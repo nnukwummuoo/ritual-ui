@@ -1,7 +1,8 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { URL } from "../../../api/config";
-import { saveImage } from "../../../api/sendImage";
+import { URL } from "@/api/config";
+import { saveImage } from "@/api/sendImage";
 import axios from "axios";
+import type { RootState } from "./store";
 
 export interface RegisterState {
   status: string;
@@ -206,7 +207,7 @@ const registerSlice = createSlice({
       })
       .addCase(registernewUser.rejected, (state, action) => {
         state.status = "failed";
-        state?.error = action.error.message;
+        state.error = action.error.message ?? null;
       })
       .addCase(verifyemail.pending, (state, action) => {
         state.verifystatus = "loading";
@@ -217,7 +218,7 @@ const registerSlice = createSlice({
       })
       .addCase(verifyemail.rejected, (state, action) => {
         state.verifystatus = "failed";
-        state.error = action.error.message;
+        state.error = action.error.message ?? null;
       })
       .addCase(registercomplete.pending, (state, action) => {
         state.compstats = "loading";
@@ -228,13 +229,14 @@ const registerSlice = createSlice({
       })
       .addCase(registercomplete.rejected, (state, action) => {
         state.compstats = "failed";
-        state.error = action.error.message;
+        state.error = action.error.message ?? null;
       })
       .addCase(loginuser.pending, (state, action) => {
         state.logstats = "loading";
       })
       .addCase(loginuser.fulfilled, (state, action) => {
-        if (state.email && state.password) {
+        // Always persist login data for client-side consumers (e.g., Sidemenu profile link)
+        try {
           localStorage.setItem(
             "login",
             JSON.stringify({
@@ -247,7 +249,7 @@ const registerSlice = createSlice({
               isModel: action.payload.isModel,
             })
           );
-        }
+        } catch {}
 
         state.logstats = "succeeded";
         state.message = action.payload.message;
@@ -264,7 +266,7 @@ const registerSlice = createSlice({
         if (!action.error.message) {
           state.error = "Check internet connection";
         } else {
-          state.error = action.error.message;
+          state.error = action.error.message ?? null;
         }
 
         //else{
@@ -279,7 +281,7 @@ const registerSlice = createSlice({
       })
       .addCase(forgetpass.rejected, (state, action) => {
         state.forgetpassstate = "failed";
-        state.error = action.error.message;
+        state.error = action.error.message ?? null;
       })
       .addCase(comfirmpasscode.pending, (state, action) => {
         state.conpasswordstate = "loading";
@@ -290,7 +292,7 @@ const registerSlice = createSlice({
       })
       .addCase(comfirmpasscode.rejected, (state, action) => {
         state.conpasswordstate = "failed";
-        state.error = action.error.message;
+        state.error = action.error.message ?? null;
       })
       .addCase(ChangePass.pending, (state, action) => {
         state.chagepassword = "loading";
@@ -300,14 +302,14 @@ const registerSlice = createSlice({
       })
       .addCase(ChangePass.rejected, (state, action) => {
         state.conpasswordstate = "failed";
-        state.error = action.error.message;
+        state.error = action.error.message ?? null;
       });
   },
 });
 
 export default registerSlice.reducer;
-export const status = (state) => state.register.status;
-export const error = (state) => state.register.error;
+export const status = (state: RootState) => state.register.status;
+export const error = (state: RootState) => state.register.error;
 export const {
   changeStatus,
   changeemailvery,

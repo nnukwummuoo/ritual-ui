@@ -32,26 +32,60 @@ const prohibitedRoute = [
 
 const PUBLIC_FILE = /\.(.*)$/
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const authToken = request.cookies.get("session")
   const isPublic = publicRoutes.some((route)=> route === pathname);
   const isProhibited = prohibitedRoute.some((route)=> route === pathname);
-
-  sessionMng(request)
+  const refreshed = await sessionMng(request)
   // Skip middleware for static files
   if (PUBLIC_FILE.test(pathname)) {
-    return NextResponse.next();
+    const res = NextResponse.next();
+    if (refreshed) {
+      res.cookies.set('session', refreshed, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        path: '/',
+        sameSite: 'strict',
+      });
+    }
+    return res;
   }
 
   if (!authToken && !isPublic) {
-    return NextResponse.redirect(new URL('/', request.url));
+    const res = NextResponse.redirect(new URL('/', request.url));
+    if (refreshed) {
+      res.cookies.set('session', refreshed, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        path: '/',
+        sameSite: 'strict',
+      });
+    }
+    return res;
   }
   if (authToken && isProhibited) {
-    return NextResponse.redirect(new URL('/', request.url));
+    const res = NextResponse.redirect(new URL('/', request.url));
+    if (refreshed) {
+      res.cookies.set('session', refreshed, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        path: '/',
+        sameSite: 'strict',
+      });
+    }
+    return res;
   }
 
   const response = NextResponse.next();
+  if (refreshed) {
+    response.cookies.set('session', refreshed, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      path: '/',
+      sameSite: 'strict',
+    });
+  }
   response.headers.set('x-powered-by', 'MintMiddleware');
   return response;
 }

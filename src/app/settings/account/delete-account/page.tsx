@@ -1,49 +1,59 @@
 "use client";
-import React,{useState} from "react";
-import { FaAngleLeft } from "react-icons/fa";
+import React, { useEffect, useState } from "react";
 import { CiWarning } from "react-icons/ci";
-import { ToastContainer } from "react-toastify";
+import { ToastContainer, toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 import Head from "../../../../components/Head";
-// import { deleteprofile, ProfilechangeStatus } from "../../app/features/profile/profile";
-// import { useSelector, useDispatch } from "react-redux";
-// import PacmanLoader from "react-spinners/RotateLoader";
+import { useDispatch, useSelector } from "react-redux";
+import { deleteprofile, ProfilechangeStatus } from "@/store/profile";
+import type { AppDispatch, RootState } from "@/store/store";
 
+const DeleteaccountPage = () => {
+  const [buttonstop, set_buttonstop] = useState(false);
+  const router = useRouter();
+  const dispatch = useDispatch<AppDispatch>();
 
- const DeleteaccountPage = () => {
-   let [color, setColor] = useState("#d49115");
-   let [buttonstop, set_buttonstop] = useState(false)
-   const router = useRouter();
-// const userid = useSelector((state) => state.register.userID);
-// const token = useSelector((state) => state.register.refreshtoken);
-// const deleteaccstats = useSelector((state) => state.profile.deleteaccstats);
-// const testmsg = useSelector((state) => state.profile.testmsg);
-// const [loading, setloading] = useState(false);
-// const dispatch = useDispatch()
+  const useridFromStore = useSelector((s: RootState) => s.register.userID);
+  const token = useSelector((s: RootState) => s.register.refreshtoken);
+  const deleteaccstats = useSelector((s: RootState) => s.profile.deleteaccstats);
+  const testmsg = useSelector((s: RootState) => s.profile.testmsg);
 
-// const deleteClick = ()=>{
-//   if(deleteaccstats !== "loading"){
-//     setloading(true)
-//     set_buttonstop(true)
-//     dispatch(deleteprofile({userid,token}))
-//   }
-  
-// }
+  // Fallback userid if not in store (from prompt)
+  const fallbackUserId = "689ef5dca5f754cf0de07e62";
+  const userid = useridFromStore || fallbackUserId;
 
-// useEffect(()=>{
-//   if(deleteaccstats === "succeeded"){
-//     localStorage.removeItem('login')
-//     dispatch(ProfilechangeStatus("idle"))
-//     router("/")
-//   }
+  const deleteClick = () => {
+    if (deleteaccstats === "loading") return;
+    set_buttonstop(true);
+    dispatch(deleteprofile({ userid, token }))
+      .unwrap()
+      .then(() => {
+        // handled in effect
+      })
+      .catch((err: any) => {
+        // will also be handled in effect, but keep UX responsive
+        toast.error(typeof err === "string" ? err : "Failed to delete account");
+        set_buttonstop(false);
+      });
+  };
 
-//   if(deleteaccstats === "failed"){
-//     toast.error(`${testmsg}`)
-//     dispatch(ProfilechangeStatus("idle"))
-    
-//   }
+  useEffect(() => {
+    if (deleteaccstats === "succeeded") {
+      try {
+        if (typeof window !== "undefined") {
+          localStorage.removeItem("login");
+        }
+      } catch {}
+      dispatch(ProfilechangeStatus("idle"));
+      router.push("/");
+    }
 
-// },[deleteaccstats])
+    if (deleteaccstats === "failed") {
+      toast.error(testmsg || "Unable to delete account. Check internet connection.");
+      dispatch(ProfilechangeStatus("idle"));
+      set_buttonstop(false);
+    }
+  }, [deleteaccstats, dispatch, router, testmsg]);
 
   return (
     <div className="mx-auto mt-10 text-white sm:w-11/12 md:w-10/12 lg:w-9/12 xl:w-8/12 md:mt-4 ">
@@ -53,19 +63,6 @@ import Head from "../../../../components/Head";
         <Head heading="DELETE MY ACCOUNT" />       
         <div className="mt-5">
         <ToastContainer position="top-center" theme="dark" />
-        {/* {loading && (
-                <div className="flex flex-col items-center w-full">
-                    <PacmanLoader
-                    color={color}
-                    loading={loading}
-                    size={10}
-                    aria-label="Loading Spinner"
-                    data-testid="loader"
-                    />
-
-                    <p className="text-xs">Deleting Please wait...</p>
-                </div>
-                )} */}
           <h4 className="mb-4">
             <span className="font-bold text-md ">PERMANENTILY DELETE</span> your
             account with all the data? All the data associated with your mmeko
@@ -77,9 +74,12 @@ import Head from "../../../../components/Head";
               <h4>Warning! This cannnot be undone </h4>
             </div>
           </div>
-          <button className="w-full max-w-md px-4 py-2 mt-6 font-medium text-black bg-white rounded-lg hover:bg-gray-500" disabled={buttonstop}> 
-            {/*onClick={deleteClick}*/}
-            Delete Account
+          <button
+            className="w-full max-w-md px-4 py-2 mt-6 font-medium text-black bg-white rounded-lg hover:bg-gray-500 disabled:opacity-60"
+            disabled={buttonstop || deleteaccstats === "loading"}
+            onClick={deleteClick}
+          >
+            {deleteaccstats === "loading" ? "Deleting…" : "Delete Account"}
           </button>
         </div>
       </div></div>  

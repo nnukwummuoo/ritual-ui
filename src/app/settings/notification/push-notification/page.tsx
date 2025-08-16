@@ -5,74 +5,43 @@ import Switch from "../../_components/Switch";
 import { useRouter } from "next/navigation";
 import NavigateBack from "../../_components/NavigateBtn";
 import Head from "../../../../components/Head";
-    // import { useSelector, useDispatch } from "react-redux";
-    // import { updatesetting, ProfilechangeStatus,getprofile } from "../../app/features/profile/profile";
-    // import WebPushService from "../../api/webPush"
+import { useDispatch, useSelector } from "react-redux";
+import { updatesetting, ProfilechangeStatus, getprofile } from "@/store/profile";
+import type { AppDispatch, RootState } from "@/store/store";
+// import WebPushService from "../../api/webPush"
 
 
  const PushNotificationPage = () => {
   const router = useRouter();
+  const dispatch = useDispatch<AppDispatch>();
+  const updatesettingstats = useSelector((s: RootState) => s.profile.updatesettingstats);
+  const emailnote = useSelector((s: RootState) => s.profile.emailnote);
+  const pushnote = useSelector((s: RootState) => s.profile.pushnote);
+  const userid = useSelector((s: RootState) => s.register.userID);
+  const token = useSelector((s: RootState) => s.register.refreshtoken);
   const [isOn, setIsOn] = useState(false);
-  // let updatesettingstats = useSelector((state) => state.profile.updatesettingstats);
-  // let pushnote = useSelector((state) => state.profile.pushnote);
-  // const [notification, setnotification] = useState(false);
-  // const token = useSelector((state) => state.register.refreshtoken);
-  // const userid = useSelector((state) => state.register.userID);
-  // const dispatch = useDispatch()
 
-  // useEffect(()=>{
-  //   if(updatesettingstats === "succeeded"){
-  //     dispatch(getprofile({ userid }));
-  //     setIsOn(!isOn)
-      
-  //     dispatch(ProfilechangeStatus("idle"))
-  //   }
-  // },[updatesettingstats])
+  // Hydrate local toggle from store
+  useEffect(() => {
+    setIsOn(Boolean(pushnote));
+  }, [pushnote]);
+
+  // After successful update, refresh profile and reset status
+  useEffect(() => {
+    if (updatesettingstats === "succeeded") {
+      if (userid) dispatch(getprofile({ userid, token }));
+      dispatch(ProfilechangeStatus("idle"));
+    }
+  }, [updatesettingstats, dispatch, userid, token]);
   
  
   const handleToggle = () => {
-    console.log("handleToggle fn")
-    // let pushsubinfo = ""
-    // if(updatesettingstats !== "loading"){
-    //   let isnote = !isOn
-    //   try{
-    //     if(isnote === false){
-    //       console.log("inside false")
-    //       const payload = await WebPushService.unsubscribe()
-    //       dispatch(updatesetting({token, userid,emailnot:"nothing",pushnot:!isOn,subinfo:pushsubinfo}))
-  
-    //     }
-        
-    //     if(isnote === true){
-    //       console.log("inside true")
-    //       if(!WebPushService.hasPermission()){
-    //          console.log("ontop request permissin")
-    //         await WebPushService.requestPermission()
-    //         console.log("inside permission")
-    //       }
-        
-    //       let subcription = await WebPushService.getSubscription()
-    //       console.log("after subcribtionget")
-    //       if(!subcription){
-    //         console.log("ontop subcribe")
-    //         subcription = await WebPushService.subscribe()
-    //         console.log("after subcribe")
-    //       }
-
-
-    //       dispatch(updatesetting({token, userid,emailnot:"nothing",pushnot:!isOn,subinfo:JSON.stringify(subcription)}))
-
-          
-    //     }
-  
-
-    //   }catch(e){
-    //     console.log("error subcribe"+e)
-    //   }
-    
-     
-      
-    // }
+    if (!userid) return;
+    const nextPush = !isOn;
+    dispatch(
+      updatesetting({ userid, emailnot: Boolean(emailnote), pushnot: nextPush })
+    );
+    setIsOn(nextPush);
   }
 
   return (
@@ -90,6 +59,9 @@ import Head from "../../../../components/Head";
           <Switch isOn={isOn} handleToggle={handleToggle} />
         </div>
       </div>
+      {updatesettingstats === "loading" && (
+        <p className="mt-2 text-sm text-slate-400">Saving…</p>
+      )}
       <p className="py-2 mb-4 text-sm text-slate-400">
         Get push notification from your fans when you are not on
       </p>

@@ -12,7 +12,7 @@ const SearchBar: React.FC<SearchBarProps> = ({ value, onChange }) => (
       <FaSearch className="absolute top-3 left-4 text-gray-400" />
       <input
         type="text"
-        placeholder="Search for articles..."
+        placeholder="Search Fans or Following..."
         className="w-full bg-gray-800 text-white py-3 px-12 rounded-md focus:outline-none"
         value={value}
         onChange={(e) => onChange(e.target.value)}

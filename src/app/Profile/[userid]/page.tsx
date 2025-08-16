@@ -6,7 +6,7 @@ export const metadata = {
     title: "profile account",
     description: "Your profile account"
 }
-// export const dynamic = 'force-dynamic';
+export const dynamic = 'force-dynamic';
 // export async function generateStaticParams() {
 //   const res = await fetch('https://api.example.com/users');
 //   const users = await res.json();
@@ -15,13 +15,6 @@ export const metadata = {
 //     userid: user.id,
 //   }));
 // }
-
-export function generateStaticParams() {
-  return [
-    { userid: 'user_1' },
-    { userid: 'randomuserid_123456789' },
-  ];
-}
 
 export default function Page() {
   return <CallProvider>

@@ -4,7 +4,7 @@ import React from 'react'
 
 export default function Profile({name, src, url}: 
     {name: string, src: string, url: string}) {
-  return <Link href={url} className={`flex gap-4 flex-col w-full`}>
+  return <Link href={url} className={`flex gap-4 flex-col w-full`} onClick={(e) => e.stopPropagation()}>
         <p className='italic'>Welcome back!</p>
         <div className={`flex gap-4 group w-full`}>
      <img
@@ -15,10 +15,11 @@ export default function Profile({name, src, url}:
             verticalAlign: "middle"
         }}
         className={`object-cover size-12 bg-slate-900 rounded-full`}
-        // onError={function (e){
-        //   e.target.onerror = null;
-        //   e.target.src = "/icons/icons8-profile_Icon1.png";
-        // }}
+        onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
+          const target = e.currentTarget as HTMLImageElement;
+          target.onerror = null;
+          target.src = "/icons/icons8-profile_user.png";
+        }}
         />
         <div className='flex flex-col gap-1 font-bold w-full'>
         <p className=" group-hover:text-gray-400 text-xl">{name}</p>

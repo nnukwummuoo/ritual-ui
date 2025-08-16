@@ -127,15 +127,15 @@ export const BottomNav = () => {
                 className="flex flex-col items-center"
                 onClick={() => handleNavigation("home", "/")}
               >
-                {/* <img
-                  src={require("/icons8-home.png")}
+                <img
+                  src="/icons/icons8-home.png"
                   alt="Home"
                   className={`w-8 h-8 ${
                     activeTab === "home"
                       ? "filter brightness-100"
                       : "filter grayscale"
                   }`}
-                /> */}
+                />
               </button>
               <p
                 className={`text-xs ${
@@ -152,7 +152,7 @@ export const BottomNav = () => {
                 onClick={() => handleNavigation("search", "/search")}
               >
                 <img
-                  src={require("@/../public/icons/icons8-search-2.png")}
+                  src="/icons/icons8-search-2.png"
                   alt="Search"
                   className={`w-8 h-8 ${
                     activeTab === "search"
@@ -176,7 +176,7 @@ export const BottomNav = () => {
                 onClick={() => handleNavigation("notify", "/notifications")}
               >
                 <img
-                  src={require("@/../public/icons/icons8-notification-1.png")}
+                  src="/icons/icons8-notification-1.png"
                   alt="Notifications"
                   className={`w-8 h-8 ${
                     activeTab === "notify"
@@ -207,7 +207,7 @@ export const BottomNav = () => {
                 }
               >
                 <img
-                  src={require("@/../public/icons/icons8-message.png")}
+                  src="/icons/icons8-message.png"
                   alt="Messages"
                   className={`w-8 h-8 ${
                     activeTab === "message"

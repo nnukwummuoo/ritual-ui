@@ -1,9 +1,39 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { URL } from "../../../api/config"
+import { URL } from "../api/config"
 // import { downloadImage, deleteImage, saveImage } from "../../../api/sendImage";
 import axios from "axios";
 
-const initialState = {
+interface ComProfileState {
+    photoLink: string;
+    details: string;
+    status: 'idle' | 'loading' | 'succeeded' | 'failed';
+    photostatus: string;
+    error: string | null;
+    profilephoto: any | null;
+    downloadPhotstats: 'idle' | 'loading' | 'succeeded' | 'failed';
+    profile: Record<string, any>;
+    getprofileidstatus: 'idle' | 'loading' | 'succeeded' | 'failed';
+    editData: Record<string, any>;
+    getedit_stats: 'idle' | 'loading' | 'succeeded' | 'failed';
+    getedit_message: string;
+    updateEdit_stats: 'idle' | 'loading' | 'succeeded' | 'failed';
+    updateEdit_message: string;
+}
+
+// Payload type for updateEdit thunk
+interface UpdateEditPayload {
+    userid: string | number;
+    deletePhotolink?: string;
+    deletePhotoID?: string | number;
+    firstname?: string;
+    lastname?: string;
+    country?: string;
+    bio?: string;
+    token: string;
+    updatePhoto?: File | Blob | string | null;
+}
+
+const initialState: ComProfileState = {
     photoLink: '',
     details: '',
     status: 'idle',
@@ -29,10 +59,10 @@ export const getcomprofile = createAsyncThunk("comprofile/getcomprofile", async 
         return response.data
 
     } catch (err) {
-
-        throw (err.response.data.message)
-
-
+        if (axios.isAxiosError(err)) {
+            throw (err.response?.data as any)?.message ?? "Network error";
+        }
+        throw "Unexpected error";
     }
 
 
@@ -59,16 +89,16 @@ export const getprofilebyid = createAsyncThunk("comprofile/getprofilebyid", asyn
         return response.data
 
     } catch (err) {
-
-        throw (err.response.data.message)
-
-
+        if (axios.isAxiosError(err)) {
+            throw (err.response?.data as any)?.message ?? "Network error";
+        }
+        throw "Unexpected error";
     }
 
 
 })
 
-export const getEdit = createAsyncThunk("comprofile/getEdit", async data => {
+export const getEdit = createAsyncThunk<any, { userid: string; token: string }>("comprofile/getEdit", async (data) => {
 
     try {
 
@@ -77,16 +107,16 @@ export const getEdit = createAsyncThunk("comprofile/getEdit", async data => {
         return response.data
 
     } catch (err) {
-
-        throw (err.response.data.message)
-
-
+        if (axios.isAxiosError(err)) {
+            throw (err.response?.data as any)?.message ?? "Network error";
+        }
+        throw "Unexpected error";
     }
 
 
 })
 
-export const updateEdit = createAsyncThunk("comprofile/updateEdit", async data => {
+export const updateEdit = createAsyncThunk<any, UpdateEditPayload>("comprofile/updateEdit", async (data: UpdateEditPayload) => {
 
     console.log("Inside updateEdit")
 
@@ -140,8 +170,10 @@ export const updateEdit = createAsyncThunk("comprofile/updateEdit", async data =
         return response.data;
 
     } catch (err) {
-
-        throw (err.response.data.message)
+        if (axios.isAxiosError(err)) {
+            throw (err.response?.data as any)?.message ?? "Network error";
+        }
+        throw "Unexpected error";
     }
 })
 
@@ -179,7 +211,7 @@ const comprofile = createSlice({
             .addCase(getcomprofile.rejected, (state, action) => {
 
                 state.status = 'failed'
-                state.error = action.error.message
+                state.error = action.error.message ?? null
             }
 
             )
@@ -197,7 +229,7 @@ const comprofile = createSlice({
             .addCase(getprofilephoto.rejected, (state, action) => {
 
                 state.photostatus = 'failed'
-                state.error = action.error.message
+                state.error = action.error.message ?? null
             }
 
             )
@@ -214,7 +246,7 @@ const comprofile = createSlice({
             .addCase(getprofilebyid.rejected, (state, action) => {
 
                 state.getprofileidstatus = 'failed'
-                state.error = action.error.message
+                state.error = action.error.message ?? null
             }
 
             )
@@ -232,7 +264,7 @@ const comprofile = createSlice({
             .addCase(getEdit.rejected, (state, action) => {
 
                 state.getedit_stats = 'failed'
-                state.getedit_message = action.error.message
+                state.getedit_message = action.error.message ?? ""
             }
 
             )
@@ -249,7 +281,7 @@ const comprofile = createSlice({
             .addCase(updateEdit.rejected, (state, action) => {
 
                 state.updateEdit_stats = 'failed'
-                state.updateEdit_message = action.error.message
+                state.updateEdit_message = action.error.message ?? ""
             }
 
             )
@@ -260,4 +292,6 @@ const comprofile = createSlice({
 
 export default comprofile.reducer;
 export const { comprofilechangeStatus, resetprofilebyid } = comprofile.actions;
-export const Compfstatus = state => state.comprofile.status;
+// Local root type for this slice to avoid implicit any on selectors
+type ComProfileRootState = { comprofile: ComProfileState };
+export const Compfstatus = (state: ComProfileRootState) => state.comprofile.status;

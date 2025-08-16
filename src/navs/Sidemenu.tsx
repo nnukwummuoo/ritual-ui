@@ -8,27 +8,47 @@ import { FaCoins } from "react-icons/fa";
 import OpenMobileMenuBtn from "@/components/OpenMobileMenuBtn";
 import { FaAngleRight } from "react-icons/fa";
 import { FaAngleDown } from "react-icons/fa";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import handleLogout from "@/lib/service/logout";
+import { useUserId } from "@/lib/hooks/useUserId";
+import { useSelector } from "react-redux";
+import type { RootState } from "@/store/store";
 
  const Sidemenu = () => {
-  const [minimize, setMinimize] = useState(false);
+ const [minimize, setMinimize] = useState(false);
+ const userId = useUserId();
+
+ // Debug: log userId changes in Sidemenu
+ useEffect(() => {
+   // eslint-disable-next-line no-console
+   console.log("[Sidemenu] userId changed:", userId);
+ }, [userId]);
 
   const router = useRouter();
   const exclusive_verify = true
   const modelID = "random_id_123" // useSelector((state) => state.profile.modelID);
   const model = true // useSelector((state) => state.profile.model);
-  const firstname = "John Doe" // useSelector((state) => state.profile.firstname);
+  const firstname = useSelector((s: RootState) => s.profile.firstname) || "User";
   const upgrade = true// const [upgrade, setUpgrade] = useState(false);
   const isModel = true
   const gold_balance = 0 // const [gold_balance, setgold_balance] = useState("");
   const admin = true // useSelector((state) => state.profile.admin);
     const { open, toggleMenu: handleMenubar } = useMenuContext();
-  
-  // function handleMinimize(e: React.MouseEvent<HTMLButtonElement>) {
-  //   setMinimize(!minimize);
-  //   handleMenubar(e);
-  // }
+  //         <MenuIconImg
+  //           src="/icons/icons8-model.png"
+  //           name="Model portfolio"
+  //           url={`/modelbyid/${modelID}`}
+  //         />
+  //       );
+  //     } else {
+  //       return (
+  //         <MenuIconImg
+  //           src="/icons/icons8-model.png"
+  //           name="Model portfolio"
+  //           url="/createmodel"
+  //         />
+  //       );
+  //     }
   // const [profile_photo, setprofile_photo] = useState(profileIcon);
   // const photo = useSelector((state) => state.comprofile.profilephoto);
   // const postuserid = useSelector((state) => state.register.userID);
@@ -123,9 +143,10 @@ import handleLogout from "@/lib/service/logout";
                 <div className="flex text-xs  text-blue-200 mb-3 w-full">
                   {/* <p className="font-bold">Welcome, {firstname}</p> */}
                   <Profile
-                  src="/icons/icons8-profile_user.png" 
-                  name={firstname} 
-                  url="/Profile/1234567890" />
+                    src="/icons/icons8-profile_user.png"
+                    name={firstname}
+                    url={userId ? `/Profile/${userId}` : `/Profile`}
+                  />
                 </div>
 
                 {/* <div className="flex p-1 "> */}
@@ -143,7 +164,7 @@ import handleLogout from "@/lib/service/logout";
 
               <div className="cstm-flex gap-4 items-start w-full mt-4">
                 <button className="flex gap-2 items-center justify-center font-bold text-sm w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white py-3 rounded-lg transition-transform duration-300 hover:scale-105 shadow-md"><FaCoins /> <span>Get More Golds</span></button>
-                <button className="cstm-boder w-full rounded-lg py-3 text-sm font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent bg-inherit flex gap-2 items-center justify-center transition-transform duration-300 hover:scale-105">🚀 <span>Upgrade Account</span></button>
+                <button className="cstm-boder w-full rounded-lg py-3 text-sm font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent bg-inherit flex gap-2 items-center justify-center transition-transform duration-300 hover:scale-105"> <span>Upgrade Account</span></button>
               </div>
             </div>
             {/* <hr className="w-full my-3 bg-blue-900 "></hr> */}
@@ -158,7 +179,7 @@ import handleLogout from "@/lib/service/logout";
               <MenuIconImg 
                 src="/icons/icons8-customer.gif" 
                 name="Profile" 
-                url="/Profile/randomuserid_123456789" />
+                url={userId ? `/Profile/${userId}` : `/Profile`} />
 
               {verify()}
 
