@@ -1,9 +1,10 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { URL } from "../../../api/config";
+import { URL } from "@/api/config";
 import axios from "axios";
+import { MessageState } from "@/types/message";
 // import { saveImage, deleteImage, updateImage } from "../../../api/sendImage";
 
-const initialState = {
+const initialState: MessageState = {
   currentmessagestatus: "idle",
   listofcurrentmessage: [],
   msgnitocations: [],
@@ -24,12 +25,12 @@ const initialState = {
   rejectAnswer:null
 };
 
-export const getchat = createAsyncThunk("chat/getchat", async (data) => {
+export const getchat = createAsyncThunk< { chats: any[]; chatInfo: any }, any>("chat/getchat", async (data) => {
   try {
     let response = await axios.put(`${URL}/getcurrentchat`, data);
 
     return response.data;
-  } catch (err) {
+  } catch (err : any) {
     if (!err.response.data.message) {
       throw "check internet connection";
     }
@@ -39,12 +40,12 @@ export const getchat = createAsyncThunk("chat/getchat", async (data) => {
 
 export const getmsgnitify = createAsyncThunk(
   "chat/getmsgnitify",
-  async (data) => {
+  async (data: any) => {
     try {
       let response = await axios.put(`${URL}/getmsgnotify`, data);
 
       return response.data;
-    } catch (err) {
+    } catch (err : any) {
       if (!err.response.data.message) {
         throw "check internet connection";
       }
@@ -60,7 +61,7 @@ export const updatemessage = createAsyncThunk(
       let response = await axios.put(`${URL}/updatenotify`, data);
 
       return response.data;
-    } catch (err) {
+    } catch (err : any) {
       if (!err.response.data.message) {
         throw "check internet connection";
       }
@@ -77,7 +78,7 @@ export const getmessagenotication = createAsyncThunk(
       let response = await axios.put(`${URL}/messagenotification`, data);
 
       return response.data;
-    } catch (err) {
+    } catch (err : any) {
       console.log("notification failed");
       if (!err.response.data.message) {
         throw "check internet connection";
@@ -91,7 +92,7 @@ export const send_gift = createAsyncThunk("chat/send_gift", async (data) => {
   try {
     let response = await axios.put(`${URL}/giftmodel`, data);
     return response.data;
-  } catch (err) {
+  } catch (err : any) {
     if (!err.response.data.message) {
       throw "check internet connection";
     }
@@ -111,7 +112,7 @@ const message = createSlice({
     },
     recivemessage(state, action) {
       state.listofcurrentmessage.forEach((index) => {
-        action.payload((value) => [...value, index]);
+        action.payload((value: any) => [...value, index]);
       });
 
       state.listofcurrentmessage = [];
@@ -151,7 +152,7 @@ const message = createSlice({
         state.Allmsg.splice(index, 1);
       }
     },
-    reset_recent(state, action) {
+    reset_recent(state: any, action: any) {
       state.recentmsg = []
     },
     set_videocall_message(state, action) {

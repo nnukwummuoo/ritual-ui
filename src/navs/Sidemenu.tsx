@@ -184,7 +184,7 @@ import handleLogout from "@/lib/service/logout";
                 <MenuIconImg 
                   src="/icons/icons8-admin.png" 
                   name={"Admin"} 
-                  url="/admin" />
+                  url="/mmeko/admin" />
               }
 
               <MenuIconImg 

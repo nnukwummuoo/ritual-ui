@@ -14,8 +14,8 @@ export const MsgRequestNav = () => {
         return <Recentmessage />;
       case "unread":
         return <Unreadmsg />;
-      case "video":
-        return <VideoCallPage />;
+      // case "video":
+      //   return <VideoCallPage />;
       default:
         return null;
     }
@@ -44,14 +44,14 @@ export const MsgRequestNav = () => {
             <p className="text-center text-xs">Unread</p>
           </button>
 
-          <button
+          {/* <button
             className={`text-slate-400 mt-3 w-1/4 rounded-lg py-1 px-6 ${
               activeTab === "video" ? "bg-[#292d31]" : ""
             }`}
             onClick={() => setActiveTab("video")}
           >
             <p className="text-center text-xs">Video Call</p>
-          </button>
+          </button> */}
         </div>
 
         {/* Render the tab content */}

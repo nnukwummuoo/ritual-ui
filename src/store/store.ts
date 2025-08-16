@@ -5,6 +5,7 @@ import modelSlice from './modelSlice';
 import bookingSlice from './booking';
 import registerReducer from './registerSlice';
 import profileReducer from './profile';
+import messageSlice from './messageSlice';
 
 
 export const store = configureStore({
@@ -15,6 +16,7 @@ export const store = configureStore({
     booking:bookingSlice,
     register:registerReducer,
     profile:profileReducer,
+    message:messageSlice,
   },
 });
 

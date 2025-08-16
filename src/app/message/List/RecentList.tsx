@@ -1,14 +1,26 @@
-import React, { useState, useEffect } from "react";
-import dodo from "@public/icons/icons8-profile_Icon.png";
-// import { downloadImage } from "../../../api/sendImage";
-import onlineIcon from "@public/icons/onlineIcon.svg";
-import offlineIcon from "@public/icons/offlineIcon.svg";
-import { format, isToday } from "date-fns";
-import DummyPics from "@public/icons/icons8-profile_Icon.png"
-import { useRouter } from "next/navigation";
+'use client';
 
-export const
-  RecentList = ({
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
+import { useSelector } from 'react-redux';
+import { format, isToday } from 'date-fns';
+import onlineIcon from '@/icons/onlineIcon.svg';
+import offlineIcon from '@/icons/offlineIcon.svg';
+import DummyPics from '@/icons/icons8-profile_Icon.png';
+import dodo from '@/icons/icons8-profile_Icon.png';
+import Image from 'next/image';
+
+interface RecentListProps {
+  photolink?: string;
+  username: string;
+  content?: string;
+  toid: string;
+  fromid: string;
+  date: string | number;
+  online: boolean;
+}
+
+export const RecentList: React.FC<RecentListProps> = ({
   photolink,
   username,
   content,
@@ -16,90 +28,72 @@ export const
   fromid,
   date,
   online,
-}: {
-  photolink: string;
-  username: string;
-  content: string;
-  toid: string;
-  fromid: string;
-  date: string;
-  online: boolean;
 }) => {
-  const [userphoto, setuserphoto] = useState(dodo);
-  const [modelid, setmodelid] = useState([]);
+  const [userphoto, setUserphoto] = useState<any>(dodo);
+  const [modelid, setModelid] = useState<string[]>([]);
   const router = useRouter();
-  // let myid = useSelector((state) => state.register.userID);
-  // let taken = false;
-  // let date1 = new Date(Number(date)).toString();
-  // const dates = format(date1, "MM/dd/yyyy 'at' h:mm a");
 
+  const myid = useSelector((state: any) => state.register.userID);
 
-  let date1 = new Date(Number(date)).toString(); 
-  const dates = isToday(date1) ? format(date1, "h:mm a") : format(date1, "MM/dd/yyyy");
+  // Format date for display
+  const dateObj = new Date(Number(date));
+  const dates = isToday(dateObj)
+    ? format(dateObj, 'h:mm a')
+    : format(dateObj, 'MM/dd/yyyy');
 
-  // useEffect(() => {  
-  //   if (fromid === myid) {
-  //     setmodelid([toid, fromid]);    
-  //   } 
-  //   if (toid === myid) {
-  //     setmodelid([fromid, toid]);
-  //   }
-  //  if (photolink) {
-  //   let photo1 = photolink;
+  useEffect(() => {
+    if (fromid === myid) {
+      setModelid([toid, fromid]);
+    }
+    if (toid === myid) {
+      setModelid([fromid, toid]);
+    }
 
-  //   //console.log('Good Photo '+photo1)
-  //   setuserphoto(photo1);
-  // }
-    
+    if (photolink) {
+      setUserphoto(photolink);
+    }
+  }, [fromid, toid, myid, photolink]);
 
-  //   //console.log('modelid'+modelid)
-  // }, []);
-
-  // const sliceContent = () => {
-  //   // console.log("here is model "+modelid)
-  //   if (content) {
-  //     return content.slice(0, 10) + `...`;
-  //   }
-  // };
+  const sliceContent = () => {
+    if (content) {
+      return content.length > 10 ? content.slice(0, 10) + '...' : content;
+    }
+    return '';
+  };
 
   return (
-    // <li
-    //   className="flex items-center justify-between px-4 py-3 mx-4 rounded-lg sm:px-2 bg-slate-800"
-    //   onClick={(e) => {
-    //     router.push(`/message/${modelid.toString()}`);
-    //   }}
-    // >
-    //   <div className="flex ml-3">
-    //     <img alt="userimg" src={photo} className="w-5 h-5 rounded-full"></img>
-    //     <p className="ml-1 text-sm font-semibold text-white">{name}</p>
-    //   </div>
-    //   <div className="mt-3 ml-3 text-sm text-black">
-    //     <p>{sliceContent()}</p>
-    //   </div>
-    // </li>
-
-    <li className="mb-1"
-      onClick={(e) => {
-        // removenotification(date);
+    <li
+      className="mb-1"
+      onClick={() => {
         router.push(`/message/${modelid.toString()}`);
       }}
-      
+      role="button"
+      tabIndex={0}
+      onKeyPress={(e) => {
+        if (e.key === 'Enter') {
+          router.push(`/message/${modelid.toString()}`);
+        }
+      }}
     >
-      <div className="flex items-center justify-between px-4 py-3 mx-2 rounded-lg sm:px-2 bg-slate-800 ">
-        <div className="flex items-center gap-4 ">
+      <div className="flex items-center justify-between px-4 py-3 mx-2 rounded-lg sm:px-2 bg-slate-800">
+        <div className="flex items-center gap-4">
           <div className="relative w-12 h-12">
             <img
-              src={require("/dodo")}
+              src={userphoto}
               alt="message-image"
               className="object-cover w-full h-full rounded-full"
-              // onError={(e) => { e.target.onerror = null;   e.target.src = DummyPics;}}
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.onerror = null;
+                target.src = DummyPics?.src;
+              }}
             />
             <div className="absolute z-10 w-6 h-6 m-1 top-6 left-6">
               <img
-                alt={online ? "online" : "offline"}
+                alt={online ? 'online' : 'offline'}
                 src={online ? onlineIcon : offlineIcon}
                 className={`object-cover rounded-full w-5 h-5 ${
-                  online ? "bg-[#d3f6e0]" : "bg-[#ffd8d9]"
+                  online ? 'bg-[#d3f6e0]' : 'bg-[#ffd8d9]'
                 }`}
               />
             </div>
@@ -107,12 +101,10 @@ export const
 
           <div>
             <h4 className="font-semibold text-slate-300 text-md sm:text-sm">
-              {username.split(" ")[0]}
+              {username.split(' ')[0]}
             </h4>
 
-            <p className="text-sm text-slate-400 sm:text-xs">
-              {/* {sliceContent()} */}
-            </p>
+            <p className="text-sm text-slate-400 sm:text-xs">{sliceContent()}</p>
           </div>
         </div>
 
