@@ -231,7 +231,7 @@ export default function CreateModelview () {
           </div>
 
           <fieldset
-            style={{ display: step === 1 ? "block" : "none" }}
+            style={{ display: step === 1 ? "flex" : "none" }}
             className="bg-gray-900 form-container"
             disabled={disablebut}
           >
@@ -382,7 +382,7 @@ export default function CreateModelview () {
           </fieldset>
 
           <fieldset
-            style={{ display: step === 2 ? "block" : "none" }}
+            style={{ display: step === 2 ? "flex" : "none" }}
             className="bg-gray-900 form-container"
             disabled={disablebut}
           >
@@ -608,7 +608,7 @@ export default function CreateModelview () {
           </fieldset>
 
           <fieldset
-            style={{ display: step === 3 ? "block" : "none" }}
+            style={{ display: step === 3 ? "flex" : "none" }}
             className="bg-gray-900 form-container"
             disabled={disablebut}
           >

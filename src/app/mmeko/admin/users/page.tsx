@@ -102,7 +102,7 @@ export default function Users(): JSX.Element {
   };
 
   return (
-    <div className="w-screen sm:w-11/12 md:w-10/12 lg:w-9/12 xl:w-8/12 mx-auto bg-black">
+    <div className="w-screen sm:w-11/12 md:w-10/12 lg:w-9/12 xl:w-8/12 mx-auto bg-gray-900">
       <div className="w-full h-full flex flex-col items-center md:w-2/4 mt-16 md:mt-0">
         <p className="text-yellow-500 font-bold border border-b-2 border-t-0 border-r-0 border-l-0 border-yellow-500">
           List Of App Users

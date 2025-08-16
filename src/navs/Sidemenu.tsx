@@ -188,18 +188,6 @@ import type { RootState } from "@/store/store";
                   name={"Following"} 
                   url="/following" />
 
-              {/* <button
-                className="flex flex-col items-center"
-                onClick={(e) => router.push("/editprofile")}
-              >
-                <img
-                  alt="editIcon"
-                  src={IconsEdit}
-                  className="object-cover w-7 h-7"
-                ></img>
-                <p className="mt-1 ml-1">Edit porfile</p>
-              </button> */}
-
               <MenuIconImg 
                   src="/icons/icons8-collection.png" 
                   name={"Collections"} 
@@ -209,26 +197,11 @@ import type { RootState } from "@/store/store";
                   name={"Gold Stats"} 
                   url="/goldstat/history" />
 
-              {/* <button
-                className="flex flex-col items-center"
-                // onClick={(e) => {
-                //   e.stopPropagation();
-                //   setIsModalOpen(true);
-                // }}
-                onClick={(e) => router.push("")}
-              >
-                <img
-                  alt="IconsPending"
-                  src={"/icons/"}
-                  className="object-cover w-7 h-7"
-                ></img>
-                <p className="mt-1 ml-1"> </p>
-              </button> */}
               <MenuIconImg 
                   src="/icons/icons8-receipts.gif" 
                   name={"Transactions"} 
                   url="/earning" />
-              {!admin &&
+              {admin &&
                 <MenuIconImg 
                   src="/icons/icons8-admin.png" 
                   name={"Admin"} 

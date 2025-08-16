@@ -98,7 +98,7 @@ export const getprofilebyid = createAsyncThunk("comprofile/getprofilebyid", asyn
 
 })
 
-export const getEdit = createAsyncThunk("comprofile/getEdit", async data => {
+export const getEdit = createAsyncThunk<any, { userid: string; token: string }>("comprofile/getEdit", async (data) => {
 
     try {
 

@@ -1,39 +1,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { URL } from "../api/config"
+import { URL } from "@/api/config";
 import axios from "axios";
-
-// Define item shape used in requests/accepted lists to avoid never[] inference
-interface BookingItem {
-  modelid: string | number;
-  date: string;
-  time: string;
-  id?: string | number;
-}
-
-interface BookingState {
-  bookingmessage: string;
-  bookingstats: "idle" | "loading" | "succeeded" | "failed";
-  requeststats: "idle" | "loading" | "succeeded" | "failed";
-  requestmessage: string;
-  requests: BookingItem[];
-  cancelmessage: string;
-  cancelstats: "idle" | "loading" | "succeeded" | "failed";
-  bookingnote: any | null;
-  notifymessage: string;
-  notifystats: "idle" | "loading" | "succeeded" | "failed";
-  acceptmessage: string;
-  accepstats: "idle" | "loading" | "succeeded" | "failed";
-  acceptedList: BookingItem[];
-  acceptedReqstat: "idle" | "loading" | "succeeded" | "failed";
-  acceptedReqMes: string;
-  paystats: "idle" | "loading" | "succeeded" | "failed";
-  paymessage: string;
-  Allrequest: BookingItem[];
-  allrequest_stats: "idle" | "loading" | "succeeded" | "failed";
-  allrequestmessage: string;
-  privatecallData: any[];
-  rejectedCall: any | null;
-}
+import { BookingState } from "@/types/booking";
 
 const initialState: BookingState = {
   bookingmessage: "",
@@ -69,7 +37,7 @@ export const bookmdel = createAsyncThunk("booking/bookmodel", async (data) => {
     //console.log('under get profile')
 
     return response.data;
-  } catch (err) {
+  } catch (err : any) {
     // console.log('erro get profile')
     if (axios.isAxiosError(err)) {
       throw (err.response?.data as any)?.message ?? "Network error";
@@ -84,7 +52,7 @@ export const getmyrequest = createAsyncThunk(
     try {
       let response = await axios.put(`${URL}/pendingrequest`, data);
       return response.data;
-    } catch (err) {
+    } catch (err : any) {
       // console.log('erro get profile')
       if (axios.isAxiosError(err)) {
         throw (err.response?.data as any)?.message ?? "Network error";
@@ -106,7 +74,7 @@ export const Cancelrequest = createAsyncThunk(
       //console.log('under get profile')
 
       return response.data;
-    } catch (err: unknown) {
+    } catch (err : any) {
       // console.log('erro get profile')
       if (axios.isAxiosError(err)) {
         throw (err.response?.data as any)?.message ?? "Network error";
@@ -128,7 +96,7 @@ export const notifymodel = createAsyncThunk(
       //console.log('under get profile')
 
       return response.data;
-    } catch (err) {
+    } catch (err : any) {
       // console.log('erro get profile')
       if (axios.isAxiosError(err)) {
         throw (err.response?.data as any)?.message ?? "Network error";
@@ -150,7 +118,7 @@ export const accepthost = createAsyncThunk(
       console.log("under accept book " + response);
 
       return response.data;
-    } catch (err) {
+    } catch (err : any) {
       // console.log('erro get profile')
       if (axios.isAxiosError(err)) {
         throw (err.response?.data as any)?.message ?? "Network error";
@@ -172,7 +140,7 @@ export const declinehost = createAsyncThunk(
       console.log("under accept book " + response);
 
       return response.data;
-    } catch (err) {
+    } catch (err : any) {
       // console.log('erro get profile')
       if (axios.isAxiosError(err)) {
         throw (err.response?.data as any)?.message ?? "Network error";
@@ -194,7 +162,7 @@ export const acceptedr_req = createAsyncThunk(
       console.log(response.data);
 
       return response.data;
-    } catch (err) {
+    } catch (err : any) {
       // console.log('erro get profile')
       if (axios.isAxiosError(err)) {
         throw (err.response?.data as any)?.message ?? "Network error";
@@ -216,7 +184,7 @@ export const completepayment = createAsyncThunk(
       console.log("under accept book " + response);
 
       return response.data;
-    } catch (err) {
+    } catch (err : any) {
       // console.log('erro get profile')
       if (axios.isAxiosError(err)) {
         throw (err.response?.data as any)?.message ?? "Network error";
@@ -238,7 +206,7 @@ export const getall_request = createAsyncThunk(
       console.log("under all request book " + response.data);
 
       return response.data;
-    } catch (err) {
+    } catch (err : any) {
       // console.log('erro get profile')
       if (axios.isAxiosError(err)) {
         throw (err.response?.data as any)?.message ?? "Network error";
@@ -252,7 +220,7 @@ const booking = createSlice({
   name: "booking",
   initialState,
   reducers: {
-    resetstat(state, action) {
+    resetstat(state, action: any) {
       state.bookingstats = "idle";
       state.requeststats = "idle";
       state.cancelstats = "idle";
@@ -341,7 +309,12 @@ const booking = createSlice({
       })
       .addCase(bookmdel.rejected, (state, action) => {
         state.bookingstats = "failed";
-        state.bookingmessage = action.error.message ?? "Check internet connection";
+
+        if (!action.error) {
+          state.bookingmessage = "Check internet connection";
+        } else {
+          state.bookingmessage = action.error.message as string;
+        }
       })
       .addCase(getmyrequest.pending, (state, action) => {
         state.requeststats = "loading";
@@ -353,7 +326,12 @@ const booking = createSlice({
       })
       .addCase(getmyrequest.rejected, (state, action) => {
         state.requeststats = "failed";
-        state.requestmessage = action.error.message ?? "Check internet connection";
+
+        if (!action.error) {
+          state.requestmessage = "Check internet connection";
+        } else {
+          state.requestmessage = action.error.message as string;
+        }
       })
       .addCase(Cancelrequest.pending, (state, action) => {
         state.cancelstats = "loading";
@@ -364,7 +342,12 @@ const booking = createSlice({
       })
       .addCase(Cancelrequest.rejected, (state, action) => {
         state.cancelstats = "failed";
-        state.cancelmessage = action.error.message ?? "Check internet connection";
+
+        if (!action.error) {
+          state.cancelmessage = "Check internet connection";
+        } else {
+          state.cancelmessage = action.error.message as string;
+        }
       })
       .addCase(notifymodel.pending, (state, action) => {
         state.notifystats = "loading";
@@ -376,7 +359,12 @@ const booking = createSlice({
       })
       .addCase(notifymodel.rejected, (state, action) => {
         state.notifystats = "failed";
-        state.notifymessage = action.error.message ?? "Check internet connection";
+
+        if (!action.error) {
+          state.notifymessage = "Check internet connection";
+        } else {
+          state.notifymessage = action.error.message as string;
+        }
       })
       .addCase(accepthost.pending, (state, action) => {
         state.accepstats = "loading";
@@ -387,7 +375,12 @@ const booking = createSlice({
       })
       .addCase(accepthost.rejected, (state, action) => {
         state.accepstats = "failed";
-        state.acceptmessage = action.error.message ?? "Check internet connection";
+
+        if (!action.error) {
+          state.acceptmessage = "Check internet connection";
+        } else {
+          state.acceptmessage = action.error.message as string;
+        }
       })
       .addCase(declinehost.pending, (state, action) => {
         state.accepstats = "loading";
@@ -398,7 +391,12 @@ const booking = createSlice({
       })
       .addCase(declinehost.rejected, (state, action) => {
         state.accepstats = "failed";
-        state.acceptmessage = action.error.message ?? "Check internet connection";
+
+        if (!action.error) {
+          state.acceptmessage = "Check internet connection";
+        } else {
+          state.acceptmessage = action.error.message as string;
+        }
       })
       .addCase(acceptedr_req.pending, (state, action) => {
         state.acceptedReqstat = "loading";
@@ -410,7 +408,12 @@ const booking = createSlice({
       })
       .addCase(acceptedr_req.rejected, (state, action) => {
         state.acceptedReqstat = "failed";
-        state.acceptedReqMes = action.error.message ?? "Check internet connection";
+
+        if (!action.error) {
+          state.acceptedReqMes = "Check internet connection";
+        } else {
+          state.acceptedReqMes = action.error.message as string;
+        }
       })
       .addCase(completepayment.pending, (state, action) => {
         state.paystats = "loading";

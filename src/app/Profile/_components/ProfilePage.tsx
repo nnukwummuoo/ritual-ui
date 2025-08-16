@@ -1,5 +1,5 @@
 "use client"
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Skeleton, { SkeletonTheme } from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 import Tabs from "./Tabs";
@@ -8,6 +8,7 @@ import { useParams } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import { getprofile } from "@/store/profile";
 import type { AppDispatch, RootState } from "@/store/store";
+import { updateEdit } from "@/store/comprofile";
 // import backIcon from "../icons/backIcon.svg";
 // import StarIcon from "../icons/transparentstar.svg";
 // import StarIcon2 from "../icons/star.svg";
@@ -66,6 +67,8 @@ const profile = {
 export const Profile = () => {
   const params = useParams();
   const dispatch = useDispatch<AppDispatch>();
+  const fileRef = useRef<HTMLInputElement | null>(null);
+  const [avatarSrc, setAvatarSrc] = useState<string | undefined>(undefined);
   const {
     status,
     firstname,
@@ -76,6 +79,11 @@ export const Profile = () => {
     active,
   } = useSelector((s: RootState) => s.profile);
   const createdAt = useSelector((s: RootState) => (s as any).profile?.createdAt as string | undefined);
+  const loggedInUserId = useSelector((s: RootState) => s.register.userID);
+  const token = useSelector((s: RootState) => s.register.refreshtoken);
+  const isUploading = useSelector((s: RootState) => s.comprofile.updateEdit_stats === "loading");
+  const viewingUserId = (params as any)?.userid as string | undefined;
+  const isSelf = Boolean(loggedInUserId && viewingUserId && loggedInUserId === viewingUserId);
   const joined = React.useMemo(() => {
     if (!createdAt) return { month: "", year: "" };
     const d = new Date(createdAt);
@@ -152,6 +160,25 @@ export const Profile = () => {
     });
     dispatch(getprofile({ userid, token } as any));
   }, [params, dispatch]);
+
+  const openPicker = () => fileRef.current?.click();
+  const onAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !isSelf) return;
+    const blobUrl = URL.createObjectURL(file);
+    setAvatarSrc(blobUrl);
+    if (loggedInUserId && token) {
+      dispatch(updateEdit({ userid: loggedInUserId, token, updatePhoto: file }))
+        .unwrap()
+        .then(() => dispatch(getprofile({ userid: loggedInUserId, token } as any)))
+        .catch(() => {});
+    }
+  };
+  useEffect(() => {
+    return () => {
+      if (avatarSrc && avatarSrc.startsWith("blob:")) URL.revokeObjectURL(avatarSrc);
+    };
+  }, [avatarSrc]);
 
   // useEffect(() => {
   //   if (getprofilebyidstats === "succeeded") {

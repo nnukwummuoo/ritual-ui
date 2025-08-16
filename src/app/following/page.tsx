@@ -11,10 +11,6 @@ import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "../../store/store";
 import { getfollow } from "../../store/profile";
 import { loginAuthUser } from "../../store/registerSlice";
-
-const firstname = "Jane"; 
-const lastname = "Doe";
-
 const FollowingPage: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const [toggle, setToggle] = useState(false);
@@ -24,6 +20,10 @@ const FollowingPage: React.FC = () => {
   const getfollow_stats = useSelector((s: RootState) => s.profile.getfollow_stats);
   const getfollow_data = useSelector((s: RootState) => s.profile.getfollow_data as any);
   const getfollow_error = useSelector((s: RootState) => s.profile.fllowmsg as string);
+
+  // Logged-in user's name from profile slice
+  const firstname = useSelector((s: RootState) => s.profile.firstname) || "";
+  const lastname = useSelector((s: RootState) => s.profile.lastname) || "";
 
   // 1) Hydrate register slice from localStorage if empty (client-only)
   useEffect(() => {

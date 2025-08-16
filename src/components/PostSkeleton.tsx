@@ -2,18 +2,14 @@ import React from 'react'
 import Skeleton, { SkeletonTheme } from 'react-loading-skeleton'
 
 export default function PostSkeleton() {
-  return <div className="px-0 -ml-48 w-[3340%] pt-16 sm:pt-0 md:w-full md:-ml-0">
-            <SkeletonTheme baseColor="#202020" highlightColor="#444">
-              <div
-                className="flex flex-col w-full gap-4"
-                style={{ width: "100%" }}
-              >
-                {Array(3)
-                  .fill(0)
+  return <SkeletonTheme baseColor="#202020" highlightColor="#444" width={"80%"} >
+              <div className="flex flex-col w-3/4 gap-8 pb-4 mt-8 mx-auto">
+                {Array
+                  .from({ length: 3 }) // Adjust the number of skeletons as needed
                   .map((_, index) => (
                     <div
                       key={index}
-                      className="w-full p-4 bg-black rounded-md shadow-md"
+                      className="w-full rounded-md shadow-md"
                     >
                       {/* Profile Section */}
                       <div className="flex items-center gap-3 mb-2">
@@ -48,5 +44,4 @@ export default function PostSkeleton() {
                   ))}
               </div>
             </SkeletonTheme>
-          </div>
 }

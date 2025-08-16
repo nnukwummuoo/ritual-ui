@@ -32,11 +32,11 @@ const Support = () => {
   ];
 
   return (
-    <div className="min-h-screen pt-8 text-white min-w-screen md:w-screen md:pr-16">
+    <div className="min-h-screen text-white">
       {/* <HeaderBackNav title="Help & Support" /> */}
 
-      <div className="w-[90%] mx-auto md:w-3/5 text-white my-6 p-4 md:mr-auto md:ml-0">
-        <div className="md:w-3/5 md:mx-auto mb-20">
+      <div className="mx-auto text-white p-4 md:mr-auto md:ml-0">
+        <div className="md:mx-auto mb-20">
           <div className="sm:mt-12">
             <h1 className="mb-12 ml-4 text-lg font-bold text-center">
               HOW CAN WE HELP?

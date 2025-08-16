@@ -1,6 +1,8 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { PayloadAction } from "@reduxjs/toolkit";
 import { URL } from "../api/config";
 import axios from "axios";
+import { ProfileState } from "@/types/profile";
 // import { saveImage } from "../../../api/sendImage";
 // import { deleteImage } from "../../../api/sendImage";
 
@@ -126,7 +128,7 @@ export const getsearch = createAsyncThunk("profile/getsearch", async () => {
     // console.log('under get profile')
 
     return response.data;
-  } catch (err) {
+  } catch (err : any) {
     // console.log('erro get profile')
     throw getErrorMessage(err);
   }
@@ -141,7 +143,7 @@ export const updatesetting = createAsyncThunk<any, any>(
       // console.log('under get profile')
 
       return response.data;
-    } catch (err) {
+    } catch (err : any) {
       // console.log('erro get profile')
       throw getErrorMessage(err);
     }
@@ -157,7 +159,7 @@ export const deleteblockedUsers = createAsyncThunk<any, any>(
       // console.log('under get profile')
 
       return response.data;
-    } catch (err) {
+    } catch (err : any) {
       // console.log('erro get profile')
       throw getErrorMessage(err);
     }
@@ -173,7 +175,7 @@ export const deleteprofile = createAsyncThunk<any, any>(
       // console.log('under get profile')
 
       return response.data;
-    } catch (err) {
+    } catch (err : any) {
       // console.log('erro get profile')
       throw getErrorMessage(err);
     }
@@ -189,7 +191,7 @@ export const getcollection = createAsyncThunk<any, any>(
       // console.log('under get profile')
 
       return response.data;
-    } catch (err) {
+    } catch (err : any) {
       // console.log('erro get profile')
       throw getErrorMessage(err);
     }
@@ -205,7 +207,7 @@ export const getblockedUsers = createAsyncThunk<any, any>(
       // console.log('under get profile')
 
       return response.data;
-    } catch (err) {
+    } catch (err : any) {
       // console.log('erro get profile')
       throw getErrorMessage(err);
     }
@@ -221,7 +223,7 @@ export const deletecollection = createAsyncThunk<any, any>(
       // console.log('under get profile')
 
       return response.data;
-    } catch (err) {
+    } catch (err : any) {
       // console.log('erro get profile')
       throw getErrorMessage(err);
     }
@@ -233,7 +235,7 @@ export const post_exclusive_content = createAsyncThunk<
   PostExclusiveContentPayload
 >(
   "profile/post_exclusive_content",
-  async (data) => {
+  async (data : any) => {
     try {
       // Send data as a FormData
       let formData = new FormData();
@@ -272,7 +274,7 @@ export const post_exclusive_content = createAsyncThunk<
       }
 
       return response.data;
-    } catch (err) {
+    } catch (err : any) {
       // console.log('erro get profile')
       throw getErrorMessage(err);
     }
@@ -313,7 +315,7 @@ export const get_my_history = createAsyncThunk<any, any>(
 
       // return response.data;
           return response.data.history;
-    } catch (err) {
+    } catch (err : any) {
       // console.log('erro get profile')
       throw getErrorMessageWithNetworkFallback(err);
     }
@@ -338,7 +340,7 @@ export const deposit = createAsyncThunk<any, any>("profile/deposit", async (data
     // console.log('under get profile')
 
     return response.data;
-  } catch (err) {
+  } catch (err : any) {
     // console.log('erro get profile')
     throw getErrorMessageWithNetworkFallback(err);
   }
@@ -349,7 +351,7 @@ export const follow = createAsyncThunk<any, any>("profile/follow", async (data) 
     let response = await axios.post(`${URL}/follow`, data);
 
     return response.data;
-  } catch (err) {
+  } catch (err : any) {
     // console.log('erro get profile')
     console.log(err);
     throw getErrorMessageWithNetworkFallback(err);
@@ -361,7 +363,7 @@ export const unfollow = createAsyncThunk<any, any>("profile/unfollow", async (da
     let response = await axios.put(`${URL}/follow`, data);
 
     return response.data;
-  } catch (err) {
+  } catch (err : any) {
     console.log(err);
     // console.log('erro get profile')
     throw getErrorMessageWithNetworkFallback(err);
@@ -399,7 +401,7 @@ export const post_exclusive_img = createAsyncThunk<
   PostExclusiveImgPayload
 >(
   "profile/post_exclusive_img",
-  async (data) => {
+  async (data: any) => {
     try {
       let img;
       let thumb;
@@ -434,7 +436,7 @@ const profile = createSlice({
   name: "profile",
   initialState,
   reducers: {
-    ProfilechangeStatus(state, action) {
+    ProfilechangeStatus(state, action: PayloadAction<ProfileState["status"]>) {
       state.status = action.payload;
       state.history_stats = action.payload;
       state.monthly_history_stats = action.payload;

@@ -8,8 +8,8 @@ const Community = () => {
     const router = useRouter();
 
   return (
-    <div className="w-screen mx-auto sm:w-11/12 md:w-10/12 lg:w-9/12 xl:w-8/12 mt-14 md:mt-8">
-        <div className="flex flex-col w-full px-4 text-gray-400 md:w-2/4 md:px-0">
+    <div className="mx-auto sm:w-11/12 md:w-10/12 lg:w-9/12 xl:w-12/12 mt-14 md:mt-8">
+        <div className="flex flex-col w-full px-4 text-gray-400 md:px-0">
             <header className="flex items-center gap-4 mb-4">
                 <FaAngleLeft
                 color="white"
