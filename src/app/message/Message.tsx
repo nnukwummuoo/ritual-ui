@@ -12,28 +12,27 @@ import { BottomNav } from "./_components/BottomNav";
 // import { Favmsg } from "./Favmsg";
 // import { getmsgnitify } from "../../app/features/message/messageSlice";
 
+import { useDispatch, useSelector } from "react-redux";
+import { getmessagenotication, getmsgnitify, updatemessage } from "@/store/messageSlice";
+import type { RootState } from "@/store/store";
 
 export const MessageView = () => {
   let [loading, setLoading] = useState<boolean>(false);
   let [color, setColor] = useState<string>("#c2d0e1");
-  // const login = useSelector((state) => state.register.logedin);
-  // const recentmsg = useSelector((state) => state.message.recentmsg);
-  // const navigate = useNavigate();
-  // const token = useSelector((state) => state.register.refreshtoken);
-  // const msgnotifystatus = useSelector((state) => state.message.msgnotifystatus);
-  // const messageList = useSelector((state) => state.message.Allmsg);
-  // let userid = useSelector((state) => state.register.userID);
-  // let ref = useRef(true);
-  // let dispatch = useDispatch();
-  // let [Chatmessage, setChatmessage] = useState("");
-  // const [click,setclick] = useState(true)
-  // useEffect(() => {
-  //   if (!login) {
-  //     window.location.href = "/";
-  //   } //else {
-  //   //   dispatch(getmsgnitify({ userid, token }));
-  //   // }
-  // }, []);
+  const dispatch = useDispatch();
+  const userid = useSelector((state: RootState) => state.register.userID);
+  const isLoggedIn = useSelector((state: RootState) => state.register.logedin);
+  const msgnotifystatus = useSelector((state: RootState) => state.message.msgnotifystatus);
+  const lastmessage = useSelector((state: RootState) => state.message.lastmessage);
+
+  useEffect(() => {
+    if (!isLoggedIn) return;
+    setLoading(true);
+    // New merged notification endpoint
+    dispatch(getmessagenotication({ userid }) as any);
+    // Legacy recent/unread endpoint if still used in UI
+    dispatch(getmsgnitify({ userid }) as any);
+  }, [isLoggedIn, userid, dispatch]);
 
   // const shownote = () => {
   //   if (loading === false) {
@@ -84,11 +83,18 @@ export const MessageView = () => {
   //   }
   // };
 
-  // useEffect(() => {
-  //   if (msgnotifystatus === "succeeded") {
-  //     setLoading(false);
-  //   }
-  // }, [msgnotifystatus]);
+  useEffect(() => {
+    if (msgnotifystatus === "succeeded" || msgnotifystatus === "failed") {
+      setLoading(false);
+    }
+  }, [msgnotifystatus]);
+
+  // Mark the latest message as read once notifications provide a lastmessage date
+  useEffect(() => {
+    if (!isLoggedIn) return;
+    if (!lastmessage) return;
+    dispatch(updatemessage({ date: lastmessage }) as any);
+  }, [lastmessage, isLoggedIn, dispatch]);
 
 
   return (

@@ -1,9 +1,43 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { URL } from "../../../api/config";
+import { URL } from "../api/config"
 import axios from "axios";
+import type { RootState } from "./store";
 // import { saveImage, deleteImage, updateImage } from "../../../api/sendImage";
 
-const initialState = {
+// Define message item shapes to avoid never[] inference on arrays
+interface MessageItem {
+  fromid: string | number;
+  toid: string | number;
+  date: string;
+  [key: string]: any;
+}
+
+interface ChatItem {
+  [key: string]: any;
+}
+
+interface MessageState {
+  currentmessagestatus: "idle" | "loading" | "succeeded" | "failed";
+  listofcurrentmessage: ChatItem[];
+  msgnitocations: MessageItem[];
+  lastmessage: string;
+  msgnotifystatus: "idle" | "loading" | "succeeded" | "failed";
+  recentmsg: any[];
+  Allmsg: MessageItem[];
+  mymessagenotifystatus: "idle" | "loading" | "succeeded" | "failed";
+  messageupdatestatus: "idle" | "loading" | "succeeded" | "failed";
+  giftstats: "idle" | "loading" | "succeeded" | "failed";
+  giftmessage: string;
+  chatinfo: Record<string, any>;
+  video_call_message: string;
+  video_call_data: any | null;
+  calling: boolean;
+  spd_call: any | null;
+  offer: any | null;
+  rejectAnswer: any | null;
+}
+
+const initialState: MessageState = {
   currentmessagestatus: "idle",
   listofcurrentmessage: [],
   msgnitocations: [],
@@ -24,80 +58,171 @@ const initialState = {
   rejectAnswer:null
 };
 
-export const getchat = createAsyncThunk("chat/getchat", async (data) => {
-  try {
-    let response = await axios.put(`${URL}/getcurrentchat`, data);
-
-    return response.data;
-  } catch (err) {
-    if (!err.response.data.message) {
-      throw "check internet connection";
-    }
-    throw err.response.data.message;
-  }
-});
-
-export const getmsgnitify = createAsyncThunk(
-  "chat/getmsgnitify",
-  async (data) => {
+export const getchat = createAsyncThunk(
+  "chat/getchat",
+  async (data: any, thunkAPI) => {
     try {
-      let response = await axios.put(`${URL}/getmsgnotify`, data);
+      const state = thunkAPI.getState() as RootState;
+      const token =
+        state.register.accesstoken ||
+        (() => {
+          try {
+            return JSON.parse(localStorage.getItem("login") || "{}").accesstoken;
+          } catch {
+            return "";
+          }
+        })();
+
+      const response = await axios.put(`${URL}/getcurrentchat`, data, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: token ? `Bearer ${token}` : "",
+        },
+      });
 
       return response.data;
     } catch (err) {
-      if (!err.response.data.message) {
-        throw "check internet connection";
+      if (axios.isAxiosError(err)) {
+        const msg = (err.response?.data as any)?.message ?? "check internet connection";
+        throw msg;
       }
-      throw err.response.data.message;
+      throw "Unexpected error";
+    }
+  }
+);
+
+export const getmsgnitify = createAsyncThunk(
+  "chat/getmsgnitify",
+  async (data: any, thunkAPI) => {
+    try {
+      const state = thunkAPI.getState() as RootState;
+      const token =
+        state.register.accesstoken ||
+        (() => {
+          try {
+            return JSON.parse(localStorage.getItem("login") || "{}").accesstoken;
+          } catch {
+            return "";
+          }
+        })();
+
+      let response = await axios.put(`${URL}/getmsgnotify`, data, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: token ? `Bearer ${token}` : "",
+        },
+      });
+
+      return response.data;
+    } catch (err) {
+      if (axios.isAxiosError(err)) {
+        const msg = (err.response?.data as any)?.message ?? "check internet connection";
+        throw msg;
+      }
+      throw "Unexpected error";
     }
   }
 );
 
 export const updatemessage = createAsyncThunk(
   "chat/updatemessage",
-  async (data) => {
+  async (data: any, thunkAPI) => {
     try {
-      let response = await axios.put(`${URL}/updatenotify`, data);
+      const state = thunkAPI.getState() as RootState;
+      const token =
+        state.register.accesstoken ||
+        (() => {
+          try {
+            return JSON.parse(localStorage.getItem("login") || "{}").accesstoken;
+          } catch {
+            return "";
+          }
+        })();
+
+      let response = await axios.put(`${URL}/updatenotify`, data, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: token ? `Bearer ${token}` : "",
+        },
+      });
 
       return response.data;
     } catch (err) {
-      if (!err.response.data.message) {
-        throw "check internet connection";
+      if (axios.isAxiosError(err)) {
+        const msg = (err.response?.data as any)?.message ?? "check internet connection";
+        throw msg;
       }
-      throw err.response.data.message;
+      throw "Unexpected error";
     }
   }
 );
 
 export const getmessagenotication = createAsyncThunk(
   "chat/getmessagenotication",
-  async (data) => {
+  async (data: any, thunkAPI) => {
     try {
       console.log("calling notification");
-      let response = await axios.put(`${URL}/messagenotification`, data);
+      const state = thunkAPI.getState() as RootState;
+      const token =
+        state.register.accesstoken ||
+        (() => {
+          try {
+            return JSON.parse(localStorage.getItem("login") || "{}").accesstoken;
+          } catch {
+            return "";
+          }
+        })();
+
+      let response = await axios.put(`${URL}/messagenotification`, data, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: token ? `Bearer ${token}` : "",
+        },
+      });
 
       return response.data;
     } catch (err) {
       console.log("notification failed");
-      if (!err.response.data.message) {
-        throw "check internet connection";
+      if (axios.isAxiosError(err)) {
+        const msg = (err.response?.data as any)?.message ?? "check internet connection";
+        throw msg;
       }
-      throw err.response.data.message;
+      throw "Unexpected error";
     }
   }
 );
 
-export const send_gift = createAsyncThunk("chat/send_gift", async (data) => {
-  try {
-    let response = await axios.put(`${URL}/giftmodel`, data);
-    return response.data;
-  } catch (err) {
-    if (!err.response.data.message) {
-      throw "check internet connection";
+export const send_gift = createAsyncThunk(
+  "chat/send_gift",
+  async (data: any, thunkAPI) => {
+    try {
+      const state = thunkAPI.getState() as RootState;
+      const token =
+        state.register.accesstoken ||
+        (() => {
+          try {
+            return JSON.parse(localStorage.getItem("login") || "{}").accesstoken;
+          } catch {
+            return "";
+          }
+        })();
+
+      let response = await axios.put(`${URL}/giftmodel`, data, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: token ? `Bearer ${token}` : "",
+        },
+      });
+      return response.data;
+    } catch (err) {
+      if (axios.isAxiosError(err)) {
+        const msg = (err.response?.data as any)?.message ?? "check internet connection";
+        throw msg;
+      }
+      throw "Unexpected error";
     }
-    throw err.response.data.message;
   }
-});
+);
 
 const message = createSlice({
   name: "message",
@@ -111,7 +236,7 @@ const message = createSlice({
     },
     recivemessage(state, action) {
       state.listofcurrentmessage.forEach((index) => {
-        action.payload((value) => [...value, index]);
+        action.payload((value: ChatItem[]) => [...value, index]);
       });
 
       state.listofcurrentmessage = [];

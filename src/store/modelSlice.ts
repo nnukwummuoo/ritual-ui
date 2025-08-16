@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { URL } from "../../../api/config";
+import { URL } from "../api/config";
 import axios from "axios";
 // import { saveImage, deleteImage, updateImage } from "../../../api/sendImage";
 
@@ -13,7 +13,7 @@ const initialState = {
   modelupdatestatus: "idle",
   modeldeletestatus: "idle",
   unverifiedhoststatus: "idle",
-  Listofunverifiedhost: [],
+  Listofunverifiedhost: [] as Array<{ id: string }>,
   verifymodelstatus: "idle",
   rejectmodelstatus: "idle",
   ListofLivehost: [],
@@ -22,7 +22,7 @@ const initialState = {
   reviewmessage: "",
   getreviewstats: "idle",
   getreviewmessage: "",
-  reviewList: [],
+  reviewList: [] as Array<{ id: string }>,
   review_delete_stats: "idle",
   review_delete_message: "",
   addcrush_stats: "idle",
@@ -43,13 +43,13 @@ const initialState = {
 
 export const createmodel = createAsyncThunk(
   "model/createmodel",
-  async (data) => {
+  async (data: any) => {
     try {
       // Prepare data for request
       let formData = new FormData();
 
       if (data.photolink) {
-        data.photolink.forEach((image) => {
+        data.photolink.forEach((image: File) => {
           formData.append("modelfiles", image);
         });
       }
@@ -79,7 +79,7 @@ export const createmodel = createAsyncThunk(
       formData.append("data", JSON.stringify(information));
       formData.append("token", data.token);
 
-      data.photolink.forEach((value) => {
+      data.photolink.forEach((value: File) => {
         formData.append("modelFiles", value);
       });
 
@@ -97,7 +97,7 @@ export const createmodel = createAsyncThunk(
       }
 
       return response.data;
-    } catch (err) {
+    } catch (err: any) {
       if (!err.response.data.message) {
         throw "check internet connection";
       }
@@ -106,12 +106,12 @@ export const createmodel = createAsyncThunk(
   }
 );
 
-export const getViews = createAsyncThunk("/models/updateview", async (data) => {
+export const getViews = createAsyncThunk("/models/updateview", async (data: any) => {
   try {
     let response = await axios.post(`${URL}/models/updateview`, data);
 
     return response.data;
-  } catch (err) {
+  } catch (err: any) {
     if (!err.response.data.message) {
       throw "check internet connection";
     }
@@ -121,12 +121,12 @@ export const getViews = createAsyncThunk("/models/updateview", async (data) => {
 
 export const updateFollowers = createAsyncThunk(
   "/models/update-followers",
-  async (data) => {
+  async (data: any) => {
     try {
       let response = await axios.post(`${URL}/models/update-followers`, data);
 
       return response.data;
-    } catch (err) {
+    } catch (err: any) {
       if (!err.response.data.message) {
         throw "check internet connection";
       }
@@ -137,7 +137,7 @@ export const updateFollowers = createAsyncThunk(
 
 export const delete_exclusive_ids = createAsyncThunk(
   "model/delete_exclusive_ids",
-  async (data) => {
+  async (data: any) => {
     try {
       console.log("outside data");
       if (data.file > 0) {
@@ -149,7 +149,7 @@ export const delete_exclusive_ids = createAsyncThunk(
       }
 
       return "sucesss";
-    } catch (err) {
+    } catch (err: any) {
       if (!err.response.data.message) {
         throw "check internet connection";
       }
@@ -160,7 +160,7 @@ export const delete_exclusive_ids = createAsyncThunk(
 
 export const post_exclusive_ids = createAsyncThunk(
   "model/post_exclusive_ids",
-  async (data) => {
+  async (data: any) => {
     try {
       let dataPonit = {
         holdphoto: "",
@@ -174,7 +174,7 @@ export const post_exclusive_ids = createAsyncThunk(
       // }
 
       return dataPonit;
-    } catch (err) {
+    } catch (err: any) {
       if (!err.response.data.message) {
         throw "check internet connection";
       }
@@ -185,7 +185,7 @@ export const post_exclusive_ids = createAsyncThunk(
 
 export const post_exclusive_docs = createAsyncThunk(
   "model/post_exclusive_docs",
-  async (data) => {
+  async (data: any) => {
     try {
       // Send data as a FormData
       let formData = new FormData();
@@ -225,7 +225,7 @@ export const post_exclusive_docs = createAsyncThunk(
       }
 
       return response.data;
-    } catch (err) {
+    } catch (err: any) {
       if (!err.response.data.message) {
         throw "check internet connection";
       }
@@ -234,7 +234,7 @@ export const post_exclusive_docs = createAsyncThunk(
   }
 );
 
-export const getmymodel = createAsyncThunk("model/getmymodel", async (data) => {
+export const getmymodel = createAsyncThunk("model/getmymodel", async (data: any) => {
   try {
     console.log("after info");
 
@@ -243,7 +243,7 @@ export const getmymodel = createAsyncThunk("model/getmymodel", async (data) => {
     // console.log('under get profile')
 
     return response.data;
-  } catch (err) {
+  } catch (err: any) {
     if (!err.response.data.message) {
       throw "check internet connection";
     }
@@ -253,7 +253,7 @@ export const getmymodel = createAsyncThunk("model/getmymodel", async (data) => {
 
 export const getmymodelbyid = createAsyncThunk(
   "model/getmymodelbyid",
-  async (data) => {
+  async (data: any) => {
     try {
       console.log("after info");
 
@@ -262,7 +262,7 @@ export const getmymodelbyid = createAsyncThunk(
       // console.log('under get profile')
 
       return response.data;
-    } catch (err) {
+    } catch (err: any) {
       if (!err.response.data.message) {
         throw "check internet connection";
       }
@@ -273,7 +273,7 @@ export const getmymodelbyid = createAsyncThunk(
 
 export const updatemodel = createAsyncThunk(
   "model/updatemodel",
-  async (data) => {
+  async (data: any) => {
     try {
       // Send data as a FormData
       let formData = new FormData();
@@ -306,7 +306,7 @@ export const updatemodel = createAsyncThunk(
       formData.append("data", JSON.stringify(updateData));
       formData.append("token", data.token);
 
-      data.photolink.forEach((photo) => {
+      data.photolink.forEach((photo: File) => {
         formData.append("updateModelPhotos", photo);
       });
 
@@ -324,7 +324,7 @@ export const updatemodel = createAsyncThunk(
       }
 
       return response.data;
-    } catch (err) {
+    } catch (err: any) {
       if (!err.response.data.message) {
         throw "check internet connection";
       }
@@ -335,7 +335,7 @@ export const updatemodel = createAsyncThunk(
 
 export const deletemodelImage = createAsyncThunk(
   "model/deletemodelImage",
-  async (data) => {
+  async (data: any) => {
     try {
       if (data) {
         for (let i = 0; i < data.length; i++) {
@@ -344,7 +344,7 @@ export const deletemodelImage = createAsyncThunk(
       }
 
       return "success";
-    } catch (err) {
+    } catch (err: any) {
       throw err;
     }
   }
@@ -352,7 +352,7 @@ export const deletemodelImage = createAsyncThunk(
 
 export const deletemodel = createAsyncThunk(
   "model/deletemodel ",
-  async (data) => {
+  async (data: any) => {
     try {
       if (data.photolink) {
         for (let i = 0; i < data.photocount; i++) {
@@ -375,7 +375,7 @@ export const deletemodel = createAsyncThunk(
       let response = await axios.post(`${URL}/deletemodel`, info);
 
       return response.data;
-    } catch (err) {
+    } catch (err: any) {
       if (!err.response.data.message) {
         throw "check internet connection";
       }
@@ -387,12 +387,12 @@ export const deletemodel = createAsyncThunk(
 //undode for getting exclusive that we need to verify
 export const unverifiedHost = createAsyncThunk(
   "model/unverifiedHost ",
-  async (data) => {
+  async (data: any) => {
     try {
       let response = await axios.post(`${URL}/getadminhost`, data);
 
       return response.data;
-    } catch (err) {
+    } catch (err: any) {
       if (!err.response.data.message) {
         throw "check internet connection";
       }
@@ -403,12 +403,12 @@ export const unverifiedHost = createAsyncThunk(
 
 export const verifymodel = createAsyncThunk(
   "model/verifymodel ",
-  async (data) => {
+  async (data: any) => {
     try {
       let response = await axios.post(`${URL}/verifymodel`, data);
 
       return response.data;
-    } catch (err) {
+    } catch (err: any) {
       if (!err.response.data.message) {
         throw "check internet connection";
       }
@@ -419,12 +419,12 @@ export const verifymodel = createAsyncThunk(
 
 export const rejectmodel = createAsyncThunk(
   "model/rejectmodel ",
-  async (data) => {
+  async (data: any) => {
     try {
       let response = await axios.post(`${URL}/rejectmodel`, data);
 
       return response.data;
-    } catch (err) {
+    } catch (err: any) {
       if (!err.response.data.message) {
         throw "check internet connection";
       }
@@ -435,13 +435,13 @@ export const rejectmodel = createAsyncThunk(
 
 export const getverifyhost = createAsyncThunk(
   "model/getverifyhost ",
-  async (data) => {
+  async (data: any) => {
     try {
       let response = await axios.post(`${URL}/getverifymodel`, data);
       console.log("Backend /getverifymodel response:", response.data);
 
       return response.data;
-    } catch (err) {
+    } catch (err: any) {
       if (!err.response.data.message) {
         throw "check internet connection";
       }
@@ -450,12 +450,12 @@ export const getverifyhost = createAsyncThunk(
   }
 );
 
-export const review = createAsyncThunk("model/review ", async (data) => {
+export const review = createAsyncThunk("model/review ", async (data: any) => {
   try {
     let response = await axios.put(`${URL}/reviewmodel`, data);
 
     return response.data;
-  } catch (err) {
+  } catch (err: any) {
     if (!err.response.data.message) {
       throw "check internet connection";
     }
@@ -463,12 +463,12 @@ export const review = createAsyncThunk("model/review ", async (data) => {
   }
 });
 
-export const getreview = createAsyncThunk("model/getreview ", async (data) => {
+export const getreview = createAsyncThunk("model/getreview ", async (data: any) => {
   try {
     let response = await axios.put(`${URL}/getreviews`, data);
 
     return response.data;
-  } catch (err) {
+  } catch (err: any) {
     if (!err.response.data.message) {
       throw "check internet connection";
     }
@@ -478,12 +478,12 @@ export const getreview = createAsyncThunk("model/getreview ", async (data) => {
 
 export const deletereview = createAsyncThunk(
   "model/deletereview ",
-  async (data) => {
+  async (data: any) => {
     try {
       let response = await axios.put(`${URL}/deletereview`, data);
 
       return response.data;
-    } catch (err) {
+    } catch (err: any) {
       if (!err.response.data.message) {
         throw "check internet connection";
       }
@@ -492,12 +492,12 @@ export const deletereview = createAsyncThunk(
   }
 );
 
-export const addcrush = createAsyncThunk("model/addcrush ", async (data) => {
+export const addcrush = createAsyncThunk("model/addcrush ", async (data: any) => {
   try {
     let response = await axios.post(`${URL}/addcrush`, data);
 
     return response.data;
-  } catch (err) {
+  } catch (err: any) {
     if (!err.response.data.message) {
       throw "check internet connection";
     }
@@ -505,27 +505,29 @@ export const addcrush = createAsyncThunk("model/addcrush ", async (data) => {
   }
 });
 
-export const getcrush = createAsyncThunk("model/getcrushs ", async (data) => {
-  try {
-    let response = await axios.get(`${URL}/getcrushs`, data);
-
-    return response.data;
-  } catch (err) {
-    if (!err.response.data.message) {
-      throw "check internet connection";
+export const getcrush = createAsyncThunk<any, { userid?: string; token?: string }>(
+  "model/getcrushs ",
+  async (data) => {
+    try {
+      const response = await axios.get(`${URL}/getcrushs`, { params: data });
+      return response.data;
+    } catch (err: any) {
+      if (!err?.response?.data?.message) {
+        throw "check internet connection";
+      }
+      throw err.response.data.message;
     }
-    throw err.response.data.message;
   }
-});
+);
 
 export const delete_MSG = createAsyncThunk(
   "model/delete_MSG ",
-  async (data) => {
+  async (data: any) => {
     try {
       let response = await axios.post(`${URL}/deleteMsg`, data);
 
       return response.data;
-    } catch (err) {
+    } catch (err: any) {
       if (!err.response.data.message) {
         throw "check internet connection";
       }
@@ -536,12 +538,18 @@ export const delete_MSG = createAsyncThunk(
 
 export const remove_Crush = createAsyncThunk(
   "model/remove_Crush ",
-  async (data) => {
+  async (
+    data: {
+      userid: string;
+      token: string;
+      modelid: string;
+    }
+  ) => {
     try {
       let response = await axios.post(`${URL}/deletecrush`, data);
 
       return response.data;
-    } catch (err) {
+    } catch (err: any) {
       if (!err.response.data.message) {
         throw "check internet connection";
       }
@@ -582,7 +590,7 @@ const model = createSlice({
       })
       .addCase(createmodel.fulfilled, (state, action) => {
         state.modelpoststatus = "succeeded";
-        state.message = action.payload.message;
+        state.message = action.payload?.message ?? state.message;
       })
       .addCase(createmodel.rejected, (state, action) => {
         state.modelpoststatus = "failed";
@@ -590,7 +598,7 @@ const model = createSlice({
         if (!action.error.message) {
           state.message = "Check internet connection";
         } else {
-          state.message = action.error.message;
+          state.message = action.error.message ?? state.message;
         }
       })
       .addCase(getmymodel.pending, (state, action) => {
@@ -598,7 +606,7 @@ const model = createSlice({
       })
       .addCase(getmymodel.fulfilled, (state, action) => {
         state.mymodelstatus = "succeeded";
-        state.message = action.payload.message;
+        state.message = action.payload?.message ?? state.message;
         state.mymodel = action.payload.host;
       })
       .addCase(getmymodel.rejected, (state, action) => {
@@ -607,7 +615,7 @@ const model = createSlice({
         if (!action.error.message) {
           state.message = "Check internet connection";
         } else {
-          state.message = action.error.message;
+          state.message = action.error.message ?? state.message;
         }
       })
       .addCase(getmymodelbyid.pending, (state, action) => {
@@ -615,7 +623,7 @@ const model = createSlice({
       })
       .addCase(getmymodelbyid.fulfilled, (state, action) => {
         state.modelbyidstatus = "succeeded";
-        state.message = action.payload.message;
+        state.message = action.payload?.message ?? state.message;
         state.modelbyid = action.payload.host;
       })
       .addCase(getmymodelbyid.rejected, (state, action) => {
@@ -624,7 +632,7 @@ const model = createSlice({
         if (!action.error.message) {
           state.message = "Check internet connection";
         } else {
-          state.message = action.error.message;
+          state.message = action.error.message ?? state.message;
         }
       })
       .addCase(updatemodel.pending, (state, action) => {
@@ -632,7 +640,7 @@ const model = createSlice({
       })
       .addCase(updatemodel.fulfilled, (state, action) => {
         state.modelupdatestatus = "succeeded";
-        state.message = action.payload.message;
+        state.message = action.payload?.message ?? state.message;
       })
       .addCase(updatemodel.rejected, (state, action) => {
         state.modelupdatestatus = "failed";
@@ -640,7 +648,7 @@ const model = createSlice({
         if (!action.error.message) {
           state.message = "Check internet connection";
         } else {
-          state.message = action.error.message;
+          state.message = action.error.message ?? state.message;
         }
       })
       .addCase(deletemodel.pending, (state, action) => {
@@ -648,7 +656,7 @@ const model = createSlice({
       })
       .addCase(deletemodel.fulfilled, (state, action) => {
         state.modeldeletestatus = "succeeded";
-        state.message = action.payload.message;
+        state.message = action.payload?.message ?? state.message;
       })
       .addCase(deletemodel.rejected, (state, action) => {
         state.modeldeletestatus = "failed";
@@ -656,7 +664,7 @@ const model = createSlice({
         if (action.error.message === undefined) {
           state.message = "Check internet connection";
         } else {
-          state.message = action.error.message;
+          state.message = action.error.message ?? state.message;
         }
       })
       .addCase(unverifiedHost.pending, (state, action) => {
@@ -664,7 +672,7 @@ const model = createSlice({
       })
       .addCase(unverifiedHost.fulfilled, (state, action) => {
         state.unverifiedhoststatus = "succeeded";
-        state.message = action.payload.message;
+        state.message = action.payload?.message ?? state.message;
         state.Listofunverifiedhost = action.payload.hosts;
       })
       .addCase(unverifiedHost.rejected, (state, action) => {
@@ -673,7 +681,7 @@ const model = createSlice({
         if (action.error.message === undefined) {
           state.message = "Check internet connection";
         } else {
-          state.message = action.error.message;
+          state.message = action.error.message ?? state.message;
         }
       })
       .addCase(verifymodel.pending, (state, action) => {
@@ -681,7 +689,7 @@ const model = createSlice({
       })
       .addCase(verifymodel.fulfilled, (state, action) => {
         state.verifymodelstatus = "succeeded";
-        state.message = action.payload.message;
+        state.message = action.payload?.message ?? state.message;
         if (action.payload.hostid) {
           let index = state.Listofunverifiedhost.findIndex((value) => {
             return value.id === action.payload.hostid;
@@ -698,7 +706,7 @@ const model = createSlice({
         if (action.error.message === undefined) {
           state.message = "Check internet connection";
         } else {
-          state.message = action.error.message;
+          state.message = action.error.message ?? state.message;
         }
       })
       .addCase(rejectmodel.pending, (state, action) => {
@@ -706,7 +714,7 @@ const model = createSlice({
       })
       .addCase(rejectmodel.fulfilled, (state, action) => {
         state.rejectmodelstatus = "succeeded";
-        state.message = action.payload.message;
+        state.message = action.payload?.message ?? state.message;
         if (action.payload.hostid) {
           let index = state.Listofunverifiedhost.findIndex((value) => {
             return value.id === action.payload.hostid;
@@ -723,7 +731,7 @@ const model = createSlice({
         if (action.error.message === undefined) {
           state.message = "Check internet connection";
         } else {
-          state.message = action.error.message;
+          state.message = action.error.message ?? state.message;
         }
       })
       .addCase(getverifyhost.pending, (state, action) => {
@@ -731,7 +739,7 @@ const model = createSlice({
       })
       .addCase(getverifyhost.fulfilled, (state, action) => {
         state.Listofhoststatus = "succeeded";
-        state.message = action.payload.message;
+        state.message = action.payload?.message ?? state.message;
         state.ListofLivehost = action.payload.host;
       })
       .addCase(getverifyhost.rejected, (state, action) => {
@@ -740,7 +748,7 @@ const model = createSlice({
         if (action.error.message === undefined) {
           state.message = "Check internet connection";
         } else {
-          state.message = action.error.message;
+          state.message = action.error.message ?? state.message;
         }
       })
       .addCase(review.pending, (state, action) => {
@@ -748,7 +756,7 @@ const model = createSlice({
       })
       .addCase(review.fulfilled, (state, action) => {
         state.reviewstats = "succeeded";
-        state.reviewmessage = action.payload.message;
+        state.reviewmessage = action.payload?.message ?? state.reviewmessage;
       })
       .addCase(review.rejected, (state, action) => {
         state.reviewstats = "failed";
@@ -756,7 +764,7 @@ const model = createSlice({
         if (!action.error) {
           state.reviewmessage = "Check internet connection";
         } else {
-          state.reviewmessage = action.error.message;
+          state.reviewmessage = action.error.message ?? state.reviewmessage;
         }
       })
       .addCase(getreview.pending, (state, action) => {
@@ -764,7 +772,7 @@ const model = createSlice({
       })
       .addCase(getreview.fulfilled, (state, action) => {
         state.getreviewstats = "succeeded";
-        state.getreviewmessage = action.payload.message;
+        state.getreviewmessage = action.payload?.message ?? state.getreviewmessage;
         state.reviewList = action.payload.reviews;
       })
       .addCase(getreview.rejected, (state, action) => {
@@ -773,7 +781,7 @@ const model = createSlice({
         if (!action.error) {
           state.getreviewmessage = "Check internet connection";
         } else {
-          state.getreviewmessage = action.error.message;
+          state.getreviewmessage = action.error.message ?? state.getreviewmessage;
         }
       })
       .addCase(deletereview.pending, (state, action) => {
@@ -781,7 +789,7 @@ const model = createSlice({
       })
       .addCase(deletereview.fulfilled, (state, action) => {
         state.review_delete_stats = "succeeded";
-        state.review_delete_message = action.payload.message;
+        state.review_delete_message = action.payload?.message ?? state.review_delete_message;
         let id = action.payload.id;
 
         let index = state.reviewList.findIndex((value) => {
@@ -798,7 +806,7 @@ const model = createSlice({
         if (!action.error) {
           state.review_delete_message = "Check internet connection";
         } else {
-          state.review_delete_message = action.error.message;
+          state.review_delete_message = action.error.message ?? state.review_delete_message;
         }
       })
       .addCase(addcrush.pending, (state, action) => {
@@ -806,7 +814,7 @@ const model = createSlice({
       })
       .addCase(addcrush.fulfilled, (state, action) => {
         state.addcrush_stats = "succeeded";
-        state.addcrush_message = action.payload.message;
+        state.addcrush_message = action.payload?.message ?? state.addcrush_message;
       })
       .addCase(addcrush.rejected, (state, action) => {
         state.addcrush_stats = "failed";
@@ -814,7 +822,7 @@ const model = createSlice({
         if (!action.error) {
           state.addcrush_message = "Check internet connection";
         } else {
-          state.addcrush_message = action.error.message;
+          state.addcrush_message = action.error.message ?? state.addcrush_message;
         }
       })
       .addCase(getcrush.pending, (state, action) => {
@@ -822,14 +830,14 @@ const model = createSlice({
       })
       .addCase(getcrush.fulfilled, (state, action) => {
         state.getcrush_stats = "suceeded";
-        state.getcrush_message = action.payload.message;
+        state.getcrush_message = action.payload?.message ?? state.getcrush_message;
       })
       .addCase(getcrush.rejected, (state, action) => {
         state.getcrush_stats = "failed";
         if (!action.error) {
           state.getcrush_stats = "Check internet connection";
         } else {
-          state.getcrush_stats = action.error.message;
+          state.getcrush_stats = action.error.message ?? state.getcrush_stats;
         }
       })
       .addCase(delete_MSG.pending, (state, action) => {
@@ -837,14 +845,14 @@ const model = createSlice({
       })
       .addCase(delete_MSG.fulfilled, (state, action) => {
         state.delete_msg_stats = "suceeded";
-        state.delete_msg_messge = action.payload.message;
+        state.delete_msg_message = action.payload?.message ?? state.delete_msg_message;
       })
       .addCase(delete_MSG.rejected, (state, action) => {
         state.delete_msg_stats = "failed";
         if (!action.error) {
-          state.delete_msg_messge = "Check internet connection";
+          state.delete_msg_message = "Check internet connection";
         } else {
-          state.delete_msg_messge = action.error.message;
+          state.delete_msg_message = action.error.message ?? state.delete_msg_message;
         }
       })
       .addCase(remove_Crush.pending, (state, action) => {
@@ -852,14 +860,14 @@ const model = createSlice({
       })
       .addCase(remove_Crush.fulfilled, (state, action) => {
         state.remove_crush_stats = "succeeded";
-        state.remove_crush_message = action.payload.message;
+        state.remove_crush_message = action.payload?.message ?? state.remove_crush_message;
       })
       .addCase(remove_Crush.rejected, (state, action) => {
         state.remove_crush_stats = "failed";
         if (!action.error) {
           state.remove_crush_message = "Check internet connection";
         } else {
-          state.remove_crush_message = action.error.message;
+          state.remove_crush_message = action.error.message ?? state.remove_crush_message;
         }
       })
       .addCase(deletemodelImage.pending, (state, action) => {

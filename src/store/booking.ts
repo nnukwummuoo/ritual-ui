@@ -1,8 +1,41 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { URL } from "../../../api/config";
+import { URL } from "../api/config"
 import axios from "axios";
 
-const initialState = {
+// Define item shape used in requests/accepted lists to avoid never[] inference
+interface BookingItem {
+  modelid: string | number;
+  date: string;
+  time: string;
+  id?: string | number;
+}
+
+interface BookingState {
+  bookingmessage: string;
+  bookingstats: "idle" | "loading" | "succeeded" | "failed";
+  requeststats: "idle" | "loading" | "succeeded" | "failed";
+  requestmessage: string;
+  requests: BookingItem[];
+  cancelmessage: string;
+  cancelstats: "idle" | "loading" | "succeeded" | "failed";
+  bookingnote: any | null;
+  notifymessage: string;
+  notifystats: "idle" | "loading" | "succeeded" | "failed";
+  acceptmessage: string;
+  accepstats: "idle" | "loading" | "succeeded" | "failed";
+  acceptedList: BookingItem[];
+  acceptedReqstat: "idle" | "loading" | "succeeded" | "failed";
+  acceptedReqMes: string;
+  paystats: "idle" | "loading" | "succeeded" | "failed";
+  paymessage: string;
+  Allrequest: BookingItem[];
+  allrequest_stats: "idle" | "loading" | "succeeded" | "failed";
+  allrequestmessage: string;
+  privatecallData: any[];
+  rejectedCall: any | null;
+}
+
+const initialState: BookingState = {
   bookingmessage: "",
   bookingstats: "idle",
   requeststats: "idle",
@@ -38,7 +71,10 @@ export const bookmdel = createAsyncThunk("booking/bookmodel", async (data) => {
     return response.data;
   } catch (err) {
     // console.log('erro get profile')
-    throw err.response.data.message;
+    if (axios.isAxiosError(err)) {
+      throw (err.response?.data as any)?.message ?? "Network error";
+    }
+    throw "Unexpected error";
   }
 });
 
@@ -50,7 +86,10 @@ export const getmyrequest = createAsyncThunk(
       return response.data;
     } catch (err) {
       // console.log('erro get profile')
-      throw err.response.data.message;
+      if (axios.isAxiosError(err)) {
+        throw (err.response?.data as any)?.message ?? "Network error";
+      }
+      throw "Unexpected error";
     }
   }
 );
@@ -67,9 +106,12 @@ export const Cancelrequest = createAsyncThunk(
       //console.log('under get profile')
 
       return response.data;
-    } catch (err) {
+    } catch (err: unknown) {
       // console.log('erro get profile')
-      throw err.response.data.message;
+      if (axios.isAxiosError(err)) {
+        throw (err.response?.data as any)?.message ?? "Network error";
+      }
+      throw "Unexpected error";
     }
   }
 );
@@ -88,7 +130,10 @@ export const notifymodel = createAsyncThunk(
       return response.data;
     } catch (err) {
       // console.log('erro get profile')
-      throw err.response.data.message;
+      if (axios.isAxiosError(err)) {
+        throw (err.response?.data as any)?.message ?? "Network error";
+      }
+      throw "Unexpected error";
     }
   }
 );
@@ -107,7 +152,10 @@ export const accepthost = createAsyncThunk(
       return response.data;
     } catch (err) {
       // console.log('erro get profile')
-      throw err.response.data.message;
+      if (axios.isAxiosError(err)) {
+        throw (err.response?.data as any)?.message ?? "Network error";
+      }
+      throw "Unexpected error";
     }
   }
 );
@@ -126,7 +174,10 @@ export const declinehost = createAsyncThunk(
       return response.data;
     } catch (err) {
       // console.log('erro get profile')
-      throw err.response.data.message;
+      if (axios.isAxiosError(err)) {
+        throw (err.response?.data as any)?.message ?? "Network error";
+      }
+      throw "Unexpected error";
     }
   }
 );
@@ -145,7 +196,10 @@ export const acceptedr_req = createAsyncThunk(
       return response.data;
     } catch (err) {
       // console.log('erro get profile')
-      throw err.response.data.message;
+      if (axios.isAxiosError(err)) {
+        throw (err.response?.data as any)?.message ?? "Network error";
+      }
+      throw "Unexpected error";
     }
   }
 );
@@ -164,7 +218,10 @@ export const completepayment = createAsyncThunk(
       return response.data;
     } catch (err) {
       // console.log('erro get profile')
-      throw err.response.data.message;
+      if (axios.isAxiosError(err)) {
+        throw (err.response?.data as any)?.message ?? "Network error";
+      }
+      throw "Unexpected error";
     }
   }
 );
@@ -183,7 +240,10 @@ export const getall_request = createAsyncThunk(
       return response.data;
     } catch (err) {
       // console.log('erro get profile')
-      throw err.response.data.message;
+      if (axios.isAxiosError(err)) {
+        throw (err.response?.data as any)?.message ?? "Network error";
+      }
+      throw "Unexpected error";
     }
   }
 );
@@ -281,12 +341,7 @@ const booking = createSlice({
       })
       .addCase(bookmdel.rejected, (state, action) => {
         state.bookingstats = "failed";
-
-        if (!action.error) {
-          state.bookingmessage = "Check internet connection";
-        } else {
-          state.bookingmessage = action.error.message;
-        }
+        state.bookingmessage = action.error.message ?? "Check internet connection";
       })
       .addCase(getmyrequest.pending, (state, action) => {
         state.requeststats = "loading";
@@ -298,12 +353,7 @@ const booking = createSlice({
       })
       .addCase(getmyrequest.rejected, (state, action) => {
         state.requeststats = "failed";
-
-        if (!action.error) {
-          state.requestmessage = "Check internet connection";
-        } else {
-          state.requestmessage = action.error.message;
-        }
+        state.requestmessage = action.error.message ?? "Check internet connection";
       })
       .addCase(Cancelrequest.pending, (state, action) => {
         state.cancelstats = "loading";
@@ -314,12 +364,7 @@ const booking = createSlice({
       })
       .addCase(Cancelrequest.rejected, (state, action) => {
         state.cancelstats = "failed";
-
-        if (!action.error) {
-          state.cancelmessage = "Check internet connection";
-        } else {
-          state.cancelmessage = action.error.message;
-        }
+        state.cancelmessage = action.error.message ?? "Check internet connection";
       })
       .addCase(notifymodel.pending, (state, action) => {
         state.notifystats = "loading";
@@ -331,12 +376,7 @@ const booking = createSlice({
       })
       .addCase(notifymodel.rejected, (state, action) => {
         state.notifystats = "failed";
-
-        if (!action.error) {
-          state.notifymessage = "Check internet connection";
-        } else {
-          state.notifymessage = action.error.message;
-        }
+        state.notifymessage = action.error.message ?? "Check internet connection";
       })
       .addCase(accepthost.pending, (state, action) => {
         state.accepstats = "loading";
@@ -347,12 +387,7 @@ const booking = createSlice({
       })
       .addCase(accepthost.rejected, (state, action) => {
         state.accepstats = "failed";
-
-        if (!action.error) {
-          state.acceptmessage = "Check internet connection";
-        } else {
-          state.acceptmessage = action.error.message;
-        }
+        state.acceptmessage = action.error.message ?? "Check internet connection";
       })
       .addCase(declinehost.pending, (state, action) => {
         state.accepstats = "loading";
@@ -363,12 +398,7 @@ const booking = createSlice({
       })
       .addCase(declinehost.rejected, (state, action) => {
         state.accepstats = "failed";
-
-        if (!action.error) {
-          state.acceptmessage = "Check internet connection";
-        } else {
-          state.acceptmessage = action.error.message;
-        }
+        state.acceptmessage = action.error.message ?? "Check internet connection";
       })
       .addCase(acceptedr_req.pending, (state, action) => {
         state.acceptedReqstat = "loading";
@@ -380,12 +410,7 @@ const booking = createSlice({
       })
       .addCase(acceptedr_req.rejected, (state, action) => {
         state.acceptedReqstat = "failed";
-
-        if (!action.error) {
-          state.acceptedReqMes = "Check internet connection";
-        } else {
-          state.acceptedReqMes = action.error.message;
-        }
+        state.acceptedReqMes = action.error.message ?? "Check internet connection";
       })
       .addCase(completepayment.pending, (state, action) => {
         state.paystats = "loading";
@@ -396,12 +421,7 @@ const booking = createSlice({
       })
       .addCase(completepayment.rejected, (state, action) => {
         state.paystats = "failed";
-
-        if (!action.error.message) {
-          state.paymessage = "Check internet connection";
-        } else {
-          state.paymessage = action.error.message;
-        }
+        state.paymessage = action.error.message ?? "Check internet connection";
       })
       .addCase(getall_request.pending, (state, action) => {
         state.allrequest_stats = "loading";
@@ -413,12 +433,7 @@ const booking = createSlice({
       })
       .addCase(getall_request.rejected, (state, action) => {
         state.allrequest_stats = "failed";
-
-        if (!action.error.message) {
-          state.allrequestmessage = "Check internet connection";
-        } else {
-          state.allrequestmessage = action.error.message;
-        }
+        state.allrequestmessage = action.error.message ?? "Check internet connection";
       });
   },
 });

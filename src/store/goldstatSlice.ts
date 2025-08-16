@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import axios from 'axios';
+import { URL } from '@/api/config';
 
 interface Transaction {
   id: string;
@@ -36,7 +37,8 @@ export const get_monthly_history = createAsyncThunk(
   'goldstat/get_monthly_history',
   async ({ userId, token }: { userId: string; token: string }, { rejectWithValue }) => {
     try {
-      const response = await axios.post('/getmonthlyhistory', { userId, token });
+      // API expects "userid" key (lowercase), map from our arg userId
+      const response = await axios.post(`${URL}/statistics/monthly`, { userid: userId, token });
       // Adjust response.data as per backend structure
       return response.data;
     } catch (err: any) {
@@ -49,7 +51,8 @@ export const get_my_history = createAsyncThunk(
   'goldstat/get_my_history',
   async ({ userId, token }: { userId: string; token: string }, { rejectWithValue }) => {
     try {
-      const response = await axios.post('/gethistory', { userId, token });
+      // API expects "userid" key (lowercase), map from our arg userId
+      const response = await axios.post(`${URL}/statistics`, { userid: userId, token });
       console.log("HISTORY RESPONSE", response.data);
       // Adjust response.data as per backend structure
       return response.data;
