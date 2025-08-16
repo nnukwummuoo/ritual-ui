@@ -3,6 +3,8 @@ import followingReducer from './followingSlice';
 import goldstatReducer from './goldstatSlice';
 import modelSlice from './modelSlice';
 import bookingSlice from './booking';
+import registerReducer from './registerSlice';
+import profileReducer from './profile';
 
 
 export const store = configureStore({
@@ -11,6 +13,8 @@ export const store = configureStore({
     goldstat: goldstatReducer,
     model: modelSlice,
     booking:bookingSlice,
+    register:registerReducer,
+    profile:profileReducer,
   },
 });
 

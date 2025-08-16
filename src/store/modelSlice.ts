@@ -115,7 +115,7 @@ export const createmodel = createAsyncThunk<any, CreateModelPayload>(
   }
 );
 
-export const getViews = createAsyncThunk("/models/updateview", async (data) => {
+export const getViews = createAsyncThunk("/models/updateview", async (data: any) => {
   try {
     let response = await axios.post(`${URL}/models/updateview`, data);
 
@@ -262,7 +262,7 @@ export const getmymodel = createAsyncThunk("model/getmymodel", async (data) => {
 
 export const getmymodelbyid = createAsyncThunk(
   "model/getmymodelbyid",
-  async (data) => {
+  async (data: any) => {
     try {
       console.log("after info");
 
@@ -361,7 +361,7 @@ export const deletemodelImage = createAsyncThunk(
 
 export const deletemodel = createAsyncThunk<any, DeleteModelPayload>(
   "model/deletemodel ",
-  async (data) => {
+  async (data: any) => {
     try {
       if (data.photolink) {
         for (let i = 0; i < data.photocount; i++) {
@@ -472,7 +472,7 @@ export const review = createAsyncThunk<any, ReviewPayload>("model/review ", asyn
   }
 });
 
-export const getreview = createAsyncThunk("model/getreview ", async (data) => {
+export const getreview = createAsyncThunk("model/getreview ", async (data: any) => {
   try {
     let response = await axios.put(`${URL}/getreviews`, data);
 
@@ -501,7 +501,7 @@ export const deletereview = createAsyncThunk(
   }
 );
 
-export const addcrush = createAsyncThunk("model/addcrush ", async (data) => {
+export const addcrush = createAsyncThunk("model/addcrush ", async (data: any) => {
   try {
     let response = await axios.post(`${URL}/addcrush`, data);
 
@@ -545,7 +545,7 @@ export const delete_MSG = createAsyncThunk(
 
 export const remove_Crush = createAsyncThunk(
   "model/remove_Crush ",
-  async (data) => {
+  async (data: any) => {
     try {
       let response = await axios.post(`${URL}/deletecrush`, data);
 

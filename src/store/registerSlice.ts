@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { URL } from "../../../api/config";
-import { saveImage } from "../../../api/sendImage";
+import { URL } from "@/api/config";
+import { saveImage } from "@/api/sendImage";
 import axios from "axios";
 
 export interface RegisterState {
@@ -206,7 +206,7 @@ const registerSlice = createSlice({
       })
       .addCase(registernewUser.rejected, (state, action) => {
         state.status = "failed";
-        state?.error = action.error.message;
+        state.error = action.error?.message as string;
       })
       .addCase(verifyemail.pending, (state, action) => {
         state.verifystatus = "loading";
@@ -217,7 +217,7 @@ const registerSlice = createSlice({
       })
       .addCase(verifyemail.rejected, (state, action) => {
         state.verifystatus = "failed";
-        state.error = action.error.message;
+        state.error = action.error.message as string;
       })
       .addCase(registercomplete.pending, (state, action) => {
         state.compstats = "loading";
@@ -228,7 +228,7 @@ const registerSlice = createSlice({
       })
       .addCase(registercomplete.rejected, (state, action) => {
         state.compstats = "failed";
-        state.error = action.error.message;
+        state.error = action.error.message as string;
       })
       .addCase(loginuser.pending, (state, action) => {
         state.logstats = "loading";
@@ -279,7 +279,7 @@ const registerSlice = createSlice({
       })
       .addCase(forgetpass.rejected, (state, action) => {
         state.forgetpassstate = "failed";
-        state.error = action.error.message;
+        state.error = action.error.message as string;
       })
       .addCase(comfirmpasscode.pending, (state, action) => {
         state.conpasswordstate = "loading";
@@ -290,7 +290,7 @@ const registerSlice = createSlice({
       })
       .addCase(comfirmpasscode.rejected, (state, action) => {
         state.conpasswordstate = "failed";
-        state.error = action.error.message;
+        state.error = action.error.message as string;
       })
       .addCase(ChangePass.pending, (state, action) => {
         state.chagepassword = "loading";
@@ -300,14 +300,14 @@ const registerSlice = createSlice({
       })
       .addCase(ChangePass.rejected, (state, action) => {
         state.conpasswordstate = "failed";
-        state.error = action.error.message;
+        state.error = action.error.message as string;
       });
   },
 });
 
 export default registerSlice.reducer;
-export const status = (state) => state.register.status;
-export const error = (state) => state.register.error;
+export const status = (state: any) => state.register.status;
+export const error = (state: any) => state.register.error;
 export const {
   changeStatus,
   changeemailvery,

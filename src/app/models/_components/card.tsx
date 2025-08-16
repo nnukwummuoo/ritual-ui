@@ -89,7 +89,9 @@ export const ModelCard = ({
   };
 
   const handleClick = () => {
-    router.push(`/modelbyid/${modelid},${userid}`);
+    console.log(modelid);
+    
+    router.push(`/models/${modelid}`);
   };
 
   return (

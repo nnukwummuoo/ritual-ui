@@ -30,12 +30,17 @@ const prohibitedRoute = [
   '/api/session'
 ];
 
+const publicRoutePrefixes = [
+  '/models',
+];
+
 const PUBLIC_FILE = /\.(.*)$/
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const authToken = request.cookies.get("session")
-  const isPublic = publicRoutes.some((route)=> route === pathname);
+  const isPublic =   publicRoutes.includes(pathname) ||
+  publicRoutePrefixes.some(prefix => pathname.startsWith(prefix));
   const isProhibited = prohibitedRoute.some((route)=> route === pathname);
 
   sessionMng(request)
