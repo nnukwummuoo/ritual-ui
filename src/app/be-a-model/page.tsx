@@ -8,7 +8,7 @@ import {
   FaShieldAlt,
   FaClock,
 } from "react-icons/fa";
-import HeaderBackNav from "../../../navs/HeaderBackNav";
+import HeaderBackNav from "../../navs/HeaderBackNav";
 import { useRouter } from "next/navigation";
 // import { useNavigate } from "react-router-dom";
 
