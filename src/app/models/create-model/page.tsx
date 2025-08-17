@@ -322,7 +322,7 @@ export default function CreateModelview () {
                 {Array.from({ length: 120 }, (_, i) => i + 40).map((value, i) => {
                   return (
                     <option
-                      key={i}
+                      key={value}
                       value={`${value} kg`}
                       className="w-full mt-1 mb-1 bg-gray-800 border text-slate-100 rounded-2xl"
                     >{`${value} kg`}</option>

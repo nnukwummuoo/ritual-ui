@@ -1,15 +1,10 @@
 import React, { useEffect, useRef, useState } from "react";
-import videocamIcon from "@/public/videocamIcon.svg";
-import emojsicon from "@/public/addemojis.js.svg";
-import sendIcon from "@/public/sendIcon.svg";
 // import "emoji-picker-element";
 import { Chatreply } from "./Chatreply";
 import { Coinsendview } from "../List/Coinsendview";
 import { useDispatch, useSelector } from "react-redux";
 import PacmanLoader from "react-spinners/DotLoader";
-import dodoIcon from "@/public/icons8-profile_Icon.png";
-import postimageIcon from "@/public/postimageicon.svg";
-import backIcon from "@/public/backIcon.svg";
+// image assets are served from /public; use URL paths instead of importing modules
 import "@/styles/Navs.css";
 import "@/styles/Chat.css";
 import { useParams, useRouter } from "next/navigation";
@@ -26,12 +21,8 @@ import DropdownMenu from "./DropdownMenu";
 // import onlineIcon from "@/public/onlineIcon.svg";
 // import offlineIcon from "@/public/offlineIcon.svg";
 // import starIcon from "@/public/star.png";
-// import {
-//   getchat,
-//   changemessagestatus,
-//   updatemessage,
-//   send_gift,
-// } from "../../app/features/message/messageSlice";
+import { getchat, send_gift } from "@/store/messageSlice";
+import type { RootState } from "@/store/store";
 
 
 let mychat = "yes";
@@ -56,8 +47,7 @@ export const Chat = () => {
   // const profilename = useSelector((state) => state.profile.firstname);
   const dispatch = useDispatch();
   const { modelid } = useParams<{ modelid: string }>();
-  const userid = "94i42noip3jed3po3ed3j"
-  // let userid = useSelector((state) => state.register.userID);
+  const userid = useSelector((state: RootState) => state.register.userID);
 
   // const login = useSelector((state) => state.register.logedin);
   // const token = useSelector((state) => state.register.refreshtoken);
@@ -70,7 +60,7 @@ export const Chat = () => {
   const [chatfirstname, setfirstname] = useState("");
 
   const [Chatname, set_Chatname] = useState("");
-  const [Chatphoto, set_Chatphoto] = useState(dodoIcon);
+  const [Chatphoto, set_Chatphoto] = useState("/icons/dodoIcon.jpg");
 
   const [showemoji, setemoji] = useState(false);
   const [text, settext] = useState("");
@@ -158,24 +148,17 @@ export const Chat = () => {
     }
   };
 
-  // useEffect(() => {
-  //   //am the client
-  //   if (messagestatus !== "loading") {
-  //     let ids = modelid.split(",");
+  useEffect(() => {
+    if (!modelid || !userid) return;
+    // Allow URLs like "<modelid>,<clientid>" or just "<modelid>"
+    const parts = modelid.split(",");
+    const payload =
+      parts.length >= 2
+        ? { modelid: parts[0], clientid: parts[1] }
+        : { modelid: parts[0], clientid: userid };
 
-  //     if (ids[0] === userid) {
-  //       mychat = "yes";
-  //     }
-  //     dispatch(
-  //       getchat({
-  //         token,
-  //         modelid: ids[0],
-  //         clientid: ids[1],
-  //         mychat,
-  //       })
-  //     );
-  //   }
-  // }, []);
+    dispatch(getchat(payload) as any);
+  }, [modelid, userid, dispatch]);
 
   // useEffect(() => {
   //   if (!login) {
@@ -395,7 +378,7 @@ export const Chat = () => {
         <div className="bg-gray-800 chat-header ">
           <div className="flex items-center gap-2">
             <button className="text-black" onClick={() => router.push("-1")}>
-              <img src={backIcon} alt="back" />
+              <img src="/icons/backIcon.svg" alt="back" />
             </button>
             <div
               className="flex items-center gap-2 cursor-pointer"
@@ -433,7 +416,7 @@ export const Chat = () => {
               //   }
               // }}
             >
-              <img src={videocamIcon} alt="videocall" />
+              <img src="/icons/videocamIcon.svg" alt="videocall" />
             </button>
             <div>
               <DropdownMenu />
@@ -443,7 +426,7 @@ export const Chat = () => {
 
         {/* Scrollable content */}
         <div className="chat-content">
-          {loading && (
+          {loading ? (
             <div className="flex flex-col items-center ">
               <PacmanLoader
                 color={color}
@@ -451,78 +434,11 @@ export const Chat = () => {
                 size={35}
                 aria-label="Loading Spinner"
               />
-              <p className="text-sm text-center text-gray-600">
-                Please wait...
-              </p>
+              <p className="text-sm text-center text-gray-600">Please wait...</p>
             </div>
+          ) : (
+            <div className="">{messagelist()}</div>
           )}
-
-          {gift_click && (
-            <div className="absolute z-10 flex flex-col h-40 bg-blue-500 rounded-lg shadow w-80 top-1/2 md:left-16 left-8 shadow-black">
-              <div className="flex w-full bg-black rounded-tl-lg rounded-tr-lg">
-                <button
-                  className="text-white"
-                  // onClick={() => setgift_click(false)}
-                >
-                  <img alt="backIcon" src={backIcon}></img>
-                </button>
-
-                <p className="mx-auto text-xs font-bold text-center text-slate-300">
-                  Gift Gold
-                </p>
-              </div>
-
-              {sendL && (
-                <div className="flex flex-col items-center mt-5">
-                  <PacmanLoader
-                    color={sendcolor}
-                    loading={sendL}
-                    size={15}
-                    aria-label="Loading Spinner"
-                    data-testid="loader"
-                  />
-                  <p className="text-xs text-center text-slate-50">
-                    Giftting... {gold_amount} Gold
-                  </p>
-                </div>
-              )}
-
-              <div className="flex items-center w-full h-full pl-2 pr-2">
-                <div className="flex flex-col w-full bg-orange-500 rounded-lg">
-                  <input
-                    type="range"
-                    min={50}
-                    max={1000}
-                    step={50}
-                    onChange={(e) => setgold_amount(e.target.value)}
-                  ></input>
-
-                  <div className="flex flex-col items-center w-full">
-                    <div className="flex pl-1 pr-1 mt-1 mb-1 bg-blue-500 rounded-lg">
-                      <p className="font-bold text-white">{gold_amount}</p>
-
-                      <img
-                        alt="goldIcon"
-                        src={require("@/public/icons8.png")}
-                        className="object-cover w-5 h-5 mt-1 ml-1"
-                      ></img>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex justify-center w-full pb-1 pl-2 pr-2">
-                <button
-                  className="w-full p-1 bg-green-500 rounded-2xl hover:bg-green-400 active:bg-green-300"
-                  // onClick={(e) => send_coin()}
-                >
-                  <p className="text-xs font-bold text-white">Send</p>
-                </button>
-              </div>
-            </div>
-          )}
-
-          <div className="">{messagelist()}</div>
 
           {showEmoji && (
             <div
@@ -550,7 +466,7 @@ export const Chat = () => {
             setgold_amount("50");
           }}
         >
-          <img src={require("@/public/icons8.png")} alt="img" />
+          <img src="/icons/icons8.png" alt="img" />
         </button>
 
         {/* Bottom Bar */}
@@ -559,7 +475,7 @@ export const Chat = () => {
             <img
               alt="postImageIcon"
               className="object-contain w-10 h-10"
-              src={postimageIcon}
+              src="/icons/postimageicon.svg"
             />
           </button>
 
@@ -575,7 +491,7 @@ export const Chat = () => {
               // onClick={toggleEmojiPicker}
               className="ml-2"
             >
-              <img alt="addemoji" src={emojsicon} className="w-6 h-6" />
+              <img alt="addemoji" src="/icons/addemojis.js.svg" className="w-6 h-6" />
             </button>
           </div>
 
@@ -583,12 +499,12 @@ export const Chat = () => {
           <button className="flex-shrink-0">
             <img
               alt="sendicon"
-              src={sendIcon}
+              src="/icons/sendIcon.svg"
               className="object-contain w-10 h-10"
             />
           </button>
         </div>
       </div>
-     </div>
+    </div>
   );
 };

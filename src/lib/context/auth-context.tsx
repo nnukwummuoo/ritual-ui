@@ -28,7 +28,10 @@ interface AuthContextType {
   setIsLoggedIn: (isLoggedIn: boolean) => void,
   status: status,
   setStatus: (status: status) => void,
-  popup: popup
+  popup: popup,
+  // expose session so pages can access user id/token
+  session: Session | null,
+  setSession: React.Dispatch<React.SetStateAction<Session | null>>
 }
 
 type ReducerAction<T = any> = {
@@ -66,6 +69,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   const [isOpen, setIsOpen] = useState(false);
   const [{}, dispatch] = useReducer(reducer, initialState)
   const [popup, setPopup] = useState<popup>("open")
+  const [session, setSession] = useState<Session | null>(null)
   const pathname = usePathname()
 
   const router = useRouter();
@@ -74,6 +78,24 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   const toggle = () => setIsOpen((prev) => !prev);
   
   useEffect(()=>{pathname.includes("register") ? setPopup("close") : setPopup("open")},[pathname])
+  // hydrate session from localStorage to support pages expecting session
+  useEffect(()=>{
+    try{
+      const raw = typeof window !== 'undefined' ? localStorage.getItem("login") : null
+      if(raw){
+        const data = JSON.parse(raw) || {}
+        setSession({
+          _id: data.userID || data._id || data.id || "",
+          email: data.email || "",
+          token: data.accesstoken || data.accessToken || data.token,
+          fullName: data.fullName || data.name || "",
+          isAdmin: data.isAdmin
+        })
+      }
+    }catch(e){
+      // ignore
+    }
+  },[isLoggedIn, status])
   return (
     <AuthContext.Provider
       value={{
@@ -84,6 +106,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
         status,
         setStatus,
         popup,
+        session,
+        setSession,
       }}
     >
       {children}

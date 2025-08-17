@@ -7,10 +7,17 @@ interface Tab {
 
 interface TabsProps {
   tabs: Tab[];
+  initialActive?: number;
 }
 
-const Tabs: React.FC<TabsProps> = ({ tabs }) => {
-  const [active, setActive] = React.useState(0);
+const Tabs: React.FC<TabsProps> = ({ tabs, initialActive = 0 }) => {
+  const [active, setActive] = React.useState(initialActive);
+
+  React.useEffect(() => {
+    // Keep active index in range when tabs or initialActive changes
+    const next = Math.min(Math.max(initialActive, 0), Math.max(tabs.length - 1, 0));
+    setActive(next);
+  }, [initialActive, tabs.length]);
 
   return (
     <div>

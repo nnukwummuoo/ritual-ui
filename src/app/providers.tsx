@@ -6,6 +6,8 @@ import { AuthProvider } from "@/lib/context/auth-context";
 import { SnackbarProvider } from "notistack";
 import { Suspense } from "react";
 import { SNACKBAR_OPTIONS } from "@/constants";
+import dynamic from "next/dynamic";
+import "react-toastify/dist/ReactToastify.css";
 
 const Loader = () => (
   <div className="w-screen flex items-center justify-center h-screen">
@@ -14,10 +16,15 @@ const Loader = () => (
 );
 
 export default function Providers({ children }: { children: React.ReactNode }) {
+  const ClientToastContainer = dynamic(
+    () => import("react-toastify").then((m) => m.ToastContainer),
+    { ssr: false }
+  );
   return (
     <Provider store={store}>
       <SnackbarProvider {...SNACKBAR_OPTIONS}>
         <AuthProvider>
+          <ClientToastContainer />
           <Suspense fallback={<Loader />}>{children}</Suspense>
         </AuthProvider>
       </SnackbarProvider>

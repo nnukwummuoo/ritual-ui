@@ -30,6 +30,23 @@ export const Loginview = () => {
       const res = await isRegistered({email,password})
       console.log(res)
       if(!res?.email?.length) throw Error("No user found")
+      
+      // Save to localStorage for useUserId hook
+      try {
+        localStorage.setItem("login", JSON.stringify({
+          email: res.email,
+          password: res.password,
+          userID: res._id || res.id,
+          refreshtoken: res.refreshtoken,
+          accesstoken: res.accessToken || res.accesstoken,
+          modelId: res.modelId,
+          isModel: res.isModel
+        }));
+       
+      } catch (e) {
+        console.error("[Login] Failed to save localStorage:", e);
+      }
+      
       setUser(res)
       setIsLoggedIn(true)   
   }catch(error){

@@ -1,13 +1,15 @@
 import React, { useState } from "react";
 
-const Tabs = ({ tabs }: {tabs: {label: string, content: string}[]}) => {
+type TabItem = { label: string; content: React.ReactNode };
+
+const Tabs = ({ tabs }: { tabs: TabItem[] }) => {
   const [activeTab, setActiveTab] = useState(0);
 
   return (
     <div>
       {/* Tab Headers */}
       <div className="flex space-x-4 border-b border-gray-300 mb-4">
-        {tabs.map((tab: {label: string}, index: number) => (
+        {tabs.map((tab: { label: string }, index: number) => (
           <button
             key={index}
             className={`px-4 py-2 text-sm font-medium ${

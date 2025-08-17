@@ -5,8 +5,9 @@ import modelSlice from './modelSlice';
 import bookingSlice from './booking';
 import registerReducer from './registerSlice';
 import profileReducer from './profile';
-import messageSlice from './messageSlice';
 
+import messageReducer from './messageSlice';
+import comprofileReducer from './comprofile';
 
 export const store = configureStore({
   reducer: {
@@ -14,9 +15,10 @@ export const store = configureStore({
     goldstat: goldstatReducer,
     model: modelSlice,
     booking:bookingSlice,
-    register:registerReducer,
-    profile:profileReducer,
-    message:messageSlice,
+    profile: profileReducer,
+    register: registerReducer,
+    message: messageReducer,
+    comprofile: comprofileReducer,
   },
 });
 

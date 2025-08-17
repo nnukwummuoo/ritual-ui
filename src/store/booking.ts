@@ -39,7 +39,10 @@ export const bookmdel = createAsyncThunk("booking/bookmodel", async (data) => {
     return response.data;
   } catch (err : any) {
     // console.log('erro get profile')
-    throw err.response.data.message;
+    if (axios.isAxiosError(err)) {
+      throw (err.response?.data as any)?.message ?? "Network error";
+    }
+    throw "Unexpected error";
   }
 });
 
@@ -51,7 +54,10 @@ export const getmyrequest = createAsyncThunk(
       return response.data;
     } catch (err : any) {
       // console.log('erro get profile')
-      throw err.response.data.message;
+      if (axios.isAxiosError(err)) {
+        throw (err.response?.data as any)?.message ?? "Network error";
+      }
+      throw "Unexpected error";
     }
   }
 );
@@ -70,7 +76,10 @@ export const Cancelrequest = createAsyncThunk(
       return response.data;
     } catch (err : any) {
       // console.log('erro get profile')
-      throw err.response.data.message;
+      if (axios.isAxiosError(err)) {
+        throw (err.response?.data as any)?.message ?? "Network error";
+      }
+      throw "Unexpected error";
     }
   }
 );
@@ -89,7 +98,10 @@ export const notifymodel = createAsyncThunk(
       return response.data;
     } catch (err : any) {
       // console.log('erro get profile')
-      throw err.response.data.message;
+      if (axios.isAxiosError(err)) {
+        throw (err.response?.data as any)?.message ?? "Network error";
+      }
+      throw "Unexpected error";
     }
   }
 );
@@ -108,7 +120,10 @@ export const accepthost = createAsyncThunk(
       return response.data;
     } catch (err : any) {
       // console.log('erro get profile')
-      throw err.response.data.message;
+      if (axios.isAxiosError(err)) {
+        throw (err.response?.data as any)?.message ?? "Network error";
+      }
+      throw "Unexpected error";
     }
   }
 );
@@ -127,7 +142,10 @@ export const declinehost = createAsyncThunk(
       return response.data;
     } catch (err : any) {
       // console.log('erro get profile')
-      throw err.response.data.message;
+      if (axios.isAxiosError(err)) {
+        throw (err.response?.data as any)?.message ?? "Network error";
+      }
+      throw "Unexpected error";
     }
   }
 );
@@ -146,7 +164,10 @@ export const acceptedr_req = createAsyncThunk(
       return response.data;
     } catch (err : any) {
       // console.log('erro get profile')
-      throw err.response.data.message;
+      if (axios.isAxiosError(err)) {
+        throw (err.response?.data as any)?.message ?? "Network error";
+      }
+      throw "Unexpected error";
     }
   }
 );
@@ -165,7 +186,10 @@ export const completepayment = createAsyncThunk(
       return response.data;
     } catch (err : any) {
       // console.log('erro get profile')
-      throw err.response.data.message;
+      if (axios.isAxiosError(err)) {
+        throw (err.response?.data as any)?.message ?? "Network error";
+      }
+      throw "Unexpected error";
     }
   }
 );
@@ -184,7 +208,10 @@ export const getall_request = createAsyncThunk(
       return response.data;
     } catch (err : any) {
       // console.log('erro get profile')
-      throw err.response.data.message;
+      if (axios.isAxiosError(err)) {
+        throw (err.response?.data as any)?.message ?? "Network error";
+      }
+      throw "Unexpected error";
     }
   }
 );
@@ -397,12 +424,7 @@ const booking = createSlice({
       })
       .addCase(completepayment.rejected, (state, action) => {
         state.paystats = "failed";
-
-        if (!action.error.message) {
-          state.paymessage = "Check internet connection";
-        } else {
-          state.paymessage = action.error.message;
-        }
+        state.paymessage = action.error.message ?? "Check internet connection";
       })
       .addCase(getall_request.pending, (state, action) => {
         state.allrequest_stats = "loading";
@@ -414,12 +436,7 @@ const booking = createSlice({
       })
       .addCase(getall_request.rejected, (state, action) => {
         state.allrequest_stats = "failed";
-
-        if (!action.error.message) {
-          state.allrequestmessage = "Check internet connection";
-        } else {
-          state.allrequestmessage = action.error.message;
-        }
+        state.allrequestmessage = action.error.message ?? "Check internet connection";
       });
   },
 });

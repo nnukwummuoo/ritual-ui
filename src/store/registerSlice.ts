@@ -2,6 +2,7 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { URL } from "@/api/config";
 import { saveImage } from "@/api/sendImage";
 import axios from "axios";
+import type { RootState } from "./store";
 
 export interface RegisterState {
   status: string;
@@ -234,7 +235,8 @@ const registerSlice = createSlice({
         state.logstats = "loading";
       })
       .addCase(loginuser.fulfilled, (state, action) => {
-        if (state.email && state.password) {
+        // Always persist login data for client-side consumers (e.g., Sidemenu profile link)
+        try {
           localStorage.setItem(
             "login",
             JSON.stringify({
@@ -247,7 +249,7 @@ const registerSlice = createSlice({
               isModel: action.payload.isModel,
             })
           );
-        }
+        } catch {}
 
         state.logstats = "succeeded";
         state.message = action.payload.message;
@@ -264,7 +266,7 @@ const registerSlice = createSlice({
         if (!action.error.message) {
           state.error = "Check internet connection";
         } else {
-          state.error = action.error.message;
+          state.error = action.error.message ?? null;
         }
 
         //else{

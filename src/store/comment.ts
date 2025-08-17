@@ -1,15 +1,25 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { URL } from "../../../api/config"
+import { URL } from "../api/config"
 import axios from "axios";
 
-const initialState = {
- message :'',
- commentstatus:'idle',
- error:null,
- allcomment:[],
- allcommentstatus:'idle',
- editcommentstatus:'idle',
- deletecommentstatus: 'idle'   
+interface CommentState {
+  message: string;
+  commentstatus: 'idle' | 'loading' | 'succeeded' | 'failed';
+  error: string | null;
+  allcomment: any[];
+  allcommentstatus: 'idle' | 'loading' | 'succeeded' | 'failed';
+  editcommentstatus: 'idle' | 'loading' | 'succeeded' | 'failed';
+  deletecommentstatus: 'idle' | 'loading' | 'succeeded' | 'failed';
+}
+
+const initialState: CommentState = {
+  message: '',
+  commentstatus: 'idle',
+  error: null,
+  allcomment: [],
+  allcommentstatus: 'idle',
+  editcommentstatus: 'idle',
+  deletecommentstatus: 'idle',
 }
 
 
@@ -29,9 +39,10 @@ export const postcomment = createAsyncThunk("comment/postcomment",async data=>{
         
     }catch(err){
        // console.log('erro get profile')
-        throw(err.response.data.message)
-        
-       
+        if (axios.isAxiosError(err)) {
+          throw (err.response?.data as any)?.message ?? "Network error";
+        }
+        throw "Unexpected error";
     }
 
 
@@ -52,9 +63,10 @@ export const getpostcomment = createAsyncThunk("comment/getpostcomment",async da
         
     }catch(err){
        // console.log('erro get profile')
-        throw(err.response.data.message)
-        
-       
+        if (axios.isAxiosError(err)) {
+          throw (err.response?.data as any)?.message ?? "Network error";
+        }
+        throw "Unexpected error";
     }
 
 
@@ -75,9 +87,10 @@ export const editpostcomment = createAsyncThunk("comment/editpostcomment",async 
         
     }catch(err){
        // console.log('erro get profile')
-        throw(err.response.data.message)
-        
-       
+        if (axios.isAxiosError(err)) {
+          throw (err.response?.data as any)?.message ?? "Network error";
+        }
+        throw "Unexpected error";
     }
 
 
@@ -98,9 +111,10 @@ export const deletecomment = createAsyncThunk("comment/deletecomment",async data
         
     }catch(err){
        // console.log('erro get profile')
-        throw(err.response.data.message)
-        
-       
+        if (axios.isAxiosError(err)) {
+          throw (err.response?.data as any)?.message ?? "Network error";
+        }
+        throw "Unexpected error";
     }
 
 
@@ -148,7 +162,7 @@ const comment = createSlice({
 
                 state.error = "Check internet connection"
             }else{
-                state.error = action.error.message
+                state.error = action.error.message ?? null
             }
         }
 
@@ -176,7 +190,7 @@ const comment = createSlice({
 
                 state.error = "Check internet connection"
             }else{
-                state.error = action.error.message
+                state.error = action.error.message ?? null
             }
         }
 
@@ -204,7 +218,7 @@ const comment = createSlice({
 
                 state.error = "Check internet connection"
             }else{
-                state.error = action.error.message
+                state.error = action.error.message ?? null
             }
         }
 
@@ -232,7 +246,7 @@ const comment = createSlice({
 
                 state.error = "Check internet connection"
             }else{
-                state.error = action.error.message
+                state.error = action.error.message ?? null
             }
         }
 

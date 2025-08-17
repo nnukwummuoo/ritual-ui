@@ -1,6 +1,11 @@
 "use client";
 
-const Modal = ({ show, message }) => {
+type ModalProps = {
+  show: boolean;
+  message: string;
+};
+
+const Modal = ({ show, message }: ModalProps) => {
   if (!show) return null;
 
   return (

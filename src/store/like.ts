@@ -1,10 +1,10 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { URL } from "../../../api/config"
+import { URL } from "../api/config"
 import axios from "axios";
 
 const initialState = {
     likestatus:'idle',
-    error:null
+    error: ""
 }
 
 export const postlike = createAsyncThunk("like/postlike",async data=>{
@@ -19,11 +19,14 @@ export const postlike = createAsyncThunk("like/postlike",async data=>{
         return response.data
 
         
-    }catch(err){
-       // console.log('erro get profile')
-        throw(err.response.data.message)
-        
-       
+    }catch (err: unknown) {
+        // Properly narrow unknown error and surface a safe message
+        if (axios.isAxiosError(err)) {
+            const msg = (err.response?.data as any)?.message ?? err.message ?? "Check internet connection";
+            throw new Error(msg);
+        }
+        const msg = (err as Error)?.message ?? "Unknown error";
+        throw new Error(msg);
     }
 
 
@@ -56,14 +59,8 @@ const like = createSlice({
 
         )
         .addCase(postlike.rejected,(state,action)=>{
-           
             state.likestatus = 'failed'
-           
-            if(!action.error.message){
-                state.error = "Check internet connection"
-            }else{
-                state.error = action.error.message
-            }
+            state.error = action.error?.message ?? "Check internet connection"
         }
 
         )

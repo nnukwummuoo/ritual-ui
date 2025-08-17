@@ -22,7 +22,7 @@ const initialState: ModelState = {
   modelupdatestatus: "idle",
   modeldeletestatus: "idle",
   unverifiedhoststatus: "idle",
-  Listofunverifiedhost: [],
+  Listofunverifiedhost: [] as Array<{ id: string }>,
   verifymodelstatus: "idle",
   rejectmodelstatus: "idle",
   ListofLivehost: [],
@@ -31,7 +31,7 @@ const initialState: ModelState = {
   reviewmessage: "",
   getreviewstats: "idle",
   getreviewmessage: "",
-  reviewList: [],
+  reviewList: [] as Array<{ id: string }>,
   review_delete_stats: "idle",
   review_delete_message: "",
   addcrush_stats: "idle",
@@ -52,13 +52,13 @@ const initialState: ModelState = {
 
 export const createmodel = createAsyncThunk<any, CreateModelPayload>(
   "model/createmodel",
-  async (data) => {
+  async (data: any) => {
     try {
       // Prepare data for request
       let formData = new FormData();
 
       if (data.photolink) {
-        data.photolink.forEach((image) => {
+        data.photolink.forEach((image: File) => {
           formData.append("modelfiles", image);
         });
       }
@@ -88,7 +88,7 @@ export const createmodel = createAsyncThunk<any, CreateModelPayload>(
       formData.append("data", JSON.stringify(information));
       formData.append("token", data.token);
 
-      data.photolink.forEach((value) => {
+      data.photolink.forEach((value: File) => {
         formData.append("modelFiles", value);
       });
 
@@ -169,7 +169,7 @@ export const delete_exclusive_ids = createAsyncThunk<any, DeleteExclusiveIdsPayl
 
 export const post_exclusive_ids = createAsyncThunk<any, PostExclusiveIdsPayload>(
   "model/post_exclusive_ids",
-  async (data) => {
+  async (data: any) => {
     try {
       let dataPonit = {
         holdphoto: "",
@@ -194,7 +194,7 @@ export const post_exclusive_ids = createAsyncThunk<any, PostExclusiveIdsPayload>
 
 export const post_exclusive_docs = createAsyncThunk<any, PostExclusiveDocsPayload>(
   "model/post_exclusive_docs",
-  async (data) => {
+  async (data: any) => {
     try {
       // Send data as a FormData
       let formData = new FormData();
@@ -243,7 +243,7 @@ export const post_exclusive_docs = createAsyncThunk<any, PostExclusiveDocsPayloa
   }
 );
 
-export const getmymodel = createAsyncThunk("model/getmymodel", async (data) => {
+export const getmymodel = createAsyncThunk("model/getmymodel", async (data: any) => {
   try {
     console.log("after info");
 
@@ -282,7 +282,7 @@ export const getmymodelbyid = createAsyncThunk(
 
 export const updatemodel = createAsyncThunk<any, UpdateModelPayload>(
   "model/updatemodel",
-  async (data) => {
+  async (data: any) => {
     try {
       // Send data as a FormData
       let formData = new FormData();
@@ -315,7 +315,7 @@ export const updatemodel = createAsyncThunk<any, UpdateModelPayload>(
       formData.append("data", JSON.stringify(updateData));
       formData.append("token", data.token);
 
-      data.photolink.forEach((photo) => {
+      data.photolink.forEach((photo: File) => {
         formData.append("updateModelPhotos", photo);
       });
 
@@ -396,7 +396,7 @@ export const deletemodel = createAsyncThunk<any, DeleteModelPayload>(
 //undode for getting exclusive that we need to verify
 export const unverifiedHost = createAsyncThunk(
   "model/unverifiedHost ",
-  async (data) => {
+  async (data: any) => {
     try {
       let response = await axios.post(`${URL}/getadminhost`, data);
 
@@ -412,7 +412,7 @@ export const unverifiedHost = createAsyncThunk(
 
 export const verifymodel = createAsyncThunk(
   "model/verifymodel ",
-  async (data) => {
+  async (data: any) => {
     try {
       let response = await axios.post(`${URL}/verifymodel`, data);
 
@@ -428,7 +428,7 @@ export const verifymodel = createAsyncThunk(
 
 export const rejectmodel = createAsyncThunk(
   "model/rejectmodel ",
-  async (data) => {
+  async (data: any) => {
     try {
       let response = await axios.post(`${URL}/rejectmodel`, data);
 
@@ -444,7 +444,7 @@ export const rejectmodel = createAsyncThunk(
 
 export const getverifyhost = createAsyncThunk(
   "model/getverifyhost ",
-  async (data) => {
+  async (data: any) => {
     try {
       let response = await axios.post(`${URL}/getverifymodel`, data);
       console.log("Backend /getverifymodel response:", response.data);
@@ -529,7 +529,7 @@ export const getcrush = createAsyncThunk("model/getcrushs ", async (data : any) 
 
 export const delete_MSG = createAsyncThunk(
   "model/delete_MSG ",
-  async (data) => {
+  async (data: any) => {
     try {
       let response = await axios.post(`${URL}/deleteMsg`, data);
 
@@ -591,7 +591,7 @@ const model = createSlice({
       })
       .addCase(createmodel.fulfilled, (state, action) => {
         state.modelpoststatus = "succeeded";
-        state.message = action.payload.message;
+        state.message = action.payload?.message ?? state.message;
       })
       .addCase(createmodel.rejected, (state, action) => {
         state.modelpoststatus = "failed";
@@ -599,7 +599,7 @@ const model = createSlice({
         if (!action.error.message) {
           state.message = "Check internet connection";
         } else {
-          state.message = action.error.message;
+          state.message = action.error.message ?? state.message;
         }
       })
       .addCase(getmymodel.pending, (state, action) => {
@@ -607,7 +607,7 @@ const model = createSlice({
       })
       .addCase(getmymodel.fulfilled, (state, action) => {
         state.mymodelstatus = "succeeded";
-        state.message = action.payload.message;
+        state.message = action.payload?.message ?? state.message;
         state.mymodel = action.payload.host;
       })
       .addCase(getmymodel.rejected, (state, action) => {
@@ -616,7 +616,7 @@ const model = createSlice({
         if (!action.error.message) {
           state.message = "Check internet connection";
         } else {
-          state.message = action.error.message;
+          state.message = action.error.message ?? state.message;
         }
       })
       .addCase(getmymodelbyid.pending, (state, action) => {
@@ -624,7 +624,7 @@ const model = createSlice({
       })
       .addCase(getmymodelbyid.fulfilled, (state, action) => {
         state.modelbyidstatus = "succeeded";
-        state.message = action.payload.message;
+        state.message = action.payload?.message ?? state.message;
         state.modelbyid = action.payload.host;
       })
       .addCase(getmymodelbyid.rejected, (state, action) => {
@@ -633,7 +633,7 @@ const model = createSlice({
         if (!action.error.message) {
           state.message = "Check internet connection";
         } else {
-          state.message = action.error.message;
+          state.message = action.error.message ?? state.message;
         }
       })
       .addCase(updatemodel.pending, (state, action) => {
@@ -641,7 +641,7 @@ const model = createSlice({
       })
       .addCase(updatemodel.fulfilled, (state, action) => {
         state.modelupdatestatus = "succeeded";
-        state.message = action.payload.message;
+        state.message = action.payload?.message ?? state.message;
       })
       .addCase(updatemodel.rejected, (state, action) => {
         state.modelupdatestatus = "failed";
@@ -649,7 +649,7 @@ const model = createSlice({
         if (!action.error.message) {
           state.message = "Check internet connection";
         } else {
-          state.message = action.error.message;
+          state.message = action.error.message ?? state.message;
         }
       })
       .addCase(deletemodel.pending, (state, action) => {
@@ -657,7 +657,7 @@ const model = createSlice({
       })
       .addCase(deletemodel.fulfilled, (state, action) => {
         state.modeldeletestatus = "succeeded";
-        state.message = action.payload.message;
+        state.message = action.payload?.message ?? state.message;
       })
       .addCase(deletemodel.rejected, (state, action) => {
         state.modeldeletestatus = "failed";
@@ -665,7 +665,7 @@ const model = createSlice({
         if (action.error.message === undefined) {
           state.message = "Check internet connection";
         } else {
-          state.message = action.error.message;
+          state.message = action.error.message ?? state.message;
         }
       })
       .addCase(unverifiedHost.pending, (state, action) => {
@@ -673,7 +673,7 @@ const model = createSlice({
       })
       .addCase(unverifiedHost.fulfilled, (state, action) => {
         state.unverifiedhoststatus = "succeeded";
-        state.message = action.payload.message;
+        state.message = action.payload?.message ?? state.message;
         state.Listofunverifiedhost = action.payload.hosts;
       })
       .addCase(unverifiedHost.rejected, (state, action) => {
@@ -682,7 +682,7 @@ const model = createSlice({
         if (action.error.message === undefined) {
           state.message = "Check internet connection";
         } else {
-          state.message = action.error.message;
+          state.message = action.error.message ?? state.message;
         }
       })
       .addCase(verifymodel.pending, (state, action) => {
@@ -690,7 +690,7 @@ const model = createSlice({
       })
       .addCase(verifymodel.fulfilled, (state, action) => {
         state.verifymodelstatus = "succeeded";
-        state.message = action.payload.message;
+        state.message = action.payload?.message ?? state.message;
         if (action.payload.hostid) {
           let index = state.Listofunverifiedhost.findIndex((value) => {
             return value.id === action.payload.hostid;
@@ -707,7 +707,7 @@ const model = createSlice({
         if (action.error.message === undefined) {
           state.message = "Check internet connection";
         } else {
-          state.message = action.error.message;
+          state.message = action.error.message ?? state.message;
         }
       })
       .addCase(rejectmodel.pending, (state, action) => {
@@ -715,7 +715,7 @@ const model = createSlice({
       })
       .addCase(rejectmodel.fulfilled, (state, action) => {
         state.rejectmodelstatus = "succeeded";
-        state.message = action.payload.message;
+        state.message = action.payload?.message ?? state.message;
         if (action.payload.hostid) {
           let index = state.Listofunverifiedhost.findIndex((value) => {
             return value.id === action.payload.hostid;
@@ -732,7 +732,7 @@ const model = createSlice({
         if (action.error.message === undefined) {
           state.message = "Check internet connection";
         } else {
-          state.message = action.error.message;
+          state.message = action.error.message ?? state.message;
         }
       })
       .addCase(getverifyhost.pending, (state, action) => {
@@ -740,7 +740,7 @@ const model = createSlice({
       })
       .addCase(getverifyhost.fulfilled, (state, action) => {
         state.Listofhoststatus = "succeeded";
-        state.message = action.payload.message;
+        state.message = action.payload?.message ?? state.message;
         state.ListofLivehost = action.payload.host;
       })
       .addCase(getverifyhost.rejected, (state, action) => {
@@ -749,7 +749,7 @@ const model = createSlice({
         if (action.error.message === undefined) {
           state.message = "Check internet connection";
         } else {
-          state.message = action.error.message;
+          state.message = action.error.message ?? state.message;
         }
       })
       .addCase(review.pending, (state, action) => {
@@ -757,7 +757,7 @@ const model = createSlice({
       })
       .addCase(review.fulfilled, (state, action) => {
         state.reviewstats = "succeeded";
-        state.reviewmessage = action.payload.message;
+        state.reviewmessage = action.payload?.message ?? state.reviewmessage;
       })
       .addCase(review.rejected, (state, action) => {
         state.reviewstats = "failed";
@@ -768,7 +768,7 @@ const model = createSlice({
       })
       .addCase(getreview.fulfilled, (state, action) => {
         state.getreviewstats = "succeeded";
-        state.getreviewmessage = action.payload.message;
+        state.getreviewmessage = action.payload?.message ?? state.getreviewmessage;
         state.reviewList = action.payload.reviews;
       })
       .addCase(getreview.rejected, (state, action) => {
@@ -780,7 +780,7 @@ const model = createSlice({
       })
       .addCase(deletereview.fulfilled, (state, action) => {
         state.review_delete_stats = "succeeded";
-        state.review_delete_message = action.payload.message;
+        state.review_delete_message = action.payload?.message ?? state.review_delete_message;
         let id = action.payload.id;
 
         let index = state.reviewList.findIndex((value) => {
@@ -801,7 +801,7 @@ const model = createSlice({
       })
       .addCase(addcrush.fulfilled, (state, action) => {
         state.addcrush_stats = "succeeded";
-        state.addcrush_message = action.payload.message;
+        state.addcrush_message = action.payload?.message ?? state.addcrush_message;
       })
       .addCase(addcrush.rejected, (state, action) => {
         state.addcrush_stats = "failed";
@@ -813,7 +813,7 @@ const model = createSlice({
       })
       .addCase(getcrush.fulfilled, (state, action) => {
         state.getcrush_stats = "suceeded";
-        state.getcrush_message = action.payload.message;
+        state.getcrush_message = action.payload?.message ?? state.getcrush_message;
       })
       .addCase(getcrush.rejected, (state, action) => {
         state.getcrush_stats = "failed";
@@ -837,7 +837,7 @@ const model = createSlice({
       })
       .addCase(remove_Crush.fulfilled, (state, action) => {
         state.remove_crush_stats = "succeeded";
-        state.remove_crush_message = action.payload.message;
+        state.remove_crush_message = action.payload?.message ?? state.remove_crush_message;
       })
       .addCase(remove_Crush.rejected, (state, action) => {
         state.remove_crush_stats = "failed";

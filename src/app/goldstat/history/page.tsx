@@ -118,7 +118,7 @@ const HistoryPage = () => {
       <div className="bg-gray-800 rounded-lg px-4 py-3 mb-3">
         <div className="flex justify-between mb-3">
           <p className="font-semibold text-sm">Account analytics</p>
-          <p className="text-xs">Last 28 days</p>
+          <p className="text-xs">{new Date().toLocaleString('default', { month: 'long', year: 'numeric' })}</p>
         </div>
         <div className="grid grid-cols-2 gap-2 text-sm">
           <div className="bg-slate-600 rounded-lg p-2 flex flex-col">

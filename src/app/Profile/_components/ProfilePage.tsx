@@ -1,10 +1,14 @@
 "use client"
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Skeleton, { SkeletonTheme } from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 import Tabs from "./Tabs";
 import DropdownMenu from "./DropDonMenu";
 import { useParams } from "next/navigation";
+import { useDispatch, useSelector } from "react-redux";
+import { getprofile } from "@/store/profile";
+import type { AppDispatch, RootState } from "@/store/store";
+import { updateEdit } from "@/store/comprofile";
 // import backIcon from "../icons/backIcon.svg";
 // import StarIcon from "../icons/transparentstar.svg";
 // import StarIcon2 from "../icons/star.svg";
@@ -61,17 +65,34 @@ const profile = {
 }
 
 export const Profile = () => {
-  const params = useParams()
-  console.log(params)
-  const [username, setusername] = useState("");
-  const [nickname, setnickname] = useState("");
+  const params = useParams();
+  const dispatch = useDispatch<AppDispatch>();
+  const fileRef = useRef<HTMLInputElement | null>(null);
+  const [avatarSrc, setAvatarSrc] = useState<string | undefined>(undefined);
+  const {
+    status,
+    firstname,
+    lastname,
+    nickname,
+    State: location,
+    country,
+    active,
+  } = useSelector((s: RootState) => s.profile);
+  const createdAt = useSelector((s: RootState) => (s as any).profile?.createdAt as string | undefined);
+  const loggedInUserId = useSelector((s: RootState) => s.register.userID);
+  const token = useSelector((s: RootState) => s.register.refreshtoken);
+  const isUploading = useSelector((s: RootState) => s.comprofile.updateEdit_stats === "loading");
+  const viewingUserId = (params as any)?.userid as string | undefined;
+  const isSelf = Boolean(loggedInUserId && viewingUserId && loggedInUserId === viewingUserId);
+  const joined = React.useMemo(() => {
+    if (!createdAt) return { month: "", year: "" };
+    const d = new Date(createdAt);
+    if (isNaN(d.getTime())) return { month: "", year: "" };
+    return { month: Months[d.getMonth()] ?? "", year: String(d.getFullYear()) };
+  }, [createdAt]);
   const [isbuying, setisbuying] = useState(false);
   const [gender, setgender] = useState("");
-  const [location, setlocation] = useState("");
   const [about, setabout] = useState("");
-  const [active, setactive] = useState(false);
-  const [firstname, setfirstname] = useState("");
-  const [lastname, setlastname] = useState("");
   // const navigate = useNavigate();
   // const getprofilebyidstats = useSelector(
   //   (state) => state.comprofile.getprofileidstatus
@@ -100,16 +121,64 @@ export const Profile = () => {
 
   // let timeoutId = null;
 
-  // useEffect(() => {
-  //   if (getprofilebyidstats !== "loading") {
-  //     dispatch(getprofilebyid({ userid: postuserid, clientid: userid }));
-  //   }
+  useEffect(() => {
+    const userid = (params as any)?.userid as string | undefined;
+    if (!userid) return;
+    // Read token from Redux first, then fall back to localStorage
+    const tokenFromRedux = (() => {
+      try {
+        return (window as any).__REDUX_TOKEN__ ?? undefined;
+      } catch {
+        return undefined;
+      }
+    })();
 
-  //   if (isbuying === true) {
-  //     setisbuying(false);
-  //     dispatch(getprofilebyid({ userid: postuserid, clientid: userid }));
-  //   }
-  // }, [postuserid, isbuying]);
+    const tokenFromRegister = ((): string | undefined => {
+      try {
+        const state = (dispatch as any).getState?.() as RootState | undefined;
+        return state?.register?.refreshtoken || state?.register?.accesstoken || undefined;
+      } catch {
+        return undefined;
+      }
+    })();
+
+    let token: string | undefined = tokenFromRegister || tokenFromRedux;
+    if (!token) {
+      try {
+        const raw = localStorage.getItem("login");
+        if (raw) {
+          const saved = JSON.parse(raw);
+          token = saved?.refreshtoken || saved?.accesstoken;
+        }
+      } catch {}
+    }
+    // eslint-disable-next-line no-console
+    console.log("[ProfilePage] dispatch getprofile", {
+      userid,
+      hasToken: Boolean(token),
+      tokenSource: tokenFromRegister ? "redux" : tokenFromRedux ? "window" : "localStorage/missing",
+    });
+    dispatch(getprofile({ userid, token } as any));
+  }, [params, dispatch]);
+
+  const openPicker = () => fileRef.current?.click();
+  const onAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !isSelf) return;
+    const blobUrl = URL.createObjectURL(file);
+    setAvatarSrc(blobUrl);
+    if (loggedInUserId && token) {
+      dispatch(updateEdit({ userid: loggedInUserId, token, updatePhoto: file }))
+        .unwrap()
+        .then(() => dispatch(getprofile({ userid: loggedInUserId, token } as any)))
+        .catch(() => {});
+    }
+  };
+  useEffect(() => {
+    return () => {
+      if (avatarSrc && avatarSrc.startsWith("blob:")) URL.revokeObjectURL(avatarSrc);
+    };
+  }, [avatarSrc]);
 
   // useEffect(() => {
   //   if (getprofilebyidstats === "succeeded") {
@@ -393,7 +462,7 @@ export const Profile = () => {
         // onClick={() => setclick(true)}
       >
         <div className="pb-6">
-          {true && ( //fectuser()
+          {(status === "loading" || status === "idle") && (
             <SkeletonTheme baseColor="#202020" highlightColor="#444">
               <div className="w-full max-w-sm p-4 mx-auto space-y-4 text-white rounded-lg shadow-md">
                 <div className="w-full h-36">
@@ -426,7 +495,10 @@ export const Profile = () => {
               </div>
             </SkeletonTheme>
           )}
-          {profile.username && (
+          {status === "failed" && (
+            <div className="w-full text-center text-red-400">Failed to load profile. Please check your connection and try again.</div>
+          )}
+          {status === "succeeded" && (
             <div className="flex flex-col">
               <div className="relative w-full bg-red-300 h-52">
                 <img
@@ -547,7 +619,7 @@ export const Profile = () => {
                       alt="joined date"
                     />
                     <p className="text-slate-500">
-                      Joined {month}, {year}
+                      Joined {joined.month}{joined.month && joined.year ? ", " : ""}{joined.year}
                     </p>
                   </div>
                 </div>
@@ -559,9 +631,41 @@ export const Profile = () => {
       <div className="mx-4 sm:max-w-xl">
         <Tabs
           tabs={[
-            { label: "Posts", content:  "No content yet - from dummy content {//**myposts() */}"}, 
-            { label: "Exclusive", content:  "No content yet - from dummy content {//**exclusive() */}"}, 
-            { label: "Info", content:  "No content yet - from dummy content {//**info() */}"}, 
+            {
+              label: "Posts",
+              content: (
+                <div className="flex justify-center py-4 my-4 mb-10">
+                  <p className="text-sm text-slate-50">No posts yet</p>
+                </div>
+              ),
+            },
+            {
+              label: "Exclusive",
+              content: (
+                <div className="flex justify-center py-4 my-4 mb-10">
+                  <p className="text-sm text-slate-50">No exclusive content yet</p>
+                </div>
+              ),
+            },
+            {
+              label: "Info",
+              content: (
+                <div className="space-y-2 text-slate-300">
+                  <div>
+                    <span className="font-semibold text-slate-200">Name:</span> {firstname} {lastname}
+                  </div>
+                  <div>
+                    <span className="font-semibold text-slate-200">Nickname:</span> {nickname}
+                  </div>
+                  <div>
+                    <span className="font-semibold text-slate-200">Location:</span> {location}
+                  </div>
+                  <div>
+                    <span className="font-semibold text-slate-200">Joined:</span> {month}, {year}
+                  </div>
+                </div>
+              ),
+            },
           ]}
         />
       </div>

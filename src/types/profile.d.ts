@@ -16,6 +16,8 @@ export interface Profile {
   exclusive_verify: boolean;
   emailnote: boolean;
   pushnote: boolean;
+  /** ISO date string when the profile/user was created. Optional; set by getprofile reducer. */
+  createdAt?: string | null;
 }
 
 export interface ProfileState extends Profile {

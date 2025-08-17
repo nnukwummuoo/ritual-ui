@@ -5,7 +5,7 @@ import axios from "axios";
 
 
 export type user = {email: string, password: string}
-export type payload = {user: user, expires: number}
+export type payload = {user: user}
 
 const secrete = process.env.NEXT_PUBLIC_SCERET
 const key = new TextEncoder().encode(secrete)
@@ -16,7 +16,7 @@ export async function encryptData(payload:payload ) {
     return await new SignJWT(payload)
     .setProtectedHeader({alg: "HS256"})
     .setIssuedAt()
-    .setExpirationTime('10s')
+    .setExpirationTime('15m')
     .sign(key)
 }
 
@@ -32,7 +32,7 @@ export async function decryptData(input: string): Promise<{ status: string; body
   }
 }
 
-export async function isRegistered(payload: {email: string, password: string, }): Promise<{email: string, password: string} | undefined> {
+export async function isRegistered(payload: {email: string, password: string, }): Promise<any | undefined> {
     try{
        
         const res = await axios.post(`${process.env.NEXT_PUBLIC_API}/login`, payload, {withCredentials: true});
@@ -47,12 +47,12 @@ export async function isRegistered(payload: {email: string, password: string, })
     }
 }
 
-export async function sessionMng(request: NextRequest) {
+export async function sessionMng(request: NextRequest): Promise<string | undefined> {
     const cookie = request.cookies.get("session")?.value
-    // const getAllCookies = request.cookies.getAll()
-    // console.log({cookieFrom_smng: cookie, cookies: getAllCookies})
-    if(!cookie?.length) return
+    if(!cookie?.length) return undefined
     const decryptCookie = await decryptData(String(cookie))
-    if(decryptCookie?.status === "valid") return
-    await axios.post(`${process.env.NEXT_PUBLIC_URL}/api/session`, decryptCookie.body, {withCredentials: true})  
+    if(decryptCookie?.status === "valid") return undefined
+    // expired -> refresh directly and return new token
+    const refreshed = await encryptData({ user: decryptCookie.body })
+    return refreshed
 }   
