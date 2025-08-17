@@ -5,7 +5,6 @@ import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/lib/context/auth-context";
 import MobileSidebar from "./mobile-sidebar";
 import dynamic from "next/dynamic";
-import AdminMobileSidebar from "./admin/adminMobileSidebar";
 
 const SideBar = () => {
   const router = useRouter();
@@ -49,12 +48,7 @@ const SideBar = () => {
     };
   }, [isMobile]);
 
-  // Render the appropriate sidebar
-  const SidebarComponent = pathname?.includes("/admin")
-    ? AdminMobileSidebar
-    : MobileSidebar;
-
-  return <SidebarComponent />;
+  return <MobileSidebar />;
 };
 
 export default SideBar;

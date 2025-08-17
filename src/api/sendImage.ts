@@ -1,32 +1,53 @@
-import axios from "axios";
+"use client";
+
+import { Client, Storage, ID } from "appwrite";
+
+// ------------------ Setup ------------------
+const client = new Client()
+  .setEndpoint("https://cloud.appwrite.io/v1") // Your API Endpoint
+  .setProject("668f9f8c0011a761d118"); // Your project ID
+
+const storage = new Storage(client);
+
+// ------------------ Types ------------------
+export type BucketId = string;
+export type FileId = string;
+
+// ------------------ Functions ------------------
+/**
+ * Save an image to Appwrite Storage
+ */
+export const saveImage = async (image: File, bucket: BucketId): Promise<FileId> => {
+  console.log("inside save fun");
+
+  const response = await storage.createFile(bucket, ID.unique(), image);
+  console.log("after inside save fun");
+
+  return response.$id;
+};
 
 /**
- * Uploads an image or returns the existing URL.
- * For now, this is a passthrough that returns the provided `fileOrUrl` if it's already a URL.
- * You can replace this with a real upload to your storage later.
+ * Download an image from storage
  */
-export async function saveImage(fileOrUrl: string, folder: string): Promise<string> {
-  try {
-    // If it's already a URL, just return it
-    if (/^https?:\/\//i.test(fileOrUrl)) {
-      return fileOrUrl;
-    }
+export const downloadImage = (photoLink: FileId, bucket: BucketId): URL => {
+  return new URL(storage.getFileDownload(bucket, photoLink));
+};
 
-    // TODO: Implement real upload logic here if needed, e.g.:
-    // const form = new FormData();
-    // form.append('file', fileOrUrl as any);
-    // form.append('folder', folder);
-    // const res = await axios.post(`${process.env.NEXT_PUBLIC_UPLOAD_URL}/upload`, form, {
-    //   headers: { 'Content-Type': 'multipart/form-data' },
-    //   withCredentials: true,
-    // });
-    // return res.data.url;
+/**
+ * Delete an image from storage
+ */
+export const deleteImage = async (photoLink: FileId, bucket: BucketId): Promise<void> => {
+  await storage.deleteFile(bucket, photoLink);
+};
 
-    // Fallback: return the raw value for now
-    return fileOrUrl;
-  } catch (e) {
-    console.error('saveImage failed', e);
-    // In case of failure, return empty string as the original code expects
-    return "";
-  }
-}
+/**
+ * Replace/update an image in storage
+ */
+export const updateImage = async (
+  photoLink: FileId,
+  bucket: BucketId,
+  image: File
+): Promise<FileId> => {
+  const response = await storage.createFile(bucket, photoLink, image);
+  return response.$id;
+};

@@ -1,41 +1,9 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { URL } from "../api/config"
+import { URL } from "@/api/config";
 import axios from "axios";
-import type { RootState } from "./store";
+import { MessageState } from "@/types/message";
+import { RootState } from "./store";
 // import { saveImage, deleteImage, updateImage } from "../../../api/sendImage";
-
-// Define message item shapes to avoid never[] inference on arrays
-interface MessageItem {
-  fromid: string | number;
-  toid: string | number;
-  date: string;
-  [key: string]: any;
-}
-
-interface ChatItem {
-  [key: string]: any;
-}
-
-interface MessageState {
-  currentmessagestatus: "idle" | "loading" | "succeeded" | "failed";
-  listofcurrentmessage: ChatItem[];
-  msgnitocations: MessageItem[];
-  lastmessage: string;
-  msgnotifystatus: "idle" | "loading" | "succeeded" | "failed";
-  recentmsg: any[];
-  Allmsg: MessageItem[];
-  mymessagenotifystatus: "idle" | "loading" | "succeeded" | "failed";
-  messageupdatestatus: "idle" | "loading" | "succeeded" | "failed";
-  giftstats: "idle" | "loading" | "succeeded" | "failed";
-  giftmessage: string;
-  chatinfo: Record<string, any>;
-  video_call_message: string;
-  video_call_data: any | null;
-  calling: boolean;
-  spd_call: any | null;
-  offer: any | null;
-  rejectAnswer: any | null;
-}
 
 const initialState: MessageState = {
   currentmessagestatus: "idle",
@@ -58,38 +26,19 @@ const initialState: MessageState = {
   rejectAnswer:null
 };
 
-export const getchat = createAsyncThunk(
-  "chat/getchat",
-  async (data: any, thunkAPI) => {
-    try {
-      const state = thunkAPI.getState() as RootState;
-      const token =
-        state.register.accesstoken ||
-        (() => {
-          try {
-            return JSON.parse(localStorage.getItem("login") || "{}").accesstoken;
-          } catch {
-            return "";
-          }
-        })();
+export const getchat = createAsyncThunk< { chats: any[]; chatInfo: any }, any>("chat/getchat", async (data) => {
+  try {
+    let response = await axios.put(`${URL}/getcurrentchat`, data);
 
-      const response = await axios.put(`${URL}/getcurrentchat`, data, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: token ? `Bearer ${token}` : "",
-        },
-      });
-
-      return response.data;
-    } catch (err) {
-      if (axios.isAxiosError(err)) {
-        const msg = (err.response?.data as any)?.message ?? "check internet connection";
-        throw msg;
-      }
-      throw "Unexpected error";
+    return response.data;
+  } catch (err : any) {
+    if (!err.response.data.message) {
+      throw "check internet connection";
     }
+    throw err.response.data.message;
   }
-);
+});
+
 
 export const getmsgnitify = createAsyncThunk(
   "chat/getmsgnitify",
@@ -147,10 +96,9 @@ export const updatemessage = createAsyncThunk(
       });
 
       return response.data;
-    } catch (err) {
-      if (axios.isAxiosError(err)) {
-        const msg = (err.response?.data as any)?.message ?? "check internet connection";
-        throw msg;
+    } catch (err : any) {
+      if (!err.response.data.message) {
+        throw "check internet connection";
       }
       throw "Unexpected error";
     }
@@ -181,7 +129,7 @@ export const getmessagenotication = createAsyncThunk(
       });
 
       return response.data;
-    } catch (err) {
+    } catch (err : any) {
       console.log("notification failed");
       if (axios.isAxiosError(err)) {
         const msg = (err.response?.data as any)?.message ?? "check internet connection";
@@ -192,37 +140,16 @@ export const getmessagenotication = createAsyncThunk(
   }
 );
 
-export const send_gift = createAsyncThunk(
-  "chat/send_gift",
-  async (data: any, thunkAPI) => {
-    try {
-      const state = thunkAPI.getState() as RootState;
-      const token =
-        state.register.accesstoken ||
-        (() => {
-          try {
-            return JSON.parse(localStorage.getItem("login") || "{}").accesstoken;
-          } catch {
-            return "";
-          }
-        })();
-
-      let response = await axios.put(`${URL}/giftmodel`, data, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: token ? `Bearer ${token}` : "",
-        },
-      });
-      return response.data;
-    } catch (err) {
-      if (axios.isAxiosError(err)) {
-        const msg = (err.response?.data as any)?.message ?? "check internet connection";
-        throw msg;
-      }
-      throw "Unexpected error";
+export const send_gift = createAsyncThunk("chat/send_gift", async (data) => {
+  try {
+    let response = await axios.put(`${URL}/giftmodel`, data);
+    return response.data;
+  } catch (err : any) {
+    if (!err.response.data.message) {
+      throw "check internet connection";
     }
   }
-);
+});
 
 const message = createSlice({
   name: "message",
@@ -236,7 +163,7 @@ const message = createSlice({
     },
     recivemessage(state, action) {
       state.listofcurrentmessage.forEach((index) => {
-        action.payload((value: ChatItem[]) => [...value, index]);
+        action.payload((value: any) => [...value, index]);
       });
 
       state.listofcurrentmessage = [];
@@ -276,7 +203,7 @@ const message = createSlice({
         state.Allmsg.splice(index, 1);
       }
     },
-    reset_recent(state, action) {
+    reset_recent(state: any, action: any) {
       state.recentmsg = []
     },
     set_videocall_message(state, action) {
