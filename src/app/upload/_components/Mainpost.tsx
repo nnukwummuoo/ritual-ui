@@ -8,17 +8,43 @@ import { ToastContainer, toast } from "react-toastify";
 // import person from "../../icons/icons8-profile_Icon.png";
 // import "../../styles/Toastify__toast.css";
 
-import { FaImage, FaVideo } from "react-icons/fa";
+import { FaImage, FaVideo, FaPlus } from "react-icons/fa";
+import FileInput from "../../../components/fileUpload";
+import { uploadImage, getViewUrl } from "../../../api/sendImage";
+import { URL as API_BASE } from "@/api/config";
+import { useDispatch, useSelector } from "react-redux";
+import type { AppDispatch, RootState } from "@/store/store";
+import { createpost, getallpost } from "@/store/post";
+import { useRouter } from "next/navigation";
+import { useUserId } from "@/lib/hooks/useUserId";
+import { useAuthToken } from "@/lib/hooks/useAuthToken";
 
 export const Mainpost = () => {
-  // const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
+  const router = useRouter();
   // const photo = useSelector((state) => state.comprofile.profilephoto);
   // const token = useSelector((state) => state.register.refreshtoken);
   // const poststatus = useSelector((state) => state.post.poststatus);
+  const { firstname, lastname, nickname } = useSelector((s: RootState) => s.profile);
   // const userid = useSelector((state) => state.register.userID);
   // const [propics, setpropics] = useState(person);
   const [postcontent, setpostcontent] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>("");
+  const [uploading, setUploading] = useState<boolean>(false);
+  const [uploadedPublicId, setUploadedPublicId] = useState<string>("");
+  const [uploadedUrl, setUploadedUrl] = useState<string>("");
+  const [showImageModal, setShowImageModal] = useState<boolean>(false);
+  const [showVideoModal, setShowVideoModal] = useState<boolean>(false);
+  const [videoFile, setVideoFile] = useState<File | null>(null);
+  const [videoPreview, setVideoPreview] = useState<string>("");
+  const [videoUploading, setVideoUploading] = useState<boolean>(false);
+  const [videoCaption, setVideoCaption] = useState<string>("");
+
+  // Auth consistent with Profile page
+  const userid = useUserId();
+  const token = useAuthToken();
 
   // useEffect(() => {
   //   if (photo) setpropics(photo);
@@ -54,7 +80,7 @@ export const Mainpost = () => {
   // };
 
   return (
-    <div className="bg-gray-900 text-white p-4 rounded-md space-y-5 max-w-2xl mx-auto border border-gray-700 2xl:mr-[38rem] md:mr-[30rem]">
+    <div className="bg-gray-900 text-white p-4 rounded-md space-y-5 max-w-4xl mx-auto border border-gray-700">
       <ToastContainer
         position="top-center"
         theme="dark"
@@ -79,6 +105,8 @@ export const Mainpost = () => {
           />
         </div>
 
+      {/* Live preview card removed as requested */}
+
         <div className="flex justify-end">
           <button
             // onClick={mypost}
@@ -91,26 +119,335 @@ export const Mainpost = () => {
       </div>
 
       {/* Image Upload Section */}
-      <div
-        className="flex items-center gap-3 p-4 transition border border-gray-500 border-dashed rounded-lg cursor-pointer hover:bg-gray-800"
-        // onClick={() =>
-        //   toast(<PostImage contents={postcontent} />, {
-        //     autoClose: false,
-        //   })
-        // }
-      >
-        <FaImage className="text-xl text-green-400" />
-        <span className="text-sm">Click to post image</span>
+      <div className="space-y-3 p-4 border border-gray-500 border-dashed rounded-lg">
+        <div className="flex items-center gap-3">
+          <FaImage className="text-xl text-green-400" />
+          <span className="text-sm">Upload image</span>
+        </div>
+
+        <FileInput
+          label="Click to post image"
+          name="image"
+          accept="image/*"
+          icon={<FaImage />}
+          openAsModal
+          onOpenModal={() => setShowImageModal(true)}
+        />
+
+        {/* Inline preview removed; handled within modal */}
+
+        <div className="flex gap-3" />
+
+        
       </div>
+
+      {/* Image Modal */}
+      {showImageModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+          <div className="w-full max-w-lg mx-4 bg-[#0b0f1f] border border-gray-700 rounded-2xl shadow-2xl">
+            <div className="flex items-center justify-between p-4 border-b border-gray-700">
+              <button
+                onClick={() => {
+                  setShowImageModal(false);
+                  setImageFile(null);
+                  setImagePreview("");
+                }}
+                className="text-gray-300 hover:text-white"
+                aria-label="Back"
+              >
+                ←
+              </button>
+              <h3 className="text-lg font-semibold">Post</h3>
+              <button
+                onClick={() => {
+                  setShowImageModal(false);
+                  setImageFile(null);
+                  setImagePreview("");
+                }}
+                className="text-gray-300 hover:text-white"
+                aria-label="Close"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="p-4 space-y-4">
+              <div
+                className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-gray-600 rounded-xl hover:bg-gray-800 cursor-pointer"
+                onClick={() => {
+                  const el = document.getElementById('image-upload-modal') as HTMLInputElement | null;
+                  if (el && !uploading) el.click();
+                }}
+                onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                onDrop={async (e) => {
+                  e.preventDefault();
+                  if (uploading) return;
+                  const file = e.dataTransfer.files?.[0];
+                  if (file && file.type.startsWith('image/')) {
+                    const url = URL.createObjectURL(file);
+                    setImageFile(file);
+                    setImagePreview(url);
+                    // Reset any previous upload state; upload occurs only when pressing the Post button
+                    setUploadedPublicId("");
+                    setUploadedUrl("");
+                  } else {
+                    toast.error('Only image files are allowed');
+                  }
+                }}
+              >
+                <FaPlus className="w-10 h-10 mb-2 text-slate-300 opacity-70" />
+                <p className="text-slate-300">
+                  {uploading ? 'Uploading…' : 'Click or drag an image to upload'}
+                </p>
+                <input
+                  id="image-upload-modal"
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0] || null;
+                    if (!file) return;
+                    const url = URL.createObjectURL(file);
+                    setImageFile(file);
+                    setImagePreview(url);
+                    // Reset any previous upload state; upload occurs only when pressing the Post button
+                    setUploadedPublicId("");
+                    setUploadedUrl("");
+                  }}
+                />
+              </div>
+
+              <div
+                className="mt-2 border border-gray-700 rounded-xl h-64 flex items-center justify-center bg-[#0b1026]"
+              >
+                {imagePreview ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={imagePreview} alt="preview" className="max-h-64 max-w-full object-contain rounded-md" />
+                ) : (
+                  <p className="text-slate-300">Preview Upload</p>
+                )}
+              </div>
+
+              <textarea
+                className="w-full h-28 p-2 rounded-lg bg-[#2a2a2a] text-gray-200 placeholder-gray-400 resize-none focus:outline-none focus:ring-2 focus:ring-orange-500"
+                placeholder="What's on your mind?"
+                value={postcontent}
+                onChange={(e) => setpostcontent(e.target.value)}
+              />
+            </div>
+            <div className="flex items-center justify-end gap-3 p-4 border-t border-gray-700">
+              <button
+                disabled={uploading}
+                className="w-full py-2 font-semibold text-white transition bg-green-600 hover:bg-green-500 rounded-lg disabled:opacity-60"
+                onClick={async () => {
+                  // If no file selected yet, open the picker
+                  if (!imageFile) {
+                    const el = document.getElementById('image-upload-modal') as HTMLInputElement | null;
+                    if (el) el.click();
+                    return;
+                  }
+                  // Require auth BEFORE uploading to avoid mixed success + unauthenticated toasts
+                  if (!userid || !token) {
+                    toast.error('Please log in to post');
+                    return;
+                  }
+                  // Create the post (thunk will upload to /api/image/save)
+                  try {
+                    // Create post
+                    if (!userid || !token) {
+                      toast.error('Not authenticated');
+                      return;
+                    }
+                    setLoading(true);
+                    // Best-effort get of current user's display info for optimistic UI
+                    const currentUsername = (() => {
+                      try {
+                        return (
+                          nickname ||
+                          localStorage.getItem('username') ||
+                          localStorage.getItem('userName') ||
+                          localStorage.getItem('profileusername') ||
+                          ''
+                        );
+                      } catch { return ''; }
+                    })();
+                    const currentName = (() => {
+                      try {
+                        return (
+                          [firstname, lastname].filter(Boolean).join(' ') ||
+                          localStorage.getItem('fullname') ||
+                          localStorage.getItem('fullName') ||
+                          localStorage.getItem('name') ||
+                          ''
+                        );
+                      } catch { return ''; }
+                    })();
+
+                    const result = await dispatch(
+                      createpost({
+                        userid: userid!,
+                        token: token!,
+                        content: postcontent,
+                        posttype: "image",
+                        filelink: imageFile,
+                        // Provide display fields for optimistic post header
+                        authorUsername: currentUsername || undefined,
+                        authorName: currentName || undefined,
+                        handle: (currentUsername || '').toString() || undefined,
+                      }) as any
+                    )
+                      .unwrap()
+                      .then(async (payload: any) => {
+                        const pub = payload?.publicId || payload?.public_id || payload?.data?.publicId || payload?.data?.public_id;
+                        const url = payload?.url || payload?.secure_url || payload?.data?.url || payload?.data?.secure_url;
+                        if (pub) {
+                          toast.success(`Uploaded image: ${pub}`, { autoClose: 800 });
+                        } else if (url) {
+                          toast.success('Image uploaded', { autoClose: 800 });
+                        }
+                        toast.success('Post created', { autoClose: 600 });
+                        // Refresh feed to ensure persistence immediately
+                        try { await dispatch(getallpost({} as any)).unwrap(); } catch {}
+                        setTimeout(() => router.push('/'), 100);
+                      })
+                      .catch((e: any) => {
+                        toast.error(e?.message || 'Failed to create post');
+                      });
+                  } catch (e: any) {
+                    toast.error(e?.message || 'Failed to create post');
+                  } finally {
+                    setUploading(false);
+                    setLoading(false);
+                    setShowImageModal(false);
+                    setImageFile(null);
+                    setImagePreview("");
+                    setUploadedPublicId("");
+                    setUploadedUrl("");
+                    setpostcontent("");
+                  }
+                }}
+              >
+                {uploading ? 'Uploading…' : (imageFile ? 'Post' : 'Choose image')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Video Modal */}
+      {showVideoModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+          <div className="w-full max-w-lg mx-4 bg-[#0b0f1f] border border-gray-700 rounded-2xl shadow-2xl">
+            <div className="flex items-center justify-between p-4 border-b border-gray-700">
+              <button
+                onClick={() => {
+                  setShowVideoModal(false);
+                  setVideoFile(null);
+                  setVideoPreview("");
+                  setVideoCaption("");
+                }}
+                className="text-gray-300 hover:text-white"
+                aria-label="Back"
+              >
+                ←
+              </button>
+              <h3 className="text-lg font-semibold">Post</h3>
+              <button
+                onClick={() => {
+                  setShowVideoModal(false);
+                  setVideoFile(null);
+                  setVideoPreview("");
+                  setVideoCaption("");
+                }}
+                className="text-gray-300 hover:text-white"
+                aria-label="Close"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="p-4 space-y-4">
+              <div
+                className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-gray-600 rounded-xl hover:bg-gray-800 cursor-pointer"
+                onClick={() => {
+                  const el = document.getElementById('video-upload-modal') as HTMLInputElement | null;
+                  if (el && !videoUploading) el.click();
+                }}
+                onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  if (videoUploading) return;
+                  const file = e.dataTransfer.files?.[0];
+                  if (file && file.type.startsWith('video/')) {
+                    const url = URL.createObjectURL(file);
+                    setVideoFile(file);
+                    setVideoPreview(url);
+                  } else {
+                    toast.error('Only video files are allowed');
+                  }
+                }}
+              >
+                <FaPlus className="w-10 h-10 mb-2 text-slate-300 opacity-70" />
+                <p className="text-slate-300">
+                  {videoUploading ? 'Uploading…' : 'Click or drag a video to upload'}
+                </p>
+                <input
+                  id="video-upload-modal"
+                  type="file"
+                  accept="video/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0] || null;
+                    if (!file) return;
+                    const url = URL.createObjectURL(file);
+                    setVideoFile(file);
+                    setVideoPreview(url);
+                  }}
+                />
+              </div>
+
+              <div className="mt-2 border border-gray-700 rounded-xl h-64 flex items-center justify-center bg-[#0b1026] overflow-hidden">
+                {videoPreview ? (
+                  <video src={videoPreview} controls className="w-full h-full object-contain" />
+                ) : (
+                  <p className="text-slate-300">Preview Upload</p>
+                )}
+              </div>
+
+              <textarea
+                className="w-full h-28 p-2 rounded-lg bg-[#2a2a2a] text-gray-200 placeholder-gray-400 resize-none focus:outline-none focus:ring-2 focus:ring-orange-500"
+                placeholder="What's on your mind?"
+                value={videoCaption}
+                onChange={(e) => setVideoCaption(e.target.value)}
+              />
+            </div>
+            <div className="flex items-center justify-end gap-3 p-4 border-t border-gray-700">
+              <button
+                disabled={videoUploading}
+                className="w-full py-2 font-semibold text-white transition bg-green-600 hover:bg-green-500 rounded-lg disabled:opacity-60"
+                onClick={() => {
+                  if (!videoFile) {
+                    const el = document.getElementById('video-upload-modal') as HTMLInputElement | null;
+                    if (el) el.click();
+                    return;
+                  }
+                  // Placeholder: integrate real upload/post action if needed
+                  toast.success('Video ready to post');
+                  setShowVideoModal(false);
+                  setVideoFile(null);
+                  setVideoPreview("");
+                  setVideoCaption("");
+                }}
+              >
+                {videoUploading ? 'Uploading…' : (videoFile ? 'Done' : 'Post')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Video Upload Section */}
       <div
         className="flex items-center gap-3 p-4 transition border border-gray-500 border-dashed rounded-lg cursor-pointer hover:bg-gray-800"
-        // onClick={() =>
-        //   toast(<Postvideo contents={postcontent} />, {
-        //     autoClose: false,
-        //   })
-        // }
+        onClick={() => setShowVideoModal(true)}
       >
         <FaVideo className="text-xl text-purple-400" />
         <span className="text-sm">Click to post video</span>
@@ -118,3 +455,13 @@ export const Mainpost = () => {
     </div>
   );
 };
+
+// Helper component to cleanup object URLs when they change/unmount
+function CleanupObjectUrl({ url }: { url: string }) {
+  useEffect(() => {
+    return () => {
+      try { URL.revokeObjectURL(url); } catch {}
+    };
+  }, [url]);
+  return null;
+}

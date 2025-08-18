@@ -8,6 +8,7 @@ import profileReducer from './profile';
 import registerReducer from './registerSlice';
 import messageReducer from './messageSlice';
 import comprofileReducer from './comprofile';
+import postReducer from './post';
 
 export const store = configureStore({
   reducer: {
@@ -19,6 +20,7 @@ export const store = configureStore({
     register: registerReducer,
     message: messageReducer,
     comprofile: comprofileReducer,
+    post: postReducer,
   },
 });
 
