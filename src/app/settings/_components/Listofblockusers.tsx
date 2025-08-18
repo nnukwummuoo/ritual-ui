@@ -1,25 +1,36 @@
 import React, {useState, useEffect} from 'react'
+import type { StaticImageData } from 'next/image';
 import PacmanLoader from "react-spinners/RotateLoader";
 import person from "../../../icons/icons8-profile_Icon.png"
 import onlineIcon from "../../../icons/onlineIcon.svg"
 import offlineIcon from "../../../icons/offlineIcon.svg"
 import { getCountryData } from '../../../api/getCountries';
-// import { downloadImage } from '../../../api/sendImage';
-import { deleteblockedUsers, getblockedUsers, ProfilechangeStatus } from '../../../app/features/profile/profile';
+// import {
+import { deleteblockedUsers, getblockedUsers, ProfilechangeStatus } from '../../../store/profile';
 import { useDispatch, useSelector } from 'react-redux';
+import type { AppDispatch, RootState } from '../../../store/store';
 
-export const Listofblockusers = ({id,photolink,location,online,name}) => {
+type ListOfBlockUsersProps = {
+  id: string;
+  photolink?: string;
+  location: string;
+  online: boolean;
+  name: string;
+};
 
-let timeout
-let removeblockstats = useSelector((state) => state.profile.removeblockstats);
-const token = useSelector((state) => state.register.refreshtoken);
-const userid = useSelector((state) => state.register.userID);
+export const Listofblockusers: React.FC<ListOfBlockUsersProps> = ({ id, photolink, location, online, name }) => {
+
+let timeout: number | undefined;
+const removeblockstats = useSelector((state: RootState) => state.profile.removeblockstats as string);
+const token = useSelector((state: RootState) => state.register.refreshtoken as string);
+const userid = useSelector((state: RootState) => state.register.userID as string);
 const [loading, setloading] = useState(false);
-const [image, setimage] = useState(person);
+// Store image as a string URL for use in <img src="..."/>
+const [image, setimage] = useState<string>(typeof person === 'string' ? person : (person as StaticImageData).src);
 let [color, setColor] = useState("#d49115");
 let [disable, setdisable] = useState(false);
 let [buttonpressed, set_buttonpressed] = useState(false)
-const dispatch = useDispatch()
+const dispatch = useDispatch<AppDispatch>()
 
 const [countryData, setCountryData] = useState({
     flag: "",

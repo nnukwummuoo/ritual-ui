@@ -57,8 +57,8 @@ export default function CreateModelview () {
   const [discription, setdiscription] = useState("");
   const [disablebut, setdisablebut] = useState(false);
   const [hosttype, sethosttype] = useState("fan Meet");
-  const [imglist, setimglist] = useState([]);
-  const [photolink, setphotolink] = useState([]);
+  const [imglist, setimglist] = useState<string[]>([]);
+  const [photolink, setphotolink] = useState<File[]>([]);
   const [step, setStep] = useState(1);
   const totalSteps = 3;
 
@@ -650,16 +650,18 @@ export default function CreateModelview () {
                   className="hidden"
                   accept="image/*"
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                    if (e.target.files?.[0]) {
-                      setimglist((value) => [...value, URL.createObjectURL(e.target.files[0])]);
-                      setphotolink((value) => [...value, e.target.files[0]]);
-                    }
+                    const files = e.currentTarget.files;
+                    if (!files || files.length === 0) return;
+                    const file = files[0];
+                    const url = URL.createObjectURL(file);
+                    setimglist((prev) => [...prev, url]);
+                    setphotolink((prev) => [...prev, file]);
                   }}
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-4 mt-4 sm:grid-cols-3 md:grid-cols-4">
-                {imglist.map((value, index) => (
+                {imglist.map((value: string, index: number) => (
                   <div key={index} className="relative group">
                     <Image
                       alt={`uploaded-${index}`}
@@ -668,12 +670,8 @@ export default function CreateModelview () {
                     />
                     <button
                       onClick={() => {
-                        setimglist((prev) =>
-                          prev.filter((item) => item !== value)
-                        );
-                        setphotolink((prev) =>
-                          prev.filter((item) => item !== value)
-                        );
+                        setimglist((prev) => prev.filter((_, i) => i !== index));
+                        setphotolink((prev) => prev.filter((_, i) => i !== index));
                       }}
                       className="absolute p-1 text-xs text-white transition bg-red-500 rounded-full opacity-0 top-2 right-2 group-hover:opacity-100"
                       title="Remove"
@@ -704,7 +702,6 @@ export default function CreateModelview () {
                 size={15}
                 aria-label="Loading Spinner"
                 data-testid="loader"
-                margin={"auto"}
               />
               <PacmanLoader
                 color={color}
@@ -712,7 +709,6 @@ export default function CreateModelview () {
                 size={15}
                 aria-label="Loading Spinner"
                 data-testid="loader"
-                margin={"auto"}
               />
               <PacmanLoader
                 color={color}
@@ -720,7 +716,6 @@ export default function CreateModelview () {
                 size={15}
                 aria-label="Loading Spinner"
                 data-testid="loader"
-                margin={"auto"}
               />
             </div>
           </fieldset>

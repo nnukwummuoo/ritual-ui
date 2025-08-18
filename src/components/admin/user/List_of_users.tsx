@@ -145,7 +145,6 @@ const [gender_type, setgender_type] = useState<string | StaticImageData>(maleIco
             size={30}
             aria-label="Loading Spinner"
             data-testid="loader"
-            margin={"auto"}
           />
           <p className="text-xs">{status}..</p>
         </div>

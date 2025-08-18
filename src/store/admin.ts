@@ -1,9 +1,45 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { URL } from "../../../api/config";
+import { URL } from "../api/config";
 import axios from "axios";
 // import { deleteImage } from "../../../api/sendImage";
 
-const initialState = {
+// Helper: normalize error messages from Axios or generic errors
+const getAxiosErrorMessage = (err: unknown): string => {
+  if (axios.isAxiosError(err)) {
+    return err.response?.data?.message ?? "check internet connection";
+  }
+  if (err instanceof Error) return err.message;
+  return "check internet connection";
+};
+
+// Types
+type User = { _id: string; [key: string]: any };
+type AdminState = {
+  alluser_stats: string;
+  alluser_message: string;
+  alluser_list: User[];
+  userphotos_list: Record<string, any>;
+  deleteuser_stats: string;
+  deleteuser_message: string;
+  delete_photo_stats: string;
+  delete_photo_message: string;
+  suspenduser_stats: string;
+  suspenduser_message: string;
+  marked_users: string[];
+  send_stats: string;
+  send_message: string;
+  notifyme: boolean;
+  notifycount: string;
+  notify_stats: string;
+  notify_message: string;
+};
+type DeleteUserPhotoArgs = {
+  modelphoto: any[];
+  postphoto: any[];
+  profilephoto: any[];
+};
+
+const initialState: AdminState = {
     alluser_stats:"idle",
     alluser_message:"",
     alluser_list:[],
@@ -36,13 +72,7 @@ export const getalluser = createAsyncThunk("admin/getalluser",async data=>{
 
     }catch(err){
        // console.log('erro get profile')
-
-       if(!err.response.data.message){
-        throw("check internet connection")
-       }
-        throw(err.response.data.message)
-
-
+       throw getAxiosErrorMessage(err);
     }
 
 
@@ -60,19 +90,13 @@ export const deleteuser = createAsyncThunk("admin/deleteuser",async data=>{
 
     }catch(err){
        // console.log('erro get profile')
-
-       if(!err.response.data.message){
-        throw("check internet connection")
-       }
-        throw(err.response.data.message)
-
-
+       throw getAxiosErrorMessage(err);
     }
 
 
 })
 
-export const deleteuser_photo = createAsyncThunk("admin/deleteuser_photo",async data=>{
+export const deleteuser_photo = createAsyncThunk<any, DeleteUserPhotoArgs>("admin/deleteuser_photo",async (data)=>{
 
     try{
 
@@ -110,13 +134,7 @@ export const deleteuser_photo = createAsyncThunk("admin/deleteuser_photo",async 
 
     }catch(err){
        // console.log('erro get profile')
-
-       if(!err){
-        throw("check internet connection")
-       }
-        throw(err.message)
-
-
+       throw getAxiosErrorMessage(err);
     }
 
 
@@ -134,13 +152,7 @@ export const suspend_user = createAsyncThunk("admin/suspenduser",async data=>{
 
     }catch(err){
        // console.log('erro get profile')
-
-       if(!err.response.data.message){
-        throw("check internet connection")
-       }
-        throw(err.response.data.message)
-
-
+       throw getAxiosErrorMessage(err);
     }
 
 
@@ -158,13 +170,7 @@ export const sendmessage = createAsyncThunk("admin/sendmessage",async data=>{
 
     }catch(err){
        // console.log('erro get profile')
-
-       if(!err.response.data.message){
-        throw("check internet connection")
-       }
-        throw(err.response.data.message)
-
-
+       throw getAxiosErrorMessage(err);
     }
 
 
@@ -182,13 +188,7 @@ export const adminnotify = createAsyncThunk("admin/adminnotify",async data=>{
 
     }catch(err){
        // console.log('erro get profile')
-
-       if(!err.response.data.message){
-        throw("check internet connection")
-       }
-        throw(err.response.data.message)
-
-
+       throw getAxiosErrorMessage(err);
     }
 
 
@@ -247,7 +247,7 @@ const admin = createSlice({
         .addCase(getalluser.rejected,(state,action)=>{
 
             state.alluser_stats = 'failed'
-            state.alluser_message = action.error.message
+            state.alluser_message = action.error.message ?? "unknown error"
         }
 
         )
@@ -275,7 +275,7 @@ const admin = createSlice({
         .addCase(deleteuser.rejected,(state,action)=>{
 
             state.deleteuser_stats = 'failed'
-            state.deleteuser_message = action.error.message
+            state.deleteuser_message = action.error.message ?? "unknown error"
         }
 
         )
@@ -295,7 +295,7 @@ const admin = createSlice({
         .addCase(deleteuser_photo.rejected,(state,action)=>{
 
             state.delete_photo_stats = 'failed'
-            state.delete_photo_message = action.error.message
+            state.delete_photo_message = action.error.message ?? "unknown error"
         }
 
         )
@@ -315,7 +315,7 @@ const admin = createSlice({
         .addCase(suspend_user.rejected,(state,action)=>{
 
             state.suspenduser_stats = 'failed'
-            state.suspenduser_message = action.error.message
+            state.suspenduser_message = action.error.message ?? "unknown error"
         }
 
         )
@@ -335,7 +335,7 @@ const admin = createSlice({
         .addCase(sendmessage.rejected,(state,action)=>{
 
             state.send_stats = 'failed'
-            state.send_message = action.error.message
+            state.send_message = action.error.message ?? "unknown error"
         }
 
         )
@@ -358,7 +358,7 @@ const admin = createSlice({
         .addCase(adminnotify.rejected,(state,action)=>{
 
             state.notify_stats = 'failed'
-            state.notify_message = action.error.message
+            state.notify_message = action.error.message ?? "unknown error"
             state.notify_stats = "idle"
         }
 
