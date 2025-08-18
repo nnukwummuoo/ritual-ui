@@ -545,13 +545,7 @@ export const delete_MSG = createAsyncThunk(
 
 export const remove_Crush = createAsyncThunk(
   "model/remove_Crush ",
-  async (
-    data: {
-      userid: string;
-      token: string;
-      modelid: string;
-    }
-  ) => {
+  async (data: any) => {
     try {
       let response = await axios.post(`${URL}/deletecrush`, data);
 

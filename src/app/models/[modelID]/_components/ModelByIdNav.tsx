@@ -6,8 +6,8 @@ import { IoArrowBack } from "react-icons/io5";
 import { useDispatch, useSelector } from "react-redux";
 import { useRouter, useParams } from "next/navigation";
 
-import StarIcon from "/icons/transparentstar.svg";
-import StarIcon2 from "/icons/star.svg";
+import StarIcon from "@/icons/transparentstar.svg";
+import StarIcon2 from "@/icons/star.svg";
 
 import {
   follow,

@@ -205,7 +205,7 @@ import type { RootState } from "@/store/store";
                 <MenuIconImg 
                   src="/icons/icons8-admin.png" 
                   name={"Admin"} 
-                  url="/admin" />
+                  url="/mmeko/admin" />
               }
 
               <MenuIconImg 

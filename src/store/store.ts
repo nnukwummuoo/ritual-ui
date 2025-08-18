@@ -3,9 +3,9 @@ import followingReducer from './followingSlice';
 import goldstatReducer from './goldstatSlice';
 import modelSlice from './modelSlice';
 import bookingSlice from './booking';
-
-import profileReducer from './profile';
 import registerReducer from './registerSlice';
+import profileReducer from './profile';
+
 import messageReducer from './messageSlice';
 import comprofileReducer from './comprofile';
 import postReducer from './post';

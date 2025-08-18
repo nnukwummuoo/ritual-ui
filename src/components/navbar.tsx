@@ -9,12 +9,13 @@ import { useRouter } from "next/navigation";
 export default function Navbar({isAuthenticated}:{isAuthenticated: boolean}) {
   const { isOpen, toggle } = useAuth();
   const router = useRouter()
+
+  console.log(isOpen);
+  
   
   return (
     <div className="z-[1000] w-full fixed top-0 left-0 top-bar-visibility">
     <div className="flex items-center text-orange-600 justify-between">
-      <div></div>
-      <div></div>
       <div className="absolute left-0 top-0 p-2 flex items-center justify-between w-full">
         <button onClick={toggle} className="navBtn">
           {isOpen ? <FaTimes size={25} /> : <FaBars size={25} />}

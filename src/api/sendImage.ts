@@ -1,9 +1,7 @@
 import { URL as API_BASE } from "./config";
 
 /**
- * Uploads an image or returns the existing URL.
- * For now, this is a passthrough that returns the provided `fileOrUrl` if it's already a URL.
- * You can replace this with a real upload to your storage later.
+ * Download an image from storage
  */
 // API base is sourced from a single config: `src/api/config.ts`.
 // In dev it points to "/api/proxy"; in prod it points to the live backend host.

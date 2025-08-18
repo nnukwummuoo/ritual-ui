@@ -90,6 +90,7 @@ export interface UpdateModelPayload {
     token: string;
     photocount: number;
     docCount: number;
+    oldlink: any
   }
   
   /** Payload for uploading exclusive docs */
