@@ -104,7 +104,6 @@ const Hostlist: React.FC<HostProps> = ({ prob }) => {
               size={30}
               aria-label="Loading Spinner"
               data-testid="loader"
-              margin={"auto"}
             />
             <p className="jost text-yellow-500 font-bold">submitting...</p>
           </div>

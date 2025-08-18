@@ -1,7 +1,7 @@
 import React from "react";
 import { useCall } from "./context";
 import { useSelector } from "react-redux";
-import { set_calling } from "../../app/features/message/messageSlice";
+import { set_calling } from "@/store/messageSlice";
 
 const GlobalCallModal = () => {
   const { isReceivingCall, acceptCall, declineCall, callarname } = useCall();

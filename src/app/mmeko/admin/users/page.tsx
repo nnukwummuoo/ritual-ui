@@ -116,7 +116,6 @@ export default function Users(): JSX.Element {
               size={30}
               aria-label="Loading Spinner"
               data-testid="loader"
-              margin={"auto"}
             />
             <p className="text-yellow-500 text-xs">fetching all user...</p>
           </div>
