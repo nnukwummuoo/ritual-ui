@@ -1,39 +1,9 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { URL } from "../api/config";
-import axios from "axios";
+import { URL } from "@/api/config";
+import axios, { AxiosRequestConfig } from "axios";
+import { CreatePostArgs, CreatePostData, PostState } from "@/types/post";
 
-type LoadStatus = "idle" | "loading" | "succeeded" | "failed";
-
-// If you have a real Post type, replace 'any' with it
-type PostItem = any;
-
-interface PostState {
-  allPost: PostItem[];
-  poststatus: LoadStatus;
-  message: string;
-  error: string | null;
-  getpostbyidstatus: LoadStatus;
-  deletepostsatus: LoadStatus;
-  postphoto: string | null;
-}
-
-type CreatePostArgs = {
-  userid: string;
-  content: string;
-  posttype: string;
-  token: string;
-  filelink?: File | Blob | string;
-  onUploadProgress?: (progressEvent: any) => void;
-  // Optional local media data to enable optimistic UI when API doesn't echo the post
-  localMediaId?: string;
-  localMediaUrl?: string;
-  // Optional author display fields for optimistic UI
-  authorUsername?: string;
-  authorName?: string;
-  handle?: string;
-};
-
-export const createpost = createAsyncThunk<any, CreatePostArgs>("post/createpost", async (data) => {
+export const createpost = createAsyncThunk("post/createpost", async (data: CreatePostData) => {
   try {
     // Send data as a FormData
     let formData = new FormData();
@@ -48,7 +18,7 @@ export const createpost = createAsyncThunk<any, CreatePostArgs>("post/createpost
     console.log("I am about to create formData", [...formData.entries()]);
 
     // Setup axios config with upload progress
-    const config = {
+    const config: AxiosRequestConfig = {
       headers: {
         "Content-Type": "multipart/form-data",
       },
@@ -69,8 +39,8 @@ export const createpost = createAsyncThunk<any, CreatePostArgs>("post/createpost
 
     return response.data;
   } catch (err: any) {
-    console.log("post err ", err);
-    throw (err?.response?.data?.message || err?.message || "Image upload failed");
+    console.log("post err " + err);
+    throw err.response.data.message;
   }
 });
 
@@ -84,57 +54,49 @@ const initialState: PostState = {
   postphoto: null,
 };
 
-export const getallpost = createAsyncThunk<any, any>(
-  "post/getallpost",
+export const getallpost = createAsyncThunk("post/getallpost", async (data: any) => {
+  try {
+    let response = await axios.post(`${URL}/getallpost`, data);
+    return response.data;
+  } catch (err: any) {
+    throw err.response.data.message;
+  }
+});
+
+export const getpost = createAsyncThunk("post/getpost", async (data: any) => {
+  try {
+    let response = await axios.get(`${URL}/getallpost`, data);
+    return response.data;
+  } catch (err: any) {
+    throw err.response.data.message;
+  }
+});
+export const getpostbyid = createAsyncThunk(
+  "post/getpostbyid",
   async (data: any) => {
     try {
       const response = await axios.post(`${URL}/getallpost`, data);
       return response.data;
     } catch (err: any) {
-      throw (err?.response?.data?.message || err?.message || "Failed to fetch posts");
+      throw err.response.data.message;
     }
   }
 );
 
-export const getpost = createAsyncThunk<any, any>(
-  "post/getpost",
-  async (data: any) => {
-    try {
-      const response = await axios.get(`${URL}/getallpost`, data as any);
-      return response.data;
-    } catch (err: any) {
-      throw (err?.response?.data?.message || err?.message || "Failed to fetch posts");
-    }
-  }
-);
+export const deletepost = createAsyncThunk("post/deletepost", async (data: any) => {
+  try {
+    let response = await axios.patch(`${URL}/post`, data);
+    let postphoto = response.data.post.postphoto;
 
-export const getpostbyid = createAsyncThunk<any, any>(
-  "post/getpostbyid",
-  async (data: any) => {
-    try {
-      const response = await axios.post(`${URL}/post`, data);
-      return response.data;
-    } catch (err: any) {
-      throw (err?.response?.data?.message || err?.message || "Failed to get post");
+    if (postphoto) {
+      // deleteImage(postphoto, "post");
     }
-  }
-);
 
-export const deletepost = createAsyncThunk<any, any>(
-  "post/deletepost",
-  async (data: any) => {
-    try {
-      const response = await axios.patch(`${URL}/post`, data);
-      const postphoto = response.data?.post?.postphoto;
-      if (postphoto) {
-        // optionally delete image here
-      }
-      return response.data;
-    } catch (err: any) {
-      throw (err?.response?.data?.message || err?.message || "Failed to delete post");
-    }
+    return response.data;
+  } catch (err: any) {
+    throw err.response.data.message;
   }
-);
+});
 
 const post = createSlice({
   name: "post",

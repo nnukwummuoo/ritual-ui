@@ -24,7 +24,7 @@ const initialState: CommentState = {
 
 
 
-export const postcomment = createAsyncThunk("comment/postcomment",async data=>{
+export const postcomment = createAsyncThunk("comment/postcomment",async (data: any)=>{
    
     try{
 
@@ -48,7 +48,7 @@ export const postcomment = createAsyncThunk("comment/postcomment",async data=>{
 
 })
 
-export const getpostcomment = createAsyncThunk("comment/getpostcomment",async data=>{
+export const getpostcomment = createAsyncThunk("comment/getpostcomment",async (data: any)=>{
    
     try{
 
@@ -72,7 +72,7 @@ export const getpostcomment = createAsyncThunk("comment/getpostcomment",async da
 
 })
 
-export const editpostcomment = createAsyncThunk("comment/editpostcomment",async data=>{
+export const editpostcomment = createAsyncThunk("comment/editpostcomment",async (data: any)=>{
    
     try{
 
@@ -96,7 +96,7 @@ export const editpostcomment = createAsyncThunk("comment/editpostcomment",async 
 
 })
 
-export const deletecomment = createAsyncThunk("comment/deletecomment",async data=>{
+export const deletecomment = createAsyncThunk("comment/deletecomment",async (data: any)=>{
    
     try{
 

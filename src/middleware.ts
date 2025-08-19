@@ -15,6 +15,8 @@ const publicRoutes = [
   '/T_&_C',
   '/login',
   '/api/session',
+  '/post-image',
+  "/comment",
 
   // change later for admin 
   "/mmeko/admin",
