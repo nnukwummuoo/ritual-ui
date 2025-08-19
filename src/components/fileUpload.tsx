@@ -1,9 +1,17 @@
 import React, { useState } from "react";
 
-const FileInput = ({ label, name, icon, onChange }:
-  { label: string; name: string; icon: React.ReactNode; onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void }
-) => {
-  const [fileName, setFileName] = useState("Click to upload or drag and drop");
+type Props = {
+  label: string;
+  name: string;
+  icon: React.ReactNode;
+  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  accept?: string;
+  openAsModal?: boolean;
+  onOpenModal?: () => void;
+};
+
+const FileInput = ({ label, name, icon, onChange, accept, openAsModal, onOpenModal }: Props) => {
+  const [fileName, setFileName] = useState("Click to post image");
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files ? e.target.files[0] : null;
@@ -21,6 +29,12 @@ const FileInput = ({ label, name, icon, onChange }:
       <label
         htmlFor={name}
         className="flex items-center justify-between gap-4 bg-[#0c0f27] text-gray-300 border border-[#1a1e3f] rounded-xl px-4 py-3 cursor-pointer transition-all duration-300 hover:border-orange-500 hover:shadow-md hover:bg-[#0c0f27]/60"
+        onClick={(e) => {
+          if (openAsModal && onOpenModal) {
+            e.preventDefault();
+            onOpenModal();
+          }
+        }}
       > 
         <div className="flex items-center gap-3 ">
 
@@ -31,6 +45,7 @@ const FileInput = ({ label, name, icon, onChange }:
           type="file"
           id={name}
           name={name}
+          accept={accept}
           onChange={handleFileChange}
           className="hidden"
         />
@@ -40,3 +55,4 @@ const FileInput = ({ label, name, icon, onChange }:
 };
 
 export default FileInput;
+

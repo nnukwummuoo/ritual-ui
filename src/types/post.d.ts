@@ -26,3 +26,19 @@ getpostbyidstatus: "idle" | "loading" | "succeeded" | "failed";
 deletepostsatus: "idle" | "loading" | "succeeded" | "failed";
 postphoto: string | null;
 }
+
+export type CreatePostArgs = {
+    userid: string;
+    content: string;
+    posttype: string;
+    token: string;
+    filelink?: File | Blob | string;
+    onUploadProgress?: (progressEvent: any) => void;
+    // Optional local media data to enable optimistic UI when API doesn't echo the post
+    localMediaId?: string;
+    localMediaUrl?: string;
+    // Optional author display fields for optimistic UI
+    authorUsername?: string;
+    authorName?: string;
+    handle?: string;
+  };
