@@ -20,7 +20,7 @@ export default function Navbar({isAuthenticated}:{isAuthenticated: boolean}) {
         <button onClick={toggle} className="navBtn">
           {isOpen ? <FaTimes size={25} /> : <FaBars size={25} />}
         </button>
-        <img src={'/icons/icon-192.png'} alt="logo" className="logo" />
+        <img src={'/icons/Mmeko_mobile_logo.png'} alt="logo" className="logo" />
       <div className="size-6"></div>
       </div>
       {!isAuthenticated && <Logins />}
