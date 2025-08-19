@@ -71,7 +71,7 @@ export default function MobileSidebar() {
     >
       <Link href="/" style={{ width: "100%", display: "flex", justifyContent: "center" }}>
         <img src={'/icons/logo.png'} alt="logo" className="brand-logo w-20" />
-        <img src={'/icons/icon-192.png'} alt="logo" className="sidebar-logo" />
+        <img src={'/icons/Mmeko_mobile_logo.png'} alt="logo" className="sidebar-logo" />
       </Link>
       <ul className="py-4">
         {sideBarItems.map((item) => (
