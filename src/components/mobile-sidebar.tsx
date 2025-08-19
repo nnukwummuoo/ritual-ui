@@ -29,7 +29,7 @@ export default function MobileSidebar() {
       icon: <FaCamera size={25} />,
     },
     {
-      route: "/",
+      route: "/search",
       name: "Explorer",
       icon: <FaCompass size={25} />,
     },
