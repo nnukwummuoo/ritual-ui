@@ -1,8 +1,9 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { URL } from "../../../api/config";
-import axios from "axios";
+import { URL } from "@/api/config";
+import axios, { AxiosRequestConfig } from "axios";
+import { CreatePostData, PostState } from "@/types/post";
 
-export const createpost = createAsyncThunk("post/createpost", async (data) => {
+export const createpost = createAsyncThunk("post/createpost", async (data: CreatePostData) => {
   try {
     // Send data as a FormData
     let formData = new FormData();
@@ -21,7 +22,7 @@ export const createpost = createAsyncThunk("post/createpost", async (data) => {
     console.log("I am about to create formData", [...formData.entries()]);
 
     // Setup axios config with upload progress
-    const config = {
+    const config: AxiosRequestConfig = {
       headers: {
         "Content-Type": "multipart/form-data",
       },
@@ -41,13 +42,13 @@ export const createpost = createAsyncThunk("post/createpost", async (data) => {
     }
 
     return response.data;
-  } catch (err) {
+  } catch (err: any) {
     console.log("post err " + err);
     throw err.response.data.message;
   }
 });
 
-const initialState = {
+const initialState: PostState = {
   allPost: [],
   poststatus: "idle",
   message: "",
@@ -57,37 +58,37 @@ const initialState = {
   postphoto: null,
 };
 
-export const getallpost = createAsyncThunk("post/getallpost", async (data) => {
+export const getallpost = createAsyncThunk("post/getallpost", async (data: any) => {
   try {
     let response = await axios.post(`${URL}/getallpost`, data);
     return response.data;
-  } catch (err) {
+  } catch (err: any) {
     throw err.response.data.message;
   }
 });
 
-export const getpost = createAsyncThunk("post/getpost", async (data) => {
+export const getpost = createAsyncThunk("post/getpost", async (data: any) => {
   try {
     let response = await axios.get(`${URL}/getallpost`, data);
     return response.data;
-  } catch (err) {
+  } catch (err: any) {
     throw err.response.data.message;
   }
 });
 
 export const getpostbyid = createAsyncThunk(
   "post/getpostbyid",
-  async (data) => {
+  async (data: any) => {
     try {
       let response = await axios.post(`${URL}/post`, data);
       return response.data;
-    } catch (err) {
+    } catch (err: any) {
       throw err.response.data.message;
     }
   }
 );
 
-export const deletepost = createAsyncThunk("post/deletepost", async (data) => {
+export const deletepost = createAsyncThunk("post/deletepost", async (data: any) => {
   try {
     let response = await axios.patch(`${URL}/post`, data);
     let postphoto = response.data.post.postphoto;
@@ -97,7 +98,7 @@ export const deletepost = createAsyncThunk("post/deletepost", async (data) => {
     }
 
     return response.data;
-  } catch (err) {
+  } catch (err: any) {
     throw err.response.data.message;
   }
 });

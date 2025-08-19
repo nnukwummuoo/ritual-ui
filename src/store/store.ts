@@ -9,6 +9,10 @@ import profileReducer from './profile';
 import messageReducer from './messageSlice';
 import comprofileReducer from './comprofile';
 
+import postReducer from './post';
+import commentReducer from './comment';
+
+
 export const store = configureStore({
   reducer: {
     following: followingReducer,
@@ -19,6 +23,8 @@ export const store = configureStore({
     register: registerReducer,
     message: messageReducer,
     comprofile: comprofileReducer,
+    post:postReducer,
+    comment:commentReducer,
   },
 });
 
