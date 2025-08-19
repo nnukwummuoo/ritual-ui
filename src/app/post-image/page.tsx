@@ -12,12 +12,7 @@ import person2 from "../../icons/icons8-profile_Icon.png";
 import backicon from "../../icons/backIcon.svg";
 import { AppDispatch } from "@/store/store";
 
-// Define prop types
-interface PostImageProps {
-  contents?: string;
-}
-
-const PostImage: React.FC<PostImageProps> = ({ contents }) => {
+const PostImage = () => {
   const photo = useSelector((state: any) => state.comprofile.profilephoto);
   const token = useSelector((state: any) => state.register.refreshtoken);
   const firstname = useSelector((state: any) => state.profile.firstname);
@@ -29,7 +24,7 @@ const PostImage: React.FC<PostImageProps> = ({ contents }) => {
 
   const dispatch = useDispatch<AppDispatch>();
 
-  const [content, setContent] = useState(contents || "");
+  const [content, setContent] = useState("");
   const [filelink, setFilelink] = useState<File | null>(null);
   const [imgsrc, setImgsrc] = useState<string | undefined>();
   const [showimage, setShowimage] = useState(false);
@@ -95,7 +90,7 @@ const PostImage: React.FC<PostImageProps> = ({ contents }) => {
       </div>
 
       {/* Profile Info (hidden) */}
-      <div className="flex items-center gap-3 mb-4 hidden">
+      <div className="flex items-center gap-3 mb-4">
         <Image
           alt="profile"
           src={propics}

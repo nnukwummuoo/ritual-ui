@@ -11,6 +11,9 @@ postphoto?: string | null;
 export interface CreatePostData {
 userid: string;
 content: string;
+authorUsername?: any;
+authorName?: any;
+handle?: any;
 posttype: string;
 token: string;
 filelink?: File | string;
