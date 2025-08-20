@@ -14,7 +14,7 @@ import { getCountryData } from "@/api/getCountries";
 
 // Props interface
 export interface ModelCardProps {
-  photolink: string;
+  photolink: string | null;
   hosttype: string;
   online: boolean;
   name: string;
@@ -98,17 +98,27 @@ export const ModelCard = ({
     <div className="relative overflow-hidden" onClick={handleClick}>
       {/* Host Image */}
       <div>
-        <Image
-          alt="model"
-          src={photolink}
-          width={400}
-          height={300}
-          className="object-cover w-full rounded h-80"
-          onError={(e) => {
-            const target = e.target as HTMLImageElement;
-            target.src = "/icons/mmekoDummy.png";
-          }}
-        />
+        {photolink ? (
+          <Image
+            alt="model"
+            src={photolink}
+            width={400}
+            height={300}
+            className="object-cover w-full rounded h-80"
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              target.src = "/icons/mmekoDummy.png";
+            }}
+          />
+        ) : (
+          <Image
+            alt="placeholder"
+            src="/icons/mmekoDummy.png"
+            width={400}
+            height={300}
+            className="object-cover w-full rounded h-80"
+          />
+        )}
       </div>
 
       {/* Online/Offline Indicator */}

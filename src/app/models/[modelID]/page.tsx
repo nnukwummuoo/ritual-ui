@@ -568,7 +568,7 @@ export default function Modelbyid () {
                   <div className="z-10 flex flex-col text-left">
                     <button
                       onClick={(e) => {
-                        navigate("/editmodel");
+                        navigate("/models/edit-model");
                       }}
                       className="text-white"
                     >

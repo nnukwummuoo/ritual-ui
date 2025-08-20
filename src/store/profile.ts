@@ -97,9 +97,13 @@ const initialState = {
   closedraw: false,
 };
 
-export const getprofile = createAsyncThunk<any, any>(
+export const getprofile = createAsyncThunk<
+  any,
+  any,
+  { rejectValue: { message: string; code?: number } }
+>(
   "profile/getprofile",
-  async (data) => {
+  async (data, thunkAPI) => {
     try {
       // Debug: trace outgoing request
       // eslint-disable-next-line no-console
@@ -107,16 +111,46 @@ export const getprofile = createAsyncThunk<any, any>(
         userid: data?.userid,
         hasToken: Boolean(data?.token),
       });
-      
-      let response = await axios.post(`${URL}/getprofile`, data);
+
+      const response = await axios.post(`${URL}/getprofile`, data);
       // eslint-disable-next-line no-console
       console.log("[getprofile] success", response.status);
 
       return response.data;
     } catch (err) {
-      // eslint-disable-next-line no-console
-      console.error("[getprofile] error", err);
-      throw getErrorMessage(err);
+      // Surface backend message and status for graceful UI
+      if (axios.isAxiosError(err)) {
+        const network = !err.response; // no response => likely ECONNREFUSED / CORS / offline
+        const code = err.response?.status ?? (err as any)?.code;
+        const backendMsg = (err.response?.data as any)?.message;
+        const message = network
+          ? "Cannot reach server. Please check your connection or start the backend."
+          : backendMsg || err.message || "Unable to load profile";
+        if (process.env.NODE_ENV !== "production") {
+          // eslint-disable-next-line no-console
+          try {
+            const summary = JSON.stringify({
+              code,
+              message,
+              network,
+              statusText: err.response?.statusText,
+              url: err.config?.url,
+              method: err.config?.method,
+            });
+            console.warn("[getprofile] axios warning", summary);
+          } catch {
+            // eslint-disable-next-line no-console
+            console.warn("[getprofile] axios warning", String(message));
+          }
+        }
+        return thunkAPI.rejectWithValue({ message, code });
+      }
+      const message = getErrorMessage(err);
+      if (process.env.NODE_ENV !== "production") {
+        // eslint-disable-next-line no-console
+        console.warn("[getprofile] unknown error", message, err);
+      }
+      return thunkAPI.rejectWithValue({ message });
     }
   }
 );
@@ -499,7 +533,8 @@ const profile = createSlice({
       })
       .addCase(getprofile.rejected, (state, action) => {
         state.status = "failed";
-        state.error = action.error?.message ?? "";
+        // Prefer structured error from rejectWithValue
+        state.error = (action.payload as any)?.message ?? action.error?.message ?? "";
       })
       .addCase(get_my_history.pending, (state, action) => {
         state.history_stats = "loading";

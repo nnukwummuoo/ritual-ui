@@ -18,6 +18,8 @@ import CountrySelect from "@/components/CountrySelect/CountrySelect";
 import idcardicon from "/public/icons/idcardIcon.svg";
 import deleteIcon from "/public/icons/deleteicon.svg";
 import "@/styles/CreateModelview.css";
+import { useAuthToken } from "@/lib/hooks/useAuthToken";
+import { editModelMultipart } from "@/api/model";
 
 
 export default function Editmodel () {
@@ -27,8 +29,9 @@ export default function Editmodel () {
   // const modelupdatestatus = useSelector(
   //   (state) => state.model.modelupdatestatus
   // );
-  // const model = useSelector((state) => state.model.modelbyid);
-  // const modelID = model.hostid;
+  const userid = useSelector((state: any) => state.register.userID);
+  const model = useSelector((state: any) => state.model.modelbyid);
+  const modelID = (model && (model.hostid || model.id || model._id)) as string | undefined;
   // const message = useSelector((state) => state.model.message);
   const dispatch = useDispatch();
   const router = useRouter();
@@ -66,6 +69,55 @@ export default function Editmodel () {
      []
   );
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const token = useAuthToken();
+
+  // Prefill fields from store model and guard when missing
+  useEffect(() => {
+    // If there is no model context, redirect back to models list
+    if (!model || !modelID) {
+      toast.info("Open a model page before editing", { autoClose: 2000 });
+      router.push("/models");
+      return;
+    }
+
+    // Prefill once when model is present
+    setname(model.name || "");
+    setage(model.age || "");
+    setlocation(model.location || "");
+    setbodytype(model.bodytype || "");
+    setheight(model.height || "");
+    setweight(model.weight || "");
+    setgender(model.gender || "");
+    setsmoke(model.smoke || "");
+    setdrink(model.drink || "");
+    setdescription(model.description || "");
+    sethosttype(model.hosttype || hosttype);
+
+    // price and duration normalization
+    if (typeof model.price === "string") {
+      setprice(model.price);
+    }
+    if (typeof model.duration === "string") {
+      // Keep original duration text and also try to extract leading number for slider
+      setdays(model.duration);
+      const num = (model.duration.match(/\d+/)?.[0]) || "";
+      if (num) setduration(num);
+    }
+
+    // Arrays: interestedin, timeava, daysava may be strings or arrays
+    const toArray = (v: any): string[] => {
+      if (Array.isArray(v)) return v;
+      if (typeof v === "string") {
+        // split by comma or whitespace
+        const parts = v.split(/[\s,]+/).map((s) => s.trim()).filter(Boolean);
+        return parts;
+      }
+      return [];
+    };
+    setInterested((prev) => (prev.length ? prev : toArray(model.interestedin)));
+    setTimes((prev) => (prev.length ? prev : toArray(model.timeava)));
+    setHours((prev) => (prev.length ? prev : toArray(model.daysava)));
+  }, [model, modelID, router]);
 
   // useEffect(() => {
   //   if (!login) {
@@ -87,7 +139,7 @@ export default function Editmodel () {
   //   }
   // }, [modelupdatestatus, message, dispatch, router, modelID]);
 
-  const checkuserInput = () => {
+  const checkuserInput = async () => {
     if (!age) return toast.error(`Age Empty`, { autoClose: 2000 });
     if (!hosttype) return toast.error(`Select host type`, { autoClose: 2000 });
     if (newImages.length === 0)
@@ -100,36 +152,45 @@ export default function Editmodel () {
     if (!description)
       return toast.error(`Write your description`, { autoClose: 2000 });
 
-    // if (modelupdatestatus !== "loading") {
-    //   setdisablebut(true);
-    //   setLoading(true);
-    //   dispatch(
-    //     updatemodel({
-    //       age,
-    //       location,
-    //       price: `${price} GOLD`,
-    //       duration: days,
-    //       bodytype,
-    //       smoke,
-    //       drink,
-    //       interestedin: interested.length > 0 ? interested : model.interestedin,
-    //       height,
-    //       weight,
-    //       description,
-    //       gender,
-    //       timeava: times.length > 0 ? times : model.timeava,
-    //       daysava: hours.length > 0 ? hours : model.daysava,
-    //       photolink: newImages,
-    //       token: user?.refreshtoken,
-    //       hosttype:
-    //         hosttype.charAt(0).toUpperCase() + hosttype.slice(1).toLowerCase(),
-    //       hostid: model.hostid,
-    //       newImages,
-    //       photocount: newImages.length,
-    //       name,
-    //     })
-    //   );
-    // }
+    if (!userid) return toast.error("Missing user, please login again");
+    if (!token) return toast.error("Missing token");
+    if (!modelID) return toast.error("Missing model id");
+
+    try {
+      setdisablebut(true);
+      setLoading(true);
+      const data = {
+        userid,
+        modelid: modelID,
+        name,
+        age,
+        location,
+        price,
+        duration: days,
+        bodytype,
+        smoke,
+        drink,
+        interestedin: interested.length > 0 ? interested : model?.interestedin || [],
+        height,
+        weight,
+        description,
+        gender,
+        timeava: times.length > 0 ? times : model?.timeava || [],
+        daysava: hours.length > 0 ? hours : model?.daysava || [],
+        hosttype,
+      };
+      const doc1 = newImages[0];
+      const doc2 = newImages[1];
+      await editModelMultipart({ token, data, doc1, doc2 });
+      toast.success("Model updated successfully");
+      router.push(`/models/${modelID}`);
+    } catch (err:any) {
+      console.error("Edit model failed", err);
+      toast.error(typeof err === 'string' ? err : 'Failed to update model');
+    } finally {
+      setdisablebut(false);
+      setLoading(false);
+    }
   };
 
   const getLocation = (country : any) => {
@@ -170,7 +231,7 @@ export default function Editmodel () {
           >
             <div className="input-container">
               <label className="label">Full Name</label>
-              <label className="bg-black name-label">{`mike`}</label>
+              <label className="bg-black name-label">{model?.name || ""}</label>
             </div>
             <div className="input-container">
               <label className="label">Location</label>
