@@ -18,17 +18,54 @@ import person from "../../icons/person.svg";
 import idcardicon from "../../icons/idcardIcon.svg";
 import deleteIcon from "../../icons/deleteicon.svg";
 // import "@/styles";
+import { useAuthToken } from "@/lib/hooks/useAuthToken";
+import { useUserId } from "@/lib/hooks/useUserId";
+import { createModelMultipart } from "@/api/model";
+import { useAuth } from "@/lib/context/auth-context";
 
 let times: any[] = [];
 let hours: any[] = [];
 let Interested: any[] = [];
 let MIN = "";
 
+// Simple client-side image compression via canvas
+async function compressImage(file: File, opts?: { maxWidth?: number; maxHeight?: number; quality?: number }): Promise<File> {
+  const { maxWidth = 1280, maxHeight = 1280, quality = 0.8 } = opts || {};
+  const img = document.createElement("img");
+  const objectUrl = URL.createObjectURL(file);
+  try {
+    await new Promise((resolve, reject) => {
+      img.onload = resolve as any;
+      img.onerror = reject as any;
+      img.src = objectUrl;
+    });
+    const canvas = document.createElement("canvas");
+    let { width, height } = img;
+    const ratio = Math.min(maxWidth / width, maxHeight / height, 1);
+    width = Math.round(width * ratio);
+    height = Math.round(height * ratio);
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return file;
+    ctx.drawImage(img, 0, 0, width, height);
+    const blob: Blob | null = await new Promise((resolve) => canvas.toBlob(resolve, "image/jpeg", quality));
+    if (!blob) return file;
+    const compressed = new File([blob], file.name.replace(/\.[^.]+$/, ".jpg"), { type: "image/jpeg" });
+    return compressed;
+  } catch (_) {
+    return file;
+  } finally {
+    URL.revokeObjectURL(objectUrl);
+  }
+}
+
 export default function CreateModelview () {
   // const firstname = useSelector((state: any) => state.profile.firstname);
   // const lastname = useSelector((state: any) => state.profile.lastname);
   // const login = useSelector((state: any) => state.register.logedin);
-  // const userid = useSelector((state : any) => state.register.userID);
+  const { session } = useAuth();
+  const userid = session?._id ?? useUserId();
   // const token = useSelector((state : any) => state.register.refreshtoken);
   // const modelpoststatus = useSelector((state : any) => state.model.modelpoststatus);
   // const message = useSelector((state : any) => state.model.message);
@@ -54,13 +91,15 @@ export default function CreateModelview () {
   const [duration, setduration] = useState("1");
   const [days, setdays] = useState("1hour");
   const [price, setprice] = useState("");
+  const [priceValue, setPriceValue] = useState<number | null>(null);
   const [discription, setdiscription] = useState("");
   const [disablebut, setdisablebut] = useState(false);
-  const [hosttype, sethosttype] = useState("fan Meet");
+  const [hosttype, sethosttype] = useState("Fan meet");
   const [imglist, setimglist] = useState<string[]>([]);
   const [photolink, setphotolink] = useState<File[]>([]);
   const [step, setStep] = useState(1);
   const totalSteps = 3;
+  const token = useAuthToken() || session?.token;
 
   // useEffect(() => {
   //   if (modelpoststatus === "succeeded") {
@@ -111,7 +150,7 @@ export default function CreateModelview () {
         return true;
 
       case 2:
-        if (!price) {
+        if (!priceValue) {
           toast.error(`Price is required`);
           return false;
         }
@@ -134,7 +173,7 @@ export default function CreateModelview () {
     }
   };
 
-  const checkuserInput = () => {
+  const checkuserInput = async () => {
     if (!name || name.trim() === "") {
       toast.error("Full name is required");
       return;
@@ -155,7 +194,7 @@ export default function CreateModelview () {
       toast.error(`Location is required`);
       return;
     }
-    if (!price) {
+    if (!priceValue) {
       toast.error(`Price is required`);
       return;
     }
@@ -172,43 +211,76 @@ export default function CreateModelview () {
       return;
     }
 
-    // if (modelpoststatus !== "loading") {
-    //   setdisablebut(true);
-    //   setLoading(true);
-      // dispatch(
-      //   createmodel({
-      //     name,
-      //     age,
-      //     location: location || "",
-      //     price,
-      //     duration: days,
-      //     bodytype,
-      //     smoke,
-      //     drink,
-      //     interestedin: Interested,
-      //     height,
-      //     weight,
-      //     discription,
-      //     gender,
-      //     timeava: times,
-      //     daysava: hours,
-      //     photolink,
-      //     userid,
-      //     token,
-      //     hosttype,
-      //   })
-      // );
-    // }
+    if (!userid) {
+      toast.error("Missing user, please login again");
+      return;
+    }
+    if (!token) {
+      toast.error("Missing token");
+      return;
+    }
+    try{
+      setdisablebut(true);
+      setLoading(true);
+      const hosttypeNormalized = hosttype
+        ? hosttype.charAt(0).toUpperCase() + hosttype.slice(1).toLowerCase()
+        : "Fan meet";
+      const data = {
+        userid,
+        name,
+        age,
+        location: location || "",
+        // Backend expects price as a numeric string; keep a separate displayPrice
+        price: priceValue != null ? String(priceValue) : "",
+        displayPrice: price,
+        priceValue,
+        duration: days,
+        bodytype,
+        smoke,
+        drink,
+        interestedin: Interested.map((v) => String(v).toLowerCase()),
+        height,
+        weight,
+        description: discription,
+        gender,
+        timeava: times,
+        daysava: hours,
+        hosttype: hosttypeNormalized,
+      };
+      const res = await createModelMultipart({ token, userid: userid!, data, files: photolink });
+      // Prefer backend message if available
+      const okMsg = (res && (res.message || res.msg)) ? String(res.message || res.msg) : "Model created successfully";
+      toast.success(okMsg, { autoClose: 3000 });
+      router.push("/models");
+    }catch(err:any){
+      // Log full error for debugging
+      console.error("Create model failed", err?.response || err);
+      const status = err?.response?.status;
+      const data = err?.response?.data;
+      const serverMsg = data?.message || data?.msg || data?.error || err?.message;
+      const detail = typeof data === 'object' ? JSON.stringify(data).slice(0, 400) : String(data || "");
+      const msg = serverMsg ? String(serverMsg) : 'Failed to create model';
+      toast.error(`${status ? `[${status}] ` : ""}${msg}${detail && serverMsg !== detail ? `\n${detail}` : ""}`, { autoClose: 6000 });
+    }finally{
+      setdisablebut(false);
+      setLoading(false);
+    }
   };
 
   const handleNextStep = () => {
-    if (validateStep(step)) {
+    const skipValidation =
+      process.env.NEXT_PUBLIC_SKIP_CREATE_MODEL_VALIDATION === "true";
+    if (skipValidation || validateStep(step)) {
       setStep(step + 1);
     }
   };
 
   const handlePreviousStep = () => {
     setStep(step - 1);
+  };
+
+  const handleSkipStep = () => {
+    setStep(step + 1);
   };
 
   const getLocation = (country: any) => {
@@ -559,6 +631,8 @@ export default function CreateModelview () {
                   } else {
                     setprice(e.currentTarget.value + " GOLD");
                   }
+                  const v = Number((e.currentTarget.value || "").toString());
+                  setPriceValue(Number.isFinite(v) && v > 0 ? v : null);
                 }}
               ></input>
             </div>
@@ -649,13 +723,27 @@ export default function CreateModelview () {
                   ref={fileInputRef}
                   className="hidden"
                   accept="image/*"
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                  multiple
+                  onChange={async (e: React.ChangeEvent<HTMLInputElement>) => {
                     const files = e.currentTarget.files;
                     if (!files || files.length === 0) return;
-                    const file = files[0];
-                    const url = URL.createObjectURL(file);
-                    setimglist((prev) => [...prev, url]);
-                    setphotolink((prev) => [...prev, file]);
+                    const selected: File[] = Array.from(files).filter((f) => f.type.startsWith("image/"));
+                    if (selected.some((f) => f.size > 2 * 1024 * 1024)) {
+                      toast.info("Compressing large images for faster upload...");
+                    }
+                    const compressed: File[] = [];
+                    for (const f of selected) {
+                      const cf = f.size > 2 * 1024 * 1024 ? await compressImage(f) : f;
+                      compressed.push(cf);
+                      if (cf.size > 2 * 1024 * 1024) {
+                        toast.warn(`${f.name} is still large after compression (~${(cf.size/1024/1024).toFixed(1)}MB)`);
+                      }
+                    }
+                    setimglist((prev) => [
+                      ...prev,
+                      ...compressed.map((f) => URL.createObjectURL(f)),
+                    ]);
+                    setphotolink((prev) => [...prev, ...compressed]);
                   }}
                 />
               </div>
@@ -666,6 +754,8 @@ export default function CreateModelview () {
                     <Image
                       alt={`uploaded-${index}`}
                       src={value}
+                      width={300}
+                      height={144}
                       className="object-cover w-full border rounded-lg h-36 border-slate-600"
                     />
                     <button
@@ -696,6 +786,11 @@ export default function CreateModelview () {
             </button>
 
             <div className="flex justify-between mt-3 overflow-hidden">
+              {photolink.length === 0 && (
+                <span className="text-xs text-yellow-400">
+                  Tip: add at least one image to improve visibility.
+                </span>
+              )}
               <PacmanLoader
                 color={color}
                 loading={loading}
@@ -747,6 +842,16 @@ export default function CreateModelview () {
               </button>
             ) : (
               <></>
+            )}
+            {step < totalSteps && (
+              <button
+                onClick={handleSkipStep}
+                className="px-4 py-2 text-white bg-gray-500 rounded"
+                style={{ maxWidth: 300 }}
+                title="Skip validation and go to next step"
+              >
+                Skip
+              </button>
             )}
           </div>
         </div>

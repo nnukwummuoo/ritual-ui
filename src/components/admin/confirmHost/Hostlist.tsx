@@ -1,6 +1,9 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import type { AppDispatch, RootState } from "@/store/store";
+import { verifymodel, rejectmodel } from "@/store/modelSlice";
 import { MdOutlineClose } from "react-icons/md";
 import proimage1 from "../../../icons/icons8-profile_Icon.png";
 import PacmanLoader from "react-spinners/ClockLoader";
@@ -52,6 +55,8 @@ const Hostlist: React.FC<HostProps> = ({ prob }) => {
   const [showImage, setShowImage] = useState(false);
   const [imageType, setImageType] = useState("");
   const [imageSrc, setImageSrc] = useState<string>(getImageSrc(proimage1));
+  const dispatch = useDispatch<AppDispatch>();
+  const token = useSelector((s: RootState) => s.register.refreshtoken);
 
   // Normalize images to string src
   const userImage = getImageSrc(image || proimage1);
@@ -59,23 +64,31 @@ const Hostlist: React.FC<HostProps> = ({ prob }) => {
   const idImage = getImageSrc(idPhoto || proimage1);
 
   const verify = async () => {
-    setDisableButton(true);
-    setLoading(true);
-    // TODO: Add verify logic here (e.g. API call or Redux dispatch)
-    setTimeout(() => {
+    try {
+      setDisableButton(true);
+      setLoading(true);
+      const hostid = userid || prob.id;
+      await dispatch(verifymodel({ token, hostid })).unwrap();
+    } catch (e) {
+      // noop; errors can be surfaced via global toasts if present
+    } finally {
       setLoading(false);
       setDisableButton(false);
-    }, 1500);
+    }
   };
 
   const reject = async () => {
-    setDisableButton(true);
-    setLoading(true);
-    // TODO: Add reject logic here
-    setTimeout(() => {
+    try {
+      setDisableButton(true);
+      setLoading(true);
+      const hostid = userid || prob.id;
+      await dispatch(rejectmodel({ token, hostid })).unwrap();
+    } catch (e) {
+      // noop
+    } finally {
       setLoading(false);
       setDisableButton(false);
-    }, 1500);
+    }
   };
 
   const [showDetails, setShowDetails] = useState(false);

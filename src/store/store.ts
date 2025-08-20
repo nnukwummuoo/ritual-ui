@@ -10,6 +10,7 @@ import messageReducer from './messageSlice';
 import comprofileReducer from './comprofile';
 import postReducer from './post';
 import commentReducer from './comment';
+import adminReducer from './admin';
 
 
 export const store = configureStore({
@@ -24,6 +25,7 @@ export const store = configureStore({
     comprofile: comprofileReducer,
     post:postReducer,
     comment:commentReducer,
+    admin: adminReducer,
   },
 });
 

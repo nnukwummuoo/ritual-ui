@@ -4,12 +4,18 @@ import React, { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { FaAngleRight } from "react-icons/fa";
 import { MdReport, MdVerifiedUser, MdAttachMoney, MdGroup } from "react-icons/md";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import HeaderBackNav from "@/components/navs/HeaderBackNav"; // Adjust import path as needed
+import type { AppDispatch, RootState } from "@/store/store";
+import { adminnotify } from "@/store/admin";
 
 const AdminPage = () => {
   const router = useRouter();
+  const dispatch = useDispatch<AppDispatch>();
   const admin = useSelector((state: any) => state.register.admin);
+  const token = useSelector((s: RootState) => s.register.refreshtoken);
+  const notifyme = useSelector((s: RootState) => s.admin.notifyme);
+  const notifycount = useSelector((s: RootState) => s.admin.notifycount);
 
   // Optional client-side redirect if not admin
   // useEffect(() => {
@@ -17,6 +23,23 @@ const AdminPage = () => {
   //     router.push("/");
   //   }
   // }, [admin, router]);
+
+  useEffect(() => {
+    let timer: any;
+    const ping = () => {
+      if (token) dispatch(adminnotify({ token } as any));
+    };
+    ping();
+    timer = setInterval(ping, 60000);
+    const onVis = () => {
+      if (document.visibilityState === 'visible') ping();
+    };
+    document.addEventListener('visibilitychange', onVis);
+    return () => {
+      clearInterval(timer);
+      document.removeEventListener('visibilitychange', onVis);
+    };
+  }, [dispatch, token]);
 
   const navdata = [
     {
@@ -47,9 +70,16 @@ const AdminPage = () => {
         <HeaderBackNav />
 
         <header>
-          <h4 className="font-bold text-lg text-white hidden sm:block">
-            ADMIN DASHBOARD
-          </h4>
+          <div className="flex items-center gap-3">
+            <h4 className="font-bold text-lg text-white hidden sm:block">
+              ADMIN DASHBOARD
+            </h4>
+            {notifyme && (
+              <span className="inline-flex items-center justify-center px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-600 text-white">
+                Notifications: {notifycount}
+              </span>
+            )}
+          </div>
         </header>
 
         <div className="pt-4">

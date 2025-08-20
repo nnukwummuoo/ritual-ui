@@ -60,19 +60,26 @@ const initialState: AdminState = {
 
 }
 
-export const getalluser = createAsyncThunk("admin/getalluser",async data=>{
+export const getalluser = createAsyncThunk("admin/getalluser",async (data:any)=>{
 
     try{
-
-
+        // First attempt: use provided data
         let response = await axios.post(`${URL}/getallusers`,data)
-       // console.log('under get profile')
-
         return response.data
-
-    }catch(err){
-       // console.log('erro get profile')
-       throw getAxiosErrorMessage(err);
+    }catch(err:any){
+        // If server errors (e.g., local API expects empty body), retry with {}
+        if (axios.isAxiosError(err)){
+            const status = err.response?.status
+            if (!err.response || status === 500){
+                try{
+                    const retry = await axios.post(`${URL}/getallusers`,{})
+                    return retry.data
+                }catch(inner){
+                    throw getAxiosErrorMessage(inner);
+                }
+            }
+        }
+        throw getAxiosErrorMessage(err);
     }
 
 

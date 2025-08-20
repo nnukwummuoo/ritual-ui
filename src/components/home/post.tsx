@@ -5,6 +5,7 @@ import type { AppDispatch, RootState } from "@/store/store";
 import { getallpost, hydrateFromCache } from "@/store/post";
 import { getprofile } from "@/store/profile";
 import { URL as API_BASE } from "@/api/config";
+const PROD_BASE = "https://mmekoapi.onrender.com"; // fallback when local proxy is down
 import PostSkeleton from "../PostSkeleton";
 
 export default function PostsCard({ type }: { type?: "video" | "image" | "text" }) {
@@ -89,9 +90,11 @@ export default function PostsCard({ type }: { type?: "video" | "image" | "text" 
           "";
         const asString = typeof mediaRef === "string" ? mediaRef : (mediaRef?.publicId || mediaRef?.public_id || mediaRef?.url || "");
         const isUrl = typeof asString === "string" && /^https?:\/\//i.test(asString);
-        const queryUrl = asString ? `${API_BASE}/api/image/view?publicId=${encodeURIComponent(asString)}` : "";
-        const pathUrl = asString ? `${API_BASE}/api/image/view/${encodeURIComponent(asString)}` : "";
-        const src = isUrl ? asString : queryUrl;
+        const queryUrlPrimary = asString ? `${API_BASE}/api/image/view?publicId=${encodeURIComponent(asString)}` : "";
+        const pathUrlPrimary = asString ? `${API_BASE}/api/image/view/${encodeURIComponent(asString)}` : "";
+        const queryUrlFallback = asString ? `${PROD_BASE}/api/image/view?publicId=${encodeURIComponent(asString)}` : "";
+        const pathUrlFallback = asString ? `${PROD_BASE}/api/image/view/${encodeURIComponent(asString)}` : "";
+        const src = isUrl ? asString : queryUrlPrimary;
 
         // Derive display name and handle from multiple possible fields
         const combinedName = [p?.firstname, p?.lastname].filter(Boolean).join(" ");
@@ -155,9 +158,22 @@ export default function PostsCard({ type }: { type?: "video" | "image" | "text" 
                 className="w-full max-h-[480px] object-contain rounded"
                 onError={(e) => {
                   const img = e.currentTarget as HTMLImageElement & { dataset: any };
-                  if (!img.dataset.fallback && pathUrl) {
-                    img.dataset.fallback = "1";
-                    img.src = pathUrl;
+                  // First fallback: switch to path URL on same base
+                  if (!img.dataset.fallback1 && pathUrlPrimary) {
+                    img.dataset.fallback1 = "1";
+                    img.src = pathUrlPrimary;
+                    return;
+                  }
+                  // Second fallback: try query on PROD base
+                  if (!img.dataset.fallback2 && queryUrlFallback) {
+                    img.dataset.fallback2 = "1";
+                    img.src = queryUrlFallback;
+                    return;
+                  }
+                  // Final fallback: try path on PROD base
+                  if (!img.dataset.fallback3 && pathUrlFallback) {
+                    img.dataset.fallback3 = "1";
+                    img.src = pathUrlFallback;
                   }
                 }}
               />
@@ -169,9 +185,24 @@ export default function PostsCard({ type }: { type?: "video" | "image" | "text" 
                 className="w-full max-h-[480px] rounded"
                 onError={(e) => {
                   const video = e.currentTarget as HTMLVideoElement & { dataset: any };
-                  if (!video.dataset.fallback && pathUrl) {
-                    video.dataset.fallback = "1";
-                    video.src = pathUrl;
+                  // First fallback: switch to path URL on same base
+                  if (!video.dataset.fallback1 && pathUrlPrimary) {
+                    video.dataset.fallback1 = "1";
+                    video.src = pathUrlPrimary;
+                    video.load();
+                    return;
+                  }
+                  // Second fallback: try query on PROD base
+                  if (!video.dataset.fallback2 && queryUrlFallback) {
+                    video.dataset.fallback2 = "1";
+                    video.src = queryUrlFallback;
+                    video.load();
+                    return;
+                  }
+                  // Final fallback: try path on PROD base
+                  if (!video.dataset.fallback3 && pathUrlFallback) {
+                    video.dataset.fallback3 = "1";
+                    video.src = pathUrlFallback;
                     video.load();
                   }
                 }}
