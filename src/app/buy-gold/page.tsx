@@ -65,7 +65,7 @@ const Topup: React.FC = () => {
   };
 
   return (
-    <div className="w-screen sm:w-11/12 md:w-10/12 lg:w-9/12 xl:w-8/12 mx-auto bg-gray-900 flex flex-col items-center min-h-screen">
+    <div className="w-screen sm:w-11/12 md:w-10/12 lg:w-9/12 xl:w-8/12 mx-auto flex flex-col items-center min-h-screen">
       <div className="w-full md:px-8 h-full md:mt-0 mt-8">
         <div className="w-full h-full flex flex-col items-center justify-center pl-1 pr-1 pt-4">
           <div className="w-full rounded-lg flex flex-col justify-center pl-2 pr-2">

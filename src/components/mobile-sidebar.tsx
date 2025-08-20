@@ -1,6 +1,8 @@
 import { useAuth } from "@/lib/context/auth-context";
 import "../styles/app.css"
 import Image from "next/image";
+import anyaLogo from '@/icons/Anya.png';
+import MmekoLogo from '@/icons/Mmeko_mobile_logo.png';
 import Link from "next/link";
 import React from "react";
 import {
@@ -70,8 +72,8 @@ export default function MobileSidebar() {
       className={`sidebar bg-gray-900 ${isOpen ? "sidebar-open" : "sidebar-closed"}`}
     >
       <Link href="/" style={{ width: "100%", display: "flex", justifyContent: "center" }}>
-        <img src={'/icons/logo.png'} alt="logo" className="brand-logo w-20" />
-        <img src={'/icons/Mmeko_mobile_logo.png'} alt="logo" className="sidebar-logo" />
+        <Image src={anyaLogo} alt="logo" className="brand-logo w-20" />
+        <Image src={MmekoLogo} alt="logo" className="sidebar-logo" />
       </Link>
       <ul className="py-4">
         {sideBarItems.map((item) => (
