@@ -5,6 +5,7 @@ import React from "react";
 import { FaBars, FaTimes } from "react-icons/fa";
 import Logins from "./Login";
 import { useRouter } from "next/navigation";
+import anyaLogo from '@/icons/Anya.png';
 
 export default function Navbar({isAuthenticated}:{isAuthenticated: boolean}) {
   const { isOpen, toggle } = useAuth();
@@ -20,7 +21,7 @@ export default function Navbar({isAuthenticated}:{isAuthenticated: boolean}) {
         <button onClick={toggle} className="navBtn">
           {isOpen ? <FaTimes size={25} /> : <FaBars size={25} />}
         </button>
-        <img src={'/icons/Mmeko_mobile_logo.png'} alt="logo" className="logo" />
+        <Image src={anyaLogo} alt="logo" className="logo" />
       <div className="size-6"></div>
       </div>
       {!isAuthenticated && <Logins />}
