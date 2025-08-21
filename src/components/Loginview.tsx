@@ -95,7 +95,7 @@ export const Loginview = () => {
     >
       <ToastContainer position="top-center" theme="dark" />
       <div className="bg-gray-800 rounded-lg shadow-lg p-6 w-full max-w-md">
-        <h1 className="text-orange-500 text-3xl font-bold text-center">
+        <h1 className="bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent text-3xl font-bold text-center">
           Welcome Back
         </h1>
         <p className="text-gray-400 text-center mt-2">
@@ -105,7 +105,7 @@ export const Loginview = () => {
           <Input type="email" placeholder="Email Address" />
           <Input type="password" />
           <input type="hidden" name="signing-type" value={"login"} />
-          <div className="flex items-start mt-4">
+          <div className="flex items-center mt-4">
             <Input
               type="checkbox"
               id="terms"
@@ -117,7 +117,7 @@ export const Loginview = () => {
             <label htmlFor="terms" className="text-gray-400 text-sm">
               I accept the{" "}
               <span
-                className="text-orange-500 underline cursor-pointer"
+                className="text-blue-500 underline cursor-pointer"
                 // onClick={() => navigate("/term_condition")}
               >
                 Terms and Conditions
@@ -126,7 +126,7 @@ export const Loginview = () => {
           </div>
 
           <button
-            className="w-full bg-orange-500 hover:bg-orange-600 text-white py-2 rounded shadow transition"
+            className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-2 rounded shadow transition"
             onClick={checkAcceptTerms}
           >
             Log In
@@ -142,7 +142,7 @@ export const Loginview = () => {
           <p className="text-gray-400 text-sm text-center mt-4">
             Don't have an account?{" "}
             <Link
-              className="text-orange-500 font-bold hover:underline cursor-pointer"
+              className="text-blue-500 font-bold hover:underline cursor-pointer"
               href="/auth/register"
             >
               Register

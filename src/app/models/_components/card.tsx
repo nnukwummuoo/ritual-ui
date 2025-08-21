@@ -98,7 +98,7 @@ export const ModelCard = ({
     <div className="relative overflow-hidden" onClick={handleClick}>
       {/* Host Image */}
       <div>
-        <Image
+        <img
           alt="model"
           src={photolink}
           width={400}
@@ -140,8 +140,7 @@ export const ModelCard = ({
           <div className="flex items-center gap-1 p-1 bg-black bg-opacity-40 rounded-lg">
             {countryData.flag && (
               <div className="rounded-full overflow-hidden size-4">
-                <Image
-                  src={countryData.flag}
+                <img                  src={countryData.flag}
                   alt={`${countryData.abbreviation} flag`}
                   width={200}
                   height={200}

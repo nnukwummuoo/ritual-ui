@@ -124,7 +124,7 @@ import type { RootState } from "@/store/store";
   };
 
   return (
-    <div className="fixed z-50">
+    <div className="fixed z-[110]">
       
       <div className="p-2">
         <nav
@@ -164,6 +164,7 @@ import type { RootState } from "@/store/store";
 
               <div className="cstm-flex gap-4 items-start w-full mt-4">
                 <button className="flex gap-2 items-center justify-center font-bold text-sm w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white py-3 rounded-lg transition-transform duration-300 hover:scale-105 shadow-md" onClick={() => router.push("/buy-gold")}><FaCoins /> <span>Get More Golds</span></button>
+                
                 <button className="cstm-boder w-full rounded-lg py-3 text-sm font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent bg-inherit flex gap-2 items-center justify-center transition-transform duration-300 hover:scale-105"> <span>Upgrade Account</span></button>
               </div>
             </div>

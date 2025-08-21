@@ -5,10 +5,10 @@ import React, { useState, useEffect } from "react";
 import Skeleton, { SkeletonTheme } from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 import Modal from "@/components/modals";
-import CategoryButtonComponent from "../models/_components/CategoryButton";
 import { useAuth } from "@/lib/context/auth-context";
 import { countryList } from "@/components/CountrySelect/countryList";
 import { ModelCard, ModelCardProps } from "./_components/card";
+import CategoryButtonComponent from "./_components/CategoryButton";
 
 export default function ModelPage() {
   // const login = useSelector((state: any) => state.register.logedin);

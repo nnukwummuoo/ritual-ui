@@ -98,13 +98,13 @@ export const Register = () => {
   ]
 
   return (
-    <div className="body w-full">
+    <div className="body w-full h-auto overflow-scroll min-h-screen">
       {/* <ToastContainer position="top-center" theme="dark" /> */}
-      <div className="form-container-wrapper w-full">
-        <Image src={"/register.png"} alt="Register" width={500} height={300} />
+      <div className="form-container-wrapper w-full mt-12 min-h-screen">
+        <Image src={"/register.png"} alt="Register" width={500} height={300} className="min-h-full" />
 
         <form action={handleSubmit}>
-          <h2>Register</h2>
+          <h2 className="!bg-gradient-to-r !from-blue-500 !to-purple-600 !bg-clip-text !text-transparent">Register</h2>
           <p>Create. Connect. Cash Out.</p>
           {/* Pagination Steps */}
           <div className="pagination">
@@ -149,13 +149,15 @@ export const Register = () => {
              })}
               <input type="hidden" name="signing-type" value="signup" />
               <Agree id="terms" toThe={<Link href="/T_&_C">the Terms and Conditions.</Link>} agree={agreedTerms} setAgree={()=> setAgreedTerms(prev=> !prev)} />
+
               <Agree id="privacy" toThe={<Link href={"/privacy-policy"}>Privacy and Policy</Link>} agree={agreedPrivacy} setAgree={()=> setAgreedPrivacy(prev=> !prev)} />
+
               <button onClick={handleClick} type="submit" className="btn flex items-center justify-center mx-auto">
                 {loading ? <p style={{color: "white"}} className="flex items-center justify-center gap-3 text-white"><BtnLoader /> Please wait...</p> : "Register" }
               </button>
             </Step>
           </div>
-          <p>I already have an account <Link href="/">Login</Link></p>
+          <p>I already have an account <Link href="/" className="!text-blue-500">Login</Link></p>
         </form>
       </div>
     </div>

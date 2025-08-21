@@ -1,7 +1,7 @@
 import { useAuth } from "@/lib/context/auth-context";
 import "../styles/app.css"
 import Image from "next/image";
-import anyaLogo from '@/icons/Anya.png';
+import anyaLogo from '@/icons/logo.png';
 import MmekoLogo from '@/icons/Mmeko_mobile_logo.png';
 import Link from "next/link";
 import React from "react";
@@ -16,6 +16,8 @@ import {
   FaUsersCog,
   FaVideo,
   FaStar,
+  FaTimes,
+  FaBars,
 } from "react-icons/fa";
 
 export default function MobileSidebar() {
@@ -75,6 +77,12 @@ export default function MobileSidebar() {
         <Image src={anyaLogo} alt="logo" className="brand-logo w-20" />
         <Image src={MmekoLogo} alt="logo" className="sidebar-logo" />
       </Link>
+      <button onClick={toggle} className="navBtn">
+        {/* {isOpen ? <FaTimes size={25} /> : <FaBars size={25} />} */}
+        <span className="bg-clip-text bg-gradient-to-r from-blue-500 to-purple-600 text-blue-500">
+          {isOpen ? <FaTimes size={25} className="text-blue-500" /> : <FaBars size={25} />}
+        </span>
+      </button>
       <ul className="py-4">
         {sideBarItems.map((item) => (
           <li key={item.name} className="gap-y-3.5 text-sm">

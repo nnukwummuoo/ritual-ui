@@ -9,6 +9,7 @@ const nextConfig: NextConfig = {
   },
   images: {
     unoptimized: true,
+    domains: ['cloud.appwrite.io'],
   },
   async rewrites() {
     return [
