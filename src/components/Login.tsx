@@ -24,11 +24,11 @@ export default function Logins() {
             style={{
               display: "flex",
               alignItems: "center",
-              padding: "8px 10px",
+              padding: "6px 10px",
               borderRadius: 20,
             }}
           >
-            <FaSignInAlt size={20} />
+            <FaSignInAlt size={18} className="text-gray-900" />
           </button>
         }
       >

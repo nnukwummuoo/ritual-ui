@@ -70,9 +70,9 @@ const EditProfile: React.FC = () => {
 
   // ✅ Handle login check
   useEffect(() => {
-    if (!login) {
-      router.push("/");
-    }
+    // if (!login) {
+    //   router.push("/");
+    // }
 
     if (login && getedit_stats !== "loading") {
       dispatch(
