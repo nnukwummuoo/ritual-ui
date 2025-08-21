@@ -1,4 +1,6 @@
 import { URL as API_BASE } from "./config";
+// Secondary base (production) used as a fallback when the local proxy is down
+const PROD_BASE = "https://mmekoapi.onrender.com";
 
 /**
  * Download an image from storage
@@ -16,11 +18,21 @@ export async function uploadImage(file: File): Promise<UploadResponse> {
   const form = new FormData();
   form.append("image", file);
 
-  const res = await fetch(`${API_BASE}/api/image/save`, {
-    method: "POST",
-    body: form,
-    credentials: "include",
-  });
+  const tryOnce = async (base: string) =>
+    fetch(`${base}/api/image/save`, { method: "POST", body: form, credentials: "include" });
+
+  let res: Response | undefined;
+  try {
+    res = await tryOnce(API_BASE);
+  } catch {
+    // network/proxy error
+  }
+  if (!res) {
+    try {
+      res = await tryOnce(PROD_BASE);
+    } catch {}
+  }
+  if (!res) throw new Error("Upload failed: network error");
 
   if (!res.ok) {
     const text = await res.text().catch(() => "");
@@ -30,12 +42,25 @@ export async function uploadImage(file: File): Promise<UploadResponse> {
 }
 
 export async function deleteImage(publicId: string): Promise<{ success?: boolean; [k: string]: any }> {
-  const res = await fetch(`${API_BASE}/api/image/delete`, {
-    method: "DELETE",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ publicId }),
-    credentials: "include",
-  });
+  const tryOnce = async (base: string) =>
+    fetch(`${base}/api/image/delete`, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ publicId }),
+      credentials: "include",
+    });
+
+  let res: Response | undefined;
+  try {
+    res = await tryOnce(API_BASE);
+  } catch {}
+  if (!res) {
+    try {
+      res = await tryOnce(PROD_BASE);
+    } catch {}
+  }
+  if (!res) throw new Error("Delete failed: network error");
+
   if (!res.ok) {
     const text = await res.text().catch(() => "");
     throw new Error(`Delete failed (${res.status}): ${text}`);
@@ -44,10 +69,22 @@ export async function deleteImage(publicId: string): Promise<{ success?: boolean
 }
 
 export async function getViewUrl(publicId: string): Promise<string> {
-  const res = await fetch(`${API_BASE}/api/image/view?publicId=${encodeURIComponent(publicId)}`, {
-    method: "GET",
-    credentials: "include",
-  });
+  const tryOnce = async (base: string) =>
+    fetch(`${base}/api/image/view?publicId=${encodeURIComponent(publicId)}`, {
+      method: "GET",
+      credentials: "include",
+    });
+
+  let res: Response | undefined;
+  try {
+    res = await tryOnce(API_BASE);
+  } catch {}
+  if (!res) {
+    try {
+      res = await tryOnce(PROD_BASE);
+    } catch {}
+  }
+  if (!res) throw new Error("Get URL failed: network error");
   const contentType = res.headers.get('content-type') || '';
   // Read the body ONCE as ArrayBuffer so we can decide how to handle it
   const buf = await res.arrayBuffer().catch(() => new ArrayBuffer(0));

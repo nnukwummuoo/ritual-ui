@@ -14,7 +14,7 @@ import { getCountryData } from "@/api/getCountries";
 
 // Props interface
 export interface ModelCardProps {
-  photolink: string;
+  photolink: string | null;
   hosttype: string;
   online: boolean;
   name: string;
@@ -100,7 +100,7 @@ export const ModelCard = ({
       <div>
         <img
           alt="model"
-          src={photolink}
+          src={photolink as any}
           width={400}
           height={300}
           className="object-cover w-full rounded h-80"

@@ -8,6 +8,8 @@ import { Suspense } from "react";
 import { SNACKBAR_OPTIONS } from "@/constants";
 import dynamic from "next/dynamic";
 import "react-toastify/dist/ReactToastify.css";
+// Install global Axios interceptor fallback
+import "@/api/axiosSetup";
 
 const Loader = () => (
   <div className="w-screen flex items-center justify-center h-screen">

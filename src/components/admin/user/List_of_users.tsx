@@ -117,6 +117,8 @@ const [gender_type, setgender_type] = useState<string | StaticImageData>(maleIco
           <Image
             alt="profileIcon"
             src={proIMG || proIMG}
+            width={28}
+            height={28}
             className="w-7 h-7 rounded-full"
           />
           <p className="text-white ml-1 text-sm font-bold">{`${firstname} ${lastname}`}</p>
@@ -127,6 +129,8 @@ const [gender_type, setgender_type] = useState<string | StaticImageData>(maleIco
           <Image
             alt="maleIcon"
             src={gender_type || gender_type}
+            width={28}
+            height={28}
             className="w-7 h-7 rounded-full"
           />
         </div>

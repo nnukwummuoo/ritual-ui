@@ -4,12 +4,15 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  images: {
+    domains: ["cloud.appwrite.io", "flagcdn.com", "upload.wikimedia.org"],
+  },
   // Keep TypeScript checks ON (do not ignore build errors)
   async rewrites() {
     return [
       {
         source: '/api/proxy/:path*',
-        destination: 'http://localhost:3100/:path*',
+        destination: 'https://mmekoapi.onrender.com/:path*',
       },
     ];
   },

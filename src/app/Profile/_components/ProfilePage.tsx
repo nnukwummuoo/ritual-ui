@@ -78,6 +78,7 @@ export const Profile = () => {
     country,
     active,
   } = useSelector((s: RootState) => s.profile);
+  const error = useSelector((s: RootState) => s.profile.error);
   const createdAt = useSelector((s: RootState) => (s as any).profile?.createdAt as string | undefined);
   const loggedInUserId = useSelector((s: RootState) => s.register.userID);
   const token = useSelector((s: RootState) => s.register.refreshtoken);
@@ -496,7 +497,17 @@ export const Profile = () => {
             </SkeletonTheme>
           )}
           {status === "failed" && (
-            <div className="w-full text-center text-red-400">Failed to load profile. Please check your connection and try again.</div>
+            <div className="w-full px-4 py-6 text-center">
+              <div className="mb-3 text-sm text-red-400">
+                {error || "Failed to load profile."}
+              </div>
+              <button
+                onClick={() => viewingUserId && dispatch(getprofile({ userid: viewingUserId, token } as any))}
+                className="px-3 py-1 text-sm rounded bg-orange-500 text-white hover:bg-orange-600"
+              >
+                Retry
+              </button>
+            </div>
           )}
           {status === "succeeded" && (
             <div className="flex flex-col">
