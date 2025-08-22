@@ -1,6 +1,8 @@
 import { useAuth } from "@/lib/context/auth-context";
 import "../styles/app.css"
 import Image from "next/image";
+import anyaLogo from '@/icons/logo.png';
+import MmekoLogo from '@/icons/Mmeko_mobile_logo.png';
 import Link from "next/link";
 import React from "react";
 import {
@@ -14,6 +16,8 @@ import {
   FaUsersCog,
   FaVideo,
   FaStar,
+  FaTimes,
+  FaBars,
 } from "react-icons/fa";
 
 export default function MobileSidebar() {
@@ -29,7 +33,7 @@ export default function MobileSidebar() {
       icon: <FaCamera size={25} />,
     },
     {
-      route: "/",
+      route: "/search",
       name: "Explorer",
       icon: <FaCompass size={25} />,
     },
@@ -70,9 +74,15 @@ export default function MobileSidebar() {
       className={`sidebar bg-gray-900 ${isOpen ? "sidebar-open" : "sidebar-closed"}`}
     >
       <Link href="/" style={{ width: "100%", display: "flex", justifyContent: "center" }}>
-        <img src={'/icons/logo.png'} alt="logo" className="brand-logo w-20" />
-        <img src={'/icons/icon-192.png'} alt="logo" className="sidebar-logo" />
+        <Image src={anyaLogo} alt="logo" className="brand-logo w-20" />
+        <Image src={MmekoLogo} alt="logo" className="sidebar-logo" />
       </Link>
+      <button onClick={toggle} className="navBtn">
+        {/* {isOpen ? <FaTimes size={25} /> : <FaBars size={25} />} */}
+        <span className="bg-clip-text bg-gradient-to-r from-blue-500 to-purple-600 text-blue-500">
+          {isOpen ? <FaTimes size={25} className="text-blue-500" /> : <FaBars size={25} />}
+        </span>
+      </button>
       <ul className="py-4">
         {sideBarItems.map((item) => (
           <li key={item.name} className="gap-y-3.5 text-sm">

@@ -98,27 +98,17 @@ export const ModelCard = ({
     <div className="relative overflow-hidden" onClick={handleClick}>
       {/* Host Image */}
       <div>
-        {photolink ? (
-          <Image
-            alt="model"
-            src={photolink}
-            width={400}
-            height={300}
-            className="object-cover w-full rounded h-80"
-            onError={(e) => {
-              const target = e.target as HTMLImageElement;
-              target.src = "/icons/mmekoDummy.png";
-            }}
-          />
-        ) : (
-          <Image
-            alt="placeholder"
-            src="/icons/mmekoDummy.png"
-            width={400}
-            height={300}
-            className="object-cover w-full rounded h-80"
-          />
-        )}
+        <img
+          alt="model"
+          src={photolink as any}
+          width={400}
+          height={300}
+          className="object-cover w-full rounded h-80"
+          onError={(e) => {
+            const target = e.target as HTMLImageElement;
+            target.src = "/icons/mmekoDummy.png";
+          }}
+        />
       </div>
 
       {/* Online/Offline Indicator */}
@@ -150,8 +140,7 @@ export const ModelCard = ({
           <div className="flex items-center gap-1 p-1 bg-black bg-opacity-40 rounded-lg">
             {countryData.flag && (
               <div className="rounded-full overflow-hidden size-4">
-                <Image
-                  src={countryData.flag}
+                <img                  src={countryData.flag}
                   alt={`${countryData.abbreviation} flag`}
                   width={200}
                   height={200}

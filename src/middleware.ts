@@ -17,6 +17,8 @@ const publicRoutes = [
   '/api/session',
   '/post-image',
   "/comment",
+  "/buy-gold",
+  "/verify-models",
 
   // change later for admin 
   "/mmeko/admin",

@@ -8,8 +8,7 @@ const TextInput = ({ label, name, type = "text", value, onChange, style }: { lab
         <textarea
           id={name}
           name={name}
-          value={value}
-          onChange={onChange}
+          {...(onChange ? { value, onChange } : { defaultValue: value })}
           required
           className=""
           style={style}
@@ -19,8 +18,7 @@ const TextInput = ({ label, name, type = "text", value, onChange, style }: { lab
           id={name}
           name={name}
           type={type}
-          value={value}
-          onChange={onChange}
+          {...(onChange ? { value, onChange } : { defaultValue: value })}
           required
           className=""
           style={style}

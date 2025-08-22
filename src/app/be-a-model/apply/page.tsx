@@ -53,6 +53,21 @@ export default function VerifiedUserForm(){
     token
   });
 
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
+    const target = e.target as HTMLInputElement;
+    const { name, type } = target;
+    if (type === "checkbox") {
+      setFormData((prev) => ({ ...prev, [name]: (target as HTMLInputElement).checked }));
+    } else if (type === "file") {
+      const files = (target as HTMLInputElement).files;
+      setFormData((prev) => ({ ...prev, [name]: files && files[0] ? files[0] : null }));
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: target.value }));
+    }
+  };
+
   // useEffect(()=>{
   //    if(!userid){
   //     window.location.href = "/";
@@ -94,26 +109,6 @@ export default function VerifiedUserForm(){
   //   }
 
   // },[exclusive_ids_stats, exclusive_docs_stats])
-
-  // const handleChange = (e) => {
-  //   const { name, value, type, checked, files } = e.target;
-  //   if (type === "checkbox") {
-  //     setFormData((prev) => ({ ...prev, [name]: checked }));
-  //   } else if (type === "file") {
-  //     console.log(`${name} is loaded`, files)
-  //     setFormData((prev) => ({ ...prev, [name]: files[0] }));
-  //   } else {
-  //     setFormData((prev) => ({ ...prev, [name]: value }));
-  //   }
-  // };
-
-  // const handleDocumentTypeChange = (e) => {
-  //   //router("/notification");
-
-  //   setDocumentType(e.currentTarget.value);
-  //   formData.documentType = e.currentTarget.value
-  //   console.log("doc type "+formData.documentType)
-  // };
 
   // const handleSubmit = async (e) => {
   //   e.preventDefault();
@@ -170,14 +165,14 @@ export default function VerifiedUserForm(){
                       label="First Name"
                       name="firstName"
                       value={formData.firstName}
-                      // onChange={handleChange}
+                      onChange={handleChange}
 
                     />
                     <TextInput
                       label="Last Name"
                       name="lastName"
                       value={formData.lastName}
-                      // onChange={handleChange}
+                      onChange={handleChange}
 
                     />
 
@@ -188,14 +183,14 @@ export default function VerifiedUserForm(){
                       name="email"
                       type="email"
                       value={formData.email}
-                      // onChange={handleChange}
+                      onChange={handleChange}
                     />
                     <TextInput
                       label="Date of Birth"
                       name="dob"
                       type="date"
                       value={formData.dob}
-                      // onChange={handleChange}
+                      onChange={handleChange}
                     />
 
                   </div>
@@ -204,25 +199,25 @@ export default function VerifiedUserForm(){
                     label="Country"
                     name="country"
                     value={formData.country}
-                    // onChange={handleChange}
+                    onChange={handleChange}
                   />
                   <TextInput
                     label="City"
                     name="city"
                     value={formData.city}
-                    // onChange={handleChange}
+                    onChange={handleChange}
                   />
 
                   </div>
-              
-              
-              
+                
+                
+                
                 <TextInput
                   label="Residential Address"
                   name="address"
                   type="textarea"
                   value={formData.address}
-                  // onChange={handleChange}
+                  onChange={handleChange}
                  
                 />
           </div>
@@ -258,7 +253,10 @@ export default function VerifiedUserForm(){
     id="documentType"
     name="documentType"
     value={documentType}
-    // onChange={handleDocumentTypeChange}
+    onChange={(e) => {
+      setDocumentType(e.currentTarget.value);
+      setFormData((prev) => ({ ...prev, documentType: e.currentTarget.value }));
+    }}
     className="w-full p-3 border border-gray-300 rounded-md focus:outline-none bg-black text-white"
   >
     <option className="bg-black text-white" value="">Select Document Type</option>
@@ -286,7 +284,7 @@ export default function VerifiedUserForm(){
                       name="idexpire"
                       type="date"
                       value={formData.idexpire}
-                      // onChange={handleChange}
+                      onChange={handleChange}
                       style={{ width: "100%" }}
                     />
 
