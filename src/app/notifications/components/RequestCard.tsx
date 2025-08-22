@@ -14,11 +14,13 @@ const cardStates = {
 const ratings = [
   "😞 Disconnected",
   "😐 Decent",
-  "😊 Loved It!",
+  "😊 Loved It!"
+]
+const rating = [
   "😑 Dry",
   "😎 Cool",
   "🥰 Sweet",
-]
+  ]
 const modelContent = {
   accepted: {
     head: "Fan Meet Accepted",
@@ -77,9 +79,10 @@ interface CardProps {
     name: string;
     img: string;
     status: "request" | "expired" | "completed" | "accepted" | "declined" | "canceled";
+    schedule?: string; 
 }
 
-export default function RequestCard({exp, img, name, titles=["fan"], status, type="fan"}: CardProps) {
+export default function RequestCard({exp, img, name, titles=["fan"], status, type="fan", schedule,}: CardProps) {
 const cardBorderVariance = type === "model" ? "border-blue-500" : type === "fan" && ["accepted", "completed"].includes(status) ? "border-green-500" : "border-yellow-500"
 const cardTextVariance = type === "model" ? "text-blue-500" : type === "fan" && ["accepted", "completed"].includes(status) ? "text-green-500" : "text-yellow-500"
 
@@ -90,6 +93,16 @@ const cardTextVariance = type === "model" ? "text-blue-500" : type === "fan" && 
           <div className={`size-16 relative rounded-full border-4 overflow-hidden ${cardBorderVariance} bg-gray-900`}>
             <Image src={img} width={100} alt="picture" height={100} className='absolute top-0 left-0 size-full object-cover' />
           </div>
+          
+            {status === "request" && type === "fan" && schedule && (
+             <div className="mt-2 flex items-center gap-2 text-yellow-400 text-sm">
+               <BiTimeFive />
+               <span>Scheduled: {schedule}</span>
+             </div>
+           )}
+         </div>
+
+        
           <div className='text-sm'>
             <p className='font-bold'>{name}</p>
             <div className='flex gap-1'>{titles?.map((title, i)=> i === titles.length -1 ? <p key={title}>{title}</p> : <p key={title}>{title} &#x2022; </p>)}</div>
@@ -108,8 +121,12 @@ const cardTextVariance = type === "model" ? "text-blue-500" : type === "fan" && 
         }</p>
         {/* RATINGS */}
         <div className='flex gap-4 flex-wrap justify-center'>
-          {status === "completed" && ratings.map((v,i) => <Rating key={i} label={v} />)}
-        </div>
+        {status === "completed" && (
+        type === "model"
+       ? rating.map((v, i) => <Rating key={i} label={v} />)
+      : ratings.map((v, i) => <Rating key={i} label={v} />)
+       )}
+      </div>
         <div className={`flex justify-between gap-6 ${type === "model" && "max-[490px]:flex-col"} items-end`}>
         { statusArr.slice(1).includes(status) ? 
         <div className={`flex gap-4 ${type === "model" && "max-[490px]:w-full"}`}>
@@ -122,12 +139,12 @@ const cardTextVariance = type === "model" ? "text-blue-500" : type === "fan" && 
           : <FanActionBtn label='Renew request' />}
         </div>
           : <>
-          <div className="flex justify-start">
-        <div className="flex flex-col min-w-28 text-left">
-        <p className="text-xl">Expires in:</p>
-        <p className="text-3xl">{exp}</p>
-       </div>
-        </div>
+     <div className="flex-1 flex items-start">
+         <div className="flex flex-col min-w-28 text-left">
+         <p className="text-xl">Expires in:</p>
+         <p className="text-3xl">{exp}</p>
+         </div>
+     </div>
           <div className={`flex gap-4 ${type === "model" && "max-[490px]:w-full"}`}>
             { type === "model" ?
             <>
