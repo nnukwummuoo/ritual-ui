@@ -15,8 +15,6 @@ const ratings = [
   "😞 Poor",
   "😐 Not bad",
   "😊 Good!",
-  "😃 Great!",
-  "😍 Extremely great!"
 ]
 const modelContent = {
   accepted: {
