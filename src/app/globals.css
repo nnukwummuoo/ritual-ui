@@ -16,20 +16,20 @@
   }
 }
 
-@keyframes slideUp {
+@keyframes slideUpMobile {
   from {
     transform: translateY(100%);
     opacity: 0;
   }
   to {
-    transform: translateY(0);
+    transform: translateY(-50%);
     opacity: 1;
   }
 }
 
-@keyframes slideDown {
+@keyframes slideDownMobile {
   from {
-    transform: translateY(0);
+    transform: translateY(-50%);
     opacity: 1;
   }
   to {
@@ -38,12 +38,13 @@
   }
 }
 
-.animate-slide-up {
-  animation: slideUp 0.5s ease-out forwards;
-}
-
-.animate-slide-down {
-  animation: slideDown 0.5s ease-in forwards;
+@media (max-width: 600px) {
+  .animate-slide-up {
+    animation: slideUpMobile 0.5s ease-out forwards;
+  }
+  .animate-slide-down {
+    animation: slideDownMobile 0.5s ease-in forwards;
+  }
 }
 
 /* Mobile-only effect */
