@@ -122,10 +122,12 @@ const cardTextVariance = type === "model" ? "text-blue-500" : type === "fan" && 
           : <FanActionBtn label='Renew request' />}
         </div>
           : <>
-          <div className='flex flex-col min-w-28 '>
-          <p className='text-xl'>Expires in:</p>
-          <p className='text-3xl'>{exp}</p>
-          </div>
+          <div className="flex justify-start">
+        <div className="flex flex-col min-w-28 text-left">
+        <p className="text-xl">Expires in:</p>
+        <p className="text-3xl">{exp}</p>
+       </div>
+        </div>
           <div className={`flex gap-4 ${type === "model" && "max-[490px]:w-full"}`}>
             { type === "model" ?
             <>
