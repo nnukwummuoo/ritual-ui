@@ -4,19 +4,44 @@ import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "@/store/store";
 import { getallpost, hydrateFromCache } from "@/store/post";
 import { getprofile } from "@/store/profile";
+import { postlike } from "@/store/like";
+import { getpostcomment, postcomment } from "@/store/comment";
 import { URL as API_BASE } from "@/api/config";
 const PROD_BASE = "https://mmekoapi.onrender.com"; // fallback when local proxy is down
 import PostSkeleton from "../PostSkeleton";
+import PostActions from "./PostActions";
 
 export default function PostsCard({ type }: { type?: "video" | "image" | "text" }) {
   const dispatch = useDispatch<AppDispatch>();
   const status = useSelector((s: RootState) => s.post.poststatus);
   const posts = useSelector((s: RootState) => s.post.allPost as any[]);
   const loggedInUserId = useSelector((s: RootState) => s.register.userID);
+  const authToken = useSelector((s: RootState) => s.register.refreshtoken || s.register.accesstoken);
   const { firstname, lastname, nickname } = useSelector((s: RootState) => s.profile);
   const [selfId, setSelfId] = React.useState<string | undefined>(undefined);
   const [selfNick, setSelfNick] = React.useState<string | undefined>(undefined);
   const [selfName, setSelfName] = React.useState<string | undefined>(undefined);
+  // Local per-post UI state for optimistic updates and comment UI
+  const [ui, setUi] = React.useState<Record<string | number, {
+    liked?: boolean;
+    likeCount?: number;
+    comments?: any[];
+    open?: boolean;
+    input?: string;
+    loadingComments?: boolean;
+    sending?: boolean;
+  }>>({});
+
+  // Rehydrate local UI (optimistic) from cache so likes/comments you made persist across refresh
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('feedUi');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed && typeof parsed === 'object') setUi(parsed);
+      }
+    } catch {}
+  }, []);
 
   useEffect(() => {
     // Hydrate from local cache first for persistence across refresh
@@ -49,6 +74,22 @@ export default function PostsCard({ type }: { type?: "video" | "image" | "text" 
     // Then fetch all posts from backend
     dispatch(getallpost({} as any));
   }, [dispatch]);
+
+  // Persist posts to localStorage to survive refresh and hydrate next mount
+  useEffect(() => {
+    try {
+      if (Array.isArray(posts)) {
+        localStorage.setItem('feedPosts', JSON.stringify(posts));
+      }
+    } catch {}
+  }, [posts]);
+
+  // Persist local UI state so optimistic likes/comments survive refresh
+  useEffect(() => {
+    try {
+      localStorage.setItem('feedUi', JSON.stringify(ui));
+    } catch {}
+  }, [ui]);
 
   if (status === "loading" && (!posts || posts.length === 0)) {
     return <PostSkeleton />;
@@ -131,6 +172,51 @@ export default function PostsCard({ type }: { type?: "video" | "image" | "text" 
           p?.postedBy?.username ||
           null;
 
+        // Basic reactions/metrics derivation
+        const likesArr: any[] = Array.isArray(p?.likes)
+          ? p?.likes
+          : Array.isArray(p?.like)
+          ? p?.like
+          : Array.isArray(p?.reactions)
+          ? p?.reactions
+          : [];
+        const commentsArr: any[] = Array.isArray(p?.comments)
+          ? p?.comments
+          : Array.isArray(p?.comment)
+          ? p?.comment
+          : [];
+        const likeCount = Array.isArray(likesArr)
+          ? likesArr.length
+          : Number(p?.likeCount || p?.likesCount || p?.likes || 0) || 0;
+        const commentCount = Array.isArray(commentsArr)
+          ? commentsArr.length
+          : Number(p?.commentCount || p?.commentsCount || p?.comments || 0) || 0;
+
+        const idStr = (v: any) => (v == null ? undefined : String(v));
+        const selfIdStr = idStr(loggedInUserId) || idStr(selfId);
+        const arrHasSelf = (arr: any[]) =>
+          !!selfIdStr &&
+          Array.isArray(arr) &&
+          arr.some((x) => {
+            const val = x?.userid || x?.userId || x?.ownerId || x?.id || x;
+            return idStr(val) === selfIdStr;
+          });
+        const liked = arrHasSelf(likesArr);
+        const starred = !!(p?.starred || p?.faved || p?.favorited);
+
+        // Merge with local optimistic state
+        const pid = p?.postid || p?.id || p?._id || idx;
+        const uiState = ui[pid] || {};
+        const uiLiked = uiState.liked ?? liked;
+        const uiLikeCount = uiState.likeCount ?? likeCount;
+        const uiOpen = !!uiState.open;
+        const uiComments = uiState.comments ?? [];
+        const uiInput = uiState.input ?? "";
+        const uiLoading = !!uiState.loadingComments;
+        const uiSending = !!uiState.sending;
+        const hasUiComments = Object.prototype.hasOwnProperty.call(uiState, 'comments');
+        const displayCommentCount = hasUiComments ? uiComments.length : commentCount;
+
         return (
           <div key={`${p?.postid || p?.id || idx}`} className="mx-auto max-w-[30rem] w-full bg-gray-800 rounded-md p-3">
             {/* Header */}
@@ -207,6 +293,169 @@ export default function PostsCard({ type }: { type?: "video" | "image" | "text" 
                   }
                 }}
               />
+            )}
+            {/* Actions */}
+            <PostActions
+              className="mt-3 border-t border-gray-700 pt-2"
+              starred={starred}
+              liked={uiLiked}
+              likeCount={uiLikeCount}
+              commentCount={displayCommentCount}
+              onStar={() => {
+                // TODO: wire to API
+                console.debug("star clicked", p?.id || p?.postid);
+              }}
+              onLike={() => {
+                const uid = String(loggedInUserId || selfId || "");
+                const localPid = p?.postid || p?.id || p?._id;
+                if (!localPid) return;
+                // Optimistic toggle
+                setUi((prev) => {
+                  const curr = prev[localPid] || {};
+                  const nextLiked = !(curr.liked ?? liked);
+                  const baseCount = curr.likeCount ?? likeCount;
+                  return {
+                    ...prev,
+                    [localPid]: {
+                      ...curr,
+                      liked: nextLiked,
+                      likeCount: Math.max(0, baseCount + (nextLiked ? 1 : -1)),
+                    },
+                  };
+                });
+                if (!uid || !authToken) return;
+                dispatch(postlike({ userid: uid, postid: localPid, token: authToken } as any));
+              }}
+              onComment={() => {
+                const localPid = p?.postid || p?.id || p?._id;
+                if (!localPid) return;
+                setUi((prev) => ({
+                  ...prev,
+                  [localPid]: { ...(prev[localPid] || {}), open: !(prev[localPid]?.open) }
+                }));
+                // If opening and not loaded yet, fetch comments
+                const curr = ui[localPid];
+                const shouldFetch = !(curr && Array.isArray(curr.comments));
+                if (shouldFetch) {
+                  setUi((prev) => ({
+                    ...prev,
+                    [localPid]: { ...(prev[localPid] || {}), loadingComments: true }
+                  }));
+                  (dispatch(getpostcomment({ postid: localPid } as any)) as any)
+                    .unwrap()
+                    .then((res: any) => {
+                      const arr = (res && (res.comment || res.comments)) || [];
+                      setUi((prev) => ({
+                        ...prev,
+                        [localPid]: { ...(prev[localPid] || {}), comments: arr, loadingComments: false }
+                      }));
+                    })
+                    .catch(() => {
+                      setUi((prev) => ({
+                        ...prev,
+                        [localPid]: { ...(prev[localPid] || {}), loadingComments: false }
+                      }));
+                    });
+                }
+              }}
+              onMore={() => {
+                // TODO: open overflow menu
+                console.debug("more clicked", p?.id || p?.postid);
+              }}
+            />
+            {uiOpen && (
+              <div className="mt-2 border-t border-gray-700 pt-2">
+                {uiLoading ? (
+                  <p className="text-sm text-gray-400">Loading comments…</p>
+                ) : (
+                  <div className="space-y-2">
+                    {uiComments && uiComments.length > 0 ? (
+                      uiComments.map((c: any, i: number) => (
+                        <div key={i} className="text-sm text-gray-200">
+                          <span className="text-gray-400 mr-2">@{c?.username || c?.author || c?.user?.username || 'user'}</span>
+                          <span>{c?.comment || c?.content || String(c)}</span>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-sm text-gray-500">No comments yet.</p>
+                    )}
+                    <div className="flex items-center gap-2 pt-1">
+                      <input
+                        value={uiInput}
+                        onChange={(e) => {
+                          const v = e.target.value;
+                          setUi((prev) => ({
+                            ...prev,
+                            [pid]: { ...(prev[pid] || {}), input: v },
+                          }));
+                        }}
+                        placeholder="Write a comment…"
+                        className="flex-1 bg-gray-900 border border-gray-700 rounded px-3 py-2 text-sm outline-none focus:border-gray-500"
+                      />
+                      <button
+                        disabled={!uiInput?.trim() || uiSending}
+                        onClick={() => {
+                          const text = (ui[pid]?.input || '').trim();
+                          if (!text) return;
+                          // Optimistically append
+                          setUi((prev) => ({
+                            ...prev,
+                            [pid]: {
+                              ...(prev[pid] || {}),
+                              input: "",
+                              sending: true,
+                              comments: [
+                                ...((prev[pid]?.comments as any[]) || []),
+                                { content: text, comment: text, username: nickname || selfNick || 'you', temp: true },
+                              ],
+                            },
+                          }));
+                          const uid = String(loggedInUserId || selfId || "");
+                          const localPid = p?.postid || p?.id || p?._id;
+                          if (uid && localPid && authToken) {
+                            (dispatch(postcomment({ userid: uid, postid: localPid, comment: text, token: authToken } as any)) as any)
+                              .unwrap()
+                              .then((res: any) => {
+                                // Merge server list with optimistic list (keep optimistic if server lags)
+                                const server = (res && (res.comment || res.comments)) as any[] | undefined;
+                                setUi((prev) => {
+                                  const current = (prev[pid]?.comments as any[]) || [];
+                                  let merged = current;
+                                  if (Array.isArray(server)) {
+                                    // If server has fewer/equal items, keep optimistic items
+                                    merged = server.length >= current.length ? server : current;
+                                  }
+                                  return {
+                                    ...prev,
+                                    [pid]: {
+                                      ...(prev[pid] || {}),
+                                      sending: false,
+                                      comments: merged,
+                                    },
+                                  };
+                                });
+                              })
+                              .catch(() => {
+                                setUi((prev) => ({
+                                  ...prev,
+                                  [pid]: { ...(prev[pid] || {}), sending: false },
+                                }));
+                              });
+                          } else {
+                            setUi((prev) => ({
+                              ...prev,
+                              [pid]: { ...(prev[pid] || {}), sending: false },
+                            }));
+                          }
+                        }}
+                        className="px-3 py-2 text-sm bg-gray-700 hover:bg-gray-600 rounded disabled:opacity-50"
+                      >
+                        Send
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
             )}
           </div>
         );
