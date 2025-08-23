@@ -19,7 +19,7 @@ export default function Navbar({isAuthenticated}:{isAuthenticated: boolean}) {
       <div className="flex items-center text-orange-600 justify-between">
         <div className="absolute left-0 top-0 p-2 flex items-center justify-between w-full">
           <button onClick={toggle} className="navBtn">
-            {/* {isOpen ? <FaTimes size={25} /> : <FaBars size={25} />} */}
+           
             <span className="bg-clip-text bg-gradient-to-r from-blue-500 to-purple-600 text-blue-500">
               {isOpen ? <FaTimes size={25} className="text-blue-500" /> : <FaBars size={25} />}
             </span>
@@ -28,7 +28,7 @@ export default function Navbar({isAuthenticated}:{isAuthenticated: boolean}) {
         <div className="size-6"></div>
         </div>
         {!isAuthenticated && <Logins />}
-        {/* <div className="size-6"></div> *<Logins /> placeholder */}
+      
       </div>
     </div>
   );
