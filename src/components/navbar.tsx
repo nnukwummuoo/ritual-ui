@@ -15,7 +15,7 @@ export default function Navbar({isAuthenticated}:{isAuthenticated: boolean}) {
   
   
   return (
-    <div className="z-[100] w-full fixed top-0 left-0 top-bar-visibility bg-gray-900 md:bg-transparent h-12">
+    <div className="z-[100] w-full fixed top-0 left-0 top-bar-visibility bg-gray-900 h-12 border-b border-b-gray-500 md:border-b-0">
       <div className="flex items-center text-orange-600 justify-between">
         <div className="absolute left-0 top-0 p-2 flex items-center justify-between w-full">
           <button onClick={toggle} className="navBtn">

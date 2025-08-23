@@ -202,7 +202,7 @@
 
 /* When checkbox is checked */
 .custom-checkbox input:checked+.checkmark {
-    background-color: #ff8a23;
+    background-color: #3b82f6;
     border-color: #191e37;
 }
 

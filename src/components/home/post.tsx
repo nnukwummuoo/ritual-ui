@@ -7,6 +7,7 @@ import { getprofile } from "@/store/profile";
 import { URL as API_BASE } from "@/api/config";
 const PROD_BASE = "https://mmekoapi.onrender.com"; // fallback when local proxy is down
 import PostSkeleton from "../PostSkeleton";
+import TextPostCard from "./text-post-card";
 
 export default function PostsCard({ type }: { type?: "video" | "image" | "text" }) {
   const dispatch = useDispatch<AppDispatch>();
@@ -94,7 +95,11 @@ export default function PostsCard({ type }: { type?: "video" | "image" | "text" 
         const pathUrlPrimary = asString ? `${API_BASE}/api/image/view/${encodeURIComponent(asString)}` : "";
         const queryUrlFallback = asString ? `${PROD_BASE}/api/image/view?publicId=${encodeURIComponent(asString)}` : "";
         const pathUrlFallback = asString ? `${PROD_BASE}/api/image/view/${encodeURIComponent(asString)}` : "";
-        const src = isUrl ? asString : queryUrlPrimary;
+        // Prefer the public host for non-local viewers so media is accessible to everyone
+        const isLocalhost = typeof window !== 'undefined' && /^(localhost|127\.0\.0\.1)$/i.test(window.location.hostname);
+        const src = isUrl
+          ? asString
+          : (isLocalhost ? queryUrlPrimary : queryUrlFallback);
 
         // Derive display name and handle from multiple possible fields
         const combinedName = [p?.firstname, p?.lastname].filter(Boolean).join(" ");
@@ -131,6 +136,104 @@ export default function PostsCard({ type }: { type?: "video" | "image" | "text" 
           p?.postedBy?.username ||
           null;
 
+        const avatarUrl =
+          p?.avatar ||
+          p?.photo ||
+          p?.profileImage ||
+          p?.user?.avatar ||
+          p?.user?.photo ||
+          p?.profile?.avatar ||
+          null;
+
+        const isTextOnly = (postType === "text" || (!asString && !isUrl)) && !!p?.content;
+        const hasMedia = !!(src && (postType === "image" || postType === "video"));
+
+        // Render specialized text card and skip generic block when text-only
+        if (isTextOnly) {
+          return (
+            <TextPostCard
+              key={`${p?.postid || p?.id || idx}`}
+              name={displayName}
+              handle={handleStr}
+              content={p?.content}
+              avatarUrl={avatarUrl}
+              createdAt={p?.createdAt}
+            />
+          );
+        }
+
+        // If post has BOTH text and media, render text in TextPostCard and media as a separate block
+        if (hasMedia && p?.content) {
+          return (
+            <div key={`${p?.postid || p?.id || idx}`} className="flex flex-col gap-3">
+              <TextPostCard
+                name={displayName}
+                handle={handleStr}
+                content={p?.content}
+                avatarUrl={avatarUrl}
+                createdAt={p?.createdAt}
+              />
+              <div className="mx-auto max-w-[30rem] w-full bg-gray-800 rounded-md p-3">
+                {postType === "image" && src && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={src}
+                    alt={p?.content || "post image"}
+                    className="w-full max-h-[480px] object-contain rounded"
+                    onError={(e) => {
+                      const img = e.currentTarget as HTMLImageElement & { dataset: any };
+                      // First fallback: switch to path URL on same base
+                      if (!img.dataset.fallback1 && pathUrlPrimary) {
+                        img.dataset.fallback1 = "1";
+                        img.src = pathUrlPrimary;
+                        return;
+                      }
+                      // Second fallback: try query on PROD base
+                      if (!img.dataset.fallback2 && queryUrlFallback) {
+                        img.dataset.fallback2 = "1";
+                        img.src = queryUrlFallback;
+                        return;
+                      }
+                      // Final fallback: try path on PROD base
+                      if (!img.dataset.fallback3 && pathUrlFallback) {
+                        img.dataset.fallback3 = "1";
+                        img.src = pathUrlFallback;
+                      }
+                    }}
+                  />
+                )}
+                {postType === "video" && src && (
+                  <video
+                    src={src}
+                    controls
+                    className="w-full max-h-[480px] rounded"
+                    onError={(e) => {
+                      const video = e.currentTarget as HTMLVideoElement & { dataset: any };
+                      if (!video.dataset.fallback1 && pathUrlPrimary) {
+                        video.dataset.fallback1 = "1";
+                        video.src = pathUrlPrimary;
+                        video.load();
+                        return;
+                      }
+                      if (!video.dataset.fallback2 && queryUrlFallback) {
+                        video.dataset.fallback2 = "1";
+                        video.src = queryUrlFallback;
+                        video.load();
+                        return;
+                      }
+                      if (!video.dataset.fallback3 && pathUrlFallback) {
+                        video.dataset.fallback3 = "1";
+                        video.src = pathUrlFallback;
+                        video.load();
+                      }
+                    }}
+                  />
+                )}
+              </div>
+            </div>
+          );
+        }
+
         return (
           <div key={`${p?.postid || p?.id || idx}`} className="mx-auto max-w-[30rem] w-full bg-gray-800 rounded-md p-3">
             {/* Header */}
@@ -145,7 +248,7 @@ export default function PostsCard({ type }: { type?: "video" | "image" | "text" 
             {p?.createdAt && (
               <p className="my-3 text-gray-400 text-sm">{new Date(p.createdAt).toLocaleString()}</p>
             )}
-            {/* Content */}
+            {/* Content (non text-only, shows alongside media) */}
             {p?.content && (
               <p className="my-2 whitespace-pre-wrap">{p.content}</p>
             )}

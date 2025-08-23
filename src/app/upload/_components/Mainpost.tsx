@@ -109,11 +109,79 @@ export const Mainpost = () => {
 
         <div className="flex justify-end">
           <button
-            // onClick={mypost}
             disabled={loading}
-            className="w-full py-2 font-semibold text-white transition bg-orange-600 rounded-lg hover:bg-orange-500"
+            className="w-full py-2 font-semibold text-white transition bg-orange-600 rounded-lg hover:bg-orange-500 disabled:opacity-60"
+            onClick={async () => {
+              if (!postcontent.trim()) {
+                toast.error("You have not said anything", { autoClose: 2000 });
+                return;
+              }
+              if (!userid || !token) {
+                toast.error('Please log in to post');
+                return;
+              }
+              try {
+                setLoading(true);
+                // Best-effort display fields for optimistic header
+                const currentUsername = (() => {
+                  try { return (
+                    nickname ||
+                    localStorage.getItem('username') ||
+                    localStorage.getItem('userName') ||
+                    localStorage.getItem('profileusername') ||
+                    ''
+                  ); } catch { return ''; }
+                })();
+                const currentName = (() => {
+                  try { return (
+                    [firstname, lastname].filter(Boolean).join(' ') ||
+                    localStorage.getItem('fullname') ||
+                    localStorage.getItem('fullName') ||
+                    localStorage.getItem('name') ||
+                    ''
+                  ); } catch { return ''; }
+                })();
+
+                await dispatch(
+                  createpost({
+                    userid: userid!,
+                    token: token!,
+                    content: postcontent,
+                    posttype: "text",
+                    // Provide display fields for optimistic post header
+                    authorUsername: currentUsername || undefined,
+                    authorName: currentName || undefined,
+                    handle: (currentUsername || '').toString() || undefined,
+                  }) as any
+                )
+                  .unwrap()
+                  .then(async () => {
+                    toast.success('Post created', { autoClose: 800 });
+                    try { await dispatch(getallpost({} as any)).unwrap(); } catch {}
+                    setTimeout(() => router.push('/'), 100);
+                  })
+                  .catch((e: any) => {
+                    toast.error(e?.message || 'Failed to create post');
+                  });
+              } catch (e: any) {
+                toast.error(e?.message || 'Failed to create post');
+              } finally {
+                setLoading(false);
+                setpostcontent("");
+              }
+            }}
           >
-            {loading ? "Posting" : "Post"}
+            {loading ? (
+              <span className="flex items-center justify-center gap-2">
+                <svg className="w-5 h-5 animate-spin text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                </svg>
+                Posting…
+              </span>
+            ) : (
+              'Post'
+            )}
           </button>
         </div>
       </div>
@@ -236,7 +304,7 @@ export const Mainpost = () => {
             </div>
             <div className="flex items-center justify-end gap-3 p-4 border-t border-gray-700">
               <button
-                disabled={uploading}
+                disabled={uploading || loading}
                 className="w-full py-2 font-semibold text-white transition bg-green-600 hover:bg-green-500 rounded-lg disabled:opacity-60"
                 onClick={async () => {
                   // If no file selected yet, open the picker
@@ -257,6 +325,7 @@ export const Mainpost = () => {
                       toast.error('Not authenticated');
                       return;
                     }
+                    setUploading(true);
                     setLoading(true);
                     // Best-effort get of current user's display info for optimistic UI
                     const currentUsername = (() => {
@@ -326,7 +395,31 @@ export const Mainpost = () => {
                   }
                 }}
               >
-                {uploading ? 'Uploading…' : (imageFile ? 'Post' : 'Choose image')}
+                {uploading || loading ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <svg
+                      className="w-5 h-5 animate-spin text-white"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      />
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                      />
+                    </svg>
+                    Uploading…
+                  </span>
+                ) : (imageFile ? 'Post' : 'Choose image')}
               </button>
             </div>
           </div>

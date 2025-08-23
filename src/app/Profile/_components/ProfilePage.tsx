@@ -4,22 +4,26 @@ import Skeleton, { SkeletonTheme } from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 import Tabs from "./Tabs";
 import DropdownMenu from "./DropDonMenu";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import { getprofile } from "@/store/profile";
 import type { AppDispatch, RootState } from "@/store/store";
 import { updateEdit } from "@/store/comprofile";
+import { BiPencil } from "react-icons/bi";
+import StarIcon from "@/icons/transparentstar.svg";
+import StarIcon2 from "@/icons/star.svg";
 // import backIcon from "../icons/backIcon.svg";
 // import StarIcon from "../icons/transparentstar.svg";
 // import StarIcon2 from "../icons/star.svg";
 // import { Postlist } from "../_components/Postlist";
 // import messageIcon from "../icons/messageIcon.png";
 // import { Exclusive } from "../_components/exclusive"
-// import { Info } from "../_components/info";
-// import Empty from "../icons/empty.svg";
-// import DummyCoverImage from "../icons/mmekoDummy.png";
-// import D from "../icons/icons8-profile_Icon.png";
-// import MessagePics from "../icons/icons8-message.png";
+// import { Info } from "/_components/info";
+import Empty from "@/icons/empty.svg";
+import DummyCoverImage from "@/icons/mmekoDummy.png";
+import D from "@/icons/icons8-profile_Icon.png";
+import MessagePics from "@/icons/icons8-message.png";
+import Image from "next/image";
 // import { BiPen, BiPencil } from "react-icons/bi";
 // import {
 //   comprofilechangeStatus,
@@ -66,6 +70,8 @@ const profile = {
 
 export const Profile = () => {
   const params = useParams();
+  const router = useRouter();
+
   const dispatch = useDispatch<AppDispatch>();
   const fileRef = useRef<HTMLInputElement | null>(null);
   const [avatarSrc, setAvatarSrc] = useState<string | undefined>(undefined);
@@ -77,13 +83,15 @@ export const Profile = () => {
     State: location,
     country,
     active,
+    model,
   } = useSelector((s: RootState) => s.profile);
+
   const error = useSelector((s: RootState) => s.profile.error);
   const createdAt = useSelector((s: RootState) => (s as any).profile?.createdAt as string | undefined);
   const loggedInUserId = useSelector((s: RootState) => s.register.userID);
   const token = useSelector((s: RootState) => s.register.refreshtoken);
   const isUploading = useSelector((s: RootState) => s.comprofile.updateEdit_stats === "loading");
-  const viewingUserId = (params as any)?.userid as string | undefined;
+  const viewingUserId = (params as any)?.userid as string ;
   const isSelf = Boolean(loggedInUserId && viewingUserId && loggedInUserId === viewingUserId);
   const joined = React.useMemo(() => {
     if (!createdAt) return { month: "", year: "" };
@@ -94,33 +102,34 @@ export const Profile = () => {
   const [isbuying, setisbuying] = useState(false);
   const [gender, setgender] = useState("");
   const [about, setabout] = useState("");
-  // const navigate = useNavigate();
-  // const getprofilebyidstats = useSelector(
-  //   (state) => state.comprofile.getprofileidstatus
-  // );
-  // const profile = useSelector((state) => state.comprofile.profile);
-  // const follow_stats = useSelector((state) => state.profile.follow_stats);
-  // const unfollow_stats = useSelector((state) => state.profile.unfollow_stats);
-  // const dispatch = useDispatch();
-  // const userid = useSelector((state) => state.register.userID);
-  // const token = useSelector((state) => state.register.refreshtoken);
-  // const { postuserid } = useParams();
+  const getprofilebyidstats = useSelector(
+    (state: RootState) => state.comprofile.getprofileidstatus
+  );
+  const profile = useSelector((state: RootState) => state.comprofile.profile);
+  const follow_stats = useSelector((state: RootState) => state.profile.follow_stats);
+  const unfollow_stats = useSelector((state: RootState) => state.profile.unfollow_stats);
+
+  const userid = useSelector((state: RootState) => state.register.userID);
+  const { postuserid } = useParams();
   const formatter = new Intl.NumberFormat("en-US");
 
   // const [userphoto, setuserphoto] = useState(person);
-  // const [disablehost, setdisable] = useState(false);
-  // const [exclusive_verify, set_exclusive_verify] = useState(false);
-  // const [disabledButton, setdisableButton] = useState(false);
+  const [disablehost, setdisable] = useState(false);
+  const [exclusive_verify, set_exclusive_verify] = useState(false);
+  const [disabledButton, setdisableButton] = useState(false);
   // const [followimg, setfollowimg] = useState(StarIcon);
-  // const [isfollwed, setisfollowed] = useState(false);
-  // const [modelid, setmodelid] = useState([]);
-  // const [click, setclick] = useState(true);
-  // const [currentPlayingIndex, setCurrentPlayingIndex] = useState(null);
-  // const [isMuted, setIsMuted] = useState(true);
-  // const [showAction, setShowAction] = useState(true);
-  // const [isFollowing, setisFollowing] = useState(false);
+  const [isfollwed, setisfollowed] = useState(false);
+  const [modelid, setmodelid] = useState<string[]>([]);
+  const [click, setclick] = useState(true);
+  const [currentPlayingIndex, setCurrentPlayingIndex] = useState(null);
+  const [isMuted, setIsMuted] = useState(true);
+  const [showAction, setShowAction] = useState(true);
+  const [isFollowing, setisFollowing] = useState(false);
+
+  const [username, setusername] = useState("");
 
   // let timeoutId = null;
+
 
   useEffect(() => {
     const userid = (params as any)?.userid as string | undefined;
@@ -181,42 +190,42 @@ export const Profile = () => {
     };
   }, [avatarSrc]);
 
-  // useEffect(() => {
-  //   if (getprofilebyidstats === "succeeded") {
-  //     setusername(profile.username);
-  //     setgender(profile.gender);
-  //     setlocation(profile.location);
-  //     setabout(profile.aboutuser);
-  //     setactive(profile.active);
-  //     setfirstname(profile.firstname);
-  //     setlastname(profile.lastname);
-  //     setnickname(profile.nickname);
-  //     set_exclusive_verify(profile.exclusive);
-  //     setisFollowing(() => {
-  //       if (profile.followers.includes(userid)) {
-  //         return true;
-  //       }
-  //       return false;
-  //     });
-  //     month = Months[Number(profile.joined_month)];
-  //     year = profile.joined_year;
-  //     likes = profile.likecount;
-  //     followers = profile.followers.length;
-  //     if (profile."/icons/icons8-profile_Icon.png") {
-  //       setuserphoto(profile."/icons/icons8-profile_Icon.png");
-  //     } else {
-  //       setuserphoto(person);
-  //     }
+  useEffect(() => {
+    if (getprofilebyidstats === "succeeded") {
+      setusername(profile.username);
+      setgender(profile.gender);
+      // setlocation(profile.location);
+      setabout(profile.aboutuser);
+      // setactive(profile.active);
+      // setfirstname(profile.firstname);
+      // setlastname(profile.lastname);
+      // setnickname(profile.nickname);
+      set_exclusive_verify(profile.exclusive);
+      setisFollowing(() => {
+        if (profile.followers.includes(userid)) {
+          return true;
+        }
+        return false;
+      });
+      month = Months[Number(profile.joined_month)];
+      year = profile.joined_year;
+      likes = profile.likecount;
+      followers = profile.followers.length;
+      // if (profile."/icons/icons8-profile_Icon.png") {
+      //   setuserphoto(profile."/icons/icons8-profile_Icon.png");
+      // } else {
+      //   setuserphoto(person);
+      // }
 
-  //     cantfandc();
+      cantfandc();
 
-  //     dispatch(comprofilechangeStatus("idle"));
-  //   }
+      // dispatch(comprofilechangeStatus("idle"));
+    }
 
-  //   if (getprofilebyidstats === "failed") {
-  //     dispatch(comprofilechangeStatus("idle"));
-  //   }
-  // }, [getprofilebyidstats, userid, postuserid]);
+    if (getprofilebyidstats === "failed") {
+      // dispatch(comprofilechangeStatus("idle"));
+    }
+  }, [getprofilebyidstats, userid, postuserid]);
 
   // useEffect(() => {
   //   if (unfollow_stats === "succeeded") {
@@ -277,27 +286,27 @@ export const Profile = () => {
   //   }
   // };
 
-  // const cantfandc = () => {
-  //   if (userid && postuserid) {
-  //     setmodelid([postuserid, userid]);
-  //   }
+  const cantfandc = () => {
+    if (loggedInUserId && viewingUserId) {
+      setmodelid([viewingUserId, loggedInUserId]);
+    }
 
-  //   if (userid && profile) {
-  //     if (profile.following) {
-  //       setisfollowed(true);
-  //       setfollowimg(StarIcon2);
-  //       follow_text = "";
-  //     }
+    // if (userid && profile) {
+    //   if (profile.following) {
+    //     setisfollowed(true);
+    //     setfollowimg(StarIcon2);
+    //     follow_text = "";
+    //   }
 
-  //     if (!userid) {
-  //       setdisableButton(true);
-  //     } else if (userid === profile.userid) {
-  //       setdisableButton(true);
-  //     } else {
-  //       setdisableButton(false);
-  //     }
-  //   }
-  // };
+    //   if (!userid) {
+    //     setdisableButton(true);
+    //   } else if (userid === profile.userid) {
+    //     setdisableButton(true);
+    //   } else {
+    //     setdisableButton(false);
+    //   }
+    // }
+  };
 
   // const exclusive = () => {
   //   if (profile.exclusive_content?.length > 0) {
@@ -434,24 +443,24 @@ export const Profile = () => {
   //   console.log(profile);
   // }, [profile]);
   // const user = useAuth();
-  // const onFollowClick = async () => {
-  //   try {
-  //     setisFollowing((prev) => !prev);
-  //     const res = await dispatch(
-  //       updateFollowers({
-  //         id: postuserid,
-  //         userId: userid,
-  //         action: "update",
-  //         token: user?.refreshtoken || "",
-  //       })
-  //     );
-  //     console.log(res);
-  //   } catch (error) {
-  //     console.log(error);
-  //   } finally {
-  //     // setIsLoading(false);
-  //   }
-  // };
+  const onFollowClick = async () => {
+    try {
+      setisFollowing((prev) => !prev);
+      // const res = await dispatch(
+        // updateFollowers({
+        //   id: postuserid,
+        //   userId: userid,
+        //   action: "update",
+        //   token: user?.refreshtoken || "",
+        // })
+      // );
+      // console.log(res);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      // setIsLoading(false);
+    }
+  };
 
   return (
     <div
@@ -547,17 +556,17 @@ export const Profile = () => {
                         // }}
                       />
                     </div>
-                    {/* {postuserid !== userid ? (
+                    {viewingUserId !== loggedInUserId ? (
                       <div className="flex flex-row items-center gap-2 mt-14">
                         <div className="flex flex-row rounded-lg">
                           <button
                             className="p-0 px-2 rounded-lg"
                             disabled={disabledButton}
                             onClick={() =>
-                              navigate(`/message/${modelid.toString()}`)
+                              router.push(`/message/${modelid.toString()}`)
                             }
                           >
-                            <img
+                            <Image
                               src={MessagePics}
                               className="w-7 h-7"
                               alt="rating"
@@ -566,7 +575,7 @@ export const Profile = () => {
                         </div>
                         <button
                           onClick={onFollowClick}
-                          className="flex gap-x-1 items-center flex-row p-1.5 bg-orange-500 rounded-lg"
+                          className="flex gap-x-1 items-center flex-row p-1.5 bg-gradient-to-r !from-blue-500 !to-purple-600 rounded-lg"
                         >
                           <img
                             src={isFollowing ? StarIcon2 : StarIcon}
@@ -579,13 +588,13 @@ export const Profile = () => {
                       </div>
                     ) : (
                       <button
-                        className="p-2 flex items-center justify-center gap-x-1 bg-orange-500 text-center text-sm rounded-lg mt-16"
-                        onClick={() => navigate("/editprofile")}
+                        className="p-2 flex items-center justify-center gap-x-1 bg-gradient-to-r !from-blue-500 !to-purple-600 text-center text-sm rounded-lg mt-16"
+                        onClick={() => router.push("/editprofile")}
                       >
                         <BiPencil />
                         Edit Profile
                       </button>
-                    )} */}
+                    )}
                   </div>
                 </div>
               </div>

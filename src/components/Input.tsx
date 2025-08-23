@@ -13,14 +13,14 @@ export default function Input({required, value, name, type, placeholder, id, ove
   onChange?: React.ChangeEventHandler<HTMLInputElement>
 }) {
   return <input
-            type={type}
-            className={overide ? classNames : "w-full px-4 py-2 bg-gray-700 text-white rounded focus:outline-none focus:ring-2 focus:ring-orange-500"}
-            placeholder={placeholder}
-            value={value}
-            name={name || type}
-            id={id}
-            checked={type === "checkbox" ? checked : undefined}
-            onChange={onChange}
-            required={required}
-          />
+    type={type}
+    className={overide ? classNames : "w-full px-4 py-2 bg-gray-700 text-white rounded focus:outline-none focus:ring-2 focus:ring-blue-500"}
+    placeholder={placeholder}
+    value={value}
+    name={name || type}
+    id={id}
+    checked={type === "checkbox" ? checked : undefined}
+    onChange={onChange}
+    required={required}
+  />
 }
