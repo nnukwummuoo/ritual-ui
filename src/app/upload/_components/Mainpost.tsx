@@ -516,21 +516,85 @@ export const Mainpost = () => {
               <button
                 disabled={videoUploading}
                 className="w-full py-2 font-semibold text-white transition bg-green-600 hover:bg-green-500 rounded-lg disabled:opacity-60"
-                onClick={() => {
+                onClick={async () => {
                   if (!videoFile) {
                     const el = document.getElementById('video-upload-modal') as HTMLInputElement | null;
                     if (el) el.click();
                     return;
                   }
-                  // Placeholder: integrate real upload/post action if needed
-                  toast.success('Video ready to post');
-                  setShowVideoModal(false);
-                  setVideoFile(null);
-                  setVideoPreview("");
-                  setVideoCaption("");
+                  if (!userid || !token) {
+                    toast.error('Please log in to post');
+                    return;
+                  }
+                  try {
+                    setVideoUploading(true);
+                    // Best-effort display fields for optimistic header
+                    const currentUsername = (() => {
+                      try {
+                        return (
+                          nickname ||
+                          localStorage.getItem('username') ||
+                          localStorage.getItem('userName') ||
+                          localStorage.getItem('profileusername') ||
+                          ''
+                        );
+                      } catch { return ''; }
+                    })();
+                    const currentName = (() => {
+                      try {
+                        return (
+                          [firstname, lastname].filter(Boolean).join(' ') ||
+                          localStorage.getItem('fullname') ||
+                          localStorage.getItem('fullName') ||
+                          localStorage.getItem('name') ||
+                          ''
+                        );
+                      } catch { return ''; }
+                    })();
+
+                    await dispatch(
+                      createpost({
+                        userid: userid!,
+                        token: token!,
+                        content: videoCaption,
+                        posttype: 'video',
+                        filelink: videoFile,
+                        authorUsername: currentUsername || undefined,
+                        authorName: currentName || undefined,
+                        handle: (currentUsername || '').toString() || undefined,
+                      }) as any
+                    )
+                      .unwrap()
+                      .then(async () => {
+                        toast.success('Video post created', { autoClose: 800 });
+                        try { await dispatch(getallpost({} as any)).unwrap(); } catch {}
+                        setTimeout(() => router.push('/'), 100);
+                      })
+                      .catch((e: any) => {
+                        toast.error(e?.message || 'Failed to create video post');
+                      });
+                  } catch (e: any) {
+                    toast.error(e?.message || 'Failed to create video post');
+                  } finally {
+                    setVideoUploading(false);
+                    setShowVideoModal(false);
+                    setVideoFile(null);
+                    setVideoPreview('');
+                    setVideoCaption('');
+                  }
                 }}
               >
-                {videoUploading ? 'Uploading…' : (videoFile ? 'Done' : 'Post')}
+                {videoUploading ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <svg className="w-5 h-5 animate-spin text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                    </svg>
+                    Uploading…
+                  </span>
+                ) : (
+                  (videoFile ? 'Post' : 'Choose video')
+                )}
               </button>
             </div>
           </div>
