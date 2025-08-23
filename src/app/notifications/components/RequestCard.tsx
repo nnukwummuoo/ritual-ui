@@ -7,7 +7,7 @@ const cardStates = {
   request: "Request sent",
   accepted: "Request accepted",
   declined: "Request declined",
-  canceled: "Request canceled",
+  cancelled: "Request cancelled",
   expired: "Request expired",
   completed: "Request completed",
 }
@@ -31,9 +31,9 @@ const modelContent = {
     head: "Fan Meet Declined",
     body: "You have declined the fan-meet request from your fan."
   },
-  canceled: {
-    head: "Fan Meet Canceled",
-    body: "Your fan canceled the request."},
+  cancelled: {
+    head: "Fan Meet Cancelled",
+    body: "Your fan cancelled the request."},
   expired: {
     head: "Fan Meet Expired",
     body: "The fan-meet request has expired. You can ask the fan to renew request."
@@ -53,11 +53,11 @@ const fanContent = {
     body: "You have successfully completed the fan meet with the model. How do you rate your experience?"},
   declined: {
     head: "Fan Meet Declined",
-    body: "Model has declined your request. We are sorry and we hope it works out next time."
+    body: "Model has declined your request."
   },
-  canceled: {
-    head: "Fan Meet Canceled",
-    body: "You have canceled the fan-meet request. You can renew this request anytime."},
+  cancelled: {
+    head: "Fan Meet Cancelled",
+    body: "You have cancelled the fan-meet request. You can renew this request anytime."},
   expired: {
     head: "Fan Meet Expired",
     body: "The fan-meet request has expired. You can renew this request anytime."
@@ -67,7 +67,7 @@ const fanContent = {
     body: "Your fan meet request has been sent. The model has 24 hours to respond."
   }
 }
-const statusArr = ["request", "expired", "completed", "accepted", "declined", "canceled"] 
+const statusArr = ["request", "expired", "completed", "accepted", "declined", "cancelled"] 
 interface CardProps {
     exp: string;
     children?: React.ReactNode;
@@ -75,7 +75,7 @@ interface CardProps {
     titles?: string[];
     name: string;
     img: string;
-    status: "request" | "expired" | "completed" | "accepted" | "declined" | "canceled";
+    status: "request" | "expired" | "completed" | "accepted" | "declined" | "cancelled";
 }
 
 export default function RequestCard({exp, img, name, titles=["fan"], status, type="fan"}: CardProps) {
