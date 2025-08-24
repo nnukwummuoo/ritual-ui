@@ -134,15 +134,8 @@ export const Mainpost = () => {
           openAsModal
           onOpenModal={() => setShowImageModal(true)}
         />
-
-        {/* Inline preview removed; handled within modal */}
-
-        <div className="flex gap-3" />
-
-        
+        <div className="flex gap-3" />  
       </div>
-
-      {/* Image Modal */}
       {showImageModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
           <div className="w-full max-w-lg mx-4 bg-[#0b0f1f] border border-gray-700 rounded-2xl shadow-2xl">
@@ -187,7 +180,7 @@ export const Mainpost = () => {
                     const url = URL.createObjectURL(file);
                     setImageFile(file);
                     setImagePreview(url);
-                    // Reset any previous upload state; upload occurs only when pressing the Post button
+                    
                     setUploadedPublicId("");
                     setUploadedUrl("");
                   } else {
@@ -210,7 +203,7 @@ export const Mainpost = () => {
                     const url = URL.createObjectURL(file);
                     setImageFile(file);
                     setImagePreview(url);
-                    // Reset any previous upload state; upload occurs only when pressing the Post button
+                   
                     setUploadedPublicId("");
                     setUploadedUrl("");
                   }}
@@ -246,7 +239,7 @@ export const Mainpost = () => {
                     if (el) el.click();
                     return;
                   }
-                  // Require auth BEFORE uploading to avoid mixed success + unauthenticated toasts
+                  
                   if (!userid || !token) {
                     toast.error('Please log in to post');
                     return;
