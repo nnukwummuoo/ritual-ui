@@ -3,7 +3,7 @@ import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "@/store/store";
 import { getallpost, hydrateFromCache } from "@/store/post";
-import { getprofile } from "@/store/profile";
+import { getprofile, follow as followThunk, unfollow as unfollowThunk } from "@/store/profile";
 import { postlike } from "@/store/like";
 import { getpostcomment, postcomment } from "@/store/comment";
 import { URL as API_BASE } from "@/api/config";
@@ -30,9 +30,10 @@ export default function PostsCard({ type }: { type?: "video" | "image" | "text" 
     input?: string;
     loadingComments?: boolean;
     sending?: boolean;
+    starred?: boolean;
   }>>({});
 
-  // Rehydrate local UI (optimistic) from cache so likes/comments you made persist across refresh
+  
   useEffect(() => {
     try {
       const raw = localStorage.getItem('feedUi');
@@ -84,7 +85,7 @@ export default function PostsCard({ type }: { type?: "video" | "image" | "text" 
     } catch {}
   }, [posts]);
 
-  // Persist local UI state so optimistic likes/comments survive refresh
+  
   useEffect(() => {
     try {
       localStorage.setItem('feedUi', JSON.stringify(ui));
@@ -130,7 +131,10 @@ export default function PostsCard({ type }: { type?: "video" | "image" | "text" 
           p?.imageId ||
           "";
         const asString = typeof mediaRef === "string" ? mediaRef : (mediaRef?.publicId || mediaRef?.public_id || mediaRef?.url || "");
-        const isUrl = typeof asString === "string" && /^https?:\/\//i.test(asString);
+        const isHttpUrl = typeof asString === "string" && /^https?:\/\//i.test(asString);
+        const isBlobUrl = typeof asString === "string" && /^blob:/i.test(asString);
+        const isDataUrl = typeof asString === "string" && /^data:/i.test(asString);
+        const isUrl = isHttpUrl || isBlobUrl || isDataUrl;
         const queryUrlPrimary = asString ? `${API_BASE}/api/image/view?publicId=${encodeURIComponent(asString)}` : "";
         const pathUrlPrimary = asString ? `${API_BASE}/api/image/view/${encodeURIComponent(asString)}` : "";
         const queryUrlFallback = asString ? `${PROD_BASE}/api/image/view?publicId=${encodeURIComponent(asString)}` : "";
@@ -153,7 +157,7 @@ export default function PostsCard({ type }: { type?: "video" | "image" | "text" 
           p?.postedBy?.username ||
           p?.postedBy?.name ||
           "User";
-        // If it's the current user's post and we still have 'User', fallback to profile/localStorage names
+      
         const postAuthorId = p?.userid || p?.userId || p?.ownerid || p?.ownerId || p?.authorId || p?.createdBy;
         const isSelf = (
           (loggedInUserId && postAuthorId && String(postAuthorId) === String(loggedInUserId)) ||
@@ -209,6 +213,7 @@ export default function PostsCard({ type }: { type?: "video" | "image" | "text" 
         const uiState = ui[pid] || {};
         const uiLiked = uiState.liked ?? liked;
         const uiLikeCount = uiState.likeCount ?? likeCount;
+        const uiStarred = uiState.starred ?? starred;
         const uiOpen = !!uiState.open;
         const uiComments = uiState.comments ?? [];
         const uiInput = uiState.input ?? "";
@@ -297,13 +302,30 @@ export default function PostsCard({ type }: { type?: "video" | "image" | "text" 
             {/* Actions */}
             <PostActions
               className="mt-3 border-t border-gray-700 pt-2"
-              starred={starred}
+              starred={uiStarred}
               liked={uiLiked}
               likeCount={uiLikeCount}
               commentCount={displayCommentCount}
               onStar={() => {
-                // TODO: wire to API
-                console.debug("star clicked", p?.id || p?.postid);
+                const localPid = p?.postid || p?.id || p?._id;
+                if (!localPid) return;
+                const authorId = p?.userid || p?.userId || p?.ownerid || p?.ownerId || p?.authorId || p?.createdBy;
+                // Optimistic toggle
+                setUi((prev) => {
+                  const curr = prev[localPid] || {};
+                  const nextStarred = !(curr.starred ?? starred);
+                  return { ...prev, [localPid]: { ...curr, starred: nextStarred } };
+                });
+                // Backend call (follow/unfollow) if possible
+                const uid = String(loggedInUserId || selfId || "");
+                if (!uid || !authToken || !authorId || String(authorId) === String(uid)) return;
+                const willFollow = !(ui[localPid]?.starred ?? starred);
+                const payload: any = { userid: uid, targetid: String(authorId), token: authToken };
+                if (willFollow) {
+                  dispatch(followThunk(payload) as any);
+                } else {
+                  dispatch(unfollowThunk(payload) as any);
+                }
               }}
               onLike={() => {
                 const uid = String(loggedInUserId || selfId || "");
