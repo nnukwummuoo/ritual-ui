@@ -13,7 +13,14 @@ export const createpost = createAsyncThunk("post/createpost", async (data: Creat
     formData.append("content", data.content);
     formData.append("posttype", data.posttype);
     if (data.token) formData.append("token", data.token);
-    if (data.filelink) formData.append("image", data.filelink as any);
+    if (data.filelink) {
+      // Always send under 'image' as the endpoint is /api/image/save
+      formData.append('image', data.filelink as any);
+      // And for video posts, also send under 'video' for servers that expect this key
+      if (data.posttype === 'video') {
+        formData.append('video', data.filelink as any);
+      }
+    }
 
     console.log("I am about to create formData", [...formData.entries()]);
 
@@ -21,6 +28,7 @@ export const createpost = createAsyncThunk("post/createpost", async (data: Creat
     const config: AxiosRequestConfig = {
       headers: {
         "Content-Type": "multipart/form-data",
+        ...(data.token ? { Authorization: `Bearer ${data.token}` } : {}),
       },
       timeout: 180000,
     };
@@ -39,8 +47,17 @@ export const createpost = createAsyncThunk("post/createpost", async (data: Creat
 
     return response.data;
   } catch (err: any) {
-    console.log("post err " + err);
-    throw err.response.data.message;
+    try { console.log("post err", err); } catch {}
+    let message = 'Upload failed';
+    if (err?.response?.data) {
+      const d = err.response.data;
+      if (typeof d === 'string') message = d;
+      else if (typeof d?.message === 'string') message = d.message;
+      else message = JSON.stringify(d);
+    } else if (typeof err?.message === 'string') {
+      message = err.message;
+    }
+    throw message;
   }
 });
 

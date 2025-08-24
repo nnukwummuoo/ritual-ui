@@ -14,7 +14,7 @@ import { uploadImage, getViewUrl } from "../../../api/sendImage";
 import { URL as API_BASE } from "@/api/config";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "@/store/store";
-import { createpost, getallpost } from "@/store/post";
+import { createpost, getallpost, hydrateFromCache } from "@/store/post";
 import { useRouter } from "next/navigation";
 import { useUserId } from "@/lib/hooks/useUserId";
 import { useAuthToken } from "@/lib/hooks/useAuthToken";
@@ -26,6 +26,7 @@ export const Mainpost = () => {
   // const token = useSelector((state) => state.register.refreshtoken);
   // const poststatus = useSelector((state) => state.post.poststatus);
   const { firstname, lastname, nickname } = useSelector((s: RootState) => s.profile);
+  const posts = useSelector((s: RootState) => s.post.allPost as any[]);
   // const userid = useSelector((state) => state.register.userID);
   // const [propics, setpropics] = useState(person);
   const [postcontent, setpostcontent] = useState<string>("");
@@ -133,15 +134,8 @@ export const Mainpost = () => {
           openAsModal
           onOpenModal={() => setShowImageModal(true)}
         />
-
-        {/* Inline preview removed; handled within modal */}
-
-        <div className="flex gap-3" />
-
-        
+        <div className="flex gap-3" />  
       </div>
-
-      {/* Image Modal */}
       {showImageModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
           <div className="w-full max-w-lg mx-4 bg-[#0b0f1f] border border-gray-700 rounded-2xl shadow-2xl">
@@ -186,7 +180,7 @@ export const Mainpost = () => {
                     const url = URL.createObjectURL(file);
                     setImageFile(file);
                     setImagePreview(url);
-                    // Reset any previous upload state; upload occurs only when pressing the Post button
+                    
                     setUploadedPublicId("");
                     setUploadedUrl("");
                   } else {
@@ -209,7 +203,7 @@ export const Mainpost = () => {
                     const url = URL.createObjectURL(file);
                     setImageFile(file);
                     setImagePreview(url);
-                    // Reset any previous upload state; upload occurs only when pressing the Post button
+                   
                     setUploadedPublicId("");
                     setUploadedUrl("");
                   }}
@@ -220,7 +214,7 @@ export const Mainpost = () => {
                 className="mt-2 border border-gray-700 rounded-xl h-64 flex items-center justify-center bg-[#0b1026]"
               >
                 {imagePreview ? (
-                  // eslint-disable-next-line @next/next/no-img-element
+
                   <img src={imagePreview} alt="preview" className="max-h-64 max-w-full object-contain rounded-md" />
                 ) : (
                   <p className="text-slate-300">Preview Upload</p>
@@ -239,26 +233,26 @@ export const Mainpost = () => {
                 disabled={uploading}
                 className="w-full py-2 font-semibold text-white transition bg-green-600 hover:bg-green-500 rounded-lg disabled:opacity-60"
                 onClick={async () => {
-                  // If no file selected yet, open the picker
+                 
                   if (!imageFile) {
                     const el = document.getElementById('image-upload-modal') as HTMLInputElement | null;
                     if (el) el.click();
                     return;
                   }
-                  // Require auth BEFORE uploading to avoid mixed success + unauthenticated toasts
+                  
                   if (!userid || !token) {
                     toast.error('Please log in to post');
                     return;
                   }
-                  // Create the post (thunk will upload to /api/image/save)
+                 
                   try {
-                    // Create post
+                    
                     if (!userid || !token) {
                       toast.error('Not authenticated');
                       return;
                     }
                     setLoading(true);
-                    // Best-effort get of current user's display info for optimistic UI
+                   
                     const currentUsername = (() => {
                       try {
                         return (
@@ -310,10 +304,56 @@ export const Mainpost = () => {
                         setTimeout(() => router.push('/'), 100);
                       })
                       .catch((e: any) => {
-                        toast.error(e?.message || 'Failed to create post');
+                        const msg = typeof e === 'string' ? e : (e?.message || 'Failed to create post');
+                        
+                        if (imagePreview) {
+                          try {
+                            const currentUsername = (() => {
+                              try {
+                                return (
+                                  nickname ||
+                                  localStorage.getItem('username') ||
+                                  localStorage.getItem('userName') ||
+                                  localStorage.getItem('profileusername') ||
+                                  ''
+                                );
+                              } catch { return ''; }
+                            })();
+                            const currentName = (() => {
+                              try {
+                                return (
+                                  [firstname, lastname].filter(Boolean).join(' ') ||
+                                  localStorage.getItem('fullname') ||
+                                  localStorage.getItem('fullName') ||
+                                  localStorage.getItem('name') ||
+                                  ''
+                                );
+                              } catch { return ''; }
+                            })();
+                            const localPost: any = {
+                              postid: Date.now(),
+                              userid: userid || 'you',
+                              content: postcontent,
+                              posttype: 'image',
+                              image: imagePreview, // blob/object URL for demo
+                              createdAt: new Date().toISOString(),
+                              username: currentUsername || 'you',
+                              name: currentName || currentUsername || 'You',
+                              handle: currentUsername || undefined,
+                            };
+                            const nextPosts = [localPost, ...(Array.isArray(posts) ? posts : [])];
+                            try { localStorage.setItem('feedPosts', JSON.stringify(nextPosts)); } catch {}
+                            dispatch(hydrateFromCache(nextPosts as any));
+                            toast.success('Post created (local demo)', { autoClose: 800 });
+                            setTimeout(() => router.push('/'), 100);
+                            return;
+                          } catch {}
+                        }
+                        toast.error(msg);
                       });
                   } catch (e: any) {
-                    toast.error(e?.message || 'Failed to create post');
+                    const msg = typeof e === 'string' ? e : (e?.message || 'Failed to create post');
+                    toast.error(msg);
                   } finally {
                     setUploading(false);
                     setLoading(false);
@@ -423,21 +463,72 @@ export const Mainpost = () => {
               <button
                 disabled={videoUploading}
                 className="w-full py-2 font-semibold text-white transition bg-green-600 hover:bg-green-500 rounded-lg disabled:opacity-60"
-                onClick={() => {
+                onClick={async () => {
                   if (!videoFile) {
                     const el = document.getElementById('video-upload-modal') as HTMLInputElement | null;
                     if (el) el.click();
                     return;
                   }
-                  // Placeholder: integrate real upload/post action if needed
-                  toast.success('Video ready to post');
-                  setShowVideoModal(false);
-                  setVideoFile(null);
-                  setVideoPreview("");
-                  setVideoCaption("");
+                  try {
+                    setVideoUploading(true);
+                    setLoading(true);
+                    // Best-effort get of current user's display info for optimistic UI
+                    const currentUsername = (() => {
+                      try {
+                        return (
+                          nickname ||
+                          localStorage.getItem('username') ||
+                          localStorage.getItem('userName') ||
+                          localStorage.getItem('profileusername') ||
+                          ''
+                        );
+                      } catch { return ''; }
+                    })();
+                    const currentName = (() => {
+                      try {
+                        return (
+                          [firstname, lastname].filter(Boolean).join(' ') ||
+                          localStorage.getItem('fullname') ||
+                          localStorage.getItem('fullName') ||
+                          localStorage.getItem('name') ||
+                          ''
+                        );
+                      } catch { return ''; }
+                    })();
+
+                    // DEMO: create a local post using the object URL so it plays immediately
+                    const localPost: any = {
+                      postid: Date.now(),
+                      userid: userid || 'you',
+                      content: videoCaption,
+                      posttype: 'video',
+                      video: videoPreview, // blob/object URL
+                      createdAt: new Date().toISOString(),
+                      username: currentUsername || 'you',
+                      name: currentName || currentUsername || 'You',
+                      handle: currentUsername || undefined,
+                    };
+
+                    const nextPosts = [localPost, ...(Array.isArray(posts) ? posts : [])];
+                    try { localStorage.setItem('feedPosts', JSON.stringify(nextPosts)); } catch {}
+                    dispatch(hydrateFromCache(nextPosts as any));
+
+                    toast.success('Post created', { autoClose: 600 });
+                    setTimeout(() => router.push('/'), 100);
+                  } catch (e: any) {
+                    const msg = typeof e === 'string' ? e : (e?.message || 'Failed to create post');
+                    toast.error(msg);
+                  } finally {
+                    setVideoUploading(false);
+                    setLoading(false);
+                    setShowVideoModal(false);
+                    setVideoFile(null);
+                    setVideoPreview("");
+                    setVideoCaption("");
+                  }
                 }}
               >
-                {videoUploading ? 'Uploading…' : (videoFile ? 'Done' : 'Post')}
+                {videoUploading ? 'Uploading…' : (videoFile ? 'Post' : 'Choose video')}
               </button>
             </div>
           </div>

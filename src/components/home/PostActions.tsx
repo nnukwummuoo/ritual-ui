@@ -100,9 +100,10 @@ export default function PostActions({
     <div className={`flex items-center justify-between text-gray-200 ${className}`}>
       <button
         type="button"
-        className="flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-700/50"
+        className={`flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-700/50 ${starred ? 'text-white' : ''}`}
         onClick={onStar}
         aria-label="Star"
+        aria-pressed={!!starred}
       >
         <StarIcon filled={starred} />
       </button>
