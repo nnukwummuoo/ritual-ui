@@ -12,9 +12,9 @@ const cardStates = {
   completed: "Request completed",
 }
 const ratings = [
-  "😐 Disconnected",
-  "🙂 Decent",
   "😍 Loved it",
+  "🙂 Decent",
+  "😐 Disconnected",
   
 ]
 const modelContent = {
