@@ -12,11 +12,10 @@ const cardStates = {
   completed: "Request completed",
 }
 const ratings = [
-  "😞 Poor",
-  "😐 Not bad",
-  "😊 Good!",
-  "😃 Great!",
-  "😍 Extremely great!"
+  "😐 Disconnected",
+  "🙂 Decent",
+  "😍 Loved it",
+  
 ]
 const modelContent = {
   accepted: {
