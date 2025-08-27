@@ -9,13 +9,26 @@ const nextConfig: NextConfig = {
   },
   images: {
     unoptimized: true,
-    domains: ['cloud.appwrite.io'],
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "cloud.appwrite.io",
+      },
+      {
+        protocol: "https",
+        hostname: "flagcdn.com",
+      },
+      {
+        protocol: "https",
+        hostname: "upload.wikimedia.org",
+      },
+    ],
   },
   async rewrites() {
     return [
       {
-        source: '/api/proxy/:path*',
-        destination: 'https://mmekoapi.onrender.com/:path*',
+        source: "/api/proxy/:path*",
+        destination: "https://mmekoapi.onrender.com/:path*",
       },
     ];
   },
