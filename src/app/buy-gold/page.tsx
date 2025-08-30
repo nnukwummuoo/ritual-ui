@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { useRouter } from 'next/navigation';
 import { useSelector } from "react-redux";
-import { toast } from "react-toastify";
+import { toast } from "material-react-toastify";
 // import { loadStripe } from "@stripe/stripe-js";
 
 import styles from "../../navs/Navs.module.css"; // use CSS module in Next.js

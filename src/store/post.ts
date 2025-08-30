@@ -2,6 +2,8 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { URL } from "@/api/config";
 import axios, { AxiosRequestConfig } from "axios";
 import { CreatePostArgs, CreatePostData, PostState } from "@/types/post";
+import backend from "@/api/backendApi";
+import { toast } from "material-react-toastify";
 
 export const createpost = createAsyncThunk("post/createpost", async (data: CreatePostData) => {
   try {
@@ -15,9 +17,13 @@ export const createpost = createAsyncThunk("post/createpost", async (data: Creat
     if (data.token) formData.append("token", data.token);
     if (data.filelink) {
       // Always send under 'image' as the endpoint is /api/image/save
-      formData.append('image', data.filelink as any);
+      if (data.posttype == "image") {
+        toast("appending image, this may take a while...", { type: "info" });
+        formData.append('image', data.filelink as any);
+      }
       // And for video posts, also send under 'video' for servers that expect this key
-      if (data.posttype === 'video') {
+      if (data.posttype == "video") {
+        toast("appending video, this may take a while...", { type: "info" });
         formData.append('video', data.filelink as any);
       }
     }
@@ -29,21 +35,36 @@ export const createpost = createAsyncThunk("post/createpost", async (data: Creat
       headers: {
         "Content-Type": "multipart/form-data",
         ...(data.token ? { Authorization: `Bearer ${data.token}` } : {}),
-      },
-      timeout: 180000,
+      }
     };
 
     // Add upload progress callback if provided
     if (data.onUploadProgress) {
       (config as any).onUploadProgress = data.onUploadProgress;
     }
-
-    const response = await axios.post(`${URL}/api/image/save`, formData, config);
+    const uploadeable=["image","video"]
+    const response = uploadeable.includes(data?.posttype)?(await axios.post(`${URL}/api/image/save`, formData, config)):{status:201,data:{
+            "postfilelink": "",
+      "postfilepublicid": ""
+    }
+    };
 
     if (!(response.status >= 200 && response.status < 300)) {
       // Treat any non-2xx as failure
       throw "Image upload failed";
     }
+
+  const api = backend(String(data?.token))
+    const resPost = await api.post("/post", {
+      userid:data.userid,
+      content: data.content,
+      posttype: data.posttype,
+      authorUsername: data.authorUsername,
+      authorName: data.authorName,
+      handle: data.handle,
+      ...(response?.data||{}),
+  })
+  console.log(resPost?.data)
 
     return response.data;
   } catch (err: any) {
@@ -57,6 +78,7 @@ export const createpost = createAsyncThunk("post/createpost", async (data: Creat
     } else if (typeof err?.message === 'string') {
       message = err.message;
     }
+    console.error(err)
     throw message;
   }
 });
@@ -79,6 +101,15 @@ export const getallpost = createAsyncThunk("post/getallpost", async (data: any) 
     throw err.response.data.message;
   }
 });
+
+export const fetchposts = async () => {
+  try {
+    let response = await axios.post(`${URL}/getallpost`, {});
+    return response.data;
+  } catch (err: any) {
+    throw err.response.data.message;
+  }
+}
 
 export const getpost = createAsyncThunk("post/getpost", async (data: any) => {
   try {

@@ -1,5 +1,5 @@
 import React from "react";
-import { Id, toast, ToastContainer } from "react-toastify";
+import { Id, toast, ToastContainer } from "material-react-toastify";
 
 export function useToast() {
   const toastId = React.useRef<Id | null>(null);

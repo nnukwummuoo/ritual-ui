@@ -8,7 +8,7 @@ import editIcon from "../../icons/edit.svg";
 import deleteicon from "../../icons/deleteicon.svg";
 import PacmanLoader from "react-spinners/PacmanLoader";
 import PacmanLoader1 from "react-spinners/ClockLoader";
-import { toast, ToastContainer } from "react-toastify";
+import { toast, ToastContainer } from "material-react-toastify";
 import { Bookinginfo } from "@/components/bookingFrag/Bookinginfo";
 import { Bookingsuccess } from "@/components/bookingFrag/Bookingsuccess";
 import { Requestform } from "@/components/bookingFrag/Requestform";
@@ -26,7 +26,7 @@ import {
 import AwesomeSlider from "react-awesome-slider";
 import { addcrush, remove_Crush } from "@/store/modelSlice";
 import { useToast } from "@/components/toast/index";
-import "react-toastify/dist/ReactToastify.css";
+import "material-react-toastify/dist/ReactToastify.css";
 import Skeleton, { SkeletonTheme } from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 
@@ -40,7 +40,7 @@ import { formatModelPrices } from "./_utils/formatModelPrices";
 //method stats and api message for redux selectors
 // addcrush_stats and addcrush_message
 
-import "react-toastify/dist/ReactToastify.css";
+import "material-react-toastify/dist/ReactToastify.css";
 import "react-loading-skeleton/dist/skeleton.css";
 import "react-awesome-slider/dist/styles.css";
 import { AppDispatch } from "@/store/store";

@@ -6,14 +6,14 @@ import "../register/styles.css"
 
 // import React, { useState, useEffect } from 'react'
 // import { Routes ,Route,useNavigate} from 'react-router-dom'
-import { ToastContainer,toast } from 'react-toastify'
+import { ToastContainer,toast } from 'material-react-toastify'
 import axios from "axios";
 import { useRouter, useSearchParams } from "next/navigation";
 import Tick from "@/components/tick-animation/Tick";
 import { revalidate } from "@/lib/utils/revalidate";
 import { isRegistered } from "@/lib/service/manageSession";
 import toastError from "@/components/ToastError";
-// import 'react-toastify/dist/ReactToastify.css'
+// import 'material-react-toastify/dist/ReactToastify.css'
 // import {comfirmpasscode,error} from '@/services/features/register/registerSlice'
 // import {changeemailvery} from '@/services/features/register/registerSlice'
 // import { useDispatch, useSelector } from 'react-redux'

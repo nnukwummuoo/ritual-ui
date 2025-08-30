@@ -7,7 +7,7 @@ import { SnackbarProvider } from "notistack";
 import { Suspense } from "react";
 import { SNACKBAR_OPTIONS } from "@/constants";
 import dynamic from "next/dynamic";
-import "react-toastify/dist/ReactToastify.css";
+import "material-react-toastify/dist/ReactToastify.css";
 // Install global Axios interceptor fallback
 import "@/api/axiosSetup";
 
@@ -19,7 +19,7 @@ const Loader = () => (
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   const ClientToastContainer = dynamic(
-    () => import("react-toastify").then((m) => m.ToastContainer),
+    () => import("material-react-toastify").then((m) => m.ToastContainer),
     { ssr: false }
   );
   return (

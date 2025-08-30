@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { CiWarning } from "react-icons/ci";
-import { ToastContainer, toast } from "react-toastify";
+import { ToastContainer, toast } from "material-react-toastify";
 import { useRouter } from "next/navigation";
 import Head from "../../../../components/Head";
 import { useDispatch, useSelector } from "react-redux";

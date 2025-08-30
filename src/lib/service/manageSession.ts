@@ -7,7 +7,7 @@ import axios from "axios";
 export type user = {email: string, password: string}
 export type payload = {user: user}
 
-const secrete = process.env.NEXT_PUBLIC_SCERET
+const secrete = process.env.NEXT_PUBLIC_SCERET || "SOME_SECRETE"
 const key = new TextEncoder().encode(secrete)
 let credentials: user | false
 let timeout_id: ReturnType<typeof setTimeout>

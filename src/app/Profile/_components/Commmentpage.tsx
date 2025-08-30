@@ -9,7 +9,7 @@ import React, { useEffect, useState } from "react";
 //   editpostcomment,
 // } from "../../app/features/comment/comment";
 // import { useDispatch, useSelector } from "react-redux";
-// import { toast } from "react-toastify";
+// import { toast } from "material-react-toastify";
 // import { useNavigate } from "react-router-dom";
 // import { getpostbyid, PostchangeStatus } from "../../app/features/post/post";
 // import Options from "../../icons/menu.svg";

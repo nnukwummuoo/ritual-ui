@@ -1,7 +1,7 @@
 "use client";
 
 import anyaLogo from '@/icons/Anya.png';
-import { toast } from "react-toastify";
+import { toast } from "material-react-toastify";
 // import { Button } from "@/components/ui/button";
 import { Eye } from "lucide-react"; // fallback icon if your animated one isn’t ready yet
 import Image from 'next/image';

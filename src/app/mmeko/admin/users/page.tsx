@@ -4,7 +4,7 @@ import React, { useState, useEffect, JSX } from "react";
 import searchIcon from "@/icons/searchicon.svg";
 import sendIcon from "@/icons/emailsendIcon.svg";
 import PacmanLoader from "react-spinners/RingLoader";
-import { ToastContainer, toast } from "react-toastify";
+import { ToastContainer, toast } from "material-react-toastify";
 import { useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "@/store/store";

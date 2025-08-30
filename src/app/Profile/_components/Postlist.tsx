@@ -13,7 +13,7 @@ import like from "../../../icons/likeIcon.svg";
 import unfollowIcon from "../../../icons/transparentstar.svg";
 import followIcon from "../../../icons/star.svg";
 import "../../../navs/Navs.css";
-// import { toast } from "react-toastify";
+// import { toast } from "material-react-toastify";
 // import { format } from "date-fns";
 // import likedicon from "../../../icons/likedIcon.svg";
 // import Options from "../../../icons/menu.svg";

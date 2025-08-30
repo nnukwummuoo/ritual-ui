@@ -10,7 +10,7 @@ import Navapp from "@/navs/NavApp";
 import ShouldRenderPopUp from "@/components/ShouldRenderPopUp";
 import { cookies } from "next/headers";
 import 'react-loading-skeleton/dist/skeleton.css';
-import { ToastContainer } from "react-toastify";
+import { ToastContainer } from "material-react-toastify";
 
 const inter = Inter({
   weight: ["100", "300", "400", "500", "700"],
