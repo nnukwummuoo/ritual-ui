@@ -1,6 +1,6 @@
 "use client"
 import React, { useState, useEffect } from "react";
-import { ToastContainer, toast } from "react-toastify";
+import { ToastContainer, toast } from "material-react-toastify";
 // import { useDispatch, useSelector } from "react-redux";
 // import { createpost } from "../../app/features/post/post";
 // import { PostImage } from "./postImage";
@@ -82,17 +82,6 @@ export const Mainpost = () => {
 
   return (
     <div className="bg-gray-900 text-white p-4 rounded-md space-y-5 max-w-4xl mx-auto border border-gray-700">
-      <ToastContainer
-        position="top-center"
-        theme="dark"
-        style={{
-          top: "50%",
-          left: "50%",
-          transform: "translate(-50%, -50%)",
-          width: "100%",
-          maxWidth: 500,
-        }}
-      />
 
       {/* Text Post Section */}
       <div className="space-y-3">
@@ -105,12 +94,133 @@ export const Mainpost = () => {
             onChange={(e) => setpostcontent(e.target.value)}
           />
         </div>
-
       {/* Live preview card removed as requested */}
 
         <div className="flex justify-end">
           <button
-            // onClick={mypost}
+            onClick={async()=>{
+              if (!userid || !token) {
+                    toast.error('Please log in to post');
+                    return;
+                  }
+                 
+                  try {
+                    
+                    if (!userid || !token) {
+                      toast.error('Not authenticated');
+                      return;
+                    }
+                    setLoading(true);
+                   
+                    const currentUsername = (() => {
+                      try {
+                        return (
+                          nickname ||
+                          localStorage.getItem('username') ||
+                          localStorage.getItem('userName') ||
+                          localStorage.getItem('profileusername') ||
+                          ''
+                        );
+                      } catch { return ''; }
+                    })();
+                    const currentName = (() => {
+                      try {
+                        return (
+                          [firstname, lastname].filter(Boolean).join(' ') ||
+                          localStorage.getItem('fullname') ||
+                          localStorage.getItem('fullName') ||
+                          localStorage.getItem('name') ||
+                          ''
+                        );
+                      } catch { return ''; }
+                    })();
+
+                    const result = await dispatch(
+                      createpost({
+                        userid: userid!,
+                        token: token!,
+                        content: postcontent,
+                        posttype: "text",
+                        filelink: "",
+                        // Provide display fields for optimistic post header
+                        authorUsername: currentUsername || undefined,
+                        authorName: currentName || undefined,
+                        handle: (currentUsername || '').toString() || undefined,
+                      }) as any
+                    )
+                      .unwrap()
+                      .then(async (payload: any) => {
+                        const pub = payload?.publicId || payload?.public_id || payload?.data?.publicId || payload?.data?.public_id;
+                        const url = payload?.url || payload?.secure_url || payload?.data?.url || payload?.data?.secure_url;
+                        toast.success('Post created', { autoClose: 600 });
+                        // Refresh feed to ensure persistence immediately 
+                        try {
+                          
+                          toast.success('Post created', { autoClose: 800 });
+                          await dispatch(getallpost({} as any)).unwrap();
+                        } catch (err) {
+                          toast.error("Something Went Wrong");
+                          console.error(err);
+                        }
+                        setTimeout(() => router.push('/'), 100);
+                      })
+                      .catch((e: any) => {
+                        const msg = typeof e === 'string' ? e : (e?.message || 'Failed to create post');
+                        
+                        if (imagePreview) {
+                          try {
+                            const currentUsername = (() => {
+                              try {
+                                return (
+                                  nickname ||
+                                  localStorage.getItem('username') ||
+                                  localStorage.getItem('userName') ||
+                                  localStorage.getItem('profileusername') ||
+                                  ''
+                                );
+                              } catch { return ''; }
+                            })();
+                            const currentName = (() => {
+                              try {
+                                return (
+                                  [firstname, lastname].filter(Boolean).join(' ') ||
+                                  localStorage.getItem('fullname') ||
+                                  localStorage.getItem('fullName') ||
+                                  localStorage.getItem('name') ||
+                                  ''
+                                );
+                              } catch { return ''; }
+                            })();
+                            const localPost: any = {
+                              postid: Date.now(),
+                              userid: userid || 'you',
+                              content: postcontent,
+                              posttype: 'text',
+                              image: "", // blob/object URL for demo
+                              createdAt: new Date().toISOString(),
+                              username: currentUsername || 'you',
+                              name: currentName || currentUsername || 'You',
+                              handle: currentUsername || undefined,
+                            };
+                            const nextPosts = [localPost, ...(Array.isArray(posts) ? posts : [])];
+                            try { localStorage.setItem('feedPosts', JSON.stringify(nextPosts)); } catch {}
+                            dispatch(hydrateFromCache(nextPosts as any));
+                            toast.success('Post created (local demo)', { autoClose: 800 });
+                            setTimeout(() => router.push('/'), 100);
+                            return;
+                          } catch {}
+                        }
+                        toast.error(msg);
+                      });
+                  } catch (e: any) {
+                    const msg = typeof e === 'string' ? e : (e?.message || 'Failed to create post');
+                    toast.error(msg);
+                  } finally{
+                    
+                    setUploading(false);
+                    setLoading(false);
+                  }
+            }}
             disabled={loading}
             className="w-full py-2 font-semibold text-white transition bg-orange-600 rounded-lg hover:bg-orange-500"
           >
@@ -137,7 +247,7 @@ export const Mainpost = () => {
         <div className="flex gap-3" />  
       </div>
       {showImageModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+        <div className="fixed inset-0  flex items-center justify-center bg-black/60" style={{zIndex:1000}}>
           <div className="w-full max-w-lg mx-4 bg-[#0b0f1f] border border-gray-700 rounded-2xl shadow-2xl">
             <div className="flex items-center justify-between p-4 border-b border-gray-700">
               <button
@@ -293,14 +403,16 @@ export const Mainpost = () => {
                       .then(async (payload: any) => {
                         const pub = payload?.publicId || payload?.public_id || payload?.data?.publicId || payload?.data?.public_id;
                         const url = payload?.url || payload?.secure_url || payload?.data?.url || payload?.data?.secure_url;
-                        if (pub) {
-                          toast.success(`Uploaded image: ${pub}`, { autoClose: 800 });
-                        } else if (url) {
-                          toast.success('Image uploaded', { autoClose: 800 });
-                        }
                         toast.success('Post created', { autoClose: 600 });
-                        // Refresh feed to ensure persistence immediately
-                        try { await dispatch(getallpost({} as any)).unwrap(); } catch {}
+                        // Refresh feed to ensure persistence immediately 
+                        try {
+                          
+                          toast.success('Post created', { autoClose: 800 });
+                          await dispatch(getallpost({} as any)).unwrap();
+                        } catch (err) {
+                          toast.error("Something Went Wrong");
+                          console.error(err);
+                        }
                         setTimeout(() => router.push('/'), 100);
                       })
                       .catch((e: any) => {
@@ -375,7 +487,7 @@ export const Mainpost = () => {
 
       {/* Video Modal */}
       {showVideoModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+        <div className="fixed inset-0  flex items-center justify-center bg-black/60" style={{zIndex:1000}}>
           <div className="w-full max-w-lg mx-4 bg-[#0b0f1f] border border-gray-700 rounded-2xl shadow-2xl">
             <div className="flex items-center justify-between p-4 border-b border-gray-700">
               <button
@@ -465,68 +577,111 @@ export const Mainpost = () => {
                 className="w-full py-2 font-semibold text-white transition bg-green-600 hover:bg-green-500 rounded-lg disabled:opacity-60"
                 onClick={async () => {
                   if (!videoFile) {
-                    const el = document.getElementById('video-upload-modal') as HTMLInputElement | null;
-                    if (el) el.click();
-                    return;
-                  }
-                  try {
-                    setVideoUploading(true);
-                    setLoading(true);
-                    // Best-effort get of current user's display info for optimistic UI
-                    const currentUsername = (() => {
-                      try {
-                        return (
-                          nickname ||
-                          localStorage.getItem('username') ||
-                          localStorage.getItem('userName') ||
-                          localStorage.getItem('profileusername') ||
-                          ''
-                        );
-                      } catch { return ''; }
-                    })();
-                    const currentName = (() => {
-                      try {
-                        return (
-                          [firstname, lastname].filter(Boolean).join(' ') ||
-                          localStorage.getItem('fullname') ||
-                          localStorage.getItem('fullName') ||
-                          localStorage.getItem('name') ||
-                          ''
-                        );
-                      } catch { return ''; }
-                    })();
+  const el = document.getElementById('video-upload-modal') as HTMLInputElement | null;
+  if (el) el.click();
+  return;
+}
 
-                    // DEMO: create a local post using the object URL so it plays immediately
-                    const localPost: any = {
-                      postid: Date.now(),
-                      userid: userid || 'you',
-                      content: videoCaption,
-                      posttype: 'video',
-                      video: videoPreview, // blob/object URL
-                      createdAt: new Date().toISOString(),
-                      username: currentUsername || 'you',
-                      name: currentName || currentUsername || 'You',
-                      handle: currentUsername || undefined,
-                    };
+if (!userid || !token) {
+  toast.error('Please log in to post');
+  return;
+}
 
-                    const nextPosts = [localPost, ...(Array.isArray(posts) ? posts : [])];
-                    try { localStorage.setItem('feedPosts', JSON.stringify(nextPosts)); } catch {}
-                    dispatch(hydrateFromCache(nextPosts as any));
+try {
+  setVideoUploading(true);
+  setLoading(true);
 
-                    toast.success('Post created', { autoClose: 600 });
-                    setTimeout(() => router.push('/'), 100);
-                  } catch (e: any) {
-                    const msg = typeof e === 'string' ? e : (e?.message || 'Failed to create post');
-                    toast.error(msg);
-                  } finally {
-                    setVideoUploading(false);
-                    setLoading(false);
-                    setShowVideoModal(false);
-                    setVideoFile(null);
-                    setVideoPreview("");
-                    setVideoCaption("");
-                  }
-                }}
+  const currentUsername = (() => {
+    try {
+      return (
+        nickname ||
+        localStorage.getItem('username') ||
+        localStorage.getItem('userName') ||
+        localStorage.getItem('profileusername') ||
+        ''
+      );
+    } catch { return ''; }
+  })();
+
+  const currentName = (() => {
+    try {
+      return (
+        [firstname, lastname].filter(Boolean).join(' ') ||
+        localStorage.getItem('fullname') ||
+        localStorage.getItem('fullName') ||
+        localStorage.getItem('name') ||
+        ''
+      );
+    } catch { return ''; }
+  })();
+
+  const result = await dispatch(
+    createpost({
+      userid: userid!,
+      token: token!,
+      content: videoCaption,
+      posttype: "video",
+      filelink: videoFile,
+      // Provide display fields for optimistic post header
+      authorUsername: currentUsername || undefined,
+      authorName: currentName || undefined,
+      handle: (currentUsername || '').toString() || undefined,
+    }) as any
+  )
+    .unwrap()
+    .then(async (payload: any) => {
+      const pub = payload?.publicId || payload?.public_id || payload?.data?.publicId || payload?.data?.public_id;
+      const url = payload?.url || payload?.secure_url || payload?.data?.url || payload?.data?.secure_url;
+      toast.success('Post created', { autoClose: 600 });
+
+      try {
+        await dispatch(getallpost({} as any)).unwrap();
+      } catch (err) {
+        toast.error("Something Went Wrong");
+        console.error(err);
+      }
+      setVideoUploading(false);
+      setLoading(false);
+      setShowVideoModal(false);
+      setVideoFile(null);
+      setVideoPreview("");
+      setVideoCaption("");
+      setTimeout(() => router.push('/'), 100);
+    })
+    .catch((e: any) => {
+      const msg = typeof e === 'string' ? e : (e?.message || 'Failed to create post');
+
+      // fallback demo post if preview exists
+      // if (videoPreview) {
+      //   try {
+      //     const localPost: any = {
+      //       postid: Date.now(),
+      //       userid: userid || 'you',
+      //       content: videoCaption,
+      //       posttype: 'video',
+      //       video: videoPreview, // blob/object URL for demo
+      //       createdAt: new Date().toISOString(),
+      //       username: currentUsername || 'you',
+      //       name: currentName || currentUsername || 'You',
+      //       handle: currentUsername || undefined,
+      //     };
+      //     const nextPosts = [localPost, ...(Array.isArray(posts) ? posts : [])];
+      //     try { localStorage.setItem('feedPosts', JSON.stringify(nextPosts)); } catch {}
+      //     dispatch(hydrateFromCache(nextPosts as any));
+      //     toast.success('Post created (local demo)', { autoClose: 800 });
+      //     setTimeout(() => router.push('/'), 100);
+      //     return;
+      //   } catch {}
+      // }
+      toast.error(msg);
+      setVideoUploading(false);
+      setLoading(false);
+    });
+} catch (e: any) {
+  const msg = typeof e === 'string' ? e : (e?.message || 'Failed to create post');
+  toast.error(msg);
+} 
+}}
               >
                 {videoUploading ? 'Uploading…' : (videoFile ? 'Post' : 'Choose video')}
               </button>
