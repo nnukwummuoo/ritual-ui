@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
-import { toast, ToastContainer } from "react-toastify";
+import { toast, ToastContainer } from "material-react-toastify";
 import Input from "./Input";
 import { login } from "@/lib/service/login";
 import Processing from "./tick-animation/LoginProcessing";

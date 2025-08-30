@@ -10,10 +10,10 @@ import {
 } from "react-icons/io5";
 import dynamic from "next/dynamic";
 import Swal from "sweetalert2";
-import { ToastContainer, toast } from "react-toastify";
+import { ToastContainer, toast } from "material-react-toastify";
 import { useSelector } from "react-redux";
 import { useAuthToken } from "@/lib/hooks/useAuthToken";
-import 'react-toastify/dist/ReactToastify.css';
+import 'material-react-toastify/dist/ReactToastify.css';
 import { URL } from "@/api/config"; // adjust this path to match your setup
 import { WithdrawalRequest } from "@/types/withdraw";
 

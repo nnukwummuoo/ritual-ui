@@ -5,14 +5,14 @@ import Image from "next/image";
 import PacmanLoader from "react-spinners/PacmanLoader";
 import { useDispatch, useSelector } from "react-redux";
 import { useRouter } from "next/navigation";
-import { toast, ToastContainer } from "react-toastify";
+import { toast, ToastContainer } from "material-react-toastify";
 // import {
 //   createmodel,
 //   changemodelstatus,
 // } from "@/app/features/model/modelSlice";
 import CountrySelect from "@/components/CountrySelect/CountrySelect";
 
-import "react-toastify/dist/ReactToastify.css";
+import "material-react-toastify/dist/ReactToastify.css";
 import "@/styles/CreateModelview.css";
 import person from "../../icons/person.svg";
 import idcardicon from "../../icons/idcardIcon.svg";

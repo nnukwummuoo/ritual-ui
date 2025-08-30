@@ -3,7 +3,7 @@ import React, { useState,useEffect, JSX } from "react";
 import { FaRegEyeSlash } from "react-icons/fa";
 import { IoEyeOutline } from "react-icons/io5";
 import { FaAngleLeft } from "react-icons/fa";
-import { ToastContainer, toast } from "react-toastify";
+import { ToastContainer, toast } from "material-react-toastify";
 // import { ChangePass, changeStatus } from "../../app/features/register/registerSlice";
 import { useSelector, useDispatch } from "react-redux";
 import PacmanLoader from "react-spinners/ClockLoader";

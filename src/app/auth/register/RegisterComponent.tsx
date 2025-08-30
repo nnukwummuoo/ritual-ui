@@ -12,7 +12,7 @@ import Agree from "./_components/AgreeBtn";
 import { register } from "@/lib/service/register";
 import { useRouter } from "next/navigation";
 import BtnLoader from "@/constants/BtnLoader";
-import { toast } from "react-toastify";
+import { toast } from "material-react-toastify";
 
 let emailCapture: FormDataEntryValue | null
 export const Register = () => {

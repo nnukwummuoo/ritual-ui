@@ -28,7 +28,7 @@ const nextConfig: NextConfig = {
     return [
       {
         source: "/api/proxy/:path*",
-        destination: "https://mmekoapi.onrender.com/:path*",
+        destination:process.env.NEXT_PUBLIC_API+"/:path*"|| "https://mmekoapi.onrender.com/:path*",
       },
     ];
   },

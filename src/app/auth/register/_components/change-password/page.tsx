@@ -1,6 +1,6 @@
 import React from 'react'
 // import { useState,useEffect } from 'react'
-// import { toast,ToastContainer } from 'react-toastify'
+// import { toast,ToastContainer } from 'material-react-toastify'
 // import {ChangePass,error,changepasswordback} from '../app/features/register/registerSlice'
 // import { useDispatch, useSelector } from 'react-redux'
 

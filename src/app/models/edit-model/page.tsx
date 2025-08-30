@@ -5,7 +5,7 @@ import PacmanLoader from "react-spinners/PacmanLoader";
 import Image from "next/image";
 import { useDispatch, useSelector } from "react-redux";
 import { useRouter } from "next/navigation";
-import { toast, ToastContainer } from "react-toastify";
+import { toast, ToastContainer } from "material-react-toastify";
 // import {
 //   updatemodel,
 //   changemodelstatus,

@@ -1,8 +1,8 @@
 "use client";
-import React, { useEffect } from "react";
+import React, { useEffect, useLayoutEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "@/store/store";
-import { getallpost, hydrateFromCache } from "@/store/post";
+import { fetchposts, getallpost, hydrateFromCache } from "@/store/post";
 import { getprofile, follow as followThunk, unfollow as unfollowThunk } from "@/store/profile";
 import { postlike } from "@/store/like";
 import { getpostcomment, postcomment } from "@/store/comment";
@@ -10,6 +10,7 @@ import { URL as API_BASE } from "@/api/config";
 const PROD_BASE = "https://mmekoapi.onrender.com"; // fallback when local proxy is down
 import PostSkeleton from "../PostSkeleton";
 import PostActions from "./PostActions";
+import { toast } from "material-react-toastify";
 
 export default function PostsCard({ type }: { type?: "video" | "image" | "text" }) {
   const dispatch = useDispatch<AppDispatch>();
@@ -21,6 +22,7 @@ export default function PostsCard({ type }: { type?: "video" | "image" | "text" 
   const [selfId, setSelfId] = React.useState<string | undefined>(undefined);
   const [selfNick, setSelfNick] = React.useState<string | undefined>(undefined);
   const [selfName, setSelfName] = React.useState<string | undefined>(undefined);
+  const [postResolve,setPostResolve] = React.useState<any[]>(posts)
   // Local per-post UI state for optimistic updates and comment UI
   const [ui, setUi] = React.useState<Record<string | number, {
     liked?: boolean;
@@ -85,6 +87,20 @@ export default function PostsCard({ type }: { type?: "video" | "image" | "text" 
     } catch {}
   }, [posts]);
 
+  useLayoutEffect(() => {
+    const tst = toast.loading("loading");
+    (async() => { 
+      try {
+        const resPosts = await fetchposts()
+        setPostResolve(resPosts.post)
+        localStorage.setItem('feedPosts', JSON.stringify(resPosts.post));
+      }catch(error){
+        console.error(error)
+      } finally{
+        toast.dismiss(tst)
+      }
+    })()
+  },[])
   
   useEffect(() => {
     try {
@@ -92,11 +108,11 @@ export default function PostsCard({ type }: { type?: "video" | "image" | "text" 
     } catch {}
   }, [ui]);
 
-  if (status === "loading" && (!posts || posts.length === 0)) {
+  if (status === "loading" && (!postResolve.length )) {
     return <PostSkeleton />;
   }
 
-  if (!posts || posts.length === 0) {
+  if (!postResolve.length) {
     return (
       <div className="text-center text-gray-400 py-6">No posts yet.</div>
     );
@@ -104,7 +120,7 @@ export default function PostsCard({ type }: { type?: "video" | "image" | "text" 
 
   return (
     <div className="flex flex-col gap-6">
-      {posts.map((p: any, idx: number) => {
+      {postResolve.map((p: any, idx: number) => {
         // Infer post type: prefer explicit fields if present
         let postType: string = p?.posttype || p?.type || "text";
         if (!postType) {
@@ -129,6 +145,8 @@ export default function PostsCard({ type }: { type?: "video" | "image" | "text" 
           p?.publicId ||
           p?.public_id ||
           p?.imageId ||
+          p?.postfilepublicid ||
+          p?.postfilelink||
           "";
         const asString = typeof mediaRef === "string" ? mediaRef : (mediaRef?.publicId || mediaRef?.public_id || mediaRef?.url || "");
         const isHttpUrl = typeof asString === "string" && /^https?:\/\//i.test(asString);
@@ -142,15 +160,15 @@ export default function PostsCard({ type }: { type?: "video" | "image" | "text" 
         const src = isUrl ? asString : queryUrlPrimary;
 
         // Derive display name and handle from multiple possible fields
-        const combinedName = [p?.firstname, p?.lastname].filter(Boolean).join(" ");
+        const combinedName = [p?.user?.firstname, p?.user?.lastname].filter(Boolean).join(" ");
         let displayName =
-          p?.username ||
-          p?.name ||
-          p?.nickname ||
+          p?.user?.username ||
+          p?.user?.name ||
+          p?.user?.nickname ||
           combinedName ||
-          p?.fullname ||
-          p?.fullName ||
-          p?.author ||
+          p?.user?.fullname ||
+          p?.user?.fullName ||
+          p?.user?.author ||
           p?.user?.username ||
           p?.user?.name ||
           p?.profile?.username ||
@@ -241,7 +259,7 @@ export default function PostsCard({ type }: { type?: "video" | "image" | "text" 
               <p className="my-2 whitespace-pre-wrap">{p.content}</p>
             )}
             {/* Media */}
-            {postType === "image" && src && (
+            {postType == "image" && src && (
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={src}
@@ -269,7 +287,7 @@ export default function PostsCard({ type }: { type?: "video" | "image" | "text" 
                 }}
               />
             )}
-            {postType === "video" && src && (
+            {postType == "video" && src && (
               <video
                 src={src}
                 controls

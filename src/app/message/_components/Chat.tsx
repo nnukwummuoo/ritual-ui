@@ -12,7 +12,7 @@ import DropdownMenu from "./DropdownMenu";
 // import goldIcon from "@/public/icons8.png";
 // import DropdownMenu from "./dropdown";
 // import DummyPics from "@/public/icons8-profile_Icon.png";
-// import { toast } from "react-toastify";
+// import { toast } from "material-react-toastify";
 // import { downloadImage } from "../../api/sendImage";
 // import { send_gift } from "../../app/features/message/messageSlice";
 // import Options from "@/public/menu.svg";

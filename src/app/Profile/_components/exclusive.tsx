@@ -1,7 +1,7 @@
 "use client"
 import React, { useState, useEffect } from "react";
 import Locker from "../../icons/locker.svg";
-import { ToastContainer, toast } from "react-toastify";
+import { ToastContainer, toast } from "material-react-toastify";
 import Notifybuy from "./Notifybuy";
 import Viewcontent from "./Viewcontent";
 import DummyImage from "./../../icons/mmekoDummy.png";
