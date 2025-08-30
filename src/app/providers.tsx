@@ -26,7 +26,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
     <Provider store={store}>
       <SnackbarProvider {...SNACKBAR_OPTIONS}>
         <AuthProvider>
-          <ClientToastContainer />
+          <ClientToastContainer position="top-center"/>
           <Suspense fallback={<Loader />}>{children}</Suspense>
         </AuthProvider>
       </SnackbarProvider>
