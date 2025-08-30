@@ -1,5 +1,11 @@
 "use client";
 import React from "react";
+import { useSelector } from "react-redux";
+import type {  RootState } from "@/store/store";
+import { useUserId } from "@/lib/hooks/useUserId";
+import { toast } from "material-react-toastify";
+import { useRouter } from 'next/navigation';
+import { deletesinglepost } from "@/store/post";
 
 export type PostActionsProps = {
   starred?: boolean;
@@ -11,6 +17,7 @@ export type PostActionsProps = {
   onComment?: () => void;
   onMore?: () => void;
   className?: string;
+  post: any; 
 };
 
 const iconBase = "size-6"; // Tailwind for width/height
@@ -72,16 +79,62 @@ function CommentIcon() {
   );
 }
 
-function DotsIcon() {
-  return (
-    <svg
+function DotsIcon({ post }: any) {
+  const router = useRouter();
+  const [hasPop, setHasPop] = React.useState(false);
+  const userid = useUserId();
+  const own = userid === post?.user?._id;
+  
+  return (<>
+    {hasPop ? <div className="d-flex fixed bg-[#0e0e0e80] top-0 h-[100dvh] bottom-0 left-0 right-0" onClick={(e) => { 
+        setHasPop(false);
+      }}>
+      <div className="bg-gray-800 text-white p-4 rounded shadow-lg mt-[25vh] right-4 top-12 z-10 mx-auto my-auto min-w-[240px] max-w-[280px]" style={{
+      
+      }} >
+        <div className="block w-full text-left px-4 py-2 hover:bg-gray-700 rounded" onClick={async() => {
+          await navigator.share({
+                    title: post?.user?.nickname+"'s post",
+                    text: post?.content?.slice(0, 100) + (post?.content?.length > 100 ? '...' : ''),
+                    url: window.location.origin + `/post/${post._id}`
+                });
+          setHasPop(false);
+        }}>Share</div>
+        <div className="block w-full text-left px-4 py-2 hover:bg-gray-700 rounded" onClick={() => {
+          navigator.clipboard.writeText(window.location.origin + `/post/${post._id}`); setHasPop(false);toast.success("Link copied to clipboard");
+        }}>Copy Link</div>
+      {own&&<>
+        <div className="block w-full text-left px-4 py-2 hover:bg-gray-700 rounded" onClick={() => { /* Implement edit functionality here */ setHasPop(false); router.push(`/post/${post?._id}/edit`) }}>Edit Post</div>
+
+          <div className="block w-full text-left px-4 py-2 hover:bg-gray-700 rounded text-red-600" onClick={async () => { /* Implement delete functionality here */
+            const tst=toast.loading("Deleting")
+            try {
+               setHasPop(false);
+            await deletesinglepost(post?._id);
+            router.push("/");
+            } catch (err) {
+              console.error(err);
+              toast.error("Error deleting post");
+          }finally{
+              toast.dismiss(tst)
+          }
+          }}>Delete Post</div>          
+      </>}
+    </div>
+    </div>
+    :<></>}
+    <svg 
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 24 24"
       fill="currentColor"
       className={iconBase}
+      onClick={(e) => { 
+        setHasPop(!hasPop);
+      }}
     >
       <path d="M6.75 12a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zm7.5 0a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zm7.5 0a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" />
     </svg>
+    </>
   );
 }
 
@@ -90,6 +143,7 @@ export default function PostActions({
   liked,
   likeCount = 0,
   commentCount = 0,
+  post,
   onStar,
   onLike,
   onComment,
@@ -131,10 +185,13 @@ export default function PostActions({
       <button
         type="button"
         className="ml-auto px-3 py-2 rounded hover:bg-gray-700/50"
-        onClick={onMore}
+        onClick={(e: any) => {
+          const click=e?.target?.children[0]?.click
+          click&&click()
+        }}
         aria-label="More options"
       >
-        <DotsIcon />
+        <DotsIcon post={ post } />
       </button>
     </div>
   );

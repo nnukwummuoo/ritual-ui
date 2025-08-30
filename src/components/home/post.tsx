@@ -11,8 +11,10 @@ const PROD_BASE = "https://mmekoapi.onrender.com"; // fallback when local proxy 
 import PostSkeleton from "../PostSkeleton";
 import PostActions from "./PostActions";
 import { toast } from "material-react-toastify";
+import {useRouter} from "next/navigation"
 
 export default function PostsCard({ type }: { type?: "video" | "image" | "text" }) {
+  const router = useRouter()
   const dispatch = useDispatch<AppDispatch>();
   const status = useSelector((s: RootState) => s.post.poststatus);
   const posts = useSelector((s: RootState) => s.post.allPost as any[]);
@@ -86,20 +88,25 @@ export default function PostsCard({ type }: { type?: "video" | "image" | "text" 
       }
     } catch {}
   }, [posts]);
-
-  useLayoutEffect(() => {
+const fetchFeed=async() => { 
     const tst = toast.loading("loading");
-    (async() => { 
       try {
         const resPosts = await fetchposts()
-        setPostResolve(resPosts.post)
+        setPostResolve(resPosts?.post||[])
         localStorage.setItem('feedPosts', JSON.stringify(resPosts.post));
       }catch(error){
         console.error(error)
       } finally{
         toast.dismiss(tst)
       }
-    })()
+    }
+  useLayoutEffect(() => {
+    setPostResolve(JSON.parse(localStorage.getItem('feedPosts') || "[]") || []);
+    fetchFeed();
+    window.addEventListener('refreshfeed', fetchFeed);
+    return ()=>{
+      window.removeEventListener('refreshfeed', fetchFeed);
+    }
   },[])
   
   useEffect(() => {
@@ -108,11 +115,11 @@ export default function PostsCard({ type }: { type?: "video" | "image" | "text" 
     } catch {}
   }, [ui]);
 
-  if (status === "loading" && (!postResolve.length )) {
+  if (status === "loading" && (!postResolve?.length )) {
     return <PostSkeleton />;
   }
 
-  if (!postResolve.length) {
+  if (!postResolve?.length) {
     return (
       <div className="text-center text-gray-400 py-6">No posts yet.</div>
     );
@@ -189,7 +196,7 @@ export default function PostsCard({ type }: { type?: "video" | "image" | "text" 
           p?.handle ||
           p?.user?.handle ||
           p?.nickname ||
-          p?.user?.username ||
+          p?.user?.nickname ||
           p?.username ||
           p?.postedBy?.username ||
           null;
@@ -243,20 +250,36 @@ export default function PostsCard({ type }: { type?: "video" | "image" | "text" 
         return (
           <div key={`${p?.postid || p?.id || idx}`} className="mx-auto max-w-[30rem] w-full bg-gray-800 rounded-md p-3">
             {/* Header */}
-            <div className="flex items-center gap-3">
-              <div className="size-10 rounded-full overflow-hidden bg-gray-700" />
+            <div className="flex items-center gap-3 cursor-pointer" onClick={()=>{
+                router.push(`/post/${p?._id}`)
+              }}>
+              <div className="size-10 rounded-full overflow-hidden bg-gray-700" >
+                  <img
+                  alt="background img"
+                  src={"/icons/profile.png"}
+                  className="object-cover w-full h-full"
+                  // onError={(e) => {
+                  //   e.target.onerror = null;
+                  //   e.target.src = DummyCoverImage;
+                  // }}
+                />
+              </div>
               <div>
-                <p className="font-medium">{displayName}</p>
+                <p className="font-medium">{p?.user?.firstname} { p?.user?.lastname}</p>
                 <span className="text-gray-400 text-sm">{handleStr ? `@${handleStr}` : ""}</span>
               </div>
             </div>
             {/* Timestamp */}
             {p?.createdAt && (
-              <p className="my-3 text-gray-400 text-sm">{new Date(p.createdAt).toLocaleString()}</p>
+              <p className="my-3 text-gray-400 text-sm  cursor-pointer" onClick={()=>{
+                router.push(`/post/${p?._id}`)
+              }}>{new Date(p.createdAt).toLocaleString()}</p>
             )}
             {/* Content */}
             {p?.content && (
-              <p className="my-2 whitespace-pre-wrap">{p.content}</p>
+              <p className="my-2 whitespace-pre-wrap cursor-pointer" onClick={()=>{
+                router.push(`/post/${p?._id}`)
+              }}>{p.content}</p>
             )}
             {/* Media */}
             {postType == "image" && src && (
@@ -324,6 +347,7 @@ export default function PostsCard({ type }: { type?: "video" | "image" | "text" 
               liked={uiLiked}
               likeCount={uiLikeCount}
               commentCount={displayCommentCount}
+              post={p}
               onStar={() => {
                 const localPid = p?.postid || p?.id || p?._id;
                 if (!localPid) return;

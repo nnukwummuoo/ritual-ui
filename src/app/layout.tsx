@@ -38,7 +38,7 @@ export default async function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.className} antialiased bg-background`}>
-        <ToastContainer />
+        <ToastContainer position="top-center" />
         <Providers>
           <main className="flex overflow-hidden h-screen relative">
               <Sidebar />

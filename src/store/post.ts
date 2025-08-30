@@ -111,6 +111,34 @@ export const fetchposts = async () => {
   }
 }
 
+export const fetchsinglepost = async (pid:String) => {
+  try {
+    let response = await axios.get(`${URL}/getallpost/${pid}`);
+    return response.data;
+  } catch (err: any) {
+    throw err.response.data.message;
+  }
+}
+
+export const deletesinglepost = async (pid:String) => {
+  try {
+    let response = await axios.delete(`${URL}/getallpost/${pid}`);
+    window.dispatchEvent(new Event("refreshfeed"));
+    return response.data;
+  } catch (err: any) {
+    throw err.response.data.message;
+  }
+}
+
+export const updatepost = async (pid:String,post:any) => {
+  try {
+    let response = await axios.put(`${URL}/getallpost/${pid}`,post);
+    return response.data;
+  } catch (err: any) {
+    throw err.response.data.message;
+  }
+}
+
 export const getpost = createAsyncThunk("post/getpost", async (data: any) => {
   try {
     let response = await axios.get(`${URL}/getallpost`, data);
