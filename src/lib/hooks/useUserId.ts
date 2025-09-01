@@ -42,3 +42,25 @@ export function useUserId(): string | undefined {
   const validReduxId = reduxUserId && reduxUserId.trim().length > 0 ? reduxUserId : undefined;
   return validReduxId ?? localId;
 }
+
+export function useUser(): any {
+  const reduxUserId = useSelector((s: RootState) => (s as any)?.register?.userID as string | undefined);
+  const [user, setUser] = useState({});
+
+  useEffect(() => {
+    // Only skip localStorage check if reduxUserId has a valid value
+    if (reduxUserId && reduxUserId.trim().length > 0) return;
+    try {
+      const raw = localStorage.getItem("login");
+      if (raw) {
+        const saved = JSON.parse(raw);
+        setUser(saved);
+      }
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.error("[useUserId] localStorage error:", e);
+    }
+  }, [reduxUserId]);
+
+  return user as any;
+}

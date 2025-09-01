@@ -1,4 +1,5 @@
 "use client"
+import React from "react";
 import "./Navs.css";
 import { useRouter } from "next/navigation";
 import MenuIconImg from "@/components/MenuIcon-img";
@@ -10,14 +11,14 @@ import { FaAngleRight } from "react-icons/fa";
 import { FaAngleDown } from "react-icons/fa";
 import { useEffect, useState } from "react";
 import handleLogout from "@/lib/service/logout";
-import { useUserId } from "@/lib/hooks/useUserId";
+import { useUser, useUserId } from "@/lib/hooks/useUserId";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/store/store";
 
  const Sidemenu = () => {
  const [minimize, setMinimize] = useState(false);
  const userId = useUserId();
-
+const user=useUser()
  // Debug: log userId changes in Sidemenu
  useEffect(() => {
    // eslint-disable-next-line no-console
@@ -25,37 +26,18 @@ import type { RootState } from "@/store/store";
  }, [userId]);
 
   const router = useRouter();
-  const exclusive_verify = true
-  const modelID = "random_id_123" // useSelector((state) => state.profile.modelID);
-  const model = true // useSelector((state) => state.profile.model);
+  const profile=useSelector((state:any)=>state.profile)
+  const modelID = useSelector((state:any) => state.profile.modelID);
+  const model =  useSelector((state:any) => state.profile.isModel);
   const firstname = useSelector((s: RootState) => s.profile.firstname) || "User";
   const upgrade = true// const [upgrade, setUpgrade] = useState(false);
   const isModel = true
   const gold_balance = 0 // const [gold_balance, setgold_balance] = useState("");
   const admin = true // useSelector((state) => state.profile.admin);
     const { open, toggleMenu: handleMenubar } = useMenuContext();
-  //         <MenuIconImg
-  //           src="/icons/icons8-model.png"
-  //           name="Model portfolio"
-  //           url={`/modelbyid/${modelID}`}
-  //         />
-  //       );
-  //     } else {
-  //       return (
-  //         <MenuIconImg
-  //           src="/icons/icons8-model.png"
-  //           name="Model portfolio"
-  //           url="/createmodel"
-  //         />
-  //       );
-  //     }
-  // const [profile_photo, setprofile_photo] = useState(profileIcon);
-  // const photo = useSelector((state) => state.comprofile.profilephoto);
-  // const postuserid = useSelector((state) => state.register.userID);
-  // const balance = useSelector((state) => state.profile.balance);
-  // const exclusive_verify = useSelector(
-  //   (state) => state.profile.exclusive_verify
-  // );
+  const exclusive_verify = useSelector(
+    (state:any) => state.profile.exclusive_verify
+  );
   // // const [isModalOpen, setIsModalOpen] = useState(false);
   // const [live, setLive] = useState(false);
   // const formatter = new Intl.NumberFormat("en-US");
@@ -93,9 +75,10 @@ import type { RootState } from "@/store/store";
   //   }
   // };
 
+
   const verify = () => {
-    if (!exclusive_verify) {
-      if (model) {
+    if (user?.modelId) {
+      if (profile?.exclusive_verify) {
         return (
           <MenuIconImg
             src="/icons/icons8-model.png"
@@ -123,9 +106,11 @@ import type { RootState } from "@/store/store";
     }
   };
 
+   React.useEffect(() => {
+      console.log(profile,user)
+   },[]);
   return (
     <div className="fixed z-[110]">
-      
       <div className="p-2">
         <nav
           onClick={handleMenubar}
@@ -177,6 +162,7 @@ import type { RootState } from "@/store/store";
                 //   }
                 //   dispatch(resetprofilebyid());
                 // }} */}
+              
               <MenuIconImg 
                 src="/icons/icons8-customer.gif" 
                 name="Profile" 

@@ -101,7 +101,7 @@ const fetchFeed=async() => {
       }
     }
   useLayoutEffect(() => {
-    setPostResolve(JSON.parse(localStorage.getItem('feedPosts') || "[]") || []);
+    (async()=>setPostResolve(JSON.parse(localStorage.getItem('feedPosts') || "[]") || []))();
     fetchFeed();
     window.addEventListener('refreshfeed', fetchFeed);
     return ()=>{

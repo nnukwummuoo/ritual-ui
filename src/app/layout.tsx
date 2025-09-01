@@ -10,7 +10,6 @@ import Navapp from "@/navs/NavApp";
 import ShouldRenderPopUp from "@/components/ShouldRenderPopUp";
 import { cookies } from "next/headers";
 import 'react-loading-skeleton/dist/skeleton.css';
-import { ToastContainer } from "material-react-toastify";
 
 const inter = Inter({
   weight: ["100", "300", "400", "500", "700"],
@@ -38,7 +37,6 @@ export default async function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.className} antialiased bg-background`}>
-        <ToastContainer position="top-center" />
         <Providers>
           <main className="flex overflow-hidden h-screen relative">
               <Sidebar />
