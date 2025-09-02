@@ -83,7 +83,7 @@ const user=useUser()
           <MenuIconImg
             src="/icons/icons8-model.png"
             name="Model portfolio"
-            url={`/modelbyid/${modelID}`}
+            url={`/models/${modelID}`}
           />
         );
       } else {

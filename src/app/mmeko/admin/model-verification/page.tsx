@@ -58,6 +58,7 @@ export default function VerifyModels() {
                   holdingIdPhoto: host.holdingIdPhotofile || host.postlinkid,
                   idPhoto: host.idPhotofile || host.userphotolink,
                   image: host.image,
+                  id: host._id,
                 }} />
               </li>
             ))}
