@@ -32,7 +32,7 @@ const user=useUser()
   const firstname = useSelector((s: RootState) => s.profile.firstname) || "User";
   const upgrade = true// const [upgrade, setUpgrade] = useState(false);
   const isModel = true
-  const gold_balance = 0 // const [gold_balance, setgold_balance] = useState("");
+  const gold_balance = profile?.balance||0 // const [gold_balance, setgold_balance] = useState("");
   const admin = true // useSelector((state) => state.profile.admin);
     const { open, toggleMenu: handleMenubar } = useMenuContext();
   const exclusive_verify = useSelector(
@@ -75,6 +75,9 @@ const user=useUser()
   //   }
   // };
 
+   React.useEffect(()=>{
+    console.log(profile,"")
+   },[profile])
 
   const verify = () => {
     if (user?.modelId) {
@@ -131,6 +134,7 @@ const user=useUser()
                     src="/icons/icons8-profile_user.png"
                     name={firstname}
                     url={userId ? `/Profile/${userId}` : `/Profile`}
+                    gold_balance={gold_balance}
                   />
                 </div>
 

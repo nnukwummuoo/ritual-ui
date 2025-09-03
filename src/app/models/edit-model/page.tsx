@@ -20,6 +20,7 @@ import deleteIcon from "/public/icons/deleteicon.svg";
 import "@/styles/CreateModelview.css";
 import { useAuthToken } from "@/lib/hooks/useAuthToken";
 import { editModelMultipart } from "@/api/model";
+import { useUserId } from "@/lib/hooks/useUserId";
 
 
 export default function Editmodel () {
@@ -29,7 +30,7 @@ export default function Editmodel () {
   // const modelupdatestatus = useSelector(
   //   (state) => state.model.modelupdatestatus
   // );
-  const userid = useSelector((state: any) => state.register.userID);
+  const userid = useUserId();
   const model = useSelector((state: any) => state.model.modelbyid);
   const modelID = (model && (model.hostid || model.id || model._id)) as string | undefined;
   // const message = useSelector((state) => state.model.message);
@@ -178,10 +179,11 @@ export default function Editmodel () {
         timeava: times.length > 0 ? times : model?.timeava || [],
         daysava: hours.length > 0 ? hours : model?.daysava || [],
         hosttype,
+        hostid:userid
       };
       const doc1 = newImages[0];
       const doc2 = newImages[1];
-      await editModelMultipart({ token, data, doc1, doc2 });
+      await editModelMultipart({ token, data,files:newImages.map(img=>img), doc1, doc2 });
       toast.success("Model updated successfully");
       router.push(`/models/${modelID}`);
     } catch (err:any) {
@@ -202,10 +204,10 @@ export default function Editmodel () {
     setphotocount((prev) => prev - 1);
   };
 
-  const handleImageUpload = (file: any) => {
-    if (file) {
-      setNewImages((prev : any) => [...prev, file]);
-      setphotocount((prev) => prev + 1);
+  const handleImageUpload = (files: any) => {
+    if (files?.length) {
+      setNewImages((prev : any) => [...prev, ...files]);
+      setphotocount((prev) => prev + files?.lenght);
     }
   };
   
@@ -574,14 +576,16 @@ export default function Editmodel () {
                   className="hidden"
                   accept="image/*"
                   onChange={(e) => {
-                    if (e.target.files?.[0]) handleImageUpload(e.target.files[0]);
-                  }}
+                    if (e.target.files?.[0]) handleImageUpload(e.target.files);
+                  }} multiple
                 />
               </div>
               <div className="grid grid-cols-2 gap-4 mt-4 sm:grid-cols-3 md:grid-cols-4">
                 {newImages.map((file, index) => (
                   <div key={`new-${index}`} className="relative group">
                     <Image
+                      width={100}
+                      height={100}
                       alt={`new-${index}`}
                       src={URL.createObjectURL(file)}
                       className="object-cover w-full border rounded-lg h-36 border-slate-600"

@@ -28,7 +28,7 @@ const initialState: BookingState = {
   rejectedCall: null,
 };
 
-export const bookmdel = createAsyncThunk("booking/bookmodel", async (data) => {
+export const bookmdel = createAsyncThunk("booking/bookmodel", async (data:any) => {
   try {
     //console.log('after info')
 
@@ -45,6 +45,19 @@ export const bookmdel = createAsyncThunk("booking/bookmodel", async (data) => {
     throw "Unexpected error";
   }
 });
+
+export const bookAmodel =  async (data:any) => {
+  try {
+    let response = await axios.put(`${URL}/bookhost`, data);
+    return response.data;
+  } catch (err : any) {
+    // console.log('erro get profile')
+    if (axios.isAxiosError(err)) {
+      throw (err.response?.data as any)?.message ?? "Network error";
+    }
+    throw "Unexpected error";
+  }
+}
 
 export const getmyrequest = createAsyncThunk(
   "booking/getmyrequest",

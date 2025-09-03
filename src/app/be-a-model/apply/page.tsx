@@ -369,7 +369,20 @@ export default function VerifiedUserForm(): any {
                   </div>
                   <TextInput label="Available Times" name="timeava" value={formData.timeava} onChange={handleChange} />
                   <TextInput label="Available Days" name="daysava" value={formData.daysava} onChange={handleChange} />
-                  <TextInput label="Host Type" name="hosttype" value={formData.hosttype} onChange={handleChange} />
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium mb-2">Host Type</label>
+                    <select
+                      name="hosttype"
+                      value={formData.hosttype}
+                      onChange={handleChange}
+                      className="w-full p-3 border border-gray-300 rounded-md focus:outline-none bg-black text-white"
+                    >
+                      <option value="">Select</option>
+                      <option value="Fan call">Fan call</option>
+                      <option value="Fan call">Fan meet</option>
+                      <option value="Fan call">Fan date</option>
+                    </select>
+                  </div>
                 </div>
               )}
 

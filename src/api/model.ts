@@ -39,7 +39,7 @@ export async function createModelMultipart(params: {
 export async function getMyModel(params: { userid: string; token?: string }) {
   const { userid, token } = params;
   const res = await axios.post(
-    `${URL}/model`,
+    `${URL}/getverifymodel`,
     { userid },
     token
       ? {
@@ -65,7 +65,8 @@ export async function editModelMultipart(params: {
   form.append("data", JSON.stringify(data));
   form.append("token", token);
   // Backend expects photos under 'updateModelPhotos'
-  if (Array.isArray(files)) {
+  console.log(files)
+  if (files?.length) {
     files.forEach((f) => form.append("updateModelPhotos", f as any));
   }
   if (doc1) form.append("updateModelPhotos", doc1 as any);
