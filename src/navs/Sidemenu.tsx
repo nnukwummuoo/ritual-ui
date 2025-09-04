@@ -102,8 +102,8 @@ const user=useUser()
       return (
         <MenuIconImg
           src="/icons/icons8-plus.png"
-          name="Model Application"
-          url="/be-a-model"
+          name={profile?.exclusive_verify ? "New Model" : "Model Application"}
+          url={profile?.exclusive_verify ? "/be-a-model/apply" : "/be-a-model"}
         />
       );
     }

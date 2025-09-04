@@ -5,6 +5,7 @@ import {createAModel} from "@/store/modelSlice"
 import { useUserId } from "@/lib/hooks/useUserId";
 import { useAuthToken } from "@/lib/hooks/useAuthToken";
 import {useRouter } from "next/navigation"
+import { useSelector } from "react-redux";
 
 // A simple SVG for the plus icon
 const PlusIcon = (): any => (
@@ -120,7 +121,8 @@ export default function VerifiedUserForm(): any {
   const prevStep = (): any => setStep((prev: any) => Math.max(prev - 1, 1));
   const userid = useUserId();
   const token = useAuthToken();
-  const router =useRouter()
+  const router = useRouter()
+  const profile=useSelector((state:any)=>state.profile)
 
   const data: any = {
     userid,
@@ -201,11 +203,11 @@ export default function VerifiedUserForm(): any {
       <div className="w-full md:w-5/4 flex flex-col mb-12 ">
         <div className="p-4" style={{ maxWidth: "700px" }}>
           <h1 className="text-2xl font-semibold text-center mb-4">
-            Verified User Application
+            {profile?.exclusive_verify?<>Create Your Model</>:<>Verified User Application</>}
           </h1>
-          <p className="text-slate-400 mb-6">
+          {profile?.exclusive_verify?<p className="text-slate-400 mb-6"></p>:<p className="text-slate-400 mb-6">
             Please provide us with information for verification. Once verified, you'll be able to start a creator account.
-          </p>
+          </p>}
           {loading && (
             <div className="flex flex-col items-center mt-16 w-full z-10 relative top-3/4">
               <div className="text-yellow-500 animate-spin">
@@ -297,7 +299,8 @@ export default function VerifiedUserForm(): any {
                 </div>
               )}
 
-              {step === 2 && (
+              {/* This is not mean't to appear on screen, let it be. Sir Ernest Chia! */}
+              {step === 100 && (
                 <div className="verify step2 mb-6">
                   <h4 className="font-bold text-md mb-4 text-center">Extra Information</h4>
                   <TextInput label="Display Name" name="name" value={formData.name} onChange={handleChange} />
@@ -386,13 +389,13 @@ export default function VerifiedUserForm(): any {
                 </div>
               )}
 
-              {step === 3 && (
+              {step === 2 && (
                 <div className="verify step3 mb-6">
                   <Ruleslist />
                 </div>
               )}
 
-              {step === 4 && (
+              {step === 3 && (
                 <div className="verify step4 mb-6">
                   <h4 className="font-bold text-md my-4">Document Upload</h4>
                   <img
