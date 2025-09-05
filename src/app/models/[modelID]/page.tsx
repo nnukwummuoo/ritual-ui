@@ -502,6 +502,11 @@ export default function Modelbyid () {
     }
   };
 
+
+  if (!loading&&model.userid&&!model.hosttype&&!model.price){
+      navigate("/models/edit-model")
+  }
+
   const psPrice = model.price?.replace(/(GOLD)(per)/, "$1 $2");
   const fmtPSPrice = psPrice?.includes("per minute")
     ? psPrice
@@ -546,7 +551,7 @@ export default function Modelbyid () {
           onClick={(e) => setclick(true)}
         >
           <div className="w-full">
-            <div className="z-50 w-full top-16 ">
+            <div className="z-10 w-full top-16 ">
               <ModelByIdNav
                 views={views}
                 modelName={(model?.name||" ").split(" ")[0]}
@@ -560,6 +565,7 @@ export default function Modelbyid () {
             {checkuser() && (
               <button>
                 <Image
+                className="z-50 absolute w-6 h-6 top-10 left-16 md:top-24 md:left-24"
                   alt="optionicon"
                   src={optionicon}
                   onClick={(e) => {
@@ -567,7 +573,7 @@ export default function Modelbyid () {
                   }}
                 />
                 {closeOption && (
-                  <div className="z-10 flex flex-col text-left">
+                  <div className="z-[100] absolute  bg-[#0e0a1f] flex flex-col text-left">
                     <button
                       onClick={(e) => {
                         navigate("/models/edit-model");
@@ -589,7 +595,7 @@ export default function Modelbyid () {
 
           {isModalOpen && (
             <div
-              className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50 p-4"
+              className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-10 p-4"
               onClick={handleModalClick}
             >
               <button

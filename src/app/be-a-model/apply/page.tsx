@@ -455,14 +455,20 @@ export default function VerifiedUserForm(): any {
                   </button>
                 )}
 
-                {step < 4 ? (
-                  <div
+                {step < 4 ? 
+                  profile?.exclusive_verify?
+                    <button
+                    type="submit"
+                    className="ml-auto bg-gradient-to-r from-green-600 to-green-700 text-white px-5 py-2 rounded-lg hover:from-green-700 hover:to-green-800 transition duration-300"
+                  >
+                    Submit Application
+                  </button>
+                  :<div
                     onClick={nextStep}
                     className="ml-auto bg-gradient-to-r from-orange-500 to-orange-600 text-white px-5 py-2 rounded-lg hover:from-orange-600 hover:to-orange-700 transition duration-300"
                   >
                     Next
-                  </div>
-                ) : (
+                  </div> : (
                   <button
                     type="submit"
                     className="ml-auto bg-gradient-to-r from-green-600 to-green-700 text-white px-5 py-2 rounded-lg hover:from-green-700 hover:to-green-800 transition duration-300"

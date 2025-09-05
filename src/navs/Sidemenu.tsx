@@ -79,14 +79,14 @@ const user=useUser()
     console.log(profile,"")
    },[profile])
 
-  const verify = () => {
-    if (user?.modelId) {
+   const verify = () => {
+    if (profile?.modelId||profile?.modelID) {
       if (profile?.exclusive_verify) {
         return (
           <MenuIconImg
             src="/icons/icons8-model.png"
             name="Model portfolio"
-            url={`/models/${modelID}`}
+            url={`/models/${profile?.modelId||profile?.modelID}`}
           />
         );
       } else {
