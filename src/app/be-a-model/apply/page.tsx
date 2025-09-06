@@ -36,7 +36,7 @@ const TextInput = ({ label, name, value, onChange, type = "text" }: any): any =>
         value={value}
         onChange={onChange}
         rows={4}
-        className="w-full p-3 border border-gray-300 rounded-md focus:outline-none bg-black text-white"
+        className="w-full p-3 border border-gray-300 rounded-md focus:outline-none bg-slate-800 text-white"
       ></textarea>
     ) : (
       <input
@@ -46,7 +46,7 @@ const TextInput = ({ label, name, value, onChange, type = "text" }: any): any =>
         type={type}
         value={value}
         onChange={onChange}
-        className="w-full p-3 border border-gray-300 rounded-md focus:outline-none bg-black text-white"
+        className="w-full p-3 border border-gray-300 rounded-md focus:outline-none bg-slate-800 text-white"
       />
     )}
   </div>
@@ -147,11 +147,10 @@ export default function VerifiedUserForm(): any {
 
   const [documentType, setDocumentType] = useState<string>("");
   const [formData, setFormData] = useState<any>({
-    firstName: "",
-    lastName: "",
-    email: "",
-    dob: "",
-    country: "",
+    name:profile?.firstname?profile?.firstname+" "+profile?.lastname:profile?.username||"",
+    email: profile?.email||"",
+    dob: profile?.dob||"",
+    location: profile?.country||"",
     city: "",
     address: "",
     idPhotofile: null,
@@ -184,11 +183,11 @@ export default function VerifiedUserForm(): any {
 
   const handleSubmit = async (e: any): Promise<void> => {
     e.preventDefault();
-    const tst=toast.loading("Creating your model");
+    const tst=toast.loading(profile?.exclusive_verify?"Creating your model":"Submitting your application");
     try{
-      const res = await createAModel({...formData,userid,token})
-      router.push("/")
-      toast.success("Your model has been submitted")
+      const res = await createAModel({...formData,userid,token, name:formData.name||profile?.firstname+" "+profile?.lastname})
+      router.push("/models/"+res.id)
+      toast.success(profile?.exclusive_verify?"Your model has been created":"Your model has been submitted")
     }catch(err:any){
       console.error(err)
       toast.error(err?.response?.data?.message||err?.message||"Something went wrong")
@@ -233,26 +232,18 @@ export default function VerifiedUserForm(): any {
               {step === 1 && (
                 <div className="verify step1 mb-6">
                   <h4 className="font-bold text-md mb-4 text-center">Personal Information</h4>
-                  <div className="input-container flex flex-wrap -mx-2">
-                    <div className="w-1/2 px-2">
+                  <div className="">
+                    <div className="input-container">
                       <TextInput
-                        label="First Name"
-                        name="firstName"
-                        value={formData.firstName}
-                        onChange={handleChange}
-                      />
-                    </div>
-                    <div className="w-1/2 px-2">
-                      <TextInput
-                        label="Last Name"
-                        name="lastName"
-                        value={formData.lastName}
+                        label="Full Name"
+                        name="name"
+                        value={formData.name||profile?.firstname+" "+profile?.lastname}
                         onChange={handleChange}
                       />
                     </div>
                   </div>
-                  <div className="input-container flex flex-wrap -mx-2">
-                    <div className="w-1/2 px-2">
+                  <div className="">
+                    <div className="input-container">
                       <TextInput
                         label="Email Address"
                         name="email"
@@ -261,26 +252,17 @@ export default function VerifiedUserForm(): any {
                         onChange={handleChange}
                       />
                     </div>
-                    <div className="w-1/2 px-2">
-                      <TextInput
-                        label="Date of Birth"
-                        name="dob"
-                        type="date"
-                        value={formData.dob}
-                        onChange={handleChange}
-                      />
-                    </div>
                   </div>
-                  <div className="input-container flex flex-wrap -mx-2">
-                    <div className="w-1/2 px-2">
+                  <div className="">
+                    <div className="input-container">
                       <TextInput
                         label="Country"
-                        name="country"
-                        value={formData.country}
+                        name="location"
+                        value={formData.location}
                         onChange={handleChange}
                       />
                     </div>
-                    <div className="w-1/2 px-2">
+                    <div className="input-container">
                       <TextInput
                         label="City"
                         name="city"
@@ -348,7 +330,7 @@ export default function VerifiedUserForm(): any {
                       <option value="Women">Women</option>
                     </select>
                   </div>
-                  <div className="input-container flex flex-wrap -mx-2">
+                  <div className="">
                     <div className="w-1/2 px-2">
                       <TextInput label="Height (cm)" name="height" type="number" value={formData.height} onChange={handleChange} />
                     </div>
@@ -461,7 +443,7 @@ export default function VerifiedUserForm(): any {
                     type="submit"
                     className="ml-auto bg-gradient-to-r from-green-600 to-green-700 text-white px-5 py-2 rounded-lg hover:from-green-700 hover:to-green-800 transition duration-300"
                   >
-                    Submit Application
+                    Create your Model
                   </button>
                   :<div
                     onClick={nextStep}

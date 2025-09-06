@@ -504,7 +504,12 @@ export default function Modelbyid () {
 
 
   if (!loading&&model.userid&&!model.hosttype&&!model.price){
+      const tst=toast.loading("Curating your model, please wait!")
       navigate("/models/edit-model")
+      setLoading(true)
+      setTimeout(()=>{
+        toast.dismiss(tst)
+      },5000)
   }
 
   const psPrice = model.price?.replace(/(GOLD)(per)/, "$1 $2");
