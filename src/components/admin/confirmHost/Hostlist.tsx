@@ -48,6 +48,7 @@ const Hostlist: React.FC<HostProps> = ({ prob }) => {
     holdingIdPhoto,
     idPhoto,
     image,
+    id
   } = prob;
 
   const [loading, setLoading] = useState(false);
@@ -67,8 +68,7 @@ const Hostlist: React.FC<HostProps> = ({ prob }) => {
     try {
       setDisableButton(true);
       setLoading(true);
-      const hostid = userid || prob.id;
-      await dispatch(verifymodel({ token, hostid })).unwrap();
+      await dispatch(verifymodel({ token, userid,id })).unwrap();
     } catch (e) {
       // noop; errors can be surfaced via global toasts if present
     } finally {
@@ -81,8 +81,7 @@ const Hostlist: React.FC<HostProps> = ({ prob }) => {
     try {
       setDisableButton(true);
       setLoading(true);
-      const hostid = userid || prob.id;
-      await dispatch(rejectmodel({ token, hostid })).unwrap();
+      await dispatch(rejectmodel({ token, userid })).unwrap();
     } catch (e) {
       // noop
     } finally {

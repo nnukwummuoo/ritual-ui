@@ -26,7 +26,7 @@ export default function ModelPage() {
   //   (state: any) => state.model.Listofhoststatus
   // );
 
-  const [searchQuery, setSearchQuery] = useState("");
+  const [ searchQuery, setSearchQuery] = useState("");
   const [nameSearchQuery, setNameSearchQuery] = useState("");
   const [hosttypeSearchQuery, setHosttypeSearchQuery] = useState("");
   const [locationSearchQuery, setLocationSearchQuery] = useState("");
@@ -136,17 +136,7 @@ export default function ModelPage() {
         }
         setLoading(true);
         const res = await getMyModel({ userid: user.session._id, token: user.session.token });
-        console.log("[GET /model] raw response:", res);
-        const list = Array.isArray(res?.data)
-          ? res.data
-          : (res?.host ? [res.host] : (res?.data?.host ? [res.data.host] : undefined))
-          || (Array.isArray(res?.models)
-          ? res.models
-          : Array.isArray(res?.mymodel)
-          ? res.mymodel
-          : Array.isArray(res)
-          ? res
-          : []);
+        const list = [...(res?.host||[])]
         console.log("[GET /model] parsed list length:", list.length);
         setMyModels(list);
       } catch (e) {
@@ -184,53 +174,7 @@ export default function ModelPage() {
   //   if (Listofhoststatus === "failed") dispatch(changemodelstatus("idle"));
   // }, [mymodelstatus, Listofhoststatus]);
 
-  const dummyData: ModelCardProps[] = [
-    {
-      photolink:
-        "https://cloud.appwrite.io/v1/storage/buckets/model/files/68741ad10008207256ee/view?project=668f9f8c0011a761d118",
-      hosttype: "Fan Meet",
-      online: true,
-      name: "John",
-      age: 25,
-      gender: "Male",
-      location: "Nigeria",
-      interest: [],
-      amount: 25,
-      modelid: "fjl",
-      userid: "",
-      createdAt: "",
-    },
-    {
-      photolink:
-        "https://cloud.appwrite.io/v1/storage/buckets/model/files/6874269a00152815f29c/view?project=668f9f8c0011a761d118",
-      hosttype: "Fan Date",
-      online: true,
-      name: "Mary",
-      age: 25,
-      gender: "Male",
-      location: "PHI",
-      interest: [],
-      amount: 25,
-      modelid: "45w",
-      userid: "",
-      createdAt: "",
-    },
-    {
-      photolink:
-        "https://cloud.appwrite.io/v1/storage/buckets/model/files/68741fbc002780de7380/view?project=668f9f8c0011a761d118",
-      hosttype: "Fan Call",
-      online: false,
-      name: "Sarah",
-      age: 25,
-      gender: "Male",
-      location: "AFG",
-      interest: [],
-      amount: 25,
-      modelid: "5ff",
-      userid: "",
-      createdAt: "",
-    },
-  ];
+  
 
   const mapToCard = (m: any): ModelCardProps => {
     // choose a single photolink string, prefer first non-empty if array
@@ -273,6 +217,7 @@ export default function ModelPage() {
       modelid: m._id || m.id || m.modelid || "",
       userid: m.userid || m.hostid || m.ownerId || "",
       createdAt: m.createdAt || m.created_at || "",
+      hostid:m.hostid
     };
   };
 

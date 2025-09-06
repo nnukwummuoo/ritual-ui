@@ -11,7 +11,7 @@ export type formVerificationConstants = {
     idPhoto: string,
     holdingIdPhoto: string,
     acceptTerms: boolean,
-    userid: string,
+    userid: string|undefined,
     documentType: string,
     idexpire: string,
     token: string

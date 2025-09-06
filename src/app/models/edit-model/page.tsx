@@ -20,6 +20,7 @@ import deleteIcon from "/public/icons/deleteicon.svg";
 import "@/styles/CreateModelview.css";
 import { useAuthToken } from "@/lib/hooks/useAuthToken";
 import { editModelMultipart } from "@/api/model";
+import { useUserId } from "@/lib/hooks/useUserId";
 
 
 export default function Editmodel () {
@@ -29,7 +30,7 @@ export default function Editmodel () {
   // const modelupdatestatus = useSelector(
   //   (state) => state.model.modelupdatestatus
   // );
-  const userid = useSelector((state: any) => state.register.userID);
+  const userid = useUserId();
   const model = useSelector((state: any) => state.model.modelbyid);
   const modelID = (model && (model.hostid || model.id || model._id)) as string | undefined;
   // const message = useSelector((state) => state.model.message);
@@ -178,10 +179,11 @@ export default function Editmodel () {
         timeava: times.length > 0 ? times : model?.timeava || [],
         daysava: hours.length > 0 ? hours : model?.daysava || [],
         hosttype,
+        hostid:userid
       };
       const doc1 = newImages[0];
       const doc2 = newImages[1];
-      await editModelMultipart({ token, data, doc1, doc2 });
+      await editModelMultipart({ token, data,files:newImages.map(img=>img), doc1, doc2 });
       toast.success("Model updated successfully");
       router.push(`/models/${modelID}`);
     } catch (err:any) {
@@ -202,10 +204,10 @@ export default function Editmodel () {
     setphotocount((prev) => prev - 1);
   };
 
-  const handleImageUpload = (file: any) => {
-    if (file) {
-      setNewImages((prev : any) => [...prev, file]);
-      setphotocount((prev) => prev + 1);
+  const handleImageUpload = (files: any) => {
+    if (files?.length) {
+      setNewImages((prev : any) => [...prev, ...files]);
+      setphotocount((prev) => prev + files?.lenght);
     }
   };
   
@@ -229,9 +231,14 @@ export default function Editmodel () {
             className="bg-gray-900 form-container"
             disabled={disablebut}
           >
-            <div className="input-container">
-              <label className="label">Full Name</label>
-              <label className="bg-black name-label">{model?.name || ""}</label>
+          <div className="input-container">
+              <TextInput
+                label="Fullname"
+                name="name"
+                value={name}
+                type={"text"}
+                onChange={({target}:any)=>setname(target.value)}
+              />
             </div>
             <div className="input-container">
               <label className="label">Location</label>
@@ -263,6 +270,7 @@ export default function Editmodel () {
                 value={bodytype}
                 onChange={(e) => setbodytype(e.currentTarget.value)}
               >
+                <option value="">Select</option>
                 <option value="Slim">Slim</option>
                 <option value="Curvy">Curvy</option>
                 <option value="Chubby">Chubby</option>
@@ -284,6 +292,7 @@ export default function Editmodel () {
                 value={height}
                 onChange={(e) => setheight(e.currentTarget.value)}
               >
+                <option value="">Select</option>
                 {Array.from({ length: 200 }, (_, i) => i + 57).map((value) => (
                   <option key={value} value={`${value} cm`}>
                     {value} cm
@@ -300,6 +309,7 @@ export default function Editmodel () {
                 value={weight}
                 onChange={(e) => setweight(e.currentTarget.value)}
               >
+                <option value="">Select</option>
                 {Array.from({ length: 120 }, (_, i) => i + 40).map((value) => (
                   <option
                     key={value}
@@ -321,6 +331,7 @@ export default function Editmodel () {
                   value={gender}
                   onChange={(e) => setgender(e.currentTarget.value)}
                 >
+                  <option value="">Select</option>
                   <option value="Man">Man</option>
                   <option value="Woman">Woman</option>
                   <option value="Trans">Trans</option>
@@ -339,6 +350,7 @@ export default function Editmodel () {
                 onChange={(e) => setsmoke(e.currentTarget.value)}
                 value={smoke}
               >
+                <option value="">Select</option>
                 <option value="Yes">Yes</option>
                 <option value="No">No</option>
               </select>
@@ -354,6 +366,7 @@ export default function Editmodel () {
                 onChange={(e) => setdrink(e.currentTarget.value)}
                 value={drink}
               >
+                <option value="">Select</option>
                 <option value="Yes">Yes</option>
                 <option value="No">No</option>
               </select>
@@ -476,6 +489,7 @@ export default function Editmodel () {
                   value={days}
                   onChange={(e) => setdays(e.currentTarget.value)}
                 >
+                  <option value="">Select</option>
                   <option value={`${duration}min`}>{duration}MIN</option>
                   <option value={`${duration}hour`}>{duration}HOUR</option>
                   <option value={`${duration}day`}>{duration}DAY</option>
@@ -491,6 +505,7 @@ export default function Editmodel () {
                   value={hosttype}
                   onChange={(e) => sethosttype(e.currentTarget.value)}
                 >
+                  <option value="">Select</option>
                   <option value="Fan meet">Fan meet</option>
                   <option value="Fan date">Fan date</option>
                   <option value="Private show">Private show</option>
@@ -574,14 +589,16 @@ export default function Editmodel () {
                   className="hidden"
                   accept="image/*"
                   onChange={(e) => {
-                    if (e.target.files?.[0]) handleImageUpload(e.target.files[0]);
-                  }}
+                    if (e.target.files?.[0]) handleImageUpload(e.target.files);
+                  }} multiple
                 />
               </div>
               <div className="grid grid-cols-2 gap-4 mt-4 sm:grid-cols-3 md:grid-cols-4">
                 {newImages.map((file, index) => (
                   <div key={`new-${index}`} className="relative group">
                     <Image
+                      width={100}
+                      height={100}
                       alt={`new-${index}`}
                       src={URL.createObjectURL(file)}
                       className="object-cover w-full border rounded-lg h-36 border-slate-600"
@@ -648,3 +665,31 @@ export default function Editmodel () {
     </div>
   );
 };
+
+const TextInput = ({ label, name, value, onChange, type = "text" }: any): any => (
+  <div className="mb-4">
+    <label htmlFor={name} className="block text-sm font-medium mb-2">
+      {label}
+    </label>
+    {type === "textarea" ? (
+      <textarea
+        id={name}
+        name={name}
+        value={value}
+        onChange={onChange}
+        rows={4}
+        className="w-full p-3 border border-gray-300 rounded-md focus:outline-none bg-black text-white"
+      ></textarea>
+    ) : (
+      <input
+        id={name}
+        name={name}
+        type={type}
+        value={value}
+          onChange={onChange}
+          placeholder={"Enter Your "+label}
+        className="w-full p-3 border border-gray-300 rounded-md focus:outline-none bg-slate-800 text-white"
+      />
+    )}
+  </div>
+);

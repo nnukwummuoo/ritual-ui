@@ -44,6 +44,7 @@ import "material-react-toastify/dist/ReactToastify.css";
 import "react-loading-skeleton/dist/skeleton.css";
 import "react-awesome-slider/dist/styles.css";
 import { AppDispatch } from "@/store/store";
+import { useUserId } from "@/lib/hooks/useUserId";
 
 
 // Types
@@ -70,7 +71,7 @@ export default function Modelbyid () {
     const dispatch = useDispatch<AppDispatch>();
 
     // Redux selectors
-  const userid = useSelector((state: RootState) => state.register.userID);
+  const userid = useUserId();
   const Mymodel = useSelector((state: RootState) => state.profile.modelID);
   const login = useSelector((state: RootState) => state.register.logedin);
   const token = useSelector((state: RootState) => state.register.refreshtoken);
@@ -100,7 +101,6 @@ export default function Modelbyid () {
     (state: RootState) => state.model.remove_crush_message
   );
   const model = useSelector((state: RootState) => state.model.modelbyid);
-
   // Toast hook
   const { successalert, dismissalert } = useToast();
 
@@ -172,7 +172,6 @@ export default function Modelbyid () {
       setLoading(false);
       setshowmodel(true);
       checkcrush();
-      setstats();
 
       const linksimg =
         typeof model.photolink === "string" && model.photolink.trim()
@@ -208,7 +207,7 @@ export default function Modelbyid () {
     const fetchViews = async () => {
       const data = {
         modelId: Model[0],
-        userId: user?.userID || "",
+        userId: userid || "",
         token: user?.refreshtoken || "",
       };
       const response = await dispatch(getViews(data));
@@ -331,7 +330,6 @@ export default function Modelbyid () {
       if (model.userid === userid) {
         return true;
       } else {
-        console.log("They're not the same");
         return false;
       }
     } else {
@@ -339,16 +337,16 @@ export default function Modelbyid () {
     }
   };
 
-  const setstats = () => {
-    const normalizedHosttype = model.hosttype?.toLowerCase().trim();
-    if (normalizedHosttype === "fan meet") {
-      setmodlemeet("Meet and Greet with");
-    } else if (normalizedHosttype === "fan date") {
-      setmodlemeet("A Date with");
-    } else if (normalizedHosttype === "private show") {
-      setmodlemeet("A Private Conversation with");
+  const getStatus = (type:String) => {
+    const normalizedHosttype = type;
+    if (normalizedHosttype == "Fan meet") {
+      return ("Meet and Greet with");
+    } else if (normalizedHosttype == "Fan date") {
+      return ("A Date with");
+    } else if (normalizedHosttype == "Fan call") {
+      return ("A Private Conversation with");
     } else {
-      setmodlemeet("Engage with");
+      return ("Engage with");
     }
   };
 
@@ -387,6 +385,8 @@ export default function Modelbyid () {
                 return (
                   <div className=" w-full h-[300px] overflow-hidden">
                     <Image
+                      height={100}
+                      width={100}
                       alt="host pics"
                       src={value}
                       className="object-cover w-full h-full rounded-md cursor-pointer hover:opacity-90 transition-opacity duration-200"
@@ -501,6 +501,17 @@ export default function Modelbyid () {
       return "offline";
     }
   };
+
+
+  if (!loading&&model.userid&&!model.hosttype&&!model.price){
+      const tst=toast.loading("Curating your model, please wait!")
+      navigate("/models/edit-model")
+      setLoading(true)
+      setTimeout(()=>{
+        toast.dismiss(tst)
+      },5000)
+  }
+
   const psPrice = model.price?.replace(/(GOLD)(per)/, "$1 $2");
   const fmtPSPrice = psPrice?.includes("per minute")
     ? psPrice
@@ -541,16 +552,17 @@ export default function Modelbyid () {
 
       {showmode && (
         <div
-          className="relative w-full p-2 pb-16 overflow-auto md:max-w-md sm:ml-8 md:mt-5 md:mr-auto md:ml-24 xl:ml-42 2xl:ml-52"
+          className="w-full p-2 pb-16 overflow-auto md:max-w-md sm:ml-8 md:mt-5 md:mr-auto md:ml-24 xl:ml-42 2xl:ml-52"
           onClick={(e) => setclick(true)}
         >
           <div className="w-full">
-            <div className="z-50 w-full md:sticky top-16 ">
+            <div className="z-10 w-full top-16 ">
               <ModelByIdNav
                 views={views}
-                modelName={model.name.split(" ")[0]}
+                modelName={(model?.name||" ").split(" ")[0]}
                 followingUser={model.followingUser}
                 id={model.userid}
+                modelid={model.hostid}
               />
             </div>
 
@@ -558,6 +570,7 @@ export default function Modelbyid () {
             {checkuser() && (
               <button>
                 <Image
+                className="z-50 absolute w-6 h-6 top-10 left-16 md:top-24 md:left-24"
                   alt="optionicon"
                   src={optionicon}
                   onClick={(e) => {
@@ -565,7 +578,7 @@ export default function Modelbyid () {
                   }}
                 />
                 {closeOption && (
-                  <div className="z-10 flex flex-col text-left">
+                  <div className="z-[100] absolute  bg-[#0e0a1f] flex flex-col text-left">
                     <button
                       onClick={(e) => {
                         navigate("/models/edit-model");
@@ -587,7 +600,7 @@ export default function Modelbyid () {
 
           {isModalOpen && (
             <div
-              className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50 p-4"
+              className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-10 p-4"
               onClick={handleModalClick}
             >
               <button
@@ -678,7 +691,7 @@ export default function Modelbyid () {
 
           {Cantchat() && (
             <button
-              className="w-full mt-2 btn"
+              className="w-full mt-2 btn bg-[#da5e16]"
               onClick={(e) => {
                 if (!userid) {
                   toast.info("login to access this operation", {
@@ -695,7 +708,7 @@ export default function Modelbyid () {
           <div className="mx-auto my-2 font-semibold text-center text-slate-300">
             <p>
               {" "}
-              {modelmeet} {model.name.split(" ")[0]}
+              { getStatus(String(model?.hosttype)) } {model.name.split(" ")[0]}
             </p>
           </div>
           <div className="grid sm:grid-cols-2">
@@ -787,7 +800,7 @@ export default function Modelbyid () {
             >
               <span>status :</span>{" "}
               <span>
-                {model.verify == "live" ? "Verified" : "Not verified"}
+                {model.verify ? "Verified" : "Not verified"}
               </span>
             </p>
             <p className="flex justify-between w-full mr-2 break-all text-slate-300 text-wrap sm:block">
@@ -891,6 +904,7 @@ export default function Modelbyid () {
                   modelid={model.hostid}
                   type={model.hosttype}
                   setrequested={setrequested}
+                  model={model}
                 />
               </div>
             </div>

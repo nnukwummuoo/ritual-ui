@@ -6,16 +6,18 @@ import type { AppDispatch, RootState } from "@/store/store";
 import { unverifiedHost } from "@/store/modelSlice";
 import PacmanLoader from "react-spinners/RingLoader";
 import Hostlist from "@/components/admin/confirmHost/Hostlist";
+import { useUserId } from "@/lib/hooks/useUserId";
 
 export default function VerifyModels() {
   const dispatch = useDispatch<AppDispatch>();
   const token = useSelector((s: RootState) => s.register.refreshtoken);
+  const userid = useUserId();
   const status = useSelector((s: RootState) => s.model.unverifiedhoststatus);
   const hosts = useSelector((s: RootState) => s.model.Listofunverifiedhost as any[]);
 
   useEffect(() => {
     if (status === "idle") {
-      dispatch(unverifiedHost({ token }));
+      dispatch(unverifiedHost({ token, userid:""+userid}));
     }
   }, [dispatch, status, token]);
 
@@ -56,6 +58,7 @@ export default function VerifyModels() {
                   holdingIdPhoto: host.holdingIdPhotofile || host.postlinkid,
                   idPhoto: host.idPhotofile || host.userphotolink,
                   image: host.image,
+                  id: host._id,
                 }} />
               </li>
             ))}

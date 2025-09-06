@@ -5,8 +5,10 @@ import {addMonths} from "date-fns/addMonths";
 import {format} from "date-fns/format";
 import RotateLoader from "react-spinners/RotateLoader";
 import { useSelector, useDispatch } from "react-redux";
-import { bookmdel, resetstat } from "@/store/booking";
+import { bookAmodel, bookmdel, resetstat } from "@/store/booking";
 import { RootState, AppDispatch } from "@/store/store"; // adjust path based on your store setup
+import { toast } from "material-react-toastify";
+import { useUserId } from "@/lib/hooks/useUserId";
 
 interface RequestFormProps {
   setsuccess: (value: boolean) => void;
@@ -17,6 +19,7 @@ interface RequestFormProps {
     error: (msg: string, options?: { autoClose?: number }) => void;
   };
   price: number;
+  model: any;
 }
 
 export const Requestform: React.FC<RequestFormProps> = ({
@@ -24,8 +27,8 @@ export const Requestform: React.FC<RequestFormProps> = ({
   setrequested,
   modelid,
   type,
-  toast,
   price,
+  model
 }) => {
   const [loading, setLoading] = useState(false);
   const [color] = useState("#d49115");
@@ -33,7 +36,7 @@ export const Requestform: React.FC<RequestFormProps> = ({
   const [time, setTime] = useState("");
   const [place, setPlace] = useState("");
 
-  const userid = useSelector((state: any) => state.register.userID);
+  const userid = useUserId();
   const token = useSelector((state: any) => state.register.refreshtoken);
   const bookingstats = useSelector((state: RootState) => state.booking.bookingstats);
   const bookingmessage = useSelector((state: RootState) => state.booking.bookingmessage);
@@ -63,7 +66,7 @@ export const Requestform: React.FC<RequestFormProps> = ({
 
   const maxDate = format(addMonths(new Date(), 13), "yyyy-MM-dd");
 
-  const checkInput = () => {
+  const checkInput = async () => {
     if (!time) {
       toast.error("Input time", { autoClose: 2000 });
       return;
@@ -77,21 +80,28 @@ export const Requestform: React.FC<RequestFormProps> = ({
       return;
     }
 
-    // if (bookingstats !== "Loading") {
-    //   setLoading(true);
-    //   dispatch(
-    //     bookmdel({
-    //       type,
-    //       place,
-    //       time,
-    //       date,
-    //       token,
-    //       modelid,
-    //       userid,
-    //       price,
-    //     })
-    //   );
-    // }
+    if (bookingstats !== "loading") {
+      const tst=toast.loading("Your request is being processed")
+      try {
+        const res = await bookAmodel({
+          place,
+          time,
+          date,
+          userid: userid,
+          modelid: model.hostid,
+          type: model.hosttype,
+          price: model.price
+        });
+        toast.success("Your request has been submitted and sent to "+(model?.name||"The model"))
+        setsuccess(true)
+        setrequested(true)
+      } catch (err) {
+        toast.error(""+err)
+      } finally {
+        toast.dismiss(tst);
+        setLoading(false)
+      }
+    }
   };
 
   return (

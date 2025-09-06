@@ -16,22 +16,24 @@ import {
 } from "@/store/profile";
 import { updateFollowers } from "@/store/modelSlice";
 import { useAuth } from '@/lib/context/auth-context';
+import { useUserId } from "@/lib/hooks/useUserId";
 
 type Props = {
   modelName: string;
   views: number;
   followingUser: boolean;
-  id: string;
+  id: string | undefined;
+  modelid: string | undefined;
 };
 
-const ModelByIdNav = ({ modelName, views, followingUser, id }: Props) => {
+const ModelByIdNav = ({ modelName, views, followingUser, id,modelid }: Props) => {
   const dispatch = useDispatch<any>();
   const router = useRouter();
   const { postuserid, modelID } = useParams<{ postuserid?: string; modelID?: string }>();
 
   const follow_stats = useSelector((state: any) => state.profile.follow_stats);
   const unfollow_stats = useSelector((state: any) => state.profile.unfollow_stats);
-  const userid = useSelector((state: any) => state.register.userID);
+  const userid = useUserId();
   const token = useSelector((state: any) => state.register.refreshtoken);
   const profile = useSelector((state: any) => state.comprofile.profile);
 
@@ -66,8 +68,8 @@ const ModelByIdNav = ({ modelName, views, followingUser, id }: Props) => {
       setIsLoading(true);
       await dispatch(
         updateFollowers({
-          id,
-          userId: userid,
+          userId: id||userid,
+          id: modelid,
           action: "update",
           token: user?.refreshtoken || "",
         })

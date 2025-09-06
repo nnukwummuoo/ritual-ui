@@ -92,7 +92,6 @@ export const createmodel = createAsyncThunk<any, CreateModelPayload>(
         formData.append("modelFiles", value);
       });
 
-      console.log("I am about to create formData", [...formData.entries()]);
 
       const response = await axios.put(`${URL}/model`, formData, {
         headers: {
@@ -114,6 +113,25 @@ export const createmodel = createAsyncThunk<any, CreateModelPayload>(
     }
   }
 );
+
+export const createAModel=async (data: any) => {
+  try {
+      const fd=new FormData()
+      const oKeys=Object.keys(data)
+      for(const key of oKeys){
+        fd.append(key,data[key])
+      }
+      const response = await axios.put(`${URL}/model`, fd, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      return response?.data;
+    } catch (err : any) {
+      throw err
+    }
+  }
 
 export const getViews = createAsyncThunk("/models/updateview", async (data: any) => {
   try {

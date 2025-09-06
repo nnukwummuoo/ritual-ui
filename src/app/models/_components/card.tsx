@@ -26,6 +26,7 @@ export interface ModelCardProps {
   modelid: string;
   userid: string;
   createdAt: string;
+  hostid:string;
 }
 
 interface CountryData {
@@ -47,6 +48,7 @@ export const ModelCard = ({
   modelid,
   userid,
   createdAt,
+  hostid
 }: ModelCardProps) => {
   const router = useRouter();
   // const [hostImg, setHostImg] = useState<string>("/icons/mmekoDummy.png");
@@ -88,10 +90,8 @@ export const ModelCard = ({
     return "/icons/transIcon.svg";
   };
 
-  const handleClick = () => {
-    console.log(modelid);
-    
-    router.push(`/models/${modelid}`);
+  const handleClick = () => {    
+    router.push(`/models/${hostid}`);
   };
 
   return (
