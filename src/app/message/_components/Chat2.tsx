@@ -21,24 +21,24 @@ import DropdownMenu from "./DropdownMenu";
 // import onlineIcon from "@/public/onlineIcon.svg";
 // import offlineIcon from "@/public/offlineIcon.svg";
 // import starIcon from "@/public/star.png";
-import { getchat, send_gift, changemessagestatus } from "@/store/messageSlice";
+import { getchat, send_gift } from "@/store/messageSlice";
 import type { RootState } from "@/store/store";
+
 
 let mychat = "yes";
 let messageType = "";
 let ClientMess;
 type messagestatus = "idle" | "loading" | "succeeded" | "failed";
+const messagestatus: messagestatus = "idle";
 export const Chat = () => {
   const msgListref = useRef(null);
-  const messagestatus = useSelector(
-    (state: RootState) => state.message.currentmessagestatus
-  );
+  // const messagestatus = useSelector(
+  //   (state) => state.message.currentmessagestatus
+  // );
   // const giftstats = useSelector((state) => state.message.giftstats);
   // const giftmessage = useSelector((state) => state.message.giftmessage);
-  const oldMessage = useSelector(
-    (state: RootState) => state.message.listofcurrentmessage
-  );
-  const chatinfo = useSelector((state: RootState) => state.message.chatinfo);
+  // const oldMessage = useSelector((state) => state.message.listofcurrentmessage);
+  // const chatinfo = useSelector((state) => state.message.chatinfo);
   // const modelID = useSelector((state) => state.profile.modelID);
   // const balance = useSelector((state) => state.profile.balance);
   // const modelname = useSelector((state) => state.profile.modelname);
@@ -72,7 +72,7 @@ export const Chat = () => {
   let [sendL, setsendL] = useState(false);
   let [sendcolor, setsend_color] = useState("#f7f5f5");
 
-  const [message, setmessage] = useState<any[]>([]);
+  const [message, setmessage] = useState([]);
 
   const messagelist = () => {
     if (loading === false) {
@@ -83,68 +83,59 @@ export const Chat = () => {
             className="mb-2 bg-black md:w-[44rem] w-96 md:px-2"
             ref={msgListref}
           >
-            {message.map(
-              (value: {
-                id: string;
-                coin: boolean;
-                content: string;
-                date: string;
-                photolink: string;
-                name: string;
-              }) => {
-                if (value.id === userid) {
-                  if (value.coin) {
-                    return (
-                      <div className="flex justify-end mb-3">
-                        <Coinsendview
-                          name={"you"}
-                          price={value.content}
-                          date={value.date}
-                        />
-                      </div>
-                    );
-                  } else if (!value.coin) {
-                    return (
-                      <div className="flex justify-end mb-3">
-                        <Chatreply
-                          img={value.photolink}
-                          username={value.name}
-                          content={value.content}
-                          date={value.date}
-                          id={value.id}
-                          className="bg-orange-500 rounded-xl hover:bg-orange-300 active:bg-orange-200"
-                        />
-                      </div>
-                    );
-                  }
-                } else {
-                  if (value.coin) {
-                    return (
-                      <div className="flex justify-start mb-3">
-                        <Coinsendview
-                          name={value.name}
-                          price={value.content}
-                          date={value.date}
-                        />
-                      </div>
-                    );
-                  } else if (!value.coin) {
-                    return (
-                      <div className="flex justify-start mb-3">
-                        <Chatreply
-                          img={value.photolink}
-                          username={value.name}
-                          content={value.content}
-                          date={value.date}
-                          id={value.id}
-                          className="bg-slate-500 rounded-xl hover:bg-slate-300 active:bg-slate-200"
-                        />
-                      </div>
-                    );
-                  }
+            {message.map((value: {id: string, coin: boolean, content: string, date: string, photolink: string, name: string}) => {
+              if (value.id === userid) {
+                if (value.coin) {
+                  return (
+                    <div className="flex justify-end mb-3">
+                      <Coinsendview
+                        name={"you"}
+                        price={value.content}
+                        date={value.date}
+                      />
+                    </div>
+                  );
+                } else if (!value.coin) {
+                  return (
+                    <div className="flex justify-end mb-3">
+                      <Chatreply
+                        img={value.photolink}
+                        username={value.name}
+                        content={value.content}
+                        date={value.date}
+                        id={value.id}
+                        className="bg-orange-500 rounded-xl hover:bg-orange-300 active:bg-orange-200"
+                      />
+                    </div>
+                  );
+                }
+              } else {
+                if (value.coin) {
+                  return (
+                    <div className="flex justify-start mb-3">
+                      <Coinsendview
+                        name={value.name}
+                        price={value.content}
+                        date={value.date}
+                      />
+                    </div>
+                  );
+                } else if (!value.coin) {
+                  return (
+                    <div className="flex justify-start mb-3">
+                      <Chatreply
+                        img={value.photolink}
+                        username={value.name}
+                        content={value.content}
+                        date={value.date}
+                        id={value.id}
+                        className="bg-slate-500 rounded-xl hover:bg-slate-300 active:bg-slate-200"
+                      />
+                    </div>
+                  );
                 }
               }
-            )}
+            })}
           </ul>
         );
       } else {
@@ -169,63 +160,63 @@ export const Chat = () => {
     dispatch(getchat(payload) as any);
   }, [modelid, userid, dispatch]);
 
-  useEffect(() => {
-    //   if (!login) {
-    //     window.location.href = "/";
-    //   }
-    //   if (message.length > 0) {
-    //     const last = msgListref.current.lastElementChild;
-    //     if (last) {
-    //       last.scrollIntoView();
-    //     }
-    //   }
+  // useEffect(() => {
+  //   if (!login) {
+  //     window.location.href = "/";
+  //   }
+  //   if (message.length > 0) {
+  //     const last = msgListref.current.lastElementChild;
+  //     if (last) {
+  //       last.scrollIntoView();
+  //     }
+  //   }
 
-    if (messagestatus === "failed") {
-      console.log("failed");
-      setLoading(false);
-    }
+  //   if (messagestatus === "failed") {
+  //     console.log("failed");
+  //     setLoading(false);
+  //   }
 
-    if (messagestatus === "succeeded") {
-      dispatch(changemessagestatus("idle"));
-      updateChat();
-      setmessage(oldMessage);
-      setLoading(false);
+  //   if (messagestatus === "succeeded") {
+  //     dispatch(changemessagestatus("idle"));
+  //     updateChat();
+  //     setmessage(oldMessage);
+  //     setLoading(false);
 
-      //     socket.on("LiveChat", (data) => {
-      //       let ids = modelid.split(",");
-      //       if (ids[0] === data.data.fromid && MYID === data.data.toid) {
-      //         // console.log(data)
-      //         dispatch(updatemessage({ date: data.data.date, token }));
-      //         let info = {
-      //           name: data.name,
-      //           photolink: data.photolink,
-      //           content: data.data.content,
-      //           date: data.data.date,
-      //           id: data.data.fromid,
-      //           coin: data.data.coin,
-      //         };
+  //     socket.on("LiveChat", (data) => {
+  //       let ids = modelid.split(",");
+  //       if (ids[0] === data.data.fromid && MYID === data.data.toid) {
+  //         // console.log(data)
+  //         dispatch(updatemessage({ date: data.data.date, token }));
+  //         let info = {
+  //           name: data.name,
+  //           photolink: data.photolink,
+  //           content: data.data.content,
+  //           date: data.data.date,
+  //           id: data.data.fromid,
+  //           coin: data.data.coin,
+  //         };
 
-      //         setmessage((value) => [...value, info]);
-      //       }
-      //     });
-    }
+  //         setmessage((value) => [...value, info]);
+  //       }
+  //     });
+  //   }
 
-    //   if (giftstats === "succeeded") {
-    //     // let sent_text = ` ${gold_amount} Gold success`;
-    //     // send_chat(sent_text);
-    //     setgold_amount("50");
-    //     setgift_click(false);
-    //     setsendL(false);
-    //     dispatch(changemessagestatus("idle"));
-    //   }
+  //   if (giftstats === "succeeded") {
+  //     // let sent_text = ` ${gold_amount} Gold success`;
+  //     // send_chat(sent_text);
+  //     setgold_amount("50");
+  //     setgift_click(false);
+  //     setsendL(false);
+  //     dispatch(changemessagestatus("idle"));
+  //   }
 
-    //   if (giftstats === "failed") {
-    //     toast.error(`${giftmessage}`, { autoClose: 2000 });
-    //     setgift_click(false);
-    //     setsendL(false);
-    //     dispatch(changemessagestatus("idle"));
-    //   }
-  }, [message, messagestatus]);
+  //   if (giftstats === "failed") {
+  //     toast.error(`${giftmessage}`, { autoClose: 2000 });
+  //     setgift_click(false);
+  //     setsendL(false);
+  //     dispatch(changemessagestatus("idle"));
+  //   }
+  // }, [message, messagestatus, giftstats]);
 
   // const check_balance = () => {
   //   let my_balance = parseFloat(balance);
@@ -320,17 +311,17 @@ export const Chat = () => {
   //   }
   // };
 
-  const updateChat = () => {
-    if (chatinfo) {
-      set_Chatname((chatinfo as any).name);
-      setfirstname((chatinfo as any).firstname);
-      if ((chatinfo as any).photolink) {
-        // let photo7 = downloadImage(chatinfo.photolink, "profile");
-        let photo7 = (chatinfo as any).photolink;
-        set_Chatphoto(photo7);
-      }
-    }
-  };
+  // const updateChat = () => {
+  //   if (chatinfo) {
+  //     set_Chatname(chatinfo.name);
+  //     setfirstname(chatinfo.firstname);
+  //     if (chatinfo.photolink) {
+  //       // let photo7 = downloadImage(chatinfo.photolink, "profile");
+  //       let photo7 = chatinfo.photolink;
+  //       set_Chatphoto(photo7);
+  //     }
+  //   }
+  // };
 
   const [showEmoji, setShowEmoji] = useState(false);
   const emojiPickerRef = useRef(null);
@@ -386,7 +377,7 @@ export const Chat = () => {
         {/* Top bar */}
         <div className="bg-gray-800 chat-header ">
           <div className="flex items-center gap-2">
-            <button className="text-black" onClick={() => router.back()}>
+            <button className="text-black" onClick={() => router.push("-1")}>
               <img src="/icons/backIcon.svg" alt="back" />
             </button>
             <div
@@ -410,20 +401,20 @@ export const Chat = () => {
           </div>
           <div className="flex items-center gap-2">
             <button
-            // onClick={(e) => {
-            //   let ids = modelid.split(",");
-            //   if (Chatname) {
-            //     let call = [
-            //       "caller",
-            //       `v_id_${ids[0]}`,
-            //       `v_id_${userid}`,
-            //       profilename,
-            //       userid,
-            //       ids[0],
-            //     ];
-            //     router(`/videocall/${call.toString()}`);
-            //   }
-            // }}
+              // onClick={(e) => {
+              //   let ids = modelid.split(",");
+              //   if (Chatname) {
+              //     let call = [
+              //       "caller",
+              //       `v_id_${ids[0]}`,
+              //       `v_id_${userid}`,
+              //       profilename,
+              //       userid,
+              //       ids[0],
+              //     ];
+              //     router(`/videocall/${call.toString()}`);
+              //   }
+              // }}
             >
               <img src="/icons/videocamIcon.svg" alt="videocall" />
             </button>
@@ -443,9 +434,7 @@ export const Chat = () => {
                 size={35}
                 aria-label="Loading Spinner"
               />
-              <p className="text-sm text-center text-gray-600">
-                Please wait...
-              </p>
+              <p className="text-sm text-center text-gray-600">Please wait...</p>
             </div>
           ) : (
             <div className="">{messagelist()}</div>
@@ -502,11 +491,7 @@ export const Chat = () => {
               // onClick={toggleEmojiPicker}
               className="ml-2"
             >
-              <img
-                alt="addemoji"
-                src="/icons/addemojis.js.svg"
-                className="w-6 h-6"
-              />
+              <img alt="addemoji" src="/icons/addemojis.js.svg" className="w-6 h-6" />
             </button>
           </div>
 

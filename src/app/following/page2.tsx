@@ -9,7 +9,7 @@ import Spinner from "../../components/ui/Spinner";
 import { User } from "../../types/user";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "../../store/store";
-import { getfollow, follow, unfollow } from "../../store/profile";
+import { getfollow } from "../../store/profile";
 import { loginAuthUser } from "../../store/registerSlice";
 const FollowingPage: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -79,14 +79,6 @@ const FollowingPage: React.FC = () => {
     console.log("[FollowingPage] render tabs", { loading });
   }, [loading]);
 
-  const handleFollow = (modelId: string) => {
-    dispatch(follow({ userId: userid, modelId: modelId, token: token }));
-  };
-
-  const handleUnfollow = (modelId: string) => {
-    dispatch(unfollow({ userId: userid, modelId: modelId, token: token }));
-  };
-
   const followers = () => {
     const followersData = apiFollowers.filter((user) =>
       user.name.toLowerCase().includes(search.toLowerCase())
@@ -106,9 +98,6 @@ const FollowingPage: React.FC = () => {
               image={user.image}
               name={user.name}
               modelid={user.modelid}
-              isFollowing={apiFollowing.some((followedUser) => followedUser.id === user.id)}
-              onFollow={() => handleFollow(user.modelid)}
-              onUnfollow={() => handleUnfollow(user.modelid)}
             />
           ))}
         </div>
@@ -135,9 +124,6 @@ const FollowingPage: React.FC = () => {
               image={user.image}
               name={user.name}
               modelid={user.modelid}
-              isFollowing={true}
-              onFollow={() => handleFollow(user.modelid)}
-              onUnfollow={() => handleUnfollow(user.modelid)}
             />
           ))}
         </div>

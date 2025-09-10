@@ -5,12 +5,9 @@ interface FollowerCardProps {
   image: string;
   name: string;
   modelid: string;
-  isFollowing: boolean;
-  onFollow: () => void;
-  onUnfollow: () => void;
 }
 
-const FollowerCard: React.FC<FollowerCardProps> = ({ image, name, modelid, isFollowing, onFollow, onUnfollow }) => {
+const FollowerCard: React.FC<FollowerCardProps> = ({ image, name, modelid }) => {
   const hasImage = Boolean(image && image.trim());
   const initials = React.useMemo(() => {
     const parts = (name || "").trim().split(/\s+/);
@@ -42,7 +39,7 @@ const FollowerCard: React.FC<FollowerCardProps> = ({ image, name, modelid, isFol
 
       {/* Right side: Dropdown (three dots) */}
       <div className="flex-shrink-0">
-        <DropdownMenu isFollowing={isFollowing} onFollow={onFollow} onUnfollow={onUnfollow} />
+        <DropdownMenu />
       </div>
     </div>
   );
