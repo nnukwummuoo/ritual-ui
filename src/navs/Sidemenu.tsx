@@ -94,7 +94,7 @@ const getModelButton = () => {
     );
   }
 
-  // 2️⃣ User applied/verified but hasn't created a model yet → go to create model
+  // 2️⃣ User applied/verified but hasn't created a model yet → go to create mod
   if (profile.exclusive_verify) {
     return (
       <MenuIconImg
