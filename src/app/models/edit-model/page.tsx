@@ -563,6 +563,9 @@ export default function Editmodel () {
               ></textarea>
             </div>
           </fieldset>
+
+
+          
           <fieldset
             style={{ display: step === 3 ? "flex" : "none" }}
             className="bg-gray-900 form-container"
@@ -617,6 +620,10 @@ export default function Editmodel () {
                 ))}
               </div>
             </div>
+
+
+
+
             <hr className="my-4 bg-slate-300" />
             <button
               className="block w-full h-10 font-semibold text-center text-white transition bg-yellow-600 btn rounded-2xl hover:bg-yellow-500"

@@ -1,3 +1,5 @@
+//src/navs/Menubar.tsx
+
 import React, { useState,useEffect } from 'react'
 import '../styles/Navs.css'
 // import personicon from 
@@ -130,7 +132,7 @@ export const Menubar = () => {
 
         {
           true && // ismodel()
-          <button className='flex flex-row mx-auto mt-2' onClick={(e)=>{
+          <button className='flex flex-row mx-auto mt-2' onClick={()=>{
             router.push(`/modelbyid/random_id_123`)
           }}>
            <p className='text-center text-sm font-semibold text-yellow-600'>Model portfolio</p>

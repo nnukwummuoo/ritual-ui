@@ -1,81 +1,114 @@
-import axios from "axios";
-import { URL } from "@/api/config";
+import backend from "@/api/backendApi";
 
-// Create Model (multipart) with both Authorization and x-refresh-token headers
+// -----------------------------
+// Create Model (URLs for photolink)
+// -----------------------------
+// -----------------------------
+// Create Model (photolinks always strings)
+// -----------------------------
 export async function createModelMultipart(params: {
   token: string;
   userid: string;
   data: Record<string, any>;
-  files?: Array<File | Blob>;
-  doc1?: File | Blob;
-  doc2?: File | Blob;
+  photolink?: string[];
 }) {
-  const { token, userid, data, files, doc1, doc2 } = params;
-  const form = new FormData();
-  const payload = { ...data, userid };
-  form.append("data", JSON.stringify(payload));
-  form.append("token", token);
-  // Backend expects photos under 'modelFiles'
-  if (Array.isArray(files)) {
-    files.forEach((f) => form.append("modelFiles", f as any));
-  }
-  // Also attach explicit doc1/doc2 fields per backend sample
-  // Prefer provided doc1/doc2, otherwise map from the first two files
-  const first = doc1 || (Array.isArray(files) && files.length > 0 ? files[0] : undefined);
-  const second = doc2 || (Array.isArray(files) && files.length > 1 ? files[1] : undefined);
-  if (first) form.append("doc1", first as any);
-  if (second) form.append("doc2", second as any);
+  const { token, userid, data, photolink = [] } = params;
 
-  const res = await axios.put(`${URL}/model`, form, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "x-refresh-token": token,
-    },
+  if (!userid) throw new Error("Missing userid for createModelMultipart");
+  if (!token) throw new Error("Missing token for createModelMultipart");
+
+  const api = backend(token);
+
+  const validPhotoLinks = photolink.filter(link => typeof link === "string" && link.trim() !== "");
+
+  const payload = {
+    ...data,
+    userid, // ✅ keep exactly as is for backend
+    photolink: validPhotoLinks,
+  };
+
+  console.log("[createModelMultipart] Payload ready:", payload);
+
+  const res = await api.put("/model", payload, {
+    headers: { "Content-Type": "application/json" },
   });
+
+  console.log("[createModelMultipart] Backend response:", res.data);
   return res.data;
 }
 
-// Get My Model by userid (optionally with Authorization header)
+
+
+// -----------------------------
+// Get My Model by userid
+// -----------------------------
 export async function getMyModel(params: { userid: string; token?: string }) {
   const { userid, token } = params;
-  const res = await axios.post(
-    `${URL}/getverifymodel`,
-    { userid },
-    token
-      ? {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      : undefined
-  );
-  return res.data;
-}
+  if (!userid) throw new Error("Missing userid for getMyModel");
 
+  const api = backend(token);
+  const res = await api.post("/getverifymodel", { userid }); // <-- make sure key matches backend
+  const data = res.data;
+
+  if (data.ok && data.host) {
+    // Ensure a fallback image exists
+    data.host = data.host.map(model => ({
+      ...model,
+      displayImage: (model.photolink && model.photolink[0]) || "/default-image.png",
+    }));
+  }
+
+  console.log("[getMyModel] Normalized response:", data);
+  return data;
+}
+// -----------------------------
 // Edit Model (multipart)
+// -----------------------------
 export async function editModelMultipart(params: {
   token: string;
-  data: Record<string, any>; // must include userid and modelid inside data
+  data: Record<string, any>; // must include userId and modelId
   files?: Array<File | Blob>;
   doc1?: File | Blob;
   doc2?: File | Blob;
 }) {
   const { token, data, files, doc1, doc2 } = params;
-  const form = new FormData();
-  form.append("data", JSON.stringify(data));
-  form.append("token", token);
-  // Backend expects photos under 'updateModelPhotos'
-  console.log(files)
-  if (files?.length) {
-    files.forEach((f) => form.append("updateModelPhotos", f as any));
-  }
-  if (doc1) form.append("updateModelPhotos", doc1 as any);
-  if (doc2) form.append("updateModelPhotos", doc2 as any);
 
-  const res = await axios.post(`${URL}/editmodel`, form, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
+  if (!data.userId) throw new Error("Missing userId in data for editModelMultipart");
+  if (!token) throw new Error("Missing token for editModelMultipart");
+
+  const api = backend(token);
+  const form = new FormData();
+
+  // Append all non-file fields
+  Object.entries(data).forEach(([key, value]) => {
+    if (Array.isArray(value)) {
+      value.forEach((v) => form.append(key, v));
+      console.log(`[editModelMultipart] Appended array field "${key}" with values:`, value);
+    } else if (value !== undefined && value !== null) {
+      form.append(key, String(value));
+      console.log(`[editModelMultipart] Appended field "${key}" with value:`, value);
+    }
   });
+
+  // Attach update files
+  [...(files || []), doc1, doc2].forEach((file, i) => {
+    if (file) {
+      form.append("updateModelPhotos", file as any);
+      console.log(
+        `[editModelMultipart] Appended updateModelPhotos[${i}]:`,
+        (file as any).name || "[blob-no-name]"
+      );
+    } else {
+      console.log(`[editModelMultipart] update file[${i}] is null or undefined, skipped`);
+    }
+  });
+
+  console.log("[editModelMultipart] Final FormData ready to send");
+
+  const res = await api.post("/editmodel", form, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+
+  console.log("[editModelMultipart] Backend response:", res.data);
   return res.data;
 }
