@@ -88,8 +88,8 @@ const getModelButton = () => {
       <MenuIconImg
         src="/icons/icons8-model.png"
         name="Model Portfolio"
-      // url={`/models/${profile.modelID || profile.modelId}`}
-       url="/model/create"
+       url={`/models/${profile.modelID || profile.modelId}`}
+      // url="/model/create"
       />
     );
   }
