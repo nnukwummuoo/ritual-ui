@@ -79,23 +79,26 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   
   useEffect(()=>{pathname.includes("register") ? setPopup("close") : setPopup("open")},[pathname])
   // hydrate session from localStorage to support pages expecting session
-  useEffect(()=>{
-    try{
-      const raw = typeof window !== 'undefined' ? localStorage.getItem("login") : null
-      if(raw){
-        const data = JSON.parse(raw) || {}
-        setSession({
-          _id: data.userID || data._id || data.id || "",
-          email: data.email || "",
-          token: data.accesstoken || data.accessToken || data.token,
-          fullName: data.fullName || data.name || "",
-          isAdmin: data.isAdmin
-        })
-      }
-    }catch(e){
-      // ignore
+  useEffect(() => {
+  try {
+    const raw = typeof window !== "undefined" ? localStorage.getItem("login") : null;
+    if (raw) {
+      const data = JSON.parse(raw) || {};
+      setSession({
+        _id: data.userID || data._id || data.id || "",
+        email: data.email || "",
+        token: data.accesstoken || data.accessToken || data.token,
+        fullName: `${data.firstname ?? ""} ${data.lastname ?? ""}`.trim() || data.fullName || data.name || "",
+        isAdmin: data.isAdmin,
+      });
     }
-  },[isLoggedIn, status])
+  } catch (e) {
+    // ignore
+  }
+}, [isLoggedIn, status]);
+
+
+
   return (
     <AuthContext.Provider
       value={{

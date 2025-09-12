@@ -68,7 +68,15 @@ export async function deleteImage(publicId: string): Promise<{ success?: boolean
   return (await res.json().catch(() => ({}))) as any;
 }
 
+
+
+
+
+
+
 export async function getViewUrl(publicId: string): Promise<string> {
+  console.log("[getViewUrl] publicId:", publicId);
+
   const tryOnce = async (base: string) =>
     fetch(`${base}/api/image/view?publicId=${encodeURIComponent(publicId)}`, {
       method: "GET",
@@ -78,15 +86,25 @@ export async function getViewUrl(publicId: string): Promise<string> {
   let res: Response | undefined;
   try {
     res = await tryOnce(API_BASE);
-  } catch {}
+    console.log("[getViewUrl] Response from API_BASE:", res.status);
+  } catch (err) {
+    console.error("[getViewUrl] Error fetching from API_BASE:", err);
+  }
+
   if (!res) {
     try {
       res = await tryOnce(PROD_BASE);
-    } catch {}
+      console.log("[getViewUrl] Response from PROD_BASE:", res.status);
+    } catch (err) {
+      console.error("[getViewUrl] Error fetching from PROD_BASE:", err);
+    }
   }
+
   if (!res) throw new Error("Get URL failed: network error");
+
   const contentType = res.headers.get('content-type') || '';
-  // Read the body ONCE as ArrayBuffer so we can decide how to handle it
+  console.log("[getViewUrl] Content-Type:", contentType);
+
   const buf = await res.arrayBuffer().catch(() => new ArrayBuffer(0));
   const decoder = new TextDecoder();
   const asText = () => {
@@ -95,44 +113,50 @@ export async function getViewUrl(publicId: string): Promise<string> {
 
   if (!res.ok) {
     const bodyText = asText();
+    console.error("[getViewUrl] Fetch failed:", res.status, bodyText);
     throw new Error(`Get URL failed (${res.status}): ${bodyText}`);
   }
 
-  // If server returned JSON or text, interpret accordingly
   if (contentType.includes('application/json') || contentType.startsWith('text/')) {
     const bodyText = asText();
     try {
       const data = JSON.parse(bodyText);
+      console.log("[getViewUrl] JSON response:", data);
       if (typeof data === 'string') return data;
       if (data && typeof (data as any).url === 'string') return (data as any).url as string;
       return bodyText;
-    } catch {
+    } catch (err) {
+      console.warn("[getViewUrl] Failed to parse JSON, returning text:", bodyText, err);
       return bodyText;
     }
   }
 
-  // Otherwise, treat as binary and return a Blob URL the UI can open
   try {
     const blob = new Blob([buf], { type: contentType || 'application/octet-stream' });
     const objectUrl = URL.createObjectURL(blob);
+    console.log("[getViewUrl] Blob URL created:", objectUrl);
     return objectUrl;
-  } catch {
-    // Fallback: return empty string if blob creation fails
+  } catch (err) {
+    console.error("[getViewUrl] Failed to create Blob URL:", err);
     return '';
   }
 }
 
-// Backwards compatibility helper. If a URL is given, return it; if a File-like is given, upload it.
+// Updated saveImage
 export async function saveImage(fileOrUrl: any, _folder?: string): Promise<string> {
   try {
     if (typeof fileOrUrl === "string" && /^https?:\/\//i.test(fileOrUrl)) {
+      console.log("[saveImage] Provided string URL, returning as-is:", fileOrUrl);
       return fileOrUrl;
     }
+    console.log("[saveImage] Uploading file:", fileOrUrl);
     const { publicId } = await uploadImage(fileOrUrl as File);
-    return await getViewUrl(publicId);
+    console.log("[saveImage] Uploaded, publicId:", publicId);
+    const url = await getViewUrl(publicId);
+    console.log("[saveImage] Resolved URL:", url);
+    return url;
   } catch (e) {
-    console.error("saveImage failed", e);
+    console.error("[saveImage] Failed:", e);
     return "";
   }
 }
-
