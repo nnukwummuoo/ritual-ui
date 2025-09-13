@@ -88,7 +88,7 @@ const Topup: React.FC = () => {
   ));
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center px-4 sm:px-6">
+    <div className="min-h-screen w-full flex items-start justify-center px-4 sm:px-6 pt-4 sm:pt-6">
       <div className="flex flex-col items-center w-full max-w-md mx-auto">
         {/* Gold Shop Avatar */}
         <div>
@@ -101,9 +101,9 @@ const Topup: React.FC = () => {
           />
         </div>
         {/* Title */}
-        <h1 className="mt-4 text-white text-2xl sm:text-3xl font-bold text-center">Gold Shop</h1>
+        <h1 className="mt-2 sm:mt-4 text-white text-2xl sm:text-3xl font-bold text-center">Gold Shop</h1>
         {/* Subtitle */}
-        <div className="flex items-center mt-2 gap-2">
+        <div className="flex items-center mt-4 gap-2">
           <span
             className="rounded-full flex items-center justify-center"
             style={{
@@ -121,7 +121,7 @@ const Topup: React.FC = () => {
 
         {/* Table Card */}
         <div
-          className="w-full bg-[#191c2f] rounded-2xl shadow-md p-0 mb-6 mt-8 sm:mt-10 overflow-x-auto"
+          className="w-full bg-[#191c2f] rounded-2xl shadow-md p-0 mb-6 mt-4 sm:mt-6 overflow-x-auto"
           style={{ border: "1px solid #23243c" }}
         >
           <table className="w-full text-white border-collapse">
