@@ -1,15 +1,25 @@
 import axios from "axios";
 import { URL } from "./config";
 
-export const getPaymentLink = async (amount : number ) => {
-  const amountToPay = Number(amount) * 56.6 * 100;
+export const getPaymentLink = async (
+  amount: number,
+  userId: string,
+  pay_currency: string = "usdtbep20",
+  order_description: string = "Gold Pack Purchase",
+  customer_email?: string
+) => {
   try {
+    const amountToPay = Number(amount).toFixed(2); // NOWPayments expects amount in crypto units
     const res = await axios.post(`${URL}/payment/create`, {
+      userId,
       amount: amountToPay,
+      pay_currency,
+      order_description,
+      customer_email,
     });
     return res.data;
   } catch (error: any) {
     console.log(error);
-    return error?.message;
+    return { message: error?.response?.data?.message || error.message };
   }
 };
