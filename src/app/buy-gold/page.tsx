@@ -103,7 +103,7 @@ const Topup: React.FC = () => {
         {/* Title */}
         <h1 className="mt-2 sm:mt-4 text-white text-2xl sm:text-3xl font-bold text-center">Gold Shop</h1>
         {/* Subtitle */}
-        <div className="flex items-center mt-4 gap-2">
+        <div className="flex items-center mt-2 gap-2">
           <span
             className="rounded-full flex items-center justify-center"
             style={{
@@ -145,12 +145,13 @@ const Topup: React.FC = () => {
             value={currencyValue || ""}
             onChange={(e) => setCurrencyValue(Number(e.target.value))}
           >
+            // Select Gold Pack
             <option value="" disabled>
               Choose Gold Pack
             </option>
             {golds.map((value) => (
               <option key={value.value} value={value.value}>
-                {value.value} / ${value.amount}{value.bonus ? ` / +${value.bonus}` : ""}
+                {value.value} Gold / ${value.amount.replace(/[^0-9.]/g, "")} {value.bonus ? `/ +${value.bonus} Bonus` : ""}
               </option>
             ))}
           </select>
