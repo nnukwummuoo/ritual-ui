@@ -31,12 +31,13 @@ const Topup: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
 
   // const token = useSelector((state: RootState) => state.register.refreshtoken);
-  const userId = useSelector((state: RootState) => state.register.userID);
-  // const login = useSelector((state: RootState) => state.register.logedin);
+  const userID = useSelector((state: RootState) => state.register.userID);
+   const login = useSelector((state: RootState) => state.register.logedin);
 
   const pay = async () => {
-  if (!userId) {
+  if (!login) {
     toast.error("Please log in to purchase gold", { autoClose: 2000 });
+    console.log(login)
     // Optionally: router.push('/login'); // Uncomment if using next/navigation
     return;
   }
@@ -58,7 +59,7 @@ const Topup: React.FC = () => {
 
       const res = await getPaymentLink(
         amount,  // Now guaranteed to be number
-        userId,
+        userID,
         "usdtbep20",
         `Gold Pack Purchase: ${currencyValue} Gold`
       );

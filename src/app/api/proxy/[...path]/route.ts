@@ -21,17 +21,40 @@ async function handleRequest(request: NextRequest, path: string) {
 
   try {
     const body = request.method !== 'GET' ? await request.json() : undefined;
+
+    // ✅ Fix: Use Headers instance to avoid type issues with undefined values
+    const headers = new Headers();
+    
+    // Forward all non-empty headers (filters out undefined like 'host')
+    request.headers.forEach((value, key) => {
+      if (value !== undefined) {  // Skip undefined values
+        headers.set(key, value);
+      }
+    });
+
+    // ✅ Explicitly remove 'host' to avoid proxy loops/conflicts
+    headers.delete('host');
+
+    // ✅ Conditionally set Content-Type only for methods with body
+    if (body && request.method !== 'GET') {
+      headers.set('Content-Type', 'application/json');
+    }
+
     const response = await fetch(targetUrl, {
       method: request.method,
-      headers: {
-        ...Object.fromEntries(request.headers.entries()),  // Forward headers (add auth if needed)
-        'host': undefined,  // Avoid proxy issues
-        'Content-Type': 'application/json',  // Ensure JSON
-      },
+      headers,  // Now a clean Headers object – TypeScript happy!
       body: body ? JSON.stringify(body) : undefined,
     });
 
-    const data = await response.json();
+    // ✅ Only parse JSON if response is OK and content-type indicates JSON
+    let data;
+    if (response.ok && response.headers.get('content-type')?.includes('application/json')) {
+      data = await response.json();
+    } else {
+      // Fallback: Read as text for non-JSON (e.g., errors)
+      data = await response.text();
+    }
+
     return NextResponse.json(data, { status: response.status });
   } catch (error) {
     console.error('Proxy error:', error);
