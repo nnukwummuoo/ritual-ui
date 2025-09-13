@@ -1,121 +1,81 @@
-"use client";
-import React, { useState } from "react";
+"use client"
+import React from "react";
 import "./Navs.css";
 import { useRouter } from "next/navigation";
 import MenuIconImg from "@/components/MenuIcon-img";
 import { useMenuContext } from "@/lib/context/MenuContext";
 import Profile from "@/components/Profile";
-import { FaCoins, FaAngleRight, FaAngleDown } from "react-icons/fa";
+import { FaCoins } from "react-icons/fa";
 import OpenMobileMenuBtn from "@/components/OpenMobileMenuBtn";
+import { FaAngleRight } from "react-icons/fa";
+import { FaAngleDown } from "react-icons/fa";
+import { useEffect, useState } from "react";
 import handleLogout from "@/lib/service/logout";
-import { useUserId } from "@/lib/hooks/useUserId";
+import { useUser, useUserId } from "@/lib/hooks/useUserId";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/store/store";
 
 const Sidemenu = () => {
   const [minimize, setMinimize] = useState(false);
   const userId = useUserId();
+  const user = useUser();
+  // Debug: log userId changes in Sidemenu
+  useEffect(() => {
+    // eslint-disable-next-line no-console
+    console.log("[Sidemenu] userId changed:", userId);
+  }, [userId]);
+
   const router = useRouter();
-  const { open, toggleMenu: handleMenubar } = useMenuContext();
-
-  // profile directly from Redux
-  const profile = useSelector((state: RootState) => state.profile);
-
-  // ⛔ Don't render until profile exists
-  if (!profile || Object.keys(profile).length === 0) {
-    return null; // nothing until profile is ready
-  }
-
- // Default fallback
-const firstname = profile?.firstname || "User";
-const gold_balance = profile?.balance || 0;
+  const profile = useSelector((state: any) => state.profile);
+  const modelID = useSelector((state: any) => state.profile.modelID);
+  const model = useSelector((state: any) => state.profile.isModel);
+  const firstname = useSelector((s: RootState) => s.profile.firstname) || "User";
+  const upgrade = true;
+  const isModel = true;
+  const gold_balance = profile?.balance || 0;
   const admin = true;
-   
+  const { open, toggleMenu: handleMenubar } = useMenuContext();
+  const exclusive_verify = useSelector(
+    (state: any) => state.profile.exclusive_verify
+  );
 
+  React.useEffect(() => {
+    console.log(profile, "");
+  }, [profile]);
 
-
-
-
-
-//model button dynmic condition
-
-
-  // MODEL BUTTON LOGIC
- // MODEL BUTTON LOGIC
-const getModelButton2 = () => {
-  if (profile.modelId || profile.modelID) {
-    if (profile.exclusive_verify) {
-      // ✅ User has a model and is verified → go to model profile page
-      return (
-        <MenuIconImg
-          src="/icons/icons8-model.png"
-          name="Model Portfolio"
-          url={`/models/${profile.modelId || profile.modelID}`} // dynamic profile page
-        />
-      );
+  const verify = () => {
+    if (profile?.modelId || profile?.modelID) {
+      if (profile?.exclusive_verify) {
+        return (
+          <MenuIconImg
+            src="/icons/icons8-model.png"
+            name="Model portfolio"
+            url={`/models/${profile?.modelId || profile?.modelID}`}
+          />
+        );
+      } else {
+        return (
+          <MenuIconImg
+            src="/icons/icons8-model.png"
+            name="Model portfolio"
+            url="/createmodel"
+          />
+        );
+      }
     } else {
-      // User has a model but not verified → go to create model page
       return (
         <MenuIconImg
-          src="/icons/icons8-model.png"
-          name="Model Portfolio"
-          url="/model/create"
+          src={!profile?.exclusive_verify ? "/icons/icons8-plus.png" : "/icons/icons8-model.png"}
+          name={profile?.exclusive_verify ? "Model portfolio" : "Model Application"}
+          url={profile?.exclusive_verify ? "/be-a-model/apply" : "/be-a-model"}
         />
       );
     }
-  } else {
-    // User has no model
-    return (
-      <MenuIconImg
-        src={!profile.exclusive_verify ? "/icons/icons8-plus.png" : "/icons/icons8-model.png"}
-        name={profile.exclusive_verify ? "Model Portfolio" : "Model Application"}
-        url={profile.exclusive_verify ? "/be-a-model/apply" : "/be-a-model"}
-      />
-    );
-  }
-};
+  };
 
-
-
-//  url={`/models/${profile?.modelId||profile?.modelID}`}
-
-  // MODEL BUTTON LOGIC
- // MODEL BUTTON LOGIC
-const getModelButton = () => {
-  // 1️⃣ User already has a model → go to their model profile
-  if (profile.modelID || profile.modelId) {
-    return (
-      <MenuIconImg
-        src="/icons/icons8-model.png"
-        name="Model Portfolio"
-       url={`/models/${profile.modelID || profile.modelId}`}
-      // url="/model/create"
-      />
-    );
-  }
-
-  // 2️⃣ User applied/verified but hasn't created a model yet → go to create mod
-  if (profile.exclusive_verify) {
-    return (
-      <MenuIconImg
-        src="/icons/icons8-model.png"
-        name="Create Model"
-        url="/model/create"
-      />
-    );
-  }
-
-  // 3️⃣ Default → user hasn't applied yet → show Model Application
-  return (
-    <MenuIconImg
-      src="/icons/icons8-plus.png"
-      name="Model Application"
-      url="/be-a-model"
-    />
-  );
-};
-
-
+  React.useEffect(() => {
+    console.log(profile, user);
+  }, []);
 
   return (
     <div className="fixed z-[110]">
@@ -129,21 +89,12 @@ const getModelButton = () => {
           <div className="absolute -top-3 right-0 w-fit cls-btn">
             <OpenMobileMenuBtn />
           </div>
-
           <div className="overflow-hidden">
-            <div
-              className={`${
-                minimize ? "minimize" : "maximize"
-              } mt-4 transition-all duration-500 flex flex-col items-start ml-1 mr-1 p-2 divider relative overflow-hidden`}
-            >
-              <button
-                onClick={() => setMinimize(!minimize)}
-                className="top-0 -right-1 text-gray-400 absolute p-2 text-lg"
-              >
+            <div className={`${minimize ? "minimize" : "maximize"} mt-4 transition-all duration-500 flex flex-col items-start ml-1 mr-1 p-2 divider relative overflow-hidden`}>
+              <button onClick={() => setMinimize(!minimize)} className="top-0 -right-1 text-gray-400 absolute p-2 text-lg">
                 <p className="absolute top-0 right-0 w-full h-full mini-btn"></p>
                 {minimize ? <FaAngleRight /> : <FaAngleDown />}
               </button>
-
               <div className="flex justify-between w-full">
                 <div className="flex text-xs text-blue-200 mb-3 w-full">
                   <Profile
@@ -154,7 +105,6 @@ const getModelButton = () => {
                   />
                 </div>
               </div>
-
               <div className="cstm-flex gap-4 items-start w-full mt-4">
                 <button
                   className="flex gap-2 items-center justify-center font-bold text-sm w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white py-3 rounded-lg transition-transform duration-300 hover:scale-105 shadow-md"
@@ -162,22 +112,18 @@ const getModelButton = () => {
                 >
                   <FaCoins /> <span>Get More Golds</span>
                 </button>
-
                 <button className="cstm-boder w-full rounded-lg py-3 text-sm font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent bg-inherit flex gap-2 items-center justify-center transition-transform duration-300 hover:scale-105">
                   <span>Upgrade Account</span>
                 </button>
               </div>
             </div>
-
-            <div className="grid-sys text-xs text-blue-100 mt-4">
+            <div className="grid-sys text-xs text-blue-100">
               <MenuIconImg
                 src="/icons/icons8-customer.gif"
                 name="Profile"
                 url={userId ? `/Profile/${userId}` : `/Profile`}
               />
-
-              {getModelButton()}
-
+              {verify()}
               <MenuIconImg
                 src="/icons/icons8-users.png"
                 name="Following"
@@ -198,7 +144,6 @@ const getModelButton = () => {
                 name="Transactions"
                 url="/earning"
               />
-
               {admin && (
                 <MenuIconImg
                   src="/icons/icons8-admin.png"
@@ -206,25 +151,29 @@ const getModelButton = () => {
                   url="/mmeko/admin"
                 />
               )}
-
               <MenuIconImg
                 src="/icons/icons8-gift.gif"
                 name="Whats New"
                 url="/change-log"
               />
-
               <div
-                onClick={handleLogout}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleLogout();
+                  handleMenubar();
+                }}
                 className="flex flex-col items-center group cursor-pointer"
               >
                 <img
                   alt="Logout"
                   src="/icons/icons8-log-out.png"
+                  style={{
+                    display: "block",
+                    verticalAlign: "middle",
+                  }}
                   className="object-cover w-7 h-7 bg-slate-900"
                 />
-                <p className="mt-1 text-center group-hover:text-gray-400">
-                  Log Out
-                </p>
+                <p className="mt-1 text-center group-hover:text-gray-400">Log Out</p>
               </div>
             </div>
           </div>

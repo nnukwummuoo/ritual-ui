@@ -1,3 +1,6 @@
+import { Tag } from "lucide-react";
+import { ta } from "zod/v4/locales";
+
 export const interst = [
   "Family",
   "Human sexuality",
@@ -11,6 +14,13 @@ export const interst = [
   "Marriage",
   "Professional relationship",
 ];
+
+interface golds {
+  value: number;
+  amount: number;  // Enforce number, not string
+  bonus?: number | string;
+  tag?: string;
+}
 
 // export const golds = [
 //     {
@@ -65,45 +75,50 @@ export const interst = [
 // ]
 export const golds = [
   {
-    amount: "1000 GOLD for $79.99",
-    bonus: "( 37% Bonus )",
-    value: "79.99",
+    amount: "$79.99",
+    bonus: "37%",
+    value: "1000",
     price: `${1000 + 37}`,
+    tag: "Best Value",
   },
   {
-    amount: "750 GOLD for $62.99",
-    bonus: "( 32% Bonus )",
-    value: "62.99",
+    amount: "$62.99",
+    bonus: "32%",
+    value: "750",
     price: `${750 + 32}`,
   },
   {
-    amount: "550 GOLD for $49.99",
-    bonus: "( 21% Bonus )",
-    value: "49.99",
+    amount: "$49.99",
+    bonus: "21%",
+    value: "550",
     price: `${550 + 21}`,
+    tag: "Fan Favorite",
   },
   {
-    amount: "400 GOLD for $39.99",
-    bonus: "( 10% Bonus )",
-    value: "39.99",
+    amount: "$39.99",
+    bonus: "10%",
+    value: "400",
     price: `${400 + 10}`,
+    tag: "Most Popular",
   },
   {
-    amount: "200 GOLD for $20.99",
-    bonus: "( 5% Bonus )",
-    value: "20.99",
+    amount: "$20.99",
+    bonus: "5%",
+    value: "200",
     price: `${200 + 5}`,
+    tag: "Hot Choice",
   },
   {
-    amount: "100 GOLD for $10.99",
+    amount: "$10.99",
     bonus: "",
-    value: "10.99",
+    value: "100",
     price: `${100}`,
+    tag: "Casual Fan",
   },
   {
-    amount: "50 GOLD for $6.99",
+    amount: "$6.99",
     bonus: "",
-    value: "6.99",
+    value: "50",
     price: `${50}`,
   },
 ];
