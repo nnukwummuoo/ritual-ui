@@ -176,129 +176,129 @@ export default function ModelPage() {
 
   
 
-  const mapToCard = (m: any): ModelCardProps => {
-    // choose a single photolink string, prefer first non-empty if array
-    const pickFirstNonEmpty = (arr: any[]): string | null => {
-      for (const v of arr) {
+const mapToCard = (m: any): ModelCardProps => {
+  // Helper: pick first valid string from array or single value
+  const pickValidPhoto = (value: any) => {
+    if (!value) return null;
+    if (Array.isArray(value)) {
+      for (const v of value) {
         if (typeof v === "string" && v.trim() !== "") return v;
       }
       return null;
-    };
-    let rawPhoto: string | null = null;
-    if (Array.isArray(m.photolink)) rawPhoto = pickFirstNonEmpty(m.photolink);
-    if (!rawPhoto) rawPhoto = m.photolink || m.photo || m.image || m.images?.[0] || m.photos?.[0] || null;
-    const photo = typeof rawPhoto === "string" && rawPhoto.trim() !== "" ? rawPhoto : null;
-
-    // parse amount: handle price like "87 GOLD" or number-like
-    const priceVal = m.price;
-    let amountNum = 0;
-    if (typeof priceVal === "string") {
-      const digits = priceVal.replace(/[^0-9]/g, "");
-      amountNum = digits ? parseInt(digits, 10) : 0;
-    } else if (typeof priceVal === "number") {
-      amountNum = priceVal;
-    } else if (typeof m.amount === "number") {
-      amountNum = m.amount;
-    } else if (typeof m.amount === "string") {
-      const digits = m.amount.replace(/[^0-9]/g, "");
-      amountNum = digits ? parseInt(digits, 10) : 0;
     }
-
-    return {
-      photolink: photo,
-      hosttype: m.hosttype || m.category || "",
-      online: Boolean(m.online),
-      name: m.name || m.fullName || "",
-      age: Number(m.age || 0),
-      gender: m.gender || "",
-      location: m.location || "",
-      interest: m.interestedin || m.interests || [],
-      amount: amountNum,
-      modelid: m._id || m.id || m.modelid || "",
-      userid: m.userid || m.hostid || m.ownerId || "",
-      createdAt: m.createdAt || m.created_at || "",
-      hostid:m.hostid
-    };
+    if (typeof value === "string" && value.trim() !== "") return value;
+    return null;
   };
 
-  const renderModels = () => {
-    // if (loading1) {
-    //   return (
-    //     <SkeletonTheme baseColor="#202020" highlightColor="#444">
-    //       <div className="w-full p-4 space-y-4">
-    //         <div className="grid grid-cols-2 gap-4 md:grid-cols-5">
-    //           {Array(10)
-    //             .fill(0)
-    //             .map((_, index) => (
-    //               <div
-    //                 key={index}
-    //                 className="relative flex flex-col items-center p-4 bg-[#121212] rounded-lg"
-    //               >
-    //                 <Skeleton width={150} height={250} className="rounded-lg" />
-    //               </div>
-    //             ))}
-    //         </div>
-    //       </div>
-    //     </SkeletonTheme>
-    //   );
-    // }
+  // Try multiple fields in order
+  let rawPhoto =
+    pickValidPhoto(m.photolink) ||
+    pickValidPhoto(m.photo) ||
+    pickValidPhoto(m.image) ||
+    pickValidPhoto(m.images) ||
+    pickValidPhoto(m.photos);
 
-    // const sortedModels = [...filterModels].sort((a, b) => {
-    //   if (a.online && !b.online) return -1;
-    //   if (!a.online && b.online) return 1;
-    //   const viewsA = Number(a.views || 0);
-    //   const viewsB = Number(b.views || 0);
-    //   return viewsB - viewsA;
-    // });
+  // If relative path (starts with "./" or no protocol), prepend base URL
+  const photo =
+    rawPhoto && !rawPhoto.startsWith("http")
+      ? `${process.env.NEXT_PUBLIC_BASE_URL || ""}${rawPhoto.replace(/^\.?\//, "/")}`
+      : rawPhoto;
 
-    // const onlineModels = sortedModels.filter((model) => model.online);
-    // const offlineModels = sortedModels.filter((model) => !model.online);
-    if (loading) {
-      return (
-        <SkeletonTheme baseColor="#202020" highlightColor="#444">
-          <div className="w-full p-4 space-y-4">
-            <div className="grid grid-cols-2 gap-4 md:grid-cols-5">
-              {Array(6)
-                .fill(0)
-                .map((_, index) => (
-                  <div
-                    key={index}
-                    className="relative flex flex-col items-center p-4 bg-[#121212] rounded-lg"
-                  >
-                    <Skeleton width={150} height={250} className="rounded-lg" />
-                  </div>
-                ))}
-            </div>
-          </div>
-        </SkeletonTheme>
-      );
-    }
+  // Parse amount
+  const amountVal = m.price ?? m.amount ?? 0;
+  let amountNum = 0;
+  if (typeof amountVal === "string") {
+    const digits = amountVal.replace(/[^0-9]/g, "");
+    amountNum = digits ? parseInt(digits, 10) : 0;
+  } else if (typeof amountVal === "number") {
+    amountNum = amountVal;
+  }
 
-    // if no session, prompt login
-    if (!user?.session?._id) {
-      return (
-        <div className="mt-6 text-sm text-slate-400">
-          Please log in to view your models.
-        </div>
-      );
-    }
+  return {
+    photolink: photo,
+    hosttype: m.hosttype || m.category || "",
+    online: Boolean(m.online),
+    name: m.name || m.fullName || "",
+    age: Number(m.age || 0),
+    gender: m.gender || "",
+    location: m.location || "",
+    interest: m.interestedin || m.interests || [],
+    amount: amountNum,
+    modelid: m._id || m.id || m.modelid || "",
+    userid: m.userid || m.hostid || m.ownerId || "",
+    createdAt: m.createdAt || m.created_at || "",
+    hostid: m.hostid,
+  };
+};
 
-    const list: ModelCardProps[] = myModels.map(mapToCard);
 
-    if (!list.length) {
-      return (
-        <div className="mt-6 text-sm text-slate-400">You have not created any models yet.</div>
-      );
-    }
 
+const renderModels = () => {
+  if (loading) {
     return (
-      <ul className="grid grid-cols-2 gap-2 mt-4 mb-12 md:grid-cols-3">
-        {list.map((value) => (
-          <ModelCard key={value.modelid || Math.random().toString(36)} {...value} />
-        ))}
-      </ul>
+      <SkeletonTheme baseColor="#202020" highlightColor="#444">
+        <div className="w-full p-4 space-y-4">
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-5">
+            {Array(6)
+              .fill(0)
+              .map((_, index) => (
+                <div
+                  key={index}
+                  className="relative flex flex-col items-center p-4 bg-[#121212] rounded-lg"
+                >
+                  <Skeleton width={150} height={250} className="rounded-lg" />
+                </div>
+              ))}
+          </div>
+        </div>
+      </SkeletonTheme>
     );
-  };
+  }
+
+  if (!user?.session?._id) {
+    return (
+      <div className="mt-6 text-sm text-slate-400">
+        Please log in to view your models.
+      </div>
+    );
+  }
+
+  const list: ModelCardProps[] = myModels.map((m) => {
+    const card = mapToCard(m);
+    return {
+      ...card,
+      photolink: card.photolink || "/images/default-placeholder.png", // fallback image
+    };
+  });
+
+  if (!list.length) {
+    return (
+      <div className="mt-6 text-sm text-slate-400">
+        You have not created any models yet.
+      </div>
+    );
+  }
+
+  return (
+    <ul className="grid grid-cols-2 gap-2 mt-4 mb-12 md:grid-cols-3">
+      {list.map((value) => (
+        <ModelCard
+          key={value.modelid || Math.random().toString(36)}
+          {...value}
+        />
+      ))}
+    </ul>
+  );
+};
+
+
+
+
+
+
+
+
+
 
   return (
     <div className="px-4 mt-10 sm:mx-10">
