@@ -8,5 +8,5 @@ export const NOWPAYMENTS_API_URL =
 // Local proxy in dev, live API in prod
 export const URL =
   process.env.NODE_ENV === "development"
-    ? "/api/proxy"
+    ? "/api/proxy/"
     : "https://mmekoapi.onrender.com";

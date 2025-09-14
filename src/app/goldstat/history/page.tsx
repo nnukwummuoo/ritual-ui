@@ -8,6 +8,7 @@ import { RootState } from "@/store/store";
 import { useAuth } from "@/lib/context/auth-context";
 import PacmanLoader from "react-spinners/PacmanLoader";
 import HistoryCard from "@/components/goldstat/HistoryCard";
+import PaymentAccountModal from "@/components/goldstat/PaymentAccountModal"; // Import the actual PaymentAccountModal
 
 interface Transaction {
   id: string;
@@ -37,15 +38,6 @@ const WithdrawRequestCard = ({ usd }: { usd: number }) => (
         Withdraw
       </button>
     </div>
-  </div>
-);
-
-const PaymentAccountModal = () => (
-  <div className="bg-gray-800 text-white p-4 rounded-lg w-full">
-    <p className="text-sm mb-2">Securely link your Wise or Payoneer account</p>
-    <button className="bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 transition-all font-bold px-4 py-2 rounded-lg">
-      Add Account
-    </button>
   </div>
 );
 
@@ -164,7 +156,7 @@ const HistoryPage = () => {
       </div>
 
       {/* Payment Account Modal */}
-      <PaymentAccountModal />
+      <PaymentAccountModal accesstoken={session?.token} userId={session?._id} />
     </div>
   );
 };
