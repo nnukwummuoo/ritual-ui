@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import { get_my_history } from "@/store/goldstatSlice";
@@ -8,7 +8,7 @@ import { RootState } from "@/store/store";
 import { useAuth } from "@/lib/context/auth-context";
 import PacmanLoader from "react-spinners/PacmanLoader";
 import HistoryCard from "@/components/goldstat/HistoryCard";
-import PaymentAccountModal from "@/components/goldstat/PaymentAccountModal"; // Import the actual PaymentAccountModal
+import PaymentAccountModal from "@/components/goldstat/PaymentAccountModal";
 
 interface Transaction {
   id: string;
@@ -45,6 +45,7 @@ const HistoryPage = () => {
   const router = useRouter();
   const dispatch = useDispatch();
   const { session } = useAuth();
+  const [showPopup, setShowPopup] = useState(false);
 
   const { history, loading, error } = useSelector(
     (state: RootState) => state.goldstat
@@ -84,7 +85,12 @@ const HistoryPage = () => {
           >
             Gold &gt;
           </button>
-          <img src="/icons/help.svg" alt="help" className="w-4 h-4" />
+          <img
+            src="/icons/help.svg"
+            alt="help"
+            className="w-4 h-4 cursor-pointer"
+            onClick={() => setShowPopup(true)}
+          />
         </div>
         <div className="flex items-center mt-2">
           <button
@@ -157,6 +163,25 @@ const HistoryPage = () => {
 
       {/* Payment Account Modal */}
       <PaymentAccountModal accesstoken={session?.token} userId={session?._id} />
+
+      {/* Popup */}
+      {showPopup && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-gray-800 p-8 rounded-lg shadow-lg text-center w-96">
+            <div className="flex justify-center mb-6">
+              <img src="/icons/icons8.png" alt="gold" className="w-16 h-16" />
+            </div>
+            <h2 className="text-2xl font-bold mb-4 text-white">Instruction</h2>
+            <p className="text-white mb-6 text-lg">1 gold = 0.04 cents</p>
+            <button
+              className="bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-500 hover:to-pink-400 transition-all text-white font-bold px-6 py-3 rounded-lg"
+              onClick={() => setShowPopup(false)}
+            >
+              Got it
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
