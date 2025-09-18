@@ -318,84 +318,86 @@ export const Register = () => {
                 <label htmlFor={v.label}>{v.label}</label>
               </div>
              ))}
+             
+              {/* Moved Terms and Privacy Policy to Step 3 */}
+              <Agree id="terms" toThe={<Link href="/T_&_C" className='!text-blue-500'>the Terms and Conditions.</Link>} agree={agreedTerms} setAgree={()=> setAgreedTerms(prev=> !prev)} />
+              <Agree id="privacy" toThe={<Link href={"/privacy-policy"} className='!text-blue-500'>Privacy and Policy</Link>} agree={agreedPrivacy} setAgree={()=> setAgreedPrivacy(prev=> !prev)} />
+              
               <NextSlide setStep={setStep} onClick={handleClick} />
             </Step>
 
             {/* Step 4 - Secret Phrase */}
             <Step step={step} slide={4}>
-              <div className="secret-phrase-container">
-                <h3 className="text-center mb-4 !bg-gradient-to-r !from-blue-500 !to-purple-600 !bg-clip-text !text-transparent">
-                  Save Your Recovery Phrase
-                </h3>
-                
-                <div className="phrase-grid">
-                  {secretPhrase.map((word, index) => (
-                    <div className="phrase-item" key={index}>
-                        <span className="phrase-number">{index + 1}</span>
-                        <span className="phrase-word">{word}</span>
-                    </div>
-                  ))}
-                </div>
-                
-                <div className="phrase-warning">
-                  <p>
-                    ⚠️ This phrase is the <strong>only way</strong> to recover your account. 
-                    Keep it safe and <strong>never share</strong> it. We cannot recover your 
-                    account if you lose this phrase.
-                  </p>
-                </div>
-                
-                <div className="phrase-actions">
-                  <button 
-                    type="button" 
-                    onClick={generateNewPhrase}
-                    className="phrase-btn secondary"
-                  >
-                    🔄 Generate
-                  </button>
-                  <button 
-                    type="button" 
-                    onClick={copyToClipboard}
-                    className="phrase-btn secondary"
-                  >
-                    {copied ? "✓ Copied!" : "📋 Copy"}
-                  </button>
-                  <button 
-                    type="button" 
-                    onClick={downloadPhrase}
-                    className="phrase-btn secondary"
-                  >
-                    📥 Download
-                  </button>
-                </div>
-                
-                <div className="saved-confirmation">
-                  <label className="saved-checkbox">
-                    <input 
-                      type="checkbox" 
-                      checked={saved} 
-                      onChange={() => setSaved(!saved)} 
-                    />
-                    <span>I have saved my recovery phrase securely</span>
-                  </label>
-                </div>
-
-                <Agree id="terms" toThe={<Link href="/T_&_C" className='!text-blue-500'>the Terms and Conditions.</Link>} agree={agreedTerms} setAgree={()=> setAgreedTerms(prev=> !prev)} />
-                < Agree id="privacy" toThe={<Link href={"/privacy-policy"} className='!text-blue-500'>Privacy and Policy</Link>} agree={agreedPrivacy} setAgree={()=> setAgreedPrivacy(prev=> !prev)} />
-
-                <button 
-                  type="submit" 
-                  className="btn flex items-center justify-center mx-auto !bg-gradient-to-r !from-blue-500 !to-purple-600"
-                  disabled={loading || !saved || !agreedTerms || !agreedPrivacy}
-                >
-                  {loading ? <p style={{color: "white"}} className="flex items-center justify-center gap-3 text-white"><BtnLoader /> Please wait...</p> : "Register" }
-                </button>
-                
-                <p className="mt-4 text-center">
-                  I already have an account <Link href="/" className="!text-blue-500">Login</Link>
+            <div className="secret-phrase-container max-h-[60vh] overflow-y-auto">
+              <h3 className="text-center mb-4 !bg-gradient-to-r !from-blue-500 !to-purple-600 !bg-clip-text !text-transparent">
+                Save Your Recovery Phrase
+              </h3>
+              
+              <div className="phrase-grid">
+                {secretPhrase.map((word, index) => (
+                  <div className="phrase-item" key={index}>
+                      <span className="phrase-number">{index + 1}</span>
+                      <span className="phrase-word">{word}</span>
+                  </div>
+                ))}
+              </div>
+              
+              <div className="phrase-warning">
+                <p>
+                  ⚠️ This phrase is the <strong>only way</strong> to recover your account. 
+                  Keep it safe and <strong>never share</strong> it. We cannot recover your 
+                  account if you lose this phrase.
                 </p>
               </div>
-            </Step>
+              
+              <div className="phrase-actions">
+                <button 
+                  type="button" 
+                  onClick={generateNewPhrase}
+                  className="phrase-btn secondary"
+                >
+                  🔄 Generate
+                </button>
+                <button 
+                  type="button" 
+                  onClick={copyToClipboard}
+                  className="phrase-btn secondary"
+                >
+                  {copied ? "✓ Copied!" : "📋 Copy"}
+                </button>
+                <button 
+                  type="button" 
+                  onClick={downloadPhrase}
+                  className="phrase-btn secondary"
+                >
+                  📥 Download
+                </button>
+              </div>
+              
+              <div className="saved-confirmation">
+                <label className="saved-checkbox">
+                  <input 
+                    type="checkbox" 
+                    checked={saved} 
+                    onChange={() => setSaved(!saved)} 
+                  />
+                  <span>I have saved my recovery phrase securely</span>
+                </label>
+              </div>
+
+              <button 
+                type="submit" 
+                className="btn flex items-center justify-center mx-auto !bg-gradient-to-r !from-blue-500 !to-purple-600"
+                disabled={loading || !saved || !agreedTerms || !agreedPrivacy}
+              >
+                {loading ? <p style={{color: "white"}} className="flex items-center justify-center gap-3 text-white"><BtnLoader /> Please wait...</p> : "Register" }
+              </button>
+              
+              <p className="mt-4 text-center">
+                I already have an account <Link href="/" className="!text-blue-500">Login</Link>
+              </p>
+            </div>
+          </Step>
           </div>
         </form>
       </div>
