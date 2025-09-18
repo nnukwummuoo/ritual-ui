@@ -1,16 +1,19 @@
 import React from 'react'
 
 export default function Input({required, value, name, type, placeholder, id, overide, classNames, checked, onChange }: {
-  type: string,
-  value?: string,
-  name?: string,
-  placeholder?: string,
-  id?: string,
-  overide?: boolean,
-  classNames?: string,
-  checked?: boolean,
-  required?: boolean
-  onChange?: React.ChangeEventHandler<HTMLInputElement>
+  type: string;
+  value?: string;
+  name?: string;
+  placeholder?: string;
+  id?: string;
+  overide?: boolean;
+  classNames?: string;
+  checked?: boolean;
+  required?: boolean;
+  onChange?: React.ChangeEventHandler<HTMLInputElement>;
+  maxLength?: number;
+  pattern?: string;
+  title?: string;
 }) {
   return <input
     type={type}

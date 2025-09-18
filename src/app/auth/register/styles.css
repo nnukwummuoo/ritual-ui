@@ -283,3 +283,113 @@
 
 
 }
+
+/* Secret Phrase Styles */
+.secret-phrase-container {
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.phrase-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.phrase-item {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.phrase-number {
+  font-weight: bold;
+  margin-right: 8px;
+  color: #888;
+  min-width: 24px;
+}
+
+.phrase-word {
+  font-weight: 500;
+  color: #fff;
+}
+
+.phrase-warning {
+  background: rgba(255, 193, 7, 0.1);
+  border: 1px solid rgba(255, 193, 7, 0.3);
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 20px;
+}
+
+.phrase-warning p {
+  margin: 0;
+  font-size: 14px;
+  color: #ffc107;
+}
+
+.phrase-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.phrase-btn {
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.phrase-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.phrase-btn.secondary {
+  background: transparent;
+}
+
+.saved-confirmation {
+  margin-bottom: 20px;
+}
+
+.saved-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.saved-checkbox input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .phrase-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .phrase-actions {
+    flex-direction: column;
+  }
+  
+  .phrase-btn {
+    width: 100%;
+  }
+}
