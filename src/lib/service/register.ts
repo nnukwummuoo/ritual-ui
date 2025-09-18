@@ -15,7 +15,7 @@ export async function register(state: void, formData: FormData) {
     const signupData = result.validatedFields as z.infer<typeof SignupFormSchema>;
     const {confirmPassword, ...data} = signupData
      try {
-    const response = await axios.post(process.env.NEXT_PUBLIC_API+"/registering", data, {withCredentials: true});
+    const response = await axios.post(process.env.NEXT_PUBLIC_API+"/register", data, {withCredentials: true});
     console.log({response})
     return {data: response.data};
   } catch (error) {
