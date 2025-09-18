@@ -334,14 +334,14 @@ export const Register = () => {
               </h3>
               
               <div className="phrase-grid">
-                {secretPhrase.map((word, index) => (
-                  <div className="phrase-item" key={index}>
+                  {secretPhrase.map((word, index) => (
+                    <div className="phrase-item" key={index}>
                       <span className="phrase-number">{index + 1}</span>
                       <span className="phrase-word">{word}</span>
-                  </div>
-                ))}
-              </div>
-              
+                    </div>
+                  ))}
+                </div>
+                              
               <div className="phrase-warning">
                 <p>
                   ⚠️ This phrase is the <strong>only way</strong> to recover your account. 
