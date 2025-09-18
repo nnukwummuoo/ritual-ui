@@ -28,7 +28,7 @@ const wordList = [
 // Function to generate a 12-word secret phrase
 const generateSecretPhrase = (): string[] => {
   const phrase = new Set<string>();
-  while (phrase.size < 1) {
+  while (phrase.size < 12) {
     const randomIndex = Math.floor(Math.random() * wordList.length);
     phrase.add(wordList[randomIndex]);
   }
