@@ -26,7 +26,7 @@ export const register = async (payload: RegistrationPayload) => {
   try {
     // The endpoint '/register' is assumed based on standard practices.
     // Please update it if your actual backend route is different.
-    const res = await axios.post(`${URL}/registering`, payload);
+    const res = await axios.post(`${URL}/register`, payload);
     return res.data;
   } catch (error: any) {
     // Log the full error for debugging purposes
