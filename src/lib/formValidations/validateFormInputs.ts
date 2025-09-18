@@ -45,7 +45,7 @@ export default function validations(formData: FormData): ValidationResult<z.infe
         firstname: formData.get('firstname'),
         lastname: formData.get('lastname'),
         username: formData.get("username"),
-        email: formData.get('email'),
+        //email: formData.get('email'),
         gender: formData.get('gender'),  
         country: formData.get('country'),
         password,

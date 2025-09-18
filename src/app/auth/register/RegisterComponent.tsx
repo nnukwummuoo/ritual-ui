@@ -9,7 +9,7 @@ import Input from "@/components/Input";
 import Step from "./_components/Step";
 import DotSlideBtn from "./_components/DotSlideBtn";
 import Agree from "./_components/AgreeBtn";
-import { register } from "@/api/register";
+import { register } from "@/lib/service/register";
 import { useRouter } from "next/navigation";
 import BtnLoader from "@/constants/BtnLoader";
 import { toast } from "material-react-toastify";
