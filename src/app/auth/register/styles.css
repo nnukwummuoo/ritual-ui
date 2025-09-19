@@ -284,6 +284,17 @@
 
 }
 
+.error-text {
+  color: red;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 /* Secret Phrase Styles */
 .secret-phrase-container {
   width: 100%;
@@ -324,17 +335,23 @@
 }
 
 .phrase-warning {
-  background: rgba(255, 193, 7, 0.1);
-  border: 1px solid rgba(255, 193, 7, 0.3);
+  background-color: #4a1e1e;
+  border: 2px solid #ff4d4d;
   border-radius: 8px;
-  padding: 12px;
-  margin-bottom: 20px;
+  padding: 10px;
+  margin: 10px 0;
+  text-align: left;
+  color: #ffffff;
 }
 
 .phrase-warning p {
   margin: 0;
-  font-size: 14px;
-  color: #ffc107;
+  line-height: 1.5;
+}
+
+.phrase-warning svg {
+  color: #ff4d4d; /* Match the warning icon color to the text */
+  font-size: 16px; /* Adjust size as needed */
 }
 
 .phrase-actions {
@@ -377,12 +394,13 @@
 .saved-checkbox input[type="checkbox"] {
   width: 18px;
   height: 18px;
+  margin-left: 18px;
 }
 
 /* Responsive adjustments */
 @media (min-width: 768px) {
   .phrase-grid {
-    grid-template-columns: repeat(4, 1fr); /* 4 columns on tablet and desktop */
+    grid-template-columns: repeat(3, 1fr); /* 4 columns on tablet and desktop */
   }
 }
 

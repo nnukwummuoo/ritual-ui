@@ -1,6 +1,6 @@
 import React from 'react'
 
-export default function Input({required, value, name, type, placeholder, id, overide, classNames, checked, onChange }: {
+export default function Input({required, value, name, type, placeholder, id, overide, classNames, checked, onChange, maxLength, pattern, title }: {
   type: string;
   value?: string;
   name?: string;
@@ -25,5 +25,8 @@ export default function Input({required, value, name, type, placeholder, id, ove
     checked={type === "checkbox" ? checked : undefined}
     onChange={onChange}
     required={required}
+    maxLength={maxLength}
+    pattern={pattern}
+    title={title}
   />
 }

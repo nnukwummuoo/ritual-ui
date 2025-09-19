@@ -3,10 +3,11 @@ import "../styles.css";
 
 export type NextSlideBtnProps = {
   setStep: React.Dispatch<React.SetStateAction<number>>;
-  onClick?: () => void; // Add optional onClick prop
+  onClick?: () => void;
+  disabled: boolean; // Added disabled prop
 };
 
-export default function NextSlide({ setStep, onClick }: NextSlideBtnProps) {
+export default function NextSlide({ setStep, onClick, disabled }: NextSlideBtnProps) {
   const handleClick = () => {
     setStep(prev => prev + 1); // Increment step
     if (onClick) {
@@ -19,6 +20,7 @@ export default function NextSlide({ setStep, onClick }: NextSlideBtnProps) {
       className="btn bg-gradient-to-r from-blue-500 to-purple-600"
       type="button"
       onClick={handleClick}
+      disabled={disabled} // Apply disabled prop
     >
       Next
     </button>
