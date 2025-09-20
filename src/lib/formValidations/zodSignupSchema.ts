@@ -5,7 +5,7 @@ export const zodObj = {
     .string()
     .min(2, { message: 'Name must be at least 2 characters long.' })
     .trim(),
-  // email: z.string().email({ message: 'Please enter a valid email.' }).trim(),
+  email: z.string().email({ message: 'Please enter a valid email.' }).trim(),
   password:  z
     .string()
     .min(8, { message: 'Be at least 8 characters long' })
@@ -25,7 +25,7 @@ export const SignupFormSchema = z.object({
   lastname: zodObj.name,
   username: zodObj.name,
   country: zodObj.name,
-  //email: zodObj.email,
+  email: zodObj.email,
   password: zodObj.password,
   confirmPassword: zodObj.password,
   dob: zodObj.dob,

@@ -14,10 +14,10 @@ import { popup, status } from "@/constants/status";
 // Define the Session interface
 export interface Session {
   _id?: string;
-  email: string;
+  nickname: string;
   token?: string;
   isAdmin?: boolean;
-  fullName: string;
+  refreshToken?: string;
 }
 
 // Define the AuthContext type
@@ -85,12 +85,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     if (raw) {
       const data = JSON.parse(raw) || {};
       setSession({
-        _id: data.userID || data._id || data.id || "",
-        email: data.email || "",
-        token: data.accesstoken || data.accessToken || data.token,
-        fullName: `${data.firstname ?? ""} ${data.lastname ?? ""}`.trim() || data.fullName || data.name || "",
-        isAdmin: data.isAdmin,
-      });
+          _id: data.userID || data._id || data.id || "",
+          nickname: data.nickname || "",
+          token: data.accesstoken || data.accessToken || data.token || "",
+          refreshToken: data.refreshtoken || data.refreshToken || data.token || "",
+          isAdmin: data.isAdmin ?? false, // Default to false if not provided
+});
     }
   } catch (e) {
     // ignore

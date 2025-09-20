@@ -3,7 +3,7 @@ import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import { toast, ToastContainer } from "material-react-toastify";
 import Input from "./Input";
-import { login } from "@/lib/service/login";
+//import { login } from "@/lib/service/login";
 import Processing from "./tick-animation/LoginProcessing";
 import { useAuth } from "@/lib/context/auth-context";
 import { revalidate } from "@/lib/utils/revalidate";
@@ -11,18 +11,26 @@ import { isRegistered } from "@/lib/service/manageSession";
 import toastError from "./ToastError";
 
 import type { Session } from "@/lib/context/auth-context";
+
 type LoginResponse = Session & { accessToken?: string };
 
 type User = {
-  email: string;
+  nickname: string;
   password: string;
   _id?: string;
-  id?: string;
+  firstname?: string;
+  lastname?: string;
   refreshtoken?: string;
-  accesstoken?: string;
   accessToken?: string;
-  modelId?: string;
-  isModel?: boolean;
+  age?: string;
+  country?: string;
+  dob?: string;
+  gender?: string;
+  admin?: boolean;
+  active?: boolean;
+  balance?: string;
+  passcode?: string;
+  fullName?: string;
 };
 
 export const Loginview = () => {
@@ -35,52 +43,49 @@ export const Loginview = () => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     try {
-      const { email, password, errors } = login(formData);
+      const nickname = formData.get("nickname")?.toString() || "";
+      const password = formData.get("password")?.toString() || "";
 
-      if (errors?.length)
-        return toastError({ message: "Please input your email and password!" });
-      if (!acceptedTerms)
+      if (!nickname || !password) {
+        return toastError({ message: "Please input your username and password!" });
+      }
+      if (!acceptedTerms) {
         return toastError({
-          message:
-            "Attempted Login: Accept the Terms and Conditions to proceed.",
+          message: "Accept the Terms and Conditions to proceed.",
         });
+      }
 
-      const res = await isRegistered({ email, password });
+      const res = await isRegistered({ nickname, password });
       console.log(res);
-      if (!res?.email?.length) throw Error("No user found");
+      if (!res?.user?.nickname?.length) {
+        throw new Error("No user found");
+      }
 
       // Save to localStorage for useUserId hook
       try {
-       localStorage.setItem(
-  "login",
-  JSON.stringify({
-    email: res.email,
-    password: res.password,
-    userID: res._id || res.id,
-    refreshtoken: res.refreshtoken,
-    accesstoken: res.accessToken || res.accesstoken,
-    modelId: res.modelId,
-    isModel: res.isModel,
-    firstname: res.firstname,   // add this if backend sends it
-    lastname: res.lastname,     // add this too
-    fullName: res.fullName || `${res.firstname ?? ""} ${res.lastname ?? ""}`.trim(),
-  })
-);
-      } catch (e) {
-        console.error("[Login] Failed to save localStorage:", e);
-      }
+  localStorage.setItem(
+    "login",
+    JSON.stringify({
+      nickname: res.user.nickname,
+      userID: res.user._id,
+      refreshtoken: res.user.refreshtoken,
+      accesstoken: res.user.accessToken,
+    })
+  );
+} catch (e) {
+  console.error("[Login] Failed to save localStorage:", e);
+}
 
-      setUser(res);
+      setUser(res.user);
       setIsLoggedIn(true);
     } catch (error) {
-      console.log(error);
-      setUser({ email: "", password: "" });
+      console.error(error);
+      setUser({ nickname: "", password: "" });
       toastError({ message: "Login failed!" });
     } finally {
       setTimeout(() => {
         setStatus("resolved");
         revalidate("/");
-        // Removed setIsLoggedIn(false) to keep session
       }, 3000);
     }
   }
@@ -91,23 +96,20 @@ export const Loginview = () => {
 
   useEffect(() => {
     async function createSession() {
-      if (!user?.email?.length && !user?.password?.length) return;
+      if (!user?.nickname?.length) return;
       try {
-        const result = await fetch(
-          process.env.NEXT_PUBLIC_URL + "/api/session",
-          {
-            method: "POST",
-            body: JSON.stringify({ email: user.email, password: user.password }),
-            credentials: "include",
-            headers: {
-              "Content-Type": "application/json",
-            },
-          }
-        );
+        const result = await fetch(`${process.env.NEXT_PUBLIC_URL}/api/session`, {
+          method: "POST",
+          body: JSON.stringify({ nickname: user.nickname, password: user.password }),
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
         const data = await result.text();
         console.log(data);
       } catch (error) {
-        console.log(error);
+        console.error(error);
       }
     }
     createSession();
@@ -135,9 +137,31 @@ export const Loginview = () => {
           Log in to access your account
         </p>
         <form onSubmit={handleLogin} className="mt-6 space-y-4">
-          <Input type="email" placeholder="Email Address" />
-          <Input type="password" />
-          <input type="hidden" name="signing-type" value={"login"} />
+          <div className="flex flex-col">
+            <Input
+              type="text"
+              name="nickname"
+              placeholder="@username"
+              pattern="@[a-z0-9_]{3,15}"
+              title="Username: @ followed by 3-15 lowercase letters, numbers, or _"
+              required={true}
+            />
+            <label htmlFor="nickname" className="text-gray-400 text-sm mt-1">
+              Username
+            </label>
+          </div>
+          <div className="flex flex-col">
+            <Input
+              type="password"
+              name="password"
+              placeholder="Password"
+              required={true}
+            />
+            <label htmlFor="password" className="text-gray-400 text-sm mt-1">
+              Password
+            </label>
+          </div>
+          <input type="hidden" name="signing-type" value="login" />
           <div className="flex items-center mt-4">
             <Input
               type="checkbox"

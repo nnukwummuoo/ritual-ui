@@ -12,35 +12,27 @@ import Agree from "./_components/AgreeBtn";
 import { register } from "@/lib/service/register";
 import { useRouter } from "next/navigation";
 import BtnLoader from "@/constants/BtnLoader";
-import { FaArrowRight, FaTimes, FaExclamationTriangle } from "react-icons/fa";
 import { toast } from "material-react-toastify";
-
 
 // Word list for generating a mnemonic phrase (unchanged)
 const wordList = [
 // Igbo
 "chi","aku","obi","mma","nne","nna","nwa","elu","ala","uzo","ulo","anu","mmiri","oku","igwe","osisi","ite","ugwu","igweoma","ike","ife","eze","ada","uzochi","odogwu","obioma","nwanne","okwu","ego","uto","mmirioma","nkume","ugwuoma","onyema","olile","ndidi","obiomaeze","chukwu","onyinye","okwuoma","okike","uwa","nnamdi","oge","udo","ihe","isi","aka","ukwu","anya",
 
-
 // Yoruba
 "omo","iya","baba","orun","ile","omi","ina","igi","orunmila","orunko","ire","ayo","ife","oro","owon","ojo","orunke","agbara","ebi","ireti","ojooma","ore","ogo","ala","irele","awon","aseyori","agbara nla","otito","ire gbogbo",
-
 
 // Hausa
 "uba","uwa","yaro","yarinya","ruwa","wuta","sama","kasa","gida","hanya","zuciya","zuciyarmu","sarki","mace","namiji","gari","rana","dare","lafiya","arziki","karfi","hakuri","gaskiya","soyayya","bege","kyauta","aboki","farin ciki","duniya","lokaci",
 
-
 // Ghana (Twi)
 "agya","ena","abofra","nsuo","ogya","soro","asaase","ofie","kwan","akoma","ohene","obaa","barima","anadwo","owia","osrane","adesua","nkrabea","nkwagye","nokware","aseda","ahonya","anigye","animuonyam","asomdwoe","bere","wiase",
-
 
 // Zulu
 "Inhliziyo","Indlu","Amanzi","Inyama","Ekuseni","Usuku","Ubusuku","Ingane","Umgwaqo","Ikhanda","Umlenze","Isandla","Umlilo","Ukudla","Umngane","Isikhathi","Umhlaba","Indoda","Owesifazane","Imali","Incwadi","Inhlanzi","Ingubo","Amandla","Ithemba","Uthando","Injabulo","Ilanga","Izulu","Ukuphila",
 
-
 // Swahili
 "Moyo","Nyumba","Maji","Nyama","Asubuhi","Siku","Usiku","Mtoto","Barabara","Kichwa","Mguu","Mkono","Moto","Chakula","Rafiki","Wakati","Dunia","Mwanaume","Mwanamke","Pesa","Kitabu","Samaki","Nguo","Nguvu","Nuru","Upendo","Furaha","Jua","Mbingu","Maisha",
-
 
 // Tagalog (Philippines)
 "Araw","Buwan","Tubig","Apoy","Hangin","Lupa","Ulan","Gubat","Bundok","Ilog","Puso","Mabuhay","Kamay","Ulo","Katawan","Mata","Saya","Lungkot","Galit","Ginhawa","Umaga","Gabi","Oras","Lakad","Takbo","Bahay","Kaibigan","Salita","Buhay","Mundo"
@@ -215,6 +207,14 @@ export const Register = () => {
     }
   }
 
+  // Step descriptions mapping
+  const stepDescriptions = [
+    "Your Beauty. Your Time. Your Rules.",
+    "No Stream. No Stress. Just Earnings.",
+    "Create. Connect. Cash Out.",
+    "Talk Less. Meet More."
+  ];
+
   const inputs = [
     {
       step_1: [
@@ -268,7 +268,7 @@ export const Register = () => {
 
         <form onSubmit={handleSubmit} noValidate>
           <h2 className="!bg-gradient-to-r !from-blue-500 !to-purple-600 !bg-clip-text !text-transparent">Register</h2>
-          <p>Create. Connect. Cash Out.</p>
+          <p>{stepDescriptions[step - 1]}</p>
           
           <div className="pagination">
             <DotSlideBtn setStep={setStep} step={step} slide={1} />
