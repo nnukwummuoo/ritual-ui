@@ -129,6 +129,21 @@
     text-align: left;
 }
 
+/* Add this to your CSS */
+.floating-label-group input:focus + label,
+.floating-label-group input:not(:placeholder-shown) + label,
+.floating-label-group select:focus + label,
+.floating-label-group select:not([value=""]) + label {
+    top: -0.5rem;
+    font-size: 0.75rem;
+    color: #bec8fa;
+    background-color: #191e37 !important;
+    width: fit-content;
+    height: fit-content;
+    text-align: left;
+    background-color: transparent;
+}
+
 /* When the input is focused, move the label */
 .floating-label-group input:focus+label,
 .floating-label-group input:not(:placeholder-shown)+label {
@@ -147,6 +162,7 @@
 .floating-label-group input:focus {
     border-color: #bec8fa;
 }
+
 .btn {
     background-color: #ff8a23;
     width: 90%;

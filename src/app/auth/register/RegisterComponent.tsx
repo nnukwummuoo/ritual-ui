@@ -225,41 +225,54 @@ export const Register = () => {
         {
           name: "firstname",
           label: "First Name",
-          input: <Input type="text" name="firstname" placeholder="" overide={true} classNames="" maxLength={10} pattern="[a-zA-Z]{1,10}" title="First name must be 1-10 letters only." required={true} value={formValues.firstname} onChange={handleInputChange} />,
+          input: <Input id="firstname" type="text" name="firstname" placeholder=" " overide={true} classNames="" maxLength={10} pattern="[a-zA-Z]{1,10}" title="First name must be 1-10 letters only." required={true} value={formValues.firstname} onChange={handleInputChange} />,
         },
         {
           name: "lastname",
           label: "Last Name",
-          input: <Input type="text" name="lastname" placeholder="" overide={true} classNames="" maxLength={10} pattern="[a-zA-Z]{1,10}" title="Last name must be 1-10 letters only." required={true} value={formValues.lastname} onChange={handleInputChange} />,
+          input: <Input id="lastname" type="text" name="lastname" placeholder=" " overide={true} classNames="" maxLength={10} pattern="[a-zA-Z]{1,10}" title="Last name must be 1-10 letters only." required={true} value={formValues.lastname} onChange={handleInputChange} />,
         },
         {
           name: "dob",
           label: "Date of birth",
-          input: <Input required={true} type="date" name="dob" placeholder="" overide={true} classNames="" value={formValues.dob} onChange={handleInputChange} />,
+          input: <Input id="dob" required={true} type="date" name="dob" placeholder=" " overide={true} classNames="" value={formValues.dob} onChange={handleInputChange} />,
         },
       ],
       step_2: [
         {
           name: "gender",
           label: "Gender",
-          input: <select id="Gender" name="gender" required={true} value={formValues.gender} onChange={handleInputChange} > <option value="">Select Gender</option> <option value="male">Male</option> <option value="female">Female</option> </select>
+          input: (
+            <select
+              id="gender"
+              name="gender"
+              required={true}
+              value={formValues.gender}
+              onChange={handleInputChange}
+              style={{ color: formValues.gender ? 'inherit' : 'transparent' }}
+            >
+              <option value="" disabled>Select Gender</option>
+              <option value="male" style={{ color: 'initial' }}>Male</option>
+              <option value="female" style={{ color: 'initial' }}>Female</option>
+            </select>
+          )
         },
         {
           name: "nickname",
           label: "@User Name",
-          input: <Input required={true} type="text" name="nickname" placeholder="@username" overide={true} classNames="" maxLength={16} pattern="@[a-z0-9_]{3,15}" title="Username: @ followed by 3-15 lowercase letters, numbers, or _" value={formValues.nickname} onChange={handleInputChange} />
+          input: <Input id="nickname" required={true} type="text" name="nickname" placeholder=" " overide={true} classNames="" maxLength={16} pattern="@[a-z0-9_]{3,15}" title="Username: @ followed by 3-15 lowercase letters, numbers, or _" value={formValues.nickname} onChange={handleInputChange} />
         },
       ],
       step_3: [
         {
           name: "password",
           label: "Password",
-          input: <Input type="password" name="password" placeholder="" overide={true} classNames="" required={true} value={formValues.password} onChange={handleInputChange} />,
+          input: <Input id="password" type="password" name="password" placeholder=" " overide={true} classNames="" required={true} value={formValues.password} onChange={handleInputChange} />,
         },
         {
           name: "confirmPassword",
           label: "Confirm Password",
-          input: <Input type="password" name="confirmPassword" placeholder="" overide={true} classNames="" required={true} value={formValues.confirmPassword} onChange={handleInputChange}/>,
+          input: <Input id="confirmPassword" type="password" name="confirmPassword" placeholder=" " overide={true} classNames="" required={true} value={formValues.confirmPassword} onChange={handleInputChange}/>,
         },
       ]
     }
@@ -287,7 +300,7 @@ export const Register = () => {
              {inputs[0].step_1.map((v, i)=>(
               <div className="floating-label-group" key={i}>
                 {v.input}
-                <label htmlFor={v.label}>{v.label}</label>
+                <label htmlFor={v.name}>{v.label}</label>
                 <p className="error-text h-6">{errors[v.name] || ""}</p>
               </div>
              ))}
@@ -299,7 +312,7 @@ export const Register = () => {
              {inputs[0].step_2.map((v, i)=>(
               <div className="floating-label-group" key={i}>
                 {v.input}
-                <label htmlFor={v.label}>{v.label}</label>
+                <label htmlFor={v.name}>{v.label}</label>
                 <p className="error-text h-6">{errors[v.name] || ""}</p>
               </div>
              ))}
@@ -316,7 +329,7 @@ export const Register = () => {
              {inputs[0].step_3.map((v, i)=>(
               <div className="floating-label-group" key={i}>
                 {v.input}
-                <label htmlFor={v.label}>{v.label}</label>
+                <label htmlFor={v.name}>{v.label}</label>
                 <p className="error-text h-6">{errors[v.name] || ""}</p>
               </div>
              ))}
@@ -383,3 +396,4 @@ export const Register = () => {
     </div>
   );
 };
+
