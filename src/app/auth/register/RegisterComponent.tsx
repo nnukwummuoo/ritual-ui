@@ -95,7 +95,11 @@ export const Register = () => {
         setErrors(prev => ({ ...prev, [name]: '' }));
     }
 
-    if (name === 'nickname') {
+    if (name === 'firstname' || name === 'lastname') {
+        // Prevent special characters in name fields
+        const sanitizedValue = value.replace(/[^a-zA-Z]/g, '');
+        setFormValues(prev => ({ ...prev, [name]: sanitizedValue }));
+    } else if (name === 'nickname') {
         // Enforce nickname format: starts with @, no special chars except _, lowercase
         let formattedValue = value;
         if (!formattedValue.startsWith('@')) {
@@ -284,7 +288,7 @@ export const Register = () => {
               <div className="floating-label-group" key={i}>
                 {v.input}
                 <label htmlFor={v.label}>{v.label}</label>
-                {errors[v.name] && <p className="error-text">{errors[v.name]}</p>}
+                <p className="error-text h-6">{errors[v.name] || ""}</p>
               </div>
              ))}
               <NextSlide onClick={handleNextClick} setStep={setStep} disabled={!isStepValid} />
@@ -296,13 +300,13 @@ export const Register = () => {
               <div className="floating-label-group" key={i}>
                 {v.input}
                 <label htmlFor={v.label}>{v.label}</label>
-                {errors[v.name] && <p className="error-text">{errors[v.name]}</p>}
+                <p className="error-text h-6">{errors[v.name] || ""}</p>
               </div>
              ))}
               <div className="floating-label-group">
                 <CountrySelect onSelectCountry={getLocation} />
                 <input type="hidden" name="country" value={country} />
-                {errors.country && <p className="error-text">{errors.country}</p>}
+                <p className="error-text h-6">{errors.country || ""}</p>
               </div>
               <NextSlide onClick={handleNextClick} setStep={setStep} disabled={!isStepValid} />
             </Step>
@@ -313,7 +317,7 @@ export const Register = () => {
               <div className="floating-label-group" key={i}>
                 {v.input}
                 <label htmlFor={v.label}>{v.label}</label>
-                {errors[v.name] && <p className="error-text">{errors[v.name]}</p>}
+                <p className="error-text h-6">{errors[v.name] || ""}</p>
               </div>
              ))}
               
