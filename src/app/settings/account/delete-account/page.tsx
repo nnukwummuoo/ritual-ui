@@ -25,7 +25,7 @@ const DeleteaccountPage = () => {
   const deleteClick = () => {
     if (deleteaccstats === "loading") return;
     set_buttonstop(true);
-    dispatch(deleteprofile({ userid, token }))
+    dispatch(deleteprofile({ userid }))
       .unwrap()
       .then(() => {
         // handled in effect

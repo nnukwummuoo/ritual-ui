@@ -18,6 +18,7 @@ const publicRoutes = [
   '/post-image',
   "/comment",
   "/buy-gold",
+  "/forget-password",
   "/verify-models",
 
   // change later for admin 

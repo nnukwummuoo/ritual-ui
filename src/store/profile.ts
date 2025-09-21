@@ -200,19 +200,17 @@ export const deleteblockedUsers = createAsyncThunk<any, any>(
   }
 );
 
-export const deleteprofile = createAsyncThunk<any, any>(
+export const deleteprofile = createAsyncThunk<any, { userid: string }>(
   "profile/deleteprofile",
-  async (data) => {
-    try {
-      //console.log('ontop get profile')
-      let response = await axios.post(`${URL}/deleteaccount`, data);
-      // console.log('under get profile')
-
-      return response.data;
-    } catch (err : any) {
-      // console.log('erro get profile')
-      throw getErrorMessage(err);
-    }
+  async ({ userid }) => {
+    const res = await axios.delete(
+      `${process.env.NEXT_PUBLIC_API}/deleteaccount`,
+      {
+        data: { userid }, // 👈 DELETE with body
+        withCredentials: true,
+      }
+    );
+    return res.data;
   }
 );
 
