@@ -10,7 +10,7 @@ import { getPaymentLink } from "@/api/payment";
 interface RootState {
   register: {
     refreshtoken: string;
-    userID: string;
+    userId: string;
     logedin: boolean;
   };
 }
@@ -28,7 +28,7 @@ const Topup: React.FC = () => {
   const [currencyValue, setCurrencyValue] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(false);
 
-  const userID = useSelector((state: RootState) => state.register.userID);
+  const userID = useSelector((state: RootState) => state.register.userId);
   const login = useSelector((state: RootState) => state.register.logedin);
 
   const pay = async () => {

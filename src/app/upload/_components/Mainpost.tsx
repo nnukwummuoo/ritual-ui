@@ -1,6 +1,6 @@
 "use client"
 import React, { useState, useEffect } from "react";
-import {  toast } from "material-react-toastify";
+import { toast } from "material-react-toastify";
 // import { useDispatch, useSelector } from "react-redux";
 // import { createpost } from "../../app/features/post/post";
 // import { PostImage } from "./postImage";
@@ -8,7 +8,7 @@ import {  toast } from "material-react-toastify";
 // import person from "../../icons/icons8-profile_Icon.png";
 // import "../../styles/Toastify__toast.css";
 
-import { FaImage, FaVideo, FaPlus } from "react-icons/fa";
+import { FaImage, FaVideo, FaPlus, FaCheck } from "react-icons/fa";
 import FileInput from "../../../components/fileUpload";
 import { uploadImage, getViewUrl } from "../../../api/sendImage";
 import { URL as API_BASE } from "@/api/config";
@@ -31,17 +31,19 @@ export const Mainpost = () => {
   // const [propics, setpropics] = useState(person);
   const [postcontent, setpostcontent] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
-  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imageFile, setImageFile] = useState<File | undefined>(undefined);
   const [imagePreview, setImagePreview] = useState<string>("");
   const [uploading, setUploading] = useState<boolean>(false);
   const [uploadedPublicId, setUploadedPublicId] = useState<string>("");
   const [uploadedUrl, setUploadedUrl] = useState<string>("");
   const [showImageModal, setShowImageModal] = useState<boolean>(false);
   const [showVideoModal, setShowVideoModal] = useState<boolean>(false);
-  const [videoFile, setVideoFile] = useState<File | null>(null);
+  const [videoFile, setVideoFile] = useState<File | undefined>(undefined);
   const [videoPreview, setVideoPreview] = useState<string>("");
   const [videoUploading, setVideoUploading] = useState<boolean>(false);
   const [videoCaption, setVideoCaption] = useState<string>("");
+  const [showBanWarning, setShowBanWarning] = useState<boolean>(false);
+  const [agreedToPolicy, setAgreedToPolicy] = useState<boolean>(false);
 
   // Auth consistent with Profile page
   const userid = useUserId();
@@ -80,6 +82,244 @@ export const Mainpost = () => {
   //   }
   // };
 
+  const handleUploadStart = (fileType: 'image' | 'video') => {
+    if (fileType === 'image' && imageFile) {
+      setShowBanWarning(true);
+    } else if (fileType === 'video' && videoFile) {
+      setShowBanWarning(true);
+    }
+  };
+
+  const handleContinueUpload = async (fileType: 'image' | 'video') => {
+    setShowBanWarning(false);
+    if (fileType === 'image' && imageFile) {
+      await handleImagePost();
+    } else if (fileType === 'video' && videoFile) {
+      await handleVideoPost();
+    }
+  };
+
+  const handleImagePost = async () => {
+    if (!userid || !token || !imageFile) {
+      toast.error('Please log in to post');
+      return;
+    }
+    try {
+      setLoading(true);
+      const currentUsername = (() => {
+        try {
+          return (
+            nickname ||
+            localStorage.getItem('username') ||
+            localStorage.getItem('userName') ||
+            localStorage.getItem('profileusername') ||
+            ''
+          );
+        } catch { return ''; }
+      })();
+      const currentName = (() => {
+        try {
+          return (
+            [firstname, lastname].filter(Boolean).join(' ') ||
+            localStorage.getItem('fullname') ||
+            localStorage.getItem('fullName') ||
+            localStorage.getItem('name') ||
+            ''
+          );
+        } catch { return ''; }
+      })();
+
+      const result = await dispatch(
+        createpost({
+          userid: userid!,
+          token: token!,
+          content: postcontent,
+          posttype: "image",
+          filelink: imageFile,
+          // Provide display fields for optimistic post header
+          authorUsername: currentUsername || undefined,
+          authorName: currentName || undefined,
+          handle: (currentUsername || '').toString() || undefined,
+        }) as any
+      )
+        .unwrap()
+        .then(async (payload: any) => {
+          const pub = payload?.publicId || payload?.public_id || payload?.data?.publicId || payload?.data?.public_id;
+          const url = payload?.url || payload?.secure_url || payload?.data?.url || payload?.data?.secure_url;
+          toast.success('Post created', { autoClose: 600 });
+          // Refresh feed to ensure persistence immediately 
+          try {
+            toast.success('Post created', { autoClose: 800 });
+            await dispatch(getallpost({} as any)).unwrap();
+          } catch (err) {
+            toast.error("Something Went Wrong");
+            console.error(err);
+          }
+          setTimeout(() => router.push('/'), 100);
+        })
+        .catch((e: any) => {
+          const msg = typeof e === 'string' ? e : (e?.message || 'Failed to create post');
+          if (imagePreview) {
+            try {
+              const currentUsername = (() => {
+                try {
+                  return (
+                    nickname ||
+                    localStorage.getItem('username') ||
+                    localStorage.getItem('userName') ||
+                    localStorage.getItem('profileusername') ||
+                    ''
+                  );
+                } catch { return ''; }
+              })();
+              const currentName = (() => {
+                try {
+                  return (
+                    [firstname, lastname].filter(Boolean).join(' ') ||
+                    localStorage.getItem('fullname') ||
+                    localStorage.getItem('fullName') ||
+                    localStorage.getItem('name') ||
+                    ''
+                  );
+                } catch { return ''; }
+              })();
+              const localPost: any = {
+                postid: Date.now(),
+                userid: userid || 'you',
+                content: postcontent,
+                posttype: 'image',
+                image: imagePreview, // blob/object URL for demo
+                createdAt: new Date().toISOString(),
+                username: currentUsername || 'you',
+                name: currentName || currentUsername || 'You',
+                handle: currentUsername || undefined,
+              };
+              const nextPosts = [localPost, ...(Array.isArray(posts) ? posts : [])];
+              try { localStorage.setItem('feedPosts', JSON.stringify(nextPosts)); } catch {}
+              dispatch(hydrateFromCache(nextPosts as any));
+              toast.success('Post created (local demo)', { autoClose: 800 });
+              setTimeout(() => router.push('/'), 100);
+              return;
+            } catch {}
+          }
+          toast.error(msg);
+        });
+    } catch (e: any) {
+      const msg = typeof e === 'string' ? e : (e?.message || 'Failed to create post');
+      toast.error(msg);
+    } finally {
+      setUploading(false);
+      setLoading(false);
+      setShowImageModal(false);
+      setImageFile(undefined);
+      setImagePreview("");
+      setUploadedPublicId("");
+      setUploadedUrl("");
+      setpostcontent("");
+    }
+  };
+
+  const handleVideoPost = async () => {
+    if (!userid || !token || !videoFile) {
+      toast.error('Please log in to post');
+      return;
+    }
+    try {
+      setVideoUploading(true);
+      setLoading(true);
+
+      const currentUsername = (() => {
+        try {
+          return (
+            nickname ||
+            localStorage.getItem('username') ||
+            localStorage.getItem('userName') ||
+            localStorage.getItem('profileusername') ||
+            ''
+          );
+        } catch { return ''; }
+      })();
+
+      const currentName = (() => {
+        try {
+          return (
+            [firstname, lastname].filter(Boolean).join(' ') ||
+            localStorage.getItem('fullname') ||
+            localStorage.getItem('fullName') ||
+            localStorage.getItem('name') ||
+            ''
+          );
+        } catch { return ''; }
+      })();
+
+      const result = await dispatch(
+        createpost({
+          userid: userid!,
+          token: token!,
+          content: videoCaption,
+          posttype: "video",
+          filelink: videoFile,
+          // Provide display fields for optimistic post header
+          authorUsername: currentUsername || undefined,
+          authorName: currentName || undefined,
+          handle: (currentUsername || '').toString() || undefined,
+        }) as any
+      )
+        .unwrap()
+        .then(async (payload: any) => {
+          const pub = payload?.publicId || payload?.public_id || payload?.data?.publicId || payload?.data?.public_id;
+          const url = payload?.url || payload?.secure_url || payload?.data?.url || payload?.data?.secure_url;
+          toast.success('Post created', { autoClose: 600 });
+
+          try {
+            await dispatch(getallpost({} as any)).unwrap();
+          } catch (err) {
+            toast.error("Something Went Wrong");
+            console.error(err);
+          }
+          setVideoUploading(false);
+          setLoading(false);
+          setShowVideoModal(false);
+          setVideoFile(undefined);
+          setVideoPreview("");
+          setVideoCaption("");
+          setTimeout(() => router.push('/'), 100);
+        })
+        .catch((e: any) => {
+          const msg = typeof e === 'string' ? e : (e?.message || 'Failed to create post');
+
+          // fallback demo post if preview exists
+          // if (videoPreview) {
+          //   try {
+          //     const localPost: any = {
+          //       postid: Date.now(),
+          //       userid: userid || 'you',
+          //       content: videoCaption,
+          //       posttype: 'video',
+          //       video: videoPreview, // blob/object URL for demo
+          //       createdAt: new Date().toISOString(),
+          //       username: currentUsername || 'you',
+          //       name: currentName || currentUsername || 'You',
+          //       handle: currentUsername || undefined,
+          //     };
+          //     const nextPosts = [localPost, ...(Array.isArray(posts) ? posts : [])];
+          //     try { localStorage.setItem('feedPosts', JSON.stringify(nextPosts)); } catch {}
+          //     dispatch(hydrateFromCache(nextPosts as any));
+          //     toast.success('Post created (local demo)', { autoClose: 800 });
+          //     setTimeout(() => router.push('/'), 100);
+          //     return;
+          //   } catch {}
+          // }
+          toast.error(msg);
+          setVideoUploading(false);
+          setLoading(false);
+        });
+    } catch (e: any) {
+      const msg = typeof e === 'string' ? e : (e?.message || 'Failed to create post');
+      toast.error(msg);
+    }
+  };
+
   return (
     <div className="bg-gray-900 text-white p-4 rounded-md space-y-5 max-w-4xl mx-auto border border-gray-700">
 
@@ -94,132 +334,126 @@ export const Mainpost = () => {
             onChange={(e) => setpostcontent(e.target.value)}
           />
         </div>
-      {/* Live preview card removed as requested */}
+        {/* Live preview card removed as requested */}
 
         <div className="flex justify-end">
           <button
-            onClick={async()=>{
+            onClick={async () => {
               if (!userid || !token) {
-                    toast.error('Please log in to post');
-                    return;
-                  }
-                 
+                toast.error('Please log in to post');
+                return;
+              }
+              try {
+                if (!userid || !token) {
+                  toast.error('Not authenticated');
+                  return;
+                }
+                setLoading(true);
+                const currentUsername = (() => {
                   try {
-                    
-                    if (!userid || !token) {
-                      toast.error('Not authenticated');
-                      return;
-                    }
-                    setLoading(true);
-                   
-                    const currentUsername = (() => {
-                      try {
-                        return (
-                          nickname ||
-                          localStorage.getItem('username') ||
-                          localStorage.getItem('userName') ||
-                          localStorage.getItem('profileusername') ||
-                          ''
-                        );
-                      } catch { return ''; }
-                    })();
-                    const currentName = (() => {
-                      try {
-                        return (
-                          [firstname, lastname].filter(Boolean).join(' ') ||
-                          localStorage.getItem('fullname') ||
-                          localStorage.getItem('fullName') ||
-                          localStorage.getItem('name') ||
-                          ''
-                        );
-                      } catch { return ''; }
-                    })();
+                    return (
+                      nickname ||
+                      localStorage.getItem('username') ||
+                      localStorage.getItem('userName') ||
+                      localStorage.getItem('profileusername') ||
+                      ''
+                    );
+                  } catch { return ''; }
+                })();
+                const currentName = (() => {
+                  try {
+                    return (
+                      [firstname, lastname].filter(Boolean).join(' ') ||
+                      localStorage.getItem('fullname') ||
+                      localStorage.getItem('fullName') ||
+                      localStorage.getItem('name') ||
+                      ''
+                    );
+                  } catch { return ''; }
+                })();
 
-                    const result = await dispatch(
-                      createpost({
-                        userid: userid!,
-                        token: token!,
-                        content: postcontent,
-                        posttype: "text",
-                        filelink: "",
-                        // Provide display fields for optimistic post header
-                        authorUsername: currentUsername || undefined,
-                        authorName: currentName || undefined,
-                        handle: (currentUsername || '').toString() || undefined,
-                      }) as any
-                    )
-                      .unwrap()
-                      .then(async (payload: any) => {
-                        const pub = payload?.publicId || payload?.public_id || payload?.data?.publicId || payload?.data?.public_id;
-                        const url = payload?.url || payload?.secure_url || payload?.data?.url || payload?.data?.secure_url;
-                        toast.success('Post created', { autoClose: 600 });
-                        // Refresh feed to ensure persistence immediately 
-                        try {
-                          
-                          toast.success('Post created', { autoClose: 800 });
-                          await dispatch(getallpost({} as any)).unwrap();
-                        } catch (err) {
-                          toast.error("Something Went Wrong");
-                          console.error(err);
-                        }
-                        setTimeout(() => router.push('/'), 100);
-                      })
-                      .catch((e: any) => {
-                        const msg = typeof e === 'string' ? e : (e?.message || 'Failed to create post');
-                        
-                        if (imagePreview) {
-                          try {
-                            const currentUsername = (() => {
-                              try {
-                                return (
-                                  nickname ||
-                                  localStorage.getItem('username') ||
-                                  localStorage.getItem('userName') ||
-                                  localStorage.getItem('profileusername') ||
-                                  ''
-                                );
-                              } catch { return ''; }
-                            })();
-                            const currentName = (() => {
-                              try {
-                                return (
-                                  [firstname, lastname].filter(Boolean).join(' ') ||
-                                  localStorage.getItem('fullname') ||
-                                  localStorage.getItem('fullName') ||
-                                  localStorage.getItem('name') ||
-                                  ''
-                                );
-                              } catch { return ''; }
-                            })();
-                            const localPost: any = {
-                              postid: Date.now(),
-                              userid: userid || 'you',
-                              content: postcontent,
-                              posttype: 'text',
-                              image: "", // blob/object URL for demo
-                              createdAt: new Date().toISOString(),
-                              username: currentUsername || 'you',
-                              name: currentName || currentUsername || 'You',
-                              handle: currentUsername || undefined,
-                            };
-                            const nextPosts = [localPost, ...(Array.isArray(posts) ? posts : [])];
-                            try { localStorage.setItem('feedPosts', JSON.stringify(nextPosts)); } catch {}
-                            dispatch(hydrateFromCache(nextPosts as any));
-                            toast.success('Post created (local demo)', { autoClose: 800 });
-                            setTimeout(() => router.push('/'), 100);
-                            return;
-                          } catch {}
-                        }
-                        toast.error(msg);
-                      });
-                  } catch (e: any) {
+                const result = await dispatch(
+                  createpost({
+                    userid: userid!,
+                    token: token!,
+                    content: postcontent,
+                    posttype: "text",
+                    filelink: "",
+                    // Provide display fields for optimistic post header
+                    authorUsername: currentUsername || undefined,
+                    authorName: currentName || undefined,
+                    handle: (currentUsername || '').toString() || undefined,
+                  }) as any
+                )
+                  .unwrap()
+                  .then(async (payload: any) => {
+                    const pub = payload?.publicId || payload?.public_id || payload?.data?.publicId || payload?.data?.public_id;
+                    const url = payload?.url || payload?.secure_url || payload?.data?.url || payload?.data?.secure_url;
+                    toast.success('Post created', { autoClose: 600 });
+                    // Refresh feed to ensure persistence immediately 
+                    try {
+                      toast.success('Post created', { autoClose: 800 });
+                      await dispatch(getallpost({} as any)).unwrap();
+                    } catch (err) {
+                      toast.error("Something Went Wrong");
+                      console.error(err);
+                    }
+                    setTimeout(() => router.push('/'), 100);
+                  })
+                  .catch((e: any) => {
                     const msg = typeof e === 'string' ? e : (e?.message || 'Failed to create post');
+                    if (imagePreview) {
+                      try {
+                        const currentUsername = (() => {
+                          try {
+                            return (
+                              nickname ||
+                              localStorage.getItem('username') ||
+                              localStorage.getItem('userName') ||
+                              localStorage.getItem('profileusername') ||
+                              ''
+                            );
+                          } catch { return ''; }
+                        })();
+                        const currentName = (() => {
+                          try {
+                            return (
+                              [firstname, lastname].filter(Boolean).join(' ') ||
+                              localStorage.getItem('fullname') ||
+                              localStorage.getItem('fullName') ||
+                              localStorage.getItem('name') ||
+                              ''
+                            );
+                          } catch { return ''; }
+                        })();
+                        const localPost: any = {
+                          postid: Date.now(),
+                          userid: userid || 'you',
+                          content: postcontent,
+                          posttype: 'text',
+                          image: "", // blob/object URL for demo
+                          createdAt: new Date().toISOString(),
+                          username: currentUsername || 'you',
+                          name: currentName || currentUsername || 'You',
+                          handle: currentUsername || undefined,
+                        };
+                        const nextPosts = [localPost, ...(Array.isArray(posts) ? posts : [])];
+                        try { localStorage.setItem('feedPosts', JSON.stringify(nextPosts)); } catch {}
+                        dispatch(hydrateFromCache(nextPosts as any));
+                        toast.success('Post created (local demo)', { autoClose: 800 });
+                        setTimeout(() => router.push('/'), 100);
+                        return;
+                      } catch {}
+                    }
                     toast.error(msg);
-                  } finally{
-                    
-                    setUploading(false);
-                    setLoading(false);
-                  }
+                  });
+              } catch (e: any) {
+                const msg = typeof e === 'string' ? e : (e?.message || 'Failed to create post');
+                toast.error(msg);
+              } finally {
+                setUploading(false);
+                setLoading(false);
+              }
             }}
             disabled={loading}
             className="w-full py-2 font-semibold text-white transition bg-orange-600 rounded-lg hover:bg-orange-500"
@@ -253,7 +487,7 @@ export const Mainpost = () => {
               <button
                 onClick={() => {
                   setShowImageModal(false);
-                  setImageFile(null);
+                  setImageFile(undefined);
                   setImagePreview("");
                 }}
                 className="text-gray-300 hover:text-white"
@@ -265,7 +499,7 @@ export const Mainpost = () => {
               <button
                 onClick={() => {
                   setShowImageModal(false);
-                  setImageFile(null);
+                  setImageFile(undefined);
                   setImagePreview("");
                 }}
                 className="text-gray-300 hover:text-white"
@@ -290,7 +524,6 @@ export const Mainpost = () => {
                     const url = URL.createObjectURL(file);
                     setImageFile(file);
                     setImagePreview(url);
-                    
                     setUploadedPublicId("");
                     setUploadedUrl("");
                   } else {
@@ -308,12 +541,11 @@ export const Mainpost = () => {
                   accept="image/*"
                   className="hidden"
                   onChange={async (e) => {
-                    const file = e.target.files?.[0] || null;
+                    const file = e.target.files?.[0] || undefined;
                     if (!file) return;
                     const url = URL.createObjectURL(file);
                     setImageFile(file);
                     setImagePreview(url);
-                   
                     setUploadedPublicId("");
                     setUploadedUrl("");
                   }}
@@ -324,7 +556,6 @@ export const Mainpost = () => {
                 className="mt-2 border border-gray-700 rounded-xl h-64 flex items-center justify-center bg-[#0b1026]"
               >
                 {imagePreview ? (
-
                   <img src={imagePreview} alt="preview" className="max-h-64 max-w-full object-contain rounded-md" />
                 ) : (
                   <p className="text-slate-300">Preview Upload</p>
@@ -342,141 +573,7 @@ export const Mainpost = () => {
               <button
                 disabled={uploading}
                 className="w-full py-2 font-semibold text-white transition bg-green-600 hover:bg-green-500 rounded-lg disabled:opacity-60"
-                onClick={async () => {
-                 
-                  if (!imageFile) {
-                    const el = document.getElementById('image-upload-modal') as HTMLInputElement | null;
-                    if (el) el.click();
-                    return;
-                  }
-                  
-                  if (!userid || !token) {
-                    toast.error('Please log in to post');
-                    return;
-                  }
-                 
-                  try {
-                    
-                    if (!userid || !token) {
-                      toast.error('Not authenticated');
-                      return;
-                    }
-                    setLoading(true);
-                   
-                    const currentUsername = (() => {
-                      try {
-                        return (
-                          nickname ||
-                          localStorage.getItem('username') ||
-                          localStorage.getItem('userName') ||
-                          localStorage.getItem('profileusername') ||
-                          ''
-                        );
-                      } catch { return ''; }
-                    })();
-                    const currentName = (() => {
-                      try {
-                        return (
-                          [firstname, lastname].filter(Boolean).join(' ') ||
-                          localStorage.getItem('fullname') ||
-                          localStorage.getItem('fullName') ||
-                          localStorage.getItem('name') ||
-                          ''
-                        );
-                      } catch { return ''; }
-                    })();
-
-                    const result = await dispatch(
-                      createpost({
-                        userid: userid!,
-                        token: token!,
-                        content: postcontent,
-                        posttype: "image",
-                        filelink: imageFile,
-                        // Provide display fields for optimistic post header
-                        authorUsername: currentUsername || undefined,
-                        authorName: currentName || undefined,
-                        handle: (currentUsername || '').toString() || undefined,
-                      }) as any
-                    )
-                      .unwrap()
-                      .then(async (payload: any) => {
-                        const pub = payload?.publicId || payload?.public_id || payload?.data?.publicId || payload?.data?.public_id;
-                        const url = payload?.url || payload?.secure_url || payload?.data?.url || payload?.data?.secure_url;
-                        toast.success('Post created', { autoClose: 600 });
-                        // Refresh feed to ensure persistence immediately 
-                        try {
-                          
-                          toast.success('Post created', { autoClose: 800 });
-                          await dispatch(getallpost({} as any)).unwrap();
-                        } catch (err) {
-                          toast.error("Something Went Wrong");
-                          console.error(err);
-                        }
-                        setTimeout(() => router.push('/'), 100);
-                      })
-                      .catch((e: any) => {
-                        const msg = typeof e === 'string' ? e : (e?.message || 'Failed to create post');
-                        
-                        if (imagePreview) {
-                          try {
-                            const currentUsername = (() => {
-                              try {
-                                return (
-                                  nickname ||
-                                  localStorage.getItem('username') ||
-                                  localStorage.getItem('userName') ||
-                                  localStorage.getItem('profileusername') ||
-                                  ''
-                                );
-                              } catch { return ''; }
-                            })();
-                            const currentName = (() => {
-                              try {
-                                return (
-                                  [firstname, lastname].filter(Boolean).join(' ') ||
-                                  localStorage.getItem('fullname') ||
-                                  localStorage.getItem('fullName') ||
-                                  localStorage.getItem('name') ||
-                                  ''
-                                );
-                              } catch { return ''; }
-                            })();
-                            const localPost: any = {
-                              postid: Date.now(),
-                              userid: userid || 'you',
-                              content: postcontent,
-                              posttype: 'image',
-                              image: imagePreview, // blob/object URL for demo
-                              createdAt: new Date().toISOString(),
-                              username: currentUsername || 'you',
-                              name: currentName || currentUsername || 'You',
-                              handle: currentUsername || undefined,
-                            };
-                            const nextPosts = [localPost, ...(Array.isArray(posts) ? posts : [])];
-                            try { localStorage.setItem('feedPosts', JSON.stringify(nextPosts)); } catch {}
-                            dispatch(hydrateFromCache(nextPosts as any));
-                            toast.success('Post created (local demo)', { autoClose: 800 });
-                            setTimeout(() => router.push('/'), 100);
-                            return;
-                          } catch {}
-                        }
-                        toast.error(msg);
-                      });
-                  } catch (e: any) {
-                    const msg = typeof e === 'string' ? e : (e?.message || 'Failed to create post');
-                    toast.error(msg);
-                  } finally {
-                    setUploading(false);
-                    setLoading(false);
-                    setShowImageModal(false);
-                    setImageFile(null);
-                    setImagePreview("");
-                    setUploadedPublicId("");
-                    setUploadedUrl("");
-                    setpostcontent("");
-                  }
-                }}
+                onClick={() => handleUploadStart('image')}
               >
                 {uploading ? 'Uploading…' : (imageFile ? 'Post' : 'Choose image')}
               </button>
@@ -493,7 +590,7 @@ export const Mainpost = () => {
               <button
                 onClick={() => {
                   setShowVideoModal(false);
-                  setVideoFile(null);
+                  setVideoFile(undefined);
                   setVideoPreview("");
                   setVideoCaption("");
                 }}
@@ -506,7 +603,7 @@ export const Mainpost = () => {
               <button
                 onClick={() => {
                   setShowVideoModal(false);
-                  setVideoFile(null);
+                  setVideoFile(undefined);
                   setVideoPreview("");
                   setVideoCaption("");
                 }}
@@ -547,7 +644,7 @@ export const Mainpost = () => {
                   accept="video/*"
                   className="hidden"
                   onChange={(e) => {
-                    const file = e.target.files?.[0] || null;
+                    const file = e.target.files?.[0] || undefined;
                     if (!file) return;
                     const url = URL.createObjectURL(file);
                     setVideoFile(file);
@@ -575,120 +672,14 @@ export const Mainpost = () => {
               <button
                 disabled={videoUploading}
                 className="w-full py-2 font-semibold text-white transition bg-green-600 hover:bg-green-500 rounded-lg disabled:opacity-60"
-                onClick={async () => {
-                  if (!videoFile) {
-  const el = document.getElementById('video-upload-modal') as HTMLInputElement | null;
-  if (el) el.click();
-  return;
-}
-
-if (!userid || !token) {
-  toast.error('Please log in to post');
-  return;
-}
-
-try {
-  setVideoUploading(true);
-  setLoading(true);
-
-  const currentUsername = (() => {
-    try {
-      return (
-        nickname ||
-        localStorage.getItem('username') ||
-        localStorage.getItem('userName') ||
-        localStorage.getItem('profileusername') ||
-        ''
-      );
-    } catch { return ''; }
-  })();
-
-  const currentName = (() => {
-    try {
-      return (
-        [firstname, lastname].filter(Boolean).join(' ') ||
-        localStorage.getItem('fullname') ||
-        localStorage.getItem('fullName') ||
-        localStorage.getItem('name') ||
-        ''
-      );
-    } catch { return ''; }
-  })();
-
-  const result = await dispatch(
-    createpost({
-      userid: userid!,
-      token: token!,
-      content: videoCaption,
-      posttype: "video",
-      filelink: videoFile,
-      // Provide display fields for optimistic post header
-      authorUsername: currentUsername || undefined,
-      authorName: currentName || undefined,
-      handle: (currentUsername || '').toString() || undefined,
-    }) as any
-  )
-    .unwrap()
-    .then(async (payload: any) => {
-      const pub = payload?.publicId || payload?.public_id || payload?.data?.publicId || payload?.data?.public_id;
-      const url = payload?.url || payload?.secure_url || payload?.data?.url || payload?.data?.secure_url;
-      toast.success('Post created', { autoClose: 600 });
-
-      try {
-        await dispatch(getallpost({} as any)).unwrap();
-      } catch (err) {
-        toast.error("Something Went Wrong");
-        console.error(err);
-      }
-      setVideoUploading(false);
-      setLoading(false);
-      setShowVideoModal(false);
-      setVideoFile(null);
-      setVideoPreview("");
-      setVideoCaption("");
-      setTimeout(() => router.push('/'), 100);
-    })
-    .catch((e: any) => {
-      const msg = typeof e === 'string' ? e : (e?.message || 'Failed to create post');
-
-      // fallback demo post if preview exists
-      // if (videoPreview) {
-      //   try {
-      //     const localPost: any = {
-      //       postid: Date.now(),
-      //       userid: userid || 'you',
-      //       content: videoCaption,
-      //       posttype: 'video',
-      //       video: videoPreview, // blob/object URL for demo
-      //       createdAt: new Date().toISOString(),
-      //       username: currentUsername || 'you',
-      //       name: currentName || currentUsername || 'You',
-      //       handle: currentUsername || undefined,
-      //     };
-      //     const nextPosts = [localPost, ...(Array.isArray(posts) ? posts : [])];
-      //     try { localStorage.setItem('feedPosts', JSON.stringify(nextPosts)); } catch {}
-      //     dispatch(hydrateFromCache(nextPosts as any));
-      //     toast.success('Post created (local demo)', { autoClose: 800 });
-      //     setTimeout(() => router.push('/'), 100);
-      //     return;
-      //   } catch {}
-      // }
-      toast.error(msg);
-      setVideoUploading(false);
-      setLoading(false);
-    });
-} catch (e: any) {
-  const msg = typeof e === 'string' ? e : (e?.message || 'Failed to create post');
-  toast.error(msg);
-} 
-}}
+                onClick={() => handleUploadStart('video')}
               >
                 {videoUploading ? 'Uploading…' : (videoFile ? 'Post' : 'Choose video')}
               </button>
             </div>
           </div>
         </div>
-      )}
+     )}
 
       {/* Video Upload Section */}
       <div
@@ -698,6 +689,43 @@ try {
         <FaVideo className="text-xl text-purple-400" />
         <span className="text-sm">Click to post video</span>
       </div>
+
+      {showBanWarning && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black/60" style={{ zIndex: 1001 }}>
+          <div className="w-full max-w-lg mx-4 bg-[#0b0f1f] border border-gray-700 rounded-2xl shadow-2xl">
+            <div className="flex items-center justify-between p-4 border-b border-gray-700 bg-red-800 rounded-t-2xl">
+              <span className="text-white font-semibold">Warning: Permanent Ban Policy</span>
+            </div>
+            <div className="p-4 space-y-4 text-white">
+              <p>Uploading explicit, sexual, or pornographic content is strictly forbidden. 1st violation → permanent ban. No second chances.</p>
+              <label className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={agreedToPolicy}
+                  onChange={(e) => setAgreedToPolicy(e.target.checked)}
+                  className="rounded border-gray-600 bg-gray-800 text-green-400 focus:ring-2 focus:ring-green-500"
+                />
+                <span>I understand and agree.</span>
+              </label>
+            </div>
+            <div className="flex items-center justify-end gap-3 p-4 border-t border-gray-700">
+              <button
+                onClick={() => setShowBanWarning(false)}
+                className="px-4 py-2 text-gray-300 hover:text-white transition"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => agreedToPolicy && handleContinueUpload(showImageModal ? 'image' : 'video')}
+                disabled={!agreedToPolicy}
+                className="px-4 py-2 font-semibold text-white bg-orange-600 rounded-lg hover:bg-orange-500 disabled:opacity-60"
+              >
+                Continue
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

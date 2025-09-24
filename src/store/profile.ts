@@ -3,6 +3,7 @@ import { PayloadAction } from "@reduxjs/toolkit";
 import { URL } from "../api/config";
 import axios from "axios";
 import { ProfileState } from "@/types/profile";
+import { RootState } from "@/store/store";
 // import { saveImage } from "../../../api/sendImage";
 // import { deleteImage } from "../../../api/sendImage";
 
@@ -41,6 +42,7 @@ const getErrorMessageWithNetworkFallback = (err: unknown): string => {
 };
 
 const initialState = {
+  userId: "",
   firstname: "",
   lastname: "",
   email: "",
@@ -200,13 +202,16 @@ export const deleteblockedUsers = createAsyncThunk<any, any>(
   }
 );
 
-export const deleteprofile = createAsyncThunk<any, { userid: string }>(
+export const deleteprofile = createAsyncThunk<any, void, { state: RootState }>(
   "profile/deleteprofile",
-  async ({ userid }) => {
+  async (_, { getState }) => {
+    const state = getState();
+    const userId = state.profile.userId;  // 👈 safely read from Redux
+
     const res = await axios.delete(
       `${process.env.NEXT_PUBLIC_API}/deleteaccount`,
       {
-        data: { userid }, // 👈 DELETE with body
+        data: { userid: userId },
         withCredentials: true,
       }
     );
@@ -506,6 +511,7 @@ const profile = createSlice({
         state.status = "succeeded";
 
         const p = action.payload?.profile ?? {};
+        state.userId = p.userId ?? p._id ?? "";
         state.firstname = p.firstname ?? "";
         state.lastname = p.lastname ?? "";
         state.nickname = p.nickname ?? "";
