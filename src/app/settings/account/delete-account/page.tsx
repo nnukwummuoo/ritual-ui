@@ -13,7 +13,7 @@ const DeleteaccountPage = () => {
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
 
-  const useridFromStore = useSelector((s: RootState) => s.register.userID);
+  const useridFromStore = useSelector((s: RootState) => s.profile.userId);
   const token = useSelector((s: RootState) => s.register.refreshtoken);
   const deleteaccstats = useSelector((s: RootState) => s.profile.deleteaccstats);
   const testmsg = useSelector((s: RootState) => s.profile.testmsg);
@@ -25,7 +25,7 @@ const DeleteaccountPage = () => {
   const deleteClick = () => {
     if (deleteaccstats === "loading") return;
     set_buttonstop(true);
-    dispatch(deleteprofile({ userid }))
+    dispatch(deleteprofile())
       .unwrap()
       .then(() => {
         // handled in effect
