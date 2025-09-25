@@ -205,8 +205,8 @@ export const Mainpost = () => {
           toast.error(msg);
         });
     } catch (e: any) {
-      const msg = typeof e === 'string' ? e : (e?.message || 'Failed to create post');
-      toast.error(msg);
+    const msg = e?.message || 'Failed to create post';
+    toast.error(msg);
     } finally {
       setUploading(false);
       setLoading(false);
@@ -218,6 +218,7 @@ export const Mainpost = () => {
       setpostcontent("");
     }
   };
+  
 
   const handleVideoPost = async () => {
     if (!userid || !token || !videoFile) {
@@ -286,7 +287,17 @@ export const Mainpost = () => {
           setTimeout(() => router.push('/'), 100);
         })
         .catch((e: any) => {
-          const msg = typeof e === 'string' ? e : (e?.message || 'Failed to create post');
+        // 👇 This will show "You can only upload 5 videos per day."
+        const msg = e?.message || 'Failed to create post';
+        toast.error(msg); 
+        setVideoUploading(false);
+        setLoading(false);
+      });
+        } catch (e: any) {
+          const msg = e?.message || 'Failed to create post';
+          toast.error(msg);
+        }
+      };
 
           // fallback demo post if preview exists
           // if (videoPreview) {
@@ -310,15 +321,20 @@ export const Mainpost = () => {
           //     return;
           //   } catch {}
           // }
-          toast.error(msg);
-          setVideoUploading(false);
-          setLoading(false);
-        });
-    } catch (e: any) {
-      const msg = typeof e === 'string' ? e : (e?.message || 'Failed to create post');
-      toast.error(msg);
-    }
-  };
+
+          const handleImageSelected = async (file: File) => {
+          if (uploading) return;
+          try {
+            const url = URL.createObjectURL(file);
+            setImageFile(file);
+            setImagePreview(url);
+            setUploadedPublicId("");
+            setUploadedUrl("");
+          } catch (error) {
+            console.error("Image selection failed:", error);
+            toast.error("Failed to load image.");
+          }
+        };
 
   return (
     <div className="bg-gray-900 text-white p-4 rounded-md space-y-5 max-w-4xl mx-auto border border-gray-700">
@@ -521,11 +537,7 @@ export const Mainpost = () => {
                   if (uploading) return;
                   const file = e.dataTransfer.files?.[0];
                   if (file && file.type.startsWith('image/')) {
-                    const url = URL.createObjectURL(file);
-                    setImageFile(file);
-                    setImagePreview(url);
-                    setUploadedPublicId("");
-                    setUploadedUrl("");
+                    await handleImageSelected(file);
                   } else {
                     toast.error('Only image files are allowed');
                   }
@@ -543,11 +555,7 @@ export const Mainpost = () => {
                   onChange={async (e) => {
                     const file = e.target.files?.[0] || undefined;
                     if (!file) return;
-                    const url = URL.createObjectURL(file);
-                    setImageFile(file);
-                    setImagePreview(url);
-                    setUploadedPublicId("");
-                    setUploadedUrl("");
+                    await handleImageSelected(file);
                   }}
                 />
               </div>
@@ -555,12 +563,17 @@ export const Mainpost = () => {
               <div
                 className="mt-2 border border-gray-700 rounded-xl h-64 flex items-center justify-center bg-[#0b1026]"
               >
-                {imagePreview ? (
-                  <img src={imagePreview} alt="preview" className="max-h-64 max-w-full object-contain rounded-md" />
-                ) : (
-                  <p className="text-slate-300">Preview Upload</p>
-                )}
-              </div>
+                {imagePreview && (
+                      <img
+                        src={imagePreview}
+                        alt="preview"
+                        className="max-h-64 max-w-full object-contain rounded-md"
+                        onError={(e) => {
+                          (e.currentTarget as HTMLImageElement).src = "/fallback.jpg"; // 👈 replace with your fallback asset
+                        }}
+                      />
+                    )}
+                    </div>
 
               <textarea
                 className="w-full h-28 p-2 rounded-lg bg-[#2a2a2a] text-gray-200 placeholder-gray-400 resize-none focus:outline-none focus:ring-2 focus:ring-orange-500"
@@ -571,7 +584,7 @@ export const Mainpost = () => {
             </div>
             <div className="flex items-center justify-end gap-3 p-4 border-t border-gray-700">
               <button
-                disabled={uploading}
+                disabled={uploading || !imageFile}
                 className="w-full py-2 font-semibold text-white transition bg-green-600 hover:bg-green-500 rounded-lg disabled:opacity-60"
                 onClick={() => handleUploadStart('image')}
               >
@@ -670,7 +683,7 @@ export const Mainpost = () => {
             </div>
             <div className="flex items-center justify-end gap-3 p-4 border-t border-gray-700">
               <button
-                disabled={videoUploading}
+                disabled={videoUploading || !videoFile}
                 className="w-full py-2 font-semibold text-white transition bg-green-600 hover:bg-green-500 rounded-lg disabled:opacity-60"
                 onClick={() => handleUploadStart('video')}
               >
@@ -729,6 +742,9 @@ export const Mainpost = () => {
     </div>
   );
 };
+
+
+
 
 // Helper component to cleanup object URLs when they change/unmount
 function CleanupObjectUrl({ url }: { url: string }) {
