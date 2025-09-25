@@ -23,13 +23,20 @@ interface RegistrationPayload {
  */
 export const register = async (payload: RegistrationPayload) => {
   try {
-    const res = await axios.post(`${process.env.NEXT_PUBLIC_API}/register`, payload, { withCredentials: true });
+    const res = await axios.post(
+      `${process.env.NEXT_PUBLIC_API}/register`,
+      payload,
+      { withCredentials: true }
+    );
     return res.data;
   } catch (error: any) {
     // Log the full error for debugging purposes
     console.error("Registration failed:", error);
 
     // Re-throw the error with a clear message to be caught by the component
-    throw new Error(error?.response?.data?.message || "An unexpected error occurred during registration.");
+    throw new Error(
+      error?.response?.data?.message ||
+        "An unexpected error occurred during registration."
+    );
   }
 };

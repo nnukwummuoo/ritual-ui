@@ -19,7 +19,11 @@ export async function uploadImage(file: File): Promise<UploadResponse> {
   form.append("image", file);
 
   const tryOnce = async (base: string) =>
-    fetch(`${base}/api/image/save`, { method: "POST", body: form, credentials: "include" });
+    fetch(`${base}/api/image/save`, {
+      method: "POST",
+      body: form,
+      credentials: "include",
+    });
 
   let res: Response | undefined;
   try {
@@ -41,7 +45,9 @@ export async function uploadImage(file: File): Promise<UploadResponse> {
   return (await res.json()) as UploadResponse;
 }
 
-export async function deleteImage(publicId: string): Promise<{ success?: boolean; [k: string]: any }> {
+export async function deleteImage(
+  publicId: string
+): Promise<{ success?: boolean; [k: string]: any }> {
   const tryOnce = async (base: string) =>
     fetch(`${base}/api/image/delete`, {
       method: "DELETE",
@@ -67,12 +73,6 @@ export async function deleteImage(publicId: string): Promise<{ success?: boolean
   }
   return (await res.json().catch(() => ({}))) as any;
 }
-
-
-
-
-
-
 
 export async function getViewUrl(publicId: string): Promise<string> {
   console.log("[getViewUrl] publicId:", publicId);
@@ -102,13 +102,17 @@ export async function getViewUrl(publicId: string): Promise<string> {
 
   if (!res) throw new Error("Get URL failed: network error");
 
-  const contentType = res.headers.get('content-type') || '';
+  const contentType = res.headers.get("content-type") || "";
   console.log("[getViewUrl] Content-Type:", contentType);
 
   const buf = await res.arrayBuffer().catch(() => new ArrayBuffer(0));
   const decoder = new TextDecoder();
   const asText = () => {
-    try { return decoder.decode(new Uint8Array(buf)); } catch { return ''; }
+    try {
+      return decoder.decode(new Uint8Array(buf));
+    } catch {
+      return "";
+    }
   };
 
   if (!res.ok) {
@@ -117,36 +121,52 @@ export async function getViewUrl(publicId: string): Promise<string> {
     throw new Error(`Get URL failed (${res.status}): ${bodyText}`);
   }
 
-  if (contentType.includes('application/json') || contentType.startsWith('text/')) {
+  if (
+    contentType.includes("application/json") ||
+    contentType.startsWith("text/")
+  ) {
     const bodyText = asText();
     try {
       const data = JSON.parse(bodyText);
       console.log("[getViewUrl] JSON response:", data);
-      if (typeof data === 'string') return data;
-      if (data && typeof (data as any).url === 'string') return (data as any).url as string;
+      if (typeof data === "string") return data;
+      if (data && typeof (data as any).url === "string")
+        return (data as any).url as string;
       return bodyText;
     } catch (err) {
-      console.warn("[getViewUrl] Failed to parse JSON, returning text:", bodyText, err);
+      console.warn(
+        "[getViewUrl] Failed to parse JSON, returning text:",
+        bodyText,
+        err
+      );
       return bodyText;
     }
   }
 
   try {
-    const blob = new Blob([buf], { type: contentType || 'application/octet-stream' });
+    const blob = new Blob([buf], {
+      type: contentType || "application/octet-stream",
+    });
     const objectUrl = URL.createObjectURL(blob);
     console.log("[getViewUrl] Blob URL created:", objectUrl);
     return objectUrl;
   } catch (err) {
     console.error("[getViewUrl] Failed to create Blob URL:", err);
-    return '';
+    return "";
   }
 }
 
 // Updated saveImage
-export async function saveImage(fileOrUrl: any, _folder?: string): Promise<string> {
+export async function saveImage(
+  fileOrUrl: any,
+  _folder?: string
+): Promise<string> {
   try {
     if (typeof fileOrUrl === "string" && /^https?:\/\//i.test(fileOrUrl)) {
-      console.log("[saveImage] Provided string URL, returning as-is:", fileOrUrl);
+      console.log(
+        "[saveImage] Provided string URL, returning as-is:",
+        fileOrUrl
+      );
       return fileOrUrl;
     }
     console.log("[saveImage] Uploading file:", fileOrUrl);

@@ -19,26 +19,43 @@ export async function encryptData(payload: payload) {
     .sign(key);
 }
 
-export async function decryptData(input: string): Promise<{ status: string; body: user }> {
+export async function decryptData(
+  input: string
+): Promise<{ status: string; body: user }> {
   try {
     const { payload } = await jwtVerify(input, key, { algorithms: ["HS256"] });
     const typedPayload = payload as payload;
-    console.log({ decryptData: { nickname: typedPayload.user.nickname, password: "[REDACTED]" }, input });
+    console.log({
+      decryptData: {
+        nickname: typedPayload.user.nickname,
+        password: "[REDACTED]",
+      },
+      input,
+    });
     return { status: "valid", body: typedPayload.user };
   } catch (error: any) {
     console.error("JWT verification error:", error.message);
-    return { status: "expired", body: error?.payload?.user ?? { nickname: "", password: "" } };
+    return {
+      status: "expired",
+      body: error?.payload?.user ?? { nickname: "", password: "" },
+    };
   }
 }
 
-export async function isRegistered(payload: { nickname: string; password: string }): Promise<{ user?: any; error?: string }> {
+export async function isRegistered(payload: {
+  nickname: string;
+  password: string;
+}): Promise<{ user?: any; error?: string }> {
   try {
     const res = await axios.post(
       `${process.env.NEXT_PUBLIC_API}/login`,
-      { nickname: payload.nickname.toLowerCase().trim(), password: payload.password },
+      {
+        nickname: payload.nickname.toLowerCase().trim(),
+        password: payload.password,
+      },
       { withCredentials: true }
     );
-    console.log("Backend response:", res.data);
+    // console.log("Backend response:", res.data);
     const data = res.data;
     if (!data.ok) {
       return { error: data.message || "Login failed" };
@@ -49,6 +66,7 @@ export async function isRegistered(payload: { nickname: string; password: string
       nickname: payload.nickname.toLowerCase().trim(),
       accessToken: data.accessToken,
       refreshtoken: data.token,
+      isAdmin: data.isAdmin,
     };
     return { user };
   } catch (error: any) {
@@ -58,7 +76,9 @@ export async function isRegistered(payload: { nickname: string; password: string
   }
 }
 
-export async function sessionMng(request: NextRequest): Promise<string | undefined> {
+export async function sessionMng(
+  request: NextRequest
+): Promise<string | undefined> {
   const cookie = request.cookies.get("auth_token")?.value;
   if (!cookie?.length) return undefined;
   const decryptCookie = await decryptData(cookie);

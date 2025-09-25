@@ -7,15 +7,15 @@ import dynamic from "next/dynamic";
 import { useAuth } from "@/lib/context/auth-context";
 // import { status } from "@/constants/status";
 
-const Popup = dynamic(()=> import("reactjs-popup"), {ssr: false,})
+const Popup = dynamic(() => import("reactjs-popup"), { ssr: false });
 
 export default function Logins() {
-  const {status} = useAuth()
-  
+  const { status } = useAuth();
+
   return (
     <div className="">
       <Popup
-        open={!["idle","resolved"].includes(status)}
+        open={!["idle", "resolved"].includes(status)}
         modal
         nested
         trigger={
@@ -26,12 +26,10 @@ export default function Logins() {
               alignItems: "center",
               padding: "6px 10px",
               borderRadius: 20,
-            }}
-          >
+            }}>
             <FaSignInAlt size={18} className="text-gray-900" />
           </button>
-        }
-      >
+        }>
         <div className=" w-2/3">
           <Loginview />
         </div>

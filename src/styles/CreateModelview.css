@@ -8,259 +8,249 @@
   padding: 20px;
   margin-top: 10px;
   gap: 16px;
-
 }
-.name-label{
-    font-size: 18px;
-    border-radius: 5px;
-   
-    color: #FFf;
-    text-align: left;
-    text-transform: capitalize;
-    width: 100%;
-    padding: 10px;
+.name-label {
+  font-size: 18px;
+  border-radius: 5px;
+
+  color: #fff;
+  text-align: left;
+  text-transform: capitalize;
+  width: 100%;
+  padding: 10px;
 }
 .form-container .input-container {
   display: flex;
   flex-direction: column;
   width: 100%;
-  
 }
 .input-container .bg-black {
-    background-color: #191e37;
-   
-   
-  }
-  
-  .label {
-    display: block;
-    margin-bottom: 0.5rem;
-    color: #cbd5e1; /* slate-300 */
-    font-size: 14px;
-  }
-  
-  .slider-group {
-    display: flex;
-   
-    justify-content: space-between;
-    flex-direction: column;
-    padding: 10px;
-    border-radius: 5px;
-    gap: 10px;
-  }
-  
-  
-  .age-display {
-    color: #94a3b8; /* slate-400 */
-    font-size: 14px;
-    margin-left: 1rem;
-  }
-  
-  /* Custom range slider styling */
-  .slider {
-    -webkit-appearance: none;
-    width: 100%;
-    height: 6px;
-    background: #e2e8f0; /* light gray track */
-    border-radius: 5px;
-    outline: none;
-    transition: background 0.3s ease;
-  }
-  
-  .slider:hover {
-    background: #cbd5e1; /* hover effect */
-  }
-  
-  /* Thumb styling */
-  .slider::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 16px;
-    height: 16px;
-    border-radius: 50%;
-    background: #f97316; /* blue thumb */
-    cursor: pointer;
-    box-shadow: 0 0 2px rgba(0, 0, 0, 0.2);
-    transition: background 0.3s ease;
-  }
-  
-  .slider::-moz-range-thumb {
-    width: 16px;
-    height: 16px;
-    border-radius: 50%;
-    background: #f97316;
-    cursor: pointer;
-    border: none;
-  }
-  .select-container {
-    margin-bottom: 1rem;
-    font-family: sans-serif;
-  }
-  
-  .select-label {
-    display: block;
-    margin-bottom: 0.5rem;
-    color: #cbd5e1; /* Tailwind's slate-300 */
-    font-size: 14px;
-  }
-  
-  .custom-select {
-    padding: 0.5rem 0.75rem;
-    font-size: 14px;
-    color: #1e293b; /* slate-800 */
-    background-color: #f8fafc; /* slate-50 */
-    padding: 10px;
- 
-    border-radius: 5px;
-    width: 100%;
-    outline: none;
-    cursor: pointer;
-    transition: border-color 0.3s ease, box-shadow 0.3s ease;
-  }
-  .height-container {
-    max-width: 300px;
-    margin: 1rem 0;
-    font-family: "Segoe UI", sans-serif;
-  }
-  
-  .height-label {
-    font-size: 16px;
-    font-weight: 600;
-    color: #cbd5e1; /* Slate-300 */
-    margin-bottom: 0.5rem;
-    display: block;
-  }
-  
-  .height-value {
-    color: #38bdf8; /* Sky-400 */
-    font-weight: bold;
-  }
-  
-  .height-select {
-    width: 100%;
-    padding: 10px;
-    font-size: 15px;
-    background-color: #1e293b; /* Slate-800 */
-    color: #f1f5f9; /* Slate-100 */
+  background-color: #191e37;
+}
 
-    border-radius: 8px;
-    outline: none;
-    cursor: pointer;
-    box-sizing: border-box;
-    transition: border 0.3s ease, box-shadow 0.3s ease;
-  }
-  
-  .height-select option {
-    background-color: #1e293b;
-    color: #f1f5f9;
-    padding: 6px;
-    border-radius: 6px;
-  }
-  
-  .profile-form {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-    max-width: 300px;
-    margin-top: 1rem;
-   
-  }
-  
-  .form-group {
-    display: flex;
-    flex-direction: column;
-  }
-  
-  .form-label {
-    margin-bottom: 0.5rem;
-    font-weight: 600;
-    color: #cbd5e1; /* slate-300 */
-  }
-  
-  .form-select {
-    padding: 10px;
-    border-radius: 5px;
-    background-color: #1e293b; /* gray-800 */
-    color: #f1f5f9; /* slate-100 */
-  
-    font-size: 14px;
-    appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 140 140' width='10' height='10' xmlns='http://www.w3.org/2000/svg'%3E%3Cpolyline points='20,40 70,90 120,40' stroke='%23f1f5f9' stroke-width='15' fill='none'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 0.75rem center;
-    background-size: 0.65rem;
-    cursor: pointer;
-    transition: border 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-  }
-  
-  .form-select:focus {
-    outline: none;
-    border-color: #38bdf8;
-    box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.3);
-  }
-  
-  .ampm-toggle {
-    display: flex;
-    gap: 0.5rem;
-    margin-bottom: 1rem;
-  }
-  
-  .toggle-btn {
-    padding: 10px 16px;
-    background-color: #1e293b; /* gray-800 */
-    color: #f1f5f9; /* slate-100 */
-    border: 1px solid #475569;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 14px;
-    transition: background-color 0.3s ease, border 0.3s ease;
-  }
-  
-  .toggle-btn.active {
-    background-color: #38bdf8; /* sky-400 */
-    color: #0f172a; /* slate-900 */
-    border-color: #38bdf8;
-  }
-  
-  .toggle-btn:hover {
-    background-color: #334155; /* gray-700 */
-  }
-  
-  .time-toggle-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 0.75rem;
-  }
-  
-  .toggle-switch {
-    display: flex;
-    align-items: center;
-    cursor: pointer;
-    user-select: none;
-  }
-  
-  .toggle-switch input {
-    display: none;
-  }
-  
-  .switch-slider {
-    width: 100%;
-    padding: 8px 12px;
-    background-color: #1e293b; /* gray-800 */
-    border-radius: 999px;
-    border: 1px solid #64748b; /* slate-400 */
-    color: #f1f5f9; /* slate-100 */
-    text-align: center;
-    transition: background-color 0.3s ease, border-color 0.3s ease;
-    font-size: 14px;
-  }
-  
-  .toggle-switch input:checked + .switch-slider {
-    background-color: #34d399; /* green-400 */
-    border-color: #34d399;
-    color: #0f172a; /* slate-900 */
-  }
-  
-  
+.label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #cbd5e1; /* slate-300 */
+  font-size: 14px;
+}
 
-  
+.slider-group {
+  display: flex;
+
+  justify-content: space-between;
+  flex-direction: column;
+  padding: 10px;
+  border-radius: 5px;
+  gap: 10px;
+}
+
+.age-display {
+  color: #94a3b8; /* slate-400 */
+  font-size: 14px;
+  margin-left: 1rem;
+}
+
+/* Custom range slider styling */
+.slider {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 6px;
+  background: #e2e8f0; /* light gray track */
+  border-radius: 5px;
+  outline: none;
+  transition: background 0.3s ease;
+}
+
+.slider:hover {
+  background: #cbd5e1; /* hover effect */
+}
+
+/* Thumb styling */
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #f97316; /* blue thumb */
+  cursor: pointer;
+  box-shadow: 0 0 2px rgba(0, 0, 0, 0.2);
+  transition: background 0.3s ease;
+}
+
+.slider::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #f97316;
+  cursor: pointer;
+  border: none;
+}
+.select-container {
+  margin-bottom: 1rem;
+  font-family: sans-serif;
+}
+
+.select-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #cbd5e1; /* Tailwind's slate-300 */
+  font-size: 14px;
+}
+
+.custom-select {
+  padding: 0.5rem 0.75rem;
+  font-size: 14px;
+  color: #1e293b; /* slate-800 */
+  background-color: #f8fafc; /* slate-50 */
+  padding: 10px;
+
+  border-radius: 5px;
+  width: 100%;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+.height-container {
+  max-width: 300px;
+  margin: 1rem 0;
+  font-family: "Segoe UI", sans-serif;
+}
+
+.height-label {
+  font-size: 16px;
+  font-weight: 600;
+  color: #cbd5e1; /* Slate-300 */
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
+.height-value {
+  color: #38bdf8; /* Sky-400 */
+  font-weight: bold;
+}
+
+.height-select {
+  width: 100%;
+  padding: 10px;
+  font-size: 15px;
+  background-color: #1e293b; /* Slate-800 */
+  color: #f1f5f9; /* Slate-100 */
+
+  border-radius: 8px;
+  outline: none;
+  cursor: pointer;
+  box-sizing: border-box;
+  transition: border 0.3s ease, box-shadow 0.3s ease;
+}
+
+.height-select option {
+  background-color: #1e293b;
+  color: #f1f5f9;
+  padding: 6px;
+  border-radius: 6px;
+}
+
+.profile-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  max-width: 300px;
+  margin-top: 1rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-label {
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: #cbd5e1; /* slate-300 */
+}
+
+.form-select {
+  padding: 10px;
+  border-radius: 5px;
+  background-color: #1e293b; /* gray-800 */
+  color: #f1f5f9; /* slate-100 */
+
+  font-size: 14px;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 140 140' width='10' height='10' xmlns='http://www.w3.org/2000/svg'%3E%3Cpolyline points='20,40 70,90 120,40' stroke='%23f1f5f9' stroke-width='15' fill='none'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 0.65rem;
+  cursor: pointer;
+  transition: border 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.form-select:focus {
+  outline: none;
+  border-color: #38bdf8;
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.3);
+}
+
+.ampm-toggle {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.toggle-btn {
+  padding: 10px 16px;
+  background-color: #1e293b; /* gray-800 */
+  color: #f1f5f9; /* slate-100 */
+  border: 1px solid #475569;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s ease, border 0.3s ease;
+}
+
+.toggle-btn.active {
+  background-color: #38bdf8; /* sky-400 */
+  color: #0f172a; /* slate-900 */
+  border-color: #38bdf8;
+}
+
+.toggle-btn:hover {
+  background-color: #334155; /* gray-700 */
+}
+
+.time-toggle-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+}
+
+.toggle-switch {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+}
+
+.toggle-switch input {
+  display: none;
+}
+
+.switch-slider {
+  width: 100%;
+  padding: 8px 12px;
+  background-color: #1e293b; /* gray-800 */
+  border-radius: 999px;
+  border: 1px solid #64748b; /* slate-400 */
+  color: #f1f5f9; /* slate-100 */
+  text-align: center;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+  font-size: 14px;
+}
+
+.toggle-switch input:checked + .switch-slider {
+  background-color: #34d399; /* green-400 */
+  border-color: #34d399;
+  color: #0f172a; /* slate-900 */
+}

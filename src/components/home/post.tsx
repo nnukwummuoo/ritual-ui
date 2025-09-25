@@ -3,7 +3,11 @@ import React, { useEffect, useLayoutEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "@/store/store";
 import { fetchposts, getallpost, hydrateFromCache } from "@/store/post";
-import { getprofile, follow as followThunk, unfollow as unfollowThunk } from "@/store/profile";
+import {
+  getprofile,
+  follow as followThunk,
+  unfollow as unfollowThunk,
+} from "@/store/profile";
 import { postlike } from "@/store/like";
 import { getpostcomment, postcomment } from "@/store/comment";
 import { URL as API_BASE } from "@/api/config";
@@ -11,39 +15,51 @@ const PROD_BASE = "https://mmekoapi.onrender.com"; // fallback when local proxy 
 import PostSkeleton from "../PostSkeleton";
 import PostActions from "./PostActions";
 import { toast } from "material-react-toastify";
-import {useRouter} from "next/navigation"
+import { useRouter } from "next/navigation";
 
-export default function PostsCard({ type }: { type?: "video" | "image" | "text" }) {
-  const router = useRouter()
+export default function PostsCard({
+  type,
+}: {
+  type?: "video" | "image" | "text";
+}) {
+  const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
   const status = useSelector((s: RootState) => s.post.poststatus);
   const posts = useSelector((s: RootState) => s.post.allPost as any[]);
   const loggedInUserId = useSelector((s: RootState) => s.register.userID);
-  const authToken = useSelector((s: RootState) => s.register.refreshtoken || s.register.accesstoken);
-  const { firstname, lastname, nickname } = useSelector((s: RootState) => s.profile);
+  const authToken = useSelector(
+    (s: RootState) => s.register.refreshtoken || s.register.accesstoken
+  );
+  const { firstname, lastname, nickname } = useSelector(
+    (s: RootState) => s.profile
+  );
   const [selfId, setSelfId] = React.useState<string | undefined>(undefined);
   const [selfNick, setSelfNick] = React.useState<string | undefined>(undefined);
   const [selfName, setSelfName] = React.useState<string | undefined>(undefined);
-  const [postResolve,setPostResolve] = React.useState<any[]>(posts)
+  const [postResolve, setPostResolve] = React.useState<any[]>(posts);
   // Local per-post UI state for optimistic updates and comment UI
-  const [ui, setUi] = React.useState<Record<string | number, {
-    liked?: boolean;
-    likeCount?: number;
-    comments?: any[];
-    open?: boolean;
-    input?: string;
-    loadingComments?: boolean;
-    sending?: boolean;
-    starred?: boolean;
-  }>>({});
+  const [ui, setUi] = React.useState<
+    Record<
+      string | number,
+      {
+        liked?: boolean;
+        likeCount?: number;
+        comments?: any[];
+        open?: boolean;
+        input?: string;
+        loadingComments?: boolean;
+        sending?: boolean;
+        starred?: boolean;
+      }
+    >
+  >({});
 
-  
   useEffect(() => {
     try {
-      const raw = localStorage.getItem('feedUi');
+      const raw = localStorage.getItem("feedUi");
       if (raw) {
         const parsed = JSON.parse(raw);
-        if (parsed && typeof parsed === 'object') setUi(parsed);
+        if (parsed && typeof parsed === "object") setUi(parsed);
       }
     } catch {}
   }, []);
@@ -51,7 +67,7 @@ export default function PostsCard({ type }: { type?: "video" | "image" | "text" 
   useEffect(() => {
     // Hydrate from local cache first for persistence across refresh
     try {
-      const cached = localStorage.getItem('feedPosts');
+      const cached = localStorage.getItem("feedPosts");
       if (cached) {
         const parsed = JSON.parse(cached);
         if (Array.isArray(parsed)) dispatch(hydrateFromCache(parsed));
@@ -59,13 +75,16 @@ export default function PostsCard({ type }: { type?: "video" | "image" | "text" 
     } catch {}
     // Pull self identity from localStorage as a fallback for display names
     try {
-      const raw = localStorage.getItem('login');
+      const raw = localStorage.getItem("login");
       if (raw) {
         const saved = JSON.parse(raw);
         const lid = saved?.userID || saved?.userid || saved?.id || undefined;
         setSelfId(lid);
         setSelfNick(saved?.nickname || saved?.username || undefined);
-        const ln = [saved?.firstname, saved?.lastname].filter(Boolean).join(' ').trim();
+        const ln = [saved?.firstname, saved?.lastname]
+          .filter(Boolean)
+          .join(" ")
+          .trim();
         setSelfName(ln || saved?.name || undefined);
         // Also fetch profile so firstname/lastname/nickname are available from Redux
         try {
@@ -84,45 +103,46 @@ export default function PostsCard({ type }: { type?: "video" | "image" | "text" 
   useEffect(() => {
     try {
       if (Array.isArray(posts)) {
-        localStorage.setItem('feedPosts', JSON.stringify(posts));
+        localStorage.setItem("feedPosts", JSON.stringify(posts));
       }
     } catch {}
   }, [posts]);
-const fetchFeed=async() => { 
+  const fetchFeed = async () => {
     const tst = toast.loading("loading");
-      try {
-        const resPosts = await fetchposts()
-        setPostResolve(resPosts?.post||[])
-        localStorage.setItem('feedPosts', JSON.stringify(resPosts.post));
-      }catch(error){
-        console.error(error)
-      } finally{
-        toast.dismiss(tst)
-      }
+    try {
+      const resPosts = await fetchposts();
+      setPostResolve(resPosts?.post || []);
+      localStorage.setItem("feedPosts", JSON.stringify(resPosts.post));
+    } catch (error) {
+      console.error(error);
+    } finally {
+      toast.dismiss(tst);
     }
+  };
   useLayoutEffect(() => {
-    (async()=>setPostResolve(JSON.parse(localStorage.getItem('feedPosts') || "[]") || []))();
+    (async () =>
+      setPostResolve(
+        JSON.parse(localStorage.getItem("feedPosts") || "[]") || []
+      ))();
     fetchFeed();
-    window.addEventListener('refreshfeed', fetchFeed);
-    return ()=>{
-      window.removeEventListener('refreshfeed', fetchFeed);
-    }
-  },[])
-  
+    window.addEventListener("refreshfeed", fetchFeed);
+    return () => {
+      window.removeEventListener("refreshfeed", fetchFeed);
+    };
+  }, []);
+
   useEffect(() => {
     try {
-      localStorage.setItem('feedUi', JSON.stringify(ui));
+      localStorage.setItem("feedUi", JSON.stringify(ui));
     } catch {}
   }, [ui]);
 
-  if (status === "loading" && (!postResolve?.length )) {
+  if (status === "loading" && !postResolve?.length) {
     return <PostSkeleton />;
   }
 
   if (!postResolve?.length) {
-    return (
-      <div className="text-center text-gray-400 py-6">No posts yet.</div>
-    );
+    return <div className="text-center text-gray-400 py-6">No posts yet.</div>;
   }
 
   return (
@@ -153,21 +173,41 @@ const fetchFeed=async() => {
           p?.public_id ||
           p?.imageId ||
           p?.postfilepublicid ||
-          p?.postfilelink||
+          p?.postfilelink ||
           "";
-        const asString = typeof mediaRef === "string" ? mediaRef : (mediaRef?.publicId || mediaRef?.public_id || mediaRef?.url || "");
-        const isHttpUrl = typeof asString === "string" && /^https?:\/\//i.test(asString);
-        const isBlobUrl = typeof asString === "string" && /^blob:/i.test(asString);
-        const isDataUrl = typeof asString === "string" && /^data:/i.test(asString);
+        const asString =
+          typeof mediaRef === "string"
+            ? mediaRef
+            : mediaRef?.publicId || mediaRef?.public_id || mediaRef?.url || "";
+        const isHttpUrl =
+          typeof asString === "string" && /^https?:\/\//i.test(asString);
+        const isBlobUrl =
+          typeof asString === "string" && /^blob:/i.test(asString);
+        const isDataUrl =
+          typeof asString === "string" && /^data:/i.test(asString);
         const isUrl = isHttpUrl || isBlobUrl || isDataUrl;
-        const queryUrlPrimary = asString ? `${API_BASE}/api/image/view?publicId=${encodeURIComponent(asString)}` : "";
-        const pathUrlPrimary = asString ? `${API_BASE}/api/image/view/${encodeURIComponent(asString)}` : "";
-        const queryUrlFallback = asString ? `${PROD_BASE}/api/image/view?publicId=${encodeURIComponent(asString)}` : "";
-        const pathUrlFallback = asString ? `${PROD_BASE}/api/image/view/${encodeURIComponent(asString)}` : "";
+        const queryUrlPrimary = asString
+          ? `${API_BASE}/api/image/view?publicId=${encodeURIComponent(
+              asString
+            )}`
+          : "";
+        const pathUrlPrimary = asString
+          ? `${API_BASE}/api/image/view/${encodeURIComponent(asString)}`
+          : "";
+        const queryUrlFallback = asString
+          ? `${PROD_BASE}/api/image/view?publicId=${encodeURIComponent(
+              asString
+            )}`
+          : "";
+        const pathUrlFallback = asString
+          ? `${PROD_BASE}/api/image/view/${encodeURIComponent(asString)}`
+          : "";
         const src = isUrl ? asString : queryUrlPrimary;
 
         // Derive display name and handle from multiple possible fields
-        const combinedName = [p?.user?.firstname, p?.user?.lastname].filter(Boolean).join(" ");
+        const combinedName = [p?.user?.firstname, p?.user?.lastname]
+          .filter(Boolean)
+          .join(" ");
         let displayName =
           p?.user?.username ||
           p?.user?.name ||
@@ -182,15 +222,23 @@ const fetchFeed=async() => {
           p?.postedBy?.username ||
           p?.postedBy?.name ||
           "User";
-      
-        const postAuthorId = p?.userid || p?.userId || p?.ownerid || p?.ownerId || p?.authorId || p?.createdBy;
-        const isSelf = (
-          (loggedInUserId && postAuthorId && String(postAuthorId) === String(loggedInUserId)) ||
-          (selfId && postAuthorId && String(postAuthorId) === String(selfId))
-        );
+
+        const postAuthorId =
+          p?.userid ||
+          p?.userId ||
+          p?.ownerid ||
+          p?.ownerId ||
+          p?.authorId ||
+          p?.createdBy;
+        const isSelf =
+          (loggedInUserId &&
+            postAuthorId &&
+            String(postAuthorId) === String(loggedInUserId)) ||
+          (selfId && postAuthorId && String(postAuthorId) === String(selfId));
         if (isSelf && (!displayName || displayName === "User")) {
           const selfCombined = [firstname, lastname].filter(Boolean).join(" ");
-          displayName = nickname || selfCombined || selfNick || selfName || displayName;
+          displayName =
+            nickname || selfCombined || selfNick || selfName || displayName;
         }
         const handleStr =
           p?.handle ||
@@ -219,7 +267,8 @@ const fetchFeed=async() => {
           : Number(p?.likeCount || p?.likesCount || p?.likes || 0) || 0;
         const commentCount = Array.isArray(commentsArr)
           ? commentsArr.length
-          : Number(p?.commentCount || p?.commentsCount || p?.comments || 0) || 0;
+          : Number(p?.commentCount || p?.commentsCount || p?.comments || 0) ||
+            0;
 
         const idStr = (v: any) => (v == null ? undefined : String(v));
         const selfIdStr = idStr(loggedInUserId) || idStr(selfId);
@@ -244,17 +293,26 @@ const fetchFeed=async() => {
         const uiInput = uiState.input ?? "";
         const uiLoading = !!uiState.loadingComments;
         const uiSending = !!uiState.sending;
-        const hasUiComments = Object.prototype.hasOwnProperty.call(uiState, 'comments');
-        const displayCommentCount = hasUiComments ? uiComments.length : commentCount;
+        const hasUiComments = Object.prototype.hasOwnProperty.call(
+          uiState,
+          "comments"
+        );
+        const displayCommentCount = hasUiComments
+          ? uiComments.length
+          : commentCount;
 
         return (
-          <div key={`${p?.postid || p?.id || idx}`} className="mx-auto max-w-[30rem] w-full bg-gray-800 rounded-md p-3">
+          <div
+            key={`${p?.postid || p?.id || idx}`}
+            className="mx-auto max-w-[30rem] w-full bg-gray-800 rounded-md p-3">
             {/* Header */}
-            <div className="flex items-center gap-3 cursor-pointer" onClick={()=>{
-                router.push(`/post/${p?._id}`)
+            <div
+              className="flex items-center gap-3 cursor-pointer"
+              onClick={() => {
+                router.push(`/post/${p?._id}`);
               }}>
-              <div className="size-10 rounded-full overflow-hidden bg-gray-700" >
-                  <img
+              <div className="size-10 rounded-full overflow-hidden bg-gray-700">
+                <img
                   alt="background img"
                   src={"/icons/profile.png"}
                   className="object-cover w-full h-full"
@@ -265,21 +323,33 @@ const fetchFeed=async() => {
                 />
               </div>
               <div>
-                <p className="font-medium">{p?.user?.firstname} { p?.user?.lastname}</p>
-                <span className="text-gray-400 text-sm">{handleStr ? `@${handleStr}` : ""}</span>
+                <p className="font-medium">
+                  {p?.user?.firstname} {p?.user?.lastname}
+                </p>
+                <span className="text-gray-400 text-sm">
+                  {handleStr ? `@${handleStr}` : ""}
+                </span>
               </div>
             </div>
             {/* Timestamp */}
             {p?.createdAt && (
-              <p className="my-3 text-gray-400 text-sm  cursor-pointer" onClick={()=>{
-                router.push(`/post/${p?._id}`)
-              }}>{new Date(p.createdAt).toLocaleString()}</p>
+              <p
+                className="my-3 text-gray-400 text-sm  cursor-pointer"
+                onClick={() => {
+                  router.push(`/post/${p?._id}`);
+                }}>
+                {new Date(p.createdAt).toLocaleString()}
+              </p>
             )}
             {/* Content */}
             {p?.content && (
-              <p className="my-2 whitespace-pre-wrap cursor-pointer" onClick={()=>{
-                router.push(`/post/${p?._id}`)
-              }}>{p.content}</p>
+              <p
+                className="my-2 whitespace-pre-wrap cursor-pointer"
+                onClick={() => {
+                  router.push(`/post/${p?._id}`);
+                }}>
+                {p.content}
+              </p>
             )}
             {/* Media */}
             {postType == "image" && src && (
@@ -289,7 +359,9 @@ const fetchFeed=async() => {
                 alt={p?.content || "post image"}
                 className="w-full max-h-[480px] object-contain rounded"
                 onError={(e) => {
-                  const img = e.currentTarget as HTMLImageElement & { dataset: any };
+                  const img = e.currentTarget as HTMLImageElement & {
+                    dataset: any;
+                  };
                   // First fallback: switch to path URL on same base
                   if (!img.dataset.fallback1 && pathUrlPrimary) {
                     img.dataset.fallback1 = "1";
@@ -316,7 +388,9 @@ const fetchFeed=async() => {
                 controls
                 className="w-full max-h-[480px] rounded"
                 onError={(e) => {
-                  const video = e.currentTarget as HTMLVideoElement & { dataset: any };
+                  const video = e.currentTarget as HTMLVideoElement & {
+                    dataset: any;
+                  };
                   // First fallback: switch to path URL on same base
                   if (!video.dataset.fallback1 && pathUrlPrimary) {
                     video.dataset.fallback1 = "1";
@@ -351,18 +425,37 @@ const fetchFeed=async() => {
               onStar={() => {
                 const localPid = p?.postid || p?.id || p?._id;
                 if (!localPid) return;
-                const authorId = p?.userid || p?.userId || p?.ownerid || p?.ownerId || p?.authorId || p?.createdBy;
+                const authorId =
+                  p?.userid ||
+                  p?.userId ||
+                  p?.ownerid ||
+                  p?.ownerId ||
+                  p?.authorId ||
+                  p?.createdBy;
                 // Optimistic toggle
                 setUi((prev) => {
                   const curr = prev[localPid] || {};
                   const nextStarred = !(curr.starred ?? starred);
-                  return { ...prev, [localPid]: { ...curr, starred: nextStarred } };
+                  return {
+                    ...prev,
+                    [localPid]: { ...curr, starred: nextStarred },
+                  };
                 });
                 // Backend call (follow/unfollow) if possible
                 const uid = String(loggedInUserId || selfId || "");
-                if (!uid || !authToken || !authorId || String(authorId) === String(uid)) return;
+                if (
+                  !uid ||
+                  !authToken ||
+                  !authorId ||
+                  String(authorId) === String(uid)
+                )
+                  return;
                 const willFollow = !(ui[localPid]?.starred ?? starred);
-                const payload: any = { userid: uid, targetid: String(authorId), token: authToken };
+                const payload: any = {
+                  userid: uid,
+                  targetid: String(authorId),
+                  token: authToken,
+                };
                 if (willFollow) {
                   dispatch(followThunk(payload) as any);
                 } else {
@@ -388,14 +481,23 @@ const fetchFeed=async() => {
                   };
                 });
                 if (!uid || !authToken) return;
-                dispatch(postlike({ userid: uid, postid: localPid, token: authToken } as any));
+                dispatch(
+                  postlike({
+                    userid: uid,
+                    postid: localPid,
+                    token: authToken,
+                  } as any)
+                );
               }}
               onComment={() => {
                 const localPid = p?.postid || p?.id || p?._id;
                 if (!localPid) return;
                 setUi((prev) => ({
                   ...prev,
-                  [localPid]: { ...(prev[localPid] || {}), open: !(prev[localPid]?.open) }
+                  [localPid]: {
+                    ...(prev[localPid] || {}),
+                    open: !prev[localPid]?.open,
+                  },
                 }));
                 // If opening and not loaded yet, fetch comments
                 const curr = ui[localPid];
@@ -403,7 +505,10 @@ const fetchFeed=async() => {
                 if (shouldFetch) {
                   setUi((prev) => ({
                     ...prev,
-                    [localPid]: { ...(prev[localPid] || {}), loadingComments: true }
+                    [localPid]: {
+                      ...(prev[localPid] || {}),
+                      loadingComments: true,
+                    },
                   }));
                   (dispatch(getpostcomment({ postid: localPid } as any)) as any)
                     .unwrap()
@@ -411,13 +516,20 @@ const fetchFeed=async() => {
                       const arr = (res && (res.comment || res.comments)) || [];
                       setUi((prev) => ({
                         ...prev,
-                        [localPid]: { ...(prev[localPid] || {}), comments: arr, loadingComments: false }
+                        [localPid]: {
+                          ...(prev[localPid] || {}),
+                          comments: arr,
+                          loadingComments: false,
+                        },
                       }));
                     })
                     .catch(() => {
                       setUi((prev) => ({
                         ...prev,
-                        [localPid]: { ...(prev[localPid] || {}), loadingComments: false }
+                        [localPid]: {
+                          ...(prev[localPid] || {}),
+                          loadingComments: false,
+                        },
                       }));
                     });
                 }
@@ -436,7 +548,13 @@ const fetchFeed=async() => {
                     {uiComments && uiComments.length > 0 ? (
                       uiComments.map((c: any, i: number) => (
                         <div key={i} className="text-sm text-gray-200">
-                          <span className="text-gray-400 mr-2">@{c?.username || c?.author || c?.user?.username || 'user'}</span>
+                          <span className="text-gray-400 mr-2">
+                            @
+                            {c?.username ||
+                              c?.author ||
+                              c?.user?.username ||
+                              "user"}
+                          </span>
                           <span>{c?.comment || c?.content || String(c)}</span>
                         </div>
                       ))
@@ -459,7 +577,7 @@ const fetchFeed=async() => {
                       <button
                         disabled={!uiInput?.trim() || uiSending}
                         onClick={() => {
-                          const text = (ui[pid]?.input || '').trim();
+                          const text = (ui[pid]?.input || "").trim();
                           if (!text) return;
                           // Optimistically append
                           setUi((prev) => ({
@@ -470,24 +588,45 @@ const fetchFeed=async() => {
                               sending: true,
                               comments: [
                                 ...((prev[pid]?.comments as any[]) || []),
-                                { content: text, comment: text, username: nickname || selfNick || 'you', temp: true },
+                                {
+                                  content: text,
+                                  comment: text,
+                                  username: nickname || selfNick || "you",
+                                  temp: true,
+                                },
                               ],
                             },
                           }));
                           const uid = String(loggedInUserId || selfId || "");
                           const localPid = p?.postid || p?.id || p?._id;
                           if (uid && localPid && authToken) {
-                            (dispatch(postcomment({ userid: uid, postid: localPid, comment: text, token: authToken } as any)) as any)
+                            (
+                              dispatch(
+                                postcomment({
+                                  userid: uid,
+                                  postid: localPid,
+                                  comment: text,
+                                  token: authToken,
+                                } as any)
+                              ) as any
+                            )
                               .unwrap()
                               .then((res: any) => {
                                 // Merge server list with optimistic list (keep optimistic if server lags)
-                                const server = (res && (res.comment || res.comments)) as any[] | undefined;
+                                const server = (res &&
+                                  (res.comment || res.comments)) as
+                                  | any[]
+                                  | undefined;
                                 setUi((prev) => {
-                                  const current = (prev[pid]?.comments as any[]) || [];
+                                  const current =
+                                    (prev[pid]?.comments as any[]) || [];
                                   let merged = current;
                                   if (Array.isArray(server)) {
                                     // If server has fewer/equal items, keep optimistic items
-                                    merged = server.length >= current.length ? server : current;
+                                    merged =
+                                      server.length >= current.length
+                                        ? server
+                                        : current;
                                   }
                                   return {
                                     ...prev,
@@ -502,7 +641,10 @@ const fetchFeed=async() => {
                               .catch(() => {
                                 setUi((prev) => ({
                                   ...prev,
-                                  [pid]: { ...(prev[pid] || {}), sending: false },
+                                  [pid]: {
+                                    ...(prev[pid] || {}),
+                                    sending: false,
+                                  },
                                 }));
                               });
                           } else {
@@ -512,8 +654,7 @@ const fetchFeed=async() => {
                             }));
                           }
                         }}
-                        className="px-3 py-2 text-sm bg-gray-700 hover:bg-gray-600 rounded disabled:opacity-50"
-                      >
+                        className="px-3 py-2 text-sm bg-gray-700 hover:bg-gray-600 rounded disabled:opacity-50">
                         Send
                       </button>
                     </div>

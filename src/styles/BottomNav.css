@@ -1,85 +1,76 @@
-.bottom-nav-container{
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    height: fit-content;
-    margin: 20px;
-    padding: 10px;
-    border-radius: 20px;
+.bottom-nav-container {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  height: fit-content;
+  margin: 20px;
+  padding: 10px;
+  border-radius: 20px;
   position: fixed;
   top: 4px;
   right: 20px;
-   
-
 }
-.bottom-navs{
-    display: flex;
-    flex-direction: row;
-    align-items: center;
+.bottom-navs {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+}
+.bottom-nav {
+  width: 70px;
+  padding: 5px 10px;
+  display: flex;
+  justify-content: center;
+  align-self: center;
+  border-radius: 10px;
+  transition: 0.5s;
+  position: relative;
+  margin-bottom: 10px;
+}
+.bottom-nav:hover {
+  transform: scale(1.1);
+}
+.bottom-nav p {
+  display: none;
+  position: absolute;
+  top: 100%;
+  bottom: -10;
+}
+.bottom-nav:hover p {
+  display: block;
+}
+
+.catorgry-open {
+  display: block;
+}
+.catorgry-closed {
+  display: none;
+}
+nav {
+  top: 85px;
+  padding: 10px;
+  right: 20px;
+  border-radius: 20px;
+}
+@media (max-width: 800px) {
+  .bottom-navs {
+    justify-content: space-between;
+  }
+  .bottom-nav {
+    background-color: transparent;
+  }
+  .bottom-nav-container {
+    position: fixed;
+    top: 92%;
+    bottom: 0;
+    width: 100%;
+    left: 2px;
+    z-index: 2000;
+    right: 2px;
     justify-content: center;
-   
-
-}
-.bottom-nav{
-    
-   width: 70px;
-   padding: 5px 10px;
-   display: flex;
-   justify-content: center;
-   align-self: center;
-   border-radius: 10px;
-   transition: 0.5s;
-   position: relative;
-   margin-bottom: 10px;
-}
-.bottom-nav:hover{
-    transform: scale(1.1);
-}
-.bottom-nav p{
-    display: none;
-    position: absolute;
-    top: 100%;
-    bottom: -10;
-}
-.bottom-nav:hover p{
-    display: block;
-
-}
-
-.catorgry-open{
-    display: block;
-}
-.catorgry-closed{
-    display: none;
-
-}
-nav{
-    top: 85px;
-    padding: 10px;
-    right: 20px;
-    border-radius: 20px;
-}
-@media (max-width:800px) {
-  
-    .bottom-navs{
-        justify-content: space-between;
-    }
-    .bottom-nav{
-        background-color: transparent;
-    }
-    .bottom-nav-container{
-        position: fixed;
-        top:92%;
-      bottom: 0;
-      width: 100%;
-      left: 2px;
-      z-index: 2000;
-      right: 2px;
-      justify-content: center;
-      margin: 0;
-    }
-    nav{
-        top: 20px;
-    }
-    
+    margin: 0;
+  }
+  nav {
+    top: 20px;
+  }
 }

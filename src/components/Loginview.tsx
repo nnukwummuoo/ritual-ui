@@ -47,7 +47,9 @@ export const Loginview = () => {
       const password = formData.get("password")?.toString() || "";
 
       if (!nickname || !password) {
-        return toastError({ message: "Please input your username and password!" });
+        return toastError({
+          message: "Please input your username and password!",
+        });
       }
       if (!acceptedTerms) {
         return toastError({
@@ -56,25 +58,26 @@ export const Loginview = () => {
       }
 
       const res = await isRegistered({ nickname, password });
-      console.log(res);
-      if (!res?.user?.nickname?.length) {
-        throw new Error("No user found");
-      }
+      // console.log("comming from res", res);
+      // if (!res?.user?.nickname?.length) {
+      //   throw new Error("No user found");
+      // }
 
       // Save to localStorage for useUserId hook
       try {
-  localStorage.setItem(
-    "login",
-    JSON.stringify({
-      nickname: res.user.nickname,
-      userID: res.user._id,
-      refreshtoken: res.user.refreshtoken,
-      accesstoken: res.user.accessToken,
-    })
-  );
-} catch (e) {
-  console.error("[Login] Failed to save localStorage:", e);
-}
+        localStorage.setItem(
+          "login",
+          JSON.stringify({
+            isAdmin: res.user.isAdmin,
+            nickname: res.user.nickname,
+            userID: res.user._id,
+            refreshtoken: res.user.refreshtoken,
+            accesstoken: res.user.accessToken,
+          })
+        );
+      } catch (e) {
+        console.error("[Login] Failed to save localStorage:", e);
+      }
 
       setUser(res.user);
       setIsLoggedIn(true);
@@ -98,16 +101,23 @@ export const Loginview = () => {
     async function createSession() {
       if (!user?.nickname?.length) return;
       try {
-        const result = await fetch(`${process.env.NEXT_PUBLIC_URL}/api/session`, {
-          method: "POST",
-          body: JSON.stringify({ nickname: user.nickname, password: user.password }),
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
+        const result = await fetch(
+          `${process.env.NEXT_PUBLIC_URL}/api/session`,
+          {
+            method: "POST",
+            body: JSON.stringify({
+              nickname: user.nickname,
+              password: user.password,
+            }),
+            credentials: "include",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        console.log("this is comming from result", result);
         const data = await result.text();
-        console.log(data);
+        console.log("this is comming from data", data);
       } catch (error) {
         console.error(error);
       }
@@ -126,8 +136,7 @@ export const Loginview = () => {
         margin: "0 10px",
         width: "90%",
         maxWidth: "450px",
-      }}
-    >
+      }}>
       <ToastContainer position="top-center" theme="dark" />
       <div className="bg-gray-800 rounded-lg shadow-lg p-6 w-full max-w-md">
         <h1 className="bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent text-3xl font-bold text-center">
@@ -181,13 +190,12 @@ export const Loginview = () => {
 
           <button
             className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-2 rounded shadow transition"
-            onClick={checkAcceptTerms}
-          >
+            onClick={checkAcceptTerms}>
             Log In
           </button>
 
-         <p className="text-blue-500 text-sm text-center hover:text-blue-400">
-            <Link 
+          <p className="text-blue-500 text-sm text-center hover:text-blue-400">
+            <Link
               href="/forget-password"
               className="text-blue-500 font-bold hover:underline">
               Forgot Password?
@@ -198,8 +206,7 @@ export const Loginview = () => {
             Don't have an account?{" "}
             <Link
               className="text-blue-500 font-bold hover:underline cursor-pointer"
-              href="/auth/register"
-            >
+              href="/auth/register">
               Register
             </Link>
           </p>

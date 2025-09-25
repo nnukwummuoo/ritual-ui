@@ -8,8 +8,12 @@ import type { RootState } from "@/store/store";
  * Order: Redux (refreshtoken | accesstoken) -> window-injected -> localStorage('login').
  */
 export function useAuthToken(): string | undefined {
-  const reduxRefresh = useSelector((s: RootState) => (s as any)?.register?.refreshtoken as string | undefined);
-  const reduxAccess = useSelector((s: RootState) => (s as any)?.register?.accesstoken as string | undefined);
+  const reduxRefresh = useSelector(
+    (s: RootState) => (s as any)?.register?.refreshtoken as string | undefined
+  );
+  const reduxAccess = useSelector(
+    (s: RootState) => (s as any)?.register?.accesstoken as string | undefined
+  );
   const [localToken, setLocalToken] = useState<string | undefined>(undefined);
 
   const reduxToken = reduxRefresh || reduxAccess;
@@ -17,7 +21,8 @@ export function useAuthToken(): string | undefined {
   useEffect(() => {
     if (reduxToken && reduxToken.trim().length > 0) return;
     try {
-      const raw = typeof window !== 'undefined' ? localStorage.getItem("login") : null;
+      const raw =
+        typeof window !== "undefined" ? localStorage.getItem("login") : null;
       // eslint-disable-next-line no-console
       console.log("[useAuthToken] localStorage raw:", raw);
       if (raw) {
@@ -32,7 +37,8 @@ export function useAuthToken(): string | undefined {
   }, [reduxToken]);
 
   useEffect(() => {
-    const resolved = (reduxToken && reduxToken.trim().length > 0) ? reduxToken : localToken;
+    const resolved =
+      reduxToken && reduxToken.trim().length > 0 ? reduxToken : localToken;
     // eslint-disable-next-line no-console
     console.log("[useAuthToken] resolved token present:", Boolean(resolved), {
       hasRedux: Boolean(reduxToken),
@@ -40,5 +46,5 @@ export function useAuthToken(): string | undefined {
     });
   }, [reduxToken, localToken]);
 
-  return (reduxToken && reduxToken.trim().length > 0) ? reduxToken : localToken;
+  return reduxToken && reduxToken.trim().length > 0 ? reduxToken : localToken;
 }

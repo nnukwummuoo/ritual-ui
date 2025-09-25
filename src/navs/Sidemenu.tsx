@@ -11,13 +11,15 @@ import handleLogout from "@/lib/service/logout";
 import { useUserId } from "@/lib/hooks/useUserId";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/store/store";
-
+import { useAuth } from "@/lib/context/auth-context";
 const Sidemenu = () => {
   const [minimize, setMinimize] = useState(false);
+
   const userId = useUserId();
   const router = useRouter();
   const { open, toggleMenu: handleMenubar } = useMenuContext();
-
+  const { session } = useAuth();
+  // console.log("comming  auth from");
   // profile directly from Redux
   const profile = useSelector((state: RootState) => state.profile);
 
@@ -26,96 +28,93 @@ const Sidemenu = () => {
     return null; // nothing until profile is ready
   }
 
- // Default fallback
-const firstname = profile?.firstname || "User";
-const gold_balance = profile?.balance || 0;
-  const admin = true;
-   
-
-
-
-
-
-
-//model button dynmic condition
-
+  // Default fallback
+  const firstname = profile?.firstname || "User";
+  const gold_balance = profile?.balance || 0;
+  const admin = session?.isAdmin;
+  if (!profile || Object.keys(profile).length === 0) {
+    return null;
+  }
+  //model button dynmic condition
 
   // MODEL BUTTON LOGIC
- // MODEL BUTTON LOGIC
-const getModelButton2 = () => {
-  if (profile.modelId || profile.modelID) {
-    if (profile.exclusive_verify) {
-      // ✅ User has a model and is verified → go to model profile page
+  // MODEL BUTTON LOGIC
+  const getModelButton2 = () => {
+    if (profile.modelId || profile.modelID) {
+      if (profile.exclusive_verify) {
+        // ✅ User has a model and is verified → go to model profile page
+        return (
+          <MenuIconImg
+            src="/icons/icons8-model.png"
+            name="Model Portfolio"
+            url={`/models/${profile.modelId || profile.modelID}`} // dynamic profile page
+          />
+        );
+      } else {
+        // User has a model but not verified → go to create model page
+        return (
+          <MenuIconImg
+            src="/icons/icons8-model.png"
+            name="Model Portfolio"
+            url="/model/create"
+          />
+        );
+      }
+    } else {
+      // User has no model
       return (
         <MenuIconImg
-          src="/icons/icons8-model.png"
-          name="Model Portfolio"
-          url={`/models/${profile.modelId || profile.modelID}`} // dynamic profile page
+          src={
+            !profile.exclusive_verify
+              ? "/icons/icons8-plus.png"
+              : "/icons/icons8-model.png"
+          }
+          name={
+            profile.exclusive_verify ? "Model Portfolio" : "Model Application"
+          }
+          url={profile.exclusive_verify ? "/be-a-model/apply" : "/be-a-model"}
         />
       );
-    } else {
-      // User has a model but not verified → go to create model page
+    }
+  };
+
+  //  url={`/models/${profile?.modelId||profile?.modelID}`}
+
+  // MODEL BUTTON LOGIC
+  // MODEL BUTTON LOGIC
+  const getModelButton = () => {
+    // 1️⃣ User already has a model → go to their model profile
+    if (profile.modelID || profile.modelId) {
       return (
         <MenuIconImg
           src="/icons/icons8-model.png"
           name="Model Portfolio"
+          url={`/models/${profile.modelID || profile.modelId}`}
+          // url="/model/create"
+        />
+      );
+    }
+
+    // 2️⃣ User applied/verified but hasn't created a model yet → go to create mod
+    if (profile.exclusive_verify) {
+      return (
+        <MenuIconImg
+          src="/icons/icons8-model.png"
+          name="Create Model"
           url="/model/create"
         />
       );
     }
-  } else {
-    // User has no model
+
+    // 3️⃣ Default → user hasn't applied yet → show Model Application
     return (
       <MenuIconImg
-        src={!profile.exclusive_verify ? "/icons/icons8-plus.png" : "/icons/icons8-model.png"}
-        name={profile.exclusive_verify ? "Model Portfolio" : "Model Application"}
-        url={profile.exclusive_verify ? "/be-a-model/apply" : "/be-a-model"}
+        src="/icons/icons8-plus.png"
+        name="Model Application"
+        url="/be-a-model"
       />
     );
-  }
-};
-
-
-
-//  url={`/models/${profile?.modelId||profile?.modelID}`}
-
-  // MODEL BUTTON LOGIC
- // MODEL BUTTON LOGIC
-const getModelButton = () => {
-  // 1️⃣ User already has a model → go to their model profile
-  if (profile.modelID || profile.modelId) {
-    return (
-      <MenuIconImg
-        src="/icons/icons8-model.png"
-        name="Model Portfolio"
-       url={`/models/${profile.modelID || profile.modelId}`}
-      // url="/model/create"
-      />
-    );
-  }
-
-  // 2️⃣ User applied/verified but hasn't created a model yet → go to create mod
-  if (profile.exclusive_verify) {
-    return (
-      <MenuIconImg
-        src="/icons/icons8-model.png"
-        name="Create Model"
-        url="/model/create"
-      />
-    );
-  }
-
-  // 3️⃣ Default → user hasn't applied yet → show Model Application
-  return (
-    <MenuIconImg
-      src="/icons/icons8-plus.png"
-      name="Model Application"
-      url="/be-a-model"
-    />
-  );
-};
-
-
+  };
 
   return (
     <div className="fixed z-[110]">
@@ -124,8 +123,7 @@ const getModelButton = () => {
           onClick={handleMenubar}
           className={`${
             open ? "show" : "hide"
-          } sm:block menu-width origin-top-right mr mt pt px-2 py-4 h-fit bg-gray-900 text-white fixed rounded-l-lg rounded-r-2xl z-[70]`}
-        >
+          } sm:block menu-width origin-top-right mr mt pt px-2 py-4 h-fit bg-gray-900 text-white fixed rounded-l-lg rounded-r-2xl z-[70]`}>
           <div className="absolute -top-3 right-0 w-fit cls-btn">
             <OpenMobileMenuBtn />
           </div>
@@ -134,12 +132,10 @@ const getModelButton = () => {
             <div
               className={`${
                 minimize ? "minimize" : "maximize"
-              } mt-4 transition-all duration-500 flex flex-col items-start ml-1 mr-1 p-2 divider relative overflow-hidden`}
-            >
+              } mt-4 transition-all duration-500 flex flex-col items-start ml-1 mr-1 p-2 divider relative overflow-hidden`}>
               <button
                 onClick={() => setMinimize(!minimize)}
-                className="top-0 -right-1 text-gray-400 absolute p-2 text-lg"
-              >
+                className="top-0 -right-1 text-gray-400 absolute p-2 text-lg">
                 <p className="absolute top-0 right-0 w-full h-full mini-btn"></p>
                 {minimize ? <FaAngleRight /> : <FaAngleDown />}
               </button>
@@ -158,8 +154,7 @@ const getModelButton = () => {
               <div className="cstm-flex gap-4 items-start w-full mt-4">
                 <button
                   className="flex gap-2 items-center justify-center font-bold text-sm w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white py-3 rounded-lg transition-transform duration-300 hover:scale-105 shadow-md"
-                  onClick={() => router.push("/buy-gold")}
-                >
+                  onClick={() => router.push("/buy-gold")}>
                   <FaCoins /> <span>Get More Golds</span>
                 </button>
 
@@ -215,8 +210,7 @@ const getModelButton = () => {
 
               <div
                 onClick={handleLogout}
-                className="flex flex-col items-center group cursor-pointer"
-              >
+                className="flex flex-col items-center group cursor-pointer">
                 <img
                   alt="Logout"
                   src="/icons/icons8-log-out.png"

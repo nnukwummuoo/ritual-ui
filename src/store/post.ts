@@ -5,83 +5,92 @@ import { CreatePostArgs, CreatePostData, PostState } from "@/types/post";
 import backend from "@/api/backendApi";
 import { toast } from "material-react-toastify";
 
-export const createpost = createAsyncThunk("post/createpost", async (data: CreatePostData) => {
-  try {
-    // Send data as a FormData
-    let formData = new FormData();
+export const createpost = createAsyncThunk(
+  "post/createpost",
+  async (data: CreatePostData) => {
+    try {
+      // Send data as a FormData
+      let formData = new FormData();
 
-    // Backend expects these fields directly
-    formData.append("userid", data.userid);
-    formData.append("content", data.content);
-    formData.append("posttype", data.posttype);
-    if (data.token) formData.append("token", data.token);
-    if (data.filelink) {
-      // Always send under 'image' as the endpoint is /api/image/save
-      if (data.posttype == "image") {
-        toast("appending image, this may take a while...", { type: "info" });
-        formData.append('image', data.filelink as any);
+      // Backend expects these fields directly
+      formData.append("userid", data.userid);
+      formData.append("content", data.content);
+      formData.append("posttype", data.posttype);
+      if (data.token) formData.append("token", data.token);
+      if (data.filelink) {
+        // Always send under 'image' as the endpoint is /api/image/save
+        if (data.posttype == "image") {
+          toast("appending image, this may take a while...", { type: "info" });
+          formData.append("image", data.filelink as any);
+        }
+        // And for video posts, also send under 'video' for servers that expect this key
+        if (data.posttype == "video") {
+          toast("appending video, this may take a while...", { type: "info" });
+          formData.append("video", data.filelink as any);
+        }
       }
-      // And for video posts, also send under 'video' for servers that expect this key
-      if (data.posttype == "video") {
-        toast("appending video, this may take a while...", { type: "info" });
-        formData.append('video', data.filelink as any);
+
+      console.log("I am about to create formData", [...formData.entries()]);
+
+      // Setup axios config with upload progress
+      const config: AxiosRequestConfig = {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          ...(data.token ? { Authorization: `Bearer ${data.token}` } : {}),
+        },
+      };
+
+      // Add upload progress callback if provided
+      if (data.onUploadProgress) {
+        (config as any).onUploadProgress = data.onUploadProgress;
       }
-    }
+      const uploadeable = ["image", "video"];
+      const response = uploadeable.includes(data?.posttype)
+        ? await axios.post(`${URL}/api/image/save`, formData, config)
+        : {
+            status: 201,
+            data: {
+              postfilelink: "",
+              postfilepublicid: "",
+            },
+          };
 
-    console.log("I am about to create formData", [...formData.entries()]);
-
-    // Setup axios config with upload progress
-    const config: AxiosRequestConfig = {
-      headers: {
-        "Content-Type": "multipart/form-data",
-        ...(data.token ? { Authorization: `Bearer ${data.token}` } : {}),
+      if (!(response.status >= 200 && response.status < 300)) {
+        // Treat any non-2xx as failure
+        throw "Image upload failed";
       }
-    };
 
-    // Add upload progress callback if provided
-    if (data.onUploadProgress) {
-      (config as any).onUploadProgress = data.onUploadProgress;
-    }
-    const uploadeable=["image","video"]
-    const response = uploadeable.includes(data?.posttype)?(await axios.post(`${URL}/api/image/save`, formData, config)):{status:201,data:{
-            "postfilelink": "",
-      "postfilepublicid": ""
-    }
-    };
+      const api = backend(String(data?.token));
+      const resPost = await api.post("/post", {
+        userid: data.userid,
+        content: data.content,
+        posttype: data.posttype,
+        authorUsername: data.authorUsername,
+        authorName: data.authorName,
+        handle: data.handle,
+        ...(response?.data || {}),
+      });
+      console.log(resPost?.data);
 
-    if (!(response.status >= 200 && response.status < 300)) {
-      // Treat any non-2xx as failure
-      throw "Image upload failed";
+      return response.data;
+    } catch (err: any) {
+      try {
+        console.log("post err", err);
+      } catch {}
+      let message = "Upload failed";
+      if (err?.response?.data) {
+        const d = err.response.data;
+        if (typeof d === "string") message = d;
+        else if (typeof d?.message === "string") message = d.message;
+        else message = JSON.stringify(d);
+      } else if (typeof err?.message === "string") {
+        message = err.message;
+      }
+      console.error(err);
+      throw message;
     }
-
-  const api = backend(String(data?.token))
-    const resPost = await api.post("/post", {
-      userid:data.userid,
-      content: data.content,
-      posttype: data.posttype,
-      authorUsername: data.authorUsername,
-      authorName: data.authorName,
-      handle: data.handle,
-      ...(response?.data||{}),
-  })
-  console.log(resPost?.data)
-
-    return response.data;
-  } catch (err: any) {
-    try { console.log("post err", err); } catch {}
-    let message = 'Upload failed';
-    if (err?.response?.data) {
-      const d = err.response.data;
-      if (typeof d === 'string') message = d;
-      else if (typeof d?.message === 'string') message = d.message;
-      else message = JSON.stringify(d);
-    } else if (typeof err?.message === 'string') {
-      message = err.message;
-    }
-    console.error(err)
-    throw message;
   }
-});
+);
 
 const initialState: PostState = {
   allPost: [],
@@ -93,14 +102,17 @@ const initialState: PostState = {
   postphoto: null,
 };
 
-export const getallpost = createAsyncThunk("post/getallpost", async (data: any) => {
-  try {
-    let response = await axios.post(`${URL}/getallpost`, data);
-    return response.data;
-  } catch (err: any) {
-    throw err.response.data.message;
+export const getallpost = createAsyncThunk(
+  "post/getallpost",
+  async (data: any) => {
+    try {
+      let response = await axios.post(`${URL}/getallpost`, data);
+      return response.data;
+    } catch (err: any) {
+      throw err.response.data.message;
+    }
   }
-});
+);
 
 export const fetchposts = async () => {
   try {
@@ -109,18 +121,18 @@ export const fetchposts = async () => {
   } catch (err: any) {
     throw err.response.data.message;
   }
-}
+};
 
-export const fetchsinglepost = async (pid:String) => {
+export const fetchsinglepost = async (pid: String) => {
   try {
     let response = await axios.get(`${URL}/getallpost/${pid}`);
     return response.data;
   } catch (err: any) {
     throw err.response.data.message;
   }
-}
+};
 
-export const deletesinglepost = async (pid:String) => {
+export const deletesinglepost = async (pid: String) => {
   try {
     let response = await axios.delete(`${URL}/getallpost/${pid}`);
     window.dispatchEvent(new Event("refreshfeed"));
@@ -128,16 +140,16 @@ export const deletesinglepost = async (pid:String) => {
   } catch (err: any) {
     throw err.response.data.message;
   }
-}
+};
 
-export const updatepost = async (pid:String,post:any) => {
+export const updatepost = async (pid: String, post: any) => {
   try {
-    let response = await axios.put(`${URL}/getallpost/${pid}`,post);
+    let response = await axios.put(`${URL}/getallpost/${pid}`, post);
     return response.data;
   } catch (err: any) {
     throw err.response.data.message;
   }
-}
+};
 
 export const getpost = createAsyncThunk("post/getpost", async (data: any) => {
   try {
@@ -159,20 +171,23 @@ export const getpostbyid = createAsyncThunk(
   }
 );
 
-export const deletepost = createAsyncThunk("post/deletepost", async (data: any) => {
-  try {
-    let response = await axios.patch(`${URL}/post`, data);
-    let postphoto = response.data.post.postphoto;
+export const deletepost = createAsyncThunk(
+  "post/deletepost",
+  async (data: any) => {
+    try {
+      let response = await axios.patch(`${URL}/post`, data);
+      let postphoto = response.data.post.postphoto;
 
-    if (postphoto) {
-      // deleteImage(postphoto, "post");
+      if (postphoto) {
+        // deleteImage(postphoto, "post");
+      }
+
+      return response.data;
+    } catch (err: any) {
+      throw err.response.data.message;
     }
-
-    return response.data;
-  } catch (err: any) {
-    throw err.response.data.message;
   }
-});
+);
 
 const post = createSlice({
   name: "post",
@@ -192,7 +207,7 @@ const post = createSlice({
         state.allPost = arr as any[];
         if (state.allPost.length > 0) state.poststatus = "succeeded";
       } catch {}
-    }
+    },
   },
   extraReducers(builder) {
     builder
@@ -204,8 +219,10 @@ const post = createSlice({
         state.message = action.payload?.message ?? state.message;
         // Accept multiple possible shapes for the created post
         const payload = action.payload as any;
-        if (process.env.NODE_ENV !== 'production') {
-          try { console.debug('createpost.fulfilled payload:', payload); } catch {}
+        if (process.env.NODE_ENV !== "production") {
+          try {
+            console.debug("createpost.fulfilled payload:", payload);
+          } catch {}
         }
         const candidate =
           payload?.post ||
@@ -219,44 +236,64 @@ const post = createSlice({
           const newPost = candidate;
           // Ensure display fields exist for header
           if (newPost && args) {
-            if (!newPost.username && args.authorUsername) newPost.username = args.authorUsername;
-            if (!newPost.name && args.authorName) newPost.name = args.authorName;
+            if (!newPost.username && args.authorUsername)
+              newPost.username = args.authorUsername;
+            if (!newPost.name && args.authorName)
+              newPost.name = args.authorName;
             if (!newPost.handle && args.handle) newPost.handle = args.handle;
           }
           const newId = newPost?.postid ?? newPost?.id ?? newPost?._id;
           if (newId != null) {
             // De-duplicate if it already exists
-            const existingIdx = state.allPost.findIndex((p: any) => (p?.postid ?? p?.id ?? p?._id) === newId);
+            const existingIdx = state.allPost.findIndex(
+              (p: any) => (p?.postid ?? p?.id ?? p?._id) === newId
+            );
             if (existingIdx !== -1) {
               state.allPost.splice(existingIdx, 1);
             }
           }
           state.allPost.unshift(newPost);
-          try { localStorage.setItem('feedPosts', JSON.stringify(state.allPost)); } catch {}
+          try {
+            localStorage.setItem("feedPosts", JSON.stringify(state.allPost));
+          } catch {}
         } else {
           // Optimistic fallback when API doesn't return the created post
           const args = (action.meta as any)?.arg as CreatePostArgs;
           // If API returns upload identifiers directly, build a post from them
-          const uploadPublicId = payload?.publicId || payload?.public_id || payload?.data?.publicId || payload?.data?.public_id;
-          const uploadUrl = payload?.url || payload?.secure_url || payload?.data?.url || payload?.data?.secure_url;
-          const basePost: any = args?.userid ? {
-            postid: Date.now(),
-            userid: args.userid,
-            content: args?.content,
-            posttype: args?.posttype,
-            createdAt: new Date().toISOString(),
-            // Author display fields for UI
-            username: args.authorUsername,
-            name: args.authorName,
-            handle: args.handle,
-          } : null;
+          const uploadPublicId =
+            payload?.publicId ||
+            payload?.public_id ||
+            payload?.data?.publicId ||
+            payload?.data?.public_id;
+          const uploadUrl =
+            payload?.url ||
+            payload?.secure_url ||
+            payload?.data?.url ||
+            payload?.data?.secure_url;
+          const basePost: any = args?.userid
+            ? {
+                postid: Date.now(),
+                userid: args.userid,
+                content: args?.content,
+                posttype: args?.posttype,
+                createdAt: new Date().toISOString(),
+                // Author display fields for UI
+                username: args.authorUsername,
+                name: args.authorName,
+                handle: args.handle,
+              }
+            : null;
           if (basePost && (uploadPublicId || uploadUrl)) {
             basePost.postphoto = uploadPublicId || uploadUrl;
             state.allPost.unshift(basePost);
-            try { localStorage.setItem('feedPosts', JSON.stringify(state.allPost)); } catch {}
+            try {
+              localStorage.setItem("feedPosts", JSON.stringify(state.allPost));
+            } catch {}
           } else if (basePost) {
             state.allPost.unshift(basePost);
-            try { localStorage.setItem('feedPosts', JSON.stringify(state.allPost)); } catch {}
+            try {
+              localStorage.setItem("feedPosts", JSON.stringify(state.allPost));
+            } catch {}
           }
         }
       })
@@ -295,12 +332,16 @@ const post = createSlice({
 
         const toDate = (v: any) => {
           const t = v?.createdAt ?? v?.created_at ?? v?.date;
-          const n = typeof t === 'number' ? t : Date.parse(t);
+          const n = typeof t === "number" ? t : Date.parse(t);
           return Number.isFinite(n) ? n : 0;
         };
 
-        state.allPost = Array.from(map.values()).sort((a, b) => toDate(b) - toDate(a));
-        try { localStorage.setItem('feedPosts', JSON.stringify(state.allPost)); } catch {}
+        state.allPost = Array.from(map.values()).sort(
+          (a, b) => toDate(b) - toDate(a)
+        );
+        try {
+          localStorage.setItem("feedPosts", JSON.stringify(state.allPost));
+        } catch {}
       })
       .addCase(getallpost.rejected, (state, action) => {
         state.poststatus = "failed";
@@ -349,4 +390,5 @@ const post = createSlice({
 });
 
 export default post.reducer;
-export const { PostchangeStatus, emptypostphoto, hydrateFromCache } = post.actions;
+export const { PostchangeStatus, emptypostphoto, hydrateFromCache } =
+  post.actions;
