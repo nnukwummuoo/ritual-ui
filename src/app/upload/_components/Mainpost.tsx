@@ -743,9 +743,6 @@ export const Mainpost = () => {
   );
 };
 
-
-
-
 // Helper component to cleanup object URLs when they change/unmount
 function CleanupObjectUrl({ url }: { url: string }) {
   useEffect(() => {
