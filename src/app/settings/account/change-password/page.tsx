@@ -8,6 +8,7 @@ import PacmanLoader from "react-spinners/ClockLoader";
 import { useRouter } from "next/navigation";
 import { changePassword } from "@/lib/service/changePassword"; // Import the updated changePassword function
 import { useSelector } from "react-redux"; // Re-enable Redux for userID
+import { RootState } from "@/store/store"; // adjust path if needed
 
 const ChangePasswordPage = () => {
   const router = useRouter();
@@ -17,7 +18,7 @@ const ChangePasswordPage = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [color] = useState("#d49115");
-  const userID = useSelector((state: any) => state.register.userID); // Get userID from Redux
+  const userId = useSelector((state: RootState) => state.profile.userId); // Get userID from Redux
 
   const togglePasswordVisibility = () => {
     setShowPassword((prevState) => !prevState);
@@ -28,7 +29,7 @@ const ChangePasswordPage = () => {
   };
 
   const handleChangePassword = async () => {
-    if (!userID) {
+    if (!userId) {
       toast.error("User ID not found. Please log in again.");
       router.push("/");
       return;
@@ -47,7 +48,7 @@ const ChangePasswordPage = () => {
     setLoading(true);
     try {
       const payload = {
-        id: userID,
+        id: userId,
         password: password,
         isuser: true, // Assuming the user is authenticated, set isuser to true
       };

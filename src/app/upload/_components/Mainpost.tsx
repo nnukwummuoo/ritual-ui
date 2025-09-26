@@ -43,7 +43,9 @@ export const Mainpost = () => {
   const [videoUploading, setVideoUploading] = useState<boolean>(false);
   const [videoCaption, setVideoCaption] = useState<string>("");
   const [showBanWarning, setShowBanWarning] = useState<boolean>(false);
+  const [showSizeWarning, setShowSizeWarning] = useState<boolean>(false);
   const [agreedToPolicy, setAgreedToPolicy] = useState<boolean>(false);
+  const [fileTypeForSizeWarning, setFileTypeForSizeWarning] = useState<'image' | 'video' | null>(null);
 
   // Auth consistent with Profile page
   const userid = useUserId();
@@ -84,8 +86,18 @@ export const Mainpost = () => {
 
   const handleUploadStart = (fileType: 'image' | 'video') => {
     if (fileType === 'image' && imageFile) {
+      if (imageFile.size > 5 * 1024 * 1024) {
+        setFileTypeForSizeWarning('image');
+        setShowSizeWarning(true);
+        return;
+      }
       setShowBanWarning(true);
     } else if (fileType === 'video' && videoFile) {
+      if (videoFile.size > 10 * 1024 * 1024) {
+        setFileTypeForSizeWarning('video');
+        setShowSizeWarning(true);
+        return;
+      }
       setShowBanWarning(true);
     }
   };
@@ -96,6 +108,15 @@ export const Mainpost = () => {
       await handleImagePost();
     } else if (fileType === 'video' && videoFile) {
       await handleVideoPost();
+    }
+  };
+
+  const handleSizeWarningContinue = async () => {
+    setShowSizeWarning(false);
+    if (fileTypeForSizeWarning === 'image' && imageFile) {
+      setShowBanWarning(true);
+    } else if (fileTypeForSizeWarning === 'video' && videoFile) {
+      setShowBanWarning(true);
     }
   };
 
@@ -205,8 +226,8 @@ export const Mainpost = () => {
           toast.error(msg);
         });
     } catch (e: any) {
-    const msg = e?.message || 'Failed to create post';
-    toast.error(msg);
+      const msg = e?.message || 'Failed to create post';
+      toast.error(msg);
     } finally {
       setUploading(false);
       setLoading(false);
@@ -322,27 +343,19 @@ export const Mainpost = () => {
           //   } catch {}
           // }
 
-  const handleImageSelected = async (file: File) => {
-     if (uploading) return;
-     try {
-        toast.info('Compressing image...', { autoClose: 1500 });
-        const compressedFile = await compressImage(file);
-        console.log(`Original size: ${(file.size / 1024 / 1024).toFixed(2)} MB`);
-        console.log(`Compressed size: ${(compressedFile.size / 1024 / 1024).toFixed(2)} MB`);
-        const url = URL.createObjectURL(compressedFile);
-        setImageFile(compressedFile);
-        setImagePreview(url);
-        setUploadedPublicId("");
-        setUploadedUrl("");
-      } catch (error) {
-        console.error("Image compression failed:", error);
-        toast.error("Image compression failed. Uploading original file.");
-        // Fallback to original file if compression fails
-        const url = URL.createObjectURL(file);
-        setImageFile(file);
-        setImagePreview(url);
-      }
-  }
+          const handleImageSelected = async (file: File) => {
+          if (uploading) return;
+          try {
+            const url = URL.createObjectURL(file);
+            setImageFile(file);
+            setImagePreview(url);
+            setUploadedPublicId("");
+            setUploadedUrl("");
+          } catch (error) {
+            console.error("Image selection failed:", error);
+            toast.error("Failed to load image.");
+          }
+        };
 
   return (
     <div className="bg-gray-900 text-white p-4 rounded-md space-y-5 max-w-4xl mx-auto border border-gray-700">
@@ -747,83 +760,30 @@ export const Mainpost = () => {
           </div>
         </div>
       )}
+
+      {showSizeWarning && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black/60" style={{ zIndex: 1001 }}>
+          <div className="w-full max-w-lg mx-4 bg-[#0b0f1f] border border-gray-700 rounded-2xl shadow-2xl">
+            <div className="flex items-center justify-between p-4 border-b border-gray-700 bg-red-800 rounded-t-2xl">
+              <span className="text-white font-semibold">File Too Large</span>
+            </div>
+            <div className="p-4 space-y-4 text-white">
+              <p>Max size is {fileTypeForSizeWarning === 'image' ? '5 MB' : '10 MB'}. Please trim or compress before uploading.</p>
+            </div>
+            <div className="flex items-center justify-end gap-3 p-4 border-t border-gray-700">
+              <button
+                onClick={() => setShowSizeWarning(false)}
+                className="px-4 py-2 text-gray-300 hover:text-white transition"
+              >
+                OK
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
-
-/**
- * Compresses an image file using the Canvas API.
- * It resizes the image and converts it to a WebP format.
- * @param file The image file to compress.
- * @param quality The quality of the output image (0 to 1).
- * @param type The mime type of the output image.
- * @returns A promise that resolves with the compressed file.
- */
-const compressImage = (file: File, quality = 0.7, type = 'image/webp'): Promise<File> => {
-    return new Promise((resolve, reject) => {
-        const image = new Image();
-        image.src = URL.createObjectURL(file);
-
-        image.onload = () => {
-            const canvas = document.createElement('canvas');
-            
-            // Resize the image for further size reduction.
-            // These can be adjusted to your needs.
-            const maxWidth = 1920;
-            const maxHeight = 1080;
-            let { width, height } = image;
-
-            if (width > height) {
-                if (width > maxWidth) {
-                    height = Math.round((height * maxWidth) / width);
-                    width = maxWidth;
-                }
-            } else {
-                if (height > maxHeight) {
-                    width = Math.round((width * maxHeight) / height);
-                    height = maxHeight;
-                }
-            }
-            canvas.width = width;
-            canvas.height = height;
-
-            const ctx = canvas.getContext('2d');
-            if (!ctx) {
-                return reject(new Error('Failed to get canvas context'));
-            }
-            
-            // Draw the resized image onto the canvas.
-            ctx.drawImage(image, 0, 0, width, height);
-
-            // Get the compressed image data as a Blob.
-            canvas.toBlob(
-                (blob) => {
-                    if (!blob) {
-                        return reject(new Error('Canvas toBlob failed'));
-                    }
-                    // Create a new File object from the Blob.
-                    const newFileName = file.name.split('.').slice(0, -1).join('.') + '.webp';
-                    const newFile = new File([blob], newFileName, {
-                        type: blob.type,
-                        lastModified: Date.now(),
-                    });
-
-                    // Clean up the object URL to free memory.
-                    URL.revokeObjectURL(image.src); 
-                    resolve(newFile);
-                },
-                type,
-                quality
-            );
-        };
-
-        image.onerror = (error) => {
-            URL.revokeObjectURL(image.src);
-            reject(error);
-        };
-    });
-};
-
 
 // Helper component to cleanup object URLs when they change/unmount
 function CleanupObjectUrl({ url }: { url: string }) {
