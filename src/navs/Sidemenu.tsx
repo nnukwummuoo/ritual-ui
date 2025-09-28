@@ -147,7 +147,7 @@ const getModelButton = () => {
               <div className="flex justify-between w-full">
                 <div className="flex text-xs text-blue-200 mb-3 w-full">
                   <Profile
-                    src="/icons/icons8-profile_user.png"
+                    src={profile.photolink || "/icons/icons8-profile_user.png"}
                     name={firstname}
                     url={userId ? `/Profile/${userId}` : `/Profile`}
                     gold_balance={gold_balance}

@@ -4,9 +4,12 @@ import React, { useState } from "react";
 import { Unreadmsg } from "./Unreadmsg";
 import { Recentmessage } from "./Recentmessage";
 import { VideoCallPage } from "./VideoCall";
+import { useRouter } from "next/navigation";
+import { FaHeadset } from "react-icons/fa";
 
 export const MsgRequestNav = () => {
   const [activeTab, setActiveTab] = useState<"recent" | "unread" | "video">("recent");
+  const router = useRouter();
 
   const renderTabContent = () => {
     switch (activeTab) {
@@ -22,40 +25,54 @@ export const MsgRequestNav = () => {
   };
 
   return (
-    <div className="w-screen md:w-11/12 lg:w-10/12 xl:w-10/12 mx-auto">
-      <div className="pb-4 overflow-auto flex-col items-center w-full mt-1">
+    <div className="w-full">
+      <div className="pb-4 flex-col items-center w-full">
         {/* Tab Buttons */}
-        <div className="overflow-auto flex justify-evenly">
+        <div className="flex justify-center gap-2 p-2">
           <button
-            className={`text-slate-400 mt-3 w-1/4 rounded-lg py-1 px-6 ${
-              activeTab === "recent" ? "bg-[#292d31]" : ""
+            className={`px-6 py-2 rounded-full text-sm font-medium transition-colors ${
+              activeTab === "recent" 
+                ? "bg-blue-600 text-white" 
+                : "bg-blue-800/30 text-blue-300 hover:bg-blue-700/50"
             }`}
             onClick={() => setActiveTab("recent")}
           >
-            <p className="text-center text-xs">Recent</p>
+            Recent
           </button>
 
           <button
-            className={`text-slate-400 mt-3 w-1/4 rounded-lg py-1 px-6 ${
-              activeTab === "unread" ? "bg-[#292d31]" : ""
+            className={`px-6 py-2 rounded-full text-sm font-medium transition-colors ${
+              activeTab === "unread" 
+                ? "bg-blue-600 text-white" 
+                : "bg-blue-800/30 text-blue-300 hover:bg-blue-700/50"
             }`}
             onClick={() => setActiveTab("unread")}
           >
-            <p className="text-center text-xs">Unread</p>
+            Unread
           </button>
-
-          {/* <button
-            className={`text-slate-400 mt-3 w-1/4 rounded-lg py-1 px-6 ${
-              activeTab === "video" ? "bg-[#292d31]" : ""
-            }`}
-            onClick={() => setActiveTab("video")}
-          >
-            <p className="text-center text-xs">Video Call</p>
-          </button> */}
         </div>
 
         {/* Render the tab content */}
         <div className="mt-4">{renderTabContent()}</div>
+        
+        {/* Support Button */}
+        <div className="mt-6 p-4 bg-gradient-to-r from-blue-500/20 to-blue-600/20 rounded-xl border border-blue-500/30">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <FaHeadset className="w-5 h-5 text-blue-400" />
+              <div>
+                <h3 className="font-semibold text-white">Need Help?</h3>
+                <p className="text-sm text-blue-200">Get support from our team</p>
+              </div>
+            </div>
+            <button
+              onClick={() => router.push("/message/support")}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors text-sm font-medium"
+            >
+              Chat Support
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );

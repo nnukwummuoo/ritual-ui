@@ -5,8 +5,8 @@
 //     : "https://api-sandbox.nowpayments.io/v1";
 
 // Backend API URL for your server
-// Local proxy in dev, live API in prod
+// Direct connection to backend in dev, live API in prod
 export const URL =
   process.env.NODE_ENV === "development"
-    ? "/api/proxy/"
+    ? "http://localhost:3100"
     : "https://mmekoapi.onrender.com";

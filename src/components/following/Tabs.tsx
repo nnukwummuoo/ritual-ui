@@ -27,7 +27,7 @@ const Tabs: React.FC<TabsProps> = ({ tabs, initialActive = 0 }) => {
             key={tab.label}
             className={`px-6 py-2 font-semibold ${
               active === idx
-                ? 'border-b-2 border-yellow-500 text-yellow-400'
+                ? 'border-b-2 border-white text-white'
                 : 'text-gray-400'
             }`}
             onClick={() => setActive(idx)}

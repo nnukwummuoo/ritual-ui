@@ -48,7 +48,8 @@ export const registernewUser = createAsyncThunk(
   async (data) => {
     console.log({data})
     try {
-      let response = await axios.post(`https://mmekoapi.onrender.com/register`, data);
+      // Use the URL from config to support both development and production
+      let response = await axios.post(`${URL}/register`, data);
       return response.data;
     } catch (err : any) {
       console.log(err.message);
@@ -108,7 +109,8 @@ export const loginuser = createAsyncThunk(
   async (data) => {
     try {
       console.log("untop login axios");
-      let response = await axios.post(`https://mmekoapi.onrender.com/login`, data);
+      // Use the URL from config to support both development and production
+      let response = await axios.post(`${URL}/login`, data);
       console.log("under login axios");
       return response.data;
     } catch (err: any) {
@@ -204,6 +206,26 @@ const registerSlice = createSlice({
       .addCase(registernewUser.fulfilled, (state, action) => {
         state.status = "succeeded";
         state.error = action.payload.message;
+        
+        // Store user data in localStorage for authentication
+        try {
+          localStorage.setItem(
+            "login",
+            JSON.stringify({
+              userID: action.payload.userId,
+              nickname: action.payload.nickname || "",
+              accesstoken: action.payload.accessToken,
+              refreshtoken: action.payload.token || "",
+            })
+          );
+          
+          // Update Redux state
+          state.userID = action.payload.userId;
+          state.accesstoken = action.payload.accessToken;
+          state.logedin = true;
+        } catch (e) {
+          console.error("Failed to store registration data:", e);
+        }
       })
       .addCase(registernewUser.rejected, (state, action) => {
         state.status = "failed";

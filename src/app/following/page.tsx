@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import React, { useState, useEffect } from "react";
 import { FaAngleLeft } from "react-icons/fa";
@@ -11,6 +12,22 @@ import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "../../store/store";
 import { getfollow } from "../../store/profile";
 import { loginAuthUser } from "../../store/registerSlice";
+import { getAllUsers } from "../../store/profile";
+
+// Utility function to format numbers with k notation
+const formatNumber = (num: number): string => {
+  if (num < 1000) {
+    return num.toString();
+  }
+  
+  if (num < 10000) {
+    const k = (num / 1000).toFixed(1);
+    return k.endsWith('.0') ? k.slice(0, -2) + 'k' : k + 'k';
+  }
+  
+  return Math.floor(num / 1000) + 'k';
+};
+
 const FollowingPage: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const [toggle, setToggle] = useState(false);
@@ -20,6 +37,8 @@ const FollowingPage: React.FC = () => {
   const getfollow_stats = useSelector((s: RootState) => s.profile.getfollow_stats);
   const getfollow_data = useSelector((s: RootState) => s.profile.getfollow_data as any);
   const getfollow_error = useSelector((s: RootState) => s.profile.fllowmsg as string);
+  const getAllUsers_stats = useSelector((s: RootState) => s.profile.getAllUsers_stats);
+  const getAllUsers_data = useSelector((s: RootState) => s.profile.getAllUsers_data as any);
 
   // Logged-in user's name from profile slice
   const firstname = useSelector((s: RootState) => s.profile.firstname) || "";
@@ -52,37 +71,83 @@ const FollowingPage: React.FC = () => {
   }, [userid, dispatch]);
 
   useEffect(() => {
-    // eslint-disable-next-line no-console
-    console.log("[FollowingPage] mount; creds", { userid, hasToken: Boolean(token) });
+    // Get token from localStorage if not in Redux state
+    let authToken = token;
+    if (!authToken && typeof window !== 'undefined') {
+      try {
+        const loginData = localStorage.getItem('login');
+        if (loginData) {
+          const parsedData = JSON.parse(loginData);
+          authToken = parsedData.refreshtoken || parsedData.accesstoken;
+          console.log("[FollowingPage] Retrieved token from localStorage:", !!authToken);
+        }
+      } catch (error) {
+        console.error("[FollowingPage] Error retrieving token from localStorage:", error);
+      }
+    }
+
+    console.log("[FollowingPage] mount; creds", { userid, hasToken: Boolean(authToken) });
     if (userid) {
-      // eslint-disable-next-line no-console
-      console.log("[FollowingPage] dispatch getfollow with userid", { userid });
-      dispatch(getfollow({ userid, token }));
+      console.log("[FollowingPage] dispatch getfollow with userid", { userid, hasToken: Boolean(authToken) });
+      dispatch(getfollow({ userid, token: authToken }));
+      // Also fetch all users for discovery
+      dispatch(getAllUsers({ token: authToken }));
     }
   }, [userid, token, dispatch]);
 
-  const loading = getfollow_stats === "loading";
+  const loading = getfollow_stats === "loading" || getAllUsers_stats === "loading";
+  
+  // Get followers/following from API response
   const apiFollowers: User[] = (getfollow_data?.followers as User[]) || [];
   const apiFollowing: User[] = (getfollow_data?.following as User[]) || [];
-  // eslint-disable-next-line no-console
-  console.log("[FollowingPage] stats/data", { getfollow_stats, counts: { followers: apiFollowers.length, following: apiFollowing.length } });
+  
+  // Use useMemo to prevent unnecessary re-renders
+  const allUsers = React.useMemo(() => {
+    return (getAllUsers_data as User[]) || [];
+  }, [getAllUsers_data]);
+  
+  // Check if user object has followers/following arrays directly
+  // This is for when the backend returns user data with these arrays
+  useEffect(() => {
+    if (allUsers.length > 0 && userid) {
+      try {
+        // Find current user in allUsers
+        const currentUser = allUsers.find((user: any) => String(user._id) === String(userid));
+        if (currentUser && Array.isArray(currentUser.following)) {
+          console.log("[FollowingPage] Found following array in user data:", currentUser.following);
+        }
+      } catch (e) {
+        console.error("[FollowingPage] Error processing user data:", e);
+      }
+    }
+  }, [allUsers, userid]);
+  console.log("[FollowingPage] stats/data", { getfollow_stats, counts: { followers: apiFollowers.length, following: apiFollowing.length, allUsers: allUsers.length } });
 
   // Prefer "Following" if it has items; otherwise default to "Fans" if it has items
+  // Always default to the Discover tab (index 2) when there are no followers/following
   const initialActiveTab = React.useMemo(() => {
     if (apiFollowing.length > 0) return 0; // Following
     if (apiFollowers.length > 0) return 1; // Fans
-    return 0;
+    return 2; // Discover tab by default if no relationships exist
   }, [apiFollowing.length, apiFollowers.length]);
 
   useEffect(() => {
-    // eslint-disable-next-line no-console
     console.log("[FollowingPage] render tabs", { loading });
   }, [loading]);
 
   const followers = () => {
-    const followersData = apiFollowers.filter((user) =>
-      user.name.toLowerCase().includes(search.toLowerCase())
-    );
+    // These are users who follow me, but I don't necessarily follow back (fans)
+    // Get all users who follow me (apiFollowers) but are not in my following list
+    const followingIds = new Set(apiFollowing.map(u => String(u.id)));
+    
+    // Filter followers to only include those that match the search
+    const followersData = apiFollowers.filter((user) => {
+      const matchesSearch = user.name.toLowerCase().includes(search.toLowerCase());
+      // Only include users that I don't follow back (true fans)
+      const iNotFollowingThem = !followingIds.has(String(user.id));
+      return matchesSearch && iNotFollowingThem;
+    });
+    
     return (
       <div>
         <h1 className="text-lg font-bold text-white px-2 text-left mb-4 mt-4">
@@ -93,12 +158,15 @@ const FollowingPage: React.FC = () => {
             <p className="text-gray-400 px-2 py-4">No fans to show yet.</p>
           )}
           {followersData.map((user, index) => (
-            <FollowerCard
-              key={`${index}_${user.id}`}
-              image={user.image}
-              name={user.name}
-              modelid={user.modelid}
-            />
+            <div key={`fan_${index}_${user.id}`} className="fan-user">
+              <FollowerCard
+                key={`fan_${index}_${user.id}`}
+                image={user.image}
+                name={user.name}
+                modelid={user.modelid}
+                userId={user.id}
+              />
+            </div>
           ))}
         </div>
       </div>
@@ -106,25 +174,87 @@ const FollowingPage: React.FC = () => {
   };
 
   const following = () => {
-    const filtered = apiFollowing.filter((user) =>
+    // These are users I follow - both mutual and non-mutual follows
+    // Get all users I follow from apiFollowing (database is the source of truth)
+    const combinedFollowing = apiFollowing.filter((user) =>
       user.name.toLowerCase().includes(search.toLowerCase())
     );
+    
     return (
       <div className="">
         <h1 className="text-lg font-bold text-white px-2 text-left mt-4">
-          {filtered.length} Following
+          {combinedFollowing.length} Following
         </h1>
         <div className="flex flex-col items-start px-2">
-          {!loading && filtered.length === 0 && (
+          {!loading && combinedFollowing.length === 0 && (
             <p className="text-gray-400 px-2 py-4">Not following anyone yet.</p>
           )}
-          {filtered.map((user, index) => (
-            <FollowerCard
-              key={`${index}_${user.id}`}
-              image={user.image}
-              name={user.name}
-              modelid={user.modelid}
-            />
+          {combinedFollowing.map((user, index) => {
+            // Pre-mark these cards as followed since they're in the Following tab
+            return (
+              <div key={`following_${index}_${user.id}`} className="following-user" data-followed="true">
+                <FollowerCard
+                  key={`following_${index}_${user.id}`}
+                  image={user.image}
+                  name={user.name}
+                  modelid={user.modelid}
+                  userId={user.id}
+                />
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
+  const discoverUsers = () => {
+    // Get all following IDs from apiFollowing
+    const followingIds = new Set(apiFollowing.map(u => String(u.id)));
+    
+    // Get all follower IDs from apiFollowers
+    const followerIds = new Set(apiFollowers.map(u => String(u.id)));
+    
+    // Filter users for the Discover tab - only show users that:
+    // 1. Are not the current user
+    // 2. Are not already followed by the current user
+    // 3. Are not following the current user
+    // 4. Match the search query
+    const discoverableUsers = allUsers.filter((user: any) => {
+      const fullName = `${user.firstname ?? ""} ${user.lastname ?? ""}`.trim().toLowerCase();
+      const matchesSearch = fullName.includes(search.toLowerCase());
+      const isNotCurrentUser = String(user._id) !== String(userid);
+      
+      // If we have no followers/following data, just filter out current user
+      if (apiFollowers.length === 0 && apiFollowing.length === 0) {
+        return matchesSearch && isNotCurrentUser;
+      }
+      
+      // Otherwise, use the filtering logic based on database data
+      const isNotAlreadyFollowing = !followingIds.has(String(user._id));
+      const isNotFollowingMe = !followerIds.has(String(user._id));
+      return matchesSearch && isNotCurrentUser && isNotAlreadyFollowing && isNotFollowingMe;
+    });
+
+    return (
+      <div className="">
+        <h1 className="text-lg font-bold text-white px-2 text-left mt-4">
+          {formatNumber(discoverableUsers.length)}  Verified Members Ready to Connect
+        </h1>
+        <div className="flex flex-col items-start px-2">
+          {!loading && discoverableUsers.length === 0 && (
+            <p className="text-gray-400 px-2 py-4">No users to discover right now.</p>
+          )}
+          {discoverableUsers.map((user: any, index: number) => (
+            <div key={`discover_${index}_${user._id}`} className="discover-user">
+              <FollowerCard
+                key={`discover_${index}_${user._id}`}
+                image={user.photolink || "/icons/icons8-profile_Icon1.png"}
+                name={`${user.firstname} ${user.lastname}`.trim()}
+                modelid={user.modelid || ""}
+                userId={user._id}
+              />
+            </div>
           ))}
         </div>
       </div>
@@ -186,8 +316,9 @@ const FollowingPage: React.FC = () => {
           {loading && <Spinner />}
           <Tabs
             tabs={[
-              { label: "Following", content: following() },
-              { label: "Fans", content: followers() },
+              { label: "Following", content: <div className="following-tab">{following()}</div> },
+              { label: "Fans", content: <div className="fans-tab">{followers()}</div> },
+              { label: "Discover", content: <div className="discover-tab">{discoverUsers()}</div> },
             ]}
             initialActive={initialActiveTab}
           />
