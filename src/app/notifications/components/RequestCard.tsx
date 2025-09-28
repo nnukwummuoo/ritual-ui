@@ -9,7 +9,7 @@ const cardStates = {
   declined: "Request declined",
   cancelled: "Request cancelled",
   expired: "Request expired",
-  completed: "Request completed",
+  completed: "Request completed"
 }
 const ratings = [
   "😍 Loved it",
@@ -52,14 +52,14 @@ const fanContent = {
     body: "You have successfully completed the fan meet with the model. How do you rate your experience?"},
   declined: {
     head: "Fan Meet Declined",
-    body: "Model has declined your request."
+    body: "Model declined your request."
   },
   cancelled: {
     head: "Fan Meet Cancelled",
     body: "You have cancelled the fan-meet request. You can renew this request anytime."},
   expired: {
     head: "Fan Meet Expired",
-    body: "The fan-meet request has expired. You can renew this request anytime."
+    body: "Your fan-meet request has expired. You can renew this request anytime."
   },
   request: {
     head: "Waiting For Model\'s Response",
@@ -78,13 +78,18 @@ interface CardProps {
 }
 
 export default function RequestCard({exp, img, name, titles=["fan"], status, type="fan"}: CardProps) {
-const cardBorderVariance = type === "model" ? "border-blue-500" : type === "fan" && ["accepted", "completed"].includes(status) ? "border-green-500" : "border-yellow-500"
-const cardTextVariance = type === "model" ? "text-blue-500" : type === "fan" && ["accepted", "completed"].includes(status) ? "text-green-500" : "text-yellow-500"
+  const cardBorderVariance = type === "model" ? "border-blue-500" : type === "fan" && ["accepted", "completed"].includes(status) ? "border-green-500" : "border-yellow-500"
+  const cardTextVariance = type === "model" ? "text-blue-500" : type === "fan" && ["accepted", "completed"].includes(status) ? "text-green-500" : "text-yellow-500"
 
-  return <div className={`w-full flex flex-col gap-8 rounded-lg border-2 ${cardBorderVariance} p-4 mx-auto text-white bg-slate-800`}
-  >
-      <div className={`flex justify-between text-5xl ${cardTextVariance}`}>
-        <div>
+  // shared action button base so buttons have same size / height
+  const actionBtnBase = 'w-full px-6 py-3 rounded-lg transition-all duration-500 text-sm flex items-center justify-center';
+  // Fan action style (uses base for consistent sizing)
+  const fanActionClass = `${actionBtnBase} border border-gray-500 max-[490px]:text-xs text-gray-300 hover:bg-slate-700 bg-transparent`;
+
+  return (
+    <div className={`w-full flex flex-col gap-6 rounded-lg border-2 ${cardBorderVariance} p-4 mx-auto text-white bg-slate-800`}>
+      <div className={`flex justify-between items-start gap-4 ${cardTextVariance}`}>
+        <div className="flex gap-4">
           <div className={`size-16 relative rounded-full border-4 overflow-hidden ${cardBorderVariance} bg-gray-900`}>
             <Image src={img} width={100} alt="picture" height={100} className='absolute top-0 left-0 size-full object-cover' />
           </div>
@@ -93,63 +98,121 @@ const cardTextVariance = type === "model" ? "text-blue-500" : type === "fan" && 
             <div className='flex gap-1'>{titles?.map((title, i)=> i === titles.length -1 ? <p key={title}>{title}</p> : <p key={title}>{title} &#x2022; </p>)}</div>
           </div>
         </div>
-        {status === "accepted" ? <p><FaCoins /> 20</p> : <BiTimeFive />}
+
+        <div className="flex flex-col items-end">
+          {status === "accepted" ? <p className="flex items-center gap-2 text-xl"><FaCoins /> 20</p> : <BiTimeFive className="text-2xl" />}
+        </div>
       </div>
-      <h3 className={`text-4xl ${cardTextVariance}`}>{
-       type === "model" ?
-        modelContent[status].head 
-       : fanContent[status].head 
+
+      <h3 className={`text-3xl md:text-4xl ${cardTextVariance}`}>{
+        type === "model" ? modelContent[status].head : fanContent[status].head
       }</h3>
-      <p>{ type === "model" ?
-        modelContent[status].body
-        : fanContent[status].body
-        }</p>
-        {/* RATINGS */}
-        <div className='flex gap-4 flex-wrap justify-center'>
-          {status === "completed" && ratings.map((v,i) => <Rating key={i} label={v} />)}
-        </div>
-        <div className={`flex justify-between gap-6 ${type === "model" && "max-[490px]:flex-col"} items-end`}>
-        { statusArr.slice(1).includes(status) ? 
-        <div className={`flex gap-4 ${type === "model" && "max-[490px]:w-full"}`}>
-          <div className='border border-gray-600 text-gray-500 px-6 py-2 rounded-lg text-sm max-[490px]:text-xs'>
-            {cardStates[status as keyof typeof cardStates]}
-          </div> 
-          { type === "model" ? <FanActionBtn label='Chat now' /> :
-           type === "fan" && status === "accepted"  ?
-          <FanActionBtn label='Mark as complete' />
-          : <FanActionBtn label='Renew request' />}
-        </div>
-          : <>
-          <div className='flex flex-col min-w-28 '>
-          <p className='text-xl'>Expires in:</p>
-          <p className='text-3xl'>{exp}</p>
-          </div>
-          <div className={`flex gap-4 ${type === "model" && "max-[490px]:w-full"}`}>
-            { type === "model" ?
-            <>
-            <ModelActionBtn type='accept' />
-            <ModelActionBtn type='decline' />
-            </>
-            : <div className='text-yellow-500 text-2xl flex flex-col items-end gap-4'>
-              <BiTimeFive />
-              {type === "fan" && status === "request" && <FanActionBtn label='Terminate request' />}
-              </div>
-            }
-          </div>
-          </>
-        }
+
+      <p className="text-sm md:text-base">{ type === "model" ? modelContent[status].body : fanContent[status].body }</p>
+
+      {/* RATINGS */}
+      <div className='flex gap-4 flex-wrap justify-center'>
+        {status === "completed" && ratings.map((v,i) => <Rating key={i} label={v} />)}
+      </div>
+
+      <div className={`flex flex-col gap-4 items-end`}>
+        { statusArr.slice(1).includes(status) ? (
+// keep this row horizontal and make buttons equal width
+<div className="flex w-full items-stretch gap-3">
+  <div className="flex-1 flex">
+    <div className="w-full border border-gray-600 text-gray-500 px-3 py-2 rounded-lg text-xs md:text-sm flex items-center justify-center">
+      {cardStates[status as keyof typeof cardStates]}
     </div>
-   </div>
+  </div>
+
+  <div className="flex-1">
+    { type === "model" && status === "accepted" ? (
+      // Model accepted → Renew + View details
+      <div className="flex gap-3">
+        <div className="flex-1">
+          <FanActionBtn label="Chat Now" className={fanActionClass} />
+        </div>
+        <div className="flex-1">
+          <button className={fanActionClass}>View details</button>
+        </div>
+      </div>
+    ) : type === "fan" && status === "accepted" ? (
+      // Fan accepted → Mark complete + View details
+      <div className="flex gap-3">
+        <div className="flex-1">
+          <FanActionBtn label="Mark as complete" className={fanActionClass} />
+        </div>
+        <div className="flex-1">
+          <button className={fanActionClass}>View details</button>
+        </div>
+      </div>
+    ) : type === "model" ? (
+      <FanActionBtn label="Renew request" className={fanActionClass} />
+    ) : (
+      <FanActionBtn label="Renew request" className={fanActionClass} />
+    )}
+  </div>
+</div>
+
+        ) : (
+          <>
+            {/* ---------- UPDATED EXPIRY ROW: now a bordered, padded full-width element ---------- */}
+            <div className='w-full'>
+              <div className='w-full flex justify-center'>
+                {/* full width button-like row with border, padding and rounded corners */}
+                <div className='w-full bg-transparent border border-gray-600 rounded-lg px-4 py-4 flex flex-col items-center justify-center'>
+                  <p className='text-lg md:text-xl text-gray-300 font-normal mb-1'>Expires in:</p>
+                  <p className='text-2xl md:text-3xl font-normal'>{exp}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Action buttons row: ALWAYS horizontal (no stacked layout) */}
+            <div className='w-full flex flex-row gap-4 items-center'>
+              { type === "model" ? (
+                // Model: Accept | Decline | View details (equal widths)
+                <>
+                  <div className='flex-1'>
+                    <ModelActionBtn type='accept' />
+                  </div>
+                  <div className='flex-1'>
+                    <ModelActionBtn type='decline' />
+                  </div>
+                  <div className='flex-1'>
+                    <button className={fanActionClass}>View details</button>
+                  </div>
+                </>
+              ) : (
+                // Fan: Cancel request | View details side-by-side
+                <>
+                  <div className='flex-1'>
+                    {type === "fan" && status === "request" && <FanActionBtn label='Cancel request' className={fanActionClass} />}
+                  </div>
+                  <div className='flex-1'>
+                    <button className={fanActionClass}>View details</button>
+                  </div>
+                </>
+              )}
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
 }
 
 function ModelActionBtn({type}: {type: "accept" | "decline"}){
-  return <button className={`py-3 w-full px-6 rounded-lg transition-all duration-500 text-white ${type === "accept" ? "hover:bg-green-700  bg-green-600" : "hover:bg-red-700  bg-red-600"}`}>
+  // Use same base sizing so heights match
+  const base = 'w-full px-6 py-3 rounded-lg transition-all duration-500 text-white flex items-center justify-center';
+  return <button className={`${base} ${type === "accept" ? "hover:bg-green-700 bg-green-600" : "hover:bg-red-700 bg-red-600"}`}>
     {type === "accept" ? "Accept" : "Decline"}
   </button>
 };
 
-function FanActionBtn({label}: {label: string}){
-  return <button className='border border-gray-500 max-[490px]:text-xs text-sm transition-all duration-500 hover:bg-slate-700 text-gray-300 px-6 py-2 rounded-lg'>{label}</button>
+function FanActionBtn({label, className}: {label: string, className?: string}){
+  // allow overriding/using shared class; default uses the same base so sizing is consistent
+  const defaultClass = 'w-full px-6 py-3 rounded-lg transition-all duration-500 text-sm flex items-center justify-center border border-gray-500 max-[490px]:text-xs text-gray-300 hover:bg-slate-700 bg-transparent';
+  return <button className={ className ? className : defaultClass }>{label}</button>
 }
 
 function Rating({label}: {label: string}){
