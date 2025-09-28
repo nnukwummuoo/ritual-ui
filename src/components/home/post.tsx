@@ -12,6 +12,7 @@ import PostSkeleton from "../PostSkeleton";
 import PostActions from "./PostActions";
 import { toast } from "material-react-toastify";
 import {useRouter} from "next/navigation"
+import { FaHeart, FaRegHeart } from "react-icons/fa"; // Example icons
 
 export default function PostsCard({ type }: { type?: "video" | "image" | "text" }) {
   const router = useRouter()
@@ -91,8 +92,26 @@ export default function PostsCard({ type }: { type?: "video" | "image" | "text" 
 const fetchFeed=async() => { 
     const tst = toast.loading("loading");
       try {
-        const resPosts = await fetchposts()
-        setPostResolve(resPosts?.post||[])
+        const resPosts = await fetchposts();
+        // Initialize UI state with proper like counts from backend
+        if (resPosts?.post && Array.isArray(resPosts.post)) {
+          // Update UI state for each post
+          setUi(prev => {
+            const newState = { ...prev };
+            resPosts.post.forEach((post: any) => {
+              const postId = post?.postid || post?.id || post?._id;
+              if (postId) {
+                newState[postId] = {
+                  ...prev[postId],
+                  likeCount: post.likeCount || 0,
+                  liked: post.likedBy?.includes(loggedInUserId || selfId),
+                };
+              }
+            });
+            return newState;
+          });
+        }
+        setPostResolve(resPosts?.post || []);
         localStorage.setItem('feedPosts', JSON.stringify(resPosts.post));
       }catch(error){
         console.error(error)
@@ -101,7 +120,29 @@ const fetchFeed=async() => {
       }
     }
   useLayoutEffect(() => {
-    (async()=>setPostResolve(JSON.parse(localStorage.getItem('feedPosts') || "[]") || []))();
+    (async () => {
+      const cachedPosts = JSON.parse(localStorage.getItem('feedPosts') || "[]") || [];
+      setPostResolve(cachedPosts);
+      
+      // Initialize UI state from cached posts
+      if (Array.isArray(cachedPosts)) {
+        setUi(prev => {
+          const newState = { ...prev };
+          cachedPosts.forEach((post: any) => {
+            const postId = post?.postid || post?.id || post?._id;
+            if (postId) {
+              newState[postId] = {
+                ...prev[postId],
+                likeCount: post.likeCount || 0,
+                liked: post.likedBy?.includes(loggedInUserId || selfId),
+              };
+            }
+          });
+          return newState;
+        });
+      }
+    })();
+    
     fetchFeed();
     window.addEventListener('refreshfeed', fetchFeed);
     return ()=>{
@@ -202,35 +243,21 @@ const fetchFeed=async() => {
           null;
 
         // Basic reactions/metrics derivation
-        const likesArr: any[] = Array.isArray(p?.likes)
-          ? p?.likes
-          : Array.isArray(p?.like)
-          ? p?.like
-          : Array.isArray(p?.reactions)
-          ? p?.reactions
-          : [];
+        // Use likeCount and likedBy from backend
+        const likeCount = Number(p?.likeCount || 0);
+        const likedByArr = Array.isArray(p?.likedBy) ? p.likedBy : [];
         const commentsArr: any[] = Array.isArray(p?.comments)
           ? p?.comments
           : Array.isArray(p?.comment)
           ? p?.comment
           : [];
-        const likeCount = Array.isArray(likesArr)
-          ? likesArr.length
-          : Number(p?.likeCount || p?.likesCount || p?.likes || 0) || 0;
         const commentCount = Array.isArray(commentsArr)
           ? commentsArr.length
           : Number(p?.commentCount || p?.commentsCount || p?.comments || 0) || 0;
 
         const idStr = (v: any) => (v == null ? undefined : String(v));
         const selfIdStr = idStr(loggedInUserId) || idStr(selfId);
-        const arrHasSelf = (arr: any[]) =>
-          !!selfIdStr &&
-          Array.isArray(arr) &&
-          arr.some((x) => {
-            const val = x?.userid || x?.userId || x?.ownerId || x?.id || x;
-            return idStr(val) === selfIdStr;
-          });
-        const liked = arrHasSelf(likesArr);
+        const liked = !!(selfIdStr && likedByArr.includes(selfIdStr));
         const starred = !!(p?.starred || p?.faved || p?.favorited);
 
         // Merge with local optimistic state
@@ -388,26 +415,48 @@ const fetchFeed=async() => {
                   dispatch(unfollowThunk(payload) as any);
                 }
               }}
-              onLike={() => {
+              onLike={async () => {
                 const uid = String(loggedInUserId || selfId || "");
                 const localPid = p?.postid || p?.id || p?._id;
-                if (!localPid) return;
-                // Optimistic toggle
-                setUi((prev) => {
-                  const curr = prev[localPid] || {};
-                  const nextLiked = !(curr.liked ?? liked);
-                  const baseCount = curr.likeCount ?? likeCount;
-                  return {
+                if (!localPid || !authToken) {
+                  toast.error("Please login to like posts");
+                  return;
+                }
+                
+                // Get current state
+                const curr = ui[localPid] || {};
+                const nextLiked = !(curr.liked ?? liked);
+                const currentCount = curr.likeCount ?? likeCount;
+                
+                // Immediate optimistic UI update
+                setUi((prev) => ({
+                  ...prev,
+                  [localPid]: {
+                    ...curr,
+                    liked: nextLiked,
+                    likeCount: Math.max(0, currentCount + (nextLiked ? 1 : -1)),
+                  },
+                }));
+
+                try {
+                  // Send to backend
+                  await dispatch(postlike({
+                    userid: uid,
+                    postid: localPid,
+                    token: authToken
+                  } as any)).unwrap();
+                } catch (err) {
+                  // On error, revert the optimistic update
+                  setUi((prev) => ({
                     ...prev,
                     [localPid]: {
-                      ...curr,
-                      liked: nextLiked,
-                      likeCount: Math.max(0, baseCount + (nextLiked ? 1 : -1)),
+                      ...prev[localPid],
+                      liked: !nextLiked,
+                      likeCount: currentCount,
                     },
-                  };
-                });
-                if (!uid || !authToken) return;
-                dispatch(postlike({ userid: uid, postid: localPid, token: authToken } as any));
+                  }));
+                  toast.error("Failed to update like. Please try again.");
+                }
               }}
               onComment={() => {
                 const localPid = p?.postid || p?.id || p?._id;

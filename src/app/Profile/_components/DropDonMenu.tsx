@@ -35,7 +35,7 @@ const DropdownMenu = ({ userId, isOwnProfile = false }: DropdownMenuProps) => {
             aria-labelledby="menu-button"
           >
             <div className="py-1" role="none">
-              {!isOwnProfile && (
+          
                 <button
                   onClick={handleAboutPage}
                   className="text-white block w-full text-left px-4 py-2 text-sm hover:bg-gray-700 transition-colors"
@@ -43,16 +43,6 @@ const DropdownMenu = ({ userId, isOwnProfile = false }: DropdownMenuProps) => {
                 >
                   About this Page
                 </button>
-              )}
-              {!isOwnProfile && (
-                <button
-                  onClick={toggleoption}
-                  className="text-white block w-full text-left px-4 py-2 text-sm hover:bg-gray-700 transition-colors"
-                  role="menuitem"
-                >
-                  Block User
-                </button>
-              )}
             </div>
           </div>
         )}

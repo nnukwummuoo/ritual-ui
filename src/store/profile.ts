@@ -412,18 +412,57 @@ export const follow = createAsyncThunk<
   { userid: string; followerid: string; token: string }
 >("profile/follow", async (data) => {
   try {
-    console.log("[follow] POST", `${URL}/follow`, {
+    console.log("🔍 [follow] Starting follow request:", {
+      url: `${URL}/follow`,
       userid: data?.userid,
       followerid: data?.followerid,
       hasToken: Boolean(data?.token),
+      tokenLength: data?.token?.length
     });
     
-    let response = await axios.post(`${URL}/follow`, data);
-    console.log("[follow] success", response.status, response.data);
+    // Send only userid and followerid in body (backend doesn't expect authentication)
+    const requestBody = {
+      userid: data.userid,
+      followerid: data.followerid
+    };
+    
+    console.log("📤 [follow] Request body:", requestBody);
+    console.log("📤 [follow] Request headers:", {
+      'Content-Type': 'application/json'
+    });
+    
+    let response = await axios.post(`${URL}/follow`, requestBody, {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    console.log("✅ [follow] Success response:", {
+      status: response.status,
+      statusText: response.statusText,
+      data: response.data,
+      headers: response.headers
+    });
 
     return response.data;
   } catch (err : any) {
-    console.error("[follow] error", err);
+    console.error("❌ [follow] Error details:", {
+      message: err.message,
+      status: err.response?.status,
+      statusText: err.response?.statusText,
+      data: err.response?.data,
+      config: {
+        url: err.config?.url,
+        method: err.config?.method,
+        data: err.config?.data,
+        headers: err.config?.headers
+      }
+    });
+    
+    // Log the specific error data from backend
+    if (err.response?.data) {
+      console.error("🔍 [follow] Backend error response:", JSON.stringify(err.response.data, null, 2));
+    }
     throw getErrorMessageWithNetworkFallback(err);
   }
 });
@@ -433,18 +472,57 @@ export const unfollow = createAsyncThunk<
   { userid: string; followerid: string; token: string }
 >("profile/unfollow", async (data) => {
   try {
-    console.log("[unfollow] PUT", `${URL}/follow`, {
+    console.log("🔍 [unfollow] Starting unfollow request:", {
+      url: `${URL}/follow`,
       userid: data?.userid,
       followerid: data?.followerid,
       hasToken: Boolean(data?.token),
+      tokenLength: data?.token?.length
     });
     
-    let response = await axios.put(`${URL}/follow`, data);
-    console.log("[unfollow] success", response.status, response.data);
+    // Send only userid and followerid in body (backend doesn't expect authentication)
+    const requestBody = {
+      userid: data.userid,
+      followerid: data.followerid
+    };
+    
+    console.log("📤 [unfollow] Request body:", requestBody);
+    console.log("📤 [unfollow] Request headers:", {
+      'Content-Type': 'application/json'
+    });
+    
+    let response = await axios.put(`${URL}/follow`, requestBody, {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    console.log("✅ [unfollow] Success response:", {
+      status: response.status,
+      statusText: response.statusText,
+      data: response.data,
+      headers: response.headers
+    });
 
     return response.data;
   } catch (err : any) {
-    console.error("[unfollow] error", err);
+    console.error("❌ [unfollow] Error details:", {
+      message: err.message,
+      status: err.response?.status,
+      statusText: err.response?.statusText,
+      data: err.response?.data,
+      config: {
+        url: err.config?.url,
+        method: err.config?.method,
+        data: err.config?.data,
+        headers: err.config?.headers
+      }
+    });
+    
+    // Log the specific error data from backend
+    if (err.response?.data) {
+      console.error("🔍 [unfollow] Backend error response:", JSON.stringify(err.response.data, null, 2));
+    }
     throw getErrorMessageWithNetworkFallback(err);
   }
 });

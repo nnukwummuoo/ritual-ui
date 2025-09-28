@@ -6,15 +6,18 @@ import Tabs from "./Tabs";
 import DropdownMenu from "./DropDonMenu";
 import { useParams, useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
-import { getprofile, getfollow, getAllUsers } from "@/store/profile";
+import { getprofile, getfollow, getAllUsers, follow, unfollow } from "@/store/profile";
+import { getViewingProfile, getViewingFollow, getAllUsersForViewing, clearViewingProfile } from "@/store/viewingProfile";
 import type { AppDispatch, RootState } from "@/store/store";
 import { updateEdit } from "@/store/comprofile";
+import { getSocket } from "@/lib/socket";
 import { BiPencil } from "react-icons/bi";
 import StarIcon from "@/icons/transparentstar.svg";
 import StarIcon2 from "@/icons/star.svg";
 import axios from "axios";
 import { Heart, MessageCircle } from "lucide-react";
 import Image from "next/image";
+import { URL as API_URL } from "@/api/config";
 // import backIcon from "../icons/backIcon.svg";
  //import StarIcon from "../icons/transparentstar.svg";
 // import StarIcon2 from "../icons/star.svg";
@@ -22,10 +25,10 @@ import Image from "next/image";
 // import messageIcon from "../icons/messageIcon.png";
 // import { Exclusive } from "../_components/exclusive"
 // import { Info } from "/_components/info";
-import Empty from "@/icons/empty.svg";
-import DummyCoverImage from "@/icons/mmekoDummy.png";
-import D from "@/icons/icons8-profile_Icon.png";
-import MessagePics from "@/icons/icons8-message.png";
+// import Empty from "@/icons/empty.svg";
+// import DummyCoverImage from "@/icons/mmekoDummy.png";
+// import D from "@/icons/icons8-profile_Icon.png";
+// import MessagePics from "@/icons/icons8-message.png";
 // import { BiPen, BiPencil } from "react-icons/bi";
 // import {
 //   comprofilechangeStatus,
@@ -43,11 +46,11 @@ import MessagePics from "@/icons/icons8-message.png";
 // import { updateFollowers } from "../app/features/model/modelSlice";
 // import { useAuth } from "../hooks/useAuth";
 
-let month = "";
-let year = "";
-let followers = 0;
-let likes = 0;
-let follow_text = "follow";
+// let month = "";
+// let year = "";
+// let followers = 0;
+// let likes = 0;
+// let follow_text = "follow";
 
 // Helper function to format numbers (e.g., 1000 -> 1K)
 const formatNumber = (num: number): string => {
@@ -72,11 +75,11 @@ const Months = [
   "December",
 ];
 
-const profile = {
-  ismodel: true,
-  username: "John Doe",
-  modeltDype: "music artist"
-}
+// const profile = {
+//   ismodel: true,
+//   username: "John Doe",
+//   modeltDype: "music artist"
+// }
 
 export const Profile = () => {
   const params = useParams();
@@ -91,39 +94,40 @@ export const Profile = () => {
   const [selectedPost, setSelectedPost] = useState<any>(null);
   const [showPostModal, setShowPostModal] = useState(false);
   const [avatarSrc, setAvatarSrc] = useState<string | undefined>(undefined);
+  // Get current user profile data (for side menu and current user info)
+  const currentUserProfile = useSelector((s: RootState) => s.profile);
+  
+  // Get viewing profile data (for the profile being viewed)
+  const viewingProfile = useSelector((s: RootState) => s.viewingProfile);
+  
+  // Get viewingUserId from params
+  const viewingUserId = (params as any)?.userid as string;
+  
+  // Determine which profile data to use based on whether we're viewing our own profile
+  const isViewingOwnProfile = viewingUserId === currentUserProfile.userId;
+  const profileData = isViewingOwnProfile ? currentUserProfile : viewingProfile;
+  
   const {
     status,
     firstname,
     lastname,
     nickname,
-    bio,
-    State: location,
-    country,
-    active,
-    model,
-    photolink,
-  } = useSelector((s: RootState) => s.profile);
+    // State: location,
+    // country,
+    // active,
+    // model,
+  } = profileData;
+  
+  // Access properties that might not exist on both types
+  const bio = (profileData as any).bio || "";
+  const photolink = (profileData as any).photolink || "";
 
   const error = useSelector((s: RootState) => s.profile.error);
   const createdAt = useSelector((s: RootState) => (s as any).profile?.createdAt as string | undefined);
   const reduxUserId = useSelector((s: RootState) => s.register.userID);
   const reduxToken = useSelector((s: RootState) => s.register.refreshtoken);
-  const isUploading = useSelector((s: RootState) => s.comprofile.updateEdit_stats === "loading");
+  // const isUploading = useSelector((s: RootState) => s.comprofile.updateEdit_stats === "loading");
 
-  // Add logging for profile data changes
-  useEffect(() => {
-    console.log("📊 [ProfilePage] Profile data updated:", {
-      firstname,
-      lastname,
-      nickname,
-      photolink,
-      status,
-      hasPhotolink: !!photolink,
-      photolinkType: typeof photolink,
-      photolinkPreview: photolink?.substring(0, 50) + '...'
-    });
-  }, [firstname, lastname, nickname, photolink, status]);
-  const viewingUserId = (params as any)?.userid as string;
   
   // Get userid and token from localStorage if not in Redux
   const [localUserid, setLocalUserid] = React.useState("");
@@ -132,26 +136,37 @@ export const Profile = () => {
   const loggedInUserId = reduxUserId || localUserid;
   const token = reduxToken || localToken;
   const isSelf = Boolean(loggedInUserId && viewingUserId && loggedInUserId === viewingUserId);
-  const joined = React.useMemo(() => {
-    if (!createdAt) return { month: "", year: "" };
-    const d = new Date(createdAt);
-    if (isNaN(d.getTime())) return { month: "", year: "" };
-    return { month: Months[d.getMonth()] ?? "", year: String(d.getFullYear()) };
-  }, [createdAt]);
-  const [isbuying, setisbuying] = useState(false);
-  const [gender, setgender] = useState("");
-  const [about, setabout] = useState("");
-  const getprofilebyidstats = useSelector(
-    (state: RootState) => state.profile.status
-  );
-  const profile = useSelector((state: RootState) => state.profile);
-  const getfollow_data = useSelector((state: RootState) => state.profile.getfollow_data as any);
-  const getfollow_stats = useSelector((state: RootState) => state.profile.getfollow_stats);
-  const getAllUsers_data = useSelector((state: RootState) => state.profile.getAllUsers_data as any);
+  // const joined = React.useMemo(() => {
+  //   if (!createdAt) return { month: "", year: "" };
+  //   const d = new Date(createdAt);
+  //   if (isNaN(d.getTime())) return { month: "", year: "" };
+  //   return { month: Months[d.getMonth()] ?? "", year: String(d.getFullYear()) };
+  // }, [createdAt]);
+  // const [isbuying, setisbuying] = useState(false);
+  // const [gender, setgender] = useState("");
+  // const [about, setabout] = useState("");
+  // Get all selectors unconditionally
+  const currentProfileStatus = useSelector((state: RootState) => state.profile.status);
+  const viewingProfileStatus = useSelector((state: RootState) => state.viewingProfile.status);
+  const currentProfile = useSelector((state: RootState) => state.profile);
+  const viewingProfileData = useSelector((state: RootState) => state.viewingProfile);
+  const currentFollowData = useSelector((state: RootState) => state.profile.getfollow_data as any);
+  const viewingFollowData = useSelector((state: RootState) => state.viewingProfile.getfollow_data as any);
+  const currentFollowStats = useSelector((state: RootState) => state.profile.getfollow_stats);
+  const viewingFollowStats = useSelector((state: RootState) => state.viewingProfile.getfollow_stats);
+  const currentAllUsersData = useSelector((state: RootState) => state.profile.getAllUsers_data as any);
+  const viewingAllUsersData = useSelector((state: RootState) => state.viewingProfile.getAllUsers_data as any);
+  
+  // Use conditional logic to select the right data
+  const getprofilebyidstats = isViewingOwnProfile ? currentProfileStatus : viewingProfileStatus;
+  const profile = isViewingOwnProfile ? currentProfile : viewingProfileData;
+  const getfollow_data = isViewingOwnProfile ? currentFollowData : viewingFollowData;
+  const getfollow_stats = isViewingOwnProfile ? currentFollowStats : viewingFollowStats;
+  const getAllUsers_data = isViewingOwnProfile ? currentAllUsersData : viewingAllUsersData;
   
   // We don't need the entire Redux state - removing to avoid unnecessary rerenders
-  const follow_stats = useSelector((state: RootState) => state.profile.follow_stats);
-  const unfollow_stats = useSelector((state: RootState) => state.profile.unfollow_stats);
+  // const follow_stats = useSelector((state: RootState) => state.profile.follow_stats);
+  // const unfollow_stats = useSelector((state: RootState) => state.profile.unfollow_stats);
 
   const userid = useSelector((state: RootState) => state.register.userID);
   const { postuserid } = useParams();
@@ -187,19 +202,20 @@ export const Profile = () => {
   const formatter = new Intl.NumberFormat("en-US");
 
   // const [userphoto, setuserphoto] = useState(person);
-  const [disablehost, setdisable] = useState(false);
-  const [exclusive_verify, set_exclusive_verify] = useState(false);
-  const [disabledButton, setdisableButton] = useState(false);
+  // const [disablehost, setdisable] = useState(false);
+  // const [exclusive_verify, set_exclusive_verify] = useState(false);
+  // const [disabledButton, setdisableButton] = useState(false);
   // const [followimg, setfollowimg] = useState(StarIcon);
-  const [isfollwed, setisfollowed] = useState(false);
+  // const [isfollwed, setisfollowed] = useState(false);
   const [modelid, setmodelid] = useState<string[]>([]);
-  const [click, setclick] = useState(true);
-  const [currentPlayingIndex, setCurrentPlayingIndex] = useState(null);
-  const [isMuted, setIsMuted] = useState(true);
-  const [showAction, setShowAction] = useState(true);
+  // const [click, setclick] = useState(true);
+  // const [currentPlayingIndex, setCurrentPlayingIndex] = useState(null);
+  // const [isMuted, setIsMuted] = useState(true);
+  // const [showAction, setShowAction] = useState(true);
   const [isFollowing, setisFollowing] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
 
-  const [username, setusername] = useState("");
+  // const [username, setusername] = useState("");
 
   // let timeoutId = null;
 
@@ -237,63 +253,95 @@ export const Profile = () => {
       } catch {}
     }
     
-    // Enhanced logging for fetching user data
-    console.log("🔍 [ProfilePage] Fetching user data:", {
-      userid: viewingUserId,
-      hasToken: Boolean(token),
-      tokenSource: tokenFromRegister ? "redux" : tokenFromRedux ? "window" : "localStorage/missing",
-      tokenLength: token?.length,
-      isSelf: viewingUserId === loggedInUserId
-    });
     
-    console.log("🚀 Dispatching getprofile with:", { userid: viewingUserId, token: token ? "exists" : "missing" });
-    dispatch(getprofile({ userid: viewingUserId, token } as any));
-  }, [viewingUserId, dispatch]);
-
-  const openPicker = () => fileRef.current?.click();
-  const onAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !isSelf) return;
-    const blobUrl = URL.createObjectURL(file);
-    setAvatarSrc(blobUrl);
-    if (loggedInUserId && token) {
-      dispatch(updateEdit({ userid: loggedInUserId, token, updatePhoto: file }))
-        .unwrap()
-        .then(() => dispatch(getprofile({ userid: loggedInUserId, token } as any)))
-        .catch(() => {});
+    // Clear viewing profile first
+    dispatch(clearViewingProfile());
+    
+    // If viewing own profile, use current user profile, otherwise fetch viewing profile
+    if (viewingUserId === loggedInUserId) {
+      // Load current user profile if not already loaded
+      if (currentUserProfile.status === "idle") {
+        dispatch(getprofile({ userid: viewingUserId, token } as any));
+      }
+    } else {
+      // Load viewing profile for other users
+      dispatch(getViewingProfile({ userid: String(viewingUserId), token: token || "" }));
     }
-  };
+  }, [viewingUserId, dispatch, loggedInUserId, currentUserProfile.status]);
+
+  // Cleanup effect to restore current user profile when navigating away
+  useEffect(() => {
+    return () => {
+      // Clear viewing profile when component unmounts or when navigating away
+      dispatch(clearViewingProfile());
+    };
+  }, [dispatch]);
+
+  // const openPicker = () => fileRef.current?.click();
+  // const onAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   const file = e.target.files?.[0];
+  //   if (!file || !isSelf) return;
+  //   const blobUrl = URL.createObjectURL(file);
+  //   setAvatarSrc(blobUrl);
+  //   if (loggedInUserId && token) {
+  //     dispatch(updateEdit({ userid: loggedInUserId, token, updatePhoto: file }))
+  //       .unwrap()
+  //       .then(() => dispatch(getprofile({ userid: loggedInUserId, token } as any)))
+  //       .catch(() => {});
+  //   }
+  // };
   useEffect(() => {
     return () => {
       if (avatarSrc && avatarSrc.startsWith("blob:")) URL.revokeObjectURL(avatarSrc);
     };
   }, [avatarSrc]);
 
+  // Ensure follow data is loaded for both current user and viewed user profiles
   useEffect(() => {
-    if (getprofilebyidstats === "succeeded") {
+    if (targetUserId && token) {
+      if (isViewingOwnProfile) {
+        // For current user's own profile, use regular getfollow
+        dispatch(getfollow({ userid: String(targetUserId), token }));
+        dispatch(getAllUsers({ token }));
+      } else {
+        // For other user's profile, use viewing profile thunks
+        dispatch(getViewingFollow({ userid: String(targetUserId), token }));
+        dispatch(getAllUsersForViewing({ token }));
+      }
+    }
+  }, [targetUserId, token, isViewingOwnProfile, dispatch]);
+
+  useEffect(() => {
+    const profileStatus = isViewingOwnProfile ? currentUserProfile.status : viewingProfile.status;
+    
+    if (profileStatus === "succeeded") {
       
       // Fetch follower data and all users if not already loaded
       // Use the target user ID (the profile we're viewing) for getfollow
       if (targetUserId && token) {
-        console.log(`Fetching follow data for profile user: ${targetUserId}`);
-        dispatch(getfollow({ userid: targetUserId, token }));
+        if (isViewingOwnProfile) {
+          dispatch(getfollow({ userid: String(targetUserId), token }));
         dispatch(getAllUsers({ token }));
+        } else {
+          dispatch(getViewingFollow({ userid: String(targetUserId), token }));
+          dispatch(getAllUsersForViewing({ token }));
+        }
       }
       
-      setusername(profile.username);
-      setgender(profile.gender);
+      // setusername((profile as any).username || "");
+      // setgender((profile as any).gender || "");
       // setlocation(profile.location);
-      setabout(profile.bio || profile.aboutuser);
+      // setabout((profile as any).bio || (profile as any).aboutuser || "");
       // setactive(profile.active);
       // setfirstname(profile.firstname);
       // setlastname(profile.lastname);
       // setnickname(profile.nickname);
-      set_exclusive_verify(profile.exclusive);
+      // set_exclusive_verify((profile as any).exclusive || false);
       // We'll update isFollowing when we have follow data
-      month = Months[Number(profile.joined_month)];
-      year = profile.joined_year;
-      likes = profile.likecount || 0; // Add fallback for likes to prevent NaN
-      followers = profile.followers?.length || 0;
+      // month = Months[Number((profile as any).joined_month)];
+      // year = (profile as any).joined_year || "";
+      // likes = (profile as any).likecount || 0; // Add fallback for likes to prevent NaN
+      // followers = (profile as any).followers?.length || 0;
       // if (profile."/icons/icons8-profile_Icon.png") {
       //   setuserphoto(profile."/icons/icons8-profile_Icon.png");
       // } else {
@@ -326,86 +374,102 @@ export const Profile = () => {
   
   // Track stats data
   
-  // Calculate follower/following counts
-  const followerFollowingCounts = React.useMemo(() => {
+  // Calculate follower/following counts and total likes
+  const profileStats = React.useMemo(() => {
+    // Try to get counts from API data first
+    let followersCount = apiFollowers.length;
+    let followingCount = apiFollowing.length;
+    
+    // Calculate total likes from all user posts
+    const totalLikes = userPosts.reduce((sum, post) => {
+      return sum + (post.totalLikes || post.likeCount || post.likes?.length || 0);
+    }, 0);
+    
+    // Fallback to profile data if API data is not available
+    if (followersCount === 0 && profileData) {
+      followersCount = (profileData as any).followers || 0;
+    }
+    if (followingCount === 0 && profileData) {
+      followingCount = (profileData as any).following || 0;
+    }
+    
     return { 
-      followersCount: apiFollowers.length, 
-      followingCount: apiFollowing.length 
+      followersCount, 
+      followingCount,
+      totalLikes
     };
-  }, [apiFollowers.length, apiFollowing.length]);
+  }, [apiFollowers.length, apiFollowing.length, getfollow_data, isViewingOwnProfile, profileData, userPosts]);
 
-  // Check if logged-in user is following the profile being viewed using allUsers data
+  // Get current user's following list from Redux (EXACT same as following page)
+  const followingList = useSelector((state: RootState) => {
+    interface FollowData {
+      following?: Array<{ id: string }>;
+    }
+    const followingData = state.profile.getfollow_data as FollowData;
+    return followingData?.following?.map(u => u.id) || [];
+  }, (left, right) => {
+    // Custom equality check to prevent unnecessary re-renders
+    if (left.length !== right.length) return false;
+    return left.every((id, index) => id === right[index]);
+  });
+
+  // Check if logged-in user is following the profile being viewed (EXACT same as following page)
   useEffect(() => {
-    if (allUsers.length > 0 && loggedInUserId && targetUserId && targetUserId !== loggedInUserId) {
-      try {
-        // Find logged-in user in allUsers
-        const currentUser = allUsers.find((user: any) => String(user._id) === String(loggedInUserId));
-        
-        if (currentUser && currentUser.following) {
-          // Check if logged-in user is following the profile user
-          const isFollowingUser = currentUser.following.some(followedId => {
-            // Handle both string and object formats
-            if (typeof followedId === 'string') {
-              return String(followedId) === String(targetUserId);
-            } else if (followedId && typeof followedId === 'object') {
-              return String(followedId._id) === String(targetUserId) || 
-                     String(followedId.userid) === String(targetUserId);
-        }
-        return false;
-      });
-          
-          setisFollowing(isFollowingUser);
-        }
-      } catch (e) {
-        // Silently handle errors
+    if (loggedInUserId && targetUserId && targetUserId !== loggedInUserId) {
+      // Use the same logic as following page
+      if (followingList.includes(Array.isArray(targetUserId) ? targetUserId.join(',') : String(targetUserId))) {
+        setisFollowing(true);
+      } else {
+        setisFollowing(false);
       }
     }
-  }, [allUsers, loggedInUserId, targetUserId]);
+  }, [followingList, loggedInUserId, targetUserId]);
   
   
-  // Check using API followers and following data
+  // Note: Removed old follow status check logic - now using followingList from Redux (same as following page)
+  
+  // Setup socket for real-time follow/unfollow updates
   useEffect(() => {
-    if (getfollow_data && loggedInUserId && targetUserId && targetUserId !== loggedInUserId) {
-      try {
-        // Get followers and following arrays
-        const followers = getfollow_data.followers || [];
-        const following = getfollow_data.following || [];
-        
-        // IMPORTANT: To check if logged-in user is following target user,
-        // we need to check if target user is in logged-in user's following list
-        // OR if logged-in user is in target user's followers list
-        
-        // Check if any follower's ID matches logged-in user
-        const isFollowerOfTarget = followers.some(follower => {
-          if (typeof follower === 'string') {
-            return String(follower) === String(loggedInUserId);
-          } else if (follower && typeof follower === 'object') {
-            // Based on the data structure we see, the ID is in the 'id' field
-            return String(follower.id) === String(loggedInUserId) || 
-                   String(follower._id) === String(loggedInUserId);
+    if (!loggedInUserId || !targetUserId) return;
+    
+    // Try to get socket connection
+    const socket = getSocket();
+    if (!socket) {
+      // Fallback: poll for updates every 10 seconds if socket is not available
+      const intervalId = setInterval(() => {
+        if (loggedInUserId && token) {
+          if (isViewingOwnProfile) {
+            dispatch(getfollow({ userid: loggedInUserId, token }));
+          } else {
+            dispatch(getViewingFollow({ userid: String(targetUserId), token }));
           }
-          return false;
-        });
-        
-        // Check if target user is in logged-in user's following list
-        const isTargetInFollowing = following.some(followed => {
-          if (typeof followed === 'string') {
-            return String(followed) === String(targetUserId);
-          } else if (followed && typeof followed === 'object') {
-            return String(followed.id) === String(targetUserId) || 
-                   String(followed._id) === String(targetUserId);
-          }
-          return false;
-        });
-        
-        // Set following status based on either check
-        const isUserFollowingTarget = isFollowerOfTarget || isTargetInFollowing;
-        setisFollowing(isUserFollowingTarget);
-      } catch (e) {
-        // Silently handle errors
-      }
+        }
+      }, 10000);
+      
+      return () => clearInterval(intervalId);
     }
-  }, [getfollow_data, loggedInUserId, targetUserId]);
+    
+    // Listen for follow/unfollow events
+    const handleFollowUpdate = (data: any) => {
+      // Check if this update is relevant to the current profile
+      if (data.target === targetUserId || data.actor === loggedInUserId) {
+        // Refresh follow data
+        if (loggedInUserId && token) {
+          if (isViewingOwnProfile) {
+            dispatch(getfollow({ userid: loggedInUserId, token }));
+          } else {
+            dispatch(getViewingFollow({ userid: String(targetUserId), token }));
+          }
+        }
+      }
+    };
+    
+    socket.on('follow_update', handleFollowUpdate);
+    
+    return () => {
+      socket.off('follow_update', handleFollowUpdate);
+    };
+  }, [loggedInUserId, targetUserId, token, dispatch, isViewingOwnProfile]);
   
   // Mock data for development/testing when API fails
   const mockPosts = React.useMemo(() => [
@@ -440,97 +504,129 @@ export const Profile = () => {
 
   // Fetch user posts - wrapped in useCallback to avoid dependency cycle
   const fetchUserPosts = React.useCallback(async (userId: string) => {
-    if (!userId || !token) return;
+    if (!userId || !token) {
+      return;
+    }
     
     setIsLoadingPosts(true);
     
-    // Define possible endpoints to try in order
-    const endpointsToTry = [
-      { url: '/getalluserpost', method: 'post' },
-      { url: '/getalluserpost', method: 'get', paramKey: 'userid' },
-      { url: '/post/user', method: 'post' },
-      { url: '/getallpost', method: 'post', dataKey: 'userid' }
-    ];
-    
-    let success = false;
-    
     try {
-      // Try each endpoint until one works
-      for (const endpoint of endpointsToTry) {
-        try {
-          let response;
-          const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3100';
-          
-          if (endpoint.method === 'post') {
-            // For POST requests
-            const data = endpoint.dataKey ? { [endpoint.dataKey]: userId } : { userid: userId };
-            response = await axios({
-              method: 'post',
-              url: `${baseUrl}${endpoint.url}`,
-              data: data,
+      // Use the URL constant from config for backend requests
+      const response = await axios.post(`${API_URL}/getalluserpost`, 
+        { userid: userId }, 
+        { 
               headers: { 
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
               },
-              timeout: 8000
-            });
-          } else {
-            // For GET requests
-            const url = endpoint.paramKey 
-              ? `${baseUrl}${endpoint.url}?${endpoint.paramKey}=${userId}` 
-              : `${baseUrl}${endpoint.url}/${userId}`;
-              
-            response = await axios({
-              method: 'get',
-              url: url,
-              headers: { 
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-              },
-              timeout: 8000
-            });
-          }
-          
-          // Check for posts in various possible response formats
-          const posts = response?.data?.post || response?.data?.posts || 
-                       (response?.data?.data && response?.data?.data.posts) || 
-                       (Array.isArray(response?.data) ? response.data : null);
-          
-          if (posts && Array.isArray(posts)) {
-            setUserPosts(posts);
-            success = true;
-            break; // Exit the loop if successful
-          }
-        } catch (endpointError) {
-          // Continue to next endpoint
+          timeout: 10000
+        }
+      );
+      
+      
+      // Extract posts from response - handle different response formats
+      let posts = [];
+      
+      if (response.data) {
+        // Try different possible response structures
+        if (Array.isArray(response.data)) {
+          posts = response.data;
+        } else if (response.data.posts && Array.isArray(response.data.posts)) {
+          posts = response.data.posts;
+        } else if (response.data.post && Array.isArray(response.data.post)) {
+          posts = response.data.post;
+        } else if (response.data.data && response.data.data.posts && Array.isArray(response.data.data.posts)) {
+          posts = response.data.data.posts;
         }
       }
+
+      // Fetch likes for each post, just like in fetchposts function
+      const postsWithLikes = await Promise.all(posts.map(async (post: any) => {
+        try {
+          // Get likes for this post
+          const likeResponse = await axios.get(`${API_URL}/like`, {
+            params: { postid: post._id || post.postid || post.id }
+          });
+          if (likeResponse.data.ok) {
+            console.log(`[Profile] Got likes for post ${post._id}:`, likeResponse.data);
+            return {
+              ...post,
+              likeCount: likeResponse.data.likeCount,
+              likedBy: likeResponse.data.likedBy
+            };
+          }
+          return post;
+        } catch (err) {
+          console.error(`Error fetching likes for post ${post._id}:`, err);
+          return {
+            ...post,
+            likeCount: post.likeCount || 0,
+            likedBy: post.likedBy || []
+          };
+        }
+      }));
       
-      // If all endpoints failed or returned no posts
-      if (!success) {
-        // For development - use mock data
+      // Use the posts with likes instead of original posts
+      posts = postsWithLikes;
+      
+      // Filter posts to ensure they belong to the specific user and count total likes
+      const filteredPosts = posts.filter((post: any) => {
+        // Check if post belongs to the user we're viewing
+        const postUserId = post.userid || post.user?.userid || post.user?._id || post.userId;
+        const belongsToUser = String(postUserId) === String(userId);
+        
+        if (belongsToUser) {
+          // Get total likes for this post
+          let totalLikes = 0;
+          
+          // Try different possible structures where likes might be stored
+          if (Array.isArray(post.likes)) {
+            totalLikes = post.likes.length;
+          } else if (Array.isArray(post.like)) {
+            totalLikes = post.like.length;
+          } else if (typeof post.likeCount === 'number') {
+            totalLikes = post.likeCount;
+          }
+          
+          // Attach the total likes count to the post
+          post.totalLikes = totalLikes;
+          
+          console.log(`[Profile] Post ${post._id || 'unknown'} total likes:`, {
+            totalLikes,
+            postUserId
+          });
+        }
+        
+        return belongsToUser;
+      });
+      
+      setUserPosts(filteredPosts);
+      
+    } catch (error) {
+      // Only use mock data for current user in development
         if (typeof window !== 'undefined' && 
             window.location.hostname === 'localhost' && 
-            viewingUserId === loggedInUserId) {
+          userId === loggedInUserId) {
           setUserPosts(mockPosts);
         } else {
           setUserPosts([]);
         }
-      }
-    } catch (error) {
-      // Show empty state
-      setUserPosts([]);
     } finally {
       setIsLoadingPosts(false);
     }
-  }, [token, mockPosts, viewingUserId, loggedInUserId]);
+  }, [token, mockPosts, loggedInUserId]);
   
-  // Fetch posts when profile is loaded
+  // Clear posts when switching users to prevent showing wrong posts
+  useEffect(() => {
+    setUserPosts([]);
+  }, [viewingUserId]);
+
+  // Fetch posts when profile is loaded - ONLY for the specific user being viewed
   useEffect(() => {
     if (targetUserId) {
       // Add a small delay to ensure other API calls complete first
       const timer = setTimeout(() => {
-        fetchUserPosts(targetUserId);
+        fetchUserPosts(String(targetUserId));
       }, 500);
       
       return () => clearTimeout(timer);
@@ -747,59 +843,148 @@ export const Profile = () => {
   //   console.log(profile);
   // }, [profile]);
   // const user = useAuth();
-  // Handle follow/unfollow button click
+  // Handle follow/unfollow button click - EXACT same pattern as following page
   const onFollowClick = async () => {
-    if (!loggedInUserId || !targetUserId || !token) {
+    if (!loggedInUserId || !targetUserId || isProcessing) {
       return;
     }
     
-    // Store current status before changing
-    const wasFollowing = isFollowing;
+    // Get token from localStorage if not in Redux state (EXACT same as following page)
+    let authToken = token;
+    if (!authToken) {
+      try {
+        const loginData = localStorage.getItem('login');
+        if (loginData) {
+          const parsedData = JSON.parse(loginData);
+          authToken = parsedData.refreshtoken || parsedData.accesstoken;
+        }
+      } catch (error) {
+        console.error("[ProfilePage] Error retrieving token from localStorage:", error);
+      }
+    }
+    
+    if (!authToken) {
+      alert("Please log in to follow/unfollow users");
+      return;
+    }
+    
+    setIsProcessing(true);
     
     try {
-      // Optimistically update UI
-      setisFollowing(!wasFollowing);
-      
-      // Call the appropriate API endpoint
-      if (wasFollowing) {
-        // Unfollow
-        await axios.post(
-          `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3100'}/follow/unfollow`,
-          { 
-            userid: targetUserId,
-            followerid: loggedInUserId
-          },
-          { 
-            headers: { 
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`
-            } 
+      // Perform follow/unfollow action (EXACT same as following page)
+      if (isFollowing) {
+        try {
+          await dispatch(unfollow({ 
+            userid: Array.isArray(targetUserId) ? targetUserId.join(',') : targetUserId,
+            followerid: loggedInUserId, 
+            token: authToken 
+          })).unwrap();
+          
+          // Update local state
+          setisFollowing(false);
+        } catch (error: unknown) {
+          // If the error is "not following this user", update the UI state
+          const errorMessage = error instanceof Error ? error.message : String(error);
+          if (errorMessage.includes("not following")) {
+            setisFollowing(false);
+          } else {
+            throw error; // Re-throw for the outer catch
           }
-        );
+        }
       } else {
-        // Follow
-        await axios.post(
-          `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3100'}/follow`,
-          { 
-            userid: targetUserId,
-            followerid: loggedInUserId
-          },
-          { 
-            headers: { 
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`
-            } 
+        try {
+          await dispatch(follow({
+            userid: Array.isArray(targetUserId) ? targetUserId.join(',') : targetUserId,
+            followerid: loggedInUserId,
+            token: authToken
+          })).unwrap();
+
+          
+          // Update local state
+          setisFollowing(true);
+        } catch (error: unknown) {
+          // Handle empty error objects or objects without message property
+          let errorMessage = "";
+          if (error instanceof Error) {
+            errorMessage = error.message;
+          } else if (typeof error === 'object' && error !== null) {
+            // Try to extract message from response data if available
+            const errorObj = error as Record<string, unknown>;
+            errorMessage = 
+              (errorObj.message as string) || 
+              ((errorObj.response as Record<string, unknown>)?.data as Record<string, unknown>)?.message as string || 
+              JSON.stringify(error);
+          } else {
+            errorMessage = String(error);
           }
-        );
+          
+          // If the error is "already followed", update UI to show Following
+          if (errorMessage.includes("already followed")) {
+            setisFollowing(true);
+            // Don't throw error - this is expected behavior
+          } else {
+            // For other errors, still assume following (safer approach)
+            setisFollowing(true);
+          }
+        }
       }
       
-      // Refresh follow data
-      dispatch(getfollow({ userid: targetUserId, token }));
-      dispatch(getAllUsers({ token }));
+      // Try to emit socket event to notify other users (EXACT same as following page)
+      try {
+        const socket = getSocket();
+        if (socket && socket.connected) {
+          socket.emit('follow_update', {
+            actor: loggedInUserId,
+            target: targetUserId,
+            action: isFollowing ? 'unfollow' : 'follow'
+          });
+        }
+      } catch {
+        // Socket error - continue with normal flow
+      }
       
-    } catch (error) {
-      // Revert UI on error
-      setisFollowing(wasFollowing);
+      // Always refresh followers/following lists regardless of socket status (EXACT same as following page)
+      dispatch(getfollow({ userid: loggedInUserId, token: authToken }));
+      
+    } catch (error: unknown) {
+      // Handle empty error objects or objects without message property
+      let errorMessage = "";
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      } else if (typeof error === 'object' && error !== null) {
+        // Try to extract message from response data if available
+        const errorObj = error as Record<string, unknown>;
+        errorMessage = 
+              (errorObj.message as string) || 
+              ((errorObj.response as Record<string, unknown>)?.data as Record<string, unknown>)?.message as string ||
+              JSON.stringify(error);
+      } else {
+        errorMessage = String(error);
+      }
+      
+      // For follow errors (which are most common), assume it's "already followed"
+      if (!isFollowing || errorMessage.includes("already followed")) {
+        setisFollowing(true);
+        
+        // Update DOM attributes to reflect the followed state
+        const element = document.querySelector(`[data-userid="${targetUserId}"]`);
+        if (element) {
+          element.setAttribute('data-following', 'true');
+        }
+      } else if (errorMessage.includes("not following")) {
+        setisFollowing(false);
+        
+        // Update DOM attributes to reflect the unfollowed state
+        const element = document.querySelector(`[data-userid="${targetUserId}"]`);
+        if (element) {
+          element.setAttribute('data-following', 'false');
+        }
+      } else {
+        // For other errors, show an alert
+        alert("Failed to " + (isFollowing ? "unfollow" : "follow") + ". Please try again.");
+      }
+    } finally {
+      setIsProcessing(false);
     }
   };
   
@@ -902,33 +1087,51 @@ export const Profile = () => {
         <div className="pb-6">
           {(status === "loading" || status === "idle") && (
             <SkeletonTheme baseColor="#202020" highlightColor="#444">
-              <div className="w-full max-w-sm p-4 mx-auto space-y-4 text-white rounded-lg shadow-md">
-                <div className="w-full h-36">
-                  <Skeleton width="100%" height="100%" />
+              <div className="flex flex-col gap-6">
+                {/* Profile header skeleton */}
+                <div className="relative w-full flex items-center justify-between px-2">
+                  <div className="flex items-center justify-center w-1/3">
+                    <div className="w-24 h-24 rounded-full p-1 bg-gradient-to-r from-blue-500 to-purple-600">
+                      <Skeleton circle width={96} height={96} />
+                    </div>
+                  </div>
+                  <div className="flex flex-col items-start pl-7 gap-2 w-2/3">
+                    <Skeleton width={120} height={24} className="rounded-md" />
+                    <div className="flex justify-start gap-4 w-full">
+                      <Skeleton width={60} height={20} />
+                      <Skeleton width={60} height={20} />
+                      <Skeleton width={60} height={20} />
+                    </div>
+                  </div>
                 </div>
-                <div className="relative flex items-center justify-between px-4 -mt-12">
-                  <Skeleton width={70} height={70} circle />
-                  <Skeleton width={80} height={30} className="rounded-md" />
+                {/* Bio and nickname skeleton */}
+                <div className="mt-3 ml-6">
+                  <Skeleton width={80} height={18} />
+                  <Skeleton width={180} height={16} />
                 </div>
-                <div className="space-y-1 text-left">
-                  <Skeleton width={140} height={20} className="rounded-md" />
-                  <Skeleton width={100} height={15} className="rounded-md" />
-                </div>
-                <div className="flex justify-start space-x-4">
-                  <Skeleton width={50} height={15} />
-                  <Skeleton width={50} height={15} />
-                </div>
-                <div className="text-left">
-                  <Skeleton width="80%" height={15} className="rounded-md" />
-                </div>
-                <div className="space-y-2">
-                  {Array(3)
-                    .fill(0)
-                    .map((_, index) => (
-                      <div key={index} className="flex justify-between w-full">
-                        <Skeleton width={160} height={20} />
+                {/* Post grid skeleton */}
+                <div className="grid grid-cols-3 gap-1 md:gap-2 mt-6">
+                  {Array(9).fill(0).map((_, idx) => (
+                    <div key={idx} className="relative aspect-square rounded-sm overflow-hidden bg-black">
+                      <Skeleton width="100%" height="100%" style={{ minHeight: 120 }} />
+                      {/* Overlay skeleton for hover */}
+                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="text-white text-center p-2">
+                          <div className="flex items-center justify-center gap-4 mb-2">
+                            <div className="flex items-center gap-1">
+                              <Skeleton width={16} height={16} circle />
+                              <Skeleton width={24} height={16} />
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Skeleton width={16} height={16} circle />
+                              <Skeleton width={24} height={16} />
+                            </div>
+                          </div>
+                          <Skeleton width={60} height={12} />
+                        </div>
                       </div>
-                    ))}
+                    </div>
+                  ))}
                 </div>
               </div>
             </SkeletonTheme>
@@ -975,14 +1178,14 @@ export const Profile = () => {
                   </p>
                   <div className="flex justify-start gap-4 w-full">
                   <p className="font-bold text-lg text-slate-400 flex flex-col items-center">
-                      {formatter.format(Number(likes || 0))}{" "}
+                      {formatter.format(profileStats.totalLikes)}{" "}
                       <span className="font-semibold tracking-wider text-[15px]">Likes</span>
                     </p>
          <p className="font-bold text-lg text-slate-400 flex flex-col items-center">
-           {followerFollowingCounts.followersCount} <span className="font-semibold tracking-wider text-[15px]">Fans</span>
+           {profileStats.followersCount} <span className="font-semibold tracking-wider text-[15px]">Fans</span>
          </p>
          <p className="font-bold text-lg text-slate-400 flex flex-col items-center">
-           {followerFollowingCounts.followingCount} <span className="font-semibold tracking-wider text-[15px]">Following</span>
+           {profileStats.followingCount} <span className="font-semibold tracking-wider text-[15px]">Following</span>
          </p>
                       </div>
                     </div>
@@ -995,14 +1198,14 @@ export const Profile = () => {
                   <p className="text-blue-500">{nickname}</p>
                 
                 
-                  {profile.ismodel && (
+                  {(profile as any).ismodel && (
                     <button
                       className="bg-[#7e3500] text-[#eedfcb] rounded-lg p-1 px-2 mt-3"
                       // onClick={() =>
                       //   navigate(`/modelbyid/${profile.modelid.toString()}`)
                       // }
                     >
-                      Request {profile.modeltDype}
+                      Request {(profile as any).modeltDype}
                     </button>
                   )}
               {/* Bio */}
@@ -1015,7 +1218,6 @@ export const Profile = () => {
                         <div className="flex flex-row   w-1/2 rounded-lg">
                           <button
                             className="p-0 px-3 w-full bg-gray-800 cursor-pointer py-1.5 rounded-lg"
-                            disabled={disabledButton}
                             onClick={() =>
                               router.push(`/message/${modelid.toString()}`)
                             }
@@ -1026,11 +1228,12 @@ export const Profile = () => {
                         <button
                           key={`follow-button-${isFollowing}`}
                           onClick={onFollowClick}
-                          className={`flex w-1/2 justify-center gap-x-1 items-center flex-row p-1.5 rounded-lg cursor-pointer ${
+                          disabled={isProcessing}
+                          className={`flex w-1/2 justify-center gap-x-1 items-center flex-row p-1.5 rounded-lg cursor-pointer transition-all duration-200 ${
                             isFollowing 
                               ? "bg-gradient-to-r !from-blue-700 !to-purple-800" 
                               : "bg-gradient-to-r !from-blue-500 !to-purple-600"
-                          }`}
+                          } ${isProcessing ? "opacity-70 cursor-not-allowed" : "hover:scale-105"}`}
                         >
                           <Image
                             src={isFollowing ? StarIcon2 : StarIcon}
@@ -1041,7 +1244,12 @@ export const Profile = () => {
                           />
 
                           <span className="font-medium">
-                            {isFollowing === true ? "Following" : "Follow"}
+                            {isProcessing 
+                              ? "..." 
+                              : isFollowing === true 
+                                ? "Following" 
+                                : "Follow"
+                            }
                           </span>
                         </button>
                       </div>
@@ -1074,6 +1282,7 @@ export const Profile = () => {
               count: userPosts.length,
               content: (
               <div>
+                  {/* 🔒 SAFETY: Only show posts belonging to the specific user being viewed */}
                   {isLoadingPosts ? (
                     <div className="flex justify-center items-center h-40">
                       <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-orange-500"></div>
@@ -1134,7 +1343,7 @@ export const Profile = () => {
                               <div className="flex items-center justify-center gap-4 mb-2">
                                 <div className="flex items-center gap-1">
                                   <Heart className="w-4 h-4" />
-                                  <span className="text-sm">{formatNumber(post.likes?.length || 0)}</span>
+                                  <span className="text-sm">{formatNumber(post.totalLikes || post.likeCount || post.likes?.length || 0)}</span>
                       </div>
                                 <div className="flex items-center gap-1">
                                   <MessageCircle className="w-4 h-4" />

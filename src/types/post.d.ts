@@ -1,11 +1,24 @@
 import { AxiosProgressEvent } from "axios";
 
+export interface Like {
+  userid: string;
+  userId?: string;
+  postid: string;
+}
+
 export interface Post {
-postid: string;
-userid: string;
-content: string;
-posttype: string;
-postphoto?: string | null;
+  postid: string;
+  userid: string;
+  content: string;
+  posttype: string;
+  postphoto?: string | null;
+  likes?: Like[];
+  like?: Like[];
+  likeCount?: number;
+  likedBy?: string[];
+  // Support multiple ID fields from different APIs
+  id?: string;
+  _id?: string;
 }
 
 export interface CreatePostData {
