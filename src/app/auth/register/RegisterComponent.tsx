@@ -13,6 +13,9 @@ import { register } from "@/lib/service/register";
 import { useRouter } from "next/navigation";
 import BtnLoader from "@/constants/BtnLoader";
 import { toast } from "material-react-toastify";
+import { useDispatch } from "react-redux";
+import { registernewUser } from "@/store/registerSlice";
+import type { AppDispatch } from "@/store/store";
 
 // Word list for generating a mnemonic phrase (unchanged)
 const wordList = [
@@ -71,6 +74,7 @@ export const Register = () => {
   const [copied, setCopied] = useState(false);
   const [saved, setSaved] = useState(false);
   const router = useRouter();
+  const dispatch = useDispatch<AppDispatch>();
   
   // State for form validation errors
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
@@ -192,10 +196,32 @@ export const Register = () => {
     
     try {
       setLoading(true);
-      const result = await register(payload);
-      console.log(result);
+      const resultAction = await dispatch(registernewUser(payload));
+      
+      if (registernewUser.fulfilled.match(resultAction)) {
+        // Create session for the newly registered user
+        try {
+          const sessionResult = await fetch(`${process.env.NEXT_PUBLIC_URL}/api/session`, {
+            method: "POST",
+            body: JSON.stringify({ 
+              nickname: formValues.nickname, 
+              password: formValues.password 
+            }),
+            credentials: "include",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          });
+          console.log("Session creation result:", await sessionResult.text());
+        } catch (sessionError) {
+          console.error("Session creation error:", sessionError);
+        }
+        
       toast.success("Registration successful! Redirecting...", { style: { backgroundColor: "#111" } });
       router.push("/");
+      } else {
+        throw new Error("Registration failed");
+      }
     } catch (error) {
       const errorMessage = (error as any)?.response?.data?.message || "Registration failed.";
       toast.error(errorMessage === "Nickname already taken!" ? "Username exists." : errorMessage, { style: { backgroundColor: "#111" } });

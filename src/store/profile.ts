@@ -4,6 +4,21 @@ import { URL } from "../api/config";
 import axios from "axios";
 import { ProfileState } from "@/types/profile";
 import { RootState } from "@/store/store";
+
+// Define types for API responses
+interface FollowData {
+  followers: Array<any>;
+  following: Array<any>;
+}
+
+interface UsersData {
+  users: Array<any>;
+}
+
+interface CollectionData {
+  allcontent: Array<any>;
+  allcrush: Array<any>;
+}
 // import { saveImage } from "../../../api/sendImage";
 // import { deleteImage } from "../../../api/sendImage";
 
@@ -64,15 +79,17 @@ const initialState = {
   historys: {},
   monthly_history_stats: "idle",
   monthly_history_messege: "",
-  monthly: [],
+  monthly: [] as any[],
   deposit_stats: "idle",
   deposit_message: "",
   exclusive_verify: false,
   follow_stats: "idle",
   unfollow_stats: "idle",
-  getfollow_data: {},
+  getfollow_data: {} as FollowData,
   getfollow_stats: "idle",
   fllowmsg: "",
+  getAllUsers_stats: "idle",
+  getAllUsers_data: [] as any[],
   postexIMG: "",
   thumbimg: "",
   posteximgStats: "idle",
@@ -81,11 +98,11 @@ const initialState = {
   deleteexstats: "idle",
   collectionstats: "idle",
   deletecolstats: "idle",
-  listofcontent: [],
-  listofcrush: [],
+  listofcontent: [] as any[],
+  listofcrush: [] as any[],
   thumbdelstats: "idle",
   deleteaccstats: "idle",
-  listofblockuser: [],
+  listofblockuser: [] as any[],
   blockuserstats: "idle",
   removeblockstats: "idle",
   updatesettingstats: "idle",
@@ -94,29 +111,36 @@ const initialState = {
   lastnote: 0,
   lastmessagenote: 0,
   searchstats: "idle",
-  search_users: [],
+  search_users: [] as any[],
   testmsg: "",
   closedraw: false,
 };
 
 export const getprofile = createAsyncThunk<
-  any,
-  any,
+  { profile: any },
+  { userid: string; token: string },
   { rejectValue: { message: string; code?: number } }
 >(
   "profile/getprofile",
   async (data, thunkAPI) => {
     try {
-      // Debug: trace outgoing request
-      // eslint-disable-next-line no-console
-      console.log("[getprofile] POST", `${URL}/getprofile`, {
+      // Enhanced logging for profile data fetching
+      console.log("🔍 [getprofile] Fetching profile data:", {
         userid: data?.userid,
         hasToken: Boolean(data?.token),
+        tokenLength: data?.token?.length,
+        endpoint: `${URL}/getprofile`
       });
 
       const response = await axios.post(`${URL}/getprofile`, data);
-      // eslint-disable-next-line no-console
-      console.log("[getprofile] success", response.status);
+      
+      console.log("✅ [getprofile] Profile data received:", {
+        status: response.status,
+        hasData: !!response.data,
+        profileKeys: response.data ? Object.keys(response.data) : [],
+        hasPhotolink: !!response.data?.profile?.photolink,
+        photolinkPreview: response.data?.profile?.photolink?.substring(0, 50) + '...'
+      });
 
       return response.data;
     } catch (err) {
@@ -170,7 +194,7 @@ export const getsearch = createAsyncThunk("profile/getsearch", async () => {
   }
 });
 
-export const updatesetting = createAsyncThunk<any, any>(
+export const updatesetting = createAsyncThunk<{ message: string }, { userid: string; token: string; emailnot: boolean; pushnot: boolean }>(
   "profile/updatesetting",
   async (data) => {
     try {
@@ -186,7 +210,7 @@ export const updatesetting = createAsyncThunk<any, any>(
   }
 );
 
-export const deleteblockedUsers = createAsyncThunk<any, any>(
+export const deleteblockedUsers = createAsyncThunk<{ message: string }, { userid: string; token: string }>(
   "profile/deleteblockedUsers",
   async (data) => {
     try {
@@ -219,7 +243,7 @@ export const deleteprofile = createAsyncThunk<any, void, { state: RootState }>(
   }
 );
 
-export const getcollection = createAsyncThunk<any, any>(
+export const getcollection = createAsyncThunk<{ data: CollectionData }, { userid: string; token: string }>(
   "profile/getcollection",
   async (data) => {
     try {
@@ -235,7 +259,7 @@ export const getcollection = createAsyncThunk<any, any>(
   }
 );
 
-export const getblockedUsers = createAsyncThunk<any, any>(
+export const getblockedUsers = createAsyncThunk<{ users: any[] }, { userid: string; token: string }>(
   "profile/getblockedUsers",
   async (data) => {
     try {
@@ -251,7 +275,7 @@ export const getblockedUsers = createAsyncThunk<any, any>(
   }
 );
 
-export const deletecollection = createAsyncThunk<any, any>(
+export const deletecollection = createAsyncThunk<{ message: string }, { userid: string; token: string; contentid: string }>(
   "profile/deletecollection",
   async (data) => {
     try {
@@ -268,11 +292,11 @@ export const deletecollection = createAsyncThunk<any, any>(
 );
 
 export const post_exclusive_content = createAsyncThunk<
-  any,
+  { message: string },
   PostExclusiveContentPayload
 >(
   "profile/post_exclusive_content",
-  async (data : any) => {
+  async (data: PostExclusiveContentPayload) => {
     try {
       // Send data as a FormData
       let formData = new FormData();
@@ -318,7 +342,7 @@ export const post_exclusive_content = createAsyncThunk<
   }
 );
 
-export const buy_exclusive_content = createAsyncThunk<any, any>(
+export const buy_exclusive_content = createAsyncThunk<{ message: string }, { userid: string; token: string; contentid: string }>(
   "profile/buy_exclusive_content",
   async (data) => {
     try {
@@ -330,7 +354,7 @@ export const buy_exclusive_content = createAsyncThunk<any, any>(
   }
 );
 
-export const delete_exclusive_content = createAsyncThunk<any, any>(
+export const delete_exclusive_content = createAsyncThunk<{ message: string }, { userid: string; token: string; contentid: string }>(
   "profile/delete_exclusive_content",
   async (data) => {
     try {
@@ -342,7 +366,7 @@ export const delete_exclusive_content = createAsyncThunk<any, any>(
   }
 );
 
-export const get_my_history = createAsyncThunk<any, any>(
+export const get_my_history = createAsyncThunk<{ history: any[] }, { userid: string; token: string }>(
   "profile/get_my_history",
   async (data) => {
     try {
@@ -359,7 +383,7 @@ export const get_my_history = createAsyncThunk<any, any>(
   }
 );
 
-export const get_monthly_history = createAsyncThunk<any, any>(
+export const get_monthly_history = createAsyncThunk<{ Month: any[] }, { userid: string; token: string }>(
   "profile/get_monthly_history",
   async (data) => {
     try {
@@ -371,7 +395,7 @@ export const get_monthly_history = createAsyncThunk<any, any>(
   }
 );
 
-export const deposit = createAsyncThunk<any, any>("profile/deposit", async (data) => {
+export const deposit = createAsyncThunk<{ message: string }, { userid: string; token: string; amount: number }>("profile/deposit", async (data) => {
   try {
     let response = await axios.post(`${URL}/topup`, data);
     // console.log('under get profile')
@@ -383,52 +407,102 @@ export const deposit = createAsyncThunk<any, any>("profile/deposit", async (data
   }
 });
 
-export const follow = createAsyncThunk<any, any>("profile/follow", async (data) => {
+export const follow = createAsyncThunk<
+  { message: string }, 
+  { userid: string; followerid: string; token: string }
+>("profile/follow", async (data) => {
   try {
+    console.log("[follow] POST", `${URL}/follow`, {
+      userid: data?.userid,
+      followerid: data?.followerid,
+      hasToken: Boolean(data?.token),
+    });
+    
     let response = await axios.post(`${URL}/follow`, data);
+    console.log("[follow] success", response.status, response.data);
 
     return response.data;
   } catch (err : any) {
-    // console.log('erro get profile')
-    console.log(err);
+    console.error("[follow] error", err);
     throw getErrorMessageWithNetworkFallback(err);
   }
 });
 
-export const unfollow = createAsyncThunk<any, any>("profile/unfollow", async (data) => {
+export const unfollow = createAsyncThunk<
+  { message: string }, 
+  { userid: string; followerid: string; token: string }
+>("profile/unfollow", async (data) => {
   try {
+    console.log("[unfollow] PUT", `${URL}/follow`, {
+      userid: data?.userid,
+      followerid: data?.followerid,
+      hasToken: Boolean(data?.token),
+    });
+    
     let response = await axios.put(`${URL}/follow`, data);
+    console.log("[unfollow] success", response.status, response.data);
 
     return response.data;
   } catch (err : any) {
-    console.log(err);
-    // console.log('erro get profile')
+    console.error("[unfollow] error", err);
     throw getErrorMessageWithNetworkFallback(err);
   }
 });
 
-export const getfollow = createAsyncThunk<any, any>("profile/getfollow", async (data) => {
+export const getfollow = createAsyncThunk<{ data: FollowData }, { userid: string; token: string }>("profile/getfollow", async (data) => {
   try {
     // Debug: trace outgoing request for followers/following
-    // eslint-disable-next-line no-console
     console.log("[getfollow] POST", `${URL}/getfollowers`, {
       userid: data?.userid,
       hasToken: Boolean(data?.token),
     });
 
-    let response = await axios.post(`${URL}/getfollowers`, data);
-    // eslint-disable-next-line no-console
+    // Set up headers with authorization token if available
+    const headers = data.token ? { 
+      'Authorization': `Bearer ${data.token}`,
+      'Content-Type': 'application/json'
+    } : {
+      'Content-Type': 'application/json'
+    };
+
+    let response = await axios.post(`${URL}/getfollowers`, 
+      { userid: data.userid }, 
+      { headers }
+    );
+    
     console.log("[getfollow] success", response.status);
     // Log raw payloads from backend
-    // eslint-disable-next-line no-console
     console.log("[getfollow] response.data", response.data);
-    // eslint-disable-next-line no-console
     console.log("[getfollow] response.data.data", response.data?.data);
 
     return response.data;
   } catch (err) {
-    // eslint-disable-next-line no-console
     console.error("[getfollow] error", err);
+    throw getErrorMessageWithNetworkFallback(err);
+  }
+});
+
+export const getAllUsers = createAsyncThunk<{ users: Array<any> }, { token: string }>("profile/getAllUsers", async (data) => {
+  try {
+    console.log("[getAllUsers] POST", `${URL}/getallusers`, {
+      hasToken: Boolean(data?.token),
+    });
+    
+    // Set up headers with authorization token if available
+    const headers = data.token ? { 
+      'Authorization': `Bearer ${data.token}`,
+      'Content-Type': 'application/json'
+    } : {
+      'Content-Type': 'application/json'
+    };
+    
+    let response = await axios.post(`${URL}/getallusers`, { token: data.token }, { headers });
+    console.log("[getAllUsers] success", response.status);
+    console.log("[getAllUsers] response.data", response.data);
+
+    return response.data;
+  } catch (err) {
+    console.error("[getAllUsers] error", err);
     throw getErrorMessageWithNetworkFallback(err);
   }
 });
@@ -438,7 +512,7 @@ export const post_exclusive_img = createAsyncThunk<
   PostExclusiveImgPayload
 >(
   "profile/post_exclusive_img",
-  async (data: any) => {
+  async (data: PostExclusiveImgPayload) => {
     try {
       let img;
       let thumb;
@@ -526,7 +600,22 @@ const profile = createSlice({
         state.modelID = (p as any).modelID ?? (p as any).modelId ?? "";
         state.modelname = (p as any).modelname ?? "";
         state.modelphotolink = (p as any).modelphotolink ?? "";
+        state.photolink = (p as any).photolink ?? (p as any).photoLink ?? "";
+        state.bio = (p as any).bio ?? "";
         state.admin = p.admin ?? false;
+        
+        // Log profile data update
+        console.log("📊 [profile slice] Profile data updated:", {
+          firstname: state.firstname,
+          lastname: state.lastname,
+          nickname: state.nickname,
+          bio: state.bio,
+          photolink: state.photolink,
+          hasBio: !!state.bio,
+          hasPhotolink: !!state.photolink,
+          photolinkType: typeof state.photolink,
+          photolinkPreview: state.photolink?.substring(0, 50) + '...'
+        });
         // Support both exclusive and exclusive_verify flags
         state.exclusive_verify = (p as any).exclusive ?? (p as any).exclusive_verify ?? false;
         state.emailnote = (p as any).emailnot ?? (p as any).emailnot === true; // boolean
@@ -606,6 +695,17 @@ const profile = createSlice({
       })
       .addCase(getfollow.rejected, (state, action) => {
         state.getfollow_stats = "failed";
+        state.fllowmsg = action.error?.message ?? "Check internet connection";
+      })
+      .addCase(getAllUsers.pending, (state, action) => {
+        state.getAllUsers_stats = "loading";
+      })
+      .addCase(getAllUsers.fulfilled, (state, action) => {
+        state.getAllUsers_stats = "succeeded";
+        state.getAllUsers_data = action.payload.users;
+      })
+      .addCase(getAllUsers.rejected, (state, action) => {
+        state.getAllUsers_stats = "failed";
         state.fllowmsg = action.error?.message ?? "Check internet connection";
       })
       .addCase(post_exclusive_img.pending, (state, action) => {

@@ -23,6 +23,7 @@ import DropdownMenu from "./DropdownMenu";
 // import starIcon from "@/public/star.png";
 import { getchat, send_gift } from "@/store/messageSlice";
 import type { RootState } from "@/store/store";
+import { getSocket } from "@/lib/socket";
 
 
 let mychat = "yes";
@@ -72,71 +73,76 @@ export const Chat = () => {
   let [sendL, setsendL] = useState(false);
   let [sendcolor, setsend_color] = useState("#f7f5f5");
 
-  const [message, setmessage] = useState([]);
+  const [message, setmessage] = useState<any[]>([]);
+  const currentmessagestatus = useSelector((state: RootState) => state.message.currentmessagestatus);
+  const listofcurrentmessage = useSelector((state: RootState) => state.message.listofcurrentmessage);
+  const chatinfo = useSelector((state: RootState) => state.message.chatinfo);
+
+  useEffect(() => {
+    if (currentmessagestatus === "succeeded") {
+      setmessage(listofcurrentmessage);
+      setLoading(false);
+    }
+  }, [currentmessagestatus, listofcurrentmessage]);
+
+  useEffect(() => {
+    if (chatinfo) {
+      set_Chatname(chatinfo.name);
+      setfirstname(chatinfo.firstname);
+      if (chatinfo.photolink) {
+        set_Chatphoto(chatinfo.photolink);
+      }
+    }
+  }, [chatinfo]);
 
   const messagelist = () => {
     if (loading === false) {
       let ids = modelid.split(",");
       if (message.length > 0) {
         return (
-          <ul
-            className="mb-2 bg-black md:w-[44rem] w-96 md:px-2"
+          <div
+            className="space-y-3"
             ref={msgListref}
           >
             {message.map((value: {id: string, coin: boolean, content: string, date: string, photolink: string, name: string}) => {
-              if (value.id === userid) {
+              const isUser = value.id === userid;
+              const messageTime = new Date(Number(value.date)).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+              
                 if (value.coin) {
                   return (
-                    <div className="flex justify-end mb-3">
-                      <Coinsendview
-                        name={"you"}
-                        price={value.content}
-                        date={value.date}
-                      />
+                  <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-4`}>
+                    <div className={`max-w-xs px-4 py-3 rounded-2xl ${
+                      isUser 
+                        ? 'bg-blue-600 text-white rounded-br-md' 
+                        : 'bg-blue-800/50 text-white rounded-bl-md border border-blue-700/30'
+                    }`}>
+                      <div className="flex items-center gap-2">
+                        <svg className="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                        </svg>
+                        <span className="font-semibold">{isUser ? 'You sent' : `${value.name} sent`}</span>
+                      </div>
+                      <p className="text-lg font-bold mt-1">${value.content}</p>
+                      <p className="text-xs opacity-70 mt-1">{messageTime}</p>
+                    </div>
                     </div>
                   );
-                } else if (!value.coin) {
-                  return (
-                    <div className="flex justify-end mb-3">
-                      <Chatreply
-                        img={value.photolink}
-                        username={value.name}
-                        content={value.content}
-                        date={value.date}
-                        id={value.id}
-                        className="bg-orange-500 rounded-xl hover:bg-orange-300 active:bg-orange-200"
-                      />
-                    </div>
-                  );
-                }
               } else {
-                if (value.coin) {
                   return (
-                    <div className="flex justify-start mb-3">
-                      <Coinsendview
-                        name={value.name}
-                        price={value.content}
-                        date={value.date}
-                      />
+                  <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-4`}>
+                    <div className={`max-w-xs px-4 py-3 rounded-2xl ${
+                      isUser 
+                        ? 'bg-blue-600 text-white rounded-br-md' 
+                        : 'bg-blue-800/50 text-white rounded-bl-md border border-blue-700/30'
+                    }`}>
+                      <p className="text-sm">{value.content}</p>
+                      <p className="text-xs opacity-70 mt-1">{messageTime}</p>
+                    </div>
                     </div>
                   );
-                } else if (!value.coin) {
-                  return (
-                    <div className="flex justify-start mb-3">
-                      <Chatreply
-                        img={value.photolink}
-                        username={value.name}
-                        content={value.content}
-                        date={value.date}
-                        id={value.id}
-                        className="bg-slate-500 rounded-xl hover:bg-slate-300 active:bg-slate-200"
-                      />
-                    </div>
-                  );
-                }
               }
             })}
-          </ul>
+          </div>
         );
       } else {
         return (
@@ -159,6 +165,37 @@ export const Chat = () => {
 
     dispatch(getchat(payload) as any);
   }, [modelid, userid, dispatch]);
+
+  // Socket connection and real-time message handling
+  useEffect(() => {
+    const socket = getSocket();
+    if (!socket || !userid) return;
+
+    // Connect user to socket
+    socket.emit("online", userid);
+
+    // Listen for new messages
+    const handleLiveChat = (data: any) => {
+      let ids = modelid.split(",");
+      if (ids[0] === data.data.fromid && userid === data.data.toid) {
+        let info = {
+          name: data.name,
+          photolink: data.photolink,
+          content: data.data.content,
+          date: data.data.date,
+          id: data.data.fromid,
+          coin: data.data.coin,
+        };
+        setmessage((value: any) => [...value, info]);
+      }
+    };
+
+    socket.on("LiveChat", handleLiveChat);
+
+    return () => {
+      socket.off("LiveChat", handleLiveChat);
+    };
+  }, [userid, modelid]);
 
   // useEffect(() => {
   //   if (!login) {
@@ -276,40 +313,47 @@ export const Chat = () => {
   //   }
   // };
 
-  // const send_chat = (text) => {
-  //   if (text) {
-  //     let reciver = modelid.split(",");
+  const send_chat = (text: string) => {
+    if (text) {
+      let reciver = modelid.split(",");
 
-  //     if (userid) {
-  //       setchatphotolink(profilephotolink);
-  //       setchatusername(profilename);
-  //     }
+      if (userid) {
+        // Get user info from Redux store
+        const profilephotolink = useSelector((state: RootState) => state.profile.photolink);
+        const profilename = useSelector((state: RootState) => state.profile.firstname);
+        setchatphotolink(profilephotolink);
+        setchatusername(profilename);
+      }
 
-  //     let content = {
-  //       fromid: userid,
-  //       content: `${text}`,
-  //       toid: reciver[0],
-  //       date: Date.now().toString(),
-  //       favourite: false,
-  //       notify: true,
-  //       coin: false,
-  //     };
+      let content = {
+        fromid: userid,
+        content: `${text}`,
+        toid: reciver[0],
+        date: Date.now().toString(),
+        favourite: false,
+        notify: true,
+        coin: false,
+      };
 
-  //     //let ids = modelid.split(",");
+      // Emit message through socket
+      const socket = getSocket();
+      if (socket) {
+        socket.emit("message", content);
+      }
+      
+      let chats = {
+        name: chatusername,
+        content: content.content,
+        date: content.date,
+        photolink: chatphotolink,
+        id: content.fromid,
+        coin: false,
+      };
 
-  //     socket.emit("message", content);
-  //     let chats = {
-  //       name: chatusername,
-  //       content: content.content,
-  //       date: content.date,
-  //       photolink: chatphotolink,
-  //       id: content.fromid,
-  //     };
-
-  //     setmessage((value) => [...value, chats]);
-  //     settext("");
-  //   }
-  // };
+      setmessage((value: any) => [...value, chats]);
+      settext("");
+    }
+  };
 
   // const updateChat = () => {
   //   if (chatinfo) {
@@ -372,72 +416,66 @@ export const Chat = () => {
   // }, [showEmoji]);
 
   return (
-    <div className="">
-      <div className="chat-container ">
+    <div className="h-screen flex flex-col bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900">
+      <div className="chat-container flex flex-col h-full">
         {/* Top bar */}
-        <div className="bg-gray-800 chat-header ">
-          <div className="flex items-center gap-2">
-            <button className="text-black" onClick={() => router.push("-1")}>
-              <img src="/icons/backIcon.svg" alt="back" />
+        <div className="bg-blue-800/50 backdrop-blur-sm border-b border-blue-700/30 p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <button 
+                onClick={() => router.back()}
+                className="p-2 hover:bg-blue-700/50 rounded-full transition-colors"
+              >
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
             </button>
-            <div
-              className="flex items-center gap-2 cursor-pointer"
-              // onClick={() => router.push(`/profile/${chatinfo?.id}`)}
-            >
-              {/* <img
+              <div className="flex items-center gap-3">
+                <img
                 src={Chatphoto}
                 alt="profile"
-                className="w-10 h-10 mb-1 rounded-full"
+                  className="w-12 h-12 rounded-full border-2 border-blue-600/50"
                 onError={(e) => {
                   e.target.onerror = null;
-                  e.target.src = DummyPics;
-                }}
-              /> */}
-              <div className="flex flex-col">
-                <p className="font-bold text-slate-300">{chatfirstname}</p>
-                <p className="text-xs text-slate-300">{Chatname}</p>
-              </div>
+                    e.target.src = "/icons/icons8-profile_Icon.png";
+                  }}
+                />
+                <div>
+                  <p className="font-bold text-white text-lg">{chatfirstname}</p>
+                  <p className="text-sm text-blue-200">Online</p>
+                </div>
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <button
-              // onClick={(e) => {
-              //   let ids = modelid.split(",");
-              //   if (Chatname) {
-              //     let call = [
-              //       "caller",
-              //       `v_id_${ids[0]}`,
-              //       `v_id_${userid}`,
-              //       profilename,
-              //       userid,
-              //       ids[0],
-              //     ];
-              //     router(`/videocall/${call.toString()}`);
-              //   }
-              // }}
-            >
-              <img src="/icons/videocamIcon.svg" alt="videocall" />
+              <button className="p-2 hover:bg-blue-700/50 rounded-full transition-colors">
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </button>
+              <button className="p-2 hover:bg-blue-700/50 rounded-full transition-colors">
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                </svg>
             </button>
-            <div>
               <DropdownMenu />
             </div>
           </div>
         </div>
 
         {/* Scrollable content */}
-        <div className="chat-content">
+        <div className="chat-content flex-1 overflow-y-auto p-4 bg-transparent">
           {loading ? (
-            <div className="flex flex-col items-center ">
+            <div className="flex flex-col items-center justify-center h-full">
               <PacmanLoader
                 color={color}
                 loading={loading}
                 size={35}
                 aria-label="Loading Spinner"
               />
-              <p className="text-sm text-center text-gray-600">Please wait...</p>
+              <p className="text-sm text-center text-blue-200 mt-2">Loading messages...</p>
             </div>
           ) : (
-            <div className="">{messagelist()}</div>
+            <div className="space-y-4">{messagelist()}</div>
           )}
 
           {showEmoji && (
@@ -470,38 +508,44 @@ export const Chat = () => {
         </button>
 
         {/* Bottom Bar */}
-        <div className="flex items-center gap-2 p-2 bg-gray-900 shadow-md chat-input-bar rounded-xl">
-          <button className="flex-shrink-0">
-            <img
-              alt="postImageIcon"
-              className="object-contain w-10 h-10"
-              src="/icons/postimageicon.svg"
-            />
+        <div className="flex items-center gap-3 p-4 bg-blue-800/30 border-t border-blue-700/30">
+          <button className="flex-shrink-0 p-2 hover:bg-blue-700/50 rounded-full transition-colors">
+            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
           </button>
 
-          <div className="flex items-center flex-1 px-3 py-1 bg-slate-500 rounded-2xl">
+          <div className="flex items-center flex-1 px-4 py-3 bg-blue-700/50 border border-blue-600/50 rounded-full">
             <textarea
-              className="flex-1 h-10 text-white placeholder-white bg-transparent outline-none resize-none"
+              className="flex-1 h-8 text-white placeholder-blue-300 bg-transparent outline-none resize-none"
               value={text}
-              placeholder="Send message..."
+              placeholder="Type a message..."
               onChange={(e) => settext(e.target.value)}
+              onKeyPress={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  send_chat(text);
+                }
+              }}
             />
             <button
               ref={emojiButtonRef}
-              // onClick={toggleEmojiPicker}
-              className="ml-2"
+              className="ml-2 p-1 hover:bg-blue-600/50 rounded-full transition-colors"
             >
-              <img alt="addemoji" src="/icons/addemojis.js.svg" className="w-6 h-6" />
+              <svg className="w-5 h-5 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
             </button>
           </div>
 
-          {/* <button onClick={() => send_chat(text)} className="flex-shrink-0"> replace onclick later */}
-          <button className="flex-shrink-0">
-            <img
-              alt="sendicon"
-              src="/icons/sendIcon.svg"
-              className="object-contain w-10 h-10"
-            />
+          <button 
+            onClick={() => send_chat(text)} 
+            disabled={!text.trim()}
+            className="flex-shrink-0 p-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-full transition-colors"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+            </svg>
           </button>
         </div>
       </div>

@@ -20,7 +20,7 @@ const publicRoutes = [
   "/buy-gold",
   "/forget-password",
   "/verify-models",
-
+  "/message",
   // change later for admin 
   "/mmeko/admin",
   "/mmeko/admin/reports",
@@ -43,7 +43,7 @@ const PUBLIC_FILE = /\.(.*)$/
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const authToken = request.cookies.get("session")
+  const authToken = request.cookies.get("session") || request.cookies.get("auth_token")
   const isPublic =   publicRoutes.includes(pathname) ||
   publicRoutePrefixes.some(prefix => pathname.startsWith(prefix));
   const isProhibited = prohibitedRoute.some((route)=> route === pathname);

@@ -42,12 +42,12 @@ export const Recentmessage: React.FC = () => {
   const userid = useSelector((state: RootState) => state.register.userID);
 
   useEffect(() => {
-    if (msgnotifystatus !== 'loading') {
+    if (msgnotifystatus !== 'loading' && userid && token) {
       setLoading(true);
       // dispatch(reset_recent());
       dispatch(getmsgnitify({ userid, token }));
     }
-  }, []);
+  }, [userid, token, msgnotifystatus, dispatch]);
 
   useEffect(() => {
     if (msgnotifystatus === 'succeeded') {

@@ -20,7 +20,7 @@ export default function PostsCard({ type }: { type?: "video" | "image" | "text" 
   const posts = useSelector((s: RootState) => s.post.allPost as any[]);
   const loggedInUserId = useSelector((s: RootState) => s.register.userID);
   const authToken = useSelector((s: RootState) => s.register.refreshtoken || s.register.accesstoken);
-  const { firstname, lastname, nickname } = useSelector((s: RootState) => s.profile);
+  const { firstname, lastname, nickname, photolink } = useSelector((s: RootState) => s.profile);
   const [selfId, setSelfId] = React.useState<string | undefined>(undefined);
   const [selfNick, setSelfNick] = React.useState<string | undefined>(undefined);
   const [selfName, setSelfName] = React.useState<string | undefined>(undefined);
@@ -247,24 +247,43 @@ const fetchFeed=async() => {
         const hasUiComments = Object.prototype.hasOwnProperty.call(uiState, 'comments');
         const displayCommentCount = hasUiComments ? uiComments.length : commentCount;
 
+
         return (
           <div key={`${p?.postid || p?.id || idx}`} className="mx-auto max-w-[30rem] w-full bg-gray-800 rounded-md p-3">
             {/* Header */}
-            <div className="flex items-center gap-3 cursor-pointer" onClick={()=>{
-                router.push(`/post/${p?._id}`)
-              }}>
-              <div className="size-10 rounded-full overflow-hidden bg-gray-700" >
-                  <img
-                  alt="background img"
-                  src={"/icons/profile.png"}
+            <div className="flex items-center gap-3">
+              <div 
+                className="size-10 rounded-full overflow-hidden bg-gray-700 cursor-pointer hover:opacity-80 transition-opacity" 
+                onClick={(e) => {
+                  e.stopPropagation(); // Prevent post click
+                  router.push(`/Profile/${postAuthorId}`);
+                }}
+              >
+                <img
+                  alt="Profile picture"
+                  src={
+                    // If it's the current user's post, use their profile image from Redux
+                    isSelf ? (photolink || "/icons/icons8-profile_user.png") :
+                    // Otherwise, try various user image fields from the post data
+                    p?.user?.photolink || 
+                    p?.user?.photoLink || 
+                    p?.user?.profileImage || 
+                    p?.user?.avatar || 
+                    p?.user?.image ||
+                    "/icons/icons8-profile_user.png"
+                  }
                   className="object-cover w-full h-full"
-                  // onError={(e) => {
-                  //   e.target.onerror = null;
-                  //   e.target.src = DummyCoverImage;
-                  // }}
+                  onError={(e) => {
+                    e.currentTarget.src = "/icons/icons8-profile_user.png";
+                  }}
                 />
               </div>
-              <div>
+              <div 
+                className="flex-1 cursor-pointer" 
+                onClick={() => {
+                  router.push(`/post/${p?._id}`)
+                }}
+              >
                 <p className="font-medium">{p?.user?.firstname} { p?.user?.lastname}</p>
                 <span className="text-gray-400 text-sm">{handleStr ? `@${handleStr}` : ""}</span>
               </div>
