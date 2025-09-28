@@ -9,27 +9,151 @@ import { FaCoins, FaAngleRight, FaAngleDown } from "react-icons/fa";
 import OpenMobileMenuBtn from "@/components/OpenMobileMenuBtn";
 import handleLogout from "@/lib/service/logout";
 import { useUserId } from "@/lib/hooks/useUserId";
-import { useSelector } from "react-redux";
-import type { RootState } from "@/store/store";
+import { useSelector, useDispatch } from "react-redux";
+import type { RootState, AppDispatch } from "@/store/store";
+import { getprofile } from "@/store/profile";
 
 const Sidemenu = () => {
+  // 🔒 CRITICAL: This component ALWAYS uses current user data
+  // It is NEVER affected by viewing other users' profiles
+  // The side menu should always show the current logged-in user's information
+  
   const [minimize, setMinimize] = useState(false);
   const userId = useUserId();
   const router = useRouter();
   const { open, toggleMenu: handleMenubar } = useMenuContext();
+  const dispatch = useDispatch<AppDispatch>();
 
-  // profile directly from Redux
+  // ALWAYS use current user profile from Redux (NEVER viewing profile)
+  // This ensures side menu is NEVER affected by viewing other users' profiles
   const profile = useSelector((state: RootState) => state.profile);
+  
+  // Get current user ID to ensure we're using the right profile
+  const reduxUserId = useSelector((state: RootState) => state.register.userID);
+  
+  // Fallback to localStorage if Redux doesn't have the user ID
+  const [currentUserId, setCurrentUserId] = React.useState(reduxUserId || '');
+  
+  // Get user ID from localStorage if Redux doesn't have it
+  React.useEffect(() => {
+    if (!reduxUserId && typeof window !== 'undefined') {
+      try {
+        const raw = localStorage.getItem("login");
+        if (raw) {
+          const data = JSON.parse(raw);
+          if (data?.userID) {
+            setCurrentUserId(data.userID);
+       
+          }
+        }
+      } catch (error) {
+        console.error("Error getting userID from localStorage:", error);
+      }
+    } else if (reduxUserId) {
+      setCurrentUserId(reduxUserId);
+    }
+  }, [reduxUserId]);
+  
+  // 🔒 CRITICAL: Ensure current user profile is always loaded
+  // This prevents the side menu from showing "User" fallback
+  // MUST be called before any early returns to maintain hook order
+  React.useEffect(() => {
+    if (currentUserId && (!profile.firstname || profile.status === "idle")) {
+      
+      // Get token from localStorage or Redux
+      let token: string | undefined;
+      try {
+        const raw = localStorage.getItem("login");
+        if (raw) {
+          const data = JSON.parse(raw);
+          token = data?.refreshtoken || data?.accesstoken;
+        }
+      } catch (error) {
+        console.error("Error getting token for side menu:", error);
+      }
+      
+      if (token) {
+        dispatch(getprofile({ userid: currentUserId, token }));
+      }
+    }
+  }, [currentUserId, profile.firstname, profile.status, dispatch]);
 
-  // ⛔ Don't render until profile exists
-  if (!profile || Object.keys(profile).length === 0) {
-    return null; // nothing until profile is ready
+  // Additional effect for Edge browser compatibility
+  React.useEffect(() => {
+    const isEdge = navigator.userAgent.includes('Edg');
+    const isCurrentUserProfile = profile.userId === currentUserId || profile.userid === currentUserId;
+    
+    if (isEdge && currentUserId && (!profile.firstname || !isCurrentUserProfile)) {
+    
+      
+      // Force reload profile for Edge browser
+      let token: string | undefined;
+      try {
+        const raw = localStorage.getItem("login");
+        if (raw) {
+          const data = JSON.parse(raw);
+          token = data?.refreshtoken || data?.accesstoken;
+        }
+      } catch (error) {
+        console.error("Error getting token for Edge fallback:", error);
+      }
+      
+      if (token) {
+        // Add a small delay for Edge browser
+        setTimeout(() => {
+          dispatch(getprofile({ userid: currentUserId, token }));
+        }, 100);
+      }
+    }
+  }, [currentUserId, profile.firstname, profile.userId, profile.userid, dispatch]);
+  
+  // ⛔ Don't render until current user profile exists and has actual data
+  if (!profile || Object.keys(profile).length === 0 || !profile.firstname) {
+    return null; // nothing until current user profile is ready with real data
   }
 
- // Default fallback
-const firstname = profile?.firstname || "User";
-const gold_balance = profile?.balance || 0;
-  const admin = true;
+  // SAFETY: Always use current user data with fallbacks
+  // These values are ALWAYS from the current logged-in user, never from viewing profiles
+  // Only use profile data if it belongs to the current user
+  const isCurrentUserProfile = profile.userId === currentUserId || profile.userid === currentUserId;
+  
+
+  // Enhanced fallback mechanism for cross-browser compatibility
+  let firstname = "User";
+  let gold_balance = 0;
+  let admin = false;
+  
+  if (isCurrentUserProfile && profile?.firstname) {
+    firstname = profile.firstname;
+    gold_balance = profile.balance || 0;
+    admin = profile.admin || false;
+  } else {
+    // Try to get data from localStorage as fallback for Edge browser issues
+    try {
+      if (typeof window !== 'undefined') {
+        const raw = localStorage.getItem("login");
+        if (raw) {
+          const data = JSON.parse(raw);
+          if (data?.firstname && data?.userID === currentUserId) {
+            firstname = data.firstname;
+          } else {
+            console.log("❌ [Sidemenu] localStorage fallback failed:", {
+              hasFirstname: !!data?.firstname,
+              userIDMatch: data?.userID === currentUserId,
+              localStorageUserID: data?.userID,
+              currentUserId,
+              reduxUserId
+            });
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Error accessing localStorage in Sidemenu:", error);
+    }
+  }
+
+  // Debug logging to track what's happening
+
    
 
 
@@ -43,14 +167,14 @@ const gold_balance = profile?.balance || 0;
   // MODEL BUTTON LOGIC
  // MODEL BUTTON LOGIC
 const getModelButton2 = () => {
-  if (profile.modelId || profile.modelID) {
+  if (profile.modelID) {
     if (profile.exclusive_verify) {
       // ✅ User has a model and is verified → go to model profile page
       return (
         <MenuIconImg
           src="/icons/icons8-model.png"
           name="Model Portfolio"
-          url={`/models/${profile.modelId || profile.modelID}`} // dynamic profile page
+          url={`/models/${profile.modelID}`} // dynamic profile page
         />
       );
     } else {
@@ -79,23 +203,23 @@ const getModelButton2 = () => {
 
 //  url={`/models/${profile?.modelId||profile?.modelID}`}
 
-  // MODEL BUTTON LOGIC
- // MODEL BUTTON LOGIC
-const getModelButton = () => {
-  // 1️⃣ User already has a model → go to their model profile
-  if (profile.modelID || profile.modelId) {
+  // MODEL BUTTON LOGIC - ALWAYS uses current user's model data
+  // This ensures the model button reflects the current user's model status
+  const getModelButton = () => {
+    // 1️⃣ Current user already has a model → go to their model profile
+    if (profile.modelID) {
     return (
       <MenuIconImg
         src="/icons/icons8-model.png"
         name="Model Portfolio"
-       url={`/models/${profile.modelID || profile.modelId}`}
+       url={`/models/${profile.modelID}`}
       // url="/model/create"
       />
     );
   }
 
-  // 2️⃣ User applied/verified but hasn't created a model yet → go to create mod
-  if (profile.exclusive_verify) {
+    // 2️⃣ Current user applied/verified but hasn't created a model yet → go to create model
+    if (profile.exclusive_verify) {
     return (
       <MenuIconImg
         src="/icons/icons8-model.png"
@@ -105,8 +229,8 @@ const getModelButton = () => {
     );
   }
 
-  // 3️⃣ Default → user hasn't applied yet → show Model Application
-  return (
+    // 3️⃣ Default → current user hasn't applied yet → show Model Application
+    return (
     <MenuIconImg
       src="/icons/icons8-plus.png"
       name="Model Application"
@@ -147,11 +271,12 @@ const getModelButton = () => {
               <div className="flex justify-between w-full">
                 <div className="flex text-xs text-blue-200 mb-3 w-full">
                   <Profile
-                    src={profile.photolink || "/icons/icons8-profile_user.png"}
+                    src={(profile as any).photolink || "/icons/icons8-profile_user.png"}
                     name={firstname}
                     url={userId ? `/Profile/${userId}` : `/Profile`}
                     gold_balance={gold_balance}
                   />
+                  {/* 🔒 SAFETY: This Profile component ALWAYS shows current user's data */}
                 </div>
               </div>
 
@@ -169,6 +294,7 @@ const getModelButton = () => {
               </div>
             </div>
 
+            {/* 🔒 ALL MENU ITEMS BELOW ALWAYS USE CURRENT USER DATA */}
             <div className="grid-sys text-xs text-blue-100 mt-4">
               <MenuIconImg
                 src="/icons/icons8-customer.gif"

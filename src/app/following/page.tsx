@@ -158,7 +158,7 @@ const FollowingPage: React.FC = () => {
             <p className="text-gray-400 px-2 py-4">No fans to show yet.</p>
           )}
           {followersData.map((user, index) => (
-            <div key={`fan_${index}_${user.id}`} className="fan-user">
+            <div key={`fan_${index}_${user.id}`} className=" w-full">
               <FollowerCard
                 key={`fan_${index}_${user.id}`}
                 image={user.image}
@@ -192,7 +192,7 @@ const FollowingPage: React.FC = () => {
           {combinedFollowing.map((user, index) => {
             // Pre-mark these cards as followed since they're in the Following tab
             return (
-              <div key={`following_${index}_${user.id}`} className="following-user" data-followed="true">
+              <div key={`following_${index}_${user.id}`} className="following-user w-full flex" data-followed="true">
                 <FollowerCard
                   key={`following_${index}_${user.id}`}
                   image={user.image}
@@ -246,7 +246,7 @@ const FollowingPage: React.FC = () => {
             <p className="text-gray-400 px-2 py-4">No users to discover right now.</p>
           )}
           {discoverableUsers.map((user: any, index: number) => (
-            <div key={`discover_${index}_${user._id}`} className="discover-user">
+            <div key={`discover_${index}_${user._id}`} className="discover-user w-full flex ">
               <FollowerCard
                 key={`discover_${index}_${user._id}`}
                 image={user.photolink || "/icons/icons8-profile_Icon1.png"}

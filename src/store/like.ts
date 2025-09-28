@@ -8,19 +8,12 @@ const initialState = {
 }
 
 export const postlike = createAsyncThunk("like/postlike",async data=>{
-   
+    console.log("[REDUX] Sending like data to backend:", data);
     try{
-     
-        //console.log('ontop get profile')
         let response = await axios.put(`${URL}/like`,data)
-       // console.log('under get profile')
-       
-
+        console.log("[REDUX] Backend response:", response.data);
         return response.data
-
-        
     }catch (err: unknown) {
-        // Properly narrow unknown error and surface a safe message
         if (axios.isAxiosError(err)) {
             const msg = (err.response?.data as any)?.message ?? err.message ?? "Check internet connection";
             throw new Error(msg);
@@ -28,8 +21,6 @@ export const postlike = createAsyncThunk("like/postlike",async data=>{
         const msg = (err as Error)?.message ?? "Unknown error";
         throw new Error(msg);
     }
-
-
 })
 
 

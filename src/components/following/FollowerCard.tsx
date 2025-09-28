@@ -1,6 +1,5 @@
 import React, { useEffect, useCallback } from "react";
 import Image from "next/image";
-import DropdownMenu from "./Dropdown";
 import { useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/store/store";
@@ -295,7 +294,7 @@ const FollowerCard: React.FC<FollowerCardProps> = ({ image, name, modelid, userI
       data-following={isFollowing ? 'true' : 'false'}
     >
       {/* Left side: avatar + name */}
-      <div className="flex items-center gap-4 flex-1 min-w-0">
+      <div className="flex items-center gap-3 w-2/3">
         {hasImage ? (
           <Image
             src={image}
@@ -319,13 +318,13 @@ const FollowerCard: React.FC<FollowerCardProps> = ({ image, name, modelid, userI
         </div>
       </div>
 
-      {/* Right side: Follow button + Dropdown */}
-      <div className="flex items-center gap-2">
+      {/* Right side: Follow button taking full width and positioned at far right */}
+      <div className="flex items-center justify-end w-1/3">
         {userId && userId !== currentUserId && (
           <button
             onClick={handleFollowToggle}
             disabled={isProcessing}
-            className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+            className={`w-full max-w-[120px] px-4 py-2 rounded-full text-sm font-medium transition-colors ${
               isFollowing
                 ? "bg-gray-600 hover:bg-gray-700 text-white"
                 : "bg-blue-600 hover:bg-blue-700 text-white"
@@ -334,9 +333,6 @@ const FollowerCard: React.FC<FollowerCardProps> = ({ image, name, modelid, userI
             {isProcessing ? "..." : isFollowing ? "Following" : "Follow"}
           </button>
         )}
-        <div className="flex-shrink-0">
-          <DropdownMenu />
-        </div>
       </div>
     </div>
   );

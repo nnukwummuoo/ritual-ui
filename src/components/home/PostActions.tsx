@@ -17,7 +17,8 @@ export type PostActionsProps = {
   onComment?: () => void;
   onMore?: () => void;
   className?: string;
-  post: any; 
+  post: any;
+  isLiking?: boolean;
 };
 
 const iconBase = "size-6"; // Tailwind for width/height
@@ -47,9 +48,9 @@ function HeartIcon({ filled }: { filled?: boolean }) {
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 24 24"
       fill={filled ? "currentColor" : "none"}
-      stroke="currentColor"
+      stroke={filled ? "none" : "currentColor"}
       strokeWidth={1.5}
-      className={iconBase}
+      className={`${iconBase} ${filled ? 'text-red-500 drop-shadow-sm scale-110' : 'text-gray-400 hover:text-red-400'} transition-all duration-200`}
     >
       <path
         strokeLinecap="round"
@@ -149,6 +150,7 @@ export default function PostActions({
   onComment,
   onMore,
   className = "",
+  isLiking = false,
 }: PostActionsProps) {
   return (
     <div className={`flex items-center justify-between text-gray-200 ${className}`}>
@@ -164,12 +166,22 @@ export default function PostActions({
 
       <button
         type="button"
-        className="flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-700/50"
-        onClick={onLike}
-        aria-label="Like"
+        className={`flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-700/50 ${liked ? 'text-red-500' : ''} transition-colors duration-200`}
+        onClick={() => {
+          if (onLike) onLike();
+        }}
+        disabled={isLiking}
+        aria-label={liked ? "Unlike post" : "Like post"}
+        aria-pressed={liked}
       >
         <HeartIcon filled={liked} />
         <span className="text-sm tabular-nums">{likeCount}</span>
+        {isLiking && (
+          <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+        )}
       </button>
 
       <button

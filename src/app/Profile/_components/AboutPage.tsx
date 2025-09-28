@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import { getprofile } from "@/store/profile";
+import { getViewingProfile, clearViewingProfile } from "@/store/viewingProfile";
 import type { AppDispatch, RootState } from "@/store/store";
 import Image from "next/image";
 import Skeleton, { SkeletonTheme } from "react-loading-skeleton";
@@ -13,23 +14,45 @@ const AboutPage = () => {
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
   
-  const { status, firstname, lastname, nickname, State: location } = useSelector((s: RootState) => s.profile);
+  // Get viewingUserId from params first
+  const viewingUserId = (params as { userid?: string })?.userid as string;
+  
+  // Get current user profile data
+  const currentUserProfile = useSelector((s: RootState) => s.profile);
+  
+  // Get viewing profile data
+  const viewingProfile = useSelector((s: RootState) => s.viewingProfile);
+  
+  // Determine which profile data to use
+  const isViewingOwnProfile = viewingUserId === currentUserProfile.userId;
+  const profileData = isViewingOwnProfile ? currentUserProfile : viewingProfile;
+  
+  const { status, firstname, lastname, nickname, State: location } = profileData;
   const profile = useSelector((state: RootState) => state.comprofile.profile);
   const getprofilebyidstats = useSelector((state: RootState) => state.comprofile.getprofileidstatus);
-  const createdAt = useSelector((s: RootState) => (s as any).profile?.createdAt as string | undefined);
   
-  const viewingUserId = (params as { userid?: string })?.userid as string;
+  // Try to get createdAt from multiple sources
+  const createdAt = profileData?.createdAt || profile?.createdAt || profileData?.created_at || profile?.created_at;
   const [about, setAbout] = useState("");
+  
   
   // Use the same useMemo approach as ProfilePage
   const joined = React.useMemo(() => {
-    if (!createdAt) return { month: "", year: "" };
+    if (!createdAt) {
+      return { month: "", year: "" };
+    }
+    
     const d = new Date(createdAt);
-    if (isNaN(d.getTime())) return { month: "", year: "" };
+    
+    if (isNaN(d.getTime())) {
+      return { month: "", year: "" };
+    }
+    
     const months = [
       "January", "February", "March", "April", "May", "June",
       "July", "August", "September", "October", "November", "December"
     ];
+    
     return { month: months[d.getMonth()] ?? "", year: String(d.getFullYear()) };
   }, [createdAt]);
 
@@ -48,19 +71,24 @@ const AboutPage = () => {
       } catch {}
     }
     
-    dispatch(getprofile({ userid, token: token || "" }));
-  }, [params, dispatch]);
+    // Clear viewing profile first
+    dispatch(clearViewingProfile());
+    
+    // If viewing own profile, use current user profile, otherwise fetch viewing profile
+    if (userid === currentUserProfile.userId) {
+      if (currentUserProfile.status === "idle") {
+        dispatch(getprofile({ userid, token: token || "" }));
+      }
+    } else {
+      dispatch(getViewingProfile({ userid, token: token || "" }));
+    }
+  }, [params, dispatch, currentUserProfile.userId, currentUserProfile.status]);
 
   useEffect(() => {
     if (getprofilebyidstats === "succeeded") {
-      console.log("Profile data received:", profile);
-      console.log("Profile keys:", Object.keys(profile));
-      console.log("createdAt from Redux:", createdAt);
-      console.log("joined result:", joined);
-      
       setAbout(profile.aboutuser || "");
     }
-  }, [getprofilebyidstats, profile.aboutuser, createdAt, joined]);
+  }, [getprofilebyidstats, profile.aboutuser]);
 
   const accountDetails = [
     {
@@ -70,7 +98,35 @@ const AboutPage = () => {
         </svg>
       ),
       label: "Date joined",
-      value: joined.month && joined.year ? `${joined.month}, ${joined.year}` : "Unknown"
+      value: (() => {
+        // Try the calculated joined date first
+        if (joined.month && joined.year) {
+          return `${joined.month}, ${joined.year}`;
+        }
+        
+        // Try profileData joined fields
+        if (profileData?.joined_month && profileData?.joined_year) {
+          return `${profileData.joined_month}, ${profileData.joined_year}`;
+        }
+        
+        // Try profile joined fields
+        if (profile?.joined_month && profile?.joined_year) {
+          return `${profile.joined_month}, ${profile.joined_year}`;
+        }
+        
+        // Fallback to raw createdAt if available
+        if (createdAt) {
+          const d = new Date(createdAt);
+          if (!isNaN(d.getTime())) {
+            const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+            const month = months[d.getMonth()];
+            const year = d.getFullYear();
+            return `${month}, ${year}`;
+          }
+        }
+        
+        return "Unknown";
+      })()
     },
     {
       icon: (

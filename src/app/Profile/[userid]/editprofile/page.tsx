@@ -7,6 +7,7 @@ import { AnyAction } from "redux";
 import PacmanLoader from "react-spinners/RingLoader";
 import { useRouter, useParams } from "next/navigation";
 import axios from "axios";
+import { URL as API_URL } from "@/api/config";
 
 import profileIcon from "@/icons/icons8-profile_Icon.png";
 // Import used for the profile image upload button in JSX
@@ -123,7 +124,7 @@ const EditProfile: React.FC = () => {
     setUsernameValid(false);
 
     try {
-      const response = await axios.post("http://localhost:3100/checkusername", {
+      const response = await axios.post(`${API_URL}/checkusername`, {
         username: `@${username}`, // Add @ prefix for database check
         currentUserId: routeUserId // Exclude current user from check
       });
@@ -293,7 +294,7 @@ const EditProfile: React.FC = () => {
       
       // Try the getprofile endpoint which might not require JWT
       try {
-        const response = await axios.post("http://localhost:3100/getprofile", { 
+        const response = await axios.post(`${API_URL}/getprofile`, { 
           userid: userId 
         });
         
@@ -349,8 +350,12 @@ const EditProfile: React.FC = () => {
             }
             
             if (profileData.nickname) {
-              setNicknamepl(profileData.nickname);
-              setNickname(profileData.nickname);
+              // Remove @ prefix if it exists when loading from database
+              const cleanNickname = profileData.nickname.startsWith('@') 
+                ? profileData.nickname.substring(1) 
+                : profileData.nickname;
+              setNicknamepl(cleanNickname);
+              setNickname(cleanNickname);
             }
             
             // Show the form
@@ -368,7 +373,7 @@ const EditProfile: React.FC = () => {
       
       // Try a direct call to the controller without middleware
       try {
-        const response = await axios.post("http://localhost:3100/api/profile/direct", { 
+        const response = await axios.post(`${API_URL}/api/profile/direct`, { 
           userid: userId 
         });
         
@@ -451,7 +456,7 @@ const EditProfile: React.FC = () => {
               
               console.log("Trying JWT authentication as fallback");
               
-              const response = await axios.post("http://localhost:3100/useredit", directAuthPayload, { headers });
+              const response = await axios.post(`${API_URL}/useredit`, directAuthPayload, { headers });
               
               if (response.status === 200 && response.data.ok !== false) {
                 console.log("JWT authentication succeeded");
@@ -492,8 +497,12 @@ const EditProfile: React.FC = () => {
                   }
                   
                   if (profileData.nickname) {
-                    setNicknamepl(profileData.nickname);
-                    setNickname(profileData.nickname);
+                    // Remove @ prefix if it exists when loading from database
+                    const cleanNickname = profileData.nickname.startsWith('@') 
+                      ? profileData.nickname.substring(1) 
+                      : profileData.nickname;
+                    setNicknamepl(cleanNickname);
+                    setNickname(cleanNickname);
                   }
                   
                   // Show the form
@@ -550,8 +559,12 @@ const EditProfile: React.FC = () => {
                 
                 // Nickname may not be in localStorage
                 if (data.nickname) {
-                  setNicknamepl(data.nickname);
-                  setNickname(data.nickname);
+                  // Remove @ prefix if it exists when loading from localStorage
+                  const cleanNickname = data.nickname.startsWith('@') 
+                    ? data.nickname.substring(1) 
+                    : data.nickname;
+                  setNicknamepl(cleanNickname);
+                  setNickname(cleanNickname);
                 }
               }
             } catch (e) {
@@ -707,8 +720,12 @@ const EditProfile: React.FC = () => {
         }
         
         if (profileData.nickname) {
-          setNicknamepl(profileData.nickname);
-          setNickname(profileData.nickname); // Also set the actual input value
+          // Remove @ prefix if it exists when loading from database
+          const cleanNickname = profileData.nickname.startsWith('@') 
+            ? profileData.nickname.substring(1) 
+            : profileData.nickname;
+          setNicknamepl(cleanNickname);
+          setNickname(cleanNickname); // Also set the actual input value
         }
       }
     }
@@ -771,8 +788,12 @@ const EditProfile: React.FC = () => {
           
           // Nickname may not be in localStorage
           if (localData.nickname) {
-            setNicknamepl(localData.nickname);
-            setNickname(localData.nickname);
+            // Remove @ prefix if it exists when loading from localStorage
+            const cleanNickname = localData.nickname.startsWith('@') 
+              ? localData.nickname.substring(1) 
+              : localData.nickname;
+            setNicknamepl(cleanNickname);
+            setNickname(cleanNickname);
           }
         }
       } catch (e) {
