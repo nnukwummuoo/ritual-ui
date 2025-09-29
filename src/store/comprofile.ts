@@ -148,7 +148,7 @@ export const getEdit = createAsyncThunk<any, {
                         firstname: directResponse.data.firstname,
                         lastname: directResponse.data.lastname,
                         state: directResponse.data.state,
-                        country: directResponse.data.country,
+                        country: directResponse.data.state,
                         bio: directResponse.data.bio || directResponse.data.details
                     }
                 };
@@ -228,7 +228,7 @@ export const getEdit = createAsyncThunk<any, {
                                     firstname: loginData.firstname,
                                     lastname: loginData.lastname,
                                     state: loginData.state || loginData.State,
-                                    country: loginData.country,
+                                    country: loginData.state,
                                     bio: loginData.bio || loginData.details
                                 }
                             };
@@ -264,7 +264,7 @@ export const updateEdit = createAsyncThunk<any, UpdateEditPayload>("comprofile/u
         lastname: data.lastname,
         bio: data.bio ? "provided" : "not provided",
         state: data.state,
-        country: data.country,
+        country: data.state,
         updatePhoto: data.updatePhoto ? "provided" : "not provided"
     });
 
@@ -308,6 +308,8 @@ export const updateEdit = createAsyncThunk<any, UpdateEditPayload>("comprofile/u
             nickname: data.nickname,
             bio: data.bio,
             state: data.state || data.country,
+            country: data.state || data.country,
+
             // Include image data URL if available
             ...(imageDataUrl && {
                 photolink: imageDataUrl,
