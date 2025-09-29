@@ -1,9 +1,10 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { URL } from "@/api/config";
 import axios, { AxiosRequestConfig } from "axios";
-import { CreatePostArgs, CreatePostData, PostState } from "@/types/post";
+import { CreatePostArgs, CreatePostData, PostState, Like, Post } from "@/types/post";
 import backend from "@/api/backendApi";
 import { toast } from "material-react-toastify";
+import { postlike } from "./like";
 
 export const createpost = createAsyncThunk("post/createpost", async (data: CreatePostData) => {
   try {
@@ -95,8 +96,39 @@ const initialState: PostState = {
 
 export const getallpost = createAsyncThunk("post/getallpost", async (data: any) => {
   try {
+    // Get posts
     let response = await axios.post(`${URL}/getallpost`, data);
-    return response.data;
+    const posts = response.data.post || [];
+
+    // For each post, get its likes
+    const postsWithLikes = await Promise.all(posts.map(async (post: any) => {
+      try {
+        // Get likes for this post
+        const likeResponse = await axios.get(`${URL}/like`, {
+          params: { postid: post._id || post.postid || post.id }
+        });
+        if (likeResponse.data.ok) {
+          return {
+            ...post,
+            likeCount: likeResponse.data.likeCount,
+            likedBy: likeResponse.data.likedBy
+          };
+        }
+        return post;
+      } catch (err) {
+        console.error(`Error fetching likes for post ${post._id}:`, err);
+        return {
+          ...post,
+          likeCount: post.likeCount || 0,
+          likedBy: post.likedBy || []
+        };
+      }
+    }));
+
+    return {
+      ...response.data,
+      post: postsWithLikes
+    };
   } catch (err: any) {
     throw err.response.data.message;
   }
@@ -105,7 +137,37 @@ export const getallpost = createAsyncThunk("post/getallpost", async (data: any) 
 export const fetchposts = async () => {
   try {
     let response = await axios.post(`${URL}/getallpost`, {});
-    return response.data;
+    const posts = response.data.post || [];
+
+    // For each post, get its likes
+    const postsWithLikes = await Promise.all(posts.map(async (post: any) => {
+      try {
+        // Get likes for this post
+        const likeResponse = await axios.get(`${URL}/like`, {
+          params: { postid: post._id || post.postid || post.id }
+        });
+        if (likeResponse.data.ok) {
+          return {
+            ...post,
+            likeCount: likeResponse.data.likeCount,
+            likedBy: likeResponse.data.likedBy
+          };
+        }
+        return post;
+      } catch (err) {
+        console.error(`Error fetching likes for post ${post._id}:`, err);
+        return {
+          ...post,
+          likeCount: post.likeCount || 0,
+          likedBy: post.likedBy || []
+        };
+      }
+    }));
+
+    return {
+      ...response.data,
+      post: postsWithLikes
+    };
   } catch (err: any) {
     throw err.response.data.message;
   }
@@ -270,36 +332,52 @@ const post = createSlice({
       .addCase(getallpost.fulfilled, (state, action) => {
         state.poststatus = "succeeded";
         state.message = action.payload.message;
-        // Merge fetched posts with existing ones (to keep freshly created posts)
+        
+        // Extract posts with their like counts
         const payload: any = action.payload || {};
-        const fetchedArray =
+        const postsArray =
           (Array.isArray(payload?.post) && payload.post) ||
           (Array.isArray(payload?.posts) && payload.posts) ||
           (Array.isArray(payload?.data?.post) && payload.data.post) ||
           (Array.isArray(payload?.data?.posts) && payload.data.posts) ||
           [];
-        const fetched: any[] = fetchedArray;
-
-        const map = new Map<string | number, any>();
+          
+        // Each post should now have likeCount and likedBy from the backend
+        // Create a map of existing posts for merging
+        const existingMap = new Map<string | number, any>();
         const getId = (p: any) => p?.postid ?? p?.id;
 
-        // Prefer fetched data for duplicates
-        for (const p of fetched) {
-          map.set(getId(p), p);
-        }
-        // Keep any posts that aren't in fetched yet (e.g., just created, eventual consistency)
+        // First store existing posts
         for (const p of state.allPost) {
           const id = getId(p);
-          if (!map.has(id)) map.set(id, p);
+          if (id) existingMap.set(id, p);
         }
 
+        // Then merge in new posts, preserving likes and other metadata from existing posts
+        const mergedPosts = postsArray.map(newPost => {
+          const id = getId(newPost);
+          const existingPost = id ? existingMap.get(id) : null;
+          if (existingPost) {
+            // Preserve existing likes/comments but update other fields
+            return {
+              ...newPost,
+              likes: existingPost.likes || newPost.likes || [],
+              like: existingPost.like || newPost.like || [], 
+              likeCount: existingPost.likeCount || newPost.likeCount || 0,
+              likedBy: existingPost.likedBy || newPost.likedBy || []
+            };
+          }
+          return newPost;
+        });
+
+        // Sort posts by date
         const toDate = (v: any) => {
           const t = v?.createdAt ?? v?.created_at ?? v?.date;
           const n = typeof t === 'number' ? t : Date.parse(t);
           return Number.isFinite(n) ? n : 0;
         };
 
-        state.allPost = Array.from(map.values()).sort((a, b) => toDate(b) - toDate(a));
+        state.allPost = mergedPosts.sort((a, b) => toDate(b) - toDate(a));
         try { localStorage.setItem('feedPosts', JSON.stringify(state.allPost)); } catch {}
       })
       .addCase(getallpost.rejected, (state, action) => {
@@ -324,6 +402,48 @@ const post = createSlice({
       .addCase(getpostbyid.rejected, (state, action) => {
         state.getpostbyidstatus = "failed";
         state.error = action.error.message || "Check internet connection";
+      })
+      // Handle like updates
+      .addCase(postlike.fulfilled, (state, action: any) => {
+        if (!action.meta?.arg) return;
+        
+        const { postid, userid } = action.meta.arg;
+        const postIndex = state.allPost.findIndex(
+          p => (p.postid === postid || p.id === postid || p._id === postid)
+        );
+        
+        if (postIndex === -1) return;
+        
+        const post = state.allPost[postIndex];
+        const isUnlike = action.payload?.ok === false;
+        
+        // Safely copy existing likes
+        const existingLikes = (post.likes || post.like || []) as Like[];
+        const likes = [...existingLikes];
+        
+        // Find existing like by this user
+        const hasLike = likes.some(l => String(l.userid || l.userId) === String(userid));
+        
+        if (isUnlike && hasLike) {
+          // Remove like on unlike response
+          const filtered = likes.filter(l => String(l.userid || l.userId) !== String(userid));
+          state.allPost[postIndex] = {
+            ...post,
+            likes: filtered,
+            like: filtered,
+            likeCount: filtered.length
+          };
+        } else if (!isUnlike && !hasLike) {
+          // Add like on successful like response
+          const newLike = { userid, postid } as Like;
+          const updated = [...likes, newLike];
+          state.allPost[postIndex] = {
+            ...post,
+            likes: updated,
+            like: updated,
+            likeCount: updated.length
+          };
+        }
       })
       .addCase(deletepost.pending, (state) => {
         state.deletepostsatus = "loading";

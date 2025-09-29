@@ -214,10 +214,7 @@ export const post_exclusive_docs = createAsyncThunk<any, PostExclusiveDocsPayloa
   "model/post_exclusive_docs",
   async (data: any) => {
     try {
-      // Send data as a FormData
       let formData = new FormData();
-
-      // Prepare the post form data
       const postData = {
         userid: data.userid,
         firstname: data.firstName,
@@ -228,8 +225,6 @@ export const post_exclusive_docs = createAsyncThunk<any, PostExclusiveDocsPayloa
         city: data.city,
         address: data.address,
         documentType: data.documentType,
-        // holdingIdPhotofile: data.holdingIdPhotofile,
-        // idPhotofile: data.idPhotofile,
         idexpire: data.idexpire,
       };
 
@@ -240,23 +235,19 @@ export const post_exclusive_docs = createAsyncThunk<any, PostExclusiveDocsPayloa
 
       console.log("I am about to create formData", [...formData.entries()]);
 
-      let response = await axios.put(`${URL}/postdocument`, formData, {
+      const response = await axios.put(`${URL}/postdocument`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
       });
 
       if (response.status !== 200) {
-        // Post was not successfully created
-        throw "Error creating your verifying your model";
+        throw new Error("Error creating your verifying your model");
       }
 
       return response.data;
-    } catch (err : any) {
-      if (!err.response.data.message) {
-        throw "check internet connection";
-      }
-      throw err.response.data.message;
+    } catch (err: any) {
+      throw err.response?.data?.message || "Check internet connection";
     }
   }
 );

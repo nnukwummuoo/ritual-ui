@@ -95,7 +95,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   } catch (e) {
     // ignore
   }
-}, [isLoggedIn, status]);
+}, [isLoggedIn]); // Remove status dependency to prevent loops
 
 
 

@@ -63,7 +63,7 @@ export const RecentList: React.FC<RecentListProps> = ({
 
   return (
     <li
-      className="mb-1"
+      className="mb-1 cursor-pointer hover:bg-blue-700/30 transition-colors"
       onClick={() => {
         router.push(`/message/${modelid.toString()}`);
       }}
@@ -75,41 +75,37 @@ export const RecentList: React.FC<RecentListProps> = ({
         }
       }}
     >
-      <div className="flex items-center justify-between px-4 py-3 mx-2 rounded-lg sm:px-2 bg-slate-800">
+      <div className="flex items-center justify-between px-4 py-4 mx-2 rounded-xl bg-blue-800/40 border border-blue-700/30">
         <div className="flex items-center gap-4">
-          <div className="relative w-12 h-12">
+          <div className="relative w-14 h-14">
             <img
               src={userphoto}
               alt="message-image"
-              className="object-cover w-full h-full rounded-full"
+              className="object-cover w-full h-full rounded-full border-2 border-blue-600/50"
               onError={(e) => {
                 const target = e.target as HTMLImageElement;
                 target.onerror = null;
                 target.src = DummyPics?.src;
               }}
             />
-            <div className="absolute z-10 w-6 h-6 m-1 top-6 left-6">
-              <img
-                alt={online ? 'online' : 'offline'}
-                src={online ? onlineIcon : offlineIcon}
-                className={`object-cover rounded-full w-5 h-5 ${
-                  online ? 'bg-[#d3f6e0]' : 'bg-[#ffd8d9]'
-                }`}
-              />
-            </div>
+            {online && (
+              <div className="absolute bottom-0 right-0 w-4 h-4 bg-green-500 border-2 border-blue-800 rounded-full"></div>
+            )}
           </div>
 
-          <div>
-            <h4 className="font-semibold text-slate-300 text-md sm:text-sm">
+          <div className="flex-1">
+            <h4 className="font-semibold text-white text-lg">
               {username.split(' ')[0]}
             </h4>
-
-            <p className="text-sm text-slate-400 sm:text-xs">{sliceContent()}</p>
+            <p className="text-sm text-blue-200 truncate">{sliceContent()}</p>
           </div>
         </div>
 
-        <div>
-          <h4 className="text-sm text-slate-400">{dates}</h4>
+        <div className="text-right">
+          <p className="text-xs text-blue-300 mb-1">{dates}</p>
+          {online && (
+            <div className="w-2 h-2 bg-green-500 rounded-full mx-auto"></div>
+          )}
         </div>
       </div>
     </li>

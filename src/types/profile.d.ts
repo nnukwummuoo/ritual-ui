@@ -14,6 +14,8 @@ export interface Profile {
   modelID: string | null;
   modelphotolink: string | null;
   modelname: string | null;
+  photolink: string | null;
+  bio: string | null;
   exclusive_verify: boolean;
   emailnote: boolean;
   pushnote: boolean;

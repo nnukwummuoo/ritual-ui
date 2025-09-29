@@ -6,13 +6,12 @@ export type formVerificationConstants = {
     country: string,
     city: string,
     address: string,
-    idPhotofile: string | null,
-    holdingIdPhotofile: string | null,
-    idPhoto: string,
-    holdingIdPhoto: string,
-    acceptTerms: boolean,
-    userid: string|undefined,
+    idPhotofile: File | null; // Changed from string | null to File | null
+     holdingIdPhotofile: File | null;
+    //idPhoto: string,
+    //holdingIdPhoto: string,
+    userid: string,
     documentType: string,
     idexpire: string,
-    token: string
+    //token: string
   }

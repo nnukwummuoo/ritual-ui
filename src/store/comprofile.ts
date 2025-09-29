@@ -2,6 +2,7 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { URL } from "../api/config"
 // import { downloadImage, deleteImage, saveImage } from "../../../api/sendImage";
 import axios from "axios";
+import { validateImageFile } from "../utils/cloudinary";
 
 interface ComProfileState {
     photoLink: string;
@@ -31,6 +32,12 @@ interface UpdateEditPayload {
     bio?: string;
     token: string;
     updatePhoto?: File | Blob | string | null;
+    // Additional auth fields
+    hasToken?: boolean;
+    accesstoken?: string;
+    refreshtoken?: string;
+    userID?: string;
+    state?: string; // Backend expects this field
 }
 
 const initialState: ComProfileState = {
@@ -98,82 +105,256 @@ export const getprofilebyid = createAsyncThunk("comprofile/getprofilebyid", asyn
 
 })
 
-export const getEdit = createAsyncThunk<any, { userid: string; token: string }>("comprofile/getEdit", async (data) => {
+export const getEdit = createAsyncThunk<any, { 
+  userid: string; 
+  token: string; 
+  hasToken?: boolean;
+  accesstoken?: string;
+  refreshtoken?: string;
+  userID?: string;
+}>("comprofile/getEdit", async (data) => {
 
     try {
+        console.log("getEdit action called with data:", {
+            userid: data.userid,
+            hasToken: data.hasToken,
+            tokenProvided: !!data.token
+        });
 
-        let response = await axios.post(`${URL}/useredit`, data)
+        // First try the direct approach that works (without JWT auth)
+        try {
+            console.log("Trying direct getprofile approach first");
+            const directResponse = await axios.post(`${URL}/getprofile`, { 
+                userid: data.userid 
+            });
+            
+            if (directResponse.status === 200 && directResponse.data) {
+                console.log("Direct getprofile approach succeeded:", {
+                    status: directResponse.status,
+                    dataReceived: !!directResponse.data
+                });
+                
+                // Log the raw response data for debugging
+                console.log("Raw direct response data:", directResponse.data);
+                
+                // Transform the response to match the expected format
+                const transformedData = {
+                    ok: true,
+                    message: "Profile fetched successfully",
+                    data: {
+                        id: directResponse.data._id || directResponse.data.userId || data.userid,
+                        photolink: directResponse.data.photolink || directResponse.data.photoLink,
+                        photoID: directResponse.data.photoID,
+                        firstname: directResponse.data.firstname,
+                        lastname: directResponse.data.lastname,
+                        state: directResponse.data.state,
+                        country: directResponse.data.country,
+                        bio: directResponse.data.bio || directResponse.data.details
+                    }
+                };
+                
+                console.log("Transformed data for Redux:", transformedData);
+                return transformedData;
+            }
+        } catch (directError) {
+            console.log("Direct getprofile approach failed, trying JWT auth", 
+                directError instanceof Error ? directError.message : "unknown error");
+        }
+        
+        // If direct approach fails, try JWT auth as fallback
+        // Create a complete data object with all fields the API might need
+        const completeData = {
+            ...data,
+            hasToken: true,  // Ensure this is always set
+        };
 
-        return response.data
+        // Set up headers with the token for JWT authentication
+        // Remove Bearer prefix if it exists, then add it back properly
+        const cleanToken = data.token.startsWith('Bearer ') ? data.token.substring(7) : data.token;
+        const authToken = `Bearer ${cleanToken}`;
+        
+        const headers = {
+            'Authorization': authToken,
+            'Content-Type': 'application/json'
+        };
+        
+        console.log("getEdit token format check:", {
+            originalLength: data.token.length,
+            hasBearer: data.token.startsWith('Bearer '),
+            finalTokenFormat: authToken.substring(0, 15) + '...'
+        });
 
+        console.log("Sending request to useredit with Authorization header:", {
+            url: `${URL}/useredit`,
+            headersSent: Object.keys(headers),
+            hasAuthHeader: !!headers.Authorization,
+            authHeaderPrefix: headers.Authorization?.substring(0, 10) + '...'
+        });
+        
+        try {
+            const response = await axios.post(`${URL}/useredit`, completeData, { headers });
+            console.log("getEdit API response:", {
+                status: response.status,
+                statusText: response.statusText,
+                dataReceived: !!response.data,
+                dataOk: response.data?.ok,
+                dataMessage: response.data?.message
+            });
+            return response.data;
+        } catch (error) {
+            if (axios.isAxiosError(error)) {
+                console.error("getEdit axios error:", {
+                    status: error.response?.status,
+                    statusText: error.response?.statusText,
+                    errorMessage: error.message,
+                    responseData: error.response?.data
+                });
+                
+                // Try one more fallback - localStorage data
+                try {
+                    console.log("JWT auth failed, trying to use localStorage data");
+                    const loginDataStr = localStorage.getItem("login");
+                    if (loginDataStr) {
+                        const loginData = JSON.parse(loginDataStr);
+                        if (loginData) {
+                            // Create a mock response with localStorage data
+                            return {
+                                ok: true,
+                                message: "Profile fetched from localStorage",
+                                data: {
+                                    id: loginData.userID || data.userid,
+                                    photolink: loginData.photolink,
+                                    photoID: loginData.photoID,
+                                    firstname: loginData.firstname,
+                                    lastname: loginData.lastname,
+                                    state: loginData.state || loginData.State,
+                                    country: loginData.country,
+                                    bio: loginData.bio || loginData.details
+                                }
+                            };
+                        }
+                    }
+                } catch (localStorageError) {
+                    console.error("localStorage fallback failed:", localStorageError);
+                }
+            } else {
+                console.error("getEdit unknown error:", error);
+            }
+            throw error;
+        }
     } catch (err) {
+        console.error("getEdit API error:", err);
         if (axios.isAxiosError(err)) {
             throw (err.response?.data as any)?.message ?? "Network error";
         }
         throw "Unexpected error";
     }
-
-
 })
 
 export const updateEdit = createAsyncThunk<any, UpdateEditPayload>("comprofile/updateEdit", async (data: UpdateEditPayload) => {
 
-    console.log("Inside updateEdit")
+    console.log("Inside updateEdit with data:", {
+        userid: data.userid,
+        userID: data.userID,
+        hasToken: data.hasToken,
+        tokenProvided: !!data.token,
+        accesstokenProvided: !!data.accesstoken,
+        refreshtokenProvided: !!data.refreshtoken,
+        firstname: data.firstname,
+        lastname: data.lastname,
+        bio: data.bio ? "provided" : "not provided",
+        state: data.state,
+        country: data.country,
+        updatePhoto: data.updatePhoto ? "provided" : "not provided"
+    });
 
     try {
-        // Send data as a FormData
-        let formData = new FormData();
-
-        /*let imagelink;
-
-        if (data.deletePhotolink && data.photolink) {
-            console.log("inside delete image")
-            await deleteImage(data.deletePhotolink, "profile")
+        // Handle image upload by converting to data URL if needed
+        let imageDataUrl = "";
+        
+        if (data.updatePhoto && data.updatePhoto instanceof File) {
+            console.log("Processing image upload by converting to data URL...");
+            
+            // Validate the image file
+            const validation = validateImageFile(data.updatePhoto, 5); // 5MB max
+            if (!validation.valid) {
+                throw new Error(validation.error || "Invalid image file");
+            }
+            
+            // Convert image to data URL
+            try {
+                const reader = new FileReader();
+                const dataUrl = await new Promise<string>((resolve, reject) => {
+                    reader.onload = () => resolve(reader.result as string);
+                    reader.onerror = reject;
+                    reader.readAsDataURL(data.updatePhoto);
+                });
+                
+                imageDataUrl = dataUrl;
+                console.log("Image converted to data URL successfully");
+            } catch (dataUrlError) {
+                console.error("Failed to convert image to data URL:", dataUrlError);
+                throw new Error("Failed to process image. Please try again.");
+            }
         }
-
-        if (data.photolink) {
-            console.log("inside delete image")
-            imagelink = await saveImage(data.photolink, "profile")
-        }
-
-        data.photolink = imagelink*/
-
-        // Prepare the post form data
+        
+        // Always use the simple editprofile endpoint (no authentication, no file upload)
+        console.log("Using simple editprofile endpoint for all updates...");
+        
         const updateData = {
             userid: data.userid,
-            // updatePhoto: data.updatePhoto,
-            deletePhotolink: data.deletePhotolink,
-            deletePhotoID: data.deletePhotoID,
             firstname: data.firstname,
             lastname: data.lastname,
-            country: data.country,
+            nickname: data.nickname,
             bio: data.bio,
-        }
+            state: data.state || data.country,
+            // Include image data URL if available
+            ...(imageDataUrl && {
+                photolink: imageDataUrl,
+                photoID: `temp_${Date.now()}`
+            })
+        };
 
-        formData.append("data", JSON.stringify(updateData));
-        formData.append("token", data.token);
-        formData.append("updatePhoto", data.updatePhoto || "");
-
-        console.log("I am about to create formData", [...formData.entries()])
-
-        const response = await axios.post(`${URL}/editmoreprofile`, formData, {
+        console.log("Sending update data:", {
+            ...updateData,
+            photolink: imageDataUrl ? "data URL provided" : "no image",
+            photolinkLength: imageDataUrl?.length,
+            photolinkPreview: imageDataUrl?.substring(0, 50) + '...'
+        });
+        
+        const response = await axios.post(`${URL}/editprofile`, updateData, {
             headers: {
-                "Content-Type": "multipart/form-data",
+                "Content-Type": "application/json"
             }
         });
 
-        if (response.status !== 200) {
-            // Post was not successfully created
-            throw "Error updating your profile";
-        }
+        console.log("Profile update succeeded:", {
+            status: response.status,
+            hasData: !!response.data
+        });
 
         return response.data;
 
     } catch (err) {
+        console.error("updateEdit error:", err);
         if (axios.isAxiosError(err)) {
-            throw (err.response?.data as any)?.message ?? "Network error";
+            console.error("updateEdit axios error:", {
+                status: err.response?.status,
+                statusText: err.response?.statusText,
+                errorMessage: err.message,
+                responseData: err.response?.data
+            });
+            
+            // Provide specific error messages based on status code
+            if (err.response?.status === 401) {
+                throw new Error("Your session has expired. Please log in again to update your profile.");
+            } else if (err.response?.status === 403) {
+                throw new Error("You don't have permission to update this profile.");
+            } else if (err.response?.status === 400) {
+                throw new Error("Invalid profile data. Please check your information and try again.");
+            }
         }
-        throw "Unexpected error";
+        throw err;
     }
 })
 

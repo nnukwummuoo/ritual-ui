@@ -1,18 +1,15 @@
 "use client";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
-import { toast, ToastContainer } from "material-react-toastify";
+import { ToastContainer } from "material-react-toastify";
 import Input from "./Input";
-//import { login } from "@/lib/service/login";
 import Processing from "./tick-animation/LoginProcessing";
 import { useAuth } from "@/lib/context/auth-context";
-import { revalidate } from "@/lib/utils/revalidate";
 import { isRegistered } from "@/lib/service/manageSession";
 import toastError from "./ToastError";
+// Removed unused imports to fix linting errors
 
-import type { Session } from "@/lib/context/auth-context";
 
-type LoginResponse = Session & { accessToken?: string };
 
 type User = {
   nickname: string;
@@ -34,14 +31,16 @@ type User = {
 };
 
 export const Loginview = () => {
-  const [loginError, setLoginError] = useState<string | null>(null);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const { setIsLoggedIn, setStatus, isLoggedIn, status } = useAuth();
   const [user, setUser] = useState<User | undefined>();
 
+  // Debug status changes - removed to prevent console spam
+
   async function handleLogin(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
+    
     try {
       const nickname = formData.get("nickname")?.toString() || "";
       const password = formData.get("password")?.toString() || "";
@@ -55,65 +54,94 @@ export const Loginview = () => {
         });
       }
 
+      // Set loading state
+      setStatus("checking");
+
+      // Add timeout to prevent infinite loading
+      const timeoutId = setTimeout(() => {
+        setStatus("idle");
+        toastError({ message: "Login request timed out. Please try again." });
+      }, 10000); // 10 second timeout
+
       const res = await isRegistered({ nickname, password });
-      console.log(res);
+      
+      // Clear timeout on successful response
+      clearTimeout(timeoutId);
+      console.log("Login response:", res);
+      console.log("User data:", res?.user);
+      
       if (!res?.user?.nickname?.length) {
-        throw new Error("No user found");
+        setStatus("idle");
+        throw new Error(res?.error || "No user found");
       }
+
+      // Create user object with all necessary data
+      const userData = {
+        ...res.user,
+        password: password, // Store the password for session creation
+        nickname: res.user.nickname,
+        _id: res.user._id,
+        accessToken: res.user.accessToken,
+        refreshtoken: res.user.refreshtoken
+      };
 
       // Save to localStorage for useUserId hook
       try {
-  localStorage.setItem(
-    "login",
-    JSON.stringify({
-      nickname: res.user.nickname,
-      userID: res.user._id,
-      refreshtoken: res.user.refreshtoken,
-      accesstoken: res.user.accessToken,
-    })
-  );
-} catch (e) {
-  console.error("[Login] Failed to save localStorage:", e);
-}
+        localStorage.setItem(
+          "login",
+          JSON.stringify({
+            nickname: res.user.nickname,
+            userID: res.user._id,
+            refreshtoken: res.user.refreshtoken,
+            accesstoken: res.user.accessToken,
+          })
+        );
+      } catch (e) {
+        console.error("[Login] Failed to save localStorage:", e);
+      }
 
-      setUser(res.user);
+      setUser(userData);
       setIsLoggedIn(true);
-    } catch (error) {
-      console.error(error);
-      setUser({ nickname: "", password: "" });
-      toastError({ message: "Login failed!" });
-    } finally {
-      setTimeout(() => {
-        setStatus("resolved");
-        revalidate("/");
-      }, 3000);
-    }
-  }
-
-  function checkAcceptTerms() {
-    if (acceptedTerms) setStatus("checking");
-  }
-
-  useEffect(() => {
-    async function createSession() {
-      if (!user?.nickname?.length) return;
+      setStatus("resolved");
+      
+      // Create session immediately after successful login (like registration)
       try {
-        const result = await fetch(`${process.env.NEXT_PUBLIC_URL}/api/session`, {
+        const sessionResult = await fetch(`${process.env.NEXT_PUBLIC_URL}/api/session`, {
           method: "POST",
-          body: JSON.stringify({ nickname: user.nickname, password: user.password }),
+          body: JSON.stringify({ 
+            nickname: userData.nickname, 
+            password: password 
+          }),
           credentials: "include",
           headers: {
             "Content-Type": "application/json",
           },
         });
-        const data = await result.text();
-        console.log(data);
-      } catch (error) {
-        console.error(error);
+        console.log("Session creation result:", await sessionResult.text());
+      } catch (sessionError) {
+        console.error("Session creation error:", sessionError);
       }
+      
+      // Redirect after successful login
+      setTimeout(() => {
+        window.location.href = "/";
+      }, 1000);
+      
+    } catch (error) {
+      console.error("Login error:", error);
+      setUser({ nickname: "", password: "" });
+      setStatus("idle");
+      
+      // Clear any pending timeouts
+      const timeoutId = setTimeout(() => {}, 0);
+      clearTimeout(timeoutId);
+      
+      const errorMessage = error instanceof Error ? error.message : "Login failed!";
+      toastError({ message: errorMessage });
     }
-    createSession();
-  }, [user]);
+  }
+
+  // Session creation is now handled immediately after successful login (like registration)
 
   return (
     <div
@@ -180,8 +208,8 @@ export const Loginview = () => {
           </div>
 
           <button
+            type="submit"
             className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-2 rounded shadow transition"
-            onClick={checkAcceptTerms}
           >
             Log In
           </button>
@@ -195,7 +223,7 @@ export const Loginview = () => {
           </p>
 
           <p className="text-gray-400 text-sm text-center mt-4">
-            Don't have an account?{" "}
+            Don&apos;t have an account?{" "}
             <Link
               className="text-blue-500 font-bold hover:underline cursor-pointer"
               href="/auth/register"

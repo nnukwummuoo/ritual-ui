@@ -5,6 +5,7 @@ import modelSlice from './modelSlice';
 import bookingSlice from './booking';
 import registerReducer from './registerSlice';
 import profileReducer from './profile';
+import viewingProfileReducer from './viewingProfile';
 
 import messageReducer from './messageSlice';
 import comprofileReducer from './comprofile';
@@ -20,6 +21,7 @@ export const store = configureStore({
     model: modelSlice,
     booking:bookingSlice,
     profile: profileReducer,
+    viewingProfile: viewingProfileReducer,
     register: registerReducer,
     message: messageReducer,
     comprofile: comprofileReducer,

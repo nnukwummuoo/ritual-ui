@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use server";
 import { NextRequest } from "next/server";
 import { jwtVerify, SignJWT } from "jose";
@@ -23,7 +24,7 @@ export async function decryptData(input: string): Promise<{ status: string; body
   try {
     const { payload } = await jwtVerify(input, key, { algorithms: ["HS256"] });
     const typedPayload = payload as payload;
-    console.log({ decryptData: { nickname: typedPayload.user.nickname, password: "[REDACTED]" }, input });
+    
     return { status: "valid", body: typedPayload.user };
   } catch (error: any) {
     console.error("JWT verification error:", error.message);
@@ -59,7 +60,14 @@ export async function isRegistered(payload: { nickname: string; password: string
 }
 
 export async function sessionMng(request: NextRequest): Promise<string | undefined> {
-  const cookie = request.cookies.get("auth_token")?.value;
+  // Check for session cookie first (preferred)
+  let cookie = request.cookies.get("session")?.value;
+  
+  // If no session cookie, check for auth_token cookie
+  if (!cookie) {
+    cookie = request.cookies.get("auth_token")?.value;
+  }
+  
   if (!cookie?.length) return undefined;
   const decryptCookie = await decryptData(cookie);
   if (decryptCookie.status === "valid") return undefined;

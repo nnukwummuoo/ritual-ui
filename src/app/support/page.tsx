@@ -1,72 +1,213 @@
 "use client";
 
-import React from "react";
-import { FaGraduationCap, FaStar, FaUser } from "react-icons/fa";
-import { GiGoldBar } from "react-icons/gi";
-import Link from "next/link";
+import React, { useState } from "react";
+import { FaAngleLeft, FaQuestionCircle, FaEnvelope, FaPhone, FaClock } from "react-icons/fa";
 import { useRouter } from "next/navigation";
-import cusmericon from "../../icons/icons8-message.png";
-import HeaderBackNav from "@/components/navs/HeaderBackNav";
-import SearchBar from "@/components/help/searchbar";
-import CategoryCard from "@/components/help/categorycard";
-import SupportButton from "@/components/help/supportButton";
 
-const Support = () => {
+const SupportPage: React.FC = () => {
   const router = useRouter();
+  const [selectedCategory, setSelectedCategory] = useState<string>("");
+  const [message, setMessage] = useState<string>("");
+  const [email, setEmail] = useState<string>("");
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
   const categories = [
-    {
-      icon: <FaGraduationCap />,
-      title: "About Mmeko",
-      articles: 6,
-      link: "about",
-    },
-    { icon: <FaStar />, title: "For Creators", articles: 11, link: "creator" },
-    { icon: <FaUser />, title: "For Fans", articles: 4, link: "fans" },
-    {
-      icon: <GiGoldBar />,
-      title: "Golds",
-      articles: 2,
-      link: "gold",
-    },
+    { id: "account", label: "Account Issues", icon: "👤" },
+    { id: "payment", label: "Payment & Billing", icon: "💳" },
+    { id: "technical", label: "Technical Support", icon: "🔧" },
+    { id: "feature", label: "Feature Request", icon: "💡" },
+    { id: "bug", label: "Bug Report", icon: "🐛" },
+    { id: "other", label: "Other", icon: "❓" },
   ];
 
+  const faqs = [
+    {
+      question: "How do I reset my password?",
+      answer: "Go to the login page and click 'Forgot Password'. Enter your email address and follow the instructions sent to your email."
+    },
+    {
+      question: "How do I update my profile?",
+      answer: "Navigate to your profile page and click the 'Edit Profile' button. You can update your information, profile picture, and bio."
+    },
+    {
+      question: "How do I follow other users?",
+      answer: "Visit any user's profile page and click the 'Follow' button. You'll receive notifications when they post new content."
+    },
+    {
+      question: "How do I send messages?",
+      answer: "Go to the Messages section and select a conversation, or visit a user's profile and click the message icon to start a new conversation."
+    },
+    {
+      question: "How do I report inappropriate content?",
+      answer: "Click the three dots menu on any post or message and select 'Report'. Our team will review the content within 24 hours."
+    },
+    {
+      question: "How do I delete my account?",
+      answer: "Go to Settings > Account Settings > Delete Account. This action is permanent and cannot be undone."
+    }
+  ];
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedCategory || !message || !email) return;
+
+    setIsSubmitting(true);
+    try {
+      // Here you would typically send the support request to your backend
+      console.log("Support request:", { selectedCategory, message, email });
+      
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      alert("Support request submitted successfully! We'll get back to you within 24 hours.");
+      setMessage("");
+      setEmail("");
+      setSelectedCategory("");
+    } catch (error) {
+      alert("Failed to submit support request. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
-    <div className="min-h-screen text-white">
-      {/* <HeaderBackNav title="Help & Support" /> */}
+    <div className="min-h-screen bg-[#0e0f2a] text-white">
+      <div className="w-full max-w-4xl mx-auto px-4 py-6">
+        {/* Header */}
+        <div className="flex items-center gap-4 mb-8">
+          <button
+            onClick={() => router.back()}
+            className="p-2 hover:bg-gray-800 rounded-full transition-colors"
+          >
+            <FaAngleLeft className="w-6 h-6" />
+          </button>
+          <div>
+            <h1 className="text-3xl font-bold">Support Center</h1>
+            <p className="text-gray-400">Get help with your account and app</p>
+          </div>
+        </div>
 
-      <div className="mx-auto text-white p-4 md:mr-auto md:ml-0">
-        <div className="md:mx-auto mb-20">
-          <div className="sm:mt-12">
-            <h1 className="mb-12 ml-4 text-lg font-bold text-center">
-              HOW CAN WE HELP?
-            </h1>
-
-            <SearchBar />
-
-            <div className="m-auto mt-6 space-y-4">
-              {categories.map((category, index) => (
-                <Link href={`/${category.link}`} key={index}>
-                  <CategoryCard {...category} />
-                </Link>
-              ))}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Contact Information */}
+          <div className="lg:col-span-1">
+            <div className="bg-gray-800 rounded-xl p-6 mb-6">
+              <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+                <FaEnvelope className="w-5 h-5 text-blue-400" />
+                Contact Us
+              </h2>
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <FaEnvelope className="w-4 h-4 text-gray-400" />
+                  <span className="text-sm">support@mmeko.com</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <FaPhone className="w-4 h-4 text-gray-400" />
+                  <span className="text-sm">+1 (555) 123-4567</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <FaClock className="w-4 h-4 text-gray-400" />
+                  <span className="text-sm">24/7 Support</span>
+                </div>
+              </div>
             </div>
 
-            <SupportButton />
+            {/* Quick Actions */}
+            <div className="bg-gray-800 rounded-xl p-6">
+              <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+                <FaQuestionCircle className="w-5 h-5 text-green-400" />
+                Quick Actions
+              </h2>
+              <div className="space-y-3">
+                <button
+                  onClick={() => router.push("/profile")}
+                  className="w-full text-left p-3 bg-gray-700 rounded-lg hover:bg-gray-600 transition-colors"
+                >
+                  View My Profile
+                </button>
+                <button
+                  onClick={() => router.push("/settings")}
+                  className="w-full text-left p-3 bg-gray-700 rounded-lg hover:bg-gray-600 transition-colors"
+                >
+                  Account Settings
+                </button>
+                <button
+                  onClick={() => router.push("/messages")}
+                  className="w-full text-left p-3 bg-gray-700 rounded-lg hover:bg-gray-600 transition-colors"
+                >
+                  Messages
+                </button>
+              </div>
+            </div>
+          </div>
 
-            {/* Uncomment if needed */}
-            {/* 
+          {/* Main Content */}
+          <div className="lg:col-span-2">
+            {/* FAQ Section */}
+            <div className="bg-gray-800 rounded-xl p-6 mb-6">
+              <h2 className="text-2xl font-semibold mb-6">Frequently Asked Questions</h2>
+              <div className="space-y-4">
+                {faqs.map((faq, index) => (
+                  <div key={index} className="border-b border-gray-700 pb-4 last:border-b-0">
+                    <h3 className="font-semibold text-lg mb-2">{faq.question}</h3>
+                    <p className="text-gray-300 text-sm leading-relaxed">{faq.answer}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Support Form */}
+            <div className="bg-gray-800 rounded-xl p-6">
+              <h2 className="text-2xl font-semibold mb-6">Send us a Message</h2>
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div>
+                  <label className="block text-sm font-medium mb-2">Category</label>
+                  <select
+                    value={selectedCategory}
+                    onChange={(e) => setSelectedCategory(e.target.value)}
+                    className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
+                  >
+                    <option value="">Select a category</option>
+                    {categories.map((category) => (
+                      <option key={category.id} value={category.id}>
+                        {category.icon} {category.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">Email Address</label>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="your.email@example.com"
+                    required
+                  />
+            </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">Message</label>
+                  <textarea
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 h-32 resize-none"
+                    placeholder="Describe your issue or question in detail..."
+                    required
+                  />
+                </div>
+
             <button
-              className="w-12 h-12 rounded-full shadow fixed bottom-20 z-40 right-4 md:right-[36rem]"
-              onClick={() => router.push("/speaker")}
-            >
-              <img
-                alt="customerimg"
-                src={cusmericon.src}
-                className="object-cover w-12 h-12 rounded-full"
-              />
+                  type="submit"
+                  disabled={isSubmitting || !selectedCategory || !message || !email}
+                  className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 px-6 rounded-lg font-semibold hover:from-blue-600 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                >
+                  {isSubmitting ? "Sending..." : "Send Message"}
             </button> 
-            */}
+              </form>
+            </div>
           </div>
         </div>
       </div>
@@ -74,4 +215,4 @@ const Support = () => {
   );
 };
 
-export default Support;
+export default SupportPage;
