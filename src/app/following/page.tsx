@@ -136,17 +136,11 @@ const FollowingPage: React.FC = () => {
   }, [loading]);
 
   const followers = () => {
-    // These are users who follow me, but I don't necessarily follow back (fans)
-    // Get all users who follow me (apiFollowers) but are not in my following list
-    const followingIds = new Set(apiFollowing.map(u => String(u.id)));
-    
-    // Filter followers to only include those that match the search
-    const followersData = apiFollowers.filter((user) => {
-      const matchesSearch = user.name.toLowerCase().includes(search.toLowerCase());
-      // Only include users that I don't follow back (true fans)
-      const iNotFollowingThem = !followingIds.has(String(user.id));
-      return matchesSearch && iNotFollowingThem;
-    });
+    // CHANGED: Show ALL users who follow me (both mutual and non-mutual follows)
+    // These are users who follow me - regardless of whether I follow them back
+    const followersData = apiFollowers.filter((user) =>
+      user.name.toLowerCase().includes(search.toLowerCase())
+    );
     
     return (
       <div>
