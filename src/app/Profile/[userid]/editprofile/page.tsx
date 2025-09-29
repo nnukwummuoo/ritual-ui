@@ -856,34 +856,34 @@ const EditProfile: React.FC = () => {
 
   // Handle form submission
   const updateButton = async () => {
-    if (updateEdit_stats !== "loading") {
+    
       // Only validate username if user has entered one
-      if (nickname && nickname.length >= 3) {
-        // Check username format first
-        const usernameRegex = /^[a-z0-9_]{3,15}$/;
-        if (!usernameRegex.test(nickname)) {
-          setErrorMessage("Username must be 3-15 characters, lowercase letters, numbers, and underscores only");
-          return;
-        }
+      // if (nickname && nickname.length >= 3) {
+      //   // Check username format first
+      //   const usernameRegex = /^[a-z0-9_]{3,15}$/;
+      //   if (!usernameRegex.test(nickname)) {
+      //     setErrorMessage("Username must be 3-15 characters, lowercase letters, numbers, and underscores only");
+      //     return;
+      //   }
 
-        // Check if username validation is still in progress
-        if (isCheckingUsername) {
-          setErrorMessage("Please wait for username validation to complete");
-          return;
-        }
+      //   // Check if username validation is still in progress
+      //   if (isCheckingUsername) {
+      //     setErrorMessage("Please wait for username validation to complete");
+      //     return;
+      //   }
 
-        // Check if username is invalid
-        if (usernameStatus === "invalid") {
-          setErrorMessage("Please choose a different username");
-          return;
-        }
+      //   // Check if username is invalid
+      //   if (usernameStatus === "invalid") {
+      //     setErrorMessage("Please choose a different username");
+      //     return;
+      //   }
 
-        // Check if username validation hasn't been completed yet
-        if (usernameStatus === "") {
-          setErrorMessage("Please wait for username validation to complete");
-          return;
-        }
-      }
+      //   // Check if username validation hasn't been completed yet
+      //   if (usernameStatus === "") {
+      //     setErrorMessage("Please wait for username validation to complete");
+      //     return;
+      //   }
+      // }
 
       setLoading(true);
       setShowEdit(false);
@@ -958,7 +958,7 @@ const EditProfile: React.FC = () => {
 
       // Send update request
       dispatch(updateEdit(finalProfileData) as unknown as AnyAction);
-    }
+   
   };
 
   return (
@@ -1087,11 +1087,14 @@ const EditProfile: React.FC = () => {
                     className="rounded-lg bg-slate-600 text-slate-100 p-2 placeholder:text-slate-500 placeholder:font-normal placeholder:text-sm"
                     placeholder={firstnamepl}
                     value={firstname}
-                    onChange={(e) => setFirstname(e.currentTarget.value)}
-                    maxLength={10}
+                    onChange={(e) => {
+                                const cleanValue = e.currentTarget.value.replace(/[^a-zA-Z0-9_]/g, '');
+                                setFirstname(cleanValue);
+                            }}
+                    maxLength={9}
                   />
                   <div className="text-xs text-right mt-1 text-slate-400">
-                    {firstname.length}/10 characters
+                    {firstname.length}/9 characters
                   </div>
                 </div>
 
@@ -1103,11 +1106,14 @@ const EditProfile: React.FC = () => {
                     className="rounded-lg bg-slate-600 text-slate-100 p-2 placeholder:text-slate-500 placeholder:font-normal placeholder:text-sm"
                     placeholder={lastnamepl}
                     value={lastname}
-                    onChange={(e) => setLastname(e.currentTarget.value)}
-                    maxLength={10}
+                     onChange={(e) => {
+                                const cleanValue = e.currentTarget.value.replace(/[^a-zA-Z0-9_]/g, '');
+                                setLastname(cleanValue);
+                            }}
+                    maxLength={9}
                   />
                   <div className="text-xs text-right mt-1 text-slate-400">
-                    {lastname.length}/10 characters
+                    {lastname.length}/9 characters
                   </div>
                 </div>
 
@@ -1217,16 +1223,10 @@ const EditProfile: React.FC = () => {
                 {/* Buttons */}
                 <div className="space-y-3">
                 <button
-                    className={`bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 transition-colors text-white font-medium py-3 px-4 rounded-lg w-full text-center disabled:opacity-50 ${
-                      (nickname && nickname.length >= 3 && (isCheckingUsername || usernameStatus === "")) ? 'opacity-50 cursor-not-allowed' : ''
-                    }`}
+                    className={`bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 transition-colors text-white font-medium py-3 px-4 rounded-lg w-full text-center disabled:opacity-50 `}
                   onClick={updateButton}
-                  disabled={loading || (nickname && nickname.length >= 3 && (isCheckingUsername || usernameStatus === ""))}
                 >
-                    {loading ? "Updating..." : 
-                     (nickname && nickname.length >= 3 && isCheckingUsername) ? "Validating username..." :
-                     (nickname && nickname.length >= 3 && usernameStatus === "") ? "Please wait..." :
-                     "Save Changes"}
+                    save changes
                   </button>
                   
                   <button
