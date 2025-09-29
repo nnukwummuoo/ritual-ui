@@ -29,16 +29,15 @@ export const postcomment = createAsyncThunk("comment/postcomment",async (data: a
     try{
 
  
-        //console.log('after info')
+        console.log('Posting comment:', data)
         
-        //console.log('ontop get profile')
         let response = await axios.put(`${URL}/comment`,data)
-       // console.log('under get profile')
+        console.log('Comment posted successfully:', response.data)
        
         return response.data
         
     }catch(err){
-       // console.log('erro get profile')
+        console.log('Error posting comment:', err)
         if (axios.isAxiosError(err)) {
           throw (err.response?.data as any)?.message ?? "Network error";
         }

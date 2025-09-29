@@ -61,7 +61,7 @@ const EditProfile: React.FC = () => {
 
   // Local state for UI
   const [loading, setLoading] = useState(true);
-  const [color] = useState("#d49115");
+  const [color] = useState("#fff");
   const [showEdit, setShowEdit] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
@@ -963,13 +963,13 @@ const EditProfile: React.FC = () => {
 
   return (
     <div className="w-screen sm:w-11/12 md:w-10/12 lg:w-9/12 xl:w-11/12 mx-auto md:mr-auto md:ml-0">
-      <div className="chat_nav">
+      <div className="chat_nav ">
         <Gennavigation click={click} setclick={setclick}  />
       </div>
       <HeaderBackNav title=""  />
 
       <div className="md:w-3/5 md:mx-auto">
-        <div className="w-full h-full flex flex-col items-center md:w-3/4 mt-4 sm:mt-16 md:mr-auto md:ml-0">
+        <div className="w-full h-full flex flex-col items-center md:w-3/4 mt-4 sm:mt-3 md:mr-auto md:ml-0">
           <p className="text-slate-400 font-bold border border-b-2 border-t-0 border-r-0 border-l-0 border-slate-400">
             Edit your Profile Information
           </p>
@@ -997,7 +997,7 @@ const EditProfile: React.FC = () => {
                 aria-label="Loading Spinner"
                 data-testid="loader"
               />
-              <p className="text-yellow-500 text-xs mt-2">Loading profile data...</p>
+              <p className="text-white text-xs mt-2">Loading profile data...</p>
              
             </div>
           )}
