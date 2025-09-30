@@ -10,7 +10,7 @@ const mockCrushData: CrushItem[] = [
     id: "crush1",
     userid: "user1",
     hosttype: "premium",
-    modelid: "model1",
+    creatorid: "creator1",
     location: "Los Angeles",
     online: true,
   },
@@ -20,7 +20,7 @@ const mockCrushData: CrushItem[] = [
     id: "crush2",
     userid: "user2",
     hosttype: "standard",
-    modelid: "model2",
+    creatorid: "creator2",
     location: "Miami",
     online: false,
   },
@@ -30,7 +30,7 @@ const mockCrushData: CrushItem[] = [
     id: "crush3",
     userid: "user3",
     hosttype: "premium",
-    modelid: "model3",
+    creatorid: "creator3",
     location: "New York",
     online: true,
   },
@@ -40,7 +40,7 @@ const mockCrushData: CrushItem[] = [
     id: "crush4",
     userid: "user4",
     hosttype: "standard",
-    modelid: "model4",
+    creatorid: "creator4",
     location: "Chicago",
     online: true,
   },
@@ -61,7 +61,7 @@ const Crush: React.FC = () => {
   return (
     <div className="w-full flex flex-col">
       <p className="text-slate-50 text-center font-bold mt-2">
-        List Of My Crush Models
+        List Of My Crush Creators
       </p>
       <div className="grid grid-cols-2 gap-2 mb-3 p-2">
         {listofcrush.map((item, idx) => (

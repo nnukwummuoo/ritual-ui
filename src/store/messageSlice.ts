@@ -206,7 +206,7 @@ export const getmessagenotication = createAsyncThunk(
 
 export const send_gift = createAsyncThunk("chat/send_gift", async (data) => {
   try {
-    let response = await axios.put(`${URL}/giftmodel`, data);
+    let response = await axios.put(`${URL}/giftcreator`, data);
     return response.data;
   } catch (err : any) {
     if (!err.response.data.message) {

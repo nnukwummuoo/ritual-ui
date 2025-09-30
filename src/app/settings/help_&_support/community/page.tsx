@@ -16,7 +16,7 @@ const Community = () => {
           <p className="mt-2 text-gray-400">
             Welcome to Mmeko — a safe, creative platform where creators and fans
             connect authentically. To keep our space respectful, safe, and
-            lawful, all users (models and fans) must follow these community
+            lawful, all users (creators and fans) must follow these community
             guidelines:
           </p>
         </section>

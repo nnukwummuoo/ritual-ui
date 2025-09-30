@@ -6,8 +6,8 @@ export const metadata = {
   description: "Upload your content here",
 }
 
-function ModelPage() {
+function CreatorPage() {
   return <Upload />
 }
 
-export default ModelPage;
+export default CreatorPage;

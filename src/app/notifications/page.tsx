@@ -12,7 +12,7 @@ export const metadata = {
   title: "Notifications"
 }
 import React from 'react'
-import { Modelnotify } from './Notitification'
+import { Creatornotify } from './Notitification'
 import { Allview } from './components/Allview'
 
 export default function Notifications() {

@@ -9,11 +9,11 @@ import OpenMobileMenuBtn from "@/components/OpenMobileMenuBtn";
 import { useMenuContext } from "@/lib/context/MenuContext";
 // import { useSelector, useDispatch } from "react-redux";
 // import { Logins } from "../../auth/Logins";
-// import { ModelSideMenu } from "./ModelSideMenu";
+// import { CreatorSideMenu } from "./CreatorSideMenu";
 
 // interface NavappProps {
 //   isOpen: boolean;
-//   modelMenu: boolean;
+//   creatorMenu: boolean;
 //   click: boolean;
   // handleGenderSearchQuery: (query: string) => void;
   // stoptop: () => void;
@@ -22,14 +22,14 @@ import { useMenuContext } from "@/lib/context/MenuContext";
  const Navapp = ({
   // isOpen,
   // click,
-  // modelMenu,
+  // creatorMenu,
   // handleGenderSearchQuery,
   // stoptop,
   // setclick,
 }) => {
   // const login = useSelector((state) => state.register.logedin);
   const login = true; // Assuming login is true for demonstration purposes
-  const [modelToggle, setModelToggle] = useState(false);
+  const [creatorToggle, setCreatorToggle] = useState(false);
   const { open } = useMenuContext();
 
 
@@ -53,18 +53,18 @@ import { useMenuContext } from "@/lib/context/MenuContext";
           <Profilenav
             handleMenubar={handleMenubar}
             isOpen={isOpen}
-            modelMenu={modelMenu}
-            handleModelToggle={handleModelToggle}
+            creatorMenu={creatorMenu}
+            handleCreatorToggle={handleCreatorToggle}
           />
         )} */}
         {login && (
           <Sidemenu />
         )}
-        {/* {login && <Sidemenu open={modelToggle} handleMenubar={handleModelToggle} handleGenderSearchQuery={handleGenderSearchQuery} />} */}
+        {/* {login && <Sidemenu open={creatorToggle} handleMenubar={handleCreatorToggle} handleGenderSearchQuery={handleGenderSearchQuery} />} */}
         {/* {login && (
-              <ModelSideMenu
-                open={modelToggle}
-                handleMenubar={handleModelToggle}
+              <CreatorSideMenu
+                open={creatorToggle}
+                handleMenubar={handleCreatorToggle}
                 handleGenderSearchQuery={handleGenderSearchQuery}
 
               />

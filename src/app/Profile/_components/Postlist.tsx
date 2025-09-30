@@ -47,7 +47,7 @@ import "../../../styles/postlist.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import { postListConstants } from "../_constants/postListConstants";
 // import { useAuth } from "../../../hooks/useAuth";
-// import { updateFollowers } from "../../../app/features/model/modelSlice";
+// import { updateFollowers } from "../../../app/features/creator/creatorSlice";
 
 export const Postlist = React.memo(
   ({
@@ -74,7 +74,7 @@ export const Postlist = React.memo(
     timeoutId,
     setPosts,
     isProfilePage = false,
-    modelId,
+    creatorId,
     followers,
   }: postListConstants) => {
     const [following, set_following] = useState(false);

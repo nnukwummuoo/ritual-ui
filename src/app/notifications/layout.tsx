@@ -1,9 +1,9 @@
 import React from 'react'
-import { Modelnotify } from './Notitification'
+import { Creatornotify } from './Notitification'
 import { Allview } from './components/Allview'
 
 export default function layout({children}: {children: React.ReactNode}) {
-  return <Modelnotify>
+  return <Creatornotify>
     {children}
-  </Modelnotify>
+  </Creatornotify>
 }

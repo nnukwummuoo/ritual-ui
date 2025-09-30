@@ -28,7 +28,7 @@ const initialState: BookingState = {
   rejectedCall: null,
 };
 
-export const bookmdel = createAsyncThunk("booking/bookmodel", async (data:any) => {
+export const bookmdel = createAsyncThunk("booking/bookcreator", async (data:any) => {
   try {
     //console.log('after info')
 
@@ -46,7 +46,7 @@ export const bookmdel = createAsyncThunk("booking/bookmodel", async (data:any) =
   }
 });
 
-export const bookAmodel =  async (data:any) => {
+export const bookAcreator =  async (data:any) => {
   try {
     let response = await axios.put(`${URL}/bookhost`, data);
     return response.data;
@@ -97,14 +97,14 @@ export const Cancelrequest = createAsyncThunk(
   }
 );
 
-export const notifymodel = createAsyncThunk(
-  "booking/notifymodel",
+export const notifycreator = createAsyncThunk(
+  "booking/notifycreator",
   async (data) => {
     try {
       //console.log('after info')
 
       //console.log('ontop get profile')
-      let response = await axios.put(`${URL}/notifymodel`, data);
+      let response = await axios.put(`${URL}/notifycreator`, data);
 
       //console.log('under get profile')
 
@@ -192,7 +192,7 @@ export const completepayment = createAsyncThunk(
       //console.log('after info')
 
       console.log("ontop accept book");
-      let response = await axios.put(`${URL}/paymodel`, data);
+      let response = await axios.put(`${URL}/paycreator`, data);
 
       console.log("under accept book " + response);
 
@@ -243,11 +243,11 @@ const booking = createSlice({
       state.paystats = "idle";
     },
     deleterequest(state, action) {
-      let { modelid, date, time } = action.payload;
+      let { creatorid, date, time } = action.payload;
 
       let index = state.requests.findIndex((value) => {
         return (
-          value.modelid === modelid &&
+          value.creatorid === creatorid &&
           value.date === date &&
           value.time === time
         );
@@ -255,7 +255,7 @@ const booking = createSlice({
 
       let index2 = state.Allrequest.findIndex((value) => {
         return (
-          value.modelid === modelid &&
+          value.creatorid === creatorid &&
           value.date === date &&
           value.time === time
         );
@@ -269,12 +269,12 @@ const booking = createSlice({
         state.Allrequest.splice(index2, 1);
       }
     },
-    deleteModel(state, action) {
-      let { modelid, date, time } = action.payload;
+    deleteCreator(state, action) {
+      let { creatorid, date, time } = action.payload;
 
       let index = state.acceptedList.findIndex((value) => {
         return (
-          value.modelid === modelid &&
+          value.creatorid === creatorid &&
           value.date === date &&
           value.time === time
         );
@@ -282,7 +282,7 @@ const booking = createSlice({
 
       let index2 = state.Allrequest.findIndex((value) => {
         return (
-          value.modelid === modelid &&
+          value.creatorid === creatorid &&
           value.date === date &&
           value.time === time
         );
@@ -362,15 +362,15 @@ const booking = createSlice({
           state.cancelmessage = action.error.message as string;
         }
       })
-      .addCase(notifymodel.pending, (state, action) => {
+      .addCase(notifycreator.pending, (state, action) => {
         state.notifystats = "loading";
       })
-      .addCase(notifymodel.fulfilled, (state, action) => {
+      .addCase(notifycreator.fulfilled, (state, action) => {
         state.notifystats = "succeeded";
         state.notifymessage = action.payload.message;
         state.bookingnote = action.payload.data;
       })
-      .addCase(notifymodel.rejected, (state, action) => {
+      .addCase(notifycreator.rejected, (state, action) => {
         state.notifystats = "failed";
 
         if (!action.error) {
@@ -458,7 +458,7 @@ export default booking.reducer;
 export const {
   resetstat,
   deleterequest,
-  deleteModel,
+  deleteCreator,
   removemsg,
   add_call_data,
   set_reject_call,

@@ -20,8 +20,8 @@ export interface RegisterState {
   forgetpassstate: string;
   conpasswordstate: string;
   chagepassword: string;
-  modelId?: string;
-  isModel?: boolean;
+  creatorId?: string;
+  creator_listing?: boolean;
 }
 
 
@@ -193,8 +193,8 @@ const registerSlice = createSlice({
       state.refreshtoken = action.payload.refreshtoken;
       state.accesstoken = action.payload.accesstoken;
       state.userID = action.payload.userID;
-      state.modelId = action.payload.modelId;
-      state.isModel = action.payload.isModel;
+      state.creatorId = action.payload.creatorId;
+      state.creator_listing = action.payload.creator_listing;
     },
   },
 
@@ -267,8 +267,8 @@ const registerSlice = createSlice({
               refreshtoken: action.payload.token,
               accesstoken: action.payload.accessToken,
               userID: action.payload.id,
-              modelId: action.payload.modelId,
-              isModel: action.payload.isModel,
+              creatorId: action.payload.creatorId,
+              creator_listing: action.payload.creator_listing,
             })
           );
         } catch {}
@@ -279,8 +279,8 @@ const registerSlice = createSlice({
         state.refreshtoken = action.payload.token;
         state.accesstoken = action.payload.accessToken;
         state.userID = action.payload.id;
-        state.modelId = action.payload.modelId;
-        state.isModel = action.payload.isModel;
+        state.creatorId = action.payload.creatorId;
+        state.creator_listing = action.payload.creator_listing;
       })
       .addCase(loginuser.rejected, (state, action) => {
         state.logstats = "failed";

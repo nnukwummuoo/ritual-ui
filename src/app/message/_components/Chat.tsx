@@ -7,8 +7,10 @@ import "@/styles/Navs.css";
 import "@/styles/Chat.css";
 import { useParams, useRouter } from "next/navigation";
 import DropdownMenu from "./DropdownMenu";
+
 // Removed Redux import - using direct API calls instead
 import { getViewingProfile } from "@/store/viewingProfile";
+
 import type { RootState } from "@/store/store";
 import { getSocket } from "@/lib/socket";
 import { toast } from "material-react-toastify";
@@ -27,14 +29,16 @@ export const Chat = () => {
   // const giftmessage = useSelector((state) => state.message.giftmessage);
   // const oldMessage = useSelector((state) => state.message.listofcurrentmessage);
   // const chatinfo = useSelector((state) => state.message.chatinfo);
-  // const modelID = useSelector((state) => state.profile.modelID);
+  // const creatorID = useSelector((state) => state.profile.creatorID);
   // const balance = useSelector((state) => state.profile.balance);
-  // const modelname = useSelector((state) => state.profile.modelname);
-  // const modelphotolink = useSelector((state) => state.profile.modelphotolink);
+  // const creatorname = useSelector((state) => state.profile.creatorname);
+  // const creatorphotolink = useSelector((state) => state.profile.creatorphotolink);
   // const profilephotolink = useSelector((state) => state.comprofile.photoLink);
   // const profilename = useSelector((state) => state.profile.firstname);
   const dispatch = useDispatch();
+
   const { modelid } = useParams<{ modelid: string }>();
+
   const router = useRouter();
 
   // Get userid from localStorage if not in Redux (same pattern as ProfilePage)
@@ -499,6 +503,7 @@ export const Chat = () => {
   }, [message]);
 
   const messagelist = () => {
+
     if (message.length > 0) {
       return (
         <>
@@ -519,6 +524,7 @@ export const Chat = () => {
                         <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
                       </svg>
                       <span className="font-semibold">{isUser ? 'You sent' : `${value.name} sent`}</span>
+
                     </div>
                     <p className="text-lg font-bold mt-1">${value.content}</p>
                     <p className="text-xs opacity-70 mt-1">{messageTime}</p>
@@ -622,6 +628,7 @@ export const Chat = () => {
 
   // Direct API call when component loads (skip Redux)
   useEffect(() => {
+
     if (!modelid) {
       return;
     }
@@ -633,6 +640,7 @@ export const Chat = () => {
     // Always fetch messages when component loads
     fetchMessagesDirectly();
   }, [modelid, loggedInUserId, reduxUserId, localUserid, fetchMessagesDirectly]);
+
 
   // Socket connection and real-time message handling
   useEffect(() => {
@@ -650,6 +658,7 @@ export const Chat = () => {
     socket.emit("online", loggedInUserId);
 
     // Listen for new messages
+
     const handleLiveChat = (data: { 
       data: { 
         fromid: string; 
@@ -675,6 +684,7 @@ export const Chat = () => {
       if (isFromTargetToCurrent || isFromCurrentToTarget) {
         
         const info = {
+
           name: data.name,
           photolink: data.photolink,
           content: data.data.content,
@@ -727,7 +737,9 @@ export const Chat = () => {
     return () => {
       socket.off("LiveChat", handleLiveChat);
     };
+
   }, [loggedInUserId, modelid]);
+
 
   // useEffect(() => {
   //   if (!login) {
@@ -752,7 +764,7 @@ export const Chat = () => {
   //     setLoading(false);
 
   //     socket.on("LiveChat", (data) => {
-  //       let ids = modelid.split(",");
+  //       let ids = creatorid.split(",");
   //       if (ids[0] === data.data.fromid && MYID === data.data.toid) {
   //         // console.log(data)
   //         dispatch(updatemessage({ date: data.data.date, token }));
@@ -800,7 +812,7 @@ export const Chat = () => {
 
   // const send_coin = () => {
   //   if (check_balance()) {
-  //     let ids = modelid.split(",");
+  //     let ids = creatorid.split(",");
 
   //     if (giftstats !== "loading") {
   //       let content = {
@@ -813,14 +825,14 @@ export const Chat = () => {
   //         coin: true,
   //       };
 
-  //       //let ids = modelid.split(",");
+  //       //let ids = creatorid.split(",");
 
   //       socket.emit("message", content);
   //       setsendL(true);
   //       dispatch(
   //         send_gift({
   //           token,
-  //           modelid: ids[0],
+  //           creatorid: ids[0],
   //           userid: userid,
   //           amount: `${gold_amount}`,
   //         })
@@ -844,6 +856,7 @@ export const Chat = () => {
   //     router.push("/topup");
   //   }
   // };
+
 
   // File validation function
   const validateFile = (file: File): { valid: boolean; error?: string } => {
@@ -968,6 +981,7 @@ export const Chat = () => {
     }
 
     setUploading(true);
+
 
     try {
       let fileUrls: string[] = [];

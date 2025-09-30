@@ -12,7 +12,7 @@ export interface CrushItem {
   id: string;
   userid: string;
   hosttype: string;
-  modelid: string;
+  creatorid: string;
   location: string;
   online: boolean;
 }

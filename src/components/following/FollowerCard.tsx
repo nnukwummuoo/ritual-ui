@@ -9,11 +9,11 @@ import { getSocket } from "@/lib/socket";
 interface FollowerCardProps {
   image: string;
   name: string;
-  modelid: string;
+  creatorid: string;
   userId?: string; // User ID for following functionality
 }
 
-const FollowerCard: React.FC<FollowerCardProps> = ({ image, name, modelid, userId }) => {
+const FollowerCard: React.FC<FollowerCardProps> = ({ image, name, creatorid, userId }) => {
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
   const currentUserId = useSelector((state: RootState) => state.register.userID);
@@ -115,8 +115,8 @@ const FollowerCard: React.FC<FollowerCardProps> = ({ image, name, modelid, userI
   const handleProfileClick = () => {
     if (userId) {
       router.push(`/Profile/${userId}`);
-    } else if (modelid) {
-      router.push(`/models/${modelid}`);
+    } else if (creatorid) {
+      router.push(`/creators/${creatorid}`);
     }
   };
 

@@ -69,12 +69,12 @@ const initialState = {
   balance: "",
   admin: false,
   witdrawable: "",
-  model: "false",
+  creator: "false",
   status: "idle",
   error: "",
-  modelID: "",
-  modelphotolink: "",
-  modelname: "",
+  creatorID: "",
+  creatorphotolink: "",
+  creatorname: "",
   photolink: "",
   bio: "",
   createdAt: "",
@@ -321,7 +321,7 @@ export const post_exclusive_content = createAsyncThunk<
 
       if (response.status !== 200) {
         // Post was not successfully created
-        throw "Error creating your verifying your model";
+        throw "Error creating your verifying your creator";
       }
 
       return response.data;
@@ -614,12 +614,12 @@ const profile = createSlice({
         state.State = (p as any).state ?? p.country ?? "";
         state.country = p.country ?? "";
         state.balance = p.balance ?? "";
-        // Backend may return either boolean model or isModel
-        state.model = (p as any).model ?? (p as any).isModel ?? false as any;
-        // Backend may use modelId
-        state.modelID = (p as any).modelID ?? (p as any).modelId ?? "";
-        state.modelname = (p as any).modelname ?? "";
-        state.modelphotolink = (p as any).modelphotolink ?? "";
+        // Backend may return either boolean creator or creator_listing
+        state.creator = (p as any).creator ?? (p as any).creator_listing ?? false as any;
+        // Backend may use creatorId
+        state.creatorID = (p as any).creatorID ?? (p as any).creatorId ?? "";
+        state.creatorname = (p as any).creatorname ?? "";
+        state.creatorphotolink = (p as any).creatorphotolink ?? "";
         state.photolink = (p as any).photolink ?? (p as any).photoLink ?? "";
         state.bio = (p as any).bio ?? "";
         state.admin = p.admin ?? false;

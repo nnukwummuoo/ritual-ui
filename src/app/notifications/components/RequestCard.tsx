@@ -17,7 +17,7 @@ const ratings = [
   "😐 Disconnected",
   
 ]
-const modelContent = {
+const creatorContent = {
   accepted: {
     head: "Fan Meet Accepted",
     body: "Please kindly remind your fan to mark as complete during or after the date — it only takes a second. If they don't contact support within 24 hours.",
@@ -46,13 +46,13 @@ const modelContent = {
 const fanContent = {
   accepted: {
     head: "Fan Meet Accepted",
-    body: "By clicking 'Mark as complete' you confirm that your pending gold of 💰20 will be sent to the model."},
+    body: "By clicking 'Mark as complete' you confirm that your pending gold of 💰20 will be sent to the creator."},
   completed: {
     head: "Fan Meet Completed",
-    body: "You have successfully completed the fan meet with the model. How do you rate your experience?"},
+    body: "You have successfully completed the fan meet with the creator. How do you rate your experience?"},
   declined: {
     head: "Fan Meet Declined",
-    body: "Model declined your request."
+    body: "Creator declined your request."
   },
   cancelled: {
     head: "Fan Meet Cancelled",
@@ -62,15 +62,15 @@ const fanContent = {
     body: "Your fan-meet request has expired. You can renew this request anytime."
   },
   request: {
-    head: "Waiting For Model\'s Response",
-    body: "Your fan meet request has been sent. The model has 24 hours to respond."
+    head: "Waiting For Creator\'s Response",
+    body: "Your fan meet request has been sent. The creator has 24 hours to respond."
   }
 }
 const statusArr = ["request", "expired", "completed", "accepted", "declined", "cancelled"] 
 interface CardProps {
     exp: string;
     children?: React.ReactNode;
-    type: "fan" | "model";
+    type: "fan" | "creator";
     titles?: string[];
     name: string;
     img: string;
@@ -78,8 +78,8 @@ interface CardProps {
 }
 
 export default function RequestCard({exp, img, name, titles=["fan"], status, type="fan"}: CardProps) {
-  const cardBorderVariance = type === "model" ? "border-blue-500" : type === "fan" && ["accepted", "completed"].includes(status) ? "border-green-500" : "border-yellow-500"
-  const cardTextVariance = type === "model" ? "text-blue-500" : type === "fan" && ["accepted", "completed"].includes(status) ? "text-green-500" : "text-yellow-500"
+  const cardBorderVariance = type === "creator" ? "border-blue-500" : type === "fan" && ["accepted", "completed"].includes(status) ? "border-green-500" : "border-yellow-500"
+  const cardTextVariance = type === "creator" ? "text-blue-500" : type === "fan" && ["accepted", "completed"].includes(status) ? "text-green-500" : "text-yellow-500"
 
   // shared action button base so buttons have same size / height
   const actionBtnBase = 'w-full px-6 py-3 rounded-lg transition-all duration-500 text-sm flex items-center justify-center';
@@ -105,10 +105,10 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
       </div>
 
       <h3 className={`text-3xl md:text-4xl ${cardTextVariance}`}>{
-        type === "model" ? modelContent[status].head : fanContent[status].head
+        type === "creator" ? creatorContent[status].head : fanContent[status].head
       }</h3>
 
-      <p className="text-sm md:text-base">{ type === "model" ? modelContent[status].body : fanContent[status].body }</p>
+      <p className="text-sm md:text-base">{ type === "creator" ? creatorContent[status].body : fanContent[status].body }</p>
 
       {/* RATINGS */}
       <div className='flex gap-4 flex-wrap justify-center'>
@@ -126,8 +126,8 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
   </div>
 
   <div className="flex-1">
-    { type === "model" && status === "accepted" ? (
-      // Model accepted → Renew + View details
+    { type === "creator" && status === "accepted" ? (
+      // Creator accepted → Renew + View details
       <div className="flex gap-3">
         <div className="flex-1">
           <FanActionBtn label="Chat Now" className={fanActionClass} />
@@ -146,7 +146,7 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
           <button className={fanActionClass}>View details</button>
         </div>
       </div>
-    ) : type === "model" ? (
+    ) : type === "creator" ? (
       <FanActionBtn label="Renew request" className={fanActionClass} />
     ) : (
       <FanActionBtn label="Renew request" className={fanActionClass} />
@@ -169,14 +169,14 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
 
             {/* Action buttons row: ALWAYS horizontal (no stacked layout) */}
             <div className='w-full flex flex-row gap-4 items-center'>
-              { type === "model" ? (
-                // Model: Accept | Decline | View details (equal widths)
+              { type === "creator" ? (
+                // Creator: Accept | Decline | View details (equal widths)
                 <>
                   <div className='flex-1'>
-                    <ModelActionBtn type='accept' />
+                    <CreatorActionBtn type='accept' />
                   </div>
                   <div className='flex-1'>
-                    <ModelActionBtn type='decline' />
+                    <CreatorActionBtn type='decline' />
                   </div>
                   <div className='flex-1'>
                     <button className={fanActionClass}>View details</button>
@@ -201,7 +201,7 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
   );
 }
 
-function ModelActionBtn({type}: {type: "accept" | "decline"}){
+function CreatorActionBtn({type}: {type: "accept" | "decline"}){
   // Use same base sizing so heights match
   const base = 'w-full px-6 py-3 rounded-lg transition-all duration-500 text-white flex items-center justify-center';
   return <button className={`${base} ${type === "accept" ? "hover:bg-green-700 bg-green-600" : "hover:bg-red-700 bg-red-600"}`}>

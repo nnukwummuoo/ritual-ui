@@ -21,7 +21,7 @@ const PrivacyPolicy = () => {
           </h2>
           <p className="mb-3">
             Name, email, profile photo, and preferences during sign-up.
-            ID documents (models only) for verification.
+            ID documents (creators only) for verification.
             Payment and transaction history.
             Device and browser information for security purposes.
 

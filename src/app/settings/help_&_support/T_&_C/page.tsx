@@ -22,8 +22,8 @@ const TermCondition = () => {
 
         <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">1. Eligibility</h3>
         <p className="mb-6">
-         You must be at least 18 years old to use or register as a model or fan on our platform.
-         All models must complete ID verification before offering services.
+         You must be at least 18 years old to use or register as a creator or fan on our platform.
+         All creators must complete ID verification before offering services.
 
         </p>
 
@@ -34,12 +34,12 @@ const TermCondition = () => {
            for illegal activities or to facilitate prostitution.Misrepresent your identity or services offered.
             </p>
 
-        <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">3. Model Services</h3>
+        <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">3. Creator Services</h3>
         <p className="mb-6">
-          Models may offer Fan Meet, Fan Date, and Fan Call services.
+          Creators may offer Fan Meet, Fan Date, and Fan Call services.
           All payments for Fan Meet or Fan Date go into a pending state and are released after the
-           fan marks the appointment as complete.Models earn per minute during active Fan Call.
-           Transport fare must be clearly stated by the model, including any embedded costs.
+           fan marks the appointment as complete.Creators earn per minute during active Fan Call.
+           Transport fare must be clearly stated by the creator, including any embedded costs.
 
 
         </p>
@@ -77,7 +77,7 @@ const TermCondition = () => {
         </p>
 
         <p className="mb-6">
-          3. Revenue Share Model
+          3. Revenue Share Creator
 
 
         </p>
@@ -99,7 +99,7 @@ const TermCondition = () => {
         </p>
 
         <p className="mb-6">
-          Models can request a withdrawal once their account balance reaches $50 or more.
+          Creators can request a withdrawal once their account balance reaches $50 or more.
            Balances below this threshold will remain in the account until the minimum is met.
            Withdrawals are processed via available payment channels (e.g., Payoneer,
             or bank transfer) subject to minimum thresholds and local banking rules.
@@ -186,7 +186,7 @@ const TermCondition = () => {
 
         <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">5. Content Ownership</h3>
         <p className="mb-6">
-          Models retain ownership of their content but grant us a non-exclusive license to display and promote it on the platform.
+          Creators retain ownership of their content but grant us a non-exclusive license to display and promote it on the platform.
           You may not upload copyrighted or stolen content.
 
 
@@ -195,7 +195,7 @@ const TermCondition = () => {
         <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">6. Fees and Revenue</h3>
        <p className="mb-6">
         The platform is free to use.
-        Models keep 100% of their revenue.
+        Creators keep 100% of their revenue.
         After this period, platform fees may apply, which will be disclosed in advance.
         </p>
         
@@ -209,7 +209,7 @@ const TermCondition = () => {
 
         <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">8. Dispute Resolution</h3>
         <p className="mb-6">
-          In case of disputes between fans and models, users are encouraged to contact support with clear evidence (screenshots, photos, videos).
+          In case of disputes between fans and creators, users are encouraged to contact support with clear evidence (screenshots, photos, videos).
           We will act as a neutral third-party, but do not guarantee resolution outcomes.
 
         </p>

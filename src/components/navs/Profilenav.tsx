@@ -8,15 +8,15 @@ import { FaTimes } from "react-icons/fa";
 interface ProfilenavProps {
   isOpen: boolean;
   handleMenubar: () => void;
-  modelMenu: boolean;
-  handleModelToggle: () => void;
+  creatorMenu: boolean;
+  handleCreatorToggle: () => void;
 }
 
 export const Profilenav: React.FC<ProfilenavProps> = ({
   isOpen,
   handleMenubar,
-  modelMenu,
-  handleModelToggle,
+  creatorMenu,
+  handleCreatorToggle,
 }) => {
   return (
     <header
@@ -28,10 +28,10 @@ export const Profilenav: React.FC<ProfilenavProps> = ({
         zIndex: 2000,
       }}
     >
-      {!modelMenu ? (
+      {!creatorMenu ? (
         <FaTimes size={24} color="#fff" onClick={handleMenubar} />
       ) : (
-        <FaTimes size={24} color="#fff" onClick={handleModelToggle} />
+        <FaTimes size={24} color="#fff" onClick={handleCreatorToggle} />
       )}
 
       {/* 
