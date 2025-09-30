@@ -10,6 +10,7 @@ import { CreateModelPayload,
   PostExclusiveIdsPayload,
   TokenPayload,
   ReviewPayload, } from "@/types/model";
+  import { RootState} from "@/store/store";
 // import { saveImage, deleteImage, updateImage } from "../../../api/sendImage";
 
 const initialState: ModelState = {
@@ -210,47 +211,53 @@ export const post_exclusive_ids = createAsyncThunk<any, PostExclusiveIdsPayload>
   }
 );
 
-export const post_exclusive_docs = createAsyncThunk<any, PostExclusiveDocsPayload>(
-  "model/post_exclusive_docs",
-  async (data: any) => {
-    try {
-      let formData = new FormData();
-      const postData = {
-        userid: data.userid,
-        firstname: data.firstName,
-        lastname: data.lastName,
-        email: data.email,
-        dob: data.dob,
-        country: data.country,
-        city: data.city,
-        address: data.address,
-        documentType: data.documentType,
-        idexpire: data.idexpire,
-      };
+export const post_exclusive_docs = createAsyncThunk<
+  any,
+  PostExclusiveDocsPayload,
+  { state: RootState }
+>("model/post_exclusive_docs", async (data, { rejectWithValue }) => {
+  try {
+    let formData = new FormData();
+    const postData = {
+      userid: data.userid,
+      firstname: data.firstName,
+      lastname: data.lastName,
+      email: data.email,
+      dob: data.dob,
+      country: data.country,
+      city: data.city,
+      address: data.address,
+      documentType: data.documentType,
+      idexpire: data.idexpire,
+    };
 
-      formData.append("data", JSON.stringify(postData));
-      formData.append("token", data.token);
-      formData.append("idPhotofile", data.idPhotofile || "");
-      formData.append("holdingIdPhotofile", data.holdingIdPhotofile || "");
+    formData.append("data", JSON.stringify(postData));
+    formData.append("idPhotofile", data.idPhotofile || "");
+    formData.append("holdingIdPhotofile", data.holdingIdPhotofile || "");
 
-      console.log("I am about to create formData", [...formData.entries()]);
+    console.log("FormData entries:", [...formData.entries()]);
+    console.log("Token sent in request:", data.token);
 
-      const response = await axios.put(`${URL}/postdocument`, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
+    const response = await axios.put(`${URL}/postdocument`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+        Authorization: `Bearer ${data.token}`,
+      },
+      withCredentials: true,
+    });
 
-      if (response.status !== 200) {
-        throw new Error("Error creating your verifying your model");
-      }
+    console.log("post_exclusive_docs response:", response.data);
 
-      return response.data;
-    } catch (err: any) {
-      throw err.response?.data?.message || "Check internet connection";
+    if (response.status !== 200) {
+      throw new Error("Error verifying your model");
     }
+
+    return response.data;
+  } catch (err: any) {
+    console.log("post_exclusive_docs error:", err.response?.data || err.message);
+    return rejectWithValue(err.response?.data?.message || "Check internet connection");
   }
-);
+});
 
 export const getmymodel = createAsyncThunk("model/getmymodel", async (data: any) => {
   try {

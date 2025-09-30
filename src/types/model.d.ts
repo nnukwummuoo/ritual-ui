@@ -96,6 +96,7 @@ export interface UpdateModelPayload {
   /** Payload for uploading exclusive docs */
   export interface PostExclusiveDocsPayload {
     userid: string;
+    token: string;
     firstName: string;
     lastName: string;
     email: string;
@@ -107,7 +108,6 @@ export interface UpdateModelPayload {
     idexpire: string;
     idPhotofile: File | null;
     holdingIdPhotofile: File | null;
-    token: string;
   }
   
   /** Payload for deleting exclusive ids */

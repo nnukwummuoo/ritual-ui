@@ -18,8 +18,9 @@ import { toast, ToastContainer } from "material-react-toastify";
 export default function VerifiedUserForm() {
   const dispatch: AppDispatch = useDispatch();
   const router = useRouter();
-  const userId = useSelector((state: RootState) => state.profile.userId); // Fetch userId from Redux
-  const token = useSelector((state: RootState) => state.register. accesstoken); // Fetch token
+  const userId = useSelector((state: RootState) => state.register.userID); // Fetch userId from Redux
+  const token = useSelector((state: RootState) => state.register.accesstoken); // Fetch token
+   console.log("Token loaded from Redux store:", token); // <-- Add this line to debug
   const [loading, setLoading] = useState(false);
   const [color] = useState("#d49115");
   const [step, setStep] = useState(1);
@@ -43,11 +44,11 @@ export default function VerifiedUserForm() {
   });
 
   useEffect(() => {
-    if (!userId) {
+    if (!userId || !token) {
       toast.error("User ID not found. Please log in again.");
       router.push("/");
     }
-  }, [userId, router]);
+  }, [userId, token, router]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type, checked, files } = e.target as any;
@@ -85,7 +86,7 @@ export default function VerifiedUserForm() {
     try {
       await dispatch(post_exclusive_docs({
         ...formData,
-        token: accesstoken,
+        token: token,
         idPhotofile: formData.idPhotofile,
         holdingIdPhotofile: formData.holdingIdPhotofile,
       })).unwrap();
