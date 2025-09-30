@@ -70,7 +70,7 @@ export default function Users(): JSX.Element {
               accesstoken: saved.accesstoken,
               userID: saved.userID,
               modelId: saved.modelId,
-              isModel: saved.isModel,
+              creator_listing: saved.creator_listing,
             })
           );
         }

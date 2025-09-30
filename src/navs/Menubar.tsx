@@ -64,7 +64,7 @@ export const Menubar = () => {
 //   }
 //  }
 
-//  const Ismodel = ()=>{
+//  const creator_listing = ()=>{
 //   if(model) {
 //     return true
 //   }else{
@@ -131,7 +131,7 @@ export const Menubar = () => {
 
 
         {
-          true && // ismodel()
+          true && // creator_listing()
           <button className='flex flex-row mx-auto mt-2' onClick={()=>{
             router.push(`/modelbyid/random_id_123`)
           }}>

@@ -87,7 +87,7 @@ export const ModelSideMenu: React.FC<ModelSideMenuProps> = ({
     }
   };
 
-  const Ismodel = () => {
+  const creator_listing = () => {
     if (model) {
       return true;
     } else {

@@ -61,7 +61,7 @@ const FollowingPage: React.FC = () => {
                 accesstoken: data.accesstoken || "",
                 userID: data.userID || "",
                 modelId: data.modelId,
-                isModel: data.isModel,
+                creator_listing: data.creator_listing,
               })
             );
           }

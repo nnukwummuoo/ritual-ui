@@ -45,7 +45,7 @@ export const Allview = () => {
   //           value.status === "completed"
   //         ) {
   //           return (
-  //             !loggedUser?.isModel && (
+  //             !loggedUser?.creator_listing && (
   //               <ul className="flex flex-col items-center pl-2 pr-2 w-full mb-1">
   //                 <Acceptedlist
   //                   key={`${index}_${userid}`}
@@ -67,7 +67,7 @@ export const Allview = () => {
 
   //         if (value.status === "pending" && value.modelid !== Mymodel) {
   //           return (
-  //             !loggedUser?.isModel && (
+  //             !loggedUser?.creator_listing && (
   //               <ul className="flex flex-col items-center pl-2 pr-2 w-full mb-1">
   //                 <Requestlist
   //                   photolink={value.photolink}

@@ -676,8 +676,8 @@ const profile = createSlice({
         state.State = (p as any).state ?? p.country ?? "";
         state.country = p.country ?? "";
         state.balance = p.balance ?? "";
-        // Backend may return either boolean model or isModel
-        state.model = (p as any).model ?? (p as any).isModel ?? false as any;
+        // Backend may return either boolean model or creator_listing
+        state.model = (p as any).model ?? (p as any).creator_listing ?? false as any;
         // Backend may use modelId
         state.modelID = (p as any).modelID ?? (p as any).modelId ?? "";
         state.modelname = (p as any).modelname ?? "";

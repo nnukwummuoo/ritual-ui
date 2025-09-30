@@ -1417,7 +1417,7 @@ const PostModal = () => {
                   <p className="text-blue-500">{nickname}</p>
                 
                 
-                  {(profile as any).ismodel && (
+                  {(profile as any).creator_listing && (
                     <button
                       className="bg-[#7e3500] text-[#eedfcb] rounded-lg p-1 px-2 mt-3"
                     >

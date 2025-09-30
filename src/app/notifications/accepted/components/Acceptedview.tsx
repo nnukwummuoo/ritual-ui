@@ -50,7 +50,7 @@ const acceptedFanReq = [
 ]
 
 const user = {
-  isModel: false
+  creator_listing: false
 }
 export const Acceptedview = () => {
   // const Accepted = useSelector((state) => state.booking.acceptedList);
@@ -77,7 +77,7 @@ export const Acceptedview = () => {
   // }, [acceptedReqstat]);
   // const user = useAuth();
   const Showaccepted = () => {
-    if (user?.isModel) {
+    if (user?.creator_listing) {
       return (
         <p className="text-slate-400 text-center mt-16 text-xs">
           !You currently don`t have any accepted request
