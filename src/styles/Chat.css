@@ -1,9 +1,12 @@
 .chat-container{
-    /* width: 100%; */
-    max-width: 700px;
-    height: 95vh;
-margin-left: 70px;
+    width: 100%;
+    max-width: 100%;
+    height: 100vh; /* Full viewport height */
+    margin-left: 0;
     position: relative;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; /* Prevent whole page scrolling */
     /* padding: 0px 2rem; */
 }
 .chat-header{
@@ -33,16 +36,14 @@ margin-left: 70px;
 .chat-content{
     display: flex;
     flex-direction: column;
-      scroll-behavior: smooth;
-
-    align-items: center;
-    padding: 10px;
-    height: 90vh;
+    scroll-behavior: smooth;
+    align-items: stretch;
+    padding: 1rem;
+    height: 70%; /* Fixed 400px height */
     overflow-y: auto;
     overflow-x: hidden;
-    min-height: 200px;
-        padding:  8rem;
- max-height: calc(100vh - 120px)
+    width: 100%;
+    max-width: 100%;
 }
 
 .chat-content::-webkit-scrollbar {
@@ -61,6 +62,23 @@ margin-left: 70px;
 .chat-content::-webkit-scrollbar-thumb:hover {
   background: #9ca3af;
 }
+
+/* Ensure messages take 50% width each */
+.chat-content .space-y-3 {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+.chat-content .space-y-3 > div {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+.chat-content .space-y-3 > div > div {
+  width: 50% !important;
+  max-width: 50% !important;
+  min-width: 200px;
+}
 .gold-button{
     background-color: transparent;
     border: none;
@@ -71,6 +89,35 @@ margin-left: 70px;
     bottom: 120px;
     right: 10px;
 }
+
+/* Ensure proper layout with fixed top and bottom bars */
+.chat-container {
+    position: relative;
+    overflow: hidden;
+}
+
+/* Top bar should be fixed and not scroll */
+.chat-container > div:first-of-type {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    flex-shrink: 0; /* Don't shrink */
+}
+
+/* Bottom input should be fixed and not scroll */
+.chat-container > div:last-of-type {
+    position: sticky;
+    bottom: 0;
+    z-index: 50;
+    flex-shrink: 0; /* Don't shrink */
+}
+
+/* Chat content should scroll and not overlap with fixed bars */
+.chat-content {
+    padding-bottom: 1rem; /* Add padding to prevent content from touching input */
+}
+
+/* Chat specific styles - no body modifications to avoid layout conflicts */
 
 @media  (max-width: 700px) {
     .chat-container{

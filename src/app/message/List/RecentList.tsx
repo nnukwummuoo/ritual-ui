@@ -6,8 +6,8 @@ import { useSelector } from 'react-redux';
 import { format, isToday } from 'date-fns';
 import onlineIcon from '@/icons/onlineIcon.svg';
 import offlineIcon from '@/icons/offlineIcon.svg';
-import DummyPics from '@/icons/icons8-profile_Icon.png';
-import dodo from '@/icons/icons8-profile_Icon.png';
+import DummyPics from '@/icons/icons8-profile_user.png';
+import dodo from '@/icons/icons8-profile_user.png';
 import Image from 'next/image';
 
 interface RecentListProps {

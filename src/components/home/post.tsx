@@ -733,10 +733,10 @@ export default function PostsCard({ type }: { type?: "video" | "image" | "text" 
                                   .then((commentRes: any) => {
                                     const serverComments = (commentRes && (commentRes.comment || commentRes.comments)) || [];
                                     setUi((prev) => ({
-                                      ...prev,
-                                      [pid]: {
-                                        ...(prev[pid] || {}),
-                                        sending: false,
+                                    ...prev,
+                                    [pid]: {
+                                      ...(prev[pid] || {}),
+                                      sending: false,
                                         comments: serverComments,
                                         commentCount: serverComments.length,
                                       },
@@ -747,7 +747,7 @@ export default function PostsCard({ type }: { type?: "video" | "image" | "text" 
                                       ...prev,
                                       [pid]: { ...(prev[pid] || {}), sending: false },
                                     }));
-                                  });
+                                });
                               })
                               .catch(() => {
                                 setUi((prev) => ({

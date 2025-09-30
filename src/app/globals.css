@@ -26,6 +26,12 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
+/* Prevent body scrolling on message routes */
+body.message-route {
+  overflow: hidden;
+  height: 100vh;
+}
+
 .bg-img{
   background-image: url("/register.png");
 }

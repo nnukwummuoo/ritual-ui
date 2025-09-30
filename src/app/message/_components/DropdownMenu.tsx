@@ -1,51 +1,58 @@
-import React, { useState } from "react";
-import Options from "../../icons/menu.svg";
-import { useCallContext } from "../contextAPI/useCallContext";
-// import { useCall } from "../contextAPI/useCallContext";
-const DropdownMenu = () => {
-  const { closeOption, toggleoption , opening} = useCallContext()
+"use client";
+import React, { useState, useRef, useEffect } from "react";
+import { Ellipsis } from 'lucide-react';
 
- 
+const DropdownMenu = () => {
+  const [opening, setOpening] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const toggleoption = () => {
+    setOpening(!opening);
+  };
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setOpening(false);
+      }
+    };
+
+    if (opening) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [opening]);
 
   return (
-    <div>
+    <div ref={dropdownRef}>
       <div className="relative inline-block text-left">
         <button onClick={toggleoption} className="px-2">
-          <img alt="options" src={Options} />
+        <Ellipsis />
         </button>
 
         {opening && (
           <div
-            className="absolute right-0 mt-2 w-40 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none"
+            className="absolute right-0 mt-2 w-40 rounded-md shadow-lg bg-gray-800 border border-gray-700 focus:outline-none z-50"
             role="menu"
             aria-orientation="vertical"
             aria-labelledby="menu-button"
           >
             <div className="py-1" role="none">
-              {/* <a
-                href="#"
-                className="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100"
+              <button
+                className="text-gray-300 block w-full text-left px-4 py-2 text-sm hover:bg-gray-700 transition-colors"
                 role="menuitem"
-                onClick={toggleoption}
-              >
-                Report
-              </a>
-              <a
-                href="#"
-                className="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100"
-                role="menuitem"
-                onClick={toggleoption}
-              >
-                Share
-              </a> */}
-              <a
-                href="#"
-                className="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100"
-                role="menuitem"
-                onClick={toggleoption}
+                onClick={() => {
+                  setOpening(false);
+                  // Add block user functionality here
+                  console.log('Block user clicked');
+                }}
               >
                 Block User
-              </a>
+              </button>
             </div>
           </div>
         )}
