@@ -129,22 +129,9 @@ export const getprofile = createAsyncThunk<
   async (data, thunkAPI) => {
     try {
       // Enhanced logging for profile data fetching
-      console.log("🔍 [getprofile] Fetching profile data:", {
-        userid: data?.userid,
-        hasToken: Boolean(data?.token),
-        tokenLength: data?.token?.length,
-        endpoint: `${URL}/getprofile`
-      });
 
       const response = await axios.post(`${URL}/getprofile`, data);
       
-      console.log("✅ [getprofile] Profile data received:", {
-        status: response.status,
-        hasData: !!response.data,
-        profileKeys: response.data ? Object.keys(response.data) : [],
-        hasPhotolink: !!response.data?.profile?.photolink,
-        photolinkPreview: response.data?.profile?.photolink?.substring(0, 50) + '...'
-      });
 
       return response.data;
     } catch (err) {
@@ -325,7 +312,6 @@ export const post_exclusive_content = createAsyncThunk<
         formData.append("thumbnaillink", data.thumbnaillink);
       }
 
-      console.log("I am about to create formData", [...formData.entries()]);
 
       let response = await axios.put(`${URL}/exclusive`, formData, {
         headers: {
@@ -416,13 +402,6 @@ export const follow = createAsyncThunk<
   { userid: string; followerid: string; token: string }
 >("profile/follow", async (data) => {
   try {
-    console.log("🔍 [follow] Starting follow request:", {
-      url: `${URL}/follow`,
-      userid: data?.userid,
-      followerid: data?.followerid,
-      hasToken: Boolean(data?.token),
-      tokenLength: data?.token?.length
-    });
     
     // Send only userid and followerid in body (backend doesn't expect authentication)
     const requestBody = {
@@ -430,10 +409,6 @@ export const follow = createAsyncThunk<
       followerid: data.followerid
     };
     
-    console.log("📤 [follow] Request body:", requestBody);
-    console.log("📤 [follow] Request headers:", {
-      'Content-Type': 'application/json'
-    });
     
     let response = await axios.post(`${URL}/follow`, requestBody, {
       headers: {
@@ -441,12 +416,6 @@ export const follow = createAsyncThunk<
       }
     });
     
-    console.log("✅ [follow] Success response:", {
-      status: response.status,
-      statusText: response.statusText,
-      data: response.data,
-      headers: response.headers
-    });
 
     return response.data;
   } catch (err : any) {
@@ -476,13 +445,6 @@ export const unfollow = createAsyncThunk<
   { userid: string; followerid: string; token: string }
 >("profile/unfollow", async (data) => {
   try {
-    console.log("🔍 [unfollow] Starting unfollow request:", {
-      url: `${URL}/follow`,
-      userid: data?.userid,
-      followerid: data?.followerid,
-      hasToken: Boolean(data?.token),
-      tokenLength: data?.token?.length
-    });
     
     // Send only userid and followerid in body (backend doesn't expect authentication)
     const requestBody = {
@@ -490,10 +452,6 @@ export const unfollow = createAsyncThunk<
       followerid: data.followerid
     };
     
-    console.log("📤 [unfollow] Request body:", requestBody);
-    console.log("📤 [unfollow] Request headers:", {
-      'Content-Type': 'application/json'
-    });
     
     let response = await axios.put(`${URL}/follow`, requestBody, {
       headers: {
@@ -501,12 +459,6 @@ export const unfollow = createAsyncThunk<
       }
     });
     
-    console.log("✅ [unfollow] Success response:", {
-      status: response.status,
-      statusText: response.statusText,
-      data: response.data,
-      headers: response.headers
-    });
 
     return response.data;
   } catch (err : any) {
@@ -534,10 +486,6 @@ export const unfollow = createAsyncThunk<
 export const getfollow = createAsyncThunk<{ data: FollowData }, { userid: string; token: string }>("profile/getfollow", async (data) => {
   try {
     // Debug: trace outgoing request for followers/following
-    console.log("[getfollow] POST", `${URL}/getfollowers`, {
-      userid: data?.userid,
-      hasToken: Boolean(data?.token),
-    });
 
     // Set up headers with authorization token if available
     const headers = data.token ? { 
@@ -552,10 +500,6 @@ export const getfollow = createAsyncThunk<{ data: FollowData }, { userid: string
       { headers }
     );
     
-    console.log("[getfollow] success", response.status);
-    // Log raw payloads from backend
-    console.log("[getfollow] response.data", response.data);
-    console.log("[getfollow] response.data.data", response.data?.data);
 
     return response.data;
   } catch (err) {
@@ -566,9 +510,6 @@ export const getfollow = createAsyncThunk<{ data: FollowData }, { userid: string
 
 export const getAllUsers = createAsyncThunk<{ users: Array<any> }, { token: string }>("profile/getAllUsers", async (data) => {
   try {
-    console.log("[getAllUsers] POST", `${URL}/getallusers`, {
-      hasToken: Boolean(data?.token),
-    });
     
     // Set up headers with authorization token if available
     const headers = data.token ? { 
@@ -579,8 +520,6 @@ export const getAllUsers = createAsyncThunk<{ users: Array<any> }, { token: stri
     };
     
     let response = await axios.post(`${URL}/getallusers`, { token: data.token }, { headers });
-    console.log("[getAllUsers] success", response.status);
-    console.log("[getAllUsers] response.data", response.data);
 
     return response.data;
   } catch (err) {
@@ -661,7 +600,6 @@ const profile = createSlice({
     builder
       .addCase(getprofile.pending, (state, action) => {
         state.status = "loading";
-        console.log(state.status);
       })
       .addCase(getprofile.fulfilled, (state, action) => {
         state.status = "succeeded";
@@ -687,17 +625,6 @@ const profile = createSlice({
         state.admin = p.admin ?? false;
         
         // Log profile data update
-        console.log("📊 [profile slice] Profile data updated:", {
-          firstname: state.firstname,
-          lastname: state.lastname,
-          nickname: state.nickname,
-          bio: state.bio,
-          photolink: state.photolink,
-          hasBio: !!state.bio,
-          hasPhotolink: !!state.photolink,
-          photolinkType: typeof state.photolink,
-          photolinkPreview: state.photolink?.substring(0, 50) + '...'
-        });
         // Support both exclusive and exclusive_verify flags
         state.exclusive_verify = (p as any).exclusive ?? (p as any).exclusive_verify ?? false;
         state.emailnote = (p as any).emailnot ?? (p as any).emailnot === true; // boolean
@@ -795,7 +722,6 @@ const profile = createSlice({
       })
       .addCase(post_exclusive_img.fulfilled, (state, action) => {
         state.posteximgStats = "succeeded";
-        console.log("content img " + action.payload);
         state.postexIMG = action.payload.img ?? "";
         state.thumbimg = action.payload.thumb ?? "";
       })

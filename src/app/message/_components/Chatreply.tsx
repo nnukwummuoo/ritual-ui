@@ -7,7 +7,7 @@ import { useEffect } from "react";
 // import { downloadImage } from "../../api/sendImage";
 import { format } from "date-fns";
 import { useSelector } from "react-redux";
-import dodoIcon from "@public/icons/icons8-profile_Icon.png";
+import dodoIcon from "@public/icons/icons8-profile_user.png";
 
 export const Chatreply = ({ img, username, content, date, id, className }: { img: any, username: string, content: string, date: string, id: string, className: string }) => {
   const dates = format(new Date(Number(date)), "MM/dd/yyyy 'at' h:mm a"); // convert date to string

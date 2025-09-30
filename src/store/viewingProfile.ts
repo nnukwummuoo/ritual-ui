@@ -83,19 +83,7 @@ export const getViewingProfile = createAsyncThunk(
   'viewingProfile/getProfile',
   async ({ userid, token }: { userid: string; token: string }) => {
     try {
-      console.log("🔍 [getViewingProfile] Fetching profile data:", {
-        userid,
-        hasToken: Boolean(token),
-        endpoint: `${URL}/getprofile`
-      });
-
       const response = await axios.post(`${URL}/getprofile`, { userid, token });
-      
-      console.log("✅ [getViewingProfile] Profile data received:", {
-        status: response.status,
-        hasData: !!response.data,
-        profileKeys: response.data ? Object.keys(response.data) : []
-      });
 
       return response.data;
     } catch (error) {
@@ -110,18 +98,7 @@ export const getViewingFollow = createAsyncThunk(
   'viewingProfile/getFollow',
   async ({ userid, token }: { userid: string; token: string }) => {
     try {
-      console.log("🔍 [getViewingFollow] Fetching follow data:", {
-        userid,
-        hasToken: Boolean(token),
-        endpoint: `${URL}/getfollowers`
-      });
-
       const response = await axios.post(`${URL}/getfollowers`, { userid, token });
-      
-      console.log("✅ [getViewingFollow] Follow data received:", {
-        status: response.status,
-        hasData: !!response.data
-      });
 
       return response.data;
     } catch (error) {
@@ -136,17 +113,7 @@ export const getAllUsersForViewing = createAsyncThunk(
   'viewingProfile/getAllUsers',
   async ({ token }: { token: string }) => {
     try {
-      console.log("🔍 [getAllUsersForViewing] Fetching all users:", {
-        hasToken: Boolean(token),
-        endpoint: `${URL}/getallusers`
-      });
-
       const response = await axios.post(`${URL}/getallusers`, { token });
-      
-      console.log("✅ [getAllUsersForViewing] All users data received:", {
-        status: response.status,
-        hasData: !!response.data
-      });
 
       return response.data;
     } catch (error) {

@@ -15,6 +15,7 @@ import { MsgRequestNav } from "./_components/MsgRequestNav";
 import { useDispatch, useSelector } from "react-redux";
 import { getmessagenotication, getmsgnitify, updatemessage } from "@/store/messageSlice";
 import type { RootState } from "@/store/store";
+import { MessageList } from "./_components/MessageList";
 
 export const MessageView = () => {
   const [loading, setLoading] = useState<boolean>(false);
@@ -98,8 +99,8 @@ export const MessageView = () => {
 
 
   return (
-    <div className="min-h-screen ">
-      <div className="w-full max-w-4xl mx-auto">
+    <div className="h-screen w-full overflow-hidden">
+      <div className="w-full h-full mx-auto">
         {/* Header */}
         <div className=" border-b  p-4">
           <div className="flex items-center justify-between">
@@ -120,40 +121,11 @@ export const MessageView = () => {
           </div>
         </div>
 
-        {/* Search Bar */}
-        <div className="p-4 ">
-          <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <svg className="w-5 h-5 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-            </div>
-            <input
-              type="text"
-              className="w-full pl-10 pr-4 py-3 bg-gray-900 border border-gray-700 rounded-full text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent"
-              placeholder="Search by name or message..."
-            />
-          </div>
-        </div>
+      
 
         {/* Messages List */}
-        <div className="flex-1 overflow-y-auto">
-          {loading && (
-            <div className="flex flex-col items-center justify-center py-12">
-              <PacmanLoader
-                color={color}
-                loading={loading}
-                size={35}
-                aria-label="Loading Spinner"
-                data-testid="loader"
-              />
-              <p className="text-sm text-center text-gray-200 mt-4">
-                Loading messages...
-              </p>
-            </div>
-          )}
-          
-          <MsgRequestNav />
+        <div className="flex-1 overflow-y-auto h-full">
+          <MessageList />
         </div>
 
         {/* Floating Action Button */}

@@ -26,13 +26,69 @@ const initialState: MessageState = {
   rejectAnswer:null
 };
 
-export const getchat = createAsyncThunk< { chats: any[]; chatInfo: any }, any>("chat/getchat", async (data) => {
+export const getchat = createAsyncThunk< { chats: any[]; chatInfo: any }, any>("chat/getchat", async (data, thunkAPI) => {
   try {
-    let response = await axios.put(`${URL}/getcurrentchat`, data);
+    console.log("🌐 [GETCHAT_API] ===== STARTING GETCHAT API CALL =====");
+    console.log("🌐 [GETCHAT_API] Making API call to getcurrentchat with data:", data);
+    console.log("🌐 [GETCHAT_API] API URL:", `${URL}/getcurrentchat`);
+    
+    const state = thunkAPI.getState() as RootState;
+    const token = state.register.refreshtoken || state.register.accesstoken || (() => {
+      try {
+        return JSON.parse(localStorage.getItem("login") || "{}").refreshtoken || 
+               JSON.parse(localStorage.getItem("login") || "{}").accesstoken;
+      } catch {
+        return "";
+      }
+    })();
 
+    console.log("🔑 [GETCHAT_API] Token available:", !!token);
+
+    // Use the same pattern as ProfilePage - include token in request body
+    const requestData = {
+      ...data,
+      token: token || ""
+    };
+
+    console.log("📤 [GETCHAT_API] Request data with token:", {
+      modelid: requestData.modelid,
+      clientid: requestData.clientid,
+      hasToken: !!requestData.token
+    });
+
+    console.log("🌐 [GETCHAT_API] Making axios request to:", `${URL}/getcurrentchat`);
+    console.log("🌐 [GETCHAT_API] Request data:", requestData);
+    console.log("🌐 [GETCHAT_API] Full URL:", `${URL}/getcurrentchat`);
+    console.log("🌐 [GETCHAT_API] URL variable:", URL);
+    
+    // Remove the test GET request - we need PUT request
+    
+    let response = await axios.put(`${URL}/getcurrentchat`, requestData, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    
+    console.log("🌐 [GETCHAT_API] Axios request completed successfully");
+
+    console.log("✅ [GETCHAT_API] API response received:", response.data);
+    console.log("📊 [GETCHAT_API] Response status:", response.status);
+    console.log("📊 [GETCHAT_API] Response data keys:", Object.keys(response.data || {}));
+    console.log("📊 [GETCHAT_API] Response data type:", typeof response.data);
+    console.log("📊 [GETCHAT_API] Response data.chats:", response.data.chats);
+    console.log("📊 [GETCHAT_API] Response data.chats length:", response.data.chats?.length);
+    console.log("📊 [GETCHAT_API] Response data.chatInfo:", response.data.chatInfo);
+    
     return response.data;
   } catch (err : any) {
-    if (!err.response.data.message) {
+    console.error("❌ [GETCHAT_API] ===== API CALL FAILED =====");
+    console.error("❌ [GETCHAT_API] API call failed:", err);
+    console.error("❌ [GETCHAT_API] Error response:", err.response?.data);
+    console.error("❌ [GETCHAT_API] Error status:", err.response?.status);
+    console.error("❌ [GETCHAT_API] Error message:", err.message);
+    console.error("❌ [GETCHAT_API] Full error:", err);
+    
+    if (!err.response?.data?.message) {
       throw "check internet connection";
     }
     throw err.response.data.message;
@@ -45,25 +101,30 @@ export const getmsgnitify = createAsyncThunk(
   async (data: any, thunkAPI) => {
     try {
       const state = thunkAPI.getState() as RootState;
-      const token =
-        state.register.accesstoken ||
-        (() => {
-          try {
-            return JSON.parse(localStorage.getItem("login") || "{}").accesstoken;
-          } catch {
-            return "";
-          }
-        })();
+      const token = state.register.refreshtoken || state.register.accesstoken || (() => {
+        try {
+          return JSON.parse(localStorage.getItem("login") || "{}").refreshtoken || 
+                 JSON.parse(localStorage.getItem("login") || "{}").accesstoken;
+        } catch {
+          return "";
+        }
+      })();
 
-      let response = await axios.put(`${URL}/getmsgnotify`, data, {
+      // Use the same pattern as getchat - include token in request body
+      const requestData = {
+        ...data,
+        token: token || ""
+      };
+
+      let response = await axios.put(`${URL}/getmsgnotify`, requestData, {
         headers: {
           "Content-Type": "application/json",
-          Authorization: token ? `Bearer ${token}` : "",
         },
       });
 
       return response.data;
-    } catch (err) {
+    } catch (err: any) {
+      
       if (axios.isAxiosError(err)) {
         const msg = (err.response?.data as any)?.message ?? "check internet connection";
         throw msg;
@@ -109,28 +170,31 @@ export const getmessagenotication = createAsyncThunk(
   "chat/getmessagenotication",
   async (data: any, thunkAPI) => {
     try {
-      console.log("calling notification");
       const state = thunkAPI.getState() as RootState;
-      const token =
-        state.register.accesstoken ||
-        (() => {
-          try {
-            return JSON.parse(localStorage.getItem("login") || "{}").accesstoken;
-          } catch {
-            return "";
-          }
-        })();
+      const token = state.register.refreshtoken || state.register.accesstoken || (() => {
+        try {
+          return JSON.parse(localStorage.getItem("login") || "{}").refreshtoken || 
+                 JSON.parse(localStorage.getItem("login") || "{}").accesstoken;
+        } catch {
+          return "";
+        }
+      })();
 
-      let response = await axios.put(`${URL}/messagenotification`, data, {
+      // Use the same pattern as getchat - include token in request body
+      const requestData = {
+        ...data,
+        token: token || ""
+      };
+
+      let response = await axios.put(`${URL}/messagenotification`, requestData, {
         headers: {
           "Content-Type": "application/json",
-          Authorization: token ? `Bearer ${token}` : "",
         },
       });
 
       return response.data;
     } catch (err : any) {
-      console.log("notification failed");
+      
       if (axios.isAxiosError(err)) {
         const msg = (err.response?.data as any)?.message ?? "check internet connection";
         throw msg;
@@ -232,8 +296,8 @@ const message = createSlice({
       })
       .addCase(getchat.fulfilled, (state, action) => {
         state.currentmessagestatus = "succeeded";
-        state.listofcurrentmessage = action.payload.chats;
-        state.chatinfo = action.payload.chatInfo
+        state.listofcurrentmessage = action.payload.chats || [];
+        state.chatinfo = action.payload.chatInfo || {};
       })
       .addCase(getchat.rejected, (state, action) => {
         state.currentmessagestatus = "failed";
@@ -247,8 +311,8 @@ const message = createSlice({
       })
       .addCase(getmsgnitify.fulfilled, (state, action) => {
         state.msgnotifystatus = "succeeded";
-         state.recentmsg = action.payload.lastchat
-
+        // Use Allmsg (all conversations) instead of lastchat (only sent messages)
+        state.recentmsg = action.payload.Allmsg || action.payload.recentmsg || action.payload.lastchat;
       })
       .addCase(getmsgnitify.rejected, (state, action) => {
         state.msgnotifystatus = "failed";
