@@ -1,5 +1,3 @@
-//src/app/creators/create-creator/Create-Creator-Listing.tsx
-
 "use client";
 
 import { useEffect, useRef, useState } from "react";
@@ -10,12 +8,12 @@ import { useRouter } from "next/navigation";
 import { toast, ToastContainer } from "material-react-toastify";
 // import {
 //   createcreator,
-//   changecreatorstatus,
+//   changecreatorstatus, ii want my moddl to work
 // } from "@/app/features/creator/creatorSlice";
 import CountrySelect from "@/components/CountrySelect/CountrySelect";
 
 import "material-react-toastify/dist/ReactToastify.css";
-import "@/styles/Create-Creator-Listing.css";
+import "@/styles/CreateCreatorListing.css";
 import person from "../../icons/person.svg";
 import idcardicon from "../../icons/idcardIcon.svg";
 import deleteIcon from "../../icons/deleteicon.svg";
@@ -62,7 +60,7 @@ async function compressImage(file: File, opts?: { maxWidth?: number; maxHeight?:
   }
 }
 
-export default function Create-Creator-Listing () {
+export default function CreateCreatorListing () {
   // const firstname = useSelector((state: any) => state.profile.firstname);
   // const lastname = useSelector((state: any) => state.profile.lastname);
   // const login = useSelector((state: any) => state.register.logedin);

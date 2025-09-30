@@ -1,7 +1,7 @@
 // src/app/creators/create-creator/page.tsx
 "use client";
-import Create-Creator-Listing from "./Create-Creator-Listing";
+import CreateCreatorListing from "./CreateCreatorListing";
 
 export default function Page() {
-  return <Create-Creator-Listing />;
+  return <CreateCreatorListing />;
 }
