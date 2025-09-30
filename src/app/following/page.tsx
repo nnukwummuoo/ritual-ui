@@ -60,7 +60,7 @@ const FollowingPage: React.FC = () => {
                 refreshtoken: data.refreshtoken || "",
                 accesstoken: data.accesstoken || "",
                 userID: data.userID || "",
-                modelId: data.modelId,
+                creatorId: data.creatorId,
                 creator_listing: data.creator_listing,
               })
             );
@@ -157,7 +157,7 @@ const FollowingPage: React.FC = () => {
                 key={`fan_${index}_${user.id}`}
                 image={user.image}
                 name={user.name}
-                modelid={user.modelid}
+                creatorid={user.creatorid}
                 userId={user.id}
               />
             </div>
@@ -191,7 +191,7 @@ const FollowingPage: React.FC = () => {
                   key={`following_${index}_${user.id}`}
                   image={user.image}
                   name={user.name}
-                  modelid={user.modelid}
+                  creatorid={user.creatorid}
                   userId={user.id}
                 />
               </div>
@@ -245,7 +245,7 @@ const FollowingPage: React.FC = () => {
                 key={`discover_${index}_${user._id}`}
                 image={user.photolink || "/icons/icons8-profile_Icon1.png"}
                 name={`${user.firstname} ${user.lastname}`.trim()}
-                modelid={user.modelid || ""}
+                creatorid={user.creatorid || ""}
                 userId={user._id}
               />
             </div>

@@ -28,8 +28,8 @@ export default function MobileSidebar() {
       icon: <FaHeart size={25} />,
     },
     {
-      route: "/models",
-      name: "Models",
+      route: "/creators",
+      name: "Creators",
       icon: <FaCamera size={25} />,
     },
     {

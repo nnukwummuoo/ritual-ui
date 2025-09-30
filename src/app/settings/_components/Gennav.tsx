@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import "@/styles/Navs.css";
 import "@/styles/Gennav.css";
 import { Loginview } from "@/components/Loginview";
-// import { ModelSideMenu } from "./ModelSideMenu";
+// import { CreatorSideMenu } from "./CreatorSideMenu";
 // import { useNavigate } from "react-router-dom";
 // import { useSelector, useDispatch } from "react-redux";
 // import { Logins } from "../auth/Logins";
@@ -16,10 +16,10 @@ let data = {};
 export const Gennavigation = ({ click }: { click: boolean}) => {
   const [open, setOpen] = useState(false);
   const login = false
-  // const [modelToggle, setModelToggle] = useState(false);
+  // const [creatorToggle, setCreatorToggle] = useState(false);
   // const login = useSelector((state) => state.register.logedin);
   // const handleMenubar = () => setOpen(!open);
-  // const handleModelToggle = () => setModelToggle(!modelToggle);
+  // const handleCreatorToggle = () => setCreatorToggle(!creatorToggle);
 
   useEffect(() => {
     if (click) {
@@ -38,8 +38,8 @@ export const Gennavigation = ({ click }: { click: boolean}) => {
             <Profilenav
               handleMenubar={handleMenubar}
               isOpen={isOpen}
-              modelMenu={modelMenu}
-              handleModelToggle={handleModelToggle}
+              creatorMenu={creatorMenu}
+              handleCreatorToggle={handleCreatorToggle}
             />
           )}
           {login && <Sidemenu open={open} handleMenubar={handleMenubar} />}*/}

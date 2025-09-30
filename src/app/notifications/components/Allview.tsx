@@ -3,8 +3,8 @@ import React, { useState, useEffect } from "react";
 import PacmanLoader from "react-spinners/RingLoader";
 // import { useSelector, useDispatch } from "react-redux";
 // import { getall_request } from "../../../app/features/booking/booking";
-// import { Acceptedlist } from "./modelnotifylist/Acceptedlist";
-// import { Meetuplist } from "./modelnotifylist/Meetuplist";
+// import { Acceptedlist } from "./creatornotifylist/Acceptedlist";
+// import { Meetuplist } from "./creatornotifylist/Meetuplist";
 // import { List_of_message } from "../../users/List_of_message";
 // import { Gennavigation } from "../../../navs/Gennav";
 // import { Acceptedview } from "./Acceptedview";
@@ -40,7 +40,7 @@ export const Allview = () => {
   //       // console.log(allRequest);
   //       return allBookings.map((value, index) => {
   //         if (
-  //           (value.modelid !== Mymodel && value.status === "accepted") ||
+  //           (value.creatorid !== Mycreator && value.status === "accepted") ||
   //           value.status === "decline" ||
   //           value.status === "completed"
   //         ) {
@@ -55,8 +55,8 @@ export const Allview = () => {
   //                   type={value.type}
   //                   date={value.date}
   //                   time={value.time}
-  //                   modelid={value.modelid}
-  //                   modeluserid={value.modeluserid}
+  //                   creatorid={value.creatorid}
+  //                   creatoruserid={value.creatoruserid}
   //                   amount={value.amount}
   //                   id={value.id}
   //                 />
@@ -65,17 +65,17 @@ export const Allview = () => {
   //           );
   //         }
 
-  //         if (value.status === "pending" && value.modelid !== Mymodel) {
+  //         if (value.status === "pending" && value.creatorid !== Mycreator) {
   //           return (
   //             !loggedUser?.creator_listing && (
   //               <ul className="flex flex-col items-center pl-2 pr-2 w-full mb-1">
   //                 <Requestlist
   //                   photolink={value.photolink}
-  //                   modelname={value.name}
-  //                   modeltype={value.type}
+  //                   creatorname={value.name}
+  //                   creatortype={value.type}
   //                   date={value.date}
   //                   time={value.time}
-  //                   modelid={value.modelid}
+  //                   creatorid={value.creatorid}
   //                   id={value.id}
   //                   setRequests={setAllBookings}
   //                 />
@@ -86,7 +86,7 @@ export const Allview = () => {
 
   //         if (
   //           value.status === "pending" ||
-  //           (value.status === "accepted" && value.modelid === Mymodel)
+  //           (value.status === "accepted" && value.creatorid === Mycreator)
   //         ) {
   //           let messaging = check_status(value.status, value.type, value.name);
   //           return (
@@ -100,7 +100,7 @@ export const Allview = () => {
   //                 time={value.time}
   //                 venue={value.place}
   //                 postuserid={value.clientid}
-  //                 modelid={value.modelid}
+  //                 creatorid={value.creatorid}
   //                 status={value.status}
   //                 latter1={messaging}
   //                 setRequests={setAllBookings}
@@ -117,7 +117,7 @@ export const Allview = () => {
   //                 id={value.id}
   //                 time={value.time}
   //                 message={value.message}
-  //                 Mymodel={Mymodel}
+  //                 Mycreator={Mycreator}
   //                 setRequests={setAllBookings}
   //               />
   //             </ul>
@@ -138,7 +138,7 @@ export const Allview = () => {
 
   // const fetchall_req = async () => {
   //   setloading(true);
-  //   await dispatch(getall_request({ userid, token, modelid: Mymodel }));
+  //   await dispatch(getall_request({ userid, token, creatorid: Mycreator }));
   //   setloading(false);
   // };
 

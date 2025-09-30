@@ -6,9 +6,9 @@ const publicRoutes = [
   '/',
   '/auth/register',
   '/auth/verify-email',
-  '/models',
-  '/models/create-model',
-  '/models/edit-model',
+  '/creators',
+  '/creators/create-creator',
+  '/creators/edit-creator',
   '/guidelines',
   '/support',
   '/privacy-policy',
@@ -19,12 +19,12 @@ const publicRoutes = [
   "/comment",
   "/buy-gold",
   "/forget-password",
-  "/verify-models",
+  "/verify-creators",
   "/message",
   // change later for admin 
   "/mmeko/admin",
   "/mmeko/admin/reports",
-  "/mmeko/admin/model-verification",
+  "/mmeko/admin/creator-verification",
   "/mmeko/admin/withdrawal",
   "/mmeko/admin/users",
 ];
@@ -36,7 +36,7 @@ const prohibitedRoute = [
 ];
 
 const publicRoutePrefixes = [
-  '/models',
+  '/creators',
 ];
 
 const PUBLIC_FILE = /\.(.*)$/

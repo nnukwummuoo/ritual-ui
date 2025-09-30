@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "@/store/store";
-import { verifymodel, rejectmodel } from "@/store/modelSlice";
+import { verifycreator, rejectcreator } from "@/store/creatorSlice";
 import { MdOutlineClose } from "react-icons/md";
 import proimage1 from "../../../icons/icons8-profile_Icon.png";
 import PacmanLoader from "react-spinners/ClockLoader";
@@ -68,7 +68,7 @@ const Hostlist: React.FC<HostProps> = ({ prob }) => {
     try {
       setDisableButton(true);
       setLoading(true);
-      await dispatch(verifymodel({ token, userid,id })).unwrap();
+      await dispatch(verifycreator({ token, userid,id })).unwrap();
     } catch (e) {
       // noop; errors can be surfaced via global toasts if present
     } finally {
@@ -81,7 +81,7 @@ const Hostlist: React.FC<HostProps> = ({ prob }) => {
     try {
       setDisableButton(true);
       setLoading(true);
-      await dispatch(rejectmodel({ token, userid })).unwrap();
+      await dispatch(rejectcreator({ token, userid })).unwrap();
     } catch (e) {
       // noop
     } finally {

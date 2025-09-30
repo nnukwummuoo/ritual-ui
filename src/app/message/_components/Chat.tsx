@@ -17,7 +17,7 @@ import DropdownMenu from "./DropdownMenu";
 // import { send_gift } from "../../app/features/message/messageSlice";
 // import Options from "@/public/menu.svg";
 // import { socket } from "../../../api/config";
-// import { Model } from "../modelviews/Model";
+// import { Creator } from "../creatorviews/Creator";
 // import onlineIcon from "@/public/onlineIcon.svg";
 // import offlineIcon from "@/public/offlineIcon.svg";
 // import starIcon from "@/public/star.png";
@@ -40,14 +40,14 @@ export const Chat = () => {
   // const giftmessage = useSelector((state) => state.message.giftmessage);
   // const oldMessage = useSelector((state) => state.message.listofcurrentmessage);
   // const chatinfo = useSelector((state) => state.message.chatinfo);
-  // const modelID = useSelector((state) => state.profile.modelID);
+  // const creatorID = useSelector((state) => state.profile.creatorID);
   // const balance = useSelector((state) => state.profile.balance);
-  // const modelname = useSelector((state) => state.profile.modelname);
-  // const modelphotolink = useSelector((state) => state.profile.modelphotolink);
+  // const creatorname = useSelector((state) => state.profile.creatorname);
+  // const creatorphotolink = useSelector((state) => state.profile.creatorphotolink);
   // const profilephotolink = useSelector((state) => state.comprofile.photoLink);
   // const profilename = useSelector((state) => state.profile.firstname);
   const dispatch = useDispatch();
-  const { modelid } = useParams<{ modelid: string }>();
+  const { creatorid } = useParams<{ creatorid: string }>();
   const userid = useSelector((state: RootState) => state.register.userID);
 
   // const login = useSelector((state) => state.register.logedin);
@@ -97,7 +97,7 @@ export const Chat = () => {
 
   const messagelist = () => {
     if (loading === false) {
-      let ids = modelid.split(",");
+      let ids = creatorid.split(",");
       if (message.length > 0) {
         return (
           <div
@@ -155,16 +155,16 @@ export const Chat = () => {
   };
 
   useEffect(() => {
-    if (!modelid || !userid) return;
-    // Allow URLs like "<modelid>,<clientid>" or just "<modelid>"
-    const parts = modelid.split(",");
+    if (!creatorid || !userid) return;
+    // Allow URLs like "<creatorid>,<clientid>" or just "<creatorid>"
+    const parts = creatorid.split(",");
     const payload =
       parts.length >= 2
-        ? { modelid: parts[0], clientid: parts[1] }
-        : { modelid: parts[0], clientid: userid };
+        ? { creatorid: parts[0], clientid: parts[1] }
+        : { creatorid: parts[0], clientid: userid };
 
     dispatch(getchat(payload) as any);
-  }, [modelid, userid, dispatch]);
+  }, [creatorid, userid, dispatch]);
 
   // Socket connection and real-time message handling
   useEffect(() => {
@@ -176,7 +176,7 @@ export const Chat = () => {
 
     // Listen for new messages
     const handleLiveChat = (data: any) => {
-      let ids = modelid.split(",");
+      let ids = creatorid.split(",");
       if (ids[0] === data.data.fromid && userid === data.data.toid) {
         let info = {
           name: data.name,
@@ -195,7 +195,7 @@ export const Chat = () => {
     return () => {
       socket.off("LiveChat", handleLiveChat);
     };
-  }, [userid, modelid]);
+  }, [userid, creatorid]);
 
   // useEffect(() => {
   //   if (!login) {
@@ -220,7 +220,7 @@ export const Chat = () => {
   //     setLoading(false);
 
   //     socket.on("LiveChat", (data) => {
-  //       let ids = modelid.split(",");
+  //       let ids = creatorid.split(",");
   //       if (ids[0] === data.data.fromid && MYID === data.data.toid) {
   //         // console.log(data)
   //         dispatch(updatemessage({ date: data.data.date, token }));
@@ -268,7 +268,7 @@ export const Chat = () => {
 
   // const send_coin = () => {
   //   if (check_balance()) {
-  //     let ids = modelid.split(",");
+  //     let ids = creatorid.split(",");
 
   //     if (giftstats !== "loading") {
   //       let content = {
@@ -281,14 +281,14 @@ export const Chat = () => {
   //         coin: true,
   //       };
 
-  //       //let ids = modelid.split(",");
+  //       //let ids = creatorid.split(",");
 
   //       socket.emit("message", content);
   //       setsendL(true);
   //       dispatch(
   //         send_gift({
   //           token,
-  //           modelid: ids[0],
+  //           creatorid: ids[0],
   //           userid: userid,
   //           amount: `${gold_amount}`,
   //         })
@@ -315,7 +315,7 @@ export const Chat = () => {
 
   const send_chat = (text: string) => {
     if (text) {
-      let reciver = modelid.split(",");
+      let reciver = creatorid.split(",");
 
       if (userid) {
         // Get user info from Redux store

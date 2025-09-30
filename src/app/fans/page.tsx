@@ -17,7 +17,7 @@ const FansPage: React.FC = () => {
   const articles: Article[] = [
     { title: "What is a Fan Call?", ref: "/Howdoprivate" },
     { title: "How do Fan meet and Fan date work?", ref: "/Datemeetandfanwork" },
-    { title: "What if I get scammed by a model?", ref: "/ifscammed" },
+    { title: "What if I get scammed by a creator?", ref: "/ifscammed" },
     {
       title:
         "What’s the difference between a Fan Call and a normal video call?",

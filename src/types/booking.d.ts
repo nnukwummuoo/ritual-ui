@@ -1,5 +1,5 @@
 interface Request {
-    modelid: string;
+    creatorid: string;
     date: string;
     time: string;
     [key: string]: any; // fallback for other props

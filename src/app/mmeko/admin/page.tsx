@@ -48,9 +48,9 @@ const AdminPage = () => {
       linktitle: "mmeko/admin/reports",
     },
     {
-      name: "Model Verification",
+      name: "Creator Verification",
       icon: <MdVerifiedUser color="white" size={20} />,
-      linktitle: "mmeko/admin/model-verification",
+      linktitle: "mmeko/admin/creator-verification",
     },
     {
       name: "Withdrawal Requests",

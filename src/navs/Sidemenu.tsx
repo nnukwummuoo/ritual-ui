@@ -161,39 +161,39 @@ const Sidemenu = () => {
 
 
 
-//model button dynmic condition
+//creator button dynmic condition
 
 
   // MODEL BUTTON LOGIC
  // MODEL BUTTON LOGIC
-const getModelButton2 = () => {
-  if (profile.modelID) {
+const getCreatorButton2 = () => {
+  if (profile.creatorID) {
     if (profile.exclusive_verify) {
-      // ✅ User has a model and is verified → go to model profile page
+      // ✅ User has a creator and is verified → go to creator profile page
       return (
         <MenuIconImg
-          src="/icons/icons8-model.png"
-          name="Model Portfolio"
-          url={`/models/${profile.modelID}`} // dynamic profile page
+          src="/icons/icons8-creator.png"
+          name="Creator Portfolio"
+          url={`/creators/${profile.creatorID}`} // dynamic profile page
         />
       );
     } else {
-      // User has a model but not verified → go to create model page
+      // User has a creator but not verified → go to create creator page
       return (
         <MenuIconImg
-          src="/icons/icons8-model.png"
-          name="Model Portfolio"
-          url="/model/create"
+          src="/icons/icons8-creator.png"
+          name="Creator Portfolio"
+          url="/creator/create"
         />
       );
     }
   } else {
-    // User has no model
+    // User has no creator
     return (
       <MenuIconImg
-        src={!profile.exclusive_verify ? "/icons/icons8-plus.png" : "/icons/icons8-model.png"}
-        name={profile.exclusive_verify ? "Model Portfolio" : "Model Application"}
-        url={profile.exclusive_verify ? "/be-a-model/apply" : "/be-a-model"}
+        src={!profile.exclusive_verify ? "/icons/icons8-plus.png" : "/icons/icons8-creator.png"}
+        name={profile.exclusive_verify ? "Creator Portfolio" : "Creator Application"}
+        url={profile.exclusive_verify ? "/be-a-creator/apply" : "/be-a-creator"}
       />
     );
   }
@@ -201,40 +201,40 @@ const getModelButton2 = () => {
 
 
 
-//  url={`/models/${profile?.modelId||profile?.modelID}`}
+//  url={`/creators/${profile?.creatorId||profile?.creatorID}`}
 
-  // MODEL BUTTON LOGIC - ALWAYS uses current user's model data
-  // This ensures the model button reflects the current user's model status
-  const getModelButton = () => {
-    // 1️⃣ Current user already has a model → go to their model profile
-    if (profile.modelID) {
+  // MODEL BUTTON LOGIC - ALWAYS uses current user's creator data
+  // This ensures the creator button reflects the current user's creator status
+  const getCreatorButton = () => {
+    // 1️⃣ Current user already has a creator → go to their creator profile
+    if (profile.creatorID) {
     return (
       <MenuIconImg
-        src="/icons/icons8-model.png"
-        name="Model Portfolio"
-       url={`/models/${profile.modelID}`}
-      // url="/model/create"
+        src="/icons/icons8-creator.png"
+        name="Creator Portfolio"
+       url={`/creators/${profile.creatorID}`}
+      // url="/creator/create"
       />
     );
   }
 
-    // 2️⃣ Current user applied/verified but hasn't created a model yet → go to create model
+    // 2️⃣ Current user applied/verified but hasn't created a creator yet → go to create creator
     if (profile.exclusive_verify) {
     return (
       <MenuIconImg
-        src="/icons/icons8-model.png"
-        name="Create Model"
-        url="/model/create"
+        src="/icons/icons8-creator.png"
+        name="Create Creator"
+        url="/creator/create"
       />
     );
   }
 
-    // 3️⃣ Default → current user hasn't applied yet → show Model Application
+    // 3️⃣ Default → current user hasn't applied yet → show Creator Application
     return (
     <MenuIconImg
       src="/icons/icons8-plus.png"
-      name="Model Application"
-      url="/be-a-model"
+      name="Creator Application"
+      url="/be-a-creator"
     />
   );
 };
@@ -302,7 +302,7 @@ const getModelButton2 = () => {
                 url={userId ? `/Profile/${userId}` : `/Profile`}
               />
 
-              {getModelButton()}
+              {getCreatorButton()}
 
               <MenuIconImg
                 src="/icons/icons8-users.png"

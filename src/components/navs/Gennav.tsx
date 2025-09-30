@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation"; // Next.js equivalent of useNavigat
 // import { Logins } from "../auth/Logins";
 import { Profilenav } from "../navs/Profilenav";
 // import { Sidemenu } from "./Sidemenu";
-import { ModelSideMenu } from "./ModelSideMenu";
+import { CreatorSideMenu } from "./CreatorSideMenu";
 
 import "@/styles/Navs.css";
 import "@/styles/Gennav.css";
@@ -16,7 +16,7 @@ import Logins from "../Login";
 // Define types for props
 interface GennavigationProps {
   // isOpen: boolean;
-  // modelMenu: boolean;
+  // creatorMenu: boolean;
   // handleGenderSearchQuery?: (query: string) => void;
   // stoptop?: boolean;
   click: boolean;
@@ -32,7 +32,7 @@ interface RootState {
 
 export const Gennavigation: React.FC<GennavigationProps> = ({
   // isOpen,
-  // modelMenu,
+  // creatorMenu,
   // handleGenderSearchQuery,
   // stoptop,
   click,
@@ -40,12 +40,12 @@ export const Gennavigation: React.FC<GennavigationProps> = ({
 }) => {
   const login = useSelector((state: RootState) => state.register.logedin);
   const [open, setOpen] = useState(false);
-  const [modelToggle, setModelToggle] = useState(false);
+  const [creatorToggle, setCreatorToggle] = useState(false);
 
   const router = useRouter();
 
   const handleMenubar = () => setOpen(!open);
-  const handleModelToggle = () => setModelToggle(!modelToggle);
+  const handleCreatorToggle = () => setCreatorToggle(!creatorToggle);
 
   useEffect(() => {
     if (click) {
@@ -66,8 +66,8 @@ export const Gennavigation: React.FC<GennavigationProps> = ({
             <Profilenav
               handleMenubar={handleMenubar}
               isOpen={isOpen}
-              modelMenu={modelMenu}
-              handleModelToggle={handleModelToggle}
+              creatorMenu={creatorMenu}
+              handleCreatorToggle={handleCreatorToggle}
             />
           )}
           {login && <Sidemenu open={open} handleMenubar={handleMenubar} />} */}

@@ -20,7 +20,7 @@ let Remotestream: MediaStream | null = null;
 // let Interval = null;
 // let startPayment = null;
 // let call_balance = 0;
-// let model_payment = 0;
+// let creator_payment = 0;
 
 // let answerid = "";
 // let callerid = "";
@@ -112,7 +112,7 @@ export const PrivateCallPage = () => {
   //     });
   //     if (callInfo[2] === "caller") {
   //       call_balance = parseFloat(callInfo[5]);
-  //       model_payment = parseFloat(callInfo[4]);
+  //       creator_payment = parseFloat(callInfo[4]);
   //       console.log("making call");
   //       if (call_balance > parseFloat(callInfo[4])) {
   //         await makeCall(Localstream, Remotestream);
@@ -122,7 +122,7 @@ export const PrivateCallPage = () => {
   //     }
 
   //     if (callInfo[4] === "answer") {
-  //       model_earning();
+  //       creator_earning();
   //       console.log("answer call");
   //       await answerCall(Localstream, Remotestream);
   //     }
@@ -186,22 +186,22 @@ export const PrivateCallPage = () => {
   // };
 
   // const caller_payment = () => {
-  //   let pay_amount = call_balance - model_payment;
+  //   let pay_amount = call_balance - creator_payment;
 
-  //   if (call_balance < model_payment) {
+  //   if (call_balance < creator_payment) {
   //     // cut call retrun
   //     endCall();
   //     return;
   //   }
   //   call_balance = pay_amount;
 
-  //   data.amount = `${model_payment}`;
+  //   data.amount = `${creator_payment}`;
   //   data.balance = `${call_balance}`;
 
   //   socket.emit("privatecall", data);
   // };
 
-  // const model_earning = () => {
+  // const creator_earning = () => {
   //   socket.on(`pvc_${userid}_amount`, async (amount) => {
   //     //console.log("getting amount "+amount.amount)
   //     let total_amount = parseFloat(amount.amount);

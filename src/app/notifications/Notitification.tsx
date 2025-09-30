@@ -1,10 +1,10 @@
 "use client"
 import React, { useEffect, useRef, useState } from "react";
 import notifymeIcon from "../../icons/notifymeIcon.svg";
-// import { Meetupview } from "./modelnotifyviews/Meetupview";
-// import { Allview } from "./modelnotifyviews/Allview";
-// import { Requestview } from "./modelnotifyviews/Requestview";
-// import { Acceptedview } from "./modelnotifyviews/Acceptedview";
+// import { Meetupview } from "./creatornotifyviews/Meetupview";
+// import { Allview } from "./creatornotifyviews/Allview";
+// import { Requestview } from "./creatornotifyviews/Requestview";
+// import { Acceptedview } from "./creatornotifyviews/Acceptedview";
 import { FaAngleLeft } from "react-icons/fa";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
@@ -13,7 +13,7 @@ import { Allview } from "./components/Allview";
 const style =
   " hover:bg-gradient-to-r hover:from-blue-400 hover:to-purple-500 hover:bg-clip-text hover:text-transparent";
 
-export const Modelnotify = ({ children }: { children: React.ReactNode }) => {
+export const Creatornotify = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
   const [all, setall] = useState("#292d31");
   const [meetup, setmeetup] = useState("");

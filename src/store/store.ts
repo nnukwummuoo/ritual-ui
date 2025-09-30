@@ -1,7 +1,7 @@
 import { configureStore } from '@reduxjs/toolkit';
 import followingReducer from './followingSlice';
 import goldstatReducer from './goldstatSlice';
-import modelSlice from './modelSlice';
+import creatorSlice from './creatorSlice';
 import bookingSlice from './booking';
 import registerReducer from './registerSlice';
 import profileReducer from './profile';
@@ -18,7 +18,7 @@ export const store = configureStore({
   reducer: {
     following: followingReducer,
     goldstat: goldstatReducer,
-    model: modelSlice,
+    creator: creatorSlice,
     booking:bookingSlice,
     profile: profileReducer,
     viewingProfile: viewingProfileReducer,

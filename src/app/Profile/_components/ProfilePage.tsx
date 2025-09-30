@@ -153,7 +153,7 @@ export const Profile = () => {
   // URL params and auth info ready
   const formatter = new Intl.NumberFormat("en-US");
 
-  const [modelid, setmodelid] = useState<string[]>([]);
+  const [creatorid, setcreatorid] = useState<string[]>([]);
   const [isFollowing, setisFollowing] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -687,7 +687,7 @@ export const Profile = () => {
   
   const cantfandc = () => {
     if (loggedInUserId && viewingUserId) {
-      setmodelid([viewingUserId, loggedInUserId]);
+      setcreatorid([viewingUserId, loggedInUserId]);
     }
   };
 
@@ -1421,7 +1421,7 @@ const PostModal = () => {
                     <button
                       className="bg-[#7e3500] text-[#eedfcb] rounded-lg p-1 px-2 mt-3"
                     >
-                      Request {(profile as any).modeltDype}
+                      Request {(profile as any).creatortDype}
                     </button>
                   )}
               {/* Bio */}
@@ -1435,7 +1435,7 @@ const PostModal = () => {
                           <button
                             className="p-0 px-3 w-full bg-gray-800 cursor-pointer py-1.5 rounded-lg"
                             onClick={() =>
-                              router.push(`/message/${modelid.toString()}`)
+                              router.push(`/message/${creatorid.toString()}`)
                             }
                           >
                             Message

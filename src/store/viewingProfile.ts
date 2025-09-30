@@ -14,10 +14,10 @@ interface ViewingProfileState {
   State: string;
   country: string;
   active: boolean;
-  model: boolean;
-  modelID: string;
-  modelname: string;
-  modelphotolink: string;
+  creator: boolean;
+  creatorID: string;
+  creatorname: string;
+  creatorphotolink: string;
   exclusive_verify: boolean;
   createdAt: string;
   balance: string;
@@ -53,10 +53,10 @@ const initialState: ViewingProfileState = {
   State: "",
   country: "",
   active: false,
-  model: false,
-  modelID: "",
-  modelname: "",
-  modelphotolink: "",
+  creator: false,
+  creatorID: "",
+  creatorname: "",
+  creatorphotolink: "",
   exclusive_verify: false,
   createdAt: "",
   balance: "",
@@ -190,10 +190,10 @@ const viewingProfileSlice = createSlice({
         state.State = (p as any).state ?? p.country ?? "";
         state.country = p.country ?? "";
         state.balance = p.balance ?? "";
-        state.model = (p as any).model ?? (p as any).creator_listing ?? false;
-        state.modelID = (p as any).modelID ?? (p as any).modelId ?? "";
-        state.modelname = (p as any).modelname ?? "";
-        state.modelphotolink = (p as any).modelphotolink ?? "";
+        state.creator = (p as any).creator ?? (p as any).creator_listing ?? false;
+        state.creatorID = (p as any).creatorID ?? (p as any).creatorId ?? "";
+        state.creatorname = (p as any).creatorname ?? "";
+        state.creatorphotolink = (p as any).creatorphotolink ?? "";
         state.photolink = (p as any).photolink ?? (p as any).photoLink ?? "";
         state.bio = (p as any).bio ?? "";
         state.admin = p.admin ?? false;
