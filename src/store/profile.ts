@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { PayloadAction } from "@reduxjs/toolkit";
 import { URL } from "../api/config";
@@ -59,6 +60,9 @@ const initialState = {
   modelID: "",
   modelphotolink: "",
   modelname: "",
+  photolink: "",
+  bio: "",
+  createdAt: "",
   history_stats: "idle",
   history_message: "",
   historys: {},

@@ -11,7 +11,7 @@ const HeaderBackNav = ({ title }: { title: string }) => {
   };
 
   return (
-    <header className="flex items-center justify-between px-0 pt-8  shadow-sm sm:hidden ">
+    <header className="flex items-center justify-between px-0 pt-1  shadow-sm sm:hidden ">
       <div className="w-10">
         <button
           onClick={handleBack}
