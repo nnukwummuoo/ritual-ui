@@ -1,3 +1,5 @@
+//src/app/creators/create-creator/Create-Creator-Listing.tsx
+
 "use client";
 
 import { useEffect, useRef, useState } from "react";
@@ -8,12 +10,12 @@ import { useRouter } from "next/navigation";
 import { toast, ToastContainer } from "material-react-toastify";
 // import {
 //   createcreator,
-//   changecreatorstatus, ii want my moddl to work
+//   changecreatorstatus,
 // } from "@/app/features/creator/creatorSlice";
 import CountrySelect from "@/components/CountrySelect/CountrySelect";
 
 import "material-react-toastify/dist/ReactToastify.css";
-import "@/styles/CreateCreatorview.css";
+import "@/styles/Create-Creator-Listing.css";
 import person from "../../icons/person.svg";
 import idcardicon from "../../icons/idcardIcon.svg";
 import deleteIcon from "../../icons/deleteicon.svg";
@@ -60,7 +62,7 @@ async function compressImage(file: File, opts?: { maxWidth?: number; maxHeight?:
   }
 }
 
-export default function CreateCreatorview () {
+export default function Create-Creator-Listing () {
   // const firstname = useSelector((state: any) => state.profile.firstname);
   // const lastname = useSelector((state: any) => state.profile.lastname);
   // const login = useSelector((state: any) => state.register.logedin);
@@ -292,7 +294,7 @@ export default function CreateCreatorview () {
       <div className="pt-16 md:pt-8">
         <ToastContainer position="top-center" theme="dark" />
         <p className="text-2xl font-semibold text-center text-slate-300 sm:w-1/2">
-          Create New Creator
+          Create New Listing 
         </p>
         <div className="form-container">
           <div className="w-full h-2 mb-6 bg-gray-700 rounded">

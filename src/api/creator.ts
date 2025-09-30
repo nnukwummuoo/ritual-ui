@@ -1,10 +1,10 @@
 import backend from "@/api/backendApi";
 
 // -----------------------------
-// Create Creator (URLs for photolink)
+// Create Listing (URLs for photolink)
 // -----------------------------
 // -----------------------------
-// Create Creator (photolinks always strings)
+// Create Listing (photolinks always strings)
 // -----------------------------
 export async function createCreatorMultipart(params: {
   token: string;

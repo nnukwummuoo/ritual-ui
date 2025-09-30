@@ -8,7 +8,7 @@ const publicRoutes = [
   '/auth/verify-email',
   '/creators',
   '/creators/create-creator',
-  '/creators/edit-creator',
+  '/creators/edit-creator-listing',
   '/guidelines',
   '/support',
   '/privacy-policy',

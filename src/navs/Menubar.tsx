@@ -118,7 +118,7 @@ export const Menubar = () => {
         <button className='flex flex-row mx-auto mt-2' onClick={(e)=>{
           router.push("/createcreator")
         }}>
-         <p className='text-center text-sm font-semibold text-yellow-600'>Creator Application</p>
+         <p className='text-center text-sm font-semibold text-yellow-600'>Become a creator</p>
          <img className='w-5 h-5 object-cover ml-1'
          alt='editicon'
          src={Addicon}

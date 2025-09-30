@@ -1,6 +1,6 @@
 // src/app/creator/create/page.tsx
-import CreateCreatorview from '../CreateCreatorview';
+import Create-Creator-Listing from '../Create-Creator-Listing';
 
 export default function Page() {
-  return <CreateCreatorview />;
+  return <Create-Creator-Listing />;
 }

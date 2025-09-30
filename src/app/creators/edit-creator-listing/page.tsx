@@ -17,7 +17,7 @@ import CountrySelect from "@/components/CountrySelect/CountrySelect";
 // Move static files into /public/icons
 import idcardicon from "/public/icons/idcardIcon.svg";
 import deleteIcon from "/public/icons/deleteicon.svg";
-import "@/styles/CreateCreatorview.css";
+import "@/styles/Create-Creator-Listing.css";
 import { useAuthToken } from "@/lib/hooks/useAuthToken";
 import { editCreatorMultipart } from "@/api/creator";
 import { useUserId } from "@/lib/hooks/useUserId";

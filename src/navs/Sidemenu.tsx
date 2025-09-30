@@ -173,7 +173,7 @@ const getCreatorButton2 = () => {
       return (
         <MenuIconImg
           src="/icons/icons8-creator.png"
-          name="Creator Portfolio"
+          name="My Portfolio"
           url={`/creators/${profile.creatorID}`} // dynamic profile page
         />
       );
@@ -182,7 +182,7 @@ const getCreatorButton2 = () => {
       return (
         <MenuIconImg
           src="/icons/icons8-creator.png"
-          name="Creator Portfolio"
+          name="My Portfolio"
           url="/creator/create"
         />
       );
@@ -192,7 +192,7 @@ const getCreatorButton2 = () => {
     return (
       <MenuIconImg
         src={!profile.exclusive_verify ? "/icons/icons8-plus.png" : "/icons/icons8-creator.png"}
-        name={profile.exclusive_verify ? "Creator Portfolio" : "Creator Application"}
+        name={profile.exclusive_verify ? "My Portfolio" : "Become a creator"}
         url={profile.exclusive_verify ? "/be-a-creator/apply" : "/be-a-creator"}
       />
     );
@@ -211,7 +211,7 @@ const getCreatorButton2 = () => {
     return (
       <MenuIconImg
         src="/icons/icons8-creator.png"
-        name="Creator Portfolio"
+        name="My Portfolio"
        url={`/creators/${profile.creatorID}`}
       // url="/creator/create"
       />
@@ -223,17 +223,17 @@ const getCreatorButton2 = () => {
     return (
       <MenuIconImg
         src="/icons/icons8-creator.png"
-        name="Create Creator"
+        name="Create Listing"
         url="/creator/create"
       />
     );
   }
 
-    // 3️⃣ Default → current user hasn't applied yet → show Creator Application
+    // 3️⃣ Default → current user hasn't applied yet → show Become a creator
     return (
     <MenuIconImg
       src="/icons/icons8-plus.png"
-      name="Creator Application"
+      name="Become a creator"
       url="/be-a-creator"
     />
   );

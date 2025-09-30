@@ -1,34 +1,35 @@
-//src/app/creators/create-creator/CreateCreatorview.tsx
-
 "use client";
-
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import PacmanLoader from "react-spinners/PacmanLoader";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { useRouter } from "next/navigation";
 import { toast, ToastContainer } from "material-react-toastify";
-// import {
-//   createcreator,
-//   changecreatorstatus,
-// } from "@/app/features/creator/creatorSlice";
 import CountrySelect from "@/components/CountrySelect/CountrySelect";
-
 import "material-react-toastify/dist/ReactToastify.css";
-import "@/styles/CreateCreatorview.css";
+import "@/styles/Create-Creator-Listing.css";
 import person from "../../icons/person.svg";
 import idcardicon from "../../icons/idcardIcon.svg";
 import deleteIcon from "../../icons/deleteicon.svg";
-// import "@/styles";
 import { useAuthToken } from "@/lib/hooks/useAuthToken";
 import { useUserId } from "@/lib/hooks/useUserId";
 import { createCreatorMultipart } from "@/api/creator";
 import { useAuth } from "@/lib/context/auth-context";
 
+// Appwrite imports
+import { Client, Storage } from "appwrite";
+
 let times: any[] = [];
 let hours: any[] = [];
 let Interested: any[] = [];
 let MIN = "";
+
+// 🔥 Convert remote Appwrite URL → File object
+async function urlToFile(url: string, filename: string) {
+  const res = await fetch(url);
+  const blob = await res.blob();
+  return new File([blob], filename, { type: blob.type });
+}
 
 // Simple client-side image compression via canvas
 async function compressImage(file: File, opts?: { maxWidth?: number; maxHeight?: number; quality?: number }): Promise<File> {
@@ -53,8 +54,7 @@ async function compressImage(file: File, opts?: { maxWidth?: number; maxHeight?:
     ctx.drawImage(img, 0, 0, width, height);
     const blob: Blob | null = await new Promise((resolve) => canvas.toBlob(resolve, "image/jpeg", quality));
     if (!blob) return file;
-    const compressed = new File([blob], file.name.replace(/\.[^.]+$/, ".jpg"), { type: "image/jpeg" });
-    return compressed;
+    return new File([blob], file.name.replace(/\.[^.]+$/, ".jpg"), { type: "image/jpeg" });
   } catch (_) {
     return file;
   } finally {
@@ -62,25 +62,18 @@ async function compressImage(file: File, opts?: { maxWidth?: number; maxHeight?:
   }
 }
 
-export default function CreateCreatorview () {
-  // const firstname = useSelector((state: any) => state.profile.firstname);
-  // const lastname = useSelector((state: any) => state.profile.lastname);
-  // const login = useSelector((state: any) => state.register.logedin);
+export default function Create-Creator-Listing() {
   const { session } = useAuth();
   const userid = session?._id ?? useUserId();
-  // const token = useSelector((state : any) => state.register.refreshtoken);
-  // const creatorpoststatus = useSelector((state : any) => state.creator.creatorpoststatus);
-  // const message = useSelector((state : any) => state.creator.message);
+  const token = useAuthToken() || session?.token;
 
   const fileInputRef = useRef<HTMLInputElement>(null);
-
   const router = useRouter();
   const dispatch = useDispatch();
 
   const [loading, setLoading] = useState(false);
   const [color, setColor] = useState("#d49115");
-
-  const [name, setname] = useState(``);
+  const [name, setname] = useState("");
   const [age, setage] = useState("18");
   const [location, setlocation] = useState("");
   const [bodytype, setbodytype] = useState("Slim");
@@ -91,210 +84,187 @@ export default function CreateCreatorview () {
   const [drink, setdrink] = useState("Yes");
   const [pm, setpm] = useState("PM");
   const [duration, setduration] = useState("1");
-  const [days, setdays] = useState("1hour");
+  //const [days, setdays] = useState("1hour");
   const [price, setprice] = useState("");
   const [priceValue, setPriceValue] = useState<number | null>(null);
   const [discription, setdiscription] = useState("");
   const [disablebut, setdisablebut] = useState(false);
   const [hosttype, sethosttype] = useState("Fan meet");
   const [imglist, setimglist] = useState<string[]>([]);
-  const [photolink, setphotolink] = useState<File[]>([]);
+ const [photolink, setphotolink] = useState<string[]>([]);
   const [step, setStep] = useState(1);
   const totalSteps = 3;
-  const token = useAuthToken() || session?.token;
 
-  // useEffect(() => {
-  //   if (creatorpoststatus === "succeeded") {
-  //     toast.success(`${message}`, { autoClose: 2000 });
-  //     // dispatch(changecreatorstatus("idle"));
-  //     router.push("/creator");
-  //   }
+  // 🔥 Autofill full name when session changes
+// 🔥 Autofill the name from session
+useEffect(() => {
+  console.log("🔍 Session object:", session);       // 👈 log the whole session
+  console.log("📛 Current name state:", name);     // 👈 log current state
+  console.log("➡️ session.fullName:", session?.fullName); // 👈 log just the fullname
 
-  //   if (creatorpoststatus === "failed") {
-  //     setdisablebut(false);
-  //     setLoading(false);
-  //     toast.error(`${message}`, { autoClose: 5000 });
-  //     // dispatch(changecreatorstatus("idle"));
-  //   }
-  // }, [creatorpoststatus]);
+  if (session?.fullName && (!name || name.trim() === "")) {
+    console.log("✅ Setting name to:", session.fullName);
+    setname(session.fullName);
+  }
+}, [session, name]);
 
-  useEffect(() => {
-    // imglist.reverse();
-  });
+// Initialize Appwrite client & storage
+const client = new Client()
+  .setEndpoint(process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT!)
+  .setProject(process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID!);
 
-  // Function to validate step-specific requirements
-  const validateStep = (stepNumber: any) => {
-    switch (stepNumber) {
-      case 1:
-        if (!name || name.trim() === "") {
-          toast.error("Full name is required");
-          return false;
-        }
-        const nameRegex = /^[a-zA-Z\s]{2,}$/;
-        if (!nameRegex.test(name.trim())) {
-          toast.error(
-            "Full name must contain only letters and spaces, and be at least 2 characters long"
-          );
-          return false;
-        }
-        if (!age) {
-          toast.error(`Age is required`);
-          return false;
-        }
-        if (!location) {
-          toast.error(`Location is required`);
-          return false;
-        }
-        if (!height) {
-          toast.error(`Height is required`);
-          return false;
-        }
-        return true;
+const storage = new Storage(client);
 
-      case 2:
-        if (!priceValue) {
-          toast.error(`Price is required`);
-          return false;
-        }
-        if (!hosttype) {
-          toast.error(`Select host type`);
-          return false;
-        }
-        if (Interested.length <= 0) {
-          toast.error(`Please select what you're interested in`);
-          return false;
-        }
-        if (!discription) {
-          toast.error(`Write your description`);
-          return false;
-        }
-        return true;
+// Upload a file to Appwrite and return its public URL
+const uploadToAppwrite = async (file: File): Promise<string> => {
+  try {
+    const uniqueId = `${Date.now()}_${file.name}`;
+    const res = await storage.createFile(
+      process.env.NEXT_PUBLIC_APPWRITE_BUCKET_ID!,
+      uniqueId,
+      file
+    );
 
-      default:
-        return true;
-    }
-  };
+    // Construct public URL (works for public buckets)
+    const publicUrl = `${process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT}/storage/buckets/${res.bucketId}/files/${res.$id}/view?project=${process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID}`;
+    return publicUrl;
+  } catch (err) {
+    console.error("Appwrite upload failed:", err);
+    throw err;
+  }
+};
 
-  const checkuserInput = async () => {
-    if (!name || name.trim() === "") {
-      toast.error("Full name is required");
-      return;
-    }
-    if (!age) {
-      toast.error(`Age is required`);
-      return;
-    }
-    if (!hosttype) {
-      toast.error(`Select host type`);
-      return;
-    }
-    if (photolink.length <= 0) {
-      toast.error(`Please upload at least one image`);
-      return;
-    }
-    if (!location) {
-      toast.error(`Location is required`);
-      return;
-    }
-    if (!priceValue) {
-      toast.error(`Price is required`);
-      return;
-    }
-    if (!height) {
-      toast.error(`Height is required`);
-      return;
-    }
-    if (Interested.length <= 0) {
-      toast.error(`Please select what you're interested in`);
-      return;
-    }
-    if (!discription) {
-      toast.error(`Write your description`);
-      return;
-    }
 
-    if (!userid) {
-      toast.error("Missing user, please login again");
-      return;
-    }
-    if (!token) {
-      toast.error("Missing token");
-      return;
-    }
-    try{
-      setdisablebut(true);
-      setLoading(true);
-      const hosttypeNormalized = hosttype
-        ? hosttype.charAt(0).toUpperCase() + hosttype.slice(1).toLowerCase()
-        : "Fan meet";
-      const data = {
-        userid,
-        name,
-        age,
-        location: location || "",
-        // Backend expects price as a numeric string; keep a separate displayPrice
-        price: priceValue != null ? String(priceValue) : "",
-        displayPrice: price,
-        priceValue,
-        duration: days,
-        bodytype,
-        smoke,
-        drink,
-        interestedin: Interested.map((v) => String(v).toLowerCase()),
-        height,
-        weight,
-        description: discription,
-        gender,
-        timeava: times,
-        daysava: hours,
-        hosttype: hosttypeNormalized,
-      };
-      const res = await createCreatorMultipart({ token, userid: userid!, data, files: photolink });
-      // Prefer backend message if available
-      const okMsg = (res && (res.message || res.msg)) ? String(res.message || res.msg) : "Creator created successfully";
-      toast.success(okMsg, { autoClose: 3000 });
-      router.push("/creators");
-    }catch(err:any){
-      // Log full error for debugging
-      console.error("Create creator failed", err?.response || err);
-      const status = err?.response?.status;
-      const data = err?.response?.data;
-      const serverMsg = data?.message || data?.msg || data?.error || err?.message;
-      const detail = typeof data === 'object' ? JSON.stringify(data).slice(0, 400) : String(data || "");
-      const msg = serverMsg ? String(serverMsg) : 'Failed to create creator';
-      toast.error(`${status ? `[${status}] ` : ""}${msg}${detail && serverMsg !== detail ? `\n${detail}` : ""}`, { autoClose: 6000 });
-    }finally{
-      setdisablebut(false);
-      setLoading(false);
-    }
-  };
+
+
+
+
+
+// -----------------------------
+// checkuserInput
+// -----------------------------
+const checkuserInput = async () => {
+  if (!name || name.trim() === "") return toast.error("Full name is required");
+  if (!age) return toast.error("Age is required");
+  if (!hosttype) return toast.error("Select host type");
+  if (photolink.length <= 0) return toast.error("Please upload at least one image");
+  if (!location) return toast.error("Location is required");
+  if (!priceValue) return toast.error("Price is required");
+  if (!height) return toast.error("Height is required");
+  if (Interested.length <= 0) return toast.error("Please select what you're interested in");
+  if (!discription) return toast.error("Write your description");
+  if (!userid) return toast.error("Missing user, please login again");
+  if (!token) return toast.error("Missing token");
+
+  try {
+    setdisablebut(true);
+    setLoading(true);
+
+    const hosttypeNormalized = hosttype.charAt(0).toUpperCase() + hosttype.slice(1).toLowerCase();
+
+    // Make sure photolink is always string array
+    const photolinksForBackend: string[] = await Promise.all(
+      photolink.map(async (urlOrFile, i) => {
+        if (typeof urlOrFile === "string" && urlOrFile.startsWith("http")) return urlOrFile;
+        const url = await uploadToAppwrite(urlOrFile as unknown as File);
+        console.log(`[checkuserInput] Uploaded photolink[${i}] →`, url);
+        return url;
+      })
+    );
+
+    setphotolink(photolinksForBackend);
+
+    const data = {
+      userid, // ✅ leave as is, do not rename
+      name: name.trim(),
+      age: String(age),
+      location: location.trim(),
+      price: priceValue != null ? String(priceValue) : "",
+      displayPrice: price,
+      duration,
+      bodytype,
+      smoke,
+      drink,
+      interestedin: Interested.map((v) => String(v).toLowerCase()),
+      height,
+      weight,
+      description: discription.trim(),
+      gender,
+      timeava: times,
+      daysava: hours,
+      hosttype: hosttypeNormalized,
+      photolink: photolinksForBackend, // ✅ string array
+    };
+
+    console.log("[checkuserInput] Sending payload to backend:", { token, userid, data });
+
+    await createCreatorMultipart({
+      token,
+      userid, // ✅ keep exactly like this
+      data,
+      photolink: photolinksForBackend,
+    });
+
+    toast.success("Creator created successfully", { autoClose: 3000 });
+    router.push("/creators");
+  } catch (err: any) {
+    console.error("Create creator failed", err?.response || err);
+    const status = err?.response?.status;
+    const data = err?.response?.data;
+    const serverMsg = data?.message || data?.msg || data?.error || err?.message;
+    const detail = typeof data === "object" ? JSON.stringify(data).slice(0, 400) : String(data || "");
+    const msg = serverMsg ? String(serverMsg) : "Failed to create creator";
+    toast.error(`${status ? `[${status}]` : ""}${msg}${detail && serverMsg !== detail ? `\n${detail}` : ""}`, { autoClose: 6000 });
+  } finally {
+    setdisablebut(false);
+    setLoading(false);
+  }
+};
+
+
+
+
+
+
 
   const handleNextStep = () => {
-    const skipValidation =
-      process.env.NEXT_PUBLIC_SKIP_CREATE_MODEL_VALIDATION === "true";
-    if (skipValidation || validateStep(step)) {
-      setStep(step + 1);
+    const skipValidation = process.env.NEXT_PUBLIC_SKIP_CREATE_MODEL_VALIDATION === "true";
+    if (skipValidation || validateStep(step)) setStep(step + 1);
+  };
+  const handlePreviousStep = () => setStep(step - 1);
+  const handleSkipStep = () => setStep(step + 1);
+  const getLocation = (country: any) => setlocation(`${country}`);
+
+  const validateStep = (stepNumber: number) => {
+    switch (stepNumber) {
+      case 1:
+        if (!name || name.trim() === "") { toast.error("Full name is required"); return false; }
+        if (!/^[a-zA-Z\s]{2,}$/.test(name.trim())) {
+          toast.error("Full name must contain only letters and spaces, and be at least 2 characters long"); return false;
+        }
+        if (!age) { toast.error("Age is required"); return false; }
+        if (!location) { toast.error("Location is required"); return false; }
+        if (!height) { toast.error("Height is required"); return false; }
+        return true;
+      case 2:
+        if (!priceValue) { toast.error("Price is required"); return false; }
+        if (!hosttype) { toast.error("Select host type"); return false; }
+        if (Interested.length <= 0) { toast.error("Please select what you're interested in"); return false; }
+        if (!discription) { toast.error("Write your description"); return false; }
+        return true;
+      default: return true;
     }
   };
 
-  const handlePreviousStep = () => {
-    setStep(step - 1);
-  };
 
-  const handleSkipStep = () => {
-    setStep(step + 1);
-  };
 
-  const getLocation = (country: any) => {
-    setlocation(`${country}`);
-  };
 
   return (
     <>
       <div className="pt-16 md:pt-8">
         <ToastContainer position="top-center" theme="dark" />
         <p className="text-2xl font-semibold text-center text-slate-300 sm:w-1/2">
-          Create New Creator
+          Create New Listing 
         </p>
         <div className="form-container">
           <div className="w-full h-2 mb-6 bg-gray-700 rounded">
@@ -310,14 +280,18 @@ export default function CreateCreatorview () {
             disabled={disablebut}
           >
             <div className="input-container">
-              <label className="label">Full Name</label>
-              <input
-                type="text"
-                className="bg-black name-label"
-                placeholder="Enter your full name"
-                value={name}
-                onChange={(e) => setname(e.target.value)}
-              />
+              <label htmlFor="fullname" className="block text-gray-300 mb-2">
+    Full Name
+  </label>
+  <input
+    id="fullname"
+    type="text"
+    className="bg-black name-label"
+    placeholder="Enter your full name"
+    value={name}
+    readOnly   // ✅ makes the field locked
+    onChange={(e) => setname(e.target.value)}
+  />
             </div>
 
             <div className="input-container">
@@ -584,17 +558,7 @@ export default function CreateCreatorview () {
                 />
               </div>
 
-              <div className="mt-4">
-                <select
-                  name="days"
-                  className="w-full p-3 mb-3 text-white bg-gray-800 focus:outline-none"
-                  onChange={(e) => setdays(e.currentTarget.value)}
-                >
-                  <option value={`${duration}min`}>{duration} MIN</option>
-                  <option value={`${duration}hour`}>{duration} HOUR</option>
-                  <option value={`${duration}day`}>{duration} DAY</option>
-                </select>
-              </div>
+              
             </div>
 
             <div className="input-container">
@@ -614,7 +578,7 @@ export default function CreateCreatorview () {
                 >
                   <option value={`Fan meet`}>Fan meet</option>
                   <option value={`Fan date`}>Fan date</option>
-                  <option value={`Private show`}>Private show</option>
+                  <option value={`Private show`}>Fan call</option>
                 </select>
               </div>
 
