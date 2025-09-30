@@ -1436,7 +1436,7 @@ const PostModal = () => {
                             className="p-0 px-3 w-full bg-gray-800 cursor-pointer py-1.5 rounded-lg"
 
                             onClick={() => {
-                              // Pass only the target user ID (the user being viewed) as modelid
+                              // Pass only the target user ID (the user being viewed) as creatorid
                               // The Chat component will use this to fetch the target user's profile details
                               const targetUserId = viewingUserId;
                               router.push(`/message/${targetUserId}`);

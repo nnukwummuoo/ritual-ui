@@ -37,7 +37,7 @@ export const Chat = () => {
   // const profilename = useSelector((state) => state.profile.firstname);
   const dispatch = useDispatch();
 
-  const { modelid } = useParams<{ modelid: string }>();
+  const { creatorid } = useParams<{ creatorid: string }>();
 
   const router = useRouter();
 
@@ -354,14 +354,14 @@ export const Chat = () => {
 
   // Direct API call to fetch messages (skip Redux)
   const fetchMessagesDirectly = React.useCallback(async () => {
-    if (!modelid || !loggedInUserId) {
+    if (!creatorid || !loggedInUserId) {
       return;
     }
 
     setLoading(true);
 
     try {
-      const targetUserId = decodeURIComponent(modelid);
+      const targetUserId = decodeURIComponent(creatorid);
       const token = (() => {
         try {
           const raw = localStorage.getItem("login");
@@ -376,7 +376,7 @@ export const Chat = () => {
       })();
 
       const requestData = {
-        modelid: targetUserId,
+        creatorid: targetUserId,
         clientid: loggedInUserId,
         token: token || ""
       };
@@ -401,15 +401,15 @@ export const Chat = () => {
       setLoading(false);
       toast.error("Failed to load messages");
     }
-  }, [modelid, loggedInUserId]);
+  }, [creatorid, loggedInUserId]);
 
   // Chat info is now handled by viewingProfile only (no Redux chatinfo)
 
-  // Fetch target user profile details when modelid changes
+  // Fetch target user profile details when creatorid changes
   useEffect(() => {
-    if (!modelid || !loggedInUserId) return;
+    if (!creatorid || !loggedInUserId) return;
 
-    const targetUserId = decodeURIComponent(modelid);
+    const targetUserId = decodeURIComponent(creatorid);
     
     // Get token from localStorage or Redux
     const token = (() => {
@@ -429,7 +429,7 @@ export const Chat = () => {
       // @ts-expect-error - Redux dispatch type issue
       dispatch(getViewingProfile({ userid: targetUserId, token }));
     }
-  }, [modelid, loggedInUserId, dispatch]);
+  }, [creatorid, loggedInUserId, dispatch]);
 
   // Update chat info from viewing profile when it loads
   useEffect(() => {
@@ -448,9 +448,9 @@ export const Chat = () => {
     }
   }, [viewingProfile]);
 
-  // Force update chat info when modelid changes to ensure profile is always shown
+  // Force update chat info when creatorid changes to ensure profile is always shown
   useEffect(() => {
-    if (modelid && viewingProfile.status === "succeeded" && viewingProfile.userId) {
+    if (creatorid && viewingProfile.status === "succeeded" && viewingProfile.userId) {
       setChatphotoError(false); // Reset error state for new profile
       const photoLink = (viewingProfile as any).photolink;
       if (photoLink && photoLink.trim() !== "" && photoLink !== "null" && photoLink !== "undefined") {
@@ -459,7 +459,7 @@ export const Chat = () => {
         set_Chatphoto("/icons/icons8-profile_user.png");
       }
     }
-  }, [modelid, viewingProfile]);
+  }, [creatorid, viewingProfile]);
 
   // Fallback to ensure loading is set to false after a reasonable time
   useEffect(() => {
@@ -472,17 +472,17 @@ export const Chat = () => {
 
   // Fallback to ensure chat info is set even if there are timing issues
   useEffect(() => {
-    if (modelid && !chatusername && !chatfirstname) {
-      const targetUserId = decodeURIComponent(modelid);
+    if (creatorid && !chatusername && !chatfirstname) {
+      const targetUserId = decodeURIComponent(creatorid);
       setchatusername(`User ${targetUserId.slice(-4)}`); // Show last 4 chars of user ID as fallback
       set_Chatphoto("/icons/icons8-profile_user.png");
     }
-  }, [modelid, chatusername, chatfirstname]);
+  }, [creatorid, chatusername, chatfirstname]);
 
   // Additional useEffect to handle navigation from MessageList (skip Redux)
   useEffect(() => {
-    // Only proceed if we have both modelid and loggedInUserId
-    if (!modelid || !loggedInUserId) {
+    // Only proceed if we have both creatorid and loggedInUserId
+    if (!creatorid || !loggedInUserId) {
       return;
     }
 
@@ -492,7 +492,7 @@ export const Chat = () => {
 
     // Use direct API call instead of Redux
     fetchMessagesDirectly();
-  }, [modelid, loggedInUserId, fetchMessagesDirectly]);
+  }, [creatorid, loggedInUserId, fetchMessagesDirectly]);
 
   // Auto-scroll to bottom when messages change
   useEffect(() => {
@@ -629,7 +629,7 @@ export const Chat = () => {
   // Direct API call when component loads (skip Redux)
   useEffect(() => {
 
-    if (!modelid) {
+    if (!creatorid) {
       return;
     }
 
@@ -639,7 +639,7 @@ export const Chat = () => {
     
     // Always fetch messages when component loads
     fetchMessagesDirectly();
-  }, [modelid, loggedInUserId, reduxUserId, localUserid, fetchMessagesDirectly]);
+  }, [creatorid, loggedInUserId, reduxUserId, localUserid, fetchMessagesDirectly]);
 
 
   // Socket connection and real-time message handling
@@ -672,10 +672,10 @@ export const Chat = () => {
       name: string; 
       photolink: string; 
     }) => {
-      const decodedModelid = decodeURIComponent(modelid);
+      const decodedCreatorid = decodeURIComponent(creatorid);
       
       // Since we now pass only the target user ID, we don't need to split by comma
-      const targetUserId = decodedModelid;
+      const targetUserId = decodedCreatorid;
       
       // Check if this message is between the current user and target user
       const isFromTargetToCurrent = (data.data.fromid === targetUserId && data.data.toid === loggedInUserId);
@@ -738,7 +738,7 @@ export const Chat = () => {
       socket.off("LiveChat", handleLiveChat);
     };
 
-  }, [loggedInUserId, modelid]);
+  }, [loggedInUserId, creatorid]);
 
 
   // useEffect(() => {
@@ -960,10 +960,10 @@ export const Chat = () => {
       return;
     }
 
-    const decodedModelid = decodeURIComponent(modelid);
+    const decodedCreatorid = decodeURIComponent(creatorid);
     
     // Since we now pass only the target user ID, we don't need to split by comma
-    const targetUserId = decodedModelid;
+    const targetUserId = decodedCreatorid;
 
     if (!loggedInUserId) {
       toast.error("Please log in to send messages");
