@@ -1,6 +1,6 @@
 "use client"
 import React, { useState, useEffect } from "react";
-// import { Acceptedlist } from "./modelnotifylist/Acceptedlist";
+// import { Acceptedlist } from "./creatornotifylist/Acceptedlist";
 // import { useSelector, useDispatch } from "react-redux";
 // import {
 //   acceptedr_req,
@@ -18,8 +18,8 @@ const acceptedFanReq = [
   type: "private show", //{value.type}
   date: "15/08/2025", //{value.date}
   time: "16:15:00", //{value.time}
-  modelid: "9490040483hhrh3", //{value.modelid}
-  modeluserid: "094399u505jkete", //{value.modeluserid}
+  creatorid: "9490040483hhrh3", //{value.creatorid}
+  creatoruserid: "094399u505jkete", //{value.creatoruserid}
   amount: 50000, //{value.amount}
   id: "3539rjeprjer93i" //{value.id}
 },
@@ -30,8 +30,8 @@ const acceptedFanReq = [
   type: "private show", //{value.type}
   date: "15/08/2025", //{value.date}
   time: "16:15:00", //{value.time}
-  modelid: "9490040483hhrh3", //{value.modelid}
-  modeluserid: "094399u505jkete", //{value.modeluserid}
+  creatorid: "9490040483hhrh3", //{value.creatorid}
+  creatoruserid: "094399u505jkete", //{value.creatoruserid}
   amount: 50000, //{value.amount}
   id: "3539rjeprjer93i" //{value.id}
 },
@@ -42,15 +42,15 @@ const acceptedFanReq = [
   type: "private show", //{value.type}
   date: "15/08/2025", //{value.date}
   time: "16:15:00", //{value.time}
-  modelid: "9490040483hhrh3", //{value.modelid}
-  modeluserid: "094399u505jkete", //{value.modeluserid}
+  creatorid: "9490040483hhrh3", //{value.creatorid}
+  creatoruserid: "094399u505jkete", //{value.creatoruserid}
   amount: 50000, //{value.amount}
   id: "3539rjeprjer93i" //{value.id}
 }
 ]
 
 const user = {
-  isModel: false
+  creator_listing: false
 }
 export const Acceptedview = () => {
   // const Accepted = useSelector((state) => state.booking.acceptedList);
@@ -77,7 +77,7 @@ export const Acceptedview = () => {
   // }, [acceptedReqstat]);
   // const user = useAuth();
   const Showaccepted = () => {
-    if (user?.isModel) {
+    if (user?.creator_listing) {
       return (
         <p className="text-slate-400 text-center mt-16 text-xs">
           !You currently don`t have any accepted request
@@ -99,8 +99,8 @@ export const Acceptedview = () => {
                   type={value.type}
                   date={value.date}
                   time={value.time}
-                  modelid={value.modelid}
-                  modeluserid={value.modeluserid}
+                  creatorid={value.creatorid}
+                  creatoruserid={value.creatoruserid}
                   amount={value.amount}
                   id={value.id}
                   // userID={value.userid}

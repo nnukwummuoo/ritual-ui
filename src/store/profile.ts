@@ -54,12 +54,12 @@ const initialState = {
   balance: "",
   admin: false,
   witdrawable: "",
-  model: "false",
+  creator: "false",
   status: "idle",
   error: "",
-  modelID: "",
-  modelphotolink: "",
-  modelname: "",
+  creatorID: "",
+  creatorphotolink: "",
+  creatorname: "",
   photolink: "",
   bio: "",
   createdAt: "",
@@ -111,16 +111,23 @@ export const getprofile = createAsyncThunk<
   "profile/getprofile",
   async (data, thunkAPI) => {
     try {
-      // Debug: trace outgoing request
-      // eslint-disable-next-line no-console
-      console.log("[getprofile] POST", `${URL}/getprofile`, {
+      // Enhanced logging for profile data fetching
+      console.log("🔍 [getprofile] Fetching profile data:", {
         userid: data?.userid,
         hasToken: Boolean(data?.token),
+        tokenLength: data?.token?.length,
+        endpoint: `${URL}/getprofile`
       });
 
       const response = await axios.post(`${URL}/getprofile`, data);
-      // eslint-disable-next-line no-console
-      console.log("[getprofile] success", response.status);
+      
+      console.log("✅ [getprofile] Profile data received:", {
+        status: response.status,
+        hasData: !!response.data,
+        profileKeys: response.data ? Object.keys(response.data) : [],
+        hasPhotolink: !!response.data?.profile?.photolink,
+        photolinkPreview: response.data?.profile?.photolink?.substring(0, 50) + '...'
+      });
 
       return response.data;
     } catch (err) {
@@ -301,7 +308,6 @@ export const post_exclusive_content = createAsyncThunk<
         formData.append("thumbnaillink", data.thumbnaillink);
       }
 
-      console.log("I am about to create formData", [...formData.entries()]);
 
       let response = await axios.put(`${URL}/exclusive`, formData, {
         headers: {
@@ -311,7 +317,7 @@ export const post_exclusive_content = createAsyncThunk<
 
       if (response.status !== 200) {
         // Post was not successfully created
-        throw "Error creating your verifying your model";
+        throw "Error creating your verifying your creator";
       }
 
       return response.data;
@@ -389,7 +395,37 @@ export const deposit = createAsyncThunk<any, any>("profile/deposit", async (data
 
 export const follow = createAsyncThunk<any, any>("profile/follow", async (data) => {
   try {
-    let response = await axios.post(`${URL}/follow`, data);
+    console.log("🔍 [follow] Starting follow request:", {
+      url: `${URL}/follow`,
+      userid: data?.userid,
+      followerid: data?.followerid,
+      hasToken: Boolean(data?.token),
+      tokenLength: data?.token?.length
+    });
+    
+    // Send only userid and followerid in body (backend doesn't expect authentication)
+    const requestBody = {
+      userid: data.userid,
+      followerid: data.followerid
+    };
+    
+    console.log("📤 [follow] Request body:", requestBody);
+    console.log("📤 [follow] Request headers:", {
+      'Content-Type': 'application/json'
+    });
+    
+    let response = await axios.post(`${URL}/follow`, requestBody, {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    console.log("✅ [follow] Success response:", {
+      status: response.status,
+      statusText: response.statusText,
+      data: response.data,
+      headers: response.headers
+    });
 
     return response.data;
   } catch (err : any) {
@@ -401,7 +437,37 @@ export const follow = createAsyncThunk<any, any>("profile/follow", async (data) 
 
 export const unfollow = createAsyncThunk<any, any>("profile/unfollow", async (data) => {
   try {
-    let response = await axios.put(`${URL}/follow`, data);
+    console.log("🔍 [unfollow] Starting unfollow request:", {
+      url: `${URL}/follow`,
+      userid: data?.userid,
+      followerid: data?.followerid,
+      hasToken: Boolean(data?.token),
+      tokenLength: data?.token?.length
+    });
+    
+    // Send only userid and followerid in body (backend doesn't expect authentication)
+    const requestBody = {
+      userid: data.userid,
+      followerid: data.followerid
+    };
+    
+    console.log("📤 [unfollow] Request body:", requestBody);
+    console.log("📤 [unfollow] Request headers:", {
+      'Content-Type': 'application/json'
+    });
+    
+    let response = await axios.put(`${URL}/follow`, requestBody, {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    console.log("✅ [unfollow] Success response:", {
+      status: response.status,
+      statusText: response.statusText,
+      data: response.data,
+      headers: response.headers
+    });
 
     return response.data;
   } catch (err : any) {
@@ -414,25 +480,58 @@ export const unfollow = createAsyncThunk<any, any>("profile/unfollow", async (da
 export const getfollow = createAsyncThunk<any, any>("profile/getfollow", async (data) => {
   try {
     // Debug: trace outgoing request for followers/following
-    // eslint-disable-next-line no-console
     console.log("[getfollow] POST", `${URL}/getfollowers`, {
       userid: data?.userid,
       hasToken: Boolean(data?.token),
     });
 
-    let response = await axios.post(`${URL}/getfollowers`, data);
-    // eslint-disable-next-line no-console
+    // Set up headers with authorization token if available
+    const headers = data.token ? { 
+      'Authorization': `Bearer ${data.token}`,
+      'Content-Type': 'application/json'
+    } : {
+      'Content-Type': 'application/json'
+    };
+
+    let response = await axios.post(`${URL}/getfollowers`, 
+      { userid: data.userid }, 
+      { headers }
+    );
+    
     console.log("[getfollow] success", response.status);
     // Log raw payloads from backend
-    // eslint-disable-next-line no-console
     console.log("[getfollow] response.data", response.data);
-    // eslint-disable-next-line no-console
     console.log("[getfollow] response.data.data", response.data?.data);
 
     return response.data;
   } catch (err) {
     // eslint-disable-next-line no-console
     console.error("[getfollow] error", err);
+    throw getErrorMessageWithNetworkFallback(err);
+  }
+});
+
+export const getAllUsers = createAsyncThunk<{ users: Array<any> }, { token: string }>("profile/getAllUsers", async (data) => {
+  try {
+    console.log("[getAllUsers] POST", `${URL}/getallusers`, {
+      hasToken: Boolean(data?.token),
+    });
+    
+    // Set up headers with authorization token if available
+    const headers = data.token ? { 
+      'Authorization': `Bearer ${data.token}`,
+      'Content-Type': 'application/json'
+    } : {
+      'Content-Type': 'application/json'
+    };
+    
+    let response = await axios.post(`${URL}/getallusers`, { token: data.token }, { headers });
+    console.log("[getAllUsers] success", response.status);
+    console.log("[getAllUsers] response.data", response.data);
+
+    return response.data;
+  } catch (err) {
+    console.error("[getAllUsers] error", err);
     throw getErrorMessageWithNetworkFallback(err);
   }
 });
@@ -509,7 +608,6 @@ const profile = createSlice({
     builder
       .addCase(getprofile.pending, (state, action) => {
         state.status = "loading";
-        console.log(state.status);
       })
       .addCase(getprofile.fulfilled, (state, action) => {
         state.status = "succeeded";
@@ -530,7 +628,22 @@ const profile = createSlice({
         state.modelID = (p as any).modelID ?? (p as any).modelId ?? "";
         state.modelname = (p as any).modelname ?? "";
         state.modelphotolink = (p as any).modelphotolink ?? "";
+        state.photolink = (p as any).photolink ?? (p as any).photoLink ?? "";
+        state.bio = (p as any).bio ?? "";
         state.admin = p.admin ?? false;
+        
+        // Log profile data update
+        console.log("📊 [profile slice] Profile data updated:", {
+          firstname: state.firstname,
+          lastname: state.lastname,
+          nickname: state.nickname,
+          bio: state.bio,
+          photolink: state.photolink,
+          hasBio: !!state.bio,
+          hasPhotolink: !!state.photolink,
+          photolinkType: typeof state.photolink,
+          photolinkPreview: state.photolink?.substring(0, 50) + '...'
+        });
         // Support both exclusive and exclusive_verify flags
         state.exclusive_verify = (p as any).exclusive ?? (p as any).exclusive_verify ?? false;
         state.emailnote = (p as any).emailnot ?? (p as any).emailnot === true; // boolean
@@ -617,7 +730,6 @@ const profile = createSlice({
       })
       .addCase(post_exclusive_img.fulfilled, (state, action) => {
         state.posteximgStats = "succeeded";
-        console.log("content img " + action.payload);
         state.postexIMG = action.payload.img ?? "";
         state.thumbimg = action.payload.thumb ?? "";
       })

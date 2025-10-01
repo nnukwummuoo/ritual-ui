@@ -6,8 +6,8 @@ import { useSelector } from 'react-redux';
 import { RootState } from '@/store/store';
 import { format, isToday } from 'date-fns';
 
-import dodo from '@/icons/icons8-profile_Icon.png';
-import DummyPics from '@/icons/icons8-profile_Icon.png';
+import dodo from '@/icons/icons8-profile_user.png';
+import DummyPics from '@/icons/icons8-profile_user.png';
 import onlineIcon from '@/icons/onlineIcon.svg';
 import offlineIcon from '@/icons/offlineIcon.svg';
 
@@ -33,7 +33,7 @@ export const UnreadList: React.FC<UnreadListProps> = ({
   online,
 }) => {
   const [userphoto, setuserphoto] = useState<string>(dodo.src);
-  const [modelid, setmodelid] = useState<string[]>([]);
+  const [creatorid, setcreatorid] = useState<string[]>([]);
   const router = useRouter();
 
   const myid = useSelector((state: RootState) => state.register.userID);
@@ -44,7 +44,7 @@ export const UnreadList: React.FC<UnreadListProps> = ({
     : format(date1, 'MM/dd/yyyy');
 
   useEffect(() => {
-    setmodelid([fromid, toid]);
+    setcreatorid([fromid, toid]);
 
     if (photolink) {
       setuserphoto(photolink);
@@ -59,7 +59,7 @@ export const UnreadList: React.FC<UnreadListProps> = ({
     <li
       className="mb-1 cursor-pointer hover:bg-blue-700/30 transition-colors"
       onClick={() => {
-        router.push(`/message/${modelid.toString()}`);
+        router.push(`/message/${creatorid.toString()}`);
       }}
     >
       <div className="flex items-center justify-between px-4 py-4 mx-2 rounded-xl bg-blue-800/40 border border-blue-700/30">

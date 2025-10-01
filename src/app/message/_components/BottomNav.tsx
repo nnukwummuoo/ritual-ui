@@ -38,14 +38,14 @@ export const BottomNav = () => {
   // const user = useAuth();
   // const Allrequest = useSelector((state) => state.booking.Allrequest);
   // const req = [...Allrequest];
-  // const notificationsCount = user?.isModel
+  // const notificationsCount = user?.creator_listing
   //   ? req.filter((item) => item.status === "accepted" || item?.admindb === true)
   //       .length
   //   : req.length;
 
   //#4287f5
   const [homecolor, sethomecolor] = useState("#c2d0e1");
-  const [modelcolor, setmodelcolor] = useState("");
+  const [creatorcolor, setcreatorcolor] = useState("");
   const [notificationcolor, setnotificationcolor] = useState("");
   const [messagecolor, setmessagecolor] = useState("");
   const [viewed, setViewed] = useState(false);
@@ -107,10 +107,10 @@ export const BottomNav = () => {
 
   // const notCount = () => {
   //   //   if ( viewed || !bookingnote) return 0;
-  //   // const total = bookingnote.model.length + bookingnote.notify.length;
+  //   // const total = bookingnote.creator.length + bookingnote.notify.length;
   //   // return total > 99 ? "99+" : total;
   //   if (bookingnote) {
-  //     return bookingnote.model.length + bookingnote.notify.length;
+  //     return bookingnote.creator.length + bookingnote.notify.length;
   //   } else {
   //     return 0;
   //   }

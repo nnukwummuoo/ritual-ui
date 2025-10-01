@@ -6,7 +6,7 @@ import { FaSpinner } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "@/store/store";
 import { getcollection, deletecollection } from "@/store/profile";
-import { remove_Crush } from "@/store/modelSlice";
+import { remove_Crush } from "@/store/creatorSlice";
 
 interface ImageCardProps {
   src: string;
@@ -97,27 +97,27 @@ const Content: React.FC<{
 
 const Crush: React.FC<{
   items: CollectionItem[];
-  onRemove: (modelid: string) => void;
+  onRemove: (creatorid: string) => void;
 }> = ({ items, onRemove }) => {
   return (
     <div className="mt-4">
       <h2 className="text-white text-center mb-4 text-lg font-semibold">
-        List Of My Crush Models
+        List Of My Crush Creators
       </h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {items?.length ? (
           items.map((it: any, idx: number) => {
             const src = it.photolink || it.photo || it.image || it.src || "";
-            const name = it.modelname || it.name || it.nickname || "Model";
+            const name = it.creatorname || it.name || it.nickname || "Creator";
             const status = it.status || "active";
             const type = it.type || "standard";
-            const modelid = it.modelid || it.modelId || it.id || it._id || String(idx);
+            const creatorid = it.creatorid || it.creatorId || it.id || it._id || String(idx);
             return (
-              <div key={String(modelid)} className="relative">
+              <div key={String(creatorid)} className="relative">
                 <ImageCard src={src} status={status} type={type} name={name} />
                 <div className="absolute top-2 left-2">
                   <button
-                    onClick={() => onRemove(String(modelid))}
+                    onClick={() => onRemove(String(creatorid))}
                     className="px-2 py-1 text-xs rounded bg-red-600 text-white hover:bg-red-500"
                   >
                     Remove
@@ -127,7 +127,7 @@ const Crush: React.FC<{
             );
           })
         ) : (
-          <div className="col-span-full text-center text-gray-400 py-10">No crush models yet.</div>
+          <div className="col-span-full text-center text-gray-400 py-10">No crush creators yet.</div>
         )}
       </div>
     </div>
@@ -218,9 +218,9 @@ const CollectionsPage: React.FC = () => {
               ) : (
                 <Crush
                   items={listofcrush || []}
-                  onRemove={async (modelid) => {
+                  onRemove={async (creatorid) => {
                     try {
-                      await dispatch(remove_Crush({ userid, token, modelid })).unwrap();
+                      await dispatch(remove_Crush({ userid, token, creatorid })).unwrap();
                       await dispatch(getcollection({ userid, token }));
                     } catch (e) {
                       // noop

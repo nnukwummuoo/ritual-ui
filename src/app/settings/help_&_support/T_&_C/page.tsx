@@ -22,8 +22,8 @@ const TermCondition = () => {
 
         <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">1. Eligibility</h3>
         <p className="mb-6">
-         You must be at least 18 years old to use or register as a model or fan on our platform.
-         All models must complete ID verification before offering services.
+         You must be at least 18 years old to use or register as a creator or fan on our platform.
+         All creators must complete ID verification before offering services.
 
         </p>
 
@@ -34,17 +34,150 @@ const TermCondition = () => {
            for illegal activities or to facilitate prostitution.Misrepresent your identity or services offered.
             </p>
 
-        <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">3. Model Services</h3>
-        <p className="mb-6">
-          Models may offer Fan Meet, Fan Date, and Fan Call services.
-          All payments for Fan Meet or Fan Date go into a pending state and are released after the
-           fan marks the appointment as complete.Models earn per minute during active Fan Call.
-           Transport fare must be clearly stated by the model, including any embedded costs.
+            <p className="mb-6">
+          Explicit Content is strictly prohibited on the platform.
 
 
         </p>
 
-         <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">4. Gold System & Earnings</h3>
+        <p className="mb-6">
+         Any Creator or Fan who posts, shares,
+          or requests explicit content will be banned immediately — no second chances.
+
+
+        </p>
+
+        <p className="mb-6">
+          Harassment, hate speech, or illegal activity also results in permanent removal.
+
+
+        </p>
+
+        <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">3. Fan Call, Fan Meet, Fan Date</h3>
+        <p className="mb-6">Fan Call: Creator is paid per call booked.
+
+        </p>
+
+        <p className="mb-6">
+          Fan Meet: Creator sets availability; fans cover transport.
+
+
+        </p>
+
+        <p className="mb-6">
+          Fan Date: Creator chooses; fans pay all costs upfront (including transport).
+
+
+
+        </p>
+
+        <p className="mb-6">
+         Creators always have the right to accept or decline any booking.
+
+        </p>
+
+
+        <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">4. Payment System</h3>
+
+         <p className="mb-6">
+         Fan Meet / Fan Date
+          </p>
+
+           <p className="mb-6">
+         Fans must pay transport fare upfront.
+          </p>
+
+           <p className="mb-6">
+         Funds are placed in a pending account (escrow).
+          </p>
+
+           <p className="mb-6">
+         After the meeting/date, fans must tap “Mark as Complete.”
+          </p>
+
+           <p className="mb-6">
+         Fan Call
+          </p>
+
+           <p className="mb-6">
+         Fans are charged per minute.
+          </p>
+
+           <p className="mb-6">
+         The amount is deducted live from the fan’s balance.
+          </p>
+
+           <p className="mb-6">
+         Once confirmed, the money is released instantly to the Creator’s account.
+          </p>
+
+           <p className="mb-6">
+         Payment is transferred directly to the Creator’s account in real time.
+          </p>
+
+        <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">2. Safety & Conduct</h3>
+
+        <p className="mb-6">
+         Creators must keep interactions respectful, safe, and legal.
+
+
+        </p>
+
+        <p className="mb-6">
+         Explicit content, harassment, or illegal activity is strictly prohibited.
+
+
+        </p>
+
+        <p className="mb-6">
+         Creators should not share personal contact info outside the platform.
+
+        </p>
+
+        <p className="mb-6">
+         The platform is not responsible for off-platform activities once a meet or date occurs.
+        </p>
+
+        <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">Platform Rights</h3>
+
+        <p className="mb-6">
+         We may suspend or remove accounts that violate rules.
+
+          </p>
+
+          <p className="mb-6">
+         We reserve the right to update terms and notify you of changes.
+
+          </p>
+
+          <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">No Employment Relationship</h3>
+
+          <p className="mb-6">
+         You are an independent contractor, not an employee.
+
+          </p>
+
+          <p className="mb-6">
+         You are responsible for your own taxes and declarations.
+
+          </p>
+
+          <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">Liability</h3>
+
+          <p className="mb-6">
+          The platform provides a safe booking/payment system, but does not guarantee fan behavior.
+
+
+          </p>
+
+          <p className="mb-6">
+          Creators are encouraged to use judgment and report unsafe users.
+
+
+          </p>
+
+
+         <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">5. Gold System & Earnings</h3>
         <p className="mb-6">
           Earnings on the platform are based on a virtual currency called Gold. All values, rates, and payouts are subject to the Gold Conversion Policy outlined below.”
 
@@ -57,7 +190,7 @@ const TermCondition = () => {
         </p>
 
         <p className="mb-6">
-          The Platform uses a virtual currency known as Gold for all fan payments and creator earnings. Fans purchase Gold to access paid features, including Fan Meet, Fan Date, Private Show, and digital content.
+          The Platform uses a virtual currency known as Gold for all fan payments and creator earnings. Fans purchase Gold to access paid features, including Fan Meet, Fan Date, Fan Call, and digital content.
 
 
 
@@ -69,7 +202,7 @@ const TermCondition = () => {
         </p>
 
         <p className="mb-6">
-          For creators, 1 Gold = $0.04 USD (starting rate).
+          For creators, 1 Gold = $0.04 USD.
           This rate reflects the platform’s internal valuation and 
           may differ from the price fans pay when purchasing Gold.
 
@@ -77,7 +210,7 @@ const TermCondition = () => {
         </p>
 
         <p className="mb-6">
-          3. Revenue Share Model
+          3. Revenue Share Creator
 
 
         </p>
@@ -99,10 +232,9 @@ const TermCondition = () => {
         </p>
 
         <p className="mb-6">
-          Models can request a withdrawal once their account balance reaches $50 or more.
+          Creators can request a withdrawal once their account balance reaches $50 or more.
            Balances below this threshold will remain in the account until the minimum is met.
-           Withdrawals are processed via available payment channels (e.g., Payoneer,
-            or bank transfer) subject to minimum thresholds and local banking rules.
+           Withdrawals are processed via crypto USDT (BEP-20)
 
 
         </p>
@@ -115,8 +247,7 @@ const TermCondition = () => {
 
         <p className="mb-6">
           Payouts must be manually requested from your dashboard. 
-          Processing may take up to 5 business days, depending on verification and 
-          payment method.
+          Processing may take up to 3 business days.
 
 
         </p>
@@ -138,15 +269,6 @@ const TermCondition = () => {
 
         </p>
 
-        <p className="mb-6">
-          Payoneer
-
-
-        </p>
-
-        <p className="mb-6">
-          Local Bank Transfer
-        </p>
 
         <p className="mb-6">
           Please ensure your wallet or account details are correct before requesting a
@@ -164,8 +286,8 @@ const TermCondition = () => {
 
         <p className="mb-6">
           We do not charge platform fees on withdrawals. However, external fees 
-          (e.g., blockchain gas fees, Payoneer transaction fees, or bank processing fees)
-           may apply depending on the method you choose.
+          (e.g., blockchain gas fees)
+           may apply.
 
 
 
@@ -179,39 +301,50 @@ const TermCondition = () => {
 
         <p className="mb-6">
           Any attempt to manipulate earnings or abuse the platform will result in account 
-          suspension and forfeiture of earnings.
+          suspension or removal and forfeiture of earnings.
 
         </p>
 
 
-        <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">5. Content Ownership</h3>
+        <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">6. Content Ownership</h3>
         <p className="mb-6">
-          Models retain ownership of their content but grant us a non-exclusive license to display and promote it on the platform.
+          Creators retain ownership of their content but grant us a non-exclusive license to display and promote it on the platform.
           You may not upload copyrighted or stolen content.
 
 
         </p>
 
-        <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">6. Fees and Revenue</h3>
+        <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">7. Fees and Revenue</h3>
        <p className="mb-6">
         The platform is free to use.
-        Models keep 100% of their revenue.
-        After this period, platform fees may apply, which will be disclosed in advance.
+        Creators keep 100% of their revenue.
         </p>
         
     
-        <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">7. Termination</h3>
+        <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">8. Termination</h3>
         <p className="mb-6">
           We reserve the right to suspend or terminate any account that violates our terms.
           Users can terminate their account anytime via account settings.
 
         </p>
 
-        <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">8. Dispute Resolution</h3>
+        <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">9. Dispute Resolution</h3>
         <p className="mb-6">
-          In case of disputes between fans and models, users are encouraged to contact support with clear evidence (screenshots, photos, videos).
+          In case of disputes between fans and creators, users are encouraged to contact support within 24 hours with clear evidence (screenshots, photos, videos).
           We will act as a neutral third-party, but do not guarantee resolution outcomes.
 
+        </p>
+
+        <p className="mb-6">
+          If a fan refuses to mark a meet/date as complete, 
+          the platform reserves the right to review and release payment based on evidence.
+        </p>
+
+        <p className="mb-6">
+
+          False disputes or abuse of the system 
+          will result in account suspension or permanent ban.
+          
         </p>
       </div>
     </div>

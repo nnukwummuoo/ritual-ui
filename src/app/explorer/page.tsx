@@ -1,7 +1,7 @@
 import React from "react";
 
-function ModelPage() {
-  return <div>ModelPage</div>;
+function CreatorPage() {
+  return <div>CreatorPage</div>;
 }
 
-export default ModelPage;
+export default CreatorPage;

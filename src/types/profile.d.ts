@@ -11,10 +11,10 @@ export interface Profile {
   balance: string;
   admin: boolean;
   witdrawable: string;
-  model: string;
-  modelID: string | null;
-  modelphotolink: string | null;
-  modelname: string | null;
+  creator: string;
+  creatorID: string | null;
+  creatorphotolink: string | null;
+  creatorname: string | null;
   photolink: string | null;
   bio: string | null;
   exclusive_verify: boolean;

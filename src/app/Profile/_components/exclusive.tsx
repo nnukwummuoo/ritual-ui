@@ -24,7 +24,7 @@ type exclusiveTypes = {
   buy: ()=> void,
   contentlink: string,
   contentname: string,
-  modelId: string,
+  creatorId: string,
   setisbuying: ()=> void,
   id: string,
   me: boolean,
@@ -39,7 +39,7 @@ export const Exclusive = ({
   buy,
   contentlink,
   contentname,
-  modelId,
+  creatorId,
   setisbuying,
   id,
   me,
@@ -62,7 +62,7 @@ export const Exclusive = ({
   // const dispatch = useDispatch();
   // const navigate = useNavigate();
 
-  // console.log(modelId, "line 48");
+  // console.log(creatorId, "line 48");
   // useEffect(() => {
   //   if (contentlink) {
   //     disable_form = false;
@@ -137,7 +137,7 @@ export const Exclusive = ({
   //           pricebalance: my_current_balance,
   //           exclusivename: contentname,
   //           exclusivelink: contentlink,
-  //           modelID: modelId,
+  //           creatorID: creatorId,
   //         })
   //       );
   //     }

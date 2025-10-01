@@ -153,7 +153,7 @@ export const Profile = () => {
   // URL params and auth info ready
   const formatter = new Intl.NumberFormat("en-US");
 
-  const [modelid, setmodelid] = useState<string[]>([]);
+  const [creatorid, setcreatorid] = useState<string[]>([]);
   const [isFollowing, setisFollowing] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -687,7 +687,7 @@ export const Profile = () => {
   
   const cantfandc = () => {
     if (loggedInUserId && viewingUserId) {
-      setmodelid([viewingUserId, loggedInUserId]);
+      setcreatorid([viewingUserId, loggedInUserId]);
     }
   };
 
@@ -895,15 +895,15 @@ const PostModal = () => {
   React.useEffect(() => {
     if (selectedPost) {
       setModalUi({
-        liked: selectedPost.likedBy?.includes(loggedInUserId) || false,
-        likeCount: selectedPost.likeCount || selectedPost.likes?.length || 0,
-        comments: selectedPost.comments || [],
+    liked: selectedPost.likedBy?.includes(loggedInUserId) || false,
+    likeCount: selectedPost.likeCount || selectedPost.likes?.length || 0,
+    comments: selectedPost.comments || [],
         commentCount: selectedPost.commentCount || selectedPost.comments?.length || 0,
-        open: false,
-        input: "",
-        loadingComments: false,
-        sending: false
-      });
+    open: false,
+    input: "",
+    loadingComments: false,
+    sending: false
+  });
     }
   }, [selectedPost, loggedInUserId]);
 
@@ -1026,8 +1026,8 @@ const PostModal = () => {
             .then((commentRes: any) => {
               const serverComments = (commentRes && (commentRes.comment || commentRes.comments)) || [];
               setModalUi(prev => ({
-                ...prev,
-                sending: false,
+              ...prev,
+              sending: false,
                 comments: serverComments,
                 commentCount: serverComments.length,
               }));
@@ -1037,7 +1037,7 @@ const PostModal = () => {
                 ...prev,
                 sending: false,
               }));
-            });
+          });
         })
         .catch(() => {
           setModalUi(prev => ({
@@ -1417,11 +1417,11 @@ const PostModal = () => {
                   <p className="text-blue-500">{nickname}</p>
                 
                 
-                  {(profile as any).ismodel && (
+                  {(profile as any).creator_listing && (
                     <button
                       className="bg-[#7e3500] text-[#eedfcb] rounded-lg p-1 px-2 mt-3"
                     >
-                      Request {(profile as any).modeltDype}
+                      Request {(profile as any).creatortDype}
                     </button>
                   )}
               {/* Bio */}
@@ -1434,9 +1434,14 @@ const PostModal = () => {
                         <div className="flex flex-row   w-1/2 rounded-lg">
                           <button
                             className="p-0 px-3 w-full bg-gray-800 cursor-pointer py-1.5 rounded-lg"
-                            onClick={() =>
-                              router.push(`/message/${modelid.toString()}`)
-                            }
+
+                            onClick={() => {
+                              // Pass only the target user ID (the user being viewed) as creatorid
+                              // The Chat component will use this to fetch the target user's profile details
+                              const targetUserId = viewingUserId;
+                              router.push(`/message/${targetUserId}`);
+                            }}
+
                           >
                             Message
                           </button>
@@ -1508,7 +1513,7 @@ const PostModal = () => {
                           </SkeletonTheme>
                         </div>
                       ))}
-                    </div>
+                  </div>
                   ) : userPosts.length === 0 ? (
                     <div className="col-span-3 text-center py-12 text-gray-500 dark:text-gray-400">
                       <svg className="w-12 h-12 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">

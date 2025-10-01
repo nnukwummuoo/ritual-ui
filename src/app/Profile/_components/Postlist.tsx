@@ -41,13 +41,13 @@ import "../../../navs/Navs.css";
 // import { useCall } from "../../messageview/context";
 // import { BottomNav } from "../../../navs/BottomNav";
 import { motion, AnimatePresence } from "framer-motion";
-import DummyImage from "../../../icons/icons8-profile_Icon.png";
+import DummyImage from "../../../icons/icons8-profile_user.png";
 import DummyContentImage from "../../../icons/mmekoDummy.png";
 import "../../../styles/postlist.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import { postListConstants } from "../_constants/postListConstants";
 // import { useAuth } from "../../../hooks/useAuth";
-// import { updateFollowers } from "../../../app/features/model/modelSlice";
+// import { updateFollowers } from "../../../app/features/creator/creatorSlice";
 
 export const Postlist = React.memo(
   ({
@@ -74,7 +74,7 @@ export const Postlist = React.memo(
     timeoutId,
     setPosts,
     isProfilePage = false,
-    modelId,
+    creatorId,
     followers,
   }: postListConstants) => {
     const [following, set_following] = useState(false);
@@ -172,7 +172,7 @@ export const Postlist = React.memo(
     //   return format(date1, "MM/dd/yyyy 'at' h:mm a");
     // }, [datetime]);
 
-    const [postuser, setpostuser] = useState<string | undefined>("/icons/icons8-profile_Icon.png");
+    const [postuser, setpostuser] = useState<string | undefined>("/icons/icons8-profile_user.png");
     const [file, setfile] = useState();
     const [alreadylike, setalreadylike] = useState(false);
     const [likephoto, setlikephoto] = useState(like);

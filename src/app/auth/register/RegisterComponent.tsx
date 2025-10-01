@@ -360,7 +360,7 @@ export const Register = () => {
               </div>
              ))}
               
-              <Agree id="terms" toThe={<Link href="/T_&_C" className='!text-blue-500'>the Terms and Conditions.</Link>} agree={agreedTerms} setAgree={()=> setAgreedTerms(prev=> !prev)} />
+              <Agree id="terms" toThe={<Link href="/T_&_C" className='!text-blue-500'>the  Conditions.</Link>} agree={agreedTerms} setAgree={()=> setAgreedTerms(prev=> !prev)} />
               < Agree id="privacy" toThe={<Link href={"/privacy-policy"} className='!text-blue-500'>Privacy and Policy</Link>} agree={agreedPrivacy} setAgree={()=> setAgreedPrivacy(prev=> !prev)} />
               
               <NextSlide onClick={handleNextClick} setStep={setStep} disabled={!isStepValid} />

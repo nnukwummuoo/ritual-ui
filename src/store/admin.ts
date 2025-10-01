@@ -34,7 +34,7 @@ type AdminState = {
   notify_message: string;
 };
 type DeleteUserPhotoArgs = {
-  modelphoto: any[];
+  creatorphoto: any[];
   postphoto: any[];
   profilephoto: any[];
 };
@@ -107,15 +107,15 @@ export const deleteuser_photo = createAsyncThunk<any, DeleteUserPhotoArgs>("admi
 
     try{
 
-       let modelphotos = data.modelphoto
+       let creatorphotos = data.creatorphoto
        let postphoto = data.postphoto
        let profilephoto = data.profilephoto
 
-       for(let i = 0; i < modelphotos.length; i++){
+       for(let i = 0; i < creatorphotos.length; i++){
 
-        if(modelphotos[i]){
+        if(creatorphotos[i]){
 
-            //  await deleteImage(modelphotos[i],"model")
+            //  await deleteImage(creatorphotos[i],"creator")
 
         }
 

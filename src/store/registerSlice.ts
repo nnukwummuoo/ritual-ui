@@ -20,8 +20,8 @@ export interface RegisterState {
   forgetpassstate: string;
   conpasswordstate: string;
   chagepassword: string;
-  modelId?: string;
-  isModel?: boolean;
+  creatorId?: string;
+  creator_listing?: boolean;
 }
 
 const getInitialState = (): RegisterState => {
@@ -212,9 +212,9 @@ const registerSlice = createSlice({
       state.password = action.payload.password;
       state.message = action.payload.message;
       state.logedin = true;
-      state.refreshtoken = action.payload.refreshToken || action.payload.refreshtoken;
-      state.accesstoken = action.payload.accessToken || action.payload.accesstoken;
-      state.userID = action.payload.userId;
+      state.refreshtoken = action.payload.refreshtoken;
+      state.accesstoken = action.payload.accesstoken;
+      state.userID = action.payload.userID;
       state.modelId = action.payload.modelId;
       state.isModel = action.payload.isModel;
     },
@@ -280,7 +280,7 @@ const registerSlice = createSlice({
               email: state.email,
               refreshtoken: action.payload.token,
               accesstoken: action.payload.accessToken,
-              userID: action.payload.userId,
+              userID: action.payload.id,
               modelId: action.payload.modelId,
               isModel: action.payload.isModel,
             })
@@ -294,7 +294,7 @@ const registerSlice = createSlice({
         state.logedin = true;
         state.refreshtoken = action.payload.token;
         state.accesstoken = action.payload.accessToken;
-        state.userID = action.payload.userId;
+        state.userID = action.payload.id;
         state.modelId = action.payload.modelId;
         state.isModel = action.payload.isModel;
       })

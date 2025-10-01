@@ -23,8 +23,8 @@ export const Menubar = () => {
   // const nickname =   useSelector(state=> state.profile.nickname)
   // const balance =   useSelector(state=> state.profile.balance)
   // const withdraw =   useSelector(state=> state.profile.witdrawable)
-  // const model =   useSelector(state=> state.profile.model)
-  // const modelID =   useSelector(state=> state.profile.modelID)
+  // const creator =   useSelector(state=> state.profile.creator)
+  // const creatorID =   useSelector(state=> state.profile.creatorID)
   // const postuserid = useSelector(state => state.register.userID)
   // const [profilepics,setprofilepics] = useState();
   // const [username,setusername] = useState(nickname);
@@ -56,16 +56,16 @@ export const Menubar = () => {
 //     }
 //  })
 
-//  const Isnotmodel = ()=>{
-//   if(!model) {
+//  const Isnotcreator = ()=>{
+//   if(!creator) {
 //     return true
 //   }else{
 //     return false
 //   }
 //  }
 
-//  const Ismodel = ()=>{
-//   if(model) {
+//  const creator_listing = ()=>{
+//   if(creator) {
 //     return true
 //   }else{
 //     return false
@@ -114,11 +114,11 @@ export const Menubar = () => {
 
 
        {
-        1 && // isNotModel()
+        1 && // isNotCreator()
         <button className='flex flex-row mx-auto mt-2' onClick={(e)=>{
-          router.push("/createmodel")
+          router.push("/createcreator")
         }}>
-         <p className='text-center text-sm font-semibold text-yellow-600'>Model Application</p>
+         <p className='text-center text-sm font-semibold text-yellow-600'>Become a creator</p>
          <img className='w-5 h-5 object-cover ml-1'
          alt='editicon'
          src={Addicon}
@@ -131,11 +131,11 @@ export const Menubar = () => {
 
 
         {
-          true && // ismodel()
+          true && // creator_listing()
           <button className='flex flex-row mx-auto mt-2' onClick={()=>{
-            router.push(`/modelbyid/random_id_123`)
+            router.push(`/creatorbyid/random_id_123`)
           }}>
-           <p className='text-center text-sm font-semibold text-yellow-600'>Model portfolio</p>
+           <p className='text-center text-sm font-semibold text-yellow-600'>Creator portfolio</p>
            <img className='w-5 h-5 object-cover ml-1'
            alt='editicon'
            src={manageIcon}

@@ -6,8 +6,8 @@ import { useSelector } from 'react-redux';
 import { format, isToday } from 'date-fns';
 import onlineIcon from '@/icons/onlineIcon.svg';
 import offlineIcon from '@/icons/offlineIcon.svg';
-import DummyPics from '@/icons/icons8-profile_Icon.png';
-import dodo from '@/icons/icons8-profile_Icon.png';
+import DummyPics from '@/icons/icons8-profile_user.png';
+import dodo from '@/icons/icons8-profile_user.png';
 import Image from 'next/image';
 
 interface RecentListProps {
@@ -30,7 +30,7 @@ export const RecentList: React.FC<RecentListProps> = ({
   online,
 }) => {
   const [userphoto, setUserphoto] = useState<any>(dodo);
-  const [modelid, setModelid] = useState<string[]>([]);
+  const [creatorid, setCreatorid] = useState<string[]>([]);
   const router = useRouter();
 
   const myid = useSelector((state: any) => state.register.userID);
@@ -43,10 +43,10 @@ export const RecentList: React.FC<RecentListProps> = ({
 
   useEffect(() => {
     if (fromid === myid) {
-      setModelid([toid, fromid]);
+      setCreatorid([toid, fromid]);
     }
     if (toid === myid) {
-      setModelid([fromid, toid]);
+      setCreatorid([fromid, toid]);
     }
 
     if (photolink) {
@@ -65,13 +65,13 @@ export const RecentList: React.FC<RecentListProps> = ({
     <li
       className="mb-1 cursor-pointer hover:bg-blue-700/30 transition-colors"
       onClick={() => {
-        router.push(`/message/${modelid.toString()}`);
+        router.push(`/message/${creatorid.toString()}`);
       }}
       role="button"
       tabIndex={0}
       onKeyPress={(e) => {
         if (e.key === 'Enter') {
-          router.push(`/message/${modelid.toString()}`);
+          router.push(`/message/${creatorid.toString()}`);
         }
       }}
     >

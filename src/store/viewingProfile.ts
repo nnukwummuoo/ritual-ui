@@ -14,10 +14,10 @@ interface ViewingProfileState {
   State: string;
   country: string;
   active: boolean;
-  model: boolean;
-  modelID: string;
-  modelname: string;
-  modelphotolink: string;
+  creator: boolean;
+  creatorID: string;
+  creatorname: string;
+  creatorphotolink: string;
   exclusive_verify: boolean;
   createdAt: string;
   balance: string;
@@ -53,10 +53,10 @@ const initialState: ViewingProfileState = {
   State: "",
   country: "",
   active: false,
-  model: false,
-  modelID: "",
-  modelname: "",
-  modelphotolink: "",
+  creator: false,
+  creatorID: "",
+  creatorname: "",
+  creatorphotolink: "",
   exclusive_verify: false,
   createdAt: "",
   balance: "",
@@ -83,19 +83,7 @@ export const getViewingProfile = createAsyncThunk(
   'viewingProfile/getProfile',
   async ({ userid, token }: { userid: string; token: string }) => {
     try {
-      console.log("🔍 [getViewingProfile] Fetching profile data:", {
-        userid,
-        hasToken: Boolean(token),
-        endpoint: `${URL}/getprofile`
-      });
-
       const response = await axios.post(`${URL}/getprofile`, { userid, token });
-      
-      console.log("✅ [getViewingProfile] Profile data received:", {
-        status: response.status,
-        hasData: !!response.data,
-        profileKeys: response.data ? Object.keys(response.data) : []
-      });
 
       return response.data;
     } catch (error) {
@@ -110,18 +98,7 @@ export const getViewingFollow = createAsyncThunk(
   'viewingProfile/getFollow',
   async ({ userid, token }: { userid: string; token: string }) => {
     try {
-      console.log("🔍 [getViewingFollow] Fetching follow data:", {
-        userid,
-        hasToken: Boolean(token),
-        endpoint: `${URL}/getfollowers`
-      });
-
       const response = await axios.post(`${URL}/getfollowers`, { userid, token });
-      
-      console.log("✅ [getViewingFollow] Follow data received:", {
-        status: response.status,
-        hasData: !!response.data
-      });
 
       return response.data;
     } catch (error) {
@@ -136,17 +113,7 @@ export const getAllUsersForViewing = createAsyncThunk(
   'viewingProfile/getAllUsers',
   async ({ token }: { token: string }) => {
     try {
-      console.log("🔍 [getAllUsersForViewing] Fetching all users:", {
-        hasToken: Boolean(token),
-        endpoint: `${URL}/getallusers`
-      });
-
       const response = await axios.post(`${URL}/getallusers`, { token });
-      
-      console.log("✅ [getAllUsersForViewing] All users data received:", {
-        status: response.status,
-        hasData: !!response.data
-      });
 
       return response.data;
     } catch (error) {
@@ -190,10 +157,10 @@ const viewingProfileSlice = createSlice({
         state.State = (p as any).state ?? p.country ?? "";
         state.country = p.country ?? "";
         state.balance = p.balance ?? "";
-        state.model = (p as any).model ?? (p as any).isModel ?? false;
-        state.modelID = (p as any).modelID ?? (p as any).modelId ?? "";
-        state.modelname = (p as any).modelname ?? "";
-        state.modelphotolink = (p as any).modelphotolink ?? "";
+        state.creator = (p as any).creator ?? (p as any).creator_listing ?? false;
+        state.creatorID = (p as any).creatorID ?? (p as any).creatorId ?? "";
+        state.creatorname = (p as any).creatorname ?? "";
+        state.creatorphotolink = (p as any).creatorphotolink ?? "";
         state.photolink = (p as any).photolink ?? (p as any).photoLink ?? "";
         state.bio = (p as any).bio ?? "";
         state.admin = p.admin ?? false;

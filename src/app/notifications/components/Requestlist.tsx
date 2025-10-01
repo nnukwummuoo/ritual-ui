@@ -11,22 +11,22 @@ import person from "../../../../icons/person.svg";
 // import { useSelector, useDispatch } from "react-redux";
 
 interface Request {
-  modeltype: string;
-  modelname: string,
+  creatortype: string;
+  creatorname: string,
   date: string,
   photolink: string,
   time: string,
-  modelid: string,
+  creatorid: string,
   id: string,
   setRequests: ()=> void,
 }
 export function Requestlist({
-  modeltype,
-  modelname,
+  creatortype,
+  creatorname,
   date,
   photolink,
   time,
-  modelid,
+  creatorid,
   id,
   setRequests,
 }: Request) {
@@ -45,7 +45,7 @@ export function Requestlist({
 
   // useEffect(() => {
   //   if (cancelstats === "succeeded") {
-  //     dispatch(deleterequest({ modelid: modelid, date: date, time: time }));
+  //     dispatch(deleterequest({ creatorid: creatorid, date: date, time: time }));
   //     dispatch(resetstat());
   //     setloading(!loading);
   //   }
@@ -61,7 +61,7 @@ export function Requestlist({
   //     Cancelrequest({
   //       token,
   //       userid,
-  //       modelid,
+  //       creatorid,
   //       time,
   //       date,
   //       id,
@@ -92,13 +92,13 @@ export function Requestlist({
 
       <div className="flex">
         <img
-          alt="modelimg"
+          alt="creatorimg"
           src={image || dodoIcon}
           className="w-7 h-7 object-cover rounded-full"
         ></img>
         <div className="flex flex-col items-center ml-1 mt-1 p-1">
           <p className="bg-blue-100 text-xs">
-            You requested a {`${modeltype}`} from {`${modelname}`} on{" "}
+            You requested a {`${creatortype}`} from {`${creatorname}`} on{" "}
             {`${date}`} at {`${time}`}
           </p>
           <button

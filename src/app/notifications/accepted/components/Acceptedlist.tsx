@@ -10,13 +10,13 @@ let comtext = "Mark as Complete";
 // import {
 //   completepayment,
 //   resetstat,
-//   deleteModel,
+//   deleteCreator,
 //   Cancelrequest,
 // } from "../../../../app/features/booking/booking";
 // import {
 //   review,
-//   changemodelstatus,
-// } from "../../../../app/features/model/modelSlice";
+//   changecreatorstatus,
+// } from "../../../../app/features/creator/creatorSlice";
 // import { useNavigate } from "react-router-dom";
 // import { ToastContainer, toast } from "material-react-toastify";
 // import {
@@ -32,10 +32,10 @@ interface AcceptedProps {
   type: string;
   date: string;
   time: string;
-  modelid: string;
+  creatorid: string;
   photolink: string;
   id: string;
-  modeluserid: string;
+  creatoruserid: string;
   amount: number,
 }
 export const Acceptedlist = ({
@@ -44,10 +44,10 @@ export const Acceptedlist = ({
   type,
   date,
   time,
-  modelid,
+  creatorid,
   photolink,
   id,
-  modeluserid,
+  creatoruserid,
   amount,
 }: AcceptedProps) => {
   const [loading, setloading] = useState(false);
@@ -58,14 +58,14 @@ export const Acceptedlist = ({
   // const cancelstats = useSelector((state) => state.booking.cancelstats);
   // const cancelmessage = useSelector((state) => state.booking.cancelmessage);
   // const balance = useSelector((state) => state.profile.balance);
-  // const Mymodel = useSelector((state) => state.profile.modelID);
+  // const Mycreator = useSelector((state) => state.profile.creatorID);
   // const profilename = useSelector((state) => state.profile.firstname);
   // let [approvebutton, setapprovebutton] = useState(false);
   // const paystats = useSelector((state) => state.booking.paystats);
   // const paymessage = useSelector((state) => state.booking.paymessage);
   // const token = useSelector((state) => state.register.refreshtoken);
-  // const reviewstats = useSelector((state) => state.model.reviewstats);
-  // const reviewmessage = useSelector((state) => state.model.reviewmessage);
+  // const reviewstats = useSelector((state) => state.creator.reviewstats);
+  // const reviewmessage = useSelector((state) => state.creator.reviewmessage);
   // const [reviewbutt, setreviewbutt] = useState(false);
   // const dispatch = useDispatch();
   // const navigate = useNavigate();
@@ -85,16 +85,16 @@ export const Acceptedlist = ({
 
   // useEffect(() => {
   //   if (paystats === "succeeded") {
-  //     dispatch(deleteModel({ modelid: modelid, date: date, time: time }));
-  //     dispatch(getall_request({ userid, token, modelid: Mymodel }));
+  //     dispatch(deleteCreator({ creatorid: creatorid, date: date, time: time }));
+  //     dispatch(getall_request({ userid, token, creatorid: Mycreator }));
   //     dispatch(acceptedr_req({ userid, token }));
   //     dispatch(resetstat());
   //     // setloading(!loading);
   //   }
 
   //   if (cancelstats === "succeeded") {
-  //     dispatch(deleteModel({ modelid: modelid, date: date, time: time }));
-  //     dispatch(getall_request({ userid, token, modelid: Mymodel }));
+  //     dispatch(deleteCreator({ creatorid: creatorid, date: date, time: time }));
+  //     dispatch(getall_request({ userid, token, creatorid: Mycreator }));
   //     dispatch(acceptedr_req({ userid, token }));
   //     dispatch(resetstat());
   //     setloading(!loading);
@@ -116,12 +116,12 @@ export const Acceptedlist = ({
   //     setrevcontent("");
   //     setreviewbutt(false);
   //     setloading(false);
-  //     dispatch(changemodelstatus("idle"));
+  //     dispatch(changecreatorstatus("idle"));
   //   }
 
   //   if (reviewstats === "failed") {
   //     setloading(false);
-  //     dispatch(changemodelstatus("idle"));
+  //     dispatch(changecreatorstatus("idle"));
   //   }
   // }, [paystats, cancelstats, reviewstats]);
 
@@ -136,7 +136,7 @@ export const Acceptedlist = ({
   // const paycomlete = () => {
   //   if (paystats !== "Loading") {
   //     const response = dispatch(
-  //       completepayment({ token, userid, modelid, date, time, id })
+  //       completepayment({ token, userid, creatorid, date, time, id })
   //     );
   //   }
   // };
@@ -154,16 +154,16 @@ export const Acceptedlist = ({
           //     });
           //     return;
           //   }
-          //   console.log("model price " + amount);
-          //   let modelid2 = [
-          //     modeluserid,
+          //   console.log("creator price " + amount);
+          //   let creatorid2 = [
+          //     creatoruserid,
           //     userid,
           //     "caller",
           //     profilename,
           //     amount,
           //     balance,
           //   ];
-          //   dispatch(add_call_data(modelid2));
+          //   dispatch(add_call_data(creatorid2));
           //   navigate(`/privatecall`);
           // }}
         >
@@ -189,14 +189,14 @@ export const Acceptedlist = ({
   // const ()=>{} = () => {
   //   if (cancelstats !== "loading") {
   //     setloading(!loading);
-  //     dispatch(Cancelrequest({ token, modelid, userid, date, time }));
+  //     dispatch(Cancelrequest({ token, creatorid, userid, date, time }));
   //   }
   // };
 
   // const reviewbutton = () => {
   //   if (reviewstats !== "loading") {
   //     setloading(true);
-  //     dispatch(review({ token, userid, modelid, content: revcontent }));
+  //     dispatch(review({ token, userid, creatorid, content: revcontent }));
   //   }
   // };
   const [initialStatus, setInitialStatus] = useState("Mark as Completed");
@@ -218,7 +218,7 @@ export const Acceptedlist = ({
       )}
       <div className="flex">
         <img
-          alt="modelimg"
+          alt="creatorimg"
           src={"/icons/person.svg"}
           className="w-7 h-7 rounded-full object-cover"
         />
@@ -258,16 +258,16 @@ export const Acceptedlist = ({
             //     });
             //     return;
             //   }
-            //   console.log("model price " + amount);
-            //   let modelid2 = [
-            //     modeluserid,
+            //   console.log("creator price " + amount);
+            //   let creatorid2 = [
+            //     creatoruserid,
             //     userid,
             //     "caller",
             //     profilename,
             //     amount,
             //     balance,
             //   ];
-            //   dispatch(add_call_data(modelid2));
+            //   dispatch(add_call_data(creatorid2));
             //   navigate(`/privatecall`);
             // }}
           >
@@ -312,7 +312,7 @@ export const Acceptedlist = ({
           <div className="flex justify-start"></div>
           <textarea
             className="rounded-md bg-slate-400 placeholder:text-white placeholder:text-xs placeholder:text-center w-1/2 h-14"
-            placeholder="write review about this model"
+            placeholder="write review about this creator"
             // onInput={(e) => setrevcontent(e.currentTarget.value)}
           ></textarea>
           <button

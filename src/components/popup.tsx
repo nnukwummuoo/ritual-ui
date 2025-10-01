@@ -51,25 +51,25 @@ export function PopUp() {
       icon: (
         <FaPhone className="w-6 h-6 text-teal-500 hover:scale-110 transition-transform icon-glow" />
       ),
-      text: "Accept private calls, get paid per-minute",
+      text: "Get paid for every Fan Call — no livestream pressure",
     },
     {
       icon: (
         <FaMapMarkerAlt className="w-6 h-6 text-pink-500 hover:scale-110 transition-transform icon-glow" />
       ),
-      text: "Fan Meet — get paid transport fare to go on casual meetups, selfies, or time together",
+      text: "Fan Meet —  instant reward (fans cover transport)",
     },
     {
       icon: (
         <FaHeart className="w-6 h-6 text-rose-500 hover:scale-110 transition-transform icon-glow" />
       ),
-      text: "Fan Date — get paid transport fare to go on dates",
+      text: "Fan Date — Your time, your rules — fans cover all costs",
     },
     {
       icon: (
         <FaGift className="w-6 h-6 text-orange-500 hover:scale-110 transition-transform icon-glow" />
       ),
-      text: "Keep 100% of your earnings for 3 months",
+      text: "Keep 100% of your earnings forever",
     },
   ];
 

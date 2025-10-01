@@ -5,7 +5,7 @@ import {addMonths} from "date-fns/addMonths";
 import {format} from "date-fns/format";
 import RotateLoader from "react-spinners/RotateLoader";
 import { useSelector, useDispatch } from "react-redux";
-import { bookAmodel, bookmdel, resetstat } from "@/store/booking";
+import { bookAcreator, bookmdel, resetstat } from "@/store/booking";
 import { RootState, AppDispatch } from "@/store/store"; // adjust path based on your store setup
 import { toast } from "material-react-toastify";
 import { useUserId } from "@/lib/hooks/useUserId";
@@ -13,22 +13,22 @@ import { useUserId } from "@/lib/hooks/useUserId";
 interface RequestFormProps {
   setsuccess: (value: boolean) => void;
   setrequested: (value: boolean) => void;
-  modelid: string;
+  creatorid: string;
   type: string;
   toast: {
     error: (msg: string, options?: { autoClose?: number }) => void;
   };
   price: number;
-  model: any;
+  creator: any;
 }
 
 export const Requestform: React.FC<RequestFormProps> = ({
   setsuccess,
   setrequested,
-  modelid,
+  creatorid,
   type,
   price,
-  model
+  creator
 }) => {
   const [loading, setLoading] = useState(false);
   const [color] = useState("#d49115");
@@ -83,16 +83,16 @@ export const Requestform: React.FC<RequestFormProps> = ({
     if (bookingstats !== "loading") {
       const tst=toast.loading("Your request is being processed")
       try {
-        const res = await bookAmodel({
+        const res = await bookAcreator({
           place,
           time,
           date,
           userid: userid,
-          modelid: model.hostid,
-          type: model.hosttype,
-          price: model.price
+          creatorid: creator.hostid,
+          type: creator.hosttype,
+          price: creator.price
         });
-        toast.success("Your request has been submitted and sent to "+(model?.name||"The model"))
+        toast.success("Your request has been submitted and sent to "+(creator?.name||"The creator"))
         setsuccess(true)
         setrequested(true)
       } catch (err) {
