@@ -258,7 +258,7 @@ const renderCreators = () => {
   if (!user?.session?._id) {
     return (
       <div className="mt-6 text-sm text-slate-400">
-        Please log in to view your creators.
+        Please log in to view creators.
       </div>
     );
   }
@@ -274,7 +274,7 @@ const renderCreators = () => {
   if (!list.length) {
     return (
       <div className="mt-6 text-sm text-slate-400">
-        You have not created any creators yet.
+        No listing yet.
       </div>
     );
   }

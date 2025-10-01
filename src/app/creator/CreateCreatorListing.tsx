@@ -205,15 +205,15 @@ const checkuserInput = async () => {
       photolink: photolinksForBackend,
     });
 
-    toast.success("Creator created successfully", { autoClose: 3000 });
+    toast.success("Listing created successfully", { autoClose: 3000 });
     router.push("/creators");
   } catch (err: any) {
-    console.error("Create creator failed", err?.response || err);
+    console.error("Failed to create listing", err?.response || err);
     const status = err?.response?.status;
     const data = err?.response?.data;
     const serverMsg = data?.message || data?.msg || data?.error || err?.message;
     const detail = typeof data === "object" ? JSON.stringify(data).slice(0, 400) : String(data || "");
-    const msg = serverMsg ? String(serverMsg) : "Failed to create creator";
+    const msg = serverMsg ? String(serverMsg) : "Failed to create listing";
     toast.error(`${status ? `[${status}]` : ""}${msg}${detail && serverMsg !== detail ? `\n${detail}` : ""}`, { autoClose: 6000 });
   } finally {
     setdisablebut(false);

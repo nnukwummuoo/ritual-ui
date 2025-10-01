@@ -184,11 +184,11 @@ export default function Editcreator () {
       const doc1 = newImages[0];
       const doc2 = newImages[1];
       await editCreatorMultipart({ token, data,files:newImages.map(img=>img), doc1, doc2 });
-      toast.success("Creator updated successfully");
+      toast.success("Listing updated successfully");
       router.push(`/creators/${creatorID}`);
     } catch (err:any) {
-      console.error("Edit creator failed", err);
-      toast.error(typeof err === 'string' ? err : 'Failed to update creator');
+      console.error("Failed to update listing", err);
+      toast.error(typeof err === 'string' ? err : 'Failed to update listing');
     } finally {
       setdisablebut(false);
       setLoading(false);

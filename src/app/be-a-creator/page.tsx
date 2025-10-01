@@ -20,9 +20,9 @@ export default function VerificationPage(){
     {
       icon: FaHandHoldingUsd,
       title: "Keep 100% of Your Earnings",
-      subtitle: "For 3 Months",
+      subtitle: "Forever",
       description:
-        "Unlike other platforms, we take 0%. Every cent you make from Fan Meets, Fan Dates, and Fan calls is yours.",
+        "Unlike other platforms, we take 0%. Every cent you make from Fan Meets, Fan Dates, and Fan Calls is yours.",
     },
     {
       icon: FaCreditCard,
