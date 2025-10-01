@@ -141,7 +141,7 @@ export default function PostsCard({ type }: { type?: "video" | "image" | "text" 
   }, [posts]);
 
   const fetchFeed = async () => { 
-    const tst = toast.loading("loading");
+
     try {
       const resPosts = await fetchposts();
       if (resPosts?.post && Array.isArray(resPosts.post)) {
