@@ -24,83 +24,62 @@ export interface RegisterState {
   creator_listing?: boolean;
 }
 
-const getInitialState = (): RegisterState => {
-  let initialState: RegisterState = {
-    status: "idle",
-    error: null,
-    verifystatus: "idle",
-    userID: "",
-    compstats: "",
-    message: "",
-    logedin: false,
-    refreshtoken: "",
-    accesstoken: "",
-    logstats: "idle",
-    email: "",
-    password: "",
-    forgetpassstate: "idle",
-    conpasswordstate: "idle",
-    chagepassword: "idle",
-  };
 
-  try {
-    const loginData = localStorage.getItem("login");
-    if (loginData) {
-      const parsed = JSON.parse(loginData);
-      initialState.email = parsed.email || "";
-      initialState.refreshtoken = parsed.refreshtoken || "";
-      initialState.accesstoken = parsed.accesstoken || "";
-      initialState.userID = parsed.userID || "";
-      initialState.modelId = parsed.modelId || "";
-      initialState.isModel = parsed.isModel || false;
-      initialState.logedin = !!parsed.accesstoken;
-    }
-  } catch (error) {
-    console.error("Failed to initialize state from localStorage:", error);
-  }
-
-  return initialState;
+const initialState: RegisterState = {
+  status: "idle",
+  error: null,
+  verifystatus: "idle",
+  userID: "",
+  compstats: "",
+  message: "",
+  logedin: false,
+  refreshtoken: "",
+  accesstoken: "",
+  logstats: "idle",
+  email: "",
+  password: "",
+  forgetpassstate: "idle",
+  conpasswordstate: "idle",
+  chagepassword: "idle",
 };
-
-const initialState: RegisterState = getInitialState();
 
 export const registernewUser = createAsyncThunk(
   "register/registernewUser",
-  async (data, { rejectWithValue }) => {
-    console.log("Register request data:", data);
+  async (data) => {
+    console.log({data})
     try {
-      let response = await axios.post(`https://mmekoapi.onrender.com/register`, data);
+      // Use the URL from config to support both development and production
+      let response = await axios.post(`${URL}/register`, data);
       return response.data;
-    } catch (err: any) {
-      console.error("Register error:", err.response?.data || err.message);
-      return rejectWithValue(err.response?.data?.message || "Registration failed");
+    } catch (err : any) {
+      console.log(err.message);
+      throw err.response.data.message;
     }
   }
 );
 
 export const verifyemail = createAsyncThunk(
   "register/verifyemail",
-  async (data, { rejectWithValue }) => {
+  async (data) => {
     try {
       let response = await axios.post(`${URL}/verifyemail`, data);
       return response.data;
     } catch (err: any) {
-      console.error("Verify email error:", err.response?.data || err.message);
-      return rejectWithValue(err.response?.data?.message || "Email verification failed");
+      throw err.response.data.message;
     }
   }
 );
 
 export const registercomplete = createAsyncThunk(
   "register/registercomplete",
-  async (data: any, { rejectWithValue }) => {
+  async (data : any) => {
     try {
       let infomfomation;
       let link;
 
       if (data.photoLink) {
         link = await saveImage(data.photoLink, "profile");
-        console.log("Profile image link:", link);
+        console.log(link);
       } else {
         link = "";
       }
@@ -112,70 +91,69 @@ export const registercomplete = createAsyncThunk(
         relationshipType: data.relationshipType,
         details: data.details,
       };
-      console.log("Complete register data:", infomfomation);
+      console.log("after info");
 
       let response = await axios.post(`${URL}/completeregister`, infomfomation);
+      console.log("after res");
       return response.data;
-    } catch (err: any) {
-      console.error("Complete register error:", err.response?.data || err.message);
-      return rejectWithValue(err.response?.data?.message || "Complete registration failed");
+    } catch (err) {
+      //  throw(err.response.data.message+'erro')
+      throw err;
+      console.log("throw");
     }
   }
 );
 
 export const loginuser = createAsyncThunk(
   "register/loginuser",
-  async (data, { rejectWithValue }) => {
+  async (data) => {
     try {
-      console.log("Sending login request with data:", data);
-      let response = await axios.post(`https://mmekoapi.onrender.com/login`, data);
-      console.log("Login API response:", response.data);
-      if (!response.data.accessToken) {
-        console.warn("No accessToken in response:", response.data);
-      }
+      console.log("untop login axios");
+      // Use the URL from config to support both development and production
+      let response = await axios.post(`${URL}/login`, data);
+      console.log("under login axios");
       return response.data;
     } catch (err: any) {
-      console.error("Login error:", err.response?.data || err.message);
-      return rejectWithValue(err.response?.data?.message || "Check internet connection");
+      throw err.response.data.message;
     }
   }
 );
 
 export const forgetpass = createAsyncThunk(
   "register/forgetpass",
-  async (data, { rejectWithValue }) => {
+  async (data) => {
     try {
       let response = await axios.post(`${URL}/forgetpassword`, data);
+
       return response.data;
     } catch (err: any) {
-      console.error("Forget password error:", err.response?.data || err.message);
-      return rejectWithValue(err.response?.data?.message || "Password reset failed");
+      throw err.response.data.message;
     }
   }
 );
 
 export const comfirmpasscode = createAsyncThunk(
   "register/comfirmpasscode",
-  async (data, { rejectWithValue }) => {
+  async (data) => {
     try {
       let response = await axios.post(`${URL}/comfirmpasscode`, data);
+
       return response.data;
     } catch (err: any) {
-      console.error("Confirm passcode error:", err.response?.data || err.message);
-      return rejectWithValue(err.response?.data?.message || "Passcode confirmation failed");
+      throw err.response.data.message;
     }
   }
 );
 
 export const ChangePass = createAsyncThunk(
   "register/ChangePass",
-  async (data, { rejectWithValue }) => {
+  async (data) => {
     try {
       let response = await axios.post(`${URL}/changepassword`, data);
+
       return response.data;
     } catch (err: any) {
-      console.error("Change password error:", err.response?.data || err.message);
-      return rejectWithValue(err.response?.data?.message || "Password change failed");
+      throw err.response.data.message;
     }
   }
 );
@@ -214,40 +192,46 @@ const registerSlice = createSlice({
       state.logedin = true;
       state.refreshtoken = action.payload.refreshtoken;
       state.accesstoken = action.payload.accesstoken;
-      state.userID = action.payload.userID;
-      state.modelId = action.payload.modelId;
-      state.isModel = action.payload.isModel;
-    },
-    logout(state) {
-      state.accesstoken = "";
-      state.refreshtoken = "";
-      state.userID = "";
-      state.logedin = false;
-      state.email = "";
-      state.password = "";
-      state.modelId = "";
-      state.isModel = false;
-      try {
-        localStorage.removeItem("login");
-      } catch (error) {
-        console.error("Failed to clear localStorage:", error);
-      }
+      state.userID = action.payload.userId;
+      state.creatorId = action.payload.creatorId;
+      state.creator_listing = action.payload.creator_listing;
     },
   },
+
   extraReducers(builder) {
     builder
-      .addCase(registernewUser.pending, (state) => {
+      .addCase(registernewUser.pending, (state, action) => {
         state.status = "loading";
       })
       .addCase(registernewUser.fulfilled, (state, action) => {
         state.status = "succeeded";
         state.error = action.payload.message;
+        
+        // Store user data in localStorage for authentication
+        try {
+          localStorage.setItem(
+            "login",
+            JSON.stringify({
+              userID: action.payload.userId,
+              nickname: action.payload.nickname || "",
+              accesstoken: action.payload.accessToken,
+              refreshtoken: action.payload.token || "",
+            })
+          );
+          
+          // Update Redux state
+          state.userID = action.payload.userId;
+          state.accesstoken = action.payload.accessToken;
+          state.logedin = true;
+        } catch (e) {
+          console.error("Failed to store registration data:", e);
+        }
       })
       .addCase(registernewUser.rejected, (state, action) => {
         state.status = "failed";
-        state.error = action.payload as string || "Registration failed";
+        state.error = action.error?.message as string;
       })
-      .addCase(verifyemail.pending, (state) => {
+      .addCase(verifyemail.pending, (state, action) => {
         state.verifystatus = "loading";
       })
       .addCase(verifyemail.fulfilled, (state, action) => {
@@ -256,9 +240,9 @@ const registerSlice = createSlice({
       })
       .addCase(verifyemail.rejected, (state, action) => {
         state.verifystatus = "failed";
-        state.error = action.payload as string || "Email verification failed";
+        state.error = action.error.message as string;
       })
-      .addCase(registercomplete.pending, (state) => {
+      .addCase(registercomplete.pending, (state, action) => {
         state.compstats = "loading";
       })
       .addCase(registercomplete.fulfilled, (state, action) => {
@@ -267,78 +251,87 @@ const registerSlice = createSlice({
       })
       .addCase(registercomplete.rejected, (state, action) => {
         state.compstats = "failed";
-        state.error = action.payload as string || "Complete registration failed";
+        state.error = action.error.message as string;
       })
-      .addCase(loginuser.pending, (state) => {
+      .addCase(loginuser.pending, (state, action) => {
         state.logstats = "loading";
       })
       .addCase(loginuser.fulfilled, (state, action) => {
+        // Always persist login data for client-side consumers (e.g., Sidemenu profile link)
         try {
           localStorage.setItem(
             "login",
             JSON.stringify({
               email: state.email,
+              password: state.password,
               refreshtoken: action.payload.token,
               accesstoken: action.payload.accessToken,
-              userID: action.payload.id,
-              modelId: action.payload.modelId,
-              isModel: action.payload.isModel,
+              userID: action.payload.userId,
+              creatorId: action.payload.creatorId,
+              creator_listing: action.payload.creator_listing,
             })
           );
-        } catch (error) {
-          console.error("Failed to save login data to localStorage:", error);
-        }
+        } catch {}
 
         state.logstats = "succeeded";
         state.message = action.payload.message;
         state.logedin = true;
         state.refreshtoken = action.payload.token;
         state.accesstoken = action.payload.accessToken;
-        state.userID = action.payload.id;
-        state.modelId = action.payload.modelId;
-        state.isModel = action.payload.isModel;
+        state.userID = action.payload.userId;
+        state.creatorId = action.payload.creatorId;
+        state.creator_listing = action.payload.creator_listing;
       })
       .addCase(loginuser.rejected, (state, action) => {
         state.logstats = "failed";
-        state.error = action.payload as string || "Check internet connection";
+
+        if (!action.error.message) {
+          state.error = "Check internet connection";
+        } else {
+          state.error = action.error.message ?? null;
+        }
+
+        //else{
+        //     state.error = 'Check network connection'
+        // }
       })
-      .addCase(forgetpass.pending, (state) => {
+      .addCase(forgetpass.pending, (state, action) => {
         state.forgetpassstate = "loading";
       })
-      .addCase(forgetpass.fulfilled, (state) => {
+      .addCase(forgetpass.fulfilled, (state, action) => {
         state.forgetpassstate = "succeeded";
       })
       .addCase(forgetpass.rejected, (state, action) => {
         state.forgetpassstate = "failed";
-        state.error = action.payload as string || "Password reset failed";
+        state.error = action.error.message as string;
       })
-      .addCase(comfirmpasscode.pending, (state) => {
+      .addCase(comfirmpasscode.pending, (state, action) => {
         state.conpasswordstate = "loading";
       })
       .addCase(comfirmpasscode.fulfilled, (state, action) => {
         state.conpasswordstate = "succeeded";
-        state.userID = action.payload.userId;
+        state.userID = action.payload.id;
       })
       .addCase(comfirmpasscode.rejected, (state, action) => {
         state.conpasswordstate = "failed";
-        state.error = action.payload as string || "Passcode confirmation failed";
+        state.error = action.error.message as string;
       })
-      .addCase(ChangePass.pending, (state) => {
+      .addCase(ChangePass.pending, (state, action) => {
         state.chagepassword = "loading";
       })
-      .addCase(ChangePass.fulfilled, (state) => {
+      .addCase(ChangePass.fulfilled, (state, action) => {
         state.chagepassword = "succeeded";
       })
       .addCase(ChangePass.rejected, (state, action) => {
         state.conpasswordstate = "failed";
-        state.error = action.payload as string || "Password change failed";
+        state.error = action.error.message as string;
       });
   },
 });
 
 export default registerSlice.reducer;
-export const status = (state: RootState) => state.register.status;
-export const error = (state: RootState) => state.register.error;
+export const status = (state: any) => state.register.status;
+export const error = (state: any) => state.register.error;
 export const {
   changeStatus,
   changeemailvery,
@@ -347,5 +340,4 @@ export const {
   changelogin,
   loginAuthUser,
   changepasswordback,
-  logout,
 } = registerSlice.actions;
