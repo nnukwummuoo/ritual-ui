@@ -96,7 +96,6 @@ export interface UpdateModelPayload {
   /** Payload for uploading exclusive docs */
   export interface PostExclusiveDocsPayload {
     userid: string;
-    token: string;
     firstName: string;
     lastName: string;
     email: string;

@@ -19,11 +19,10 @@ export default function VerifiedUserForm() {
   const dispatch: AppDispatch = useDispatch();
   const router = useRouter();
   const userId = useSelector((state: RootState) => state.register.userID); // Fetch userId from Redux
-  const token = useSelector((state: RootState) => state.register.accesstoken); // Fetch token
-   console.log("Token loaded from Redux store:", token); // <-- Add this line to debug
   const [loading, setLoading] = useState(false);
   const [color] = useState("#d49115");
   const [step, setStep] = useState(1);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
   const nextStep = () => setStep((prev) => Math.min(prev + 1, 3));
   const prevStep = () => setStep((prev) => Math.max(prev - 1, 1));
 
@@ -44,11 +43,11 @@ export default function VerifiedUserForm() {
   });
 
   useEffect(() => {
-    if (!userId || !token) {
+    if (!userId) {
       toast.error("User ID not found. Please log in again.");
       router.push("/");
     }
-  }, [userId, token, router]);
+  }, [userId, router]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type, checked, files } = e.target as any;
@@ -66,11 +65,6 @@ export default function VerifiedUserForm() {
     e.preventDefault();
     console.log("formData", formData);
 
-    // if (!formData.acceptTerms) {
-    //   toast.error("Please accept the terms and conditions.");
-    //   return;
-    // }
-
     if (!formData.idPhotofile || !formData.holdingIdPhotofile) {
       toast.error("Please upload both ID photo and holding ID photo.");
       return;
@@ -86,17 +80,21 @@ export default function VerifiedUserForm() {
     try {
       await dispatch(post_exclusive_docs({
         ...formData,
-        token: token,
         idPhotofile: formData.idPhotofile,
         holdingIdPhotofile: formData.holdingIdPhotofile,
       })).unwrap();
       toast.success("Application submitted successfully!");
-      router.push("/notifications");
+      setShowSuccessModal(true);
     } catch (error: any) {
       toast.error(error || "Failed to submit application. Please try again.");
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleModalClose = () => {
+    setShowSuccessModal(false);
+    router.push("/notifications");
   };
 
   return (
@@ -270,6 +268,28 @@ export default function VerifiedUserForm() {
               </div>
             </form>
           </fieldset>
+
+          {showSuccessModal && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+              <div className="bg-gray-900 rounded-xl shadow-md p-6 text-center max-w-sm">
+                <div className="flex justify-center mb-4">
+                  <div className="w-12 h-12 bg-green-600 rounded-full flex items-center justify-center">
+                    <svg width="24" height="24" fill="white" viewBox="0 0 24 24">
+                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                    </svg>
+                  </div>
+                </div>
+                <h2 className="text-xl font-semibold mb-2">Application submitted.</h2>
+                <p className="text-slate-400 mb-4">Feedback will be shared within a few hours.</p>
+                <button
+                  onClick={handleModalClose}
+                  className="bg-gray-700 text-white px-5 py-2 rounded-lg hover:bg-gray-600 transition duration-300"
+                >
+                  OK
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

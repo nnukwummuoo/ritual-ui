@@ -236,14 +236,12 @@ export const post_exclusive_docs = createAsyncThunk<
     formData.append("holdingIdPhotofile", data.holdingIdPhotofile || "");
 
     console.log("FormData entries:", [...formData.entries()]);
-    console.log("Token sent in request:", data.token);
 
     const response = await axios.put(`${URL}/postdocument`, formData, {
       headers: {
         "Content-Type": "multipart/form-data",
-        Authorization: `Bearer ${data.token}`,
       },
-      withCredentials: true,
+      withCredentials: true, // ✅ send cookies automatically
     });
 
     console.log("post_exclusive_docs response:", response.data);
