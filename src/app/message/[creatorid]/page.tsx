@@ -9,22 +9,3 @@ export const metadata = {
 export default function ChatPage() {
   return <Chat />;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -367,25 +367,36 @@ export const Chat = () => {
           const raw = localStorage.getItem("login");
           if (raw) {
             const data = JSON.parse(raw);
-            return data?.refreshtoken || data?.accesstoken;
+            const token = data?.refreshtoken || data?.accesstoken;
+            console.log("🔍 [CHAT] Token retrieved:", token ? "Present" : "Missing");
+            console.log("🔍 [CHAT] Token type:", data?.refreshtoken ? "refresh" : "access");
+            return token;
           }
         } catch (error) {
           console.error("[Chat] Error retrieving token from localStorage:", error);
         }
+        console.log("❌ [CHAT] No token found in localStorage");
         return "";
       })();
 
       const requestData = {
         creatorid: targetUserId,
-        clientid: loggedInUserId,
-        token: token || ""
+        clientid: loggedInUserId
       };
+
+      console.log("🔍 [CHAT] Fetching messages with data:", requestData);
+      console.log("🔍 [CHAT] API URL:", `${API_URL}/getcurrentchat`);
+      console.log("🔍 [CHAT] Token being sent:", token);
+      console.log("🔍 [CHAT] Token length:", token?.length);
 
       const response = await axios.put(`${API_URL}/getcurrentchat`, requestData, {
         headers: {
           "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
         },
       });
+
+      console.log("✅ [CHAT] Messages fetched successfully:", response.data);
 
       if (response.data.chats && Array.isArray(response.data.chats)) {
         setmessage(response.data.chats);
@@ -396,10 +407,21 @@ export const Chat = () => {
       }
 
       setLoading(false);
-    } catch (error) {
-      console.error("Error fetching messages:", error);
+    } catch (error: any) {
+      console.error("❌ [CHAT] Error fetching messages:", error);
+      console.error("❌ [CHAT] Error response:", error.response?.data);
+      console.error("❌ [CHAT] Error status:", error.response?.status);
+      console.error("❌ [CHAT] Error headers:", error.response?.headers);
+      
       setLoading(false);
-      toast.error("Failed to load messages");
+      
+      if (error.response?.status === 403) {
+        toast.error("Access denied. Please check your login status.");
+      } else if (error.response?.status === 401) {
+        toast.error("Authentication failed. Please log in again.");
+      } else {
+        toast.error(`Failed to load messages: ${error.response?.data?.message || error.message}`);
+      }
     }
   }, [creatorid, loggedInUserId]);
 
@@ -965,12 +987,18 @@ export const Chat = () => {
     // Since we now pass only the target user ID, we don't need to split by comma
     const targetUserId = decodedCreatorid;
 
+    console.log("🔍 [CHAT] Debug info:");
+    console.log("🔍 [CHAT] creatorid from params:", creatorid);
+    console.log("🔍 [CHAT] targetUserId after decode:", targetUserId);
+    console.log("🔍 [CHAT] loggedInUserId:", loggedInUserId);
+
     if (!loggedInUserId) {
       toast.error("Please log in to send messages");
       return;
     }
 
-    if (!targetUserId) {
+    if (!targetUserId || targetUserId === 'undefined' || targetUserId === 'null') {
+      console.error("❌ [CHAT] Invalid targetUserId:", targetUserId);
       toast.error("Invalid recipient");
       return;
     }
