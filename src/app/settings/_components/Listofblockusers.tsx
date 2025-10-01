@@ -5,10 +5,11 @@ import person from "../../../icons/icons8-profile_Icon.png"
 import onlineIcon from "../../../icons/onlineIcon.svg"
 import offlineIcon from "../../../icons/offlineIcon.svg"
 import { getCountryData } from '../../../api/getCountries';
-// import {
-import { deleteblockedUsers, getblockedUsers, ProfilechangeStatus } from '../../../store/profile';
 import { useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch, RootState } from '../../../store/store';
+import { URL as API_URL } from '@/api/config';
+import axios from 'axios';
+import { toast } from 'material-react-toastify';
 
 type ListOfBlockUsersProps = {
   id: string;
@@ -16,13 +17,12 @@ type ListOfBlockUsersProps = {
   location: string;
   online: boolean;
   name: string;
+  onUnblock?: () => void;
 };
 
-export const Listofblockusers: React.FC<ListOfBlockUsersProps> = ({ id, photolink, location, online, name }) => {
+export const Listofblockusers: React.FC<ListOfBlockUsersProps> = ({ id, photolink, location, online, name, onUnblock }) => {
 
 let timeout: number | undefined;
-const removeblockstats = useSelector((state: RootState) => state.profile.removeblockstats as string);
-const token = useSelector((state: RootState) => state.register.refreshtoken as string);
 const userid = useSelector((state: RootState) => state.register.userID as string);
 const [loading, setloading] = useState(false);
 // Store image as a string URL for use in <img src="..."/>
@@ -50,23 +50,62 @@ const [countryData, setCountryData] = useState({
     fetchData();
   }, []);
 
-  const unblockClick = ()=>{
-    if(removeblockstats !== "loading"){
-      setloading(true)
-      setdisable(true)
-      dispatch(deleteblockedUsers({token,id}))
-    }
-  }
+  const unblockClick = async () => {
+    if (loading) return;
 
-  useEffect(()=>{
-    if(removeblockstats === "succeeded"){
-      setloading(false)
-      set_buttonpressed(false)
-      dispatch(ProfilechangeStatus("idle"))
-      dispatch(getblockedUsers({token,userid}))
-      
+    setloading(true);
+    setdisable(true);
+
+    try {
+      const token = (() => {
+        try {
+          const raw = localStorage.getItem("login");
+          if (raw) {
+            const data = JSON.parse(raw);
+            return data?.refreshtoken || data?.accesstoken;
+          }
+        } catch (error) {
+          console.error("[UnblockUser] Error retrieving token:", error);
+        }
+        return "";
+      })();
+
+      if (!token) {
+        toast.error("Please log in to unblock users");
+        return;
+      }
+
+      const response = await axios.post(`${API_URL}/block/unblock`, {
+        blockerId: userid,
+        blockedUserId: id
+      }, {
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        }
+      });
+
+      if (response.data.ok) {
+        toast.success("User unblocked successfully");
+        if (onUnblock) {
+          onUnblock(); // Refresh the list
+        }
+      } else {
+        toast.error(response.data.message || "Failed to unblock user");
+      }
+
+    } catch (error: any) {
+      console.error("Error unblocking user:", error);
+      if (error.response?.data?.message) {
+        toast.error(error.response.data.message);
+      } else {
+        toast.error("Failed to unblock user. Please try again.");
+      }
+    } finally {
+      setloading(false);
+      set_buttonpressed(false);
     }
-  },[removeblockstats])
+  };
 
   return (
     <div className="bg-slate-300 p-1 w-full rounded-lg"
