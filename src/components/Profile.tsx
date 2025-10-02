@@ -1,10 +1,14 @@
 import Link from 'next/link'
-import { StringifyOptions } from 'node:querystring'
 import React from 'react'
 
-export default function Profile({name, src, url,gold_balance}: 
-    {name: string, src: string, url: string,gold_balance:number|string}) {
-  return <Link href={url} className={`flex gap-4 flex-col w-full`} onClick={(e) => e.stopPropagation()}>
+export default function Profile({name, src, url,gold_balance, onClick}: 
+    {name: string, src: string, url: string,gold_balance:number|string, onClick?: () => void}) {
+  return <Link href={url} className={`flex gap-4 flex-col w-full`} onClick={(e) => {
+    e.stopPropagation();
+    if (onClick) {
+      onClick();
+    }
+  }}>
         <p className='italic'>Welcome back!</p>
         <div className={`flex gap-4 group w-full`}>
      <img

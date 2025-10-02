@@ -7,7 +7,7 @@ import { getViewingProfile } from "@/store/viewingProfile";
 import type { RootState } from "@/store/store";
 import Image from "next/image";
 import { MessageCircle } from "lucide-react";
-import { getSocket } from "@/lib/socket";
+import { getSocket, joinUserRoom, leaveUserRoom, onUserOnline, onUserOffline, removeTypingListeners } from "@/lib/socket";
 
 interface MessageItem {
   fromid: string;
@@ -22,6 +22,7 @@ interface MessageItem {
   unreadCount?: number;
   unread?: boolean;
   value?: string;
+  online?: boolean;
 }
 
 export const MessageList = () => {
@@ -35,6 +36,7 @@ export const MessageList = () => {
   const [loading, setLoading] = useState(true);
   const [profilePictures, setProfilePictures] = useState<Record<string, string>>({});
   const [searchQuery, setSearchQuery] = useState("");
+  const [onlineUsers, setOnlineUsers] = useState<Set<string>>(new Set());
 
   // Get userid from localStorage if not in Redux (same pattern as Chat.tsx)
   const [localUserid, setLocalUserid] = React.useState("");
@@ -63,6 +65,33 @@ export const MessageList = () => {
       }
     }
   }, [reduxUserid]);
+
+  // Socket event listeners for online status
+  React.useEffect(() => {
+    if (userid && isLoggedIn) {
+      // Join user room for online status
+      joinUserRoom(userid);
+
+      // Listen for user online/offline events
+      onUserOnline((userId) => {
+        setOnlineUsers(prev => new Set([...prev, userId]));
+      });
+
+      onUserOffline((userId) => {
+        setOnlineUsers(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(userId);
+          return newSet;
+        });
+      });
+
+      // Cleanup on unmount
+      return () => {
+        leaveUserRoom(userid);
+        removeTypingListeners();
+      };
+    }
+  }, [userid, isLoggedIn]);
 
   useEffect(() => {
     if (!isLoggedIn || !userid) {
@@ -118,7 +147,7 @@ export const MessageList = () => {
     };
 
     // Listen for follow updates (when someone follows/unfollows)
-    const handleFollowUpdate = (data: { userId: string; action: string }) => {
+    const handleFollowUpdate = () => {
       // Refresh message list when follow status changes
       // @ts-expect-error - Redux dispatch type issue
       dispatch(getmsgnitify({ userid }));
@@ -206,14 +235,22 @@ export const MessageList = () => {
   const formatTime = (dateString: string) => {
     const date = new Date(Number(dateString));
     const now = new Date();
-    const diffInHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60);
+    const diffInSeconds = (now.getTime() - date.getTime()) / 1000;
+    const diffInMinutes = diffInSeconds / 60;
+    const diffInHours = diffInMinutes / 60;
+    const diffInDays = diffInHours / 24;
     
-    if (diffInHours < 1) {
+    if (diffInSeconds < 60) {
       return "Just now";
+    } else if (diffInMinutes < 60) {
+      return `${Math.floor(diffInMinutes)}m ago`;
     } else if (diffInHours < 24) {
       return `${Math.floor(diffInHours)}h ago`;
+    } else if (diffInDays < 7) {
+      return `${Math.floor(diffInDays)}d ago`;
     } else {
-      return `${Math.floor(diffInHours / 24)}d ago`;
+      // For older messages, show the actual date
+      return date.toLocaleDateString();
     }
   };
 
@@ -371,7 +408,9 @@ export const MessageList = () => {
               )}
             </div>
             {/* Online indicator */}
-            <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-gray-900 rounded-full"></div>
+            {onlineUsers.has(otherUserId) && (
+              <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-gray-900 rounded-full"></div>
+            )}
           </div>
 
           {/* Message content */}

@@ -15,10 +15,38 @@ import axios from 'axios';
     let [color, setColor] = useState("#d49115");
     
     const userid = useSelector((state: RootState) => state.register.userID);
+    const profileUserId = useSelector((state: RootState) => state.profile?.userId || state.profile?.creatorID);
+    
+    // Get userid from localStorage if not in Redux (same pattern as DropdownMenu)
+    const [localUserid, setLocalUserid] = React.useState("");
+    
+    React.useEffect(() => {
+      if (typeof window !== "undefined") {
+        try {
+          const raw = localStorage.getItem("login");
+          if (raw) {
+            const data = JSON.parse(raw);
+            
+            // Set user ID if not in Redux - check multiple possible keys
+            if (!userid) {
+              const userId = data?.userID || data?.userid || data?.id;
+              if (userId) {
+                setLocalUserid(userId);
+                console.log("🔍 [BLOCKED_USERS] UserID from localStorage:", userId);
+              }
+            }
+          }
+        } catch (error) {
+          console.error("Error parsing user data from localStorage:", error);
+        }
+      }
+    }, [userid]);
+
+    const loggedInUserId = userid || profileUserId || localUserid;
     const dispatch = useDispatch();
 
     const fetchBlockedUsers = async () => {
-      if (!userid) {
+      if (!loggedInUserId) {
         setError("Please log in to view blocked users");
         setloading(false);
         return;
@@ -45,7 +73,7 @@ import axios from 'axios';
         }
 
         const response = await axios.post(`${API_URL}/block/blocked-users`, {
-          userId: userid
+          userId: loggedInUserId
         }, {
           headers: {
             "Content-Type": "application/json",
@@ -54,8 +82,11 @@ import axios from 'axios';
         });
 
         if (response.data.ok) {
+          console.log("🔍 [BLOCKED_USERS] API Response:", response.data);
+          console.log("🔍 [BLOCKED_USERS] Blocked users data:", response.data.blockedUsers);
           setBlockedUsers(response.data.blockedUsers);
         } else {
+          console.error("🔍 [BLOCKED_USERS] API Error:", response.data);
           setError(response.data.message || "Failed to load blocked users");
         }
       } catch (error: any) {
@@ -68,11 +99,22 @@ import axios from 'axios';
 
     useEffect(() => {
       fetchBlockedUsers();
-    }, [userid]);
+    }, [loggedInUserId]);
 
     const showcontent = () => {
       if (loading) {
-        return null;
+        return (
+          <div className="flex flex-col items-center justify-center py-16">
+            <PacmanLoader
+              color={color}
+              loading={loading}
+              size={15}
+              aria-label="Loading Spinner"
+              data-testid="loader"
+            />
+            <p className="text-gray-400 mt-4">Loading blocked users...</p>
+          </div>
+        );
       }
 
       if (error) {
@@ -85,7 +127,7 @@ import axios from 'axios';
 
       if (blockedUsers.length > 0) {
         return (
-          <div className="grid grid-cols-2 gap-2 p-2 mb-3">
+          <div className="space-y-3">
             {blockedUsers.map((user, index) => (
               <Listofblockusers 
                 id={user.id} 
@@ -101,8 +143,10 @@ import axios from 'axios';
         );
       } else {
         return (
-          <div className='w-full'>
-            <p className='w-full mt-16 text-xs text-center text-yellow-200'>No Blocked users!</p>
+          <div className='w-full text-center py-16'>
+            <div className="text-gray-400 text-6xl mb-4">🚫</div>
+            <h3 className="text-xl text-gray-300 mb-2">No Blocked Users</h3>
+            <p className="text-gray-500">You haven't blocked any users yet.</p>
           </div>
         );
       }

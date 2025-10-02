@@ -210,8 +210,6 @@ export default function PostsCard({ type }: { type?: "video" | "image" | "text" 
       }
     } catch(error) {
       console.error(error);
-    } finally {
-      toast.dismiss(tst);
     }
   };
 
