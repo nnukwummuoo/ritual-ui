@@ -13,7 +13,7 @@ export default function SupportChatLayout({
 }) {
   return (
     <MessageLayoutClient>
-      <div className="h-screen w-full flex flex-col bg-gray-900">
+      <div className="h-screen w-full flex flex-col bg-gray-900 pb-safe">
         {children}
       </div>
     </MessageLayoutClient>

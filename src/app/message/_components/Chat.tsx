@@ -433,7 +433,26 @@ export const Chat = () => {
 
   // Chat info is now handled by viewingProfile only (no Redux chatinfo)
 
-  // Fetch target user profile details when creatorid changes
+  // Track route changes to force fresh profile fetch
+  const [routeChangeKey, setRouteChangeKey] = useState(0);
+
+  // Force fresh fetch when user navigates back to chat
+  useEffect(() => {
+    const handleRouteChange = () => {
+      setRouteChangeKey(prev => prev + 1);
+    };
+
+    // Listen for route changes (when user comes back to chat)
+    window.addEventListener('focus', handleRouteChange);
+    window.addEventListener('pageshow', handleRouteChange);
+
+    return () => {
+      window.removeEventListener('focus', handleRouteChange);
+      window.removeEventListener('pageshow', handleRouteChange);
+    };
+  }, []);
+
+  // Fetch target user profile details when creatorid changes or route changes
   useEffect(() => {
     if (!creatorid || !loggedInUserId) return;
 
@@ -454,10 +473,19 @@ export const Chat = () => {
     })();
 
     if (token) {
+      // Clear previous profile data first to ensure fresh loading
+      setchatusername("");
+      setfirstname("");
+      setlastname("");
+      set_Chatphoto("/icons/icons8-profile_user.png");
+      
+      // Clear Redux viewing profile state to force fresh fetch
+      dispatch({ type: 'viewingProfile/clearViewingProfile' });
+      
       // @ts-expect-error - Redux dispatch type issue
       dispatch(getViewingProfile({ userid: targetUserId, token }));
     }
-  }, [creatorid, loggedInUserId, dispatch]);
+  }, [creatorid, loggedInUserId, dispatch, routeChangeKey]);
 
   // Update chat info from viewing profile when it loads
   useEffect(() => {
@@ -473,8 +501,17 @@ export const Chat = () => {
       } else {
         set_Chatphoto("/icons/icons8-profile_user.png");
       }
+    } else if (viewingProfile.status === "failed") {
+      // Handle profile loading failure with better fallback
+      const targetUserId = decodeURIComponent(creatorid || "");
+      const fallbackName = `User ${targetUserId.slice(-6)}`;
+      
+      setfirstname(fallbackName);
+      setchatusername(fallbackName);
+      set_Chatphoto("/icons/icons8-profile_user.png");
+      setChatphotoError(false);
     }
-  }, [viewingProfile]);
+  }, [viewingProfile, creatorid]);
 
   // Force update chat info when creatorid changes to ensure profile is always shown
   useEffect(() => {
@@ -493,17 +530,41 @@ export const Chat = () => {
   useEffect(() => {
     const fallbackTimeout = setTimeout(() => {
       setLoading(false);
-    }, 10000); // 10 second fallback - only if API is taking too long
+      
+      // If profile still hasn't loaded, set fallback values
+      if (!chatusername && creatorid) {
+        const targetUserId = decodeURIComponent(creatorid);
+        const fallbackName = `User ${targetUserId.slice(-6)}`;
+        
+        setchatusername(fallbackName);
+        setfirstname(fallbackName);
+        set_Chatphoto("/icons/icons8-profile_user.png");
+        setChatphotoError(false);
+      }
+    }, 5000); // 5 second fallback - reduced from 10 seconds
 
     return () => clearTimeout(fallbackTimeout);
-  }, []);
+  }, [creatorid, chatusername]);
 
-  // Fallback to ensure chat info is set even if there are timing issues
+  // Enhanced fallback to ensure chat info is set even if there are timing issues
   useEffect(() => {
-    if (creatorid && !chatusername && !chatfirstname) {
+    if (creatorid && (!chatusername || !chatfirstname)) {
       const targetUserId = decodeURIComponent(creatorid);
-      setchatusername(`User ${targetUserId.slice(-4)}`); // Show last 4 chars of user ID as fallback
+      
+      // Try to get a better fallback name from the user ID
+      const fallbackName = `User ${targetUserId.slice(-6)}`; // Show last 6 chars for better identification
+      
+      // Only set fallback if we don't have any name yet
+      if (!chatusername) {
+        setchatusername(fallbackName);
+      }
+      if (!chatfirstname) {
+        setfirstname(fallbackName);
+      }
+      
+      // Set default profile picture
       set_Chatphoto("/icons/icons8-profile_user.png");
+      setChatphotoError(false);
     }
   }, [creatorid, chatusername, chatfirstname]);
 
@@ -1200,6 +1261,20 @@ export const Chat = () => {
   //   };
   // }, [showEmoji]);
 
+  // Cleanup when component unmounts (user exits route)
+  useEffect(() => {
+    return () => {
+      // Clear profile data when user exits the chat route
+      setchatusername("");
+      setfirstname("");
+      setlastname("");
+      set_Chatphoto("/icons/icons8-profile_user.png");
+      
+      // Clear Redux viewing profile state
+      dispatch({ type: 'viewingProfile/clearViewingProfile' });
+    };
+  }, [dispatch]);
+
   return (
     <div className="h-full w-full flex flex-col">
       {/* Top Bar with Clean Design */}
@@ -1363,8 +1438,8 @@ export const Chat = () => {
         </div>
       )}
 
-      {/* Input Bar - Clean Design */}
-      <div className="flex items-center gap-2 sm:gap-3 p-3 sm:p-4  bg-gray-800 border-t border-blue-700/30 sticky bottom-0 z-50 flex-shrink-0">
+      {/* Input Bar - Mobile Optimized */}
+      <div className="flex items-center gap-2 sm:gap-3 p-3 sm:p-4 bg-gray-800 border-t border-blue-700/30 sticky bottom-0 z-50 flex-shrink-0 pb-safe">
         <input
           type="file"
           ref={fileInputRef}

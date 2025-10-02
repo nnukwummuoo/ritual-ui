@@ -58,7 +58,7 @@ export const SupportChat = () => {
     }
   }, [reduxUserId]);
 
-  // Mock support messages for demonstration
+  // Load messages including support form message
   useEffect(() => {
     const mockMessages = [
       {
@@ -74,6 +74,28 @@ export const SupportChat = () => {
         }
       }
     ];
+
+    // Check for support message from form
+    const supportMessage = localStorage.getItem("supportMessage");
+    if (supportMessage) {
+      const userMessage = {
+        _id: '2',
+        content: supportMessage,
+        fromid: loggedInUserId,
+        toid: 'support',
+        date: Date.now() - 60000, // 1 minute ago
+        user: {
+          firstname: 'You',
+          lastname: '',
+          photolink: ''
+        }
+      };
+      mockMessages.push(userMessage);
+      
+      // Clear the support message from localStorage
+      localStorage.removeItem("supportMessage");
+    }
+
     setMessages(mockMessages);
   }, [loggedInUserId]);
 
@@ -265,8 +287,8 @@ export const SupportChat = () => {
         </div>
       )}
 
-      {/* Input Bar */}
-      <div className="flex items-center gap-2 sm:gap-3 p-3 sm:p-4 bg-gray-800 border-t border-gray-700/30 sticky bottom-0 z-50 flex-shrink-0">
+      {/* Input Bar - Mobile Optimized */}
+      <div className="flex items-center gap-2 sm:gap-3 p-3 sm:p-4 bg-gray-800 border-t border-gray-700/30 sticky bottom-0 z-50 flex-shrink-0 pb-safe">
         <input
           type="file"
           ref={fileInputRef}

@@ -22,28 +22,94 @@ const SupportPage: React.FC = () => {
 
   const faqs = [
     {
-      question: "How do I reset my password?",
-      answer: "Go to the login page and click 'Forgot Password'. Enter your email address and follow the instructions sent to your email."
+      section: "🔑 Getting Started",
+      questions: [
+        {
+          question: "How do I create an account?",
+          answer: "Sign up with a username and password. You will also be given a unique 12-secret-phrase for recovery."
+        },
+        {
+          question: "What is the 12-secret-phrase?",
+          answer: "It's your backup key. If you forget your password or lose access, you can use the 12-secret-phrase to recover your account."
+        },
+        {
+          question: "What if I lose my 12-secret-phrase?",
+          answer: "If you forget your password and lose your 12-secret-phrase, your account cannot be recovered. Keep it safe."
+        },
+        {
+          question: "Can I be both a Fan and a Creator?",
+          answer: "Yes ✅. You can switch roles anytime in your account settings."
+        }
+      ]
     },
     {
-      question: "How do I update my profile?",
-      answer: "Navigate to your profile page and click the 'Edit Profile' button. You can update your information, profile picture, and bio."
+      section: "💳 Payments & Earnings",
+      questions: [
+        {
+          question: "How do Fan Meet / Fan Date payments work?",
+          answer: "Fans pay transport fare upfront. The money is held in a pending account until the fan taps \"Mark as Complete.\" Once confirmed, the payment is instantly released to the Creator."
+        },
+        {
+          question: "How does Fan Call payment work?",
+          answer: "Fans are charged per minute, and the money is transferred live to the Creator's account during the call."
+        },
+        {
+          question: "Do Creators keep 100% of their money?",
+          answer: "Yes 💯. Creators always keep 100% of their earnings."
+        }
+      ]
     },
     {
-      question: "How do I follow other users?",
-      answer: "Visit any user's profile page and click the 'Follow' button. You'll receive notifications when they post new content."
+      section: "🚫 Safety & Rules",
+      questions: [
+        {
+          question: "Can I post explicit content?",
+          answer: "No ❌. One offense = permanent ban. No warnings, no second chances."
+        },
+        {
+          question: "What if a fan/creator breaks the rules?",
+          answer: "Use the Report button. Our team will review immediately and take action."
+        },
+        {
+          question: "What happens if a fan doesn't mark a meet/date as complete?",
+          answer: "Contact support within 24 hours with evidence (Screenshots, photo, video or chat logs) and our support team will review the case. If valid, the payment will still be released to the Creator."
+        }
+      ]
     },
     {
-      question: "How do I send messages?",
-      answer: "Go to the Messages section and select a conversation, or visit a user's profile and click the message icon to start a new conversation."
+      section: "🛠 Account & Access",
+      questions: [
+        {
+          question: "How do I log in?",
+          answer: "Use your username and password."
+        },
+        {
+          question: "How do I recover my account?",
+          answer: "Enter your 12-secret-phrase. It will reset your access and let you set a new password."
+        },
+        {
+          question: "Can I change my 12-secret-phrase?",
+          answer: "No. It is fixed. Protect it carefully."
+        }
+      ]
     },
     {
-      question: "How do I report inappropriate content?",
-      answer: "Click the three dots menu on any post or message and select 'Report'. Our team will review the content within 24 hours."
+      section: "💬 Contact Support",
+      questions: [
+        {
+          question: "For disputes, bugs, or urgent help:",
+          answer: "📩 Open a Support Ticket inside the app.\n🕒 Response Time: within 24 hours."
+        }
+      ]
     },
     {
-      question: "How do I delete my account?",
-      answer: "Go to Settings > Account Settings > Delete Account. This action is permanent and cannot be undone."
+      section: "⚠ Reminder",
+      questions: [
+        {
+          question: "Username + Password = Daily Access.",
+          answer: "12-Secret-Phrase = Your only backup key."
+        }
+      ]
     }
   ];
 
@@ -52,26 +118,30 @@ const SupportPage: React.FC = () => {
     if (!selectedCategory || !message || !email) return;
 
     setIsSubmitting(true);
-    try {
-      // Here you would typically send the support request to your backend
-      console.log("Support request:", { selectedCategory, message, email });
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      alert("Support request submitted successfully! We'll get back to you within 24 hours.");
-      setMessage("");
-      setEmail("");
-      setSelectedCategory("");
-    } catch (error) {
-      alert("Failed to submit support request. Please try again.");
-    } finally {
-      setIsSubmitting(false);
-    }
+    
+    // Format the complete message with all details
+    const fullMessage = `📧 Support Request Details:
+Category: ${selectedCategory}
+Email: ${email}
+Message: ${message}
+Timestamp: ${new Date().toLocaleString()}`;
+
+    // Store the message in localStorage to show in support chat
+    localStorage.setItem("supportMessage", fullMessage);
+    
+    // Reset form
+    setSelectedCategory("");
+    setEmail("");
+    setMessage("");
+    
+    // Redirect to support chat page
+    window.location.href = "/message/supportchat";
+    
+    setIsSubmitting(false);
   };
 
   return (
-    <div className="min-h-screen bg-[#0e0f2a] text-white">
+    <div className="min-h-screen mb-24 bg-[#0e0f2a] text-white">
       <div className="w-full max-w-4xl mx-auto px-4 py-6">
         {/* Header */}
         <div className="flex items-center gap-4 mb-8">
@@ -131,10 +201,10 @@ const SupportPage: React.FC = () => {
                   Account Settings
                 </button>
                 <button
-                  onClick={() => router.push("/messages")}
+                  onClick={() => router.push("/messages/supportchat")}
                   className="w-full text-left p-3 bg-gray-700 rounded-lg hover:bg-gray-600 transition-colors"
                 >
-                  Messages
+                  Mmeko support
                 </button>
               </div>
             </div>
@@ -144,12 +214,19 @@ const SupportPage: React.FC = () => {
           <div className="lg:col-span-2">
             {/* FAQ Section */}
             <div className="bg-gray-800 rounded-xl p-6 mb-6">
-              <h2 className="text-2xl font-semibold mb-6">Frequently Asked Questions</h2>
+              <h2 className="text-2xl font-semibold mb-6">🙋 Help & Support (FAQ)</h2>
+              <div className="space-y-8">
+                {faqs.map((section, sectionIndex) => (
+                  <div key={sectionIndex} className="border-b border-gray-700 pb-6 last:border-b-0">
+                    <h3 className="text-xl font-semibold mb-4 text-blue-400">{section.section}</h3>
               <div className="space-y-4">
-                {faqs.map((faq, index) => (
-                  <div key={index} className="border-b border-gray-700 pb-4 last:border-b-0">
-                    <h3 className="font-semibold text-lg mb-2">{faq.question}</h3>
-                    <p className="text-gray-300 text-sm leading-relaxed">{faq.answer}</p>
+                      {section.questions.map((faq, faqIndex) => (
+                        <div key={faqIndex} className="bg-gray-700 rounded-lg p-4">
+                          <h4 className="font-semibold text-lg mb-2 text-white">{faq.question}</h4>
+                          <p className="text-gray-300 text-sm leading-relaxed whitespace-pre-line">{faq.answer}</p>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -158,6 +235,7 @@ const SupportPage: React.FC = () => {
             {/* Support Form */}
             <div className="bg-gray-800 rounded-xl p-6">
               <h2 className="text-2xl font-semibold mb-6">Send us a Message</h2>
+              <p className="text-gray-300 mb-6">Your message will be sent to our support team and you'll be redirected to the support chat page to continue the conversation.</p>
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div>
                   <label className="block text-sm font-medium mb-2">Category</label>

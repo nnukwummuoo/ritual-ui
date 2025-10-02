@@ -2,6 +2,7 @@ import { io } from "socket.io-client";
 
 // Socket.io client singleton
 let socket: ReturnType<typeof io> | null = null;
+let isConnecting = false;
 
 // Helper function to attach socket event listeners
 const attachSocketEvents = (socketInstance: ReturnType<typeof io>, socketUrl: string) => {
@@ -116,7 +117,13 @@ export const removeTypingListeners = () => {
 export const getSocket = () => {
   if (typeof window === "undefined") return null;
   
+  // If already connecting, return existing socket or null
+  if (isConnecting && socket) {
+    return socket;
+  }
+  
   if (!socket) {
+    isConnecting = true;
     try {
       // Smart configuration: use local server if available, fallback to production
       let socketUrl: string;
@@ -150,7 +157,7 @@ export const getSocket = () => {
         reconnectionDelay: 2000, // Increased delay
         reconnectionDelayMax: 10000, // Max delay between attempts
         timeout: 20000, // Connection timeout
-        forceNew: true, // Force new connection
+        forceNew: false, // Don't force new connection - reuse existing
         transports: ["polling", "websocket"], // Try polling first for better compatibility
         upgrade: true, // Allow transport upgrades
         rememberUpgrade: true, // Remember successful transport
@@ -158,6 +165,11 @@ export const getSocket = () => {
       
       // Attach event listeners
       attachSocketEvents(socket, socketUrl);
+      
+      // Reset connecting flag when connected
+      socket.on("connect", () => {
+        isConnecting = false;
+      });
       
       // Handle connection errors with fallback
       socket.on("connect_error", (err) => {
@@ -195,6 +207,7 @@ export const getSocket = () => {
       
     } catch (error) {
       console.error("[Socket] Error creating socket connection:", error);
+      isConnecting = false;
       return null;
     }
   }
@@ -210,6 +223,7 @@ export const resetSocket = () => {
     console.log("🔄 [Socket] Resetting connection...");
     socket.disconnect();
     socket = null;
+    isConnecting = false;
   }
 };
 
