@@ -222,7 +222,7 @@ const getCreatorButton2 = () => {
     if (profile.exclusive_verify) {
     return (
       <MenuIconImg
-        src="/icons/icons8-creator.png"
+        src="/icons/icon-create-listing.png"
         name="Create Listing"
         url="/creator/create"
       />
