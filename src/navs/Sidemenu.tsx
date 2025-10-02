@@ -190,7 +190,7 @@ const Sidemenu = () => {
     if (profile.exclusive_verify) {
     return (
       <MenuIconImg
-        src="/icons/icon-create-listing.png"
+        src="/icons/icons8-plus.png" 
         name="Create Listing"
         url="/creator/create"
       />
@@ -200,7 +200,7 @@ const Sidemenu = () => {
     // 3️⃣ Default → current user hasn't applied yet → show Become a creator
     return (
     <MenuIconImg
-      src="/icons/icons8-plus.png"
+      src="/icons/icons-become-a-creator.png"
       name="Become a creator"
       url="/be-a-creator"
     />
