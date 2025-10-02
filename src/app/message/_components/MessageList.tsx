@@ -8,6 +8,7 @@ import type { RootState } from "@/store/store";
 import Image from "next/image";
 import { MessageCircle } from "lucide-react";
 import { getSocket, joinUserRoom, leaveUserRoom, onUserOnline, onUserOffline, removeTypingListeners } from "@/lib/socket";
+import { useOnlineStatus } from "@/contexts/OnlineStatusContext";
 
 interface MessageItem {
   fromid: string;
@@ -36,7 +37,9 @@ export const MessageList = () => {
   const [loading, setLoading] = useState(true);
   const [profilePictures, setProfilePictures] = useState<Record<string, string>>({});
   const [searchQuery, setSearchQuery] = useState("");
-  const [onlineUsers, setOnlineUsers] = useState<Set<string>>(new Set());
+  
+  // Use global online status context
+  const { isUserOnline } = useOnlineStatus();
 
   // Get userid from localStorage if not in Redux (same pattern as Chat.tsx)
   const [localUserid, setLocalUserid] = React.useState("");
@@ -71,19 +74,6 @@ export const MessageList = () => {
     if (userid && isLoggedIn) {
       // Join user room for online status
       joinUserRoom(userid);
-
-      // Listen for user online/offline events
-      onUserOnline((userId) => {
-        setOnlineUsers(prev => new Set([...prev, userId]));
-      });
-
-      onUserOffline((userId) => {
-        setOnlineUsers(prev => {
-          const newSet = new Set(prev);
-          newSet.delete(userId);
-          return newSet;
-        });
-      });
 
       // Cleanup on unmount
       return () => {
@@ -408,7 +398,7 @@ export const MessageList = () => {
               )}
             </div>
             {/* Online indicator */}
-            {onlineUsers.has(otherUserId) && (
+            {isUserOnline(otherUserId) && (
               <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-gray-900 rounded-full"></div>
             )}
           </div>

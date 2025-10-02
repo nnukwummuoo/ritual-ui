@@ -13,6 +13,7 @@ import { getViewingProfile } from "@/store/viewingProfile";
 
 import type { RootState } from "@/store/store";
 import { getSocket, startTyping, stopTyping } from "@/lib/socket";
+import { useOnlineStatus } from "@/contexts/OnlineStatusContext";
 import { toast } from "material-react-toastify";
 import { URL as API_URL } from "@/api/config";
 import axios from "axios";
@@ -300,7 +301,8 @@ export const Chat = () => {
   const [isTyping, setIsTyping] = useState(false);
   const [otherUserTyping, setOtherUserTyping] = useState(false);
   const [typingTimeout, setTypingTimeout] = useState<NodeJS.Timeout | null>(null);
-  const [isOtherUserOnline, setIsOtherUserOnline] = useState(false);
+  // Use global online status context
+  const { isUserOnline } = useOnlineStatus();
 
   const [message, setmessage] = useState<Array<{
     id: string;
@@ -795,29 +797,13 @@ export const Chat = () => {
     socket.on('typing_start', handleTypingStart);
     socket.on('typing_stop', handleTypingStop);
 
-    // Online status listeners
-    const handleUserOnline = (userId: string) => {
-      if (userId === creatorid) {
-        setIsOtherUserOnline(true);
-      }
-    };
-
-    const handleUserOffline = (userId: string) => {
-      if (userId === creatorid) {
-        setIsOtherUserOnline(false);
-      }
-    };
-
-    socket.on('user_online', handleUserOnline);
-    socket.on('user_offline', handleUserOffline);
+    // Online status is now handled globally by OnlineStatusContext
 
     return () => {
       // Leave user room
       socket.emit("leave_user_room", { userId: loggedInUserId });
       
       socket.off("LiveChat", handleLiveChat);
-      socket.off('user_online', handleUserOnline);
-      socket.off('user_offline', handleUserOffline);
       socket.off('typing_start', handleTypingStart);
       socket.off('typing_stop', handleTypingStop);
     };
@@ -1271,7 +1257,7 @@ export const Chat = () => {
                       </div>
                       <span className="text-xs text-blue-300">Typing...</span>
                     </div>
-                  ) : isOtherUserOnline ? (
+                  ) : isUserOnline(creatorid) ? (
                     <div className="flex items-center gap-1">
                       <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                       <span className="text-xs text-green-400">Online</span>
