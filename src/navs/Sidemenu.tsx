@@ -310,7 +310,7 @@ const Sidemenu = () => {
                 <img
                   alt="Logout"
                   src="/icons/icons8-log-out.png"
-                  className="object-cover w-7 h-7 bg-slate-900"
+                  className="object-cover w-12 h-12 bg-slate-900"
                 />
                 <p className="mt-1 text-center group-hover:text-gray-400">
                   Log Out
