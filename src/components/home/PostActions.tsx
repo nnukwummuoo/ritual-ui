@@ -5,8 +5,7 @@ import { toast } from "material-react-toastify";
 import { useRouter } from 'next/navigation';
 import { deletesinglepost } from "@/store/post";
 import Image from "next/image";
-import StarIcon from "@/icons/transparentstar.svg";
-import StarIcon2 from "@/icons/star.svg";
+// Star icons will be referenced directly in the Image components
 
 export type PostActionsProps = {
   starred?: boolean;
@@ -20,51 +19,27 @@ export type PostActionsProps = {
   post: any; // eslint-disable-line @typescript-eslint/no-explicit-any
   isLiking?: boolean;
 };
-const iconBase = "h-10 w-10 text-slate-400 hover:text-white cursor-pointer transition-colors duration-200";
+const iconBase = "h-8 w-8 text-slate-400 hover:text-white cursor-pointer transition-colors duration-200";
 
 function StarIconComponent({ filled }: { filled?: boolean }) {
   return filled ? (
-    <Image src={StarIcon2} alt="star filled" width={28} height={28} className="w-7 h-7" />
+    <Image src="/icons/current-filled-start-icon.png" alt="star filled" width={28} height={28} className="w-8 h-8 object-cover" />
   ) : (
-    <Image src={StarIcon} alt="star outline" width={28} height={28} className="w-7 h-7" />
+    <Image src="/icons/current-start-icon.png" alt="star outline" width={28} height={28} className="w-8 h-8 object-cover" />
   );
 }
 
 function HeartIconComponent({ filled }: { filled?: boolean }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill={filled ? "currentColor" : "none"}
-      stroke={filled ? "none" : "currentColor"}
-      strokeWidth={filled ? 0 : 3}
-      className={`w-7 h-7 ${filled ? 'text-white drop-shadow-sm scale-110 font-bold' : 'text-gray-400 hover:text-gray-200'} transition-all duration-200`}
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.94 0-3.64 1.126-4.312 2.733-.672-1.607-2.372-2.733-4.313-2.733C5.099 3.75 3 5.765 3 8.25c0 7.22 8.063 11.25 9 11.25s9-4.03 9-11.25z"
-      />
-    </svg>
+  return filled ? (
+    <Image src="/icons/current-filled-heart-icon.png" alt="heart filled" width={28} height={28} className="w-8 h-8 object-cover" />
+  ) : (
+    <Image src="/icons/current-heart-icon.png" alt="heart outline" width={28} height={28} className="w-8 h-8 object-cover" />
   );
 }
 
 function CommentIconComponent() {
   return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      className="w-7 h-7 text-gray-400 hover:text-gray-200 transition-colors duration-200"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-      />
-    </svg>
+    <Image src="/icons/current-comment-icon.png" alt="comment" width={28} height={28} className="w-7 h-7" />
   );
 }
 
@@ -123,18 +98,16 @@ function DotsIcon({ post }: { post: any }) { // eslint-disable-line @typescript-
     </div>
     </div>
     :<></>}
-    <svg 
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 24 24"
-    fill="currentColor"
-    // This is where the new size (h-10 w-10) and interactive styling are applied
-    className={iconBase} 
-    onClick={() => { 
+    <Image 
+      src="/icons/current-3-dot-icon.png" 
+      alt="more options" 
+      width={28} 
+      height={28} 
+      className={iconBase} 
+      onClick={() => { 
         setHasPop(!hasPop);
-    }}
->
-    <path d="M6.75 12a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zm7.5 0a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zm7.5 0a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" />
-</svg>
+      }}
+    />
     </>
   );
 }
