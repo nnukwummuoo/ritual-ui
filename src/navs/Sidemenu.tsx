@@ -288,11 +288,6 @@ const Sidemenu = () => {
                 name="My Earnings"
                 url="/goldstat/history"
               />
-              <MenuIconImg
-                src="/icons/icons8-receipts.gif"
-                name="Transactions"
-                url="/earning"
-              />
 
               {admin && (
                 <MenuIconImg
@@ -304,7 +299,7 @@ const Sidemenu = () => {
 
               <MenuIconImg
                 src="/icons/icons8-gift.png"
-                name="Whats New"
+                name="What's New"
                 url="/change-log"
               />
 
