@@ -334,7 +334,7 @@ const getCreatorButton2 = () => {
               )}
 
               <MenuIconImg
-                src="/icons/icons8-gift.gif"
+                src="/icons/icons8-gift.png"
                 name="Whats New"
                 url="/change-log"
               />
