@@ -285,7 +285,7 @@ const Sidemenu = () => {
               />
               <MenuIconImg
                 src="/icons/icons8-gold.png"
-                name="Gold Stats"
+                name="My Earnings"
                 url="/goldstat/history"
               />
               <MenuIconImg
