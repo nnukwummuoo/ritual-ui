@@ -32,13 +32,81 @@ const attachSocketEvents = (socketInstance: ReturnType<typeof io>, socketUrl: st
 
   socketInstance.on("connect_error", (err) => {
     console.error("❌ [Socket] Connection error:", err.message);
-    console.error("❌ [Socket] Error type:", err.type);
-    console.error("❌ [Socket] Error description:", err.description);
+    console.error("❌ [Socket] Error details:", err);
   });
 
   socketInstance.on("error", (err) => {
     console.error("❌ [Socket] Socket error:", err);
   });
+};
+
+// Online status and typing indicator functions
+export const joinUserRoom = (userId: string) => {
+  const socket = getSocket();
+  if (socket) {
+    socket.emit("join_user_room", { userId });
+    console.log("🔍 [Socket] Joined user room:", userId);
+  }
+};
+
+export const leaveUserRoom = (userId: string) => {
+  const socket = getSocket();
+  if (socket) {
+    socket.emit("leave_user_room", { userId });
+    console.log("🔍 [Socket] Left user room:", userId);
+  }
+};
+
+export const startTyping = (fromUserId: string, toUserId: string) => {
+  const socket = getSocket();
+  if (socket) {
+    socket.emit("typing_start", { fromUserId, toUserId });
+  }
+};
+
+export const stopTyping = (fromUserId: string, toUserId: string) => {
+  const socket = getSocket();
+  if (socket) {
+    socket.emit("typing_stop", { fromUserId, toUserId });
+  }
+};
+
+export const onUserOnline = (callback: (userId: string) => void) => {
+  const socket = getSocket();
+  if (socket) {
+    socket.on("user_online", callback);
+  }
+};
+
+export const onUserOffline = (callback: (userId: string) => void) => {
+  const socket = getSocket();
+  if (socket) {
+    socket.on("user_offline", callback);
+  }
+};
+
+export const onTypingStart = (callback: (data: { fromUserId: string, toUserId: string }) => void) => {
+  const socket = getSocket();
+  if (socket) {
+    socket.on("typing_start", callback);
+  }
+};
+
+export const onTypingStop = (callback: (data: { fromUserId: string, toUserId: string }) => void) => {
+  const socket = getSocket();
+  if (socket) {
+    socket.on("typing_stop", callback);
+  }
+};
+
+export const removeTypingListeners = () => {
+  const socket = getSocket();
+  if (socket) {
+    socket.off("typing_start");
+    socket.off("typing_stop");
+    socket.off("user_online");
+    socket.off("user_offline");
+  }
 };
 
 /**
@@ -81,7 +149,6 @@ export const getSocket = () => {
         reconnectionAttempts: 10, // Increased attempts
         reconnectionDelay: 2000, // Increased delay
         reconnectionDelayMax: 10000, // Max delay between attempts
-        maxReconnectionAttempts: 10,
         timeout: 20000, // Connection timeout
         forceNew: true, // Force new connection
         transports: ["polling", "websocket"], // Try polling first for better compatibility

@@ -2,11 +2,11 @@ import React from 'react';
 import MessageLayoutClient from '../MessageLayoutClient';
 
 export const metadata = {
-  title: "Message",
-  description: "Direct message conversation",
+  title: "Support Chat",
+  description: "Real human support conversation",
 }
 
-export default function MessageLayout({
+export default function SupportChatLayout({
   children,
 }: {
   children: React.ReactNode;

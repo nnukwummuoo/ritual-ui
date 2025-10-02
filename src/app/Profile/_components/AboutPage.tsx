@@ -27,7 +27,7 @@ const AboutPage = () => {
   const isViewingOwnProfile = viewingUserId === currentUserProfile.userId;
   const profileData = isViewingOwnProfile ? currentUserProfile : viewingProfile;
   
-  const { status, firstname, lastname, nickname, State: location } = profileData;
+  const { status, firstname, lastname, nickname, country: location } = profileData;
   const profile = useSelector((state: RootState) => state.comprofile.profile);
   const getprofilebyidstats = useSelector((state: RootState) => state.comprofile.getprofileidstatus);
   

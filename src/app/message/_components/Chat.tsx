@@ -12,7 +12,7 @@ import DropdownMenu from "./DropdownMenu";
 import { getViewingProfile } from "@/store/viewingProfile";
 
 import type { RootState } from "@/store/store";
-import { getSocket } from "@/lib/socket";
+import { getSocket, startTyping, stopTyping } from "@/lib/socket";
 import { toast } from "material-react-toastify";
 import { URL as API_URL } from "@/api/config";
 import axios from "axios";
@@ -297,6 +297,10 @@ export const Chat = () => {
 
   const [text, settext] = useState("");
   const [loading, setLoading] = useState(true);
+  const [isTyping, setIsTyping] = useState(false);
+  const [otherUserTyping, setOtherUserTyping] = useState(false);
+  const [typingTimeout, setTypingTimeout] = useState<NodeJS.Timeout | null>(null);
+  const [isOtherUserOnline, setIsOtherUserOnline] = useState(false);
 
   const [message, setmessage] = useState<Array<{
     id: string;
@@ -538,8 +542,8 @@ export const Chat = () => {
                 <div key={index} className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-4 w-full`}>
                   <div className={`w-1/2 px-4 py-3 rounded-2xl ${
                     isUser 
-                      ? 'bg-blue-600 text-white rounded-br-md' 
-                      : 'bg-blue-800/50 text-white rounded-bl-md border border-blue-700/30'
+                      ? ' bg-gray-800 text-white rounded-br-md' 
+                      : ' bg-gray-800/50 text-white rounded-bl-md border border-blue-700/30'
                   }`}>
                     <div className="flex items-center gap-2">
                       <svg className="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 24 24">
@@ -558,8 +562,8 @@ export const Chat = () => {
                 <div key={index} className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-4 w-full`}>
                   <div className={`w-1/2 px-4 py-3 rounded-2xl ${
                     isUser 
-                      ? 'bg-blue-600 text-white rounded-br-md' 
-                      : 'bg-blue-800/50 text-white rounded-bl-md border border-blue-700/30'
+                      ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-br-md' 
+                      : ' bg-gray-800/50 text-white rounded-bl-md border border-blue-700/30'
                   }`}>
                     <p className="text-sm">{value.content}</p>
                     
@@ -636,6 +640,22 @@ export const Chat = () => {
               );
             }
           })}
+          
+          {/* Typing indicator */}
+          {otherUserTyping && (
+            <div className="flex justify-start mb-4 w-full">
+              <div className="w-1/2 px-4 py-3 rounded-2xl  bg-gray-800/50 text-white rounded-bl-md border border-blue-700/30">
+                <div className="flex items-center gap-2">
+                  <div className="flex space-x-1">
+                    <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce"></div>
+                    <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                    <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                  </div>
+                  <span className="text-sm text-blue-300">Typing...</span>
+                </div>
+              </div>
+            </div>
+          )}
         </>
       );
     } else {
@@ -678,6 +698,9 @@ export const Chat = () => {
 
     // Connect user to socket
     socket.emit("online", loggedInUserId);
+    
+    // Join user room for typing events
+    socket.emit("join_user_room", { userId: loggedInUserId });
 
     // Listen for new messages
 
@@ -756,8 +779,47 @@ export const Chat = () => {
 
     socket.on("LiveChat", handleLiveChat);
 
+    // Typing event listeners
+    const handleTypingStart = (data: { fromUserId: string, toUserId: string }) => {
+      if (data.fromUserId === creatorid && data.toUserId === loggedInUserId) {
+        setOtherUserTyping(true);
+      }
+    };
+
+    const handleTypingStop = (data: { fromUserId: string, toUserId: string }) => {
+      if (data.fromUserId === creatorid && data.toUserId === loggedInUserId) {
+        setOtherUserTyping(false);
+      }
+    };
+
+    socket.on('typing_start', handleTypingStart);
+    socket.on('typing_stop', handleTypingStop);
+
+    // Online status listeners
+    const handleUserOnline = (userId: string) => {
+      if (userId === creatorid) {
+        setIsOtherUserOnline(true);
+      }
+    };
+
+    const handleUserOffline = (userId: string) => {
+      if (userId === creatorid) {
+        setIsOtherUserOnline(false);
+      }
+    };
+
+    socket.on('user_online', handleUserOnline);
+    socket.on('user_offline', handleUserOffline);
+
     return () => {
+      // Leave user room
+      socket.emit("leave_user_room", { userId: loggedInUserId });
+      
       socket.off("LiveChat", handleLiveChat);
+      socket.off('user_online', handleUserOnline);
+      socket.off('user_offline', handleUserOffline);
+      socket.off('typing_start', handleTypingStart);
+      socket.off('typing_stop', handleTypingStop);
     };
 
   }, [loggedInUserId, creatorid]);
@@ -1153,14 +1215,14 @@ export const Chat = () => {
   // }, [showEmoji]);
 
   return (
-    <div className="h-full w-full">
+    <div className="h-full w-full flex flex-col">
       {/* Top Bar with Clean Design */}
-      <div className="bg-blue-800 backdrop-blur-sm border-b border-blue-700/30 p-4 sticky top-0 z-50">
+      <div className=" bg-gray-800 backdrop-blur-sm border-b border-blue-700/30 p-3 sm:p-4 sticky top-0 z-50 flex-shrink-0">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button 
               onClick={() => router.back()}
-              className="p-2 hover:bg-blue-700/50 rounded-full transition-colors"
+              className="p-2 hover: bg-gray-800/50 rounded-full transition-colors"
             >
               <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -1199,7 +1261,25 @@ export const Chat = () => {
                     {chatfirstname && chatlastname ? `${chatfirstname} ${chatlastname}`.trim() : chatusername || "User"}
                   </p>
                 )}
-                <p className="text-xs text-blue-300">Direct message</p>
+                <div className="flex items-center gap-2">
+                  {otherUserTyping ? (
+                    <div className="flex items-center gap-1">
+                      <div className="flex space-x-1">
+                        <div className="w-1 h-1 bg-blue-400 rounded-full animate-bounce"></div>
+                        <div className="w-1 h-1 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                        <div className="w-1 h-1 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                      </div>
+                      <span className="text-xs text-blue-300">Typing...</span>
+                    </div>
+                  ) : isOtherUserOnline ? (
+                    <div className="flex items-center gap-1">
+                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                      <span className="text-xs text-green-400">Online</span>
+                    </div>
+                  ) : (
+                    <span className="text-xs text-blue-300">Direct message</span>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -1211,11 +1291,11 @@ export const Chat = () => {
       </div>
 
       {/* Messages Area - Clean Design */}
-      <div ref={msgListref} className="h-[calc(100vh-200px)] overflow-y-auto p-4 bg-transparent">
+      <div ref={msgListref} className="flex-1 overflow-y-auto p-3 sm:p-4 bg-transparent">
         {loading ? (
           <div className="space-y-4 w-full max-w-4xl mx-auto">
             <div className="flex justify-start mb-4 w-full">
-              <div className="w-1/2 px-4 py-3 rounded-2xl bg-blue-800/50 text-white rounded-bl-md border border-blue-700/30">
+              <div className="w-1/2 px-4 py-3 rounded-2xl  bg-gray-800/50 text-white rounded-bl-md border border-blue-700/30">
                 <div className="animate-pulse">
                   <div className="h-4 bg-gray-400 rounded w-3/4 mb-2"></div>
                   <div className="h-3 bg-gray-400 rounded w-1/2"></div>
@@ -1223,7 +1303,7 @@ export const Chat = () => {
               </div>
             </div>
             <div className="flex justify-end mb-4 w-full">
-              <div className="w-1/2 px-4 py-3 rounded-2xl bg-blue-600 text-white rounded-br-md">
+              <div className="w-1/2 px-4 py-3 rounded-2xl  bg-gray-800 text-white rounded-br-md">
                 <div className="animate-pulse">
                   <div className="h-4 bg-gray-400 rounded w-3/4 mb-2"></div>
                   <div className="h-3 bg-gray-400 rounded w-1/2"></div>
@@ -1243,7 +1323,7 @@ export const Chat = () => {
 
       {/* File Preview Area */}
       {previewFiles.length > 0 && (
-        <div className="p-4 bg-blue-800/50 border-t border-blue-700/30">
+        <div className="p-4  bg-gray-800/50 border-t border-blue-700/30">
           <div className="flex flex-wrap gap-2">
             {previewFiles.map((preview, index) => (
               <div key={index} className="relative">
@@ -1298,7 +1378,7 @@ export const Chat = () => {
       )}
 
       {/* Input Bar - Clean Design */}
-      <div className="flex items-center gap-3 p-4 bg-blue-800 border-t border-blue-700/30 sticky bottom-0 z-50">
+      <div className="flex items-center gap-2 sm:gap-3 p-3 sm:p-4  bg-gray-800 border-t border-blue-700/30 sticky bottom-0 z-50 flex-shrink-0">
         <input
           type="file"
           ref={fileInputRef}
@@ -1310,17 +1390,47 @@ export const Chat = () => {
         
         <button
           onClick={() => fileInputRef.current?.click()}
-          className="flex-shrink-0 p-3 bg-blue-700 hover:bg-blue-600 text-white rounded-full transition-colors"
+          className="flex-shrink-0 p-3  bg-gray-800 hover: bg-gray-800 text-white rounded-full transition-colors"
         >
           <Paperclip className="w-5 h-5" />
         </button>
 
-        <div className="flex items-center flex-1 px-4 py-3 bg-blue-700/50 border border-blue-600/50 rounded-full">
+        <div className="flex items-center flex-1 px-4 py-3  bg-gray-800/50 border border-blue-600/50 rounded-full">
           <textarea
             className="flex-1 h-8 text-white placeholder-blue-300 bg-transparent outline-none resize-none"
             value={text}
             placeholder="Type a message..."
-            onChange={(e) => settext(e.target.value)}
+            onChange={(e) => {
+              settext(e.target.value);
+              
+              // Handle typing indicators
+              if (e.target.value.trim() && loggedInUserId && creatorid) {
+                if (!isTyping) {
+                  setIsTyping(true);
+                  startTyping(loggedInUserId, creatorid);
+                }
+                
+                // Clear existing timeout
+                if (typingTimeout) {
+                  clearTimeout(typingTimeout);
+                }
+                
+                // Set new timeout to stop typing after 2 seconds of inactivity
+                const timeout = setTimeout(() => {
+                  setIsTyping(false);
+                  stopTyping(loggedInUserId, creatorid);
+                }, 2000);
+                
+                setTypingTimeout(timeout);
+              } else if (!e.target.value.trim() && isTyping) {
+                setIsTyping(false);
+                stopTyping(loggedInUserId, creatorid);
+                if (typingTimeout) {
+                  clearTimeout(typingTimeout);
+                  setTypingTimeout(null);
+                }
+              }
+            }}
             onKeyPress={(e) => {
               if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
@@ -1333,7 +1443,7 @@ export const Chat = () => {
         <button 
           onClick={() => send_chat(text)} 
           disabled={(!text.trim() && selectedFiles.length === 0) || uploading}
-          className="flex-shrink-0 p-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-full transition-colors"
+          className="flex-shrink-0 p-3  bg-gray-800 hover: bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-full transition-colors"
         >
           {uploading ? (
             <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>

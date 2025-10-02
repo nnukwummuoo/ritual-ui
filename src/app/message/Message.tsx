@@ -1,9 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
-import React, { useEffect, useState } from "react";
-import PacmanLoader from "react-spinners/DotLoader";
+import React, { useEffect } from "react";
 import { FaAngleLeft } from "react-icons/fa";
-import { MsgRequestNav } from "./_components/MsgRequestNav";
+import Image from "next/image";
 // import { RecentList } from "./List/RecentList";
 // import { Gennavigation } from "../../navs/Gennav";
 // import { Unreadmsg } from "./_components/Unreadmsg";
@@ -18,8 +17,6 @@ import type { RootState } from "@/store/store";
 import { MessageList } from "./_components/MessageList";
 
 export const MessageView = () => {
-  const [loading, setLoading] = useState<boolean>(false);
-  const [color] = useState<string>("#c2d0e1");
   const dispatch = useDispatch();
   const userid = useSelector((state: RootState) => state.register.userID);
   const isLoggedIn = useSelector((state: RootState) => state.register.logedin);
@@ -28,7 +25,6 @@ export const MessageView = () => {
 
   useEffect(() => {
     if (!isLoggedIn || !userid) return;
-    setLoading(true);
     // New merged notification endpoint
     dispatch(getmessagenotication({ userid }) as any);
     // Legacy recent/unread endpoint if still used in UI
@@ -86,7 +82,7 @@ export const MessageView = () => {
 
   useEffect(() => {
     if (msgnotifystatus === "succeeded" || msgnotifystatus === "failed") {
-      setLoading(false);
+      // Loading state handled
     }
   }, [msgnotifystatus]);
 
@@ -113,10 +109,17 @@ export const MessageView = () => {
               </button>
               <h1 className="text-2xl font-bold text-white">Messages</h1>
             </div>
-            <button className="p-2 hover:bg-blue-700/50 rounded-full transition-colors">
-              <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
-              </svg>
+            <button 
+              onClick={() => window.location.href = '/message/supportchat'}
+              className="p-2 hover:bg-blue-700/50 rounded-full transition-colors"
+            >
+              <Image 
+                src="/support.png" 
+                alt="Support" 
+                width={24}
+                height={24}
+                className="w-10 h-10"
+              />
             </button>
           </div>
         </div>

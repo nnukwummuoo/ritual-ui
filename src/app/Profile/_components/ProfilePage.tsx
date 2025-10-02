@@ -1177,9 +1177,6 @@ const PostModal = () => {
               post={selectedPost}
               onLike={handleModalLike}
               onComment={handleModalCommentToggle}
-              onMore={() => {
-                console.debug("more clicked in modal", postId);
-              }}
               // Remove the star-related props entirely
             />
             
