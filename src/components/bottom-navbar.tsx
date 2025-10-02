@@ -87,7 +87,7 @@ export default function BottomNavBar() {
                   />
                   {/* Unread indicator */}
                   {item.showUnreadIndicator && (
-                    <div className="absolute -top-1 -right-1 min-w-[18px] h-[18px] bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-semibold">
+                    <div className="absolute -top-1 -right-1 min-w-[18px] h-[18px] bg-white text-black text-xs rounded-full flex items-center justify-center font-semibold">
                       {item.unreadCount && item.unreadCount > 99 ? (
                         <span className="flex items-center">
                           <span>99</span>

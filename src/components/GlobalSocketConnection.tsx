@@ -11,6 +11,7 @@ export default function GlobalSocketConnection() {
   // Get userid from localStorage if not in Redux (same pattern as other components)
   const [localUserid, setLocalUserid] = useState("");
   const [localIsLoggedIn, setLocalIsLoggedIn] = useState(false);
+  const [hasConnected, setHasConnected] = useState(false);
   
   const userid = reduxUserid || localUserid;
   const isLoggedIn = reduxIsLoggedIn || localIsLoggedIn;
@@ -39,6 +40,12 @@ export default function GlobalSocketConnection() {
   useEffect(() => {
     // Only connect if user is logged in and we have a user ID
     if (!isLoggedIn || !userid) {
+      setHasConnected(false);
+      return;
+    }
+
+    // Prevent multiple connections for the same user
+    if (hasConnected) {
       return;
     }
 
@@ -53,6 +60,7 @@ export default function GlobalSocketConnection() {
         // Join user room for online status (same as message components)
         joinUserRoom(userid);
         socket.emit("online", userid);
+        setHasConnected(true);
       });
       return;
     }
@@ -62,15 +70,26 @@ export default function GlobalSocketConnection() {
     
     // Emit online status when user is authenticated
     socket.emit("online", userid);
+    setHasConnected(true);
+    
+    // Set up heartbeat to keep user online
+    const heartbeatInterval = setInterval(() => {
+      if (socket && socket.connected) {
+        socket.emit("heartbeat", userid);
+      }
+    }, 15000); // Send heartbeat every 15 seconds
 
     // Cleanup on unmount or when user logs out
     return () => {
       if (socket && userid) {
         leaveUserRoom(userid);
         socket.emit("offline", userid);
+        setHasConnected(false);
       }
+      // Clear heartbeat interval
+      clearInterval(heartbeatInterval);
     };
-  }, [userid, isLoggedIn, localUserid, localIsLoggedIn]);
+  }, [userid, isLoggedIn, localUserid, localIsLoggedIn, hasConnected]);
 
   // This component doesn't render anything
   return null;

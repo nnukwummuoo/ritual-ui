@@ -18,6 +18,12 @@ export const metadata: Metadata = {
     default: "Mmeko - Welcome",
   },
   description: "",
+  viewport: {
+    width: "device-width",
+    initialScale: 1,
+    maximumScale: 1,
+    userScalable: false,
+  },
 };
 
 export default async function RootLayout({
