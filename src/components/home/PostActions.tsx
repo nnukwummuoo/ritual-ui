@@ -31,7 +31,7 @@ function StarIconComponent({ filled }: { filled?: boolean }) {
 
 function HeartIconComponent({ filled }: { filled?: boolean }) {
   return filled ? (
-    <Image src="/icons/current-filled-heart-icon.png" alt="heart filled" width={28} height={28} className="w-8 h-8 object-cover" />
+    <Image src="/icons/current-filled-heart-icon.png" alt="heart filled" width={28} height={28} className="w-7 h-7 object-cover" />
   ) : (
     <Image src="/icons/current-heart-icon.png" alt="heart outline" width={28} height={28} className="w-7 h-7 object-cover" />
   );
