@@ -508,7 +508,7 @@ export const getfollow = createAsyncThunk<{ data: FollowData }, { userid: string
   }
 });
 
-export const getAllUsers = createAsyncThunk<{ users: Array<any> }, { token: string }>("profile/getAllUsers", async (data) => {
+export const getAllUsers = createAsyncThunk<{ users: Array<any> }, { token: string; userid?: string }>("profile/getAllUsers", async (data) => {
   try {
     
     // Set up headers with authorization token if available
@@ -519,7 +519,10 @@ export const getAllUsers = createAsyncThunk<{ users: Array<any> }, { token: stri
       'Content-Type': 'application/json'
     };
     
-    let response = await axios.post(`${URL}/getallusers`, { token: data.token }, { headers });
+    let response = await axios.post(`${URL}/getallusers`, { 
+      token: data.token,
+      userid: data.userid 
+    }, { headers });
 
     return response.data;
   } catch (err) {
