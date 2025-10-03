@@ -225,7 +225,7 @@ export const Profile = () => {
       if (isViewingOwnProfile) {
         // For current user's own profile, use regular getfollow
         dispatch(getfollow({ userid: String(targetUserId), token }));
-        dispatch(getAllUsers({ token }));
+        dispatch(getAllUsers({ token, userid: String(targetUserId) }));
       } else {
         // For other user's profile, use viewing profile thunks
         dispatch(getViewingFollow({ userid: String(targetUserId), token }));
@@ -244,7 +244,7 @@ export const Profile = () => {
       if (targetUserId && token) {
         if (isViewingOwnProfile) {
           dispatch(getfollow({ userid: String(targetUserId), token }));
-        dispatch(getAllUsers({ token }));
+        dispatch(getAllUsers({ token, userid: String(targetUserId) }));
         } else {
           dispatch(getViewingFollow({ userid: String(targetUserId), token }));
           dispatch(getAllUsersForViewing({ token }));
