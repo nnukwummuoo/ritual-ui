@@ -23,7 +23,7 @@ const TermCondition = () => {
         <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">1. Eligibility</h3>
         <p className="mb-6">
          You must be at least 18 years old to use or register as a creator or fan on our platform.
-         All creators must complete ID verification before offering services.
+         All creators must complete ID verification before creating a portfolio.
 
         </p>
 
@@ -77,6 +77,8 @@ const TermCondition = () => {
         <p className="mb-6">
           3. Fan Date 
 
+          </p>
+
           <p className="mb-6">
          Creator chooses; fans pay all costs upfront (including transport).
           </p>
@@ -84,7 +86,7 @@ const TermCondition = () => {
 
 
 
-        </p>
+        
 
         <p className="mb-6">
          Creators always have the right to accept or decline any request.
@@ -229,7 +231,7 @@ const TermCondition = () => {
           <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">9. Liability</h3>
 
           <p className="mb-6">
-          The platform provides a safe booking/payment system, but does not guarantee fan behavior.
+          The platform provides a safe fan connection and payment system, but does not guarantee fan behavior.
 
 
           </p>
@@ -298,7 +300,7 @@ const TermCondition = () => {
         <p className="mb-6">
           Creators can request a withdrawal once their account balance reaches $50 or more.
            Balances below this threshold will remain in the account until the minimum is met.
-           Withdrawals are processed via crypto USDT (BEP-20)
+           Withdrawals are processed via USDT (BEP20 - Binance Smart Chain)
 
 
         </p>
@@ -328,7 +330,7 @@ const TermCondition = () => {
         </p>
 
         <p className="mb-6">
-          USDT (BEP-20)
+          USDT (BEP20 - Binance Smart Chain)
 
 
         </p>
