@@ -39,7 +39,7 @@ function HeartIconComponent({ filled }: { filled?: boolean }) {
 
 function CommentIconComponent() {
   return (
-    <Image src="/icons/current-comment-icon.png" alt="comment" width={28} height={28} className="w-7 h-7" />
+    <Image src="/icons/current-comment-icon.png" alt="comment" width={28} height={28} className="w-8 h-8" />
   );
 }
 
