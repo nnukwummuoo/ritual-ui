@@ -191,7 +191,7 @@ const Sidemenu = () => {
     return (
       <MenuIconImg
         src="/icons/icons8-plus.png" 
-        name="Create Listing"
+        name="Create Portfolio"
         url="/creator/create"
       />
     );
