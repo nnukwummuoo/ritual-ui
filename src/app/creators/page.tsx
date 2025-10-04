@@ -274,7 +274,7 @@ const renderCreators = () => {
   if (!list.length) {
     return (
       <div className="mt-6 text-sm text-slate-400">
-        No listing yet.
+        No portfolio yet.
       </div>
     );
   }

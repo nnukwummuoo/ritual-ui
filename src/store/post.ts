@@ -136,7 +136,19 @@ export const getallpost = createAsyncThunk("post/getallpost", async (data: any) 
 
 export const fetchposts = async () => {
   try {
-    let response = await axios.post(`${URL}/getallpost`, {});
+    // Get user ID from localStorage for blocking filter
+    let userid = "";
+    try {
+      const raw = localStorage.getItem("login");
+      if (raw) {
+        const data = JSON.parse(raw);
+        userid = data?.userID || data?.userid || data?.id || "";
+      }
+    } catch (error) {
+      console.error("Error getting user ID from localStorage:", error);
+    }
+
+    let response = await axios.post(`${URL}/getallpost`, { userid });
     const posts = response.data.post || [];
 
     // For each post, get its likes

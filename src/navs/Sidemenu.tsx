@@ -81,7 +81,7 @@ const Sidemenu = () => {
   // Additional effect for Edge browser compatibility
   React.useEffect(() => {
     const isEdge = navigator.userAgent.includes('Edg');
-    const isCurrentUserProfile = profile.userId === currentUserId || profile.userid === currentUserId;
+    const isCurrentUserProfile = profile.userId === currentUserId;
     
     if (isEdge && currentUserId && (!profile.firstname || !isCurrentUserProfile)) {
     
@@ -105,7 +105,7 @@ const Sidemenu = () => {
         }, 100);
       }
     }
-  }, [currentUserId, profile.firstname, profile.userId, profile.userid, dispatch]);
+  }, [currentUserId, profile.firstname, profile.userId, dispatch]);
   
   // ⛔ Don't render until current user profile exists and has actual data
   if (!profile || Object.keys(profile).length === 0 || !profile.firstname) {
@@ -115,7 +115,7 @@ const Sidemenu = () => {
   // SAFETY: Always use current user data with fallbacks
   // These values are ALWAYS from the current logged-in user, never from viewing profiles
   // Only use profile data if it belongs to the current user
-  const isCurrentUserProfile = profile.userId === currentUserId || profile.userid === currentUserId;
+  const isCurrentUserProfile = profile.userId === currentUserId;
   
 
   // Enhanced fallback mechanism for cross-browser compatibility
@@ -125,7 +125,7 @@ const Sidemenu = () => {
   
   if (isCurrentUserProfile && profile?.firstname) {
     firstname = profile.firstname;
-    gold_balance = profile.balance || 0;
+    gold_balance = Number(profile.balance) || 0;
     admin = profile.admin || false;
   } else {
     // Try to get data from localStorage as fallback for Edge browser issues
@@ -166,38 +166,6 @@ const Sidemenu = () => {
 
   // MODEL BUTTON LOGIC
  // MODEL BUTTON LOGIC
-const getCreatorButton2 = () => {
-  if (profile.creatorID) {
-    if (profile.exclusive_verify) {
-      // ✅ User has a creator and is verified → go to creator profile page
-      return (
-        <MenuIconImg
-          src="/icons/icons8-creator.png"
-          name="My Portfolio"
-          url={`/creators/${profile.creatorID}`} // dynamic profile page
-        />
-      );
-    } else {
-      // User has a creator but not verified → go to create creator page
-      return (
-        <MenuIconImg
-          src="/icons/icons8-creator.png"
-          name="My Portfolio"
-          url="/creator/create"
-        />
-      );
-    }
-  } else {
-    // User has no creator
-    return (
-      <MenuIconImg
-        src={!profile.exclusive_verify ? "/icons/icons8-plus.png" : "/icons/icons8-creator.png"}
-        name={profile.exclusive_verify ? "My Portfolio" : "Become a creator"}
-        url={profile.exclusive_verify ? "/be-a-creator/apply" : "/be-a-creator"}
-      />
-    );
-  }
-};
 
 
 
@@ -222,8 +190,8 @@ const getCreatorButton2 = () => {
     if (profile.exclusive_verify) {
     return (
       <MenuIconImg
-        src="/icons/icons8-creator.png"
-        name="Create Listing"
+        src="/icons/icons8-plus.png" 
+        name="Create Portfolio"
         url="/creator/create"
       />
     );
@@ -232,7 +200,7 @@ const getCreatorButton2 = () => {
     // 3️⃣ Default → current user hasn't applied yet → show Become a creator
     return (
     <MenuIconImg
-      src="/icons/icons8-plus.png"
+      src="/icons/icons-become-a-creator.png"
       name="Become a creator"
       url="/be-a-creator"
     />
@@ -271,10 +239,11 @@ const getCreatorButton2 = () => {
               <div className="flex justify-between w-full">
                 <div className="flex text-xs text-blue-200 mb-3 w-full">
                   <Profile
-                    src={(profile as any).photolink || "/icons/icons8-profile_user.png"}
+                    src={profile.photolink || ""}
                     name={firstname}
                     url={userId ? `/Profile/${userId}` : `/Profile`}
                     gold_balance={gold_balance}
+                    onClick={() => handleMenubar()}
                   />
                   {/* 🔒 SAFETY: This Profile component ALWAYS shows current user's data */}
                 </div>
@@ -296,11 +265,11 @@ const getCreatorButton2 = () => {
 
             {/* 🔒 ALL MENU ITEMS BELOW ALWAYS USE CURRENT USER DATA */}
             <div className="grid-sys text-xs text-blue-100 mt-4">
-              <MenuIconImg
+              {/* <MenuIconImg
                 src="/icons/icons8-customer.gif"
                 name="Profile"
                 url={userId ? `/Profile/${userId}` : `/Profile`}
-              />
+              /> */}
 
               {getCreatorButton()}
 
@@ -316,13 +285,8 @@ const getCreatorButton2 = () => {
               />
               <MenuIconImg
                 src="/icons/icons8-gold.png"
-                name="Gold Stats"
+                name="My Earnings"
                 url="/goldstat/history"
-              />
-              <MenuIconImg
-                src="/icons/icons8-receipts.gif"
-                name="Transactions"
-                url="/earning"
               />
 
               {admin && (
@@ -334,8 +298,8 @@ const getCreatorButton2 = () => {
               )}
 
               <MenuIconImg
-                src="/icons/icons8-gift.gif"
-                name="Whats New"
+                src="/icons/icons8-gift.png"
+                name="What's New"
                 url="/change-log"
               />
 
@@ -346,7 +310,7 @@ const getCreatorButton2 = () => {
                 <img
                   alt="Logout"
                   src="/icons/icons8-log-out.png"
-                  className="object-cover w-7 h-7 bg-slate-900"
+                  className="object-cover w-12 h-12 bg-slate-900"
                 />
                 <p className="mt-1 text-center group-hover:text-gray-400">
                   Log Out

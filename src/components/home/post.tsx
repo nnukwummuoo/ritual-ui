@@ -129,7 +129,8 @@ export default function PostsCard({ type }: { type?: "video" | "image" | "text" 
       }
     } catch {}
     
-    dispatch(getallpost({} as any));
+    // Use fetchposts() instead of getallpost() to ensure userid is passed for blocking filter
+    fetchFeed();
   }, [dispatch]);
 
   useEffect(() => {
@@ -141,7 +142,6 @@ export default function PostsCard({ type }: { type?: "video" | "image" | "text" 
   }, [posts]);
 
   const fetchFeed = async () => { 
-    const tst = toast.loading("loading");
     try {
       const resPosts = await fetchposts();
       if (resPosts?.post && Array.isArray(resPosts.post)) {
@@ -207,11 +207,12 @@ export default function PostsCard({ type }: { type?: "video" | "image" | "text" 
         
         setPostResolve(postsWithLikesAndComments);
         localStorage.setItem('feedPosts', JSON.stringify(postsWithLikesAndComments));
+        
+        // Also update Redux store with filtered posts
+        dispatch(hydrateFromCache(postsWithLikesAndComments));
       }
     } catch(error) {
       console.error(error);
-    } finally {
-      toast.dismiss(tst);
     }
   };
 
@@ -432,22 +433,39 @@ export default function PostsCard({ type }: { type?: "video" | "image" | "text" 
                     router.push(`/Profile/${postAuthorId}`);
                   }}
                 >
-                  <img
-                    alt="Profile picture"
-                    src={
-                      isSelf ? (photolink || "/icons/icons8-profile_user.png") :
+                  {(() => {
+                    const profileImage = isSelf ? photolink : 
                       p?.user?.photolink || 
                       p?.user?.photoLink || 
                       p?.user?.profileImage || 
                       p?.user?.avatar || 
-                      p?.user?.image ||
-                      "/icons/icons8-profile_user.png"
+                      p?.user?.image;
+                    
+                    const userName = isSelf ? `${firstname} ${lastname}`.trim() : 
+                      `${p?.user?.firstname || ""} ${p?.user?.lastname || ""}`.trim();
+                    
+                    const initials = userName.split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2) || "?";
+                    
+                    if (profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined") {
+                      return (
+                        <img
+                          alt="Profile picture"
+                          src={profileImage}
+                          className="object-cover w-full h-full"
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                            e.currentTarget.nextElementSibling?.style.setProperty('display', 'flex');
+                          }}
+                        />
+                      );
                     }
-                    className="object-cover w-full h-full"
-                    onError={(e) => {
-                      e.currentTarget.src = "/icons/icons8-profile_user.png";
-                    }}
-                  />
+                    
+                    return (
+                      <div className="w-full h-full flex items-center justify-center text-white text-sm font-semibold bg-gray-600">
+                        {initials}
+                      </div>
+                    );
+                  })()}
                 </div>
                 <div 
                   className="flex-1 cursor-pointer" 

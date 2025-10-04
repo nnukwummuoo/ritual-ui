@@ -20,11 +20,11 @@ const ratings = [
 const creatorContent = {
   accepted: {
     head: "Fan Meet Accepted",
-    body: "Please kindly remind your fan to mark as complete during or after the date — it only takes a second. If they don't contact support within 24 hours.",
+    body: "Please kindly remind your fan to mark as complete during or after the date — it only takes a second. If they don't, contact support within 24 hours.",
   },
   completed: {
     head: "Fan Meet Completed",
-    body: "You have successfully completed the fan meet with your fan. How do you rate your experience?"
+    body: "How do you rate your experience?"
   },
   declined: {
     head: "Fan Meet Declined",
@@ -35,11 +35,11 @@ const creatorContent = {
     body: "Your fan cancelled the request."},
   expired: {
     head: "Fan Meet Expired",
-    body: "The fan-meet request has expired. You can ask the fan to renew request."
+    body: "You can ask the fan to renew request."
   },
   request: {
     head: "New Fan Meet Request",
-    body: "You've received a fan meet request. Please accept or decline within 24 hours."
+    body: "You have 24 hours to accept or decline."
   }
   
 }
@@ -49,17 +49,17 @@ const fanContent = {
     body: "By clicking 'Mark as complete' you confirm that your pending gold of 💰20 will be sent to the creator."},
   completed: {
     head: "Fan Meet Completed",
-    body: "You have successfully completed the fan meet with the creator. How do you rate your experience?"},
+    body: "How do you rate your experience?"},
   declined: {
     head: "Fan Meet Declined",
     body: "Creator declined your request."
   },
   cancelled: {
     head: "Fan Meet Cancelled",
-    body: "You have cancelled the fan-meet request. You can renew this request anytime."},
+    body: "You have cancelled the request. You can renew this request anytime."},
   expired: {
     head: "Fan Meet Expired",
-    body: "Your fan-meet request has expired. You can renew this request anytime."
+    body: "Your request has expired. You can renew this request anytime."
   },
   request: {
     head: "Waiting For Creator\'s Response",

@@ -91,7 +91,7 @@ const FollowingPage: React.FC = () => {
       console.log("[FollowingPage] dispatch getfollow with userid", { userid, hasToken: Boolean(authToken) });
       dispatch(getfollow({ userid, token: authToken }));
       // Also fetch all users for discovery
-      dispatch(getAllUsers({ token: authToken }));
+      dispatch(getAllUsers({ token: authToken, userid }));
     }
   }, [userid, token, dispatch]);
 
@@ -155,7 +155,7 @@ const FollowingPage: React.FC = () => {
             <div key={`fan_${index}_${user.id}`} className=" w-full">
               <FollowerCard
                 key={`fan_${index}_${user.id}`}
-                image={user.image}
+                image={user.image || ""}
                 name={user.name}
                 creatorid={user.creatorid}
                 userId={user.id}
@@ -189,7 +189,7 @@ const FollowingPage: React.FC = () => {
               <div key={`following_${index}_${user.id}`} className="following-user w-full flex" data-followed="true">
                 <FollowerCard
                   key={`following_${index}_${user.id}`}
-                  image={user.image}
+                  image={user.image || ""}
                   name={user.name}
                   creatorid={user.creatorid}
                   userId={user.id}
@@ -243,7 +243,7 @@ const FollowingPage: React.FC = () => {
             <div key={`discover_${index}_${user._id}`} className="discover-user w-full flex ">
               <FollowerCard
                 key={`discover_${index}_${user._id}`}
-                image={user.photolink || "/icons/icons8-profile_Icon1.png"}
+                image={user.photolink || ""}
                 name={`${user.firstname} ${user.lastname}`.trim()}
                 creatorid={user.creatorid || ""}
                 userId={user._id}

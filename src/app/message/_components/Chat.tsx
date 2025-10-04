@@ -12,7 +12,8 @@ import DropdownMenu from "./DropdownMenu";
 import { getViewingProfile } from "@/store/viewingProfile";
 
 import type { RootState } from "@/store/store";
-import { getSocket } from "@/lib/socket";
+import { getSocket, startTyping, stopTyping } from "@/lib/socket";
+import { useOnlineStatus } from "@/contexts/OnlineStatusContext";
 import { toast } from "material-react-toastify";
 import { URL as API_URL } from "@/api/config";
 import axios from "axios";
@@ -297,6 +298,11 @@ export const Chat = () => {
 
   const [text, settext] = useState("");
   const [loading, setLoading] = useState(true);
+  const [isTyping, setIsTyping] = useState(false);
+  const [otherUserTyping, setOtherUserTyping] = useState(false);
+  const [typingTimeout, setTypingTimeout] = useState<NodeJS.Timeout | null>(null);
+  // Use global online status context
+  const { isUserOnline } = useOnlineStatus();
 
   const [message, setmessage] = useState<Array<{
     id: string;
@@ -367,25 +373,36 @@ export const Chat = () => {
           const raw = localStorage.getItem("login");
           if (raw) {
             const data = JSON.parse(raw);
-            return data?.refreshtoken || data?.accesstoken;
+            const token = data?.refreshtoken || data?.accesstoken;
+            console.log("🔍 [CHAT] Token retrieved:", token ? "Present" : "Missing");
+            console.log("🔍 [CHAT] Token type:", data?.refreshtoken ? "refresh" : "access");
+            return token;
           }
         } catch (error) {
           console.error("[Chat] Error retrieving token from localStorage:", error);
         }
+        console.log("❌ [CHAT] No token found in localStorage");
         return "";
       })();
 
       const requestData = {
         creatorid: targetUserId,
-        clientid: loggedInUserId,
-        token: token || ""
+        clientid: loggedInUserId
       };
+
+      console.log("🔍 [CHAT] Fetching messages with data:", requestData);
+      console.log("🔍 [CHAT] API URL:", `${API_URL}/getcurrentchat`);
+      console.log("🔍 [CHAT] Token being sent:", token);
+      console.log("🔍 [CHAT] Token length:", token?.length);
 
       const response = await axios.put(`${API_URL}/getcurrentchat`, requestData, {
         headers: {
           "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
         },
       });
+
+      console.log("✅ [CHAT] Messages fetched successfully:", response.data);
 
       if (response.data.chats && Array.isArray(response.data.chats)) {
         setmessage(response.data.chats);
@@ -396,16 +413,46 @@ export const Chat = () => {
       }
 
       setLoading(false);
-    } catch (error) {
-      console.error("Error fetching messages:", error);
+    } catch (error: any) {
+      console.error("❌ [CHAT] Error fetching messages:", error);
+      console.error("❌ [CHAT] Error response:", error.response?.data);
+      console.error("❌ [CHAT] Error status:", error.response?.status);
+      console.error("❌ [CHAT] Error headers:", error.response?.headers);
+      
       setLoading(false);
-      toast.error("Failed to load messages");
+      
+      if (error.response?.status === 403) {
+        toast.error("Access denied. Please check your login status.");
+      } else if (error.response?.status === 401) {
+        toast.error("Authentication failed. Please log in again.");
+      } else {
+        toast.error(`Failed to load messages: ${error.response?.data?.message || error.message}`);
+      }
     }
   }, [creatorid, loggedInUserId]);
 
   // Chat info is now handled by viewingProfile only (no Redux chatinfo)
 
-  // Fetch target user profile details when creatorid changes
+  // Track route changes to force fresh profile fetch
+  const [routeChangeKey, setRouteChangeKey] = useState(0);
+
+  // Force fresh fetch when user navigates back to chat
+  useEffect(() => {
+    const handleRouteChange = () => {
+      setRouteChangeKey(prev => prev + 1);
+    };
+
+    // Listen for route changes (when user comes back to chat)
+    window.addEventListener('focus', handleRouteChange);
+    window.addEventListener('pageshow', handleRouteChange);
+
+    return () => {
+      window.removeEventListener('focus', handleRouteChange);
+      window.removeEventListener('pageshow', handleRouteChange);
+    };
+  }, []);
+
+  // Fetch target user profile details when creatorid changes or route changes
   useEffect(() => {
     if (!creatorid || !loggedInUserId) return;
 
@@ -426,10 +473,19 @@ export const Chat = () => {
     })();
 
     if (token) {
+      // Clear previous profile data first to ensure fresh loading
+      setchatusername("");
+      setfirstname("");
+      setlastname("");
+      set_Chatphoto("/icons/icons8-profile_user.png");
+      
+      // Clear Redux viewing profile state to force fresh fetch
+      dispatch({ type: 'viewingProfile/clearViewingProfile' });
+      
       // @ts-expect-error - Redux dispatch type issue
       dispatch(getViewingProfile({ userid: targetUserId, token }));
     }
-  }, [creatorid, loggedInUserId, dispatch]);
+  }, [creatorid, loggedInUserId, dispatch, routeChangeKey]);
 
   // Update chat info from viewing profile when it loads
   useEffect(() => {
@@ -445,8 +501,17 @@ export const Chat = () => {
       } else {
         set_Chatphoto("/icons/icons8-profile_user.png");
       }
+    } else if (viewingProfile.status === "failed") {
+      // Handle profile loading failure with better fallback
+      const targetUserId = decodeURIComponent(creatorid || "");
+      const fallbackName = `User ${targetUserId.slice(-6)}`;
+      
+      setfirstname(fallbackName);
+      setchatusername(fallbackName);
+      set_Chatphoto("/icons/icons8-profile_user.png");
+      setChatphotoError(false);
     }
-  }, [viewingProfile]);
+  }, [viewingProfile, creatorid]);
 
   // Force update chat info when creatorid changes to ensure profile is always shown
   useEffect(() => {
@@ -465,17 +530,41 @@ export const Chat = () => {
   useEffect(() => {
     const fallbackTimeout = setTimeout(() => {
       setLoading(false);
-    }, 10000); // 10 second fallback - only if API is taking too long
+      
+      // If profile still hasn't loaded, set fallback values
+      if (!chatusername && creatorid) {
+        const targetUserId = decodeURIComponent(creatorid);
+        const fallbackName = `User ${targetUserId.slice(-6)}`;
+        
+        setchatusername(fallbackName);
+        setfirstname(fallbackName);
+        set_Chatphoto("/icons/icons8-profile_user.png");
+        setChatphotoError(false);
+      }
+    }, 5000); // 5 second fallback - reduced from 10 seconds
 
     return () => clearTimeout(fallbackTimeout);
-  }, []);
+  }, [creatorid, chatusername]);
 
-  // Fallback to ensure chat info is set even if there are timing issues
+  // Enhanced fallback to ensure chat info is set even if there are timing issues
   useEffect(() => {
-    if (creatorid && !chatusername && !chatfirstname) {
+    if (creatorid && (!chatusername || !chatfirstname)) {
       const targetUserId = decodeURIComponent(creatorid);
-      setchatusername(`User ${targetUserId.slice(-4)}`); // Show last 4 chars of user ID as fallback
+      
+      // Try to get a better fallback name from the user ID
+      const fallbackName = `User ${targetUserId.slice(-6)}`; // Show last 6 chars for better identification
+      
+      // Only set fallback if we don't have any name yet
+      if (!chatusername) {
+        setchatusername(fallbackName);
+      }
+      if (!chatfirstname) {
+        setfirstname(fallbackName);
+      }
+      
+      // Set default profile picture
       set_Chatphoto("/icons/icons8-profile_user.png");
+      setChatphotoError(false);
     }
   }, [creatorid, chatusername, chatfirstname]);
 
@@ -516,8 +605,8 @@ export const Chat = () => {
                 <div key={index} className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-4 w-full`}>
                   <div className={`w-1/2 px-4 py-3 rounded-2xl ${
                     isUser 
-                      ? 'bg-blue-600 text-white rounded-br-md' 
-                      : 'bg-blue-800/50 text-white rounded-bl-md border border-blue-700/30'
+                      ? ' bg-gray-800 text-white rounded-br-md' 
+                      : ' bg-gray-800/50 text-white rounded-bl-md border border-blue-700/30'
                   }`}>
                     <div className="flex items-center gap-2">
                       <svg className="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 24 24">
@@ -536,8 +625,8 @@ export const Chat = () => {
                 <div key={index} className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-4 w-full`}>
                   <div className={`w-1/2 px-4 py-3 rounded-2xl ${
                     isUser 
-                      ? 'bg-blue-600 text-white rounded-br-md' 
-                      : 'bg-blue-800/50 text-white rounded-bl-md border border-blue-700/30'
+                      ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-br-md' 
+                      : ' bg-gray-800/50 text-white rounded-bl-md border border-blue-700/30'
                   }`}>
                     <p className="text-sm">{value.content}</p>
                     
@@ -614,6 +703,22 @@ export const Chat = () => {
               );
             }
           })}
+          
+          {/* Typing indicator */}
+          {otherUserTyping && (
+            <div className="flex justify-start mb-4 w-full">
+              <div className="w-1/2 px-4 py-3 rounded-2xl  bg-gray-800/50 text-white rounded-bl-md border border-blue-700/30">
+                <div className="flex items-center gap-2">
+                  <div className="flex space-x-1">
+                    <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce"></div>
+                    <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                    <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                  </div>
+                  <span className="text-sm text-blue-300">Typing...</span>
+                </div>
+              </div>
+            </div>
+          )}
         </>
       );
     } else {
@@ -656,6 +761,9 @@ export const Chat = () => {
 
     // Connect user to socket
     socket.emit("online", loggedInUserId);
+    
+    // Join user room for typing events
+    socket.emit("join_user_room", { userId: loggedInUserId });
 
     // Listen for new messages
 
@@ -734,8 +842,31 @@ export const Chat = () => {
 
     socket.on("LiveChat", handleLiveChat);
 
+    // Typing event listeners
+    const handleTypingStart = (data: { fromUserId: string, toUserId: string }) => {
+      if (data.fromUserId === creatorid && data.toUserId === loggedInUserId) {
+        setOtherUserTyping(true);
+      }
+    };
+
+    const handleTypingStop = (data: { fromUserId: string, toUserId: string }) => {
+      if (data.fromUserId === creatorid && data.toUserId === loggedInUserId) {
+        setOtherUserTyping(false);
+      }
+    };
+
+    socket.on('typing_start', handleTypingStart);
+    socket.on('typing_stop', handleTypingStop);
+
+    // Online status is now handled globally by OnlineStatusContext
+
     return () => {
+      // Leave user room
+      socket.emit("leave_user_room", { userId: loggedInUserId });
+      
       socket.off("LiveChat", handleLiveChat);
+      socket.off('typing_start', handleTypingStart);
+      socket.off('typing_stop', handleTypingStop);
     };
 
   }, [loggedInUserId, creatorid]);
@@ -965,12 +1096,18 @@ export const Chat = () => {
     // Since we now pass only the target user ID, we don't need to split by comma
     const targetUserId = decodedCreatorid;
 
+    console.log("🔍 [CHAT] Debug info:");
+    console.log("🔍 [CHAT] creatorid from params:", creatorid);
+    console.log("🔍 [CHAT] targetUserId after decode:", targetUserId);
+    console.log("🔍 [CHAT] loggedInUserId:", loggedInUserId);
+
     if (!loggedInUserId) {
       toast.error("Please log in to send messages");
       return;
     }
 
-    if (!targetUserId) {
+    if (!targetUserId || targetUserId === 'undefined' || targetUserId === 'null') {
+      console.error("❌ [CHAT] Invalid targetUserId:", targetUserId);
       toast.error("Invalid recipient");
       return;
     }
@@ -1124,15 +1261,29 @@ export const Chat = () => {
   //   };
   // }, [showEmoji]);
 
+  // Cleanup when component unmounts (user exits route)
+  useEffect(() => {
+    return () => {
+      // Clear profile data when user exits the chat route
+      setchatusername("");
+      setfirstname("");
+      setlastname("");
+      set_Chatphoto("/icons/icons8-profile_user.png");
+      
+      // Clear Redux viewing profile state
+      dispatch({ type: 'viewingProfile/clearViewingProfile' });
+    };
+  }, [dispatch]);
+
   return (
-    <div className="h-full w-full">
+    <div className="h-full w-full flex flex-col">
       {/* Top Bar with Clean Design */}
-      <div className="bg-blue-800 backdrop-blur-sm border-b border-blue-700/30 p-4 sticky top-0 z-50">
+      <div className=" bg-gray-800 backdrop-blur-sm border-b border-blue-700/30 p-3 sm:p-4 sticky top-0 z-50 flex-shrink-0">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button 
               onClick={() => router.back()}
-              className="p-2 hover:bg-blue-700/50 rounded-full transition-colors"
+              className="p-2 hover: bg-gray-800/50 rounded-full transition-colors"
             >
               <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -1171,7 +1322,25 @@ export const Chat = () => {
                     {chatfirstname && chatlastname ? `${chatfirstname} ${chatlastname}`.trim() : chatusername || "User"}
                   </p>
                 )}
-                <p className="text-xs text-blue-300">Direct message</p>
+                <div className="flex items-center gap-2">
+                  {otherUserTyping ? (
+                    <div className="flex items-center gap-1">
+                      <div className="flex space-x-1">
+                        <div className="w-1 h-1 bg-blue-400 rounded-full animate-bounce"></div>
+                        <div className="w-1 h-1 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                        <div className="w-1 h-1 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                      </div>
+                      <span className="text-xs text-blue-300">Typing...</span>
+                    </div>
+                  ) : isUserOnline(creatorid) ? (
+                    <div className="flex items-center gap-1">
+                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                      <span className="text-xs text-green-400">Online</span>
+                    </div>
+                  ) : (
+                    <span className="text-xs text-blue-300">Direct message</span>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -1183,11 +1352,11 @@ export const Chat = () => {
       </div>
 
       {/* Messages Area - Clean Design */}
-      <div ref={msgListref} className="h-[calc(100vh-200px)] overflow-y-auto p-4 bg-transparent">
+      <div ref={msgListref} className="flex-1 overflow-y-auto p-3 sm:p-4 bg-transparent pb-20">
         {loading ? (
           <div className="space-y-4 w-full max-w-4xl mx-auto">
             <div className="flex justify-start mb-4 w-full">
-              <div className="w-1/2 px-4 py-3 rounded-2xl bg-blue-800/50 text-white rounded-bl-md border border-blue-700/30">
+              <div className="w-1/2 px-4 py-3 rounded-2xl  bg-gray-800/50 text-white rounded-bl-md border border-blue-700/30">
                 <div className="animate-pulse">
                   <div className="h-4 bg-gray-400 rounded w-3/4 mb-2"></div>
                   <div className="h-3 bg-gray-400 rounded w-1/2"></div>
@@ -1195,7 +1364,7 @@ export const Chat = () => {
               </div>
             </div>
             <div className="flex justify-end mb-4 w-full">
-              <div className="w-1/2 px-4 py-3 rounded-2xl bg-blue-600 text-white rounded-br-md">
+              <div className="w-1/2 px-4 py-3 rounded-2xl  bg-gray-800 text-white rounded-br-md">
                 <div className="animate-pulse">
                   <div className="h-4 bg-gray-400 rounded w-3/4 mb-2"></div>
                   <div className="h-3 bg-gray-400 rounded w-1/2"></div>
@@ -1207,7 +1376,7 @@ export const Chat = () => {
             </div>
           </div>
         ) : (
-          <div className="space-y-4 w-full max-w-4xl mx-auto">
+          <div className="space-y-4 w-full max-w-4xl mx-auto pb-4">
             {messagelist()}
           </div>
         )}
@@ -1215,7 +1384,7 @@ export const Chat = () => {
 
       {/* File Preview Area */}
       {previewFiles.length > 0 && (
-        <div className="p-4 bg-blue-800/50 border-t border-blue-700/30">
+        <div className="p-4  bg-gray-800/50 border-t border-blue-700/30">
           <div className="flex flex-wrap gap-2">
             {previewFiles.map((preview, index) => (
               <div key={index} className="relative">
@@ -1269,8 +1438,8 @@ export const Chat = () => {
         </div>
       )}
 
-      {/* Input Bar - Clean Design */}
-      <div className="flex items-center gap-3 p-4 bg-blue-800 border-t border-blue-700/30 sticky bottom-0 z-50">
+      {/* Input Bar - Mobile Optimized */}
+      <div className="flex items-center gap-2 sm:gap-3 p-3 sm:p-4 bg-gray-800 border-t border-blue-700/30 sticky bottom-0 z-50 flex-shrink-0 pb-safe shadow-lg">
         <input
           type="file"
           ref={fileInputRef}
@@ -1282,17 +1451,47 @@ export const Chat = () => {
         
         <button
           onClick={() => fileInputRef.current?.click()}
-          className="flex-shrink-0 p-3 bg-blue-700 hover:bg-blue-600 text-white rounded-full transition-colors"
+          className="flex-shrink-0 p-3  bg-gray-800 hover: bg-gray-800 text-white rounded-full transition-colors"
         >
           <Paperclip className="w-5 h-5" />
         </button>
 
-        <div className="flex items-center flex-1 px-4 py-3 bg-blue-700/50 border border-blue-600/50 rounded-full">
+        <div className="flex items-center flex-1 px-4 py-3  bg-gray-800/50 border border-blue-600/50 rounded-full">
           <textarea
             className="flex-1 h-8 text-white placeholder-blue-300 bg-transparent outline-none resize-none"
             value={text}
             placeholder="Type a message..."
-            onChange={(e) => settext(e.target.value)}
+            onChange={(e) => {
+              settext(e.target.value);
+              
+              // Handle typing indicators
+              if (e.target.value.trim() && loggedInUserId && creatorid) {
+                if (!isTyping) {
+                  setIsTyping(true);
+                  startTyping(loggedInUserId, creatorid);
+                }
+                
+                // Clear existing timeout
+                if (typingTimeout) {
+                  clearTimeout(typingTimeout);
+                }
+                
+                // Set new timeout to stop typing after 2 seconds of inactivity
+                const timeout = setTimeout(() => {
+                  setIsTyping(false);
+                  stopTyping(loggedInUserId, creatorid);
+                }, 2000);
+                
+                setTypingTimeout(timeout);
+              } else if (!e.target.value.trim() && isTyping) {
+                setIsTyping(false);
+                stopTyping(loggedInUserId, creatorid);
+                if (typingTimeout) {
+                  clearTimeout(typingTimeout);
+                  setTypingTimeout(null);
+                }
+              }
+            }}
             onKeyPress={(e) => {
               if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
@@ -1305,7 +1504,7 @@ export const Chat = () => {
         <button 
           onClick={() => send_chat(text)} 
           disabled={(!text.trim() && selectedFiles.length === 0) || uploading}
-          className="flex-shrink-0 p-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-full transition-colors"
+          className="flex-shrink-0 p-3  bg-gray-800 hover: bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-full transition-colors"
         >
           {uploading ? (
             <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>

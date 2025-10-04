@@ -5,10 +5,11 @@ import person from "../../../icons/icons8-profile_Icon.png"
 import onlineIcon from "../../../icons/onlineIcon.svg"
 import offlineIcon from "../../../icons/offlineIcon.svg"
 import { getCountryData } from '../../../api/getCountries';
-// import {
-import { deleteblockedUsers, getblockedUsers, ProfilechangeStatus } from '../../../store/profile';
 import { useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch, RootState } from '../../../store/store';
+import { URL as API_URL } from '@/api/config';
+import axios from 'axios';
+import { toast } from 'material-react-toastify';
 
 type ListOfBlockUsersProps = {
   id: string;
@@ -16,14 +17,41 @@ type ListOfBlockUsersProps = {
   location: string;
   online: boolean;
   name: string;
+  onUnblock?: () => void;
 };
 
-export const Listofblockusers: React.FC<ListOfBlockUsersProps> = ({ id, photolink, location, online, name }) => {
+export const Listofblockusers: React.FC<ListOfBlockUsersProps> = ({ id, photolink, location, online, name, onUnblock }) => {
 
 let timeout: number | undefined;
-const removeblockstats = useSelector((state: RootState) => state.profile.removeblockstats as string);
-const token = useSelector((state: RootState) => state.register.refreshtoken as string);
 const userid = useSelector((state: RootState) => state.register.userID as string);
+const profileUserId = useSelector((state: RootState) => state.profile?.userId || state.profile?.creatorID);
+
+// Get userid from localStorage if not in Redux (same pattern as DropdownMenu)
+const [localUserid, setLocalUserid] = React.useState("");
+
+React.useEffect(() => {
+  if (typeof window !== "undefined") {
+    try {
+      const raw = localStorage.getItem("login");
+      if (raw) {
+        const data = JSON.parse(raw);
+        
+        // Set user ID if not in Redux - check multiple possible keys
+        if (!userid) {
+          const userId = data?.userID || data?.userid || data?.id;
+          if (userId) {
+            setLocalUserid(userId);
+            console.log("🔍 [UNBLOCK] UserID from localStorage:", userId);
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Error parsing user data from localStorage:", error);
+    }
+  }
+}, [userid]);
+
+const loggedInUserId = userid || profileUserId || localUserid;
 const [loading, setloading] = useState(false);
 // Store image as a string URL for use in <img src="..."/>
 const [image, setimage] = useState<string>(typeof person === 'string' ? person : (person as StaticImageData).src);
@@ -50,101 +78,171 @@ const [countryData, setCountryData] = useState({
     fetchData();
   }, []);
 
-  const unblockClick = ()=>{
-    if(removeblockstats !== "loading"){
-      setloading(true)
-      setdisable(true)
-      dispatch(deleteblockedUsers({token,id}))
-    }
-  }
+  const unblockClick = async () => {
+    if (loading) return;
 
-  useEffect(()=>{
-    if(removeblockstats === "succeeded"){
-      setloading(false)
-      set_buttonpressed(false)
-      dispatch(ProfilechangeStatus("idle"))
-      dispatch(getblockedUsers({token,userid}))
-      
+    // Add confirmation dialog
+    const confirmed = await new Promise<boolean>((resolve) => {
+      toast.info(
+        <div className="flex flex-col gap-3 bg-blue-900 p-4 rounded-lg">
+          <div className="text-white">
+            Are you sure you want to unblock {name}? You will be able to see their posts and they will be able to see yours.
+          </div>
+          <div className="flex gap-2 justify-end">
+            <button
+              className="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 text-sm"
+              onClick={() => {
+                toast.dismiss();
+                resolve(true);
+              }}
+            >
+              Unblock User
+            </button>
+            <button
+              className="px-3 py-1 bg-gray-600 text-white rounded hover:bg-gray-700 text-sm"
+              onClick={() => {
+                toast.dismiss();
+                resolve(false);
+              }}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>,
+        {
+          position: "top-center",
+          autoClose: false,
+          closeOnClick: false,
+          draggable: false,
+          className: "toast-confirmation",
+          style: {
+            backgroundColor: "#1e3a8a", // dark blue background
+            color: "white"
+          }
+        }
+      );
+    });
+
+    if (!confirmed) {
+      return;
     }
-  },[removeblockstats])
+
+    setloading(true);
+    setdisable(true);
+
+    try {
+      const token = (() => {
+        try {
+          const raw = localStorage.getItem("login");
+          if (raw) {
+            const data = JSON.parse(raw);
+            return data?.refreshtoken || data?.accesstoken;
+          }
+        } catch (error) {
+          console.error("[UnblockUser] Error retrieving token:", error);
+        }
+        return "";
+      })();
+
+      if (!token) {
+        toast.error("Please log in to unblock users");
+        return;
+      }
+
+      const response = await axios.post(`${API_URL}/block/unblock`, {
+        blockerId: loggedInUserId,
+        blockedUserId: id
+      }, {
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        }
+      });
+
+      if (response.data.ok) {
+        toast.success("User unblocked successfully");
+        if (onUnblock) {
+          onUnblock(); // Refresh the list
+        }
+      } else {
+        toast.error(response.data.message || "Failed to unblock user");
+      }
+
+    } catch (error: any) {
+      console.error("Error unblocking user:", error);
+      if (error.response?.data?.message) {
+        toast.error(error.response.data.message);
+      } else {
+        toast.error("Failed to unblock user. Please try again.");
+      }
+    } finally {
+      setloading(false);
+      set_buttonpressed(false);
+    }
+  };
 
   return (
-    <div className="bg-slate-300 p-1 w-full rounded-lg"
-    onMouseDown={(e)=>{
-     
-        timeout = window.setTimeout(()=>set_buttonpressed(true),1300)
-      
-    }}
-    onTouchStart={(e)=>{
-      
-        timeout = window.setTimeout(()=>set_buttonpressed(true),1300)
-      
-    }}
+    <div className="bg-gray-800 rounded-lg p-4 mb-3 border border-gray-700">
+      <div className="flex items-center justify-between">
+        {/* User Info */}
+        <div className="flex items-center space-x-3">
+          {/* Profile Picture */}
+          <div className="relative">
+            <img
+              alt="Profile"
+              src={image}
+              className="w-12 h-12 rounded-full object-cover border-2 border-gray-600"
+            />
+            {/* Online Status */}
+            <div className="absolute -bottom-1 -right-1">
+              <div className={`w-4 h-4 rounded-full border-2 border-gray-800 ${
+                online ? "bg-green-500" : "bg-gray-500"
+              }`}></div>
+            </div>
+          </div>
 
-    onMouseUp={(e)=>{
-      clearTimeout(timeout)
-    }}
-
-    onTouchEnd={(e)=>{
-      clearTimeout(timeout)
-    }}
-    >
-      {buttonpressed && <button className='w-full text-center bg-slate-800' onClick={unblockClick} disabled={disable}>
-        <p className='text-white font-bold'>Unblock User</p>
-      </button>}
-
-    {loading && (
-      <div className="w-full flex flex-col items-center">
-        <PacmanLoader
-          color={color}
-          loading={loading}
-          size={10}
-          aria-label="Loading Spinner"
-          data-testid="loader"
-        />
-
-        <p className="text-xs">Unblocking user Please wait...</p>
-      </div>
-    )}
-
-<div className="relative">
-        <div>
-          <img
-            alt="verified"
-            src={image}
-            className="rounded h-80 w-full object-cover"
-          />
-        </div>
-
-        <div className="absolute top-0 m-1 w-6 h-6 ">
-          <img
-            alt={online ? "online" : "offline"}
-            src={online ? onlineIcon : offlineIcon}
-            className={`object-cover rounded-full w-5 h-5 ${
-              online ? "bg-[#d3f6e0]" : "bg-[#ffd8d9]"
-            }`}
-          />
-        </div>
-
-        <div className="absolute bottom-1">
-          <div className="flex flex-row gap-2 items-center px-1  ">
-            <div className="flex items-center p-1 gap-1 bg-black bg-opacity-40 rounded-lg ">
+          {/* User Details */}
+          <div className="flex-1">
+            <h3 className="text-white font-semibold text-lg">{name}</h3>
+            <div className="flex items-center space-x-2 mt-1">
               <img
                 src={countryData.flag}
                 alt={`${countryData.abbreviation} flag`}
-                className="w-3 h-3 object-cover rounded-full"
+                className="w-4 h-4 rounded-full"
               />
-              <span className="text-white text-xs ">{countryData.fifa}</span>
+              <span className="text-gray-400 text-sm">{countryData.fifa}</span>
+              <span className="text-gray-500 text-sm">•</span>
+              <span className="text-gray-400 text-sm">
+                {online ? "Online" : "Offline"}
+              </span>
             </div>
-           
-            <h4 className="text-xs bg-black bg-opacity-50 rounded-lg p-1">
-              {name}
-            </h4>
           </div>
         </div>
-      </div>
 
-        
+        {/* Unblock Button */}
+        <div className="flex items-center space-x-2">
+          {loading ? (
+            <div className="flex items-center space-x-2">
+              <PacmanLoader
+                color={color}
+                loading={loading}
+                size={8}
+                aria-label="Loading Spinner"
+                data-testid="loader"
+              />
+              <span className="text-gray-400 text-sm">Unblocking...</span>
+            </div>
+          ) : (
+            <button
+              onClick={unblockClick}
+              disabled={disable}
+              className="bg-red-600 hover:bg-red-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+            >
+              Unblock
+            </button>
+          )}
+        </div>
+      </div>
     </div>
   )
 }
