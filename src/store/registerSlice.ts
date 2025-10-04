@@ -192,7 +192,7 @@ const registerSlice = createSlice({
       state.logedin = true;
       state.refreshtoken = action.payload.refreshtoken;
       state.accesstoken = action.payload.accesstoken;
-      state.userID = action.payload.userID;
+      state.userID = action.payload.userId;
       state.creatorId = action.payload.creatorId;
       state.creator_listing = action.payload.creator_listing;
     },
@@ -266,7 +266,7 @@ const registerSlice = createSlice({
               password: state.password,
               refreshtoken: action.payload.token,
               accesstoken: action.payload.accessToken,
-              userID: action.payload.id,
+              userID: action.payload.userId,
               creatorId: action.payload.creatorId,
               creator_listing: action.payload.creator_listing,
             })
@@ -278,7 +278,7 @@ const registerSlice = createSlice({
         state.logedin = true;
         state.refreshtoken = action.payload.token;
         state.accesstoken = action.payload.accessToken;
-        state.userID = action.payload.id;
+        state.userID = action.payload.userId;
         state.creatorId = action.payload.creatorId;
         state.creator_listing = action.payload.creator_listing;
       })

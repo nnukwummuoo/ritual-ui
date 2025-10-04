@@ -1,5 +1,6 @@
 export interface Profile {
   userId: string;
+  accessToken?: string;
   firstname: string;
   lastname: string;
   email: string;
