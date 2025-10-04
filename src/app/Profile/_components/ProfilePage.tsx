@@ -1061,19 +1061,29 @@ const PostModal = () => {
         <div className="p-4 border-b border-gray-800 flex justify-between items-center">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-gray-700 overflow-hidden">
-              {selectedPost.user?.photolink ? (
-                <Image 
-                  src={selectedPost.user.photolink} 
-                  alt="Profile" 
-                  width={40} 
-                  height={40} 
-                  className="object-cover w-full h-full"
-                />
-              ) : (
-                <div className="w-full h-full bg-gray-600 flex items-center justify-center text-gray-400">
-                  {selectedPost.user?.firstname?.charAt(0) || '?'}
-                </div>
-              )}
+              {(() => {
+                const profileImage = selectedPost.user?.photolink;
+                const userName = `${selectedPost.user?.firstname || ""} ${selectedPost.user?.lastname || ""}`.trim();
+                const initials = userName.split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2) || "?";
+                
+                if (profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined") {
+                  return (
+                    <Image 
+                      src={profileImage} 
+                      alt="Profile" 
+                      width={40} 
+                      height={40} 
+                      className="object-cover w-full h-full"
+                    />
+                  );
+                }
+                
+                return (
+                  <div className="w-full h-full bg-gray-600 flex items-center justify-center text-white text-sm font-semibold">
+                    {initials}
+                  </div>
+                );
+              })()}
             </div>
             <div>
               <p className="font-medium">
@@ -1195,19 +1205,29 @@ const PostModal = () => {
                         <div key={index} className="flex gap-3">
                           <div className="flex-shrink-0">
                             <div className="w-8 h-8 rounded-full bg-gray-700 overflow-hidden">
-                              {comment.user?.photolink ? (
-                                <Image
-                                  src={comment.user.photolink}
-                                  alt="Commenter"
-                                  width={32}
-                                  height={32}
-                                  className="object-cover w-full h-full"
-                                />
-                              ) : (
-                                <div className="w-full h-full bg-gray-600 flex items-center justify-center text-xs text-gray-400">
-                                  {comment.user?.username?.charAt(0) || comment.username?.charAt(0) || '?'}
-                                </div>
-                              )}
+                              {(() => {
+                                const profileImage = comment.user?.photolink;
+                                const userName = comment.user?.username || comment.username || "User";
+                                const initials = userName.split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2) || "?";
+                                
+                                if (profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined") {
+                                  return (
+                                    <Image
+                                      src={profileImage}
+                                      alt="Commenter"
+                                      width={32}
+                                      height={32}
+                                      className="object-cover w-full h-full"
+                                    />
+                                  );
+                                }
+                                
+                                return (
+                                  <div className="w-full h-full bg-gray-600 flex items-center justify-center text-xs text-white font-semibold">
+                                    {initials}
+                                  </div>
+                                );
+                              })()}
                             </div>
                           </div>
                           <div className="flex-1">
@@ -1283,13 +1303,29 @@ const PostModal = () => {
           {/* Profile Picture */}
           <div className="relative w-full h-full flex items-center justify-center">
             <div className="relative w-full h-0 pb-[100%] max-h-[80vh]">
-              <Image
-                alt="Profile Picture"
-                src={photolink || avatarSrc || "/icons/profile.png"}
-                fill
-                className="object-contain rounded-lg"
-                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 70vw"
-              />
+              {(() => {
+                const profileImage = photolink || avatarSrc;
+                const userName = `${firstname || ""} ${lastname || ""}`.trim();
+                const initials = userName.split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2) || "?";
+                
+                if (profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined") {
+                  return (
+                    <Image
+                      alt="Profile Picture"
+                      src={profileImage}
+                      fill
+                      className="object-contain rounded-lg"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 70vw"
+                    />
+                  );
+                }
+                
+                return (
+                  <div className="w-full h-full rounded-lg bg-gray-600 flex items-center justify-center text-white text-6xl font-bold">
+                    {initials}
+                  </div>
+                );
+              })()}
             </div>
           </div>
           
@@ -1379,13 +1415,29 @@ const PostModal = () => {
                       <div 
                       onClick={() => setShowProfilePictureModal(true)}
                       className="w-24 h-24 rounded-full p-1 bg-gradient-to-r from-blue-500 to-purple-600">
-                        <Image
-                        alt="profile picture"
-                        src={photolink || avatarSrc || "/icons/profile.png"}
-                          width={128}
-                          height={128}
-                          className="object-cover w-full h-full rounded-full"
-                      />
+                        {(() => {
+                          const profileImage = photolink || avatarSrc;
+                          const userName = `${firstname || ""} ${lastname || ""}`.trim();
+                          const initials = userName.split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2) || "?";
+                          
+                          if (profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined") {
+                            return (
+                              <Image
+                                alt="profile picture"
+                                src={profileImage}
+                                width={128}
+                                height={128}
+                                className="object-cover w-full h-full rounded-full"
+                              />
+                            );
+                          }
+                          
+                          return (
+                            <div className="w-full h-full rounded-full bg-gray-600 flex items-center justify-center text-white text-2xl font-bold">
+                              {initials}
+                            </div>
+                          );
+                        })()}
                       </div>
                     </div>
                       <div className="flex flex-col items-start pl-7 gap-2 w-2/3">
@@ -1711,13 +1763,29 @@ const PostModal = () => {
                       <div className="flex items-center mb-3">
                         <div className="w-10 h-10 rounded-full overflow-hidden mr-3 bg-gradient-to-r from-blue-500 to-purple-600 p-0.5">
                           <div className="w-full h-full rounded-full overflow-hidden bg-black">
-                            <Image 
-                              src={review.avatar} 
-                              alt={review.name} 
-                              width={40} 
-                              height={40} 
-                              className="w-full h-full object-cover"
-                            />
+                            {(() => {
+                              const profileImage = review.avatar;
+                              const userName = review.name;
+                              const initials = userName.split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2) || "?";
+                              
+                              if (profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined") {
+                                return (
+                                  <Image 
+                                    src={profileImage} 
+                                    alt={review.name} 
+                                    width={40} 
+                                    height={40} 
+                                    className="w-full h-full object-cover"
+                                  />
+                                );
+                              }
+                              
+                              return (
+                                <div className="w-full h-full bg-gray-600 flex items-center justify-center text-white text-sm font-semibold">
+                                  {initials}
+                                </div>
+                              );
+                            })()}
                   </div>
                   </div>
                   <div>

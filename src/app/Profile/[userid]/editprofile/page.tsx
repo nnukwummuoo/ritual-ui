@@ -1029,14 +1029,30 @@ const EditProfile: React.FC = () => {
                 <div className="relative group">
                   <div className="w-28 h-28 rounded-full p-1 bg-gradient-to-r from-blue-500 to-purple-600">
                     <div className="w-full h-full rounded-full overflow-hidden bg-black">
-                  <Image
-                        alt="Profile Picture"
-                    src={profileimg}
-                        width={112}
-                        height={112}
-                        className="w-full h-full object-cover"
-                        onError={() => setProfileimg(profileIcon.src)}
-                      />
+                      {(() => {
+                        const profileImage = profileimg;
+                        const userName = `${firstname || ""} ${lastname || ""}`.trim();
+                        const initials = userName.split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2) || "?";
+                        
+                        if (profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined" && profileImage !== profileIcon.src) {
+                          return (
+                            <Image
+                              alt="Profile Picture"
+                              src={profileImage}
+                              width={112}
+                              height={112}
+                              className="w-full h-full object-cover"
+                              onError={() => setProfileimg(profileIcon.src)}
+                            />
+                          );
+                        }
+                        
+                        return (
+                          <div className="w-full h-full flex items-center justify-center text-white text-3xl font-bold bg-gray-600">
+                            {initials}
+                          </div>
+                        );
+                      })()}
                     </div>
                 </div>
 
@@ -1051,6 +1067,21 @@ const EditProfile: React.FC = () => {
                     </svg>
                   </div>
                 </div>
+
+                {/* Delete Profile Picture Button */}
+                {profileimg && profileimg !== profileIcon.src && (
+                  <button
+                    onClick={() => {
+                      setProfileimg(profileIcon.src);
+                      setUpdatePhoto(undefined);
+                      setDeletePhotolink(profileimg);
+                      setErrorMessage("");
+                    }}
+                    className="mt-2 bg-red-600 hover:bg-red-700 text-white text-xs py-1 px-3 rounded-full transition-colors"
+                  >
+                    Delete Profile Picture
+                  </button>
+                )}
 
                 {/* Text instruction */}
                 <p className="text-sm text-gray-400 mt-2 mb-3">Click on the image to change your profile picture</p>

@@ -43,6 +43,40 @@ const SupportPage: React.FC = () => {
       ]
     },
     {
+      section: "🤝 Fan Meet & Fan Date",
+      questions: [
+        {
+          question: "What are Fan Meet and Fan Date for?",
+          answer: "🤝 Fan Meet – A short, casual meeting where you can greet your favorite creator, chat, and even take a selfie. It's about making a quick personal connection - limited to 30 minutes maximum for safety and fairness.\n\n🍽 Fan Date – A slightly more relaxed session where you spend time together in a safe public place — like grabbing coffee, eating, or walking — but still limited to 30 minutes maximum for safety and fairness."
+        }
+      ]
+    },
+    {
+      section: "🚌 Transport Fare",
+      questions: [
+        {
+          question: "Why do I have to pay for transport fare?",
+          answer: "💡 Creators give their time to meet fans. To keep it fair and safe, fans cover their travel costs so creators don't lose money when showing up."
+        },
+        {
+          question: "How is the transport fare decided?",
+          answer: "🚌 It's calculated based on distance, transportation rates, and local conditions. The exact fare is displayed before you confirm the request."
+        },
+        {
+          question: "Do I still pay if the creator cancels?",
+          answer: "❌ No. If the creator cancels, you'll get your transport fare refunded."
+        },
+        {
+          question: "Do I get a refund if I cancel?",
+          answer: "✅ Yes, if you cancel before the creator accepts your request → full refund.\n⚠ No, you can't cancel after the creator accepts your request → transport fare is non-refundable."
+        },
+        {
+          question: "Is this safe?",
+          answer: "🛡 Yes. All Fan Meet and Fan Date sessions are limited to 30 minutes maximum, must take place in a public location, and transport fare ensures the creator can arrive and return safely."
+        }
+      ]
+    },
+    {
       section: "💳 Payments & Earnings",
       questions: [
         {
