@@ -4,16 +4,21 @@ import { useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/store/store";
 import { follow, unfollow, getfollow } from "@/store/profile";
+import { checkVipStatus } from "@/store/vip";
 import { getSocket } from "@/lib/socket";
+import VIPBadge from "@/components/VIPBadge";
 
 interface FollowerCardProps {
   image: string;
   name: string;
   creatorid: string;
   userId?: string; // User ID for following functionality
+  isVip?: boolean;
+  vipStartDate?: string;
+  vipEndDate?: string;
 }
 
-const FollowerCard: React.FC<FollowerCardProps> = ({ image, name, creatorid, userId }) => {
+const FollowerCard: React.FC<FollowerCardProps> = ({ image, name, creatorid, userId, isVip = false, vipStartDate, vipEndDate }) => {
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
   const currentUserId = useSelector((state: RootState) => state.register.userID);
@@ -31,6 +36,7 @@ const FollowerCard: React.FC<FollowerCardProps> = ({ image, name, creatorid, use
   });
   const [isFollowing, setIsFollowing] = React.useState(false);
   const [isProcessing, setIsProcessing] = React.useState(false);
+  // VIP status is now passed as props from the API data
   
   const hasImage = Boolean(image && image.trim());
   const initials = React.useMemo(() => {
@@ -80,6 +86,8 @@ const FollowerCard: React.FC<FollowerCardProps> = ({ image, name, creatorid, use
   useEffect(() => {
     checkFollowingState();
   }, [checkFollowingState]);
+
+  // VIP status is now passed as props from the API data, no need to check individually
   
   // Setup socket for real-time follow/unfollow updates
   useEffect(() => {
@@ -295,24 +303,32 @@ const FollowerCard: React.FC<FollowerCardProps> = ({ image, name, creatorid, use
     >
       {/* Left side: avatar + name */}
       <div className="flex items-center gap-3 w-2/3">
-        {hasImage ? (
-          <Image
-            src={image}
-            alt={name}
-            width={48}
-            height={48}
-            className="w-12 h-12 rounded-full object-cover flex-shrink-0"
-            onError={(e) => {
-              const target = e.target as HTMLImageElement;
-              target.onerror = null;
-              target.src = "/icons/icons8-profile_Icon1.png";
-            }}
-          />
-        ) : (
-          <div className="w-12 h-12 rounded-full bg-gray-700 flex items-center justify-center text-white text-sm font-semibold flex-shrink-0">
-            {initials}
-          </div>
-        )}
+        <div className="relative">
+          {hasImage ? (
+            <Image
+              src={image}
+              alt={name}
+              width={48}
+              height={48}
+              className="w-12 h-12 rounded-full object-cover flex-shrink-0"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.onerror = null;
+                target.src = "/icons/icons8-profile_Icon1.png";
+              }}
+            />
+          ) : (
+            <div className="w-12 h-12 rounded-full bg-gray-700 flex items-center justify-center text-white text-sm font-semibold flex-shrink-0">
+              {initials}
+            </div>
+          )}
+          
+          {/* VIP Lion Badge */}
+          {(() => {
+            console.log(`🔍 [FOLLOWER DEBUG] User: ${name} - isVip: ${isVip}, vipEndDate: ${vipEndDate}`);
+            return <VIPBadge size="md" className="absolute -top-1 -right-1" isVip={isVip} vipEndDate={vipEndDate} />;
+          })()}
+        </div>
         <div className="flex flex-col gap-1 min-w-0 flex-1">
           <div className="text-white font-semibold truncate">{name}</div>
         </div>

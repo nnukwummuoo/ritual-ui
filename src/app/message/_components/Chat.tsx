@@ -10,6 +10,7 @@ import DropdownMenu from "./DropdownMenu";
 
 // Removed Redux import - using direct API calls instead
 import { getViewingProfile } from "@/store/viewingProfile";
+import { checkVipStatus } from "@/store/vip";
 
 import type { RootState } from "@/store/store";
 import { getSocket, startTyping, stopTyping } from "@/lib/socket";
@@ -19,6 +20,7 @@ import { URL as API_URL } from "@/api/config";
 import axios from "axios";
 import Image from "next/image";
 import { X, Paperclip, Send, File, Download } from "lucide-react";
+import VIPBadge from "@/components/VIPBadge";
 
 
 export const Chat = () => {
@@ -316,11 +318,17 @@ export const Chat = () => {
     messageId?: string; // Unique identifier for deduplication
     status?: 'sending' | 'sent' | 'delivered' | 'failed'; // Message status
     tempId?: string; // Temporary ID for optimistic updates
+    isVip?: boolean;
+    vipStartDate?: string;
+    vipEndDate?: string;
   }>>([]);
   // Removed Redux dependencies - using direct API calls instead
   
   // Get viewing profile data for the target user
   const viewingProfile = useSelector((state: RootState) => state.viewingProfile);
+  
+  // Get VIP status from Redux
+  const vipStatus = useSelector((state: RootState) => state.vip.vipStatus);
   
   // File upload states
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
@@ -501,6 +509,10 @@ export const Chat = () => {
       } else {
         set_Chatphoto("/icons/icons8-profile_user.png");
       }
+      
+      // Fetch VIP status for the chat partner
+      console.log(`🔍 [CHAT] Fetching VIP status for chat partner: ${viewingProfile.userId}`);
+      dispatch(checkVipStatus(viewingProfile.userId) as any);
     } else if (viewingProfile.status === "failed") {
       // Handle profile loading failure with better fallback
       const targetUserId = decodeURIComponent(creatorid || "");
@@ -511,7 +523,7 @@ export const Chat = () => {
       set_Chatphoto("/icons/icons8-profile_user.png");
       setChatphotoError(false);
     }
-  }, [viewingProfile, creatorid]);
+  }, [viewingProfile, creatorid, dispatch]);
 
   // Force update chat info when creatorid changes to ensure profile is always shown
   useEffect(() => {
@@ -613,6 +625,10 @@ export const Chat = () => {
                         <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
                       </svg>
                       <span className="font-semibold">{isUser ? 'You sent' : `${value.name} sent`}</span>
+                      {/* VIP Badge for message sender */}
+                      {!isUser && value.isVip && (
+                        <VIPBadge size="md" isVip={value.isVip} vipEndDate={value.vipEndDate} />
+                      )}
 
                     </div>
                     <p className="text-lg font-bold mt-1">${value.content}</p>
@@ -628,6 +644,13 @@ export const Chat = () => {
                       ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-br-md' 
                       : ' bg-gray-800/50 text-white rounded-bl-md border border-blue-700/30'
                   }`}>
+                    {/* VIP Badge for message sender */}
+                    {!isUser && value.isVip && (
+                      <div className="flex items-center gap-2 mb-2">
+                          <VIPBadge size="md" isVip={value.isVip} vipEndDate={value.vipEndDate} />
+                        <span className="text-xs text-blue-300">VIP Message</span>
+                      </div>
+                    )}
                     <p className="text-sm">{value.content}</p>
                     
                     {/* Display files if any */}
@@ -775,7 +798,10 @@ export const Chat = () => {
         date: string; 
         coin: boolean; 
         files?: string[]; 
-        fileCount?: number; 
+        fileCount?: number;
+        isVip?: boolean;
+        vipStartDate?: string;
+        vipEndDate?: string;
       }; 
       name: string; 
       photolink: string; 
@@ -802,7 +828,10 @@ export const Chat = () => {
           files: data.data.files || [],
           fileCount: data.data.fileCount || 0,
           messageId: `${data.data.fromid}-${data.data.date}`, // Create unique message ID
-          status: 'delivered' as const
+          status: 'delivered' as const,
+          isVip: data.data.isVip || false,
+          vipStartDate: data.data.vipStartDate,
+          vipEndDate: data.data.vipEndDate
         };
         
         // Check if this is a message from the current user (optimistic update)
@@ -1170,7 +1199,10 @@ export const Chat = () => {
         fileCount: fileUrls.length,
         messageId: `${content.fromid}-${content.date}`,
         status: 'sending' as const,
-        tempId: tempId
+        tempId: tempId,
+        isVip: false, // Current user's VIP status (will be updated by socket)
+        vipStartDate: undefined,
+        vipEndDate: undefined
       };
 
       setmessage((value) => [...value, chats]);
@@ -1292,24 +1324,30 @@ export const Chat = () => {
             
             <div className="flex items-center gap-3">
               {/* Profile Picture */}
-              <div className="w-12 h-12 rounded-full border-2 border-blue-600/50 overflow-hidden">
-                {loading || (!chatusername && !chatfirstname) ? (
-                  <div className="w-full h-full bg-gray-600 animate-pulse rounded-full"></div>
-                ) : Chatphoto && Chatphoto !== "/icons/icons8-profile_user.png" && !ChatphotoError ? (
-                  <Image
-                    src={Chatphoto}
-                    alt="profile"
-                    width={48}
-                    height={48}
-                    className="w-full h-full object-cover"
-                    onError={() => {
-                      setChatphotoError(true);
-                    }}
-                  />
-                ) : (
-                  <div className={`w-full h-full flex items-center justify-center text-white font-semibold ${getRandomColor(chatfirstname && chatlastname ? `${chatfirstname} ${chatlastname}`.trim() : chatusername || "User")}`}>
-                    {getUserInitials(chatfirstname && chatlastname ? `${chatfirstname} ${chatlastname}`.trim() : chatusername || "User")}
-                  </div>
+              <div className="relative">
+                <div className="w-12 h-12 rounded-full border-2 border-blue-600/50 overflow-hidden">
+                  {loading || (!chatusername && !chatfirstname) ? (
+                    <div className="w-full h-full bg-gray-600 animate-pulse rounded-full"></div>
+                  ) : Chatphoto && Chatphoto !== "/icons/icons8-profile_user.png" && !ChatphotoError ? (
+                    <Image
+                      src={Chatphoto}
+                      alt="profile"
+                      width={48}
+                      height={48}
+                      className="w-full h-full object-cover"
+                      onError={() => {
+                        setChatphotoError(true);
+                      }}
+                    />
+                  ) : (
+                    <div className={`w-full h-full flex items-center justify-center text-white font-semibold ${getRandomColor(chatfirstname && chatlastname ? `${chatfirstname} ${chatlastname}`.trim() : chatusername || "User")}`}>
+                      {getUserInitials(chatfirstname && chatlastname ? `${chatfirstname} ${chatlastname}`.trim() : chatusername || "User")}
+                    </div>
+                  )}
+                </div>
+                {/* VIP Badge for chat partner */}
+                {viewingProfile.status === "succeeded" && vipStatus?.isVip && (
+                  <VIPBadge size="md" className="absolute -top-1 -right-1" isVip={vipStatus.isVip} vipEndDate={vipStatus.vipEndDate} />
                 )}
               </div>
               
