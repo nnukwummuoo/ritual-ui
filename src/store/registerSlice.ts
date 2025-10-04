@@ -22,6 +22,10 @@ export interface RegisterState {
   chagepassword: string;
   creatorId?: string;
   creator_listing?: boolean;
+  // VIP status fields
+  isVip?: boolean;
+  vipStartDate?: string;
+  vipEndDate?: string;
 }
 
 
@@ -41,6 +45,10 @@ const initialState: RegisterState = {
   forgetpassstate: "idle",
   conpasswordstate: "idle",
   chagepassword: "idle",
+  // VIP status fields
+  isVip: false,
+  vipStartDate: undefined,
+  vipEndDate: undefined,
 };
 
 export const registernewUser = createAsyncThunk(
@@ -195,6 +203,17 @@ const registerSlice = createSlice({
       state.userID = action.payload.userID;
       state.creatorId = action.payload.creatorId;
       state.creator_listing = action.payload.creator_listing;
+      // VIP status fields
+      state.isVip = action.payload.isVip || false;
+      state.vipStartDate = action.payload.vipStartDate;
+      state.vipEndDate = action.payload.vipEndDate;
+      
+      console.log(`🔍 [REGISTER SLICE] loginAuthUser - VIP Status:`, {
+        isVip: action.payload.isVip,
+        vipStartDate: action.payload.vipStartDate,
+        vipEndDate: action.payload.vipEndDate,
+        userID: action.payload.userID
+      });
     },
   },
 
@@ -269,6 +288,10 @@ const registerSlice = createSlice({
               userID: action.payload.id,
               creatorId: action.payload.creatorId,
               creator_listing: action.payload.creator_listing,
+              // Include VIP status
+              isVip: action.payload.isVip || false,
+              vipStartDate: action.payload.vipStartDate || null,
+              vipEndDate: action.payload.vipEndDate || null,
             })
           );
         } catch {}
@@ -281,6 +304,10 @@ const registerSlice = createSlice({
         state.userID = action.payload.id;
         state.creatorId = action.payload.creatorId;
         state.creator_listing = action.payload.creator_listing;
+        // Set VIP status in Redux state
+        state.isVip = action.payload.isVip || false;
+        state.vipStartDate = action.payload.vipStartDate || null;
+        state.vipEndDate = action.payload.vipEndDate || null;
       })
       .addCase(loginuser.rejected, (state, action) => {
         state.logstats = "failed";

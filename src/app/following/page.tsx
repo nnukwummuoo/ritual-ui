@@ -159,6 +159,9 @@ const FollowingPage: React.FC = () => {
                 name={user.name}
                 creatorid={user.creatorid}
                 userId={user.id}
+                isVip={user.isVip || false}
+                vipStartDate={user.vipStartDate}
+                vipEndDate={user.vipEndDate}
               />
             </div>
           ))}
@@ -193,6 +196,9 @@ const FollowingPage: React.FC = () => {
                   name={user.name}
                   creatorid={user.creatorid}
                   userId={user.id}
+                  isVip={user.isVip || false}
+                  vipStartDate={user.vipStartDate}
+                  vipEndDate={user.vipEndDate}
                 />
               </div>
             );
@@ -247,6 +253,9 @@ const FollowingPage: React.FC = () => {
                 name={`${user.firstname} ${user.lastname}`.trim()}
                 creatorid={user.creatorid || ""}
                 userId={user._id}
+                isVip={user.isVip || false}
+                vipStartDate={user.vipStartDate}
+                vipEndDate={user.vipEndDate}
               />
             </div>
           ))}

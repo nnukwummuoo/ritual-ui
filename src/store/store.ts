@@ -12,6 +12,7 @@ import comprofileReducer from './comprofile';
 import postReducer from './post';
 import commentReducer from './comment';
 import adminReducer from './admin';
+import vipReducer from './vip';
 
 
 export const store = configureStore({
@@ -28,6 +29,7 @@ export const store = configureStore({
     post:postReducer,
     comment:commentReducer,
     admin: adminReducer,
+    vip: vipReducer,
   },
 });
 

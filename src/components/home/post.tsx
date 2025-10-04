@@ -3,18 +3,21 @@
 import React, { useEffect, useLayoutEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "@/store/store";
-import { fetchposts, getallpost, hydrateFromCache } from "@/store/post";
+import { fetchposts, hydrateFromCache } from "@/store/post";
 import { getprofile, follow as followThunk, unfollow as unfollowThunk, getfollow } from "@/store/profile";
 import { postlike } from "@/store/like";
 import { getpostcomment, postcomment } from "@/store/comment";
+import { checkVipStatus } from "@/store/vip";
+import VIPBadge from "@/components/VIPBadge";
 import { URL as API_BASE } from "@/api/config";
 const PROD_BASE = "https://mmekoapi.onrender.com";
 import PostSkeleton from "../PostSkeleton";
 import PostActions from "./PostActions";
 import { toast } from "material-react-toastify";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
-export default function PostsCard({ type }: { type?: "video" | "image" | "text" }) {
+export default function PostsCard() {
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
   const status = useSelector((s: RootState) => s.post.poststatus);
@@ -32,6 +35,7 @@ export default function PostsCard({ type }: { type?: "video" | "image" | "text" 
   const token = reduxToken || localToken;
   
   const { firstname, lastname, nickname, photolink } = useSelector((s: RootState) => s.profile);
+  const vipStatus = useSelector((s: RootState) => s.vip.vipStatus);
   const [selfId, setSelfId] = React.useState<string | undefined>(undefined);
   const [selfNick, setSelfNick] = React.useState<string | undefined>(undefined);
   const [selfName, setSelfName] = React.useState<string | undefined>(undefined);
@@ -91,6 +95,13 @@ export default function PostsCard({ type }: { type?: "video" | "image" | "text" 
       dispatch(getfollow({ userid: loggedInUserId, token }));
     }
   }, [loggedInUserId, token, dispatch]);
+
+  // Check VIP status for current user
+  useEffect(() => {
+    if (loggedInUserId) {
+      dispatch(checkVipStatus(loggedInUserId));
+    }
+  }, [loggedInUserId, dispatch]);
 
   useEffect(() => {
     try {
@@ -295,7 +306,7 @@ export default function PostsCard({ type }: { type?: "video" | "image" | "text" 
       
       dispatch(getfollow({ userid: loggedInUserId, token }));
       
-    } catch (error: unknown) {
+    } catch  {
       setUi(prev => ({
         ...prev,
         [postId]: {
@@ -304,7 +315,7 @@ export default function PostsCard({ type }: { type?: "video" | "image" | "text" 
         },
       }));
       
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      // const errorMessage = error instanceof Error ? error.message : String(error);
       toast.error(`Failed to ${currentlyFollowing ? 'unfollow' : 'follow'}. Please try again.`);
     }
   };
@@ -411,7 +422,7 @@ export default function PostsCard({ type }: { type?: "video" | "image" | "text" 
         const uiState = ui[pid] || {};
         const uiLiked = uiState.liked ?? liked;
         const uiLikeCount = uiState.likeCount ?? likeCount;
-        const uiStarred = uiState.starred ?? starred;
+       // const uiStarred = uiState.starred ?? starred;
         const uiOpen = !!uiState.open;
         const uiComments = uiState.comments ?? [];
         const uiInput = uiState.input ?? "";
@@ -426,46 +437,67 @@ export default function PostsCard({ type }: { type?: "video" | "image" | "text" 
           <div key={`${p?.postid || p?.id || idx}`} className="mx-auto max-w-[30rem] w-full bg-gray-800 rounded-md p-3">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-3">
-                <div 
-                  className="size-10 rounded-full overflow-hidden bg-gray-700 cursor-pointer hover:opacity-80 transition-opacity" 
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    router.push(`/Profile/${postAuthorId}`);
-                  }}
-                >
-                  {(() => {
-                    const profileImage = isSelf ? photolink : 
-                      p?.user?.photolink || 
-                      p?.user?.photoLink || 
-                      p?.user?.profileImage || 
-                      p?.user?.avatar || 
-                      p?.user?.image;
-                    
-                    const userName = isSelf ? `${firstname} ${lastname}`.trim() : 
-                      `${p?.user?.firstname || ""} ${p?.user?.lastname || ""}`.trim();
-                    
-                    const initials = userName.split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2) || "?";
-                    
-                    if (profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined") {
+                <div className="relative">
+                  <div 
+                    className="size-10 rounded-full overflow-hidden bg-gray-700 cursor-pointer hover:opacity-80 transition-opacity" 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      router.push(`/Profile/${postAuthorId}`);
+                    }}
+                  >
+                    {(() => {
+                      const profileImage = isSelf ? photolink : 
+                        p?.user?.photolink || 
+                        p?.user?.photoLink || 
+                        p?.user?.profileImage || 
+                        p?.user?.avatar || 
+                        p?.user?.image;
+                      
+                      const userName = isSelf ? `${firstname} ${lastname}`.trim() : 
+                        `${p?.user?.firstname || ""} ${p?.user?.lastname || ""}`.trim();
+                      
+                      const initials = userName.split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2) || "?";
+                      
+                      if (profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined") {
+                        return (
+                          <img
+                            alt="Profile picture"
+                            src={profileImage}
+                            className="object-cover w-full h-full"
+                            onError={(e) => {
+                              const target = e.currentTarget as HTMLImageElement;
+                              target.style.display = 'none';
+                              const nextElement = target.nextElementSibling as HTMLElement;
+                              if (nextElement) {
+                                nextElement.style.setProperty('display', 'flex');
+                              }
+                            }}
+                          />
+                        );
+                      }
+                      
                       return (
-                        <img
-                          alt="Profile picture"
-                          src={profileImage}
-                          className="object-cover w-full h-full"
-                          onError={(e) => {
-                            e.currentTarget.style.display = 'none';
-                            e.currentTarget.nextElementSibling?.style.setProperty('display', 'flex');
-                          }}
-                        />
+                        <div className="w-full h-full flex items-center justify-center text-white text-sm font-semibold bg-gray-600">
+                          {initials}
+                        </div>
                       );
-                    }
-                    
-                    return (
-                      <div className="w-full h-full flex items-center justify-center text-white text-sm font-semibold bg-gray-600">
-                        {initials}
-                      </div>
-                    );
-                  })()}
+                    })()}
+                  </div>
+                  
+       {/* VIP Lion Badge - show if the post author is VIP */}
+       {(() => {
+         // Check if current user is VIP
+         if (isSelf && vipStatus?.isVip) {
+           return <VIPBadge size="md" className="absolute -top-1 -right-1" isVip={vipStatus.isVip} vipEndDate={vipStatus.vipEndDate} />;
+         }
+
+         // Check if post author is VIP
+         if (!isSelf && p?.user?.isVip) {
+           return <VIPBadge size="md" className="absolute -top-1 -right-1" isVip={p.user.isVip} vipEndDate={p.user.vipEndDate} />;
+         }
+
+         return null;
+       })()}
                 </div>
                 <div 
                   className="flex-1 cursor-pointer" 
@@ -508,28 +540,32 @@ export default function PostsCard({ type }: { type?: "video" | "image" | "text" 
             )}
             
             {postType == "image" && src && (
-              <img
-                src={src}
-                alt={p?.content || "post image"}
-                className="w-full max-h-[480px] object-contain rounded"
-                onError={(e) => {
-                  const img = e.currentTarget as HTMLImageElement & { dataset: any };
-                  if (!img.dataset.fallback1 && pathUrlPrimary) {
-                    img.dataset.fallback1 = "1";
-                    img.src = pathUrlPrimary;
-                    return;
-                  }
-                  if (!img.dataset.fallback2 && queryUrlFallback) {
-                    img.dataset.fallback2 = "1";
-                    img.src = queryUrlFallback;
-                    return;
-                  }
-                  if (!img.dataset.fallback3 && pathUrlFallback) {
-                    img.dataset.fallback3 = "1";
-                    img.src = pathUrlFallback;
-                  }
-                }}
-              />
+              <div className="w-full max-h-[480px] relative rounded overflow-hidden">
+                <Image
+                  src={src}
+                  alt={p?.content || "post image"}
+                  width={800}
+                  height={480}
+                  className="w-full h-auto object-contain"
+                  onError={(e) => {
+                    const img = e.currentTarget as HTMLImageElement & { dataset: any };
+                    if (!img.dataset.fallback1 && pathUrlPrimary) {
+                      img.dataset.fallback1 = "1";
+                      img.src = pathUrlPrimary;
+                      return;
+                    }
+                    if (!img.dataset.fallback2 && queryUrlFallback) {
+                      img.dataset.fallback2 = "1";
+                      img.src = queryUrlFallback;
+                      return;
+                    }
+                    if (!img.dataset.fallback3 && pathUrlFallback) {
+                      img.dataset.fallback3 = "1";
+                      img.src = pathUrlFallback;
+                    }
+                  }}
+                />
+              </div>
             )}
             
             {postType == "video" && src && (
@@ -596,7 +632,7 @@ export default function PostsCard({ type }: { type?: "video" | "image" | "text" 
                     postid: localPid,
                     token: token
                   } as any)).unwrap();
-                } catch (err) {
+                } catch {
                   setUi((prev) => ({
                     ...prev,
                     [localPid]: {
@@ -651,9 +687,6 @@ export default function PostsCard({ type }: { type?: "video" | "image" | "text" 
                     });
                 }
               }}
-              onMore={() => {
-                console.debug("more clicked", p?.id || p?.postid);
-              }}
             />
             
             {uiOpen && (
@@ -665,24 +698,42 @@ export default function PostsCard({ type }: { type?: "video" | "image" | "text" 
                     {uiComments && uiComments.length > 0 ? (
                       uiComments.map((c: any, i: number) => (
                         <div key={i} className="text-sm text-gray-200 flex items-start gap-2">
-                          <div className="flex-shrink-0 w-6 h-6 rounded-full bg-gray-600 flex items-center justify-center text-xs">
-                            {c?.commentuserphoto ? (
-                              <img 
-                                src={c.commentuserphoto} 
-                                alt="avatar" 
-                                className="w-full h-full rounded-full object-cover"
-                                onError={(e) => {
-                                  e.currentTarget.style.display = 'none';
-                                  const nextElement = e.currentTarget.nextElementSibling as HTMLElement;
-                                  if (nextElement) {
-                                    nextElement.style.display = 'block';
-                                  }
-                                }}
-                              />
-                            ) : null}
-                            <span style={{display: c?.commentuserphoto ? 'none' : 'block'}}>
+                          <div className="relative flex-shrink-0 w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center text-xs">
+                            {(() => {
+                              // Use the same logic as post author profile picture
+                              const profileImage = c?.commentuserphoto || c?.photo || c?.photolink || c?.photoLink || c?.profileImage || c?.avatar || c?.image;
+                              
+                              if (profileImage && profileImage.trim() && profileImage !== 'null' && profileImage !== 'undefined') {
+                                return (
+                                  <img
+                                    alt="Profile picture"
+                                    src={profileImage}
+                                    className="object-cover w-full h-full rounded-full"
+                                    onError={(e) => {
+                                      const target = e.currentTarget as HTMLImageElement;
+                                      target.style.display = 'none';
+                                      const nextElement = target.nextElementSibling as HTMLElement;
+                                      if (nextElement) {
+                                        nextElement.style.setProperty('display', 'flex');
+                                      }
+                                    }}
+                                  />
+                                );
+                              }
+                              
+                              return null;
+                            })()}
+                            <span style={{display: 'flex'}}>
                               {(c?.commentusername || c?.username || 'U').charAt(0).toUpperCase()}
                             </span>
+                            
+                            {/* VIP Badge for commenter */}
+                            {(() => {
+                              const isVipActive = c?.isVip && c?.vipEndDate && new Date(c.vipEndDate) > new Date();
+                              return isVipActive && (
+                                <VIPBadge size="lg" className="absolute -top-1 -right-1" isVip={c.isVip} vipEndDate={c.vipEndDate} />
+                              );
+                            })()}
                           </div>
                           <div className="flex-1">
                             <div className="flex items-center gap-2">
@@ -744,7 +795,6 @@ export default function PostsCard({ type }: { type?: "video" | "image" | "text" 
                             (dispatch(postcomment({ userid: uid, postid: localPid, content: text, token: token } as any)) as any)
                               .unwrap()
                               .then((res: any) => {
-                                console.log('Comment response:', res);
                                 // Refresh comments after successful post
                                 dispatch(getpostcomment({ postid: localPid } as any))
                                   .unwrap()

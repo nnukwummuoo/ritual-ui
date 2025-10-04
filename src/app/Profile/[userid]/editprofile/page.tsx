@@ -1071,15 +1071,51 @@ const EditProfile: React.FC = () => {
                 {/* Delete Profile Picture Button */}
                 {profileimg && profileimg !== profileIcon.src && (
                   <button
-                    onClick={() => {
-                      setProfileimg(profileIcon.src);
-                      setUpdatePhoto(undefined);
-                      setDeletePhotolink(profileimg);
-                      setErrorMessage("");
+                    onClick={async () => {
+                      try {
+                        setLoading(true);
+                        setErrorMessage("");
+                        
+                        // Get user data for the API call
+                        const localData = getLocalStorageData();
+                        const effectiveUserId = loggedInUserId || localData.userID || routeUserId;
+                        
+                        // Immediately update UI
+                        setProfileimg(profileIcon.src);
+                        setUpdatePhoto(undefined);
+                        setDeletePhotolink(profileimg);
+                        
+                        // Call API to delete profile picture immediately
+                        const deleteResponse = await axios.post(`${API_URL}/editprofile`, {
+                          userid: effectiveUserId,
+                          deletePhotolink: profileimg,
+                          deletePhotoID: deletePhotoID
+                        });
+                        
+                        if (deleteResponse.data.ok) {
+                          console.log("Profile picture deleted from database successfully");
+                          setSuccessMessage("Profile picture deleted successfully!");
+                          
+                          // Clear the delete fields since deletion is complete
+                          setDeletePhotolink(undefined);
+                          setDeletePhotoID(undefined);
+                        } else {
+                          throw new Error(deleteResponse.data.message || "Failed to delete profile picture");
+                        }
+                      } catch (error) {
+                        console.error("Error deleting profile picture:", error);
+                        setErrorMessage("Failed to delete profile picture. Please try again.");
+                        
+                        // Revert UI changes if deletion failed
+                        setProfileimg(profileimg);
+                      } finally {
+                        setLoading(false);
+                      }
                     }}
-                    className="mt-2 bg-red-600 hover:bg-red-700 text-white text-xs py-1 px-3 rounded-full transition-colors"
+                    className="mt-2 bg-red-600 hover:bg-red-700 text-white text-xs py-1 px-3 rounded-full transition-colors disabled:opacity-50"
+                    disabled={loading}
                   >
-                    Delete Profile Picture
+                    {loading ? "Deleting..." : "Delete Profile Picture"}
                   </button>
                 )}
 

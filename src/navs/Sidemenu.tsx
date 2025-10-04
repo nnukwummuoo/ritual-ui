@@ -12,6 +12,7 @@ import { useUserId } from "@/lib/hooks/useUserId";
 import { useSelector, useDispatch } from "react-redux";
 import type { RootState, AppDispatch } from "@/store/store";
 import { getprofile } from "@/store/profile";
+import { checkVipStatus } from "@/store/vip";
 
 const Sidemenu = () => {
   // 🔒 CRITICAL: This component ALWAYS uses current user data
@@ -34,6 +35,13 @@ const Sidemenu = () => {
   // Fallback to localStorage if Redux doesn't have the user ID
   const [currentUserId, setCurrentUserId] = React.useState(reduxUserId || '');
   
+  // Get VIP status from VIP store (more reliable)
+  const vipStatus = useSelector((state: RootState) => state.vip.vipStatus);
+  const isVip = vipStatus?.isVip || false;
+  const vipStartDate = vipStatus?.vipStartDate;
+  const vipEndDate = vipStatus?.vipEndDate;
+  
+  
   // Get user ID from localStorage if Redux doesn't have it
   React.useEffect(() => {
     if (!reduxUserId && typeof window !== 'undefined') {
@@ -53,6 +61,8 @@ const Sidemenu = () => {
       setCurrentUserId(reduxUserId);
     }
   }, [reduxUserId]);
+
+  // VIP status is now loaded from login data in register state
   
   // 🔒 CRITICAL: Ensure current user profile is always loaded
   // This prevents the side menu from showing "User" fallback
@@ -74,6 +84,8 @@ const Sidemenu = () => {
       
       if (token) {
         dispatch(getprofile({ userid: currentUserId, token }));
+        // Also check VIP status
+        dispatch(checkVipStatus(currentUserId));
       }
     }
   }, [currentUserId, profile.firstname, profile.status, dispatch]);
@@ -120,11 +132,13 @@ const Sidemenu = () => {
 
   // Enhanced fallback mechanism for cross-browser compatibility
   let firstname = "User";
+  let lastname = "";
   let gold_balance = 0;
   let admin = false;
   
   if (isCurrentUserProfile && profile?.firstname) {
     firstname = profile.firstname;
+    lastname = profile.lastname || "";
     gold_balance = Number(profile.balance) || 0;
     admin = profile.admin || false;
   } else {
@@ -136,6 +150,7 @@ const Sidemenu = () => {
           const data = JSON.parse(raw);
           if (data?.firstname && data?.userID === currentUserId) {
             firstname = data.firstname;
+            lastname = data.lastname || "";
           } else {
             console.log("❌ [Sidemenu] localStorage fallback failed:", {
               hasFirstname: !!data?.firstname,
@@ -240,9 +255,13 @@ const Sidemenu = () => {
                 <div className="flex text-xs text-blue-200 mb-3 w-full">
                   <Profile
                     src={profile.photolink || ""}
-                    name={firstname}
+                    name={`${firstname} ${lastname}`.trim()}
+                    firstname={firstname}
+                    lastname={lastname}
                     url={userId ? `/Profile/${userId}` : `/Profile`}
                     gold_balance={gold_balance}
+                    isVip={isVip || false}
+                    vipEndDate={vipEndDate}
                     onClick={() => handleMenubar()}
                   />
                   {/* 🔒 SAFETY: This Profile component ALWAYS shows current user's data */}
@@ -257,7 +276,10 @@ const Sidemenu = () => {
                   <FaCoins /> <span>Get More Golds</span>
                 </button>
 
-                <button className="cstm-boder w-full rounded-lg py-3 text-sm font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent bg-inherit flex gap-2 items-center justify-center transition-transform duration-300 hover:scale-105">
+                <button 
+                  className="cstm-boder w-full rounded-lg py-3 text-sm font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent bg-inherit flex gap-2 items-center justify-center transition-transform duration-300 hover:scale-105"
+                  onClick={() => router.push("/vip")}
+                >
                   <span>Upgrade Account</span>
                 </button>
               </div>
