@@ -7,7 +7,7 @@ import PacmanLoader from "react-spinners/ClockLoader";
 import Checklist from "../../../components/checklist";
 import Ruleslist from "../../../components/ruleslist";
 import { useSelector, useDispatch } from "react-redux";
-import { post_exclusive_docs } from "@/store/modelSlice";
+import { post_exclusive_docs } from "@/store/creatorSlice";
 import '@/styles/VerificationForm.css';
 import { formVerificationConstants } from "@/constants/formVerificationConstants";
 import HeaderBackNav from "@/navs/HeaderBackNav";
@@ -18,7 +18,7 @@ import { toast, ToastContainer } from "material-react-toastify";
 export default function VerifiedUserForm() {
   const dispatch: AppDispatch = useDispatch();
   const router = useRouter();
-  const userId = useSelector((state: RootState) => state.register.userID); // Fetch userId from Redux
+  const userId = useSelector((state: RootState) => state.profile.userId); // Fetch userId from Redux
   const [loading, setLoading] = useState(false);
   const [color] = useState("#d49115");
   const [step, setStep] = useState(1);

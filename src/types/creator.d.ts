@@ -34,6 +34,9 @@ export interface CreatorState {
     exclusive_ids_stats: string;
     exclusive_docs_stats: string;
     delete_docs_stats: string;
+    getdocumentstatus: string;
+    documents: any[],
+    rejectdocumentstatus: string
 }  
 
 interface CreateCreatorPayload {

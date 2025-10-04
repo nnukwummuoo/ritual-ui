@@ -48,6 +48,9 @@ const initialState: CreatorState = {
   exclusive_ids_stats: "idle",
   exclusive_docs_stats: "idle",
   delete_docs_stats: "idle",
+  getdocumentstatus: "idle", // New: for getdocument thunk
+  documents: [] as any[], // New: to store fetched documents
+  rejectdocumentstatus: "idle", // New: for rejectdocument thunk
 };
 
 export const createcreator = createAsyncThunk<any, CreateCreatorPayload>(
@@ -234,9 +237,9 @@ export const post_exclusive_docs = createAsyncThunk<any, PostExclusiveDocsPayloa
       };
 
       formData.append("data", JSON.stringify(postData));
-      formData.append("token", data.token);
-      formData.append("idPhotofile", data.idPhotofile || "");
-      formData.append("holdingIdPhotofile", data.holdingIdPhotofile || "");
+      //formData.append("token", data.token);
+      formData.append("idPhotofile", data.idPhotofile);
+      formData.append("holdingIdPhotofile", data.holdingIdPhotofile);
 
       console.log("I am about to create formData", [...formData.entries()]);
 
@@ -577,6 +580,36 @@ export const remove_Crush = createAsyncThunk(
   }
 );
 
+// New thunk: getdocument (GET /getdocument/:userid)
+export const getdocument = createAsyncThunk("creator/getdocument", async () => {
+  try {
+    let response = await axios.get(`${URL}/getdocument`);
+
+    return response.data;
+  } catch (err: any) {
+    if (!err.response?.data?.message) {
+      throw "Check internet connection";
+    }
+    throw err.response.data.message;
+  }
+});
+
+// New thunk: rejectdocument (POST /rejectdocument, body: { userid, docid })
+export const rejectdocument = createAsyncThunk<any, { userid: string; docid: string }>(
+  "creator/rejectdocument",
+  async (data) => {
+    try {
+      let response = await axios.post(`${URL}/rejectdocument`, data);
+      return response.data;
+    } catch (err: any) {
+      if (!err.response?.data?.message) {
+        throw "check internet connection";
+      }
+      throw err.response.data.message;
+    }
+  }
+);
+
 const creator = createSlice({
   name: "creator",
   initialState,
@@ -600,6 +633,7 @@ const creator = createSlice({
       state.deletmodeImage_stats = action.payload;
       state.exclusive_ids_stats = action.payload;
       state.delete_docs_stats = action.payload;
+      state.getdocumentstatus = action.payload;
     },
   },
   extraReducers(builder) {
@@ -903,6 +937,37 @@ const creator = createSlice({
       })
       .addCase(delete_exclusive_ids.rejected, (state, action) => {
         state.delete_docs_stats = "failed";
+      })
+      .addCase(getdocument.pending, (state) => {
+        state.getdocumentstatus = "loading";
+      })
+      .addCase(getdocument.fulfilled, (state, action) => {
+        state.getdocumentstatus = "succeeded";
+        state.documents = action.payload.documents || [];
+        state.message = action.payload.message ?? state.message;
+      })
+      .addCase(getdocument.rejected, (state, action) => {
+        state.getdocumentstatus = "failed";
+        state.message = action.error.message ?? "Check internet connection";
+      })
+      .addCase(rejectdocument.pending, (state) => {
+        state.rejectdocumentstatus = "loading";
+      })
+      .addCase(rejectdocument.fulfilled, (state, action) => {
+        state.rejectdocumentstatus = "succeeded";
+        state.message = action.payload.message ?? state.message;
+        if (action.payload.rejectedDocId) {
+          let index = state.Listofunverifiedhost.findIndex((value) => {
+            return value._id === action.payload.rejectedDocId; // Assuming _id is the doc ID
+          });
+          if (index !== -1) {
+            state.Listofunverifiedhost.splice(index, 1);
+          }
+        }
+      })
+      .addCase(rejectdocument.rejected, (state, action) => {
+        state.rejectdocumentstatus = "failed";
+        state.message = action.error.message ?? "Check internet connection";
       });
   },
 });
