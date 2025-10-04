@@ -129,7 +129,8 @@ export default function PostsCard({ type }: { type?: "video" | "image" | "text" 
       }
     } catch {}
     
-    dispatch(getallpost({} as any));
+    // Use fetchposts() instead of getallpost() to ensure userid is passed for blocking filter
+    fetchFeed();
   }, [dispatch]);
 
   useEffect(() => {
@@ -141,7 +142,6 @@ export default function PostsCard({ type }: { type?: "video" | "image" | "text" 
   }, [posts]);
 
   const fetchFeed = async () => { 
-
     try {
       const resPosts = await fetchposts();
       if (resPosts?.post && Array.isArray(resPosts.post)) {
@@ -207,6 +207,9 @@ export default function PostsCard({ type }: { type?: "video" | "image" | "text" 
         
         setPostResolve(postsWithLikesAndComments);
         localStorage.setItem('feedPosts', JSON.stringify(postsWithLikesAndComments));
+        
+        // Also update Redux store with filtered posts
+        dispatch(hydrateFromCache(postsWithLikesAndComments));
       }
     } catch(error) {
       console.error(error);

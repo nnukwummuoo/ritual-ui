@@ -171,13 +171,29 @@ const AboutPage = () => {
           {status === "succeeded" && (
             <>
               <div className="relative inline-block mb-4">
-                <Image
-                  src="/icons/profile.png"
-                  alt="Profile picture"
-                  width={120}
-                  height={120}
-                  className="rounded-full object-cover"
-                />
+                {(() => {
+                  const profileImage = profileData?.photolink || "";
+                  const userName = `${firstname || ""} ${lastname || ""}`.trim();
+                  const initials = userName.split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2) || "?";
+                  
+                  if (profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined") {
+                    return (
+                      <Image
+                        src={profileImage}
+                        alt="Profile picture"
+                        width={120}
+                        height={120}
+                        className="rounded-full object-cover"
+                      />
+                    );
+                  }
+                  
+                  return (
+                    <div className="w-[120px] h-[120px] rounded-full bg-gray-600 flex items-center justify-center text-white text-4xl font-bold">
+                      {initials}
+                    </div>
+                  );
+                })()}
                 {/* Verification Badge */}
                 {/* <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
                   <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">

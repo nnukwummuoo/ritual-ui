@@ -1352,7 +1352,7 @@ export const Chat = () => {
       </div>
 
       {/* Messages Area - Clean Design */}
-      <div ref={msgListref} className="flex-1 overflow-y-auto p-3 sm:p-4 bg-transparent">
+      <div ref={msgListref} className="flex-1 overflow-y-auto p-3 sm:p-4 bg-transparent pb-20">
         {loading ? (
           <div className="space-y-4 w-full max-w-4xl mx-auto">
             <div className="flex justify-start mb-4 w-full">
@@ -1376,7 +1376,7 @@ export const Chat = () => {
             </div>
           </div>
         ) : (
-          <div className="space-y-4 w-full max-w-4xl mx-auto">
+          <div className="space-y-4 w-full max-w-4xl mx-auto pb-4">
             {messagelist()}
           </div>
         )}
@@ -1439,7 +1439,7 @@ export const Chat = () => {
       )}
 
       {/* Input Bar - Mobile Optimized */}
-      <div className="flex items-center gap-2 sm:gap-3 p-3 sm:p-4 bg-gray-800 border-t border-blue-700/30 sticky bottom-0 z-50 flex-shrink-0 pb-safe">
+      <div className="flex items-center gap-2 sm:gap-3 p-3 sm:p-4 bg-gray-800 border-t border-blue-700/30 sticky bottom-0 z-50 flex-shrink-0 pb-safe shadow-lg">
         <input
           type="file"
           ref={fileInputRef}
