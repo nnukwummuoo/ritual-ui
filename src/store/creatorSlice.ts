@@ -217,10 +217,7 @@ export const post_exclusive_docs = createAsyncThunk<any, PostExclusiveDocsPayloa
   "creator/post_exclusive_docs",
   async (data: any) => {
     try {
-      // Send data as a FormData
       let formData = new FormData();
-
-      // Prepare the post form data
       const postData = {
         userid: data.userid,
         firstname: data.firstName,
@@ -231,17 +228,22 @@ export const post_exclusive_docs = createAsyncThunk<any, PostExclusiveDocsPayloa
         city: data.city,
         address: data.address,
         documentType: data.documentType,
-        // holdingIdPhotofile: data.holdingIdPhotofile,
-        // idPhotofile: data.idPhotofile,
         idexpire: data.idexpire,
       };
 
       formData.append("data", JSON.stringify(postData));
-      //formData.append("token", data.token);
-      formData.append("idPhotofile", data.idPhotofile);
-      formData.append("holdingIdPhotofile", data.holdingIdPhotofile);
+      if (data.idPhotofile instanceof File) {
+        formData.append("idPhotofile", data.idPhotofile);
+      } else {
+        throw new Error("Invalid ID photo file");
+      }
+      if (data.holdingIdPhotofile instanceof File) {
+        formData.append("holdingIdPhotofile", data.holdingIdPhotofile);
+      } else {
+        throw new Error("Invalid holding ID photo file");
+      }
 
-      console.log("I am about to create formData", [...formData.entries()]);
+      console.log("FormData entries:", [...formData.entries()]);
 
       let response = await axios.put(`${URL}/postdocument`, formData, {
         headers: {
@@ -250,14 +252,14 @@ export const post_exclusive_docs = createAsyncThunk<any, PostExclusiveDocsPayloa
       });
 
       if (response.status !== 200) {
-        // Post was not successfully created
         throw "Error creating your verifying your creator";
       }
 
       return response.data;
-    } catch (err : any) {
-      if (!err.response.data.message) {
-        throw "check internet connection";
+    } catch (err: any) {
+      console.error("Error in post_exclusive_docs:", err);
+      if (!err.response?.data?.message) {
+        throw err.message || "check internet connection";
       }
       throw err.response.data.message;
     }

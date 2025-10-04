@@ -70,17 +70,15 @@ export default function AdminVerifyDocumentPage() {
           {userDocuments.map((doc: any) => (
             <div key={doc._id} className="bg-gray-800 p-6 rounded-lg shadow-lg border border-gray-700">
               {/* Header Section */}
-              <div className="flex justify-between items-center mb-4">
+              <div className="flex flex-col items-start mb-4">
                 <div>
                   <h2 className="text-xl font-semibold">{doc.firstname} {doc.lastname}</h2>
                   <p className="text-sm text-gray-400">{doc.address || "N/A"}, {doc.country || "N/A"}</p>
-                  <p className="text-xs text-gray-500">
-                    Submitted: {new Date(doc.createdAt).toLocaleString() || "24-September-2025 08:00:43"}
-                  </p>
-                  <p className="text-xs text-gray-500">model id: {doc._id || "68d33a4ab6619662747534468"}</p>
+                  <p className="text-xs text-gray-500">Submitted: {new Date(doc.createdAt).toLocaleString()}</p>
+                  <p className="text-xs text-gray-500">Creator Id: {doc._id || "N/A"}</p>
                 </div>
-                <div className="flex items-center space-x-4">
-                  <span className="px-3 py-1 bg-purple-600 rounded-full text-sm">Model Application</span>
+                <div className="flex items-center space-x-4 mt-2">
+                  <span className="px-3 py-1 bg-purple-600 rounded-full text-sm">Creator Application</span>
                   <span className="px-3 py-1 bg-green-600 rounded-full text-sm">Status: {doc.verify ? "accepted" : "pending"}</span>
                 </div>
               </div>

@@ -18,7 +18,7 @@ import { toast, ToastContainer } from "material-react-toastify";
 export default function VerifiedUserForm() {
   const dispatch: AppDispatch = useDispatch();
   const router = useRouter();
-  const userId = useSelector((state: RootState) => state.profile.userId); // Fetch userId from Redux
+  const userId = useSelector((state: RootState) => state.profile.userId);
   const [loading, setLoading] = useState(false);
   const [color] = useState("#d49115");
   const [step, setStep] = useState(1);
@@ -36,7 +36,6 @@ export default function VerifiedUserForm() {
     address: "",
     idPhotofile: null,
     holdingIdPhotofile: null,
-    //acceptTerms: false,
     userid: userId || "",
     documentType: "",
     idexpire: "",
@@ -51,13 +50,11 @@ export default function VerifiedUserForm() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type, checked, files } = e.target as any;
-    if (type === "checkbox") {
-      setFormData((prev) => ({ ...prev, [name]: checked }));
-    } else if (type === "file") {
+    if (type === "file") {
       console.log(`${name} is loaded`, files);
-      setFormData((prev) => ({ ...prev, [name]: files[0] }));
+      setFormData((prev) => ({ ...prev, [name]: files[0] })); // Store raw File object
     } else {
-      setFormData((prev) => ({ ...prev, [name]: value }));
+      setFormData((prev) => ({ ...prev, [name]: type === "checkbox" ? checked : value }));
     }
   };
 
@@ -65,14 +62,39 @@ export default function VerifiedUserForm() {
     e.preventDefault();
     console.log("formData", formData);
 
-    if (!formData.idPhotofile || !formData.holdingIdPhotofile) {
+    // Validate files
+    if (!(formData.idPhotofile instanceof File) || !(formData.holdingIdPhotofile instanceof File)) {
       toast.error("Please upload both ID photo and holding ID photo.");
       return;
     }
 
+    // Validate required fields
     if (!formData.firstName || !formData.lastName || !formData.email || !formData.dob || 
         !formData.country || !formData.city || !formData.address || !formData.documentType || !formData.idexpire) {
       toast.error("Please fill in all required fields.");
+      return;
+    }
+
+    // Validate dates
+    const today = new Date();
+    const dobDate = new Date(formData.dob);
+    const idexpireDate = new Date(formData.idexpire);
+
+    if (isNaN(dobDate.getTime())) {
+      toast.error("Invalid Date of Birth");
+      return;
+    }
+    if (isNaN(idexpireDate.getTime())) {
+      toast.error("Invalid ID Expiration Date");
+      return;
+    }
+    const minAgeDate = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate());
+    if (dobDate > minAgeDate) {
+      toast.error("You must be at least 18 years old");
+      return;
+    }
+    if (idexpireDate < today) {
+      toast.error("ID expiration date must be in the future");
       return;
     }
 
@@ -80,8 +102,8 @@ export default function VerifiedUserForm() {
     try {
       await dispatch(post_exclusive_docs({
         ...formData,
-        idPhotofile: formData.idPhotofile,
-        holdingIdPhotofile: formData.holdingIdPhotofile,
+        idPhotofile: formData.idPhotofile, // File object
+        holdingIdPhotofile: formData.holdingIdPhotofile, // File object
       })).unwrap();
       toast.success("Application submitted successfully!");
       setShowSuccessModal(true);
