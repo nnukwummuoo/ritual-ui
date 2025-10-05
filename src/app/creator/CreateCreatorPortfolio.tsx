@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import PacmanLoader from "react-spinners/PacmanLoader";
-import { useDispatch } from "react-redux";
 import { useRouter } from "next/navigation";
 import { toast, ToastContainer } from "material-react-toastify";
 import CountrySelect from "@/components/CountrySelect/CountrySelect";
@@ -16,6 +15,9 @@ import { useAuthToken } from "@/lib/hooks/useAuthToken";
 import { useUserId } from "@/lib/hooks/useUserId";
 import { createCreatorMultipart } from "@/api/creator";
 import { useAuth } from "@/lib/context/auth-context";
+import { useSelector, useDispatch } from "react-redux";
+import type { RootState, AppDispatch } from "@/store/store";
+import { getprofile } from "@/store/profile";
 
 // Appwrite imports
 import { Client, Storage } from "appwrite";
@@ -70,19 +72,23 @@ export default function CreateCreatorPortfolio() {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
+
+  // Get profile data from Redux (like side menu)
+  const profile = useSelector((state: RootState) => state.profile);
+  const reduxUserId = useSelector((state: RootState) => state.register.userID);
 
   const [loading, setLoading] = useState(false);
   const [color, setColor] = useState("#d49115");
   const [name, setname] = useState("");
   const [age, setage] = useState("18");
   const [location, setlocation] = useState("");
-  const [bodytype, setbodytype] = useState("Slim");
+  const [bodytype, setbodytype] = useState("");
   const [height, setheight] = useState("");
   const [weight, setweight] = useState("");
-  const [gender, setgender] = useState("Man");
-  const [smoke, setsmoke] = useState("Yes");
-  const [drink, setdrink] = useState("Yes");
+  const [gender, setgender] = useState("");
+  const [smoke, setsmoke] = useState("");
+  const [drink, setdrink] = useState("");
   const [pm, setpm] = useState("PM");
   const [duration, setduration] = useState("1");
   //const [days, setdays] = useState("1hour");
@@ -95,19 +101,56 @@ export default function CreateCreatorPortfolio() {
  const [photolink, setphotolink] = useState<string[]>([]);
   const [step, setStep] = useState(1);
   const totalSteps = 3;
+  const [showPriceGuide, setShowPriceGuide] = useState(false);
 
-  // 🔥 Autofill full name when session changes
-// 🔥 Autofill the name from session
-useEffect(() => {
-  console.log("🔍 Session object:", session);       // 👈 log the whole session
-  console.log("📛 Current name state:", name);     // 👈 log current state
-  console.log("➡️ session.fullName:", session?.fullName); // 👈 log just the fullname
+  // 🔥 Autofill full name from user profile (like side menu)
+  useEffect(() => {
+    const currentUserId = reduxUserId || userid;
+    
+    // Load profile if not loaded
+    if (currentUserId && (!profile.firstname || profile.status === "idle")) {
+      let token: string | undefined;
+      try {
+        const raw = localStorage.getItem("login");
+        if (raw) {
+          const data = JSON.parse(raw);
+          token = data?.refreshtoken || data?.accesstoken;
+        }
+      } catch (error) {
+        console.error("Error getting token for profile:", error);
+      }
+      
+      if (token) {
+        dispatch(getprofile({ userid: currentUserId, token }));
+      }
+    }
 
-  if (session?.fullName) {
-    console.log("✅ Setting name to:", session.fullName);
-    setname(session.fullName);
-  }
-}, [session, name]);
+    // Set name from profile data (like side menu)
+    if (profile?.firstname && profile.userId === currentUserId) {
+      const fullName = `${profile.firstname} ${profile.lastname || ""}`.trim();
+      if (fullName && (!name || name.trim() === "")) {
+        setname(fullName);
+      }
+    } else {
+      // Fallback to localStorage (like side menu)
+      try {
+        if (typeof window !== 'undefined') {
+          const raw = localStorage.getItem("login");
+          if (raw) {
+            const data = JSON.parse(raw);
+            if (data?.firstname && data?.userID === currentUserId) {
+              const fullName = `${data.firstname} ${data.lastname || ""}`.trim();
+              if (fullName && (!name || name.trim() === "")) {
+                setname(fullName);
+              }
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Error accessing localStorage for name:", error);
+      }
+    }
+  }, [profile, reduxUserId, userid, dispatch, name]);
 
 // Initialize Appwrite client & storage
 const client = new Client()
@@ -314,7 +357,8 @@ const checkuserInput = async () => {
     className="bg-black name-label"
     placeholder="Enter your full name"
     value={name}
-    onChange={(e) => setname(e.target.value)}
+    readOnly
+    style={{ cursor: 'not-allowed', opacity: 0.7 }}
   />
             </div>
 
@@ -347,8 +391,10 @@ const checkuserInput = async () => {
               <select
                 name="bodytype"
                 className="height-select"
+                value={bodytype}
                 onChange={(e) => setbodytype(e.currentTarget.value)}
               >
+                <option value="">Select body type</option>
                 <option value="Slim">Slim</option>
                 <option value="Curvy">Curvy</option>
                 <option value="Chubby">Chubby</option>
@@ -369,8 +415,10 @@ const checkuserInput = async () => {
               <select
                 id="height-select"
                 className="height-select"
+                value={height}
                 onChange={(e) => setheight(e.currentTarget.value)}
               >
+                <option value="">Select height</option>
                 {Array.from({ length: 200 }, (_, i) => i + 57).map((value) => (
                   <option key={value} value={`${value} cm`}>
                     {value} cm
@@ -387,10 +435,12 @@ const checkuserInput = async () => {
               </div>
               <select
                 className="height-select"
+                value={weight}
                 onChange={(e) => {
                   setweight(e.currentTarget.value);
                 }}
               >
+                <option value="">Select weight</option>
                 {Array.from({ length: 120 }, (_, i) => i + 40).map((value, i) => {
                   return (
                     <option
@@ -412,8 +462,10 @@ const checkuserInput = async () => {
                   id="gender"
                   name="gender"
                   className="form-select"
+                  value={gender}
                   onChange={(e) => setgender(e.currentTarget.value)}
                 >
+                  <option value="">Select gender</option>
                   <option value="Man">Man</option>
                   <option value="Woman">Woman</option>
                   <option value="Trans">Trans</option>
@@ -429,8 +481,10 @@ const checkuserInput = async () => {
                   id="smoke"
                   name="smoke"
                   className="form-select"
+                  value={smoke}
                   onChange={(e) => setsmoke(e.currentTarget.value)}
                 >
+                  <option value="">Select option</option>
                   <option value="Yes">Yes</option>
                   <option value="No">No</option>
                 </select>
@@ -444,8 +498,10 @@ const checkuserInput = async () => {
                   id="drink"
                   name="drink"
                   className="form-select"
+                  value={drink}
                   onChange={(e) => setdrink(e.currentTarget.value)}
                 >
+                  <option value="">Select option</option>
                   <option value="Yes">Yes</option>
                   <option value="No">No</option>
                 </select>
@@ -567,50 +623,44 @@ const checkuserInput = async () => {
             </div>
 
             <div className="input-container">
-              <label className="font-semibold text-slate-300">Duration</label>
-              <div className="ml-4 text-lg font-medium text-slate-300">
-                {duration} min
-              </div>
-              <div className="flex items-center justify-between mt-2">
-                <input
-                  type="range"
-                  min="1"
-                  max="30"
-                  className="slider"
-                  value={duration}
-                  onChange={(e) => setduration(e.currentTarget.value)}
-                />
-              </div>
-
-              
-            </div>
-
-            <div className="input-container">
               <div className="flex-col">
                 <label className="form-label">Choose Category</label>
                 <select
                   name="hosttype"
                   className="height-select"
+                  value={hosttype}
                   onChange={(e) => {
                     sethosttype(e.currentTarget.value);
-                    if (e.currentTarget.value === "Private show") {
+                    if (e.currentTarget.value === "Fan Call") {
                       MIN = "per minute";
                     } else {
                       MIN = "";
                     }
                   }}
                 >
+                  <option value="">Select category</option>
                   <option value={`Fan meet`}>Fan meet</option>
                   <option value={`Fan date`}>Fan date</option>
-                  <option value={`Private show`}>Fan call</option>
+                  <option value={`Fan Call`}>Fan call</option>
                 </select>
               </div>
 
-              <label className="text-slate-300">
-                Enter desired{" "}
-                {hosttype === "Private show" ? "tip " : "transport fare "}
-                amount {`${MIN} ${hosttype == "Private show" && "per minute"}`}
-              </label>
+              <div className="flex items-center gap-2">
+                <label className="text-slate-300">
+                  {hosttype === "Fan Call" 
+                    ? "Set how much fans pay per minute for your Fan Call"
+                    : "Enter transport fare fans will pay you"
+                  }
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setShowPriceGuide(true)}
+                  className="w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold hover:bg-blue-700 transition-colors"
+                  title="View recommended prices"
+                >
+                  ?
+                </button>
+              </div>
               <input
                 className="bg-black name-label"
                 type="number"
@@ -625,6 +675,23 @@ const checkuserInput = async () => {
                   setPriceValue(Number.isFinite(v) && v > 0 ? v : null);
                 }}
               ></input>
+            </div>
+
+            <div className="input-container">
+              <label className="font-semibold text-slate-300">Duration</label>
+              <div className="ml-4 text-lg font-medium text-slate-300">
+                {duration} min
+              </div>
+              <div className="flex items-center justify-between mt-2">
+                <input
+                  type="range"
+                  min="1"
+                  max="30"
+                  className="slider"
+                  value={duration}
+                  onChange={(e) => setduration(e.currentTarget.value)}
+                />
+              </div>
             </div>
 
             <div className="input-container">
@@ -846,6 +913,66 @@ const checkuserInput = async () => {
           </div>
         </div>
       </div>
+
+      {/* Price Guide Modal */}
+      {showPriceGuide && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-gray-900 rounded-lg p-6 max-w-md mx-4 relative">
+            <button
+              onClick={() => setShowPriceGuide(false)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-white text-xl"
+            >
+              ×
+            </button>
+            <h3 className="text-xl font-bold text-white mb-4">Recommended Prices</h3>
+            
+            <div className="space-y-4">
+              {/* Fan Call */}
+              <div className="bg-gray-800 p-4 rounded-lg">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center">
+                    📱
+                  </div>
+                  <h4 className="text-white font-semibold">Fan Call (online)</h4>
+                </div>
+                <p className="text-yellow-400 font-bold text-lg">10 - 120 gold / min</p>
+                <p className="text-gray-300 text-sm">(≈ $0.40 - $0.80 / min)</p>
+              </div>
+
+              {/* Fan Meet */}
+              <div className="bg-gray-800 p-4 rounded-lg">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center">
+                    🤝
+                  </div>
+                  <h4 className="text-white font-semibold">Fan Meet (in person)</h4>
+                </div>
+                <p className="text-yellow-400 font-bold text-lg">$30 - $50</p>
+                <p className="text-gray-300 text-sm">(750 - 1,250 gold)</p>
+              </div>
+
+              {/* Fan Date */}
+              <div className="bg-gray-800 p-4 rounded-lg">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center">
+                    ❤️
+                  </div>
+                  <h4 className="text-white font-semibold">Fan Date (in person)</h4>
+                </div>
+                <p className="text-yellow-400 font-bold text-lg">$50 - $100</p>
+                <p className="text-gray-300 text-sm">(1,250 - 2,500 gold)</p>
+              </div>
+            </div>
+
+            <button
+              onClick={() => setShowPriceGuide(false)}
+              className="w-full mt-6 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              Got it
+            </button>
+          </div>
+        </div>
+      )}
     </>
   );
 };

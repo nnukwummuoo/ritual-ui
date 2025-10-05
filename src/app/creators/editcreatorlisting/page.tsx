@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useEffect, useRef, useState } from "react";
@@ -21,6 +22,7 @@ import "@/styles/CreateCreatorPortfolio.css";
 import { useAuthToken } from "@/lib/hooks/useAuthToken";
 import { editCreatorMultipart } from "@/api/creator";
 import { useUserId } from "@/lib/hooks/useUserId";
+import { getprofile } from "@/store/profile";
 
 
 export default function Editcreator () {
@@ -37,6 +39,10 @@ export default function Editcreator () {
   const dispatch = useDispatch();
   const router = useRouter();
   // const user = useAuth();
+
+  // Get profile data from Redux (like side menu)
+  const profile = useSelector((state: any) => state.profile);
+  const reduxUserId = useSelector((state: any) => state.register.userID);
 
   const [loading, setLoading] = useState(false);
   const [color, setColor] = useState("#d49115");
@@ -59,6 +65,7 @@ export default function Editcreator () {
   const [photocount, setphotocount] = useState(0);
   const [step, setStep] = useState(1);
   const totalSteps = 3;
+  const [showPriceGuide, setShowPriceGuide] = useState(false);
   const [newImages, setNewImages] = useState<any[]>([]);
   const [times, setTimes] = useState<string[]>(
    []
@@ -79,6 +86,25 @@ export default function Editcreator () {
       toast.info("Open a creator page before editing", { autoClose: 2000 });
       router.push("/creators");
       return;
+    }
+
+    // Load user profile to get full name (like side menu)
+    const currentUserId = reduxUserId || userid;
+    if (currentUserId && (!profile.firstname || profile.status === "idle")) {
+      let token: string | undefined;
+      try {
+        const raw = localStorage.getItem("login");
+        if (raw) {
+          const data = JSON.parse(raw);
+          token = data?.refreshtoken || data?.accesstoken;
+        }
+      } catch (error) {
+        console.error("Error getting token for profile:", error);
+      }
+      
+      if (token) {
+        dispatch(getprofile({ userid: currentUserId, token }));
+      }
     }
 
     // Prefill once when creator is present
@@ -119,6 +145,37 @@ export default function Editcreator () {
     setTimes((prev) => (prev.length ? prev : toArray(creator.timeava)));
     setHours((prev) => (prev.length ? prev : toArray(creator.daysava)));
   }, [creator, creatorID, router]);
+
+  // 🔥 Autofill full name from user profile (like side menu)
+  useEffect(() => {
+    const currentUserId = reduxUserId || userid;
+    
+    // Set name from profile data (like side menu)
+    if (profile?.firstname && profile.userId === currentUserId) {
+      const fullName = `${profile.firstname} ${profile.lastname || ""}`.trim();
+      if (fullName && (!name || name.trim() === "")) {
+        setname(fullName);
+      }
+    } else {
+      // Fallback to localStorage (like side menu)
+      try {
+        if (typeof window !== 'undefined') {
+          const raw = localStorage.getItem("login");
+          if (raw) {
+            const data = JSON.parse(raw);
+            if (data?.firstname && data?.userID === currentUserId) {
+              const fullName = `${data.firstname} ${data.lastname || ""}`.trim();
+              if (fullName && (!name || name.trim() === "")) {
+                setname(fullName);
+              }
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Error accessing localStorage for name:", error);
+      }
+    }
+  }, [profile, reduxUserId, userid, name]);
 
   // useEffect(() => {
   //   if (!login) {
@@ -161,8 +218,8 @@ export default function Editcreator () {
       setdisablebut(true);
       setLoading(true);
       const data = {
-        userid,
-        creatorid: creatorID,
+        userId: userid, 
+        creatorId: creatorID, 
         name,
         age,
         location,
@@ -179,7 +236,7 @@ export default function Editcreator () {
         timeava: times.length > 0 ? times : creator?.timeava || [],
         daysava: hours.length > 0 ? hours : creator?.daysava || [],
         hosttype,
-        hostid:userid
+        hostid: userid
       };
       const doc1 = newImages[0];
       const doc2 = newImages[1];
@@ -238,6 +295,7 @@ export default function Editcreator () {
                 value={name}
                 type={"text"}
                 onChange={({target}:any)=>setname(target.value)}
+                readOnly={true}
               />
             </div>
             <div className="input-container">
@@ -468,6 +526,44 @@ export default function Editcreator () {
               </div>
             </div>
             <div className="input-container">
+              <div className="flex-col">
+                <label className="form-label">Choose Category</label>
+                <select
+                  name="hosttype"
+                  className="height-select"
+                  value={hosttype}
+                  onChange={(e) => sethosttype(e.currentTarget.value)}
+                >
+                  <option value="">Select</option>
+                  <option value="Fan meet">Fan meet</option>
+                  <option value="Fan date">Fan date</option>
+                  <option value="Fan Call">Fan Call</option>
+                </select>
+              </div>
+              <div className="flex items-center gap-2">
+                <label className="text-slate-300">
+                  {hosttype === "Fan Call" 
+                    ? "Set how much fans pay per minute for your Fan Call"
+                    : "Enter transport fare fans will pay you"
+                  }
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setShowPriceGuide(true)}
+                  className="w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold hover:bg-blue-700 transition-colors"
+                  title="View recommended prices"
+                >
+                  ?
+                </button>
+              </div>
+              <input
+                className="bg-black name-label"
+                type="number"
+                placeholder={price}
+                onInput={(e) => setprice(e.currentTarget.value)}
+              />
+            </div>
+            <div className="input-container">
               <label className="font-semibold text-slate-300">Duration</label>
               <div className="ml-4 text-lg font-medium text-slate-300">
                 {duration} min
@@ -495,33 +591,6 @@ export default function Editcreator () {
                   <option value={`${duration}day`}>{duration}DAY</option>
                 </select>
               </div>
-            </div>
-            <div className="input-container">
-              <div className="flex-col">
-                <label className="form-label">Choose Category</label>
-                <select
-                  name="hosttype"
-                  className="height-select"
-                  value={hosttype}
-                  onChange={(e) => sethosttype(e.currentTarget.value)}
-                >
-                  <option value="">Select</option>
-                  <option value="Fan meet">Fan meet</option>
-                  <option value="Fan date">Fan date</option>
-                  <option value="Private show">Private show</option>
-                </select>
-              </div>
-              <label className="text-slate-300">
-                Enter desired{" "}
-                {hosttype === "Private show" ? "tip " : "transport fare "}amount{" "}
-                {hosttype === "Private show" && "per minute"}
-              </label>
-              <input
-                className="bg-black name-label"
-                type="number"
-                placeholder={price}
-                onInput={(e) => setprice(e.currentTarget.value)}
-              />
             </div>
             <div className="input-container">
               <label className="mb-2 font-medium text-slate-300">
@@ -669,11 +738,71 @@ export default function Editcreator () {
           </div>
         </div>
       </div>
+
+      {/* Price Guide Modal */}
+      {showPriceGuide && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-gray-900 rounded-lg p-6 max-w-md mx-4 relative">
+            <button
+              onClick={() => setShowPriceGuide(false)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-white text-xl"
+            >
+              ×
+            </button>
+            <h3 className="text-xl font-bold text-white mb-4">Recommended Prices</h3>
+            
+            <div className="space-y-4">
+              {/* Fan Call */}
+              <div className="bg-gray-800 p-4 rounded-lg">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center">
+                    📱
+                  </div>
+                  <h4 className="text-white font-semibold">Fan Call (online)</h4>
+                </div>
+                <p className="text-yellow-400 font-bold text-lg">10 - 120 gold / min</p>
+                <p className="text-gray-300 text-sm">(≈ $0.40 - $0.80 / min)</p>
+              </div>
+
+              {/* Fan Meet */}
+              <div className="bg-gray-800 p-4 rounded-lg">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center">
+                    🤝
+                  </div>
+                  <h4 className="text-white font-semibold">Fan Meet (in person)</h4>
+                </div>
+                <p className="text-yellow-400 font-bold text-lg">$30 - $50</p>
+                <p className="text-gray-300 text-sm">(750 - 1,250 gold)</p>
+              </div>
+
+              {/* Fan Date */}
+              <div className="bg-gray-800 p-4 rounded-lg">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center">
+                    ❤️
+                  </div>
+                  <h4 className="text-white font-semibold">Fan Date (in person)</h4>
+                </div>
+                <p className="text-yellow-400 font-bold text-lg">$50 - $100</p>
+                <p className="text-gray-300 text-sm">(1,250 - 2,500 gold)</p>
+              </div>
+            </div>
+
+            <button
+              onClick={() => setShowPriceGuide(false)}
+              className="w-full mt-6 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              Got it
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
-const TextInput = ({ label, name, value, onChange, type = "text" }: any): any => (
+const TextInput = ({ label, name, value, onChange, type = "text", readOnly = false }: any): any => (
   <div className="mb-4">
     <label htmlFor={name} className="block text-sm font-medium mb-2">
       {label}
@@ -686,6 +815,8 @@ const TextInput = ({ label, name, value, onChange, type = "text" }: any): any =>
         onChange={onChange}
         rows={4}
         className="w-full p-3 border border-gray-300 rounded-md focus:outline-none bg-black text-white"
+        readOnly={readOnly}
+        style={readOnly ? { cursor: 'not-allowed', opacity: 0.7 } : {}}
       ></textarea>
     ) : (
       <input
@@ -693,9 +824,11 @@ const TextInput = ({ label, name, value, onChange, type = "text" }: any): any =>
         name={name}
         type={type}
         value={value}
-          onChange={onChange}
-          placeholder={"Enter Your "+label}
+        onChange={onChange}
+        placeholder={"Enter Your "+label}
         className="w-full p-3 border border-gray-300 rounded-md focus:outline-none bg-slate-800 text-white"
+        readOnly={readOnly}
+        style={readOnly ? { cursor: 'not-allowed', opacity: 0.7 } : {}}
       />
     )}
   </div>
