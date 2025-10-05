@@ -63,7 +63,7 @@ async function compressImage(file: File, opts?: { maxWidth?: number; maxHeight?:
   }
 }
 
-export default function CreateCreatorListing() {
+export default function CreateCreatorPortfolio() {
   const { session } = useAuth();
   const userid = session?._id ?? useUserId();
   const token = useAuthToken() || session?.token;
