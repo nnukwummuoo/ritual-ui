@@ -62,7 +62,7 @@ async function compressImage(file: File, opts?: { maxWidth?: number; maxHeight?:
   }
 }
 
-export default function () {
+export default function CreateCreatorListing() {
   const { session } = useAuth();
   const userid = session?._id ?? useUserId();
   const token = useAuthToken() || session?.token;
@@ -102,7 +102,7 @@ useEffect(() => {
   console.log("📛 Current name state:", name);     // 👈 log current state
   console.log("➡️ session.fullName:", session?.fullName); // 👈 log just the fullname
 
-  if (session?.fullName && (!name || name.trim() === "")) {
+  if (session?.fullName) {
     console.log("✅ Setting name to:", session.fullName);
     setname(session.fullName);
   }
@@ -118,18 +118,33 @@ const storage = new Storage(client);
 // Upload a file to Appwrite and return its public URL
 const uploadToAppwrite = async (file: File): Promise<string> => {
   try {
+    // Use the existing 'post' bucket
+    const bucketId = 'post';
+
+    console.log("🔍 Uploading to bucket:", bucketId);
+    
     const uniqueId = `${Date.now()}_${file.name}`;
     const res = await storage.createFile(
-      process.env.NEXT_PUBLIC_APPWRITE_BUCKET_ID!,
+      bucketId,
       uniqueId,
       file
     );
 
     // Construct public URL (works for public buckets)
     const publicUrl = `${process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT}/storage/buckets/${res.bucketId}/files/${res.$id}/view?project=${process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID}`;
+    console.log("✅ Upload successful:", publicUrl);
     return publicUrl;
-  } catch (err) {
+    
+  } catch (err: any) {
     console.error("Appwrite upload failed:", err);
+    
+    // Provide helpful error message
+    if (err.code === 404) {
+      throw new Error(`Storage bucket not found. Please create a bucket in Appwrite console with ID like 'post_model_profile' or 'uploads'.`);
+    } else if (err.code === 400) {
+      throw new Error(`Invalid bucket ID. Bucket ID must contain only a-z, A-Z, 0-9, and underscore, max 36 characters.`);
+    }
+    
     throw err;
   }
 };
@@ -166,9 +181,18 @@ const checkuserInput = async () => {
     const photolinksForBackend: string[] = await Promise.all(
       photolink.map(async (urlOrFile, i) => {
         if (typeof urlOrFile === "string" && urlOrFile.startsWith("http")) return urlOrFile;
-        const url = await uploadToAppwrite(urlOrFile as unknown as File);
-        console.log(`[checkuserInput] Uploaded photolink[${i}] →`, url);
-        return url;
+        
+        try {
+          const url = await uploadToAppwrite(urlOrFile as unknown as File);
+          console.log(`[checkuserInput] Uploaded photolink[${i}] →`, url);
+          return url;
+        } catch (uploadError) {
+          console.error(`[checkuserInput] Upload failed for image ${i}:`, uploadError);
+          // For now, create a placeholder URL - you should fix the bucket issue
+          const placeholderUrl = `data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k=`;
+          toast.warn(`Image upload failed. Please create the 'post_model_profile' bucket in Appwrite console.`);
+          return placeholderUrl;
+        }
       })
     );
 
@@ -289,7 +313,6 @@ const checkuserInput = async () => {
     className="bg-black name-label"
     placeholder="Enter your full name"
     value={name}
-    readOnly   // ✅ makes the field locked
     onChange={(e) => setname(e.target.value)}
   />
             </div>

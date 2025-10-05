@@ -45,6 +45,7 @@ import "react-loading-skeleton/dist/skeleton.css";
 import "react-awesome-slider/dist/styles.css";
 import { AppDispatch } from "@/store/store";
 import { useUserId } from "@/lib/hooks/useUserId";
+import { useAuth } from "@/lib/context/auth-context";
 
 
 // Types
@@ -71,10 +72,13 @@ export default function Creatorbyid () {
     const dispatch = useDispatch<AppDispatch>();
 
     // Redux selectors
-  const userid = useUserId();
+  const useridFromHook = useUserId();
+  const { session } = useAuth();
+  const userid = useridFromHook || session?._id;
   const Mycreator = useSelector((state: RootState) => state.profile.creatorID);
   const login = useSelector((state: RootState) => state.register.logedin);
   const token = useSelector((state: RootState) => state.register.refreshtoken);
+  const reduxUserId = useSelector((state: RootState) => state.register.userID);
   const message = useSelector((state: RootState) => state.creator.message);
   const creatorbyidstatus = useSelector(
     (state: RootState) => state.creator.creatorbyidstatus
@@ -142,10 +146,10 @@ export default function Creatorbyid () {
 
 
   useEffect(() => {
-    // if (!login) {
-    //   window.location.href = "/";
-    // }
-    if (!userid) return;
+
+    if (!userid || !Creator[0]) {
+      return;
+    }
 
     if (creatorbyidstatus !== "loading") {
       dispatch(
@@ -165,7 +169,7 @@ export default function Creatorbyid () {
         })
       );
     }
-  }, [userid]);
+  }, [userid, Creator[0]]);
 
   useEffect(() => {
     if (creatorbyidstatus === "succeeded") {
@@ -192,6 +196,7 @@ export default function Creatorbyid () {
     }
 
     if (creatorbyidstatus === "failed") {
+      setLoading(false);
       dispatch(changecreatorstatus("idle"));
     }
   }, [creatorbyidstatus]);
@@ -503,7 +508,7 @@ export default function Creatorbyid () {
   };
 
 
-  if (!loading&&creator.userid&&!creator.hosttype&&!creator.price){
+  if (!loading && creator?.userid && !creator?.hosttype && !creator?.price){
       const tst=toast.loading("Curating your creator, please wait!")
       navigate("/creators/editcreatorlisting")
       setLoading(true)
@@ -512,10 +517,52 @@ export default function Creatorbyid () {
       },5000)
   }
 
-  const psPrice = creator.price?.replace(/(GOLD)(per)/, "$1 $2");
+  const psPrice = creator?.price?.replace(/(GOLD)(per)/, "$1 $2");
   const fmtPSPrice = psPrice?.includes("per minute")
     ? psPrice
     : `${psPrice} per minute`;
+  // Don't render if creator data is not available or still loading
+  if (loading || creatorbyidstatus === "loading" || !creator || Object.keys(creator).length === 0) {
+    return (
+      <div className="pt-5 md:pt-0">
+        <SkeletonTheme baseColor="#202020" highlightColor="#444">
+          <div className="relative w-full pb-16 mx-auto overflow-auto md:max-w-md sm:ml-8 md:mt-5 md:mr-auto md:ml-24 xl:ml-42 2xl:ml-52">
+            <div className="w-full space-y-4">
+              <div className="flex justify-center">
+                <Skeleton width={300} height={300} className="rounded-lg" />
+              </div>
+              <div className="space-y-2">
+                <Skeleton height={20} />
+                <Skeleton height={20} />
+                <Skeleton height={20} />
+              </div>
+            </div>
+          </div>
+        </SkeletonTheme>
+      </div>
+    );
+  }
+
+  // Show error message if creator fetch failed
+  if (creatorbyidstatus === "failed") {
+    return (
+      <div className="pt-5 md:pt-0">
+        <div className="relative w-full pb-16 mx-auto overflow-auto md:max-w-md sm:ml-8 md:mt-5 md:mr-auto md:ml-24 xl:ml-42 2xl:ml-52">
+          <div className="flex flex-col items-center justify-center p-8 text-center">
+            <h2 className="text-xl font-bold text-red-400 mb-4">Creator Not Found</h2>
+            <p className="text-gray-400 mb-4">The creator you're looking for doesn't exist or has been removed.</p>
+            <button 
+              onClick={() => router.push('/creators')}
+              className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
+            >
+              Back to Creators
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="pt-5 md:pt-0">
       {loading && (

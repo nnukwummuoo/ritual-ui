@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import backend from "@/api/backendApi";
 
 // -----------------------------
@@ -47,18 +48,19 @@ export async function getMyCreator(params: { userid: string; token?: string }) {
   if (!userid) throw new Error("Missing userid for getMyCreator");
 
   const api = backend(token);
-  const res = await api.post("/getverifycreator", { userid }); // <-- make sure key matches backend
+  const res = await api.post("/creator", { userid }, {
+    headers: { "Content-Type": "application/json" } // <-- Fix: use JSON content type
+  });
   const data = res.data;
 
   if (data.ok && data.host) {
     // Ensure a fallback image exists
-    data.host = data.host.map(creator => ({
+    data.host = data.host.map((creator: any) => ({
       ...creator,
       displayImage: (creator.photolink && creator.photolink[0]) || "/default-image.png",
     }));
   }
 
-  console.log("[getMyCreator] Normalized response:", data);
   return data;
 }
 // -----------------------------

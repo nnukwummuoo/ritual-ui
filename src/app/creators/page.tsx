@@ -95,11 +95,18 @@ export default function CreatorPage() {
   useEffect(() => {
     const fetchCountries = async () => {
       try {
-        const response = await fetch("https://restcountries.com/v3.1/all");
+        // Use the fields parameter to get only needed data
+        const response = await fetch("https://restcountries.com/v3.1/all?fields=name,flags");
         const data = await response.json();
+        
+        // Check if data is an array
+        if (!Array.isArray(data)) {
+          throw new Error("Invalid data format from countries API");
+        }
+        
         const formattedCountries = data.map((country: any) => ({
-          name: country.name.common,
-          flag: country.flags.svg,
+          name: country.name?.common || country.name || "Unknown",
+          flag: country.flags?.svg || "../../icons/Mappamondo.svg",
         }));
 
         const countriesWithAll = [
@@ -110,7 +117,7 @@ export default function CreatorPage() {
         setDisplayedCountries(countriesWithAll);
         setCountries(countriesWithAll);
       } catch (error) {
-        console.log("Error fetching countries:", error);
+        // Use fallback to local country list
         const fallbackCountries = ["All", ...countryList].map((country) => ({
           name: country,
           flag: "../../icons/Mappamondo.svg",
@@ -136,12 +143,15 @@ export default function CreatorPage() {
         }
         setLoading(true);
         const res = await getMyCreator({ userid: user.session._id, token: user.session.token });
-        const list = [...(res?.host||[])]
-        console.log("[GET /creator] parsed list length:", list.length);
+        
+        // Handle different response formats
+        const list = Array.isArray(res?.host) ? [...res.host] : 
+                    Array.isArray(res) ? [...res] : 
+                    Array.isArray(res?.data) ? [...res.data] : [];
+        
         setMyCreators(list);
-      } catch (e) {
-        // console only, UI remains simple
-        console.error("Failed to load my creators", e);
+      } catch (e: any) {
+        setMyCreators([]);
       } finally {
         setLoading(false);
       }
