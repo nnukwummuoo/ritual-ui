@@ -8,6 +8,8 @@ export interface VipStatus {
   vipStartDate?: string;
   vipEndDate?: string;
   daysRemaining: number;
+  autoRenewal?: boolean;
+  goldBalance?: number;
 }
 
 // VIP State Interface

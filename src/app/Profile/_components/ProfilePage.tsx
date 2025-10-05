@@ -1428,7 +1428,7 @@ const PostModal = () => {
                 })()}
                 
                 {/* VIP Lion Badge */}
-                {profileOwnerVipStatus && <VIPBadge size="xxl" className="absolute top-4 right-4" isVip={profileOwnerVipStatus} vipEndDate={vipStatus?.vipEndDate} />}
+                {profileOwnerVipStatus && <VIPBadge size="xl" className="absolute -top-4 -right-4" isVip={profileOwnerVipStatus} vipEndDate={vipStatus?.vipEndDate} />}
               </div>
             </div>
           </div>
@@ -1562,7 +1562,7 @@ const PostModal = () => {
                         
                         {/* VIP Lion Badge */}
                           {(() => {
-                            return profileOwnerVipStatus && <VIPBadge size="xl" className="absolute -top-1 -right-1" isVip={profileOwnerVipStatus} vipEndDate={vipStatus?.vipEndDate} />;
+                            return profileOwnerVipStatus && <VIPBadge size="xxl" className="absolute -top-8 -right-8" isVip={profileOwnerVipStatus} vipEndDate={vipStatus?.vipEndDate} />;
                           })()}
                       </div>
                     </div>
