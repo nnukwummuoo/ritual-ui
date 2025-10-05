@@ -46,6 +46,7 @@ export default function Editcreator () {
 
   const [loading, setLoading] = useState(false);
   const [color, setColor] = useState("#d49115");
+  const [showFileSizeModal, setShowFileSizeModal] = useState(false);
   const [name, setname] = useState("");
   const [age, setage] = useState( "");
   const [location, setlocation] = useState("");
@@ -263,6 +264,13 @@ export default function Editcreator () {
 
   const handleImageUpload = (files: any) => {
     if (files?.length) {
+      // Check for files larger than 5MB
+      const oversizedFiles = Array.from(files).filter((f: any) => f.size > 5 * 1024 * 1024);
+      if (oversizedFiles.length > 0) {
+        setShowFileSizeModal(true);
+        return;
+      }
+      
       setNewImages((prev : any) => [...prev, ...files]);
       setphotocount((prev) => prev + files?.lenght);
     }
@@ -578,7 +586,7 @@ export default function Editcreator () {
                   onChange={(e) => setduration(e.currentTarget.value)}
                 />
               </div>
-              <div className="mt-4">
+              {/* <div className="mt-4">
                 <select
                   name="days"
                   className="w-full p-3 mb-3 text-white bg-gray-800 focus:outline-none"
@@ -590,7 +598,7 @@ export default function Editcreator () {
                   <option value={`${duration}hour`}>{duration}HOUR</option>
                   <option value={`${duration}day`}>{duration}DAY</option>
                 </select>
-              </div>
+              </div> */}
             </div>
             <div className="input-container">
               <label className="mb-2 font-medium text-slate-300">
@@ -794,6 +802,28 @@ export default function Editcreator () {
               className="w-full mt-6 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors"
             >
               Got it
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* File Size Modal */}
+      {showFileSizeModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-gray-900 rounded-lg p-6 max-w-md mx-4 relative">
+            <div className="bg-red-600 text-white font-bold text-lg px-4 py-3 rounded-t-lg -m-6 mb-4">
+              File Too Large
+            </div>
+            <div className="bg-gray-800 rounded-lg p-4 mb-4">
+              <p className="text-white text-center">
+                Max size is 5 MB. Please trim or compress before uploading.
+              </p>
+            </div>
+            <button
+              onClick={() => setShowFileSizeModal(false)}
+              className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              OK
             </button>
           </div>
         </div>

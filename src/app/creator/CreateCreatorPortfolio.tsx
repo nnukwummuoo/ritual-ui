@@ -34,36 +34,6 @@ async function urlToFile(url: string, filename: string) {
   return new File([blob], filename, { type: blob.type });
 }
 
-// Simple client-side image compression via canvas
-async function compressImage(file: File, opts?: { maxWidth?: number; maxHeight?: number; quality?: number }): Promise<File> {
-  const { maxWidth = 1280, maxHeight = 1280, quality = 0.8 } = opts || {};
-  const img = document.createElement("img");
-  const objectUrl = URL.createObjectURL(file);
-  try {
-    await new Promise((resolve, reject) => {
-      img.onload = resolve as any;
-      img.onerror = reject as any;
-      img.src = objectUrl;
-    });
-    const canvas = document.createElement("canvas");
-    let { width, height } = img;
-    const ratio = Math.min(maxWidth / width, maxHeight / height, 1);
-    width = Math.round(width * ratio);
-    height = Math.round(height * ratio);
-    canvas.width = width;
-    canvas.height = height;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return file;
-    ctx.drawImage(img, 0, 0, width, height);
-    const blob: Blob | null = await new Promise((resolve) => canvas.toBlob(resolve, "image/jpeg", quality));
-    if (!blob) return file;
-    return new File([blob], file.name.replace(/\.[^.]+$/, ".jpg"), { type: "image/jpeg" });
-  } catch (_) {
-    return file;
-  } finally {
-    URL.revokeObjectURL(objectUrl);
-  }
-}
 
 export default function CreateCreatorPortfolio() {
   const { session } = useAuth();
@@ -80,6 +50,7 @@ export default function CreateCreatorPortfolio() {
 
   const [loading, setLoading] = useState(false);
   const [color, setColor] = useState("#d49115");
+  const [showFileSizeModal, setShowFileSizeModal] = useState(false);
   const [name, setname] = useState("");
   const [age, setage] = useState("18");
   const [location, setlocation] = useState("");
@@ -98,7 +69,7 @@ export default function CreateCreatorPortfolio() {
   const [disablebut, setdisablebut] = useState(false);
   const [hosttype, sethosttype] = useState("Fan meet");
   const [imglist, setimglist] = useState<string[]>([]);
- const [photolink, setphotolink] = useState<string[]>([]);
+  const [photolink, setphotolink] = useState<File[]>([]);
   const [step, setStep] = useState(1);
   const totalSteps = 3;
   const [showPriceGuide, setShowPriceGuide] = useState(false);
@@ -154,18 +125,27 @@ export default function CreateCreatorPortfolio() {
 
 // Initialize Appwrite client & storage
 const client = new Client()
-  .setEndpoint(process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT!)
-  .setProject(process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID!);
+  .setEndpoint(process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT || "https://cloud.appwrite.io/v1")
+  .setProject(process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID || "");
 
 const storage = new Storage(client);
 
 // Upload a file to Appwrite and return its public URL
 const uploadToAppwrite = async (file: File): Promise<string> => {
   try {
-    // Use the existing 'post' bucket
-    const bucketId = 'post';
+    // Use the existing 'post' bucket (or environment-specific bucket)
+    const bucketId = process.env.NODE_ENV === 'production' ? 'post' : 'post';
 
-    console.log("🔍 Uploading to bucket:", bucketId);
+    console.log("🔍 [Appwrite] Uploading to bucket:", bucketId);
+    console.log("🔍 [Appwrite] Endpoint:", process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT);
+    console.log("🔍 [Appwrite] Project ID:", process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID);
+    console.log("🔍 [Appwrite] Environment:", process.env.NODE_ENV);
+    console.log("🔍 [Appwrite] File details:", { name: file.name, size: file.size, type: file.type });
+    console.log("🔍 [Appwrite] All env vars:", {
+      NODE_ENV: process.env.NODE_ENV,
+      NEXT_PUBLIC_APPWRITE_ENDPOINT: process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT,
+      NEXT_PUBLIC_APPWRITE_PROJECT_ID: process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID
+    });
     
     const uniqueId = `${Date.now()}_${file.name}`;
     const res = await storage.createFile(
@@ -174,22 +154,43 @@ const uploadToAppwrite = async (file: File): Promise<string> => {
       file
     );
 
+    console.log("🔍 [Appwrite] Upload response:", res);
+
     // Construct public URL (works for public buckets)
-    const publicUrl = `${process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT}/storage/buckets/${res.bucketId}/files/${res.$id}/view?project=${process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID}`;
-    console.log("✅ Upload successful:", publicUrl);
+    const endpoint = process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT || "https://cloud.appwrite.io/v1";
+    const projectId = process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID || "";
+    const publicUrl = `${endpoint}/storage/buckets/${res.bucketId}/files/${res.$id}/view?project=${projectId}`;
+    console.log("✅ [Appwrite] Upload successful:", publicUrl);
+    console.log("🔍 [Appwrite] URL components:", { endpoint, projectId, bucketId: res.bucketId, fileId: res.$id });
+    
+    // Test if the URL is accessible
+    try {
+      const testResponse = await fetch(publicUrl, { method: 'HEAD' });
+      console.log("🔍 [Appwrite] URL accessibility test:", testResponse.status, testResponse.ok ? "✅ Accessible" : "❌ Not accessible");
+    } catch (testError) {
+      console.warn("⚠️ [Appwrite] URL accessibility test failed:", testError);
+    }
+    
     return publicUrl;
     
   } catch (err: any) {
-    console.error("Appwrite upload failed:", err);
+    console.error("❌ [Appwrite] Upload failed:", err);
+    console.error("❌ [Appwrite] Error code:", err.code);
+    console.error("❌ [Appwrite] Error message:", err.message);
+    console.error("❌ [Appwrite] Error type:", err.type);
     
     // Provide helpful error message
     if (err.code === 404) {
-      throw new Error(`Storage bucket not found. Please create a bucket in Appwrite console with ID like 'post_model_profile' or 'uploads'.`);
+      throw new Error(`Storage bucket 'post' not found. Please create a bucket in Appwrite console with ID 'post' and make it public.`);
     } else if (err.code === 400) {
       throw new Error(`Invalid bucket ID. Bucket ID must contain only a-z, A-Z, 0-9, and underscore, max 36 characters.`);
+    } else if (err.code === 401) {
+      throw new Error(`Authentication failed. Please check your Appwrite credentials.`);
+    } else if (err.code === 403) {
+      throw new Error(`Access denied. Please check bucket permissions and make sure it's public.`);
     }
     
-    throw err;
+    throw new Error(`Upload failed: ${err.message || 'Unknown error'}`);
   }
 };
 
@@ -203,6 +204,7 @@ const uploadToAppwrite = async (file: File): Promise<string> => {
 // checkuserInput
 // -----------------------------
 const checkuserInput = async () => {
+  console.log("[checkuserInput] Function called - starting validation");
   if (!name || name.trim() === "") return toast.error("Full name is required");
   if (!age) return toast.error("Age is required");
   if (!hosttype) return toast.error("Select host type");
@@ -221,26 +223,9 @@ const checkuserInput = async () => {
 
     const hosttypeNormalized = hosttype.charAt(0).toUpperCase() + hosttype.slice(1).toLowerCase();
 
-    // Make sure photolink is always string array
-    const photolinksForBackend: string[] = await Promise.all(
-      photolink.map(async (urlOrFile, i) => {
-        if (typeof urlOrFile === "string" && urlOrFile.startsWith("http")) return urlOrFile;
-        
-        try {
-          const url = await uploadToAppwrite(urlOrFile as unknown as File);
-          console.log(`[checkuserInput] Uploaded photolink[${i}] →`, url);
-          return url;
-        } catch (uploadError) {
-          console.error(`[checkuserInput] Upload failed for image ${i}:`, uploadError);
-          // For now, create a placeholder URL - you should fix the bucket issue
-          const placeholderUrl = `data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k=`;
-          toast.warn(`Image upload failed. Please create the 'post_model_profile' bucket in Appwrite console.`);
-          return placeholderUrl;
-        }
-      })
-    );
-
-    setphotolink(photolinksForBackend);
+    // Don't upload files in frontend - let backend handle all uploads
+    // Just use the file objects directly
+    setphotolink(photolink);
 
     const data = {
       userid, // ✅ leave as is, do not rename
@@ -261,16 +246,18 @@ const checkuserInput = async () => {
       timeava: times,
       daysava: hours,
       hosttype: hosttypeNormalized,
-      photolink: photolinksForBackend, // ✅ string array
+      // photolink will be sent as files separately
     };
 
     console.log("[checkuserInput] Sending payload to backend:", { token, userid, data });
+    console.log("[checkuserInput] Files to upload:", photolink.length, photolink.map(f => f.name));
+    console.log("[checkuserInput] About to call createCreatorMultipart API");
 
     await createCreatorMultipart({
       token,
       userid, // ✅ keep exactly like this
       data,
-      photolink: photolinksForBackend,
+      photolink: photolink, // Pass file objects directly
     });
 
     toast.success("Portfolio created successfully", { autoClose: 3000 });
@@ -785,48 +772,51 @@ const checkuserInput = async () => {
                     const files = e.currentTarget.files;
                     if (!files || files.length === 0) return;
                     const selected: File[] = Array.from(files).filter((f) => f.type.startsWith("image/"));
-                    if (selected.some((f) => f.size > 2 * 1024 * 1024)) {
-                      toast.info("Compressing large images for faster upload...");
+                    
+                    // Check for files larger than 5MB
+                    const oversizedFiles = selected.filter(f => f.size > 5 * 1024 * 1024);
+                    if (oversizedFiles.length > 0) {
+                      setShowFileSizeModal(true);
+                      return;
                     }
-                    const compressed: File[] = [];
-                    for (const f of selected) {
-                      const cf = f.size > 2 * 1024 * 1024 ? await compressImage(f) : f;
-                      compressed.push(cf);
-                      if (cf.size > 2 * 1024 * 1024) {
-                        toast.warn(`${f.name} is still large after compression (~${(cf.size/1024/1024).toFixed(1)}MB)`);
-                      }
-                    }
-                    setimglist((prev) => [
-                      ...prev,
-                      ...compressed.map((f) => URL.createObjectURL(f)),
-                    ]);
-                    setphotolink((prev) => [...prev, ...compressed]);
+                    
+                    // Create preview URLs for immediate display
+                    const previewUrls = selected.map((f) => URL.createObjectURL(f));
+                    setimglist((prev) => [...prev, ...previewUrls]);
+                    setphotolink((prev) => [...prev, ...selected]);
+                    
+                    // Don't upload to Appwrite here - let backend handle all uploads
                   }}
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-4 mt-4 sm:grid-cols-3 md:grid-cols-4">
-                {imglist.map((value: string, index: number) => (
-                  <div key={index} className="relative group">
-                    <Image
-                      alt={`uploaded-${index}`}
-                      src={value}
-                      width={300}
-                      height={144}
-                      className="object-cover w-full border rounded-lg h-36 border-slate-600"
-                    />
-                    <button
-                      onClick={() => {
-                        setimglist((prev) => prev.filter((_, i) => i !== index));
-                        setphotolink((prev) => prev.filter((_, i) => i !== index));
-                      }}
-                      className="absolute p-1 text-xs text-white transition bg-red-500 rounded-full opacity-0 top-2 right-2 group-hover:opacity-100"
-                      title="Remove"
-                    >
-                      ✕
-                    </button>
-                  </div>
-                ))}
+                {imglist.map((value: string, index: number) => {
+                  return (
+                    <div key={index} className="relative group">
+                      <Image
+                        alt={`uploaded-${index}`}
+                        src={value}
+                        width={300}
+                        height={144}
+                        className="object-cover w-full border rounded-lg h-36 border-slate-600"
+                      />
+                      <button
+                        onClick={() => {
+                          setimglist((prev) => prev.filter((_, i) => i !== index));
+                          setphotolink((prev) => prev.filter((_, i) => i !== index));
+                        }}
+                        className="absolute p-1 text-xs text-white transition bg-red-500 rounded-full opacity-0 top-2 right-2 group-hover:opacity-100"
+                        title="Remove"
+                      >
+                        ✕
+                      </button>
+                      <div className="absolute px-2 py-1 text-xs text-white bg-blue-500 rounded bottom-2 left-2">
+                        Preview
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
 
@@ -969,6 +959,28 @@ const checkuserInput = async () => {
               className="w-full mt-6 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors"
             >
               Got it
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* File Size Modal */}
+      {showFileSizeModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-gray-900 rounded-lg p-6 max-w-md mx-4 relative">
+            <div className="bg-red-600 text-white font-bold text-lg px-4 py-3 rounded-t-lg -m-6 mb-4">
+              File Too Large
+            </div>
+            <div className="bg-gray-800 rounded-lg p-4 mb-4">
+              <p className="text-white text-center">
+                Max size is 5 MB. Please trim or compress before uploading.
+              </p>
+            </div>
+            <button
+              onClick={() => setShowFileSizeModal(false)}
+              className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              OK
             </button>
           </div>
         </div>

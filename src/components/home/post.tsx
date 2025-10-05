@@ -731,7 +731,7 @@ export default function PostsCard() {
                             {(() => {
                               const isVipActive = c?.isVip && c?.vipEndDate && new Date(c.vipEndDate) > new Date();
                               return isVipActive && (
-                                <VIPBadge size="sm" className="absolute -top-1 -right-1.5" isVip={c.isVip} vipEndDate={c.vipEndDate} />
+                                <VIPBadge size="md" className="absolute -top-2 -right-2" isVip={c.isVip} vipEndDate={c.vipEndDate} />
                               );
                             })()}
                           </div>
@@ -740,18 +740,11 @@ export default function PostsCard() {
                               <span className="font-medium text-gray-300">
                                 {c?.commentusername || c?.username || 'User'}
                               </span>
-                              {c?.commentnickname && (
-                                <span className="text-gray-500 text-xs">@{c.commentnickname}</span>
-                              )}
                             </div>
                             <div className="text-gray-200 mt-1">
                               {c?.content || c?.comment || String(c)}
                             </div>
-                            {c?.commenttime && (
-                              <div className="text-xs text-gray-500 mt-1">
-                                {new Date(parseInt(c.commenttime)).toLocaleString()}
-                              </div>
-                            )}
+                            
                           </div>
                         </div>
                       ))

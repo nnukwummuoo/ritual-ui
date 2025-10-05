@@ -1615,29 +1615,57 @@ const PostModal = () => {
                   <div className="w-full overflow-x-hidden   mt-2">
                     <p className="text-slate-400 break-words">{bio || "Hey, I am using mmeko"}</p>
                   </div>
-              <div className="w-full flex items-center justify-center">
+              <div className="w-full -ml-2 flex items-center justify-center">
                     {viewingUserId !== loggedInUserId ? (
-                      <div className="flex flex-row-reverse mr-5 w-full justify-between items-center gap-2 mt-4">
-                        <div className="flex flex-row   w-1/2 rounded-lg">
-                          <button
-                            className="p-0 px-3 w-full bg-gray-800 cursor-pointer py-1.5 rounded-lg"
-
-                            onClick={() => {
-                              // Pass only the target user ID (the user being viewed) as creatorid
-                              // The Chat component will use this to fetch the target user's profile details
-                              const targetUserId = viewingUserId;
-                              router.push(`/message/${targetUserId}`);
-                            }}
-
-                          >
-                            Message
-                          </button>
-                        </div>
+                      <div className="flex flex-row-reverse w-full gap-2 mt-4">
+                        {/* Message Button */}
+                        <button
+                          className={`flex-1 bg-gray-800 cursor-pointer py-1.5 px-3 rounded-lg hover:bg-gray-700 transition-colors text-center`}
+                          onClick={() => {
+                            // Pass only the target user ID (the user being viewed) as creatorid
+                            // The Chat component will use this to fetch the target user's profile details
+                            const targetUserId = viewingUserId;
+                            router.push(`/message/${targetUserId}`);
+                          }}
+                        >
+                          Message
+                        </button>
+                        
+                        {/* Fan Meet Button - Only show if the profile owner has creator portfolio */}
+                        {(() => {
+                          // Check for creator properties based on the actual data structure
+                          const hasCreatorPortfolio = profileData && (
+                            (profileData as any).creator === true ||
+                            (profileData as any).creatorID ||
+                            (profileData as any).creatorname ||
+                            (profileData as any).exclusive_verify === true
+                          );
+                          
+                          // Get host type from profile data or default to "Fan meet"
+                          const hostType = (profileData as any)?.hosttype || 
+                                         (profileData as any)?.creatortDype || 
+                                         (profileData as any)?.creatorType ||
+                                         "Fan meet";
+                          
+                          return hasCreatorPortfolio && (
+                            <button
+                              className="flex-1 bg-gradient-to-r from-orange-500 to-red-600 cursor-pointer py-1.5 px-3 rounded-lg hover:from-orange-600 hover:to-red-700 transition-all duration-200 hover:scale-105 text-center"
+                              onClick={() => {
+                                // Navigate to creator profile or booking page
+                                router.push(`/creators/${viewingUserId}`);
+                              }}
+                            >
+                              {hostType}
+                            </button>
+                          );
+                        })()}
+                        
+                        {/* Follow Button */}
                         <button
                           key={`follow-button-${isFollowing}`}
                           onClick={onFollowClick}
                           disabled={isProcessing}
-                          className={`flex w-1/2 justify-center gap-x-1 items-center flex-row p-1.5 rounded-lg cursor-pointer transition-all duration-200 ${
+                          className={`flex-1 flex justify-center gap-x-1 items-center py-1.5 px-3 rounded-lg cursor-pointer transition-all duration-200 ${
                             isFollowing 
                               ? "bg-gradient-to-r !from-blue-700 !to-purple-800" 
                               : "bg-gradient-to-r !from-blue-500 !to-purple-600"

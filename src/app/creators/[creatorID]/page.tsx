@@ -23,7 +23,6 @@ import {
   deletecreator,
 } from "@/store/creatorSlice";
 // import { downloadImage } from "../../api/sendImage";
-import AwesomeSlider from "react-awesome-slider";
 import { addcrush, remove_Crush } from "@/store/creatorSlice";
 import "material-react-toastify/dist/ReactToastify.css";
 import Skeleton, { SkeletonTheme } from "react-loading-skeleton";
@@ -41,10 +40,12 @@ import { formatCreatorPrices } from "./_utils/formatCreatorPrices";
 
 import "material-react-toastify/dist/ReactToastify.css";
 import "react-loading-skeleton/dist/skeleton.css";
-import "react-awesome-slider/dist/styles.css";
 import { AppDispatch } from "@/store/store";
 import { useUserId } from "@/lib/hooks/useUserId";
 import { useAuth } from "@/lib/context/auth-context";
+import VIPBadge from "@/components/VIPBadge";
+import { checkVipCelebration, markVipCelebrationViewed } from "@/api/vipCelebration";
+import { checkVipStatus } from "@/store/vip";
 
 
 // Types
@@ -95,8 +96,52 @@ export default function Creatorbyid () {
     // Redux selectors
   const useridFromHook = useUserId();
   const { session } = useAuth();
-  const userid = useridFromHook || session?._id;
-  const token = useSelector((state: RootState) => state.register.refreshtoken);
+  const reduxUserid = useSelector((state: RootState) => state.register.userID);
+  
+  // Get userid from multiple sources
+  const [userid, setUserid] = useState<string>("");
+  
+  useEffect(() => {
+    if (useridFromHook) {
+      setUserid(useridFromHook);
+    } else if (session?._id) {
+      setUserid(session._id);
+    } else if (reduxUserid) {
+      setUserid(reduxUserid);
+    } else {
+      // Fallback to localStorage
+      try {
+        const stored = localStorage.getItem("login");
+        if (stored) {
+          const data = JSON.parse(stored);
+          setUserid(data?.userID || data?.userid || data?.id || "");
+        }
+      } catch (error) {
+        // Silent fail
+      }
+    }
+  }, [useridFromHook, session?._id, reduxUserid]);
+  const reduxToken = useSelector((state: RootState) => state.register.refreshtoken);
+  
+  // Get token from Redux or localStorage as fallback
+  const [token, setToken] = useState<string>("");
+  
+  useEffect(() => {
+    if (reduxToken) {
+      setToken(reduxToken);
+    } else {
+      // Fallback to localStorage
+      try {
+        const stored = localStorage.getItem("login");
+        if (stored) {
+          const data = JSON.parse(stored);
+          setToken(data?.refreshtoken || data?.accesstoken || "");
+        }
+      } catch (error) {
+        // Silent fail
+      }
+    }
+  }, [reduxToken]);
   const message = useSelector((state: RootState) => state.creator.message);
   const creatorbyidstatus = useSelector(
     (state: RootState) => state.creator.creatorbyidstatus
@@ -117,6 +162,9 @@ export default function Creatorbyid () {
     (state: RootState) => state.creator.remove_crush_stats
   );
   const creator = useSelector((state: RootState) => state.creator.creatorbyid);
+
+  // Get VIP status from Redux
+  const vipStatusFromRedux = useSelector((state: RootState) => state.vip.vipStatus);
 
   // State
   const [user, setUser] = useState<{ refreshtoken: string } | null>(null);
@@ -143,12 +191,84 @@ export default function Creatorbyid () {
   const [imglist, setimglist] = useState<string[]>([]);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [views, setViews] = useState(0);
+  
+  // VIP celebration state
+  const [showVipCelebration, setShowVipCelebration] = useState(false);
+  const [vipCelebrationShown, setVipCelebrationShown] = useState(false);
+  const [celebrationChecked, setCelebrationChecked] = useState(false);
 
   // ✅ Replace navigate
   const navigate = (path: string) => {
     router.push(path);
   };
 
+  // Check VIP celebration status (database-based)
+  const checkVipCelebrationStatus = React.useCallback(async (userId: string, viewerId: string) => {
+    if (!userId || !viewerId || !token) return false;
+    
+    try {
+      const response = await checkVipCelebration(userId, viewerId, token);
+      return response.shouldShowCelebration;
+    } catch (error) {
+      return false;
+    }
+  }, [token]);
+
+  // Mark VIP celebration as viewed (database-based)
+  const markVipCelebrationAsViewed = React.useCallback(async (userId: string, viewerId: string) => {
+    if (!userId || !viewerId || !token) return;
+    
+    try {
+      await markVipCelebrationViewed(userId, viewerId, token);
+    } catch (error) {
+      // Silent fail
+    }
+  }, [token]);
+
+
+  // Check VIP status for the creator being viewed
+  useEffect(() => {
+    if (Creator[0] && token) {
+      dispatch(checkVipStatus(Creator[0]));
+    }
+  }, [Creator[0], token, dispatch]);
+
+  // Check VIP celebration status when VIP status is confirmed
+  useEffect(() => {
+    const checkCelebration = async () => {
+      if (vipStatusFromRedux?.isVip && creatorbyidstatus === "succeeded" && Creator[0] && userid && !celebrationChecked) {
+        setCelebrationChecked(true);
+        
+        try {
+          const shouldShow = await checkVipCelebrationStatus(Creator[0], userid);
+          
+          if (shouldShow) {
+            setShowVipCelebration(true);
+            setVipCelebrationShown(true);
+            
+            // Mark as viewed in database
+            await markVipCelebrationAsViewed(Creator[0], userid);
+            
+            // Hide the celebration after 5 seconds
+            setTimeout(() => {
+              setShowVipCelebration(false);
+            }, 5000);
+          }
+        } catch (error) {
+          // Silent fail
+        }
+      }
+    };
+
+    checkCelebration();
+  }, [vipStatusFromRedux, creatorbyidstatus, Creator[0], userid, celebrationChecked, checkVipCelebrationStatus, markVipCelebrationAsViewed]);
+
+  // Reset VIP celebration tracking when switching creators
+  useEffect(() => {
+    setVipCelebrationShown(false);
+    setShowVipCelebration(false);
+    setCelebrationChecked(false);
+  }, [Creator[0]]);
 
   useEffect(() => {
 
@@ -191,11 +311,10 @@ export default function Creatorbyid () {
 
       setphotocount(linksimg.length);
 
-      linksimg.forEach((index: string) => {
-        const img = index;
-        setimglist((value) => [...value, img]);
-        setoldlink((value) => [...value, index]);
-      });
+      // Reset and set images properly
+      setimglist(linksimg);
+      setoldlink(linksimg);
+      setCurrentImageIndex(0); // Reset to first image
 
       dispatch(changecreatorstatus("idle"));
     }
@@ -204,7 +323,7 @@ export default function Creatorbyid () {
       setLoading(false);
       dispatch(changecreatorstatus("idle"));
     }
-  }, [creatorbyidstatus]);
+  }, [creatorbyidstatus, creator.photolink]);
 
   useEffect(() => {
     const stored = localStorage.getItem("login");
@@ -234,7 +353,6 @@ export default function Creatorbyid () {
   
         setViews(parsed?.views ?? 0);
       } catch (err) {
-        console.error("Failed to parse views response:", err);
         setViews(0);
       }
     };
@@ -261,6 +379,7 @@ export default function Creatorbyid () {
       set_dcb(false);
       set_removeCrush(true);
       set_crush_text("Remove crush");
+      toast.success("Added to your crush list! 💜", { autoClose: 2000 });
     }
 
     if (addcrush_stats === "failed") {
@@ -274,6 +393,7 @@ export default function Creatorbyid () {
       set_dcb(false);
       set_removeCrush(false);
       set_crush_text("Add to crush");
+      toast.success("Removed from your crush list", { autoClose: 2000 });
     }
 
     if (addcrush_stats === "failed") {
@@ -292,33 +412,6 @@ export default function Creatorbyid () {
     }
   };
 
-  useEffect(() => {
-    if (creatorbyidstatus === "succeeded") {
-      setLoading(false);
-      setshowcreator(true);
-
-      const linksimg =
-        typeof creator.photolink === "string"
-          ? creator.photolink.split(",")
-          : Array.isArray(creator.photolink)
-          ? creator.photolink
-          : [];
-
-      setphotocount(linksimg.length);
-
-      linksimg.forEach((index: string) => {
-        setimglist((value) => [...value, index]);
-        setoldlink((value) => [...value, index]);
-      });
-
-      dispatch(changecreatorstatus("idle"));
-    }
-
-    if (creatorbyidstatus === "failed") {
-      toast.error(`${message}`, { autoClose: 2000 });
-      dispatch(changecreatorstatus("idle"));
-    }
-  }, [creatorbyidstatus]);
 
   useEffect(() => {
     if (creatordeletestatus === "succeeded") {
@@ -381,31 +474,58 @@ export default function Creatorbyid () {
     }
   };
 
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
   const checkimg = () => {
     if (loading === false) {
       if (imglist.length > 0) {
         return (
-          <div className="pt-2 pb-4 md:pt-60 ">
-            <AwesomeSlider
-              fillParent={false}
-              bullets={false}
-              animation="foldOutAnimation"
-            >
-              {imglist.map((value, index) => {
-                return (
-                  <div key={index} className=" w-full h-[300px] overflow-hidden">
-                    <Image
-                      height={100}
-                      width={100}
-                      alt="host pics"
-                      src={value}
-                      className="object-cover w-full h-full rounded-md cursor-pointer hover:opacity-90 transition-opacity duration-200"
-                      onClick={() => openModal(value)}
-                    />
-                  </div>
-                );
-              })}
-            </AwesomeSlider>
+          <div className="pt-2 pb-4 md:pt-60">
+            <div className="relative w-full h-[300px] overflow-hidden rounded-md">
+              <Image
+                height={300}
+                width={400}
+                alt="host pics"
+                src={imglist[currentImageIndex]}
+                className="object-cover w-full h-full cursor-pointer hover:opacity-90 transition-opacity duration-200"
+                onClick={() => openModal(imglist[currentImageIndex])}
+              />
+              
+              {/* Navigation arrows */}
+              {imglist.length > 1 && (
+                <>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setCurrentImageIndex((prev) => 
+                        prev === 0 ? imglist.length - 1 : prev - 1
+                      );
+                    }}
+                    className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-70 transition-all duration-200"
+                  >
+                    ←
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setCurrentImageIndex((prev) => 
+                        prev === imglist.length - 1 ? 0 : prev + 1
+                      );
+                    }}
+                    className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-70 transition-all duration-200"
+                  >
+                    →
+                  </button>
+                </>
+              )}
+              
+              {/* Image counter */}
+              {imglist.length > 1 && (
+                <div className="absolute bottom-2 right-2 bg-black bg-opacity-50 text-white px-2 py-1 rounded text-sm">
+                  {currentImageIndex + 1} / {imglist.length}
+                </div>
+              )}
+            </div>
           </div>
         );
       }
@@ -530,17 +650,114 @@ export default function Creatorbyid () {
   // Don't render if creator data is not available or still loading
   if (loading || creatorbyidstatus === "loading" || !creator || Object.keys(creator).length === 0) {
     return (
-      <div className="pt-5 md:pt-0">
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
         <SkeletonTheme baseColor="#202020" highlightColor="#444">
-          <div className="relative w-full pb-16 mx-auto overflow-auto md:max-w-md sm:ml-8 md:mt-5 md:mr-auto md:ml-24 xl:ml-42 2xl:ml-52">
-            <div className="w-full space-y-4">
-              <div className="flex justify-center">
-                <Skeleton width={300} height={300} className="rounded-lg" />
+          <div className="container mx-auto px-4 py-8">
+            <div className="max-w-4xl mx-auto space-y-6">
+              
+              {/* Header Section Skeleton */}
+              <div className="bg-gray-800 rounded-2xl p-6 shadow-2xl">
+                <div className="flex justify-between items-start mb-4">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-4">
+                      <Skeleton circle width={40} height={40} />
+                      <div className="space-y-2">
+                        <Skeleton width={120} height={20} />
+                        <Skeleton width={80} height={16} />
+                      </div>
+                    </div>
+                  </div>
+                  <Skeleton width={40} height={40} className="rounded-full" />
+                </div>
+                
+                <div className="text-center">
+                  <Skeleton width={200} height={24} className="mx-auto mb-2" />
+                  <Skeleton width={150} height={20} className="mx-auto" />
+                </div>
               </div>
-              <div className="space-y-2">
-                <Skeleton height={20} />
-                <Skeleton height={20} />
-                <Skeleton height={20} />
+
+              {/* Image Gallery Skeleton */}
+              <div className="bg-gray-800 rounded-2xl p-6 shadow-2xl">
+                <div className="flex justify-center">
+                  <Skeleton width={400} height={300} className="rounded-xl" />
+                </div>
+              </div>
+
+              {/* Action Buttons Skeleton */}
+              <div className="bg-gray-800 rounded-2xl p-6 shadow-2xl">
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <Skeleton width="100%" height={48} className="rounded-xl" />
+                  <Skeleton width="100%" height={48} className="rounded-xl" />
+                </div>
+                <Skeleton width="100%" height={56} className="rounded-xl mt-4" />
+              </div>
+
+              {/* Profile Information Skeleton */}
+              <div className="bg-gray-800 rounded-2xl p-6 shadow-2xl">
+                <Skeleton width={200} height={32} className="mx-auto mb-6" />
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    {Array(6).fill(0).map((_, index) => (
+                      <div key={index} className="flex justify-between items-center p-3 bg-gray-700 rounded-lg">
+                        <Skeleton width={80} height={20} />
+                        <Skeleton width={100} height={20} />
+                      </div>
+                    ))}
+                  </div>
+                  
+                  <div className="space-y-4">
+                    {Array(6).fill(0).map((_, index) => (
+                      <div key={index} className="flex justify-between items-center p-3 bg-gray-700 rounded-lg">
+                        <Skeleton width={80} height={20} />
+                        <Skeleton width={100} height={20} />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Interests Skeleton */}
+                <div className="mt-6">
+                  <Skeleton width={120} height={24} className="mb-3" />
+                  <div className="flex flex-wrap gap-2">
+                    {Array(4).fill(0).map((_, index) => (
+                      <Skeleton key={index} width={60} height={32} className="rounded-full" />
+                    ))}
+                  </div>
+                </div>
+
+                {/* Availability Skeleton */}
+                <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Skeleton width={120} height={24} className="mb-3" />
+                    <Skeleton width="100%" height={60} className="rounded-lg" />
+                  </div>
+                  <div>
+                    <Skeleton width={120} height={24} className="mb-3" />
+                    <Skeleton width="100%" height={60} className="rounded-lg" />
+                  </div>
+                </div>
+              </div>
+
+              {/* About Section Skeleton */}
+              <div className="bg-gray-800 rounded-2xl p-6 shadow-2xl">
+                <Skeleton width={120} height={32} className="mx-auto mb-4" />
+                <Skeleton width="100%" height={80} className="rounded-lg" />
+              </div>
+
+              {/* Safety Rules Skeleton */}
+              <div className="bg-gray-800 rounded-2xl p-6 shadow-2xl">
+                <Skeleton width={200} height={32} className="mx-auto mb-4" />
+                <div className="space-y-3">
+                  <Skeleton width="100%" height={20} />
+                  <Skeleton width="100%" height={20} />
+                  <Skeleton width="100%" height={40} className="rounded-lg" />
+                </div>
+              </div>
+
+              {/* Reviews Section Skeleton */}
+              <div className="bg-gray-800 rounded-2xl p-6 shadow-2xl">
+                <Skeleton width="100%" height={56} className="rounded-xl" />
               </div>
             </div>
           </div>
@@ -573,23 +790,129 @@ export default function Creatorbyid () {
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
       <ToastContainer position="top-center" theme="dark" />
       
+      {/* VIP Celebration Animation */}
+      {showVipCelebration && (
+        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black bg-opacity-50 pointer-events-none">
+          <div className="relative w-64 h-64 md:w-96 md:h-96">
+            <Image
+              src="/lion.gif"
+              alt="VIP Celebration"
+              fill
+              className="object-contain"
+              priority
+            />
+          </div>
+        </div>
+      )}
+      
       {loading && (
         <SkeletonTheme baseColor="#202020" highlightColor="#444">
           <div className="container mx-auto px-4 py-8">
-            <div className="max-w-4xl mx-auto">
+            <div className="max-w-4xl mx-auto space-y-6">
+              
+              {/* Header Section Skeleton */}
               <div className="bg-gray-800 rounded-2xl p-6 shadow-2xl">
-                <div className="flex justify-center mb-6">
-                  <Skeleton width={300} height={300} className="rounded-xl" />
+                <div className="flex justify-between items-start mb-4">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-4">
+                      <Skeleton circle width={40} height={40} />
+                      <div className="space-y-2">
+                        <Skeleton width={120} height={20} />
+                        <Skeleton width={80} height={16} />
+                      </div>
+                    </div>
+                  </div>
+                  <Skeleton width={40} height={40} className="rounded-full" />
                 </div>
-                <div className="space-y-4">
-                  <Skeleton height={40} className="rounded-lg" />
-                  <Skeleton height={30} className="rounded-lg" />
-                  <div className="grid grid-cols-2 gap-4">
+                
+                <div className="text-center">
+                  <Skeleton width={200} height={24} className="mx-auto mb-2" />
+                  <Skeleton width={150} height={20} className="mx-auto" />
+                </div>
+              </div>
+
+              {/* Image Gallery Skeleton */}
+              <div className="bg-gray-800 rounded-2xl p-6 shadow-2xl">
+                <div className="flex justify-center">
+                  <Skeleton width={400} height={300} className="rounded-xl" />
+                </div>
+              </div>
+
+              {/* Action Buttons Skeleton */}
+              <div className="bg-gray-800 rounded-2xl p-6 shadow-2xl">
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <Skeleton width="100%" height={48} className="rounded-xl" />
+                  <Skeleton width="100%" height={48} className="rounded-xl" />
+                </div>
+                <Skeleton width="100%" height={56} className="rounded-xl mt-4" />
+              </div>
+
+              {/* Profile Information Skeleton */}
+              <div className="bg-gray-800 rounded-2xl p-6 shadow-2xl">
+                <Skeleton width={200} height={32} className="mx-auto mb-6" />
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-4">
                     {Array(6).fill(0).map((_, index) => (
-                      <Skeleton key={index} height={20} className="rounded" />
+                      <div key={index} className="flex justify-between items-center p-3 bg-gray-700 rounded-lg">
+                        <Skeleton width={80} height={20} />
+                        <Skeleton width={100} height={20} />
+                      </div>
+                    ))}
+                  </div>
+                  
+                  <div className="space-y-4">
+                    {Array(6).fill(0).map((_, index) => (
+                      <div key={index} className="flex justify-between items-center p-3 bg-gray-700 rounded-lg">
+                        <Skeleton width={80} height={20} />
+                        <Skeleton width={100} height={20} />
+                      </div>
                     ))}
                   </div>
                 </div>
+
+                {/* Interests Skeleton */}
+                <div className="mt-6">
+                  <Skeleton width={120} height={24} className="mb-3" />
+                  <div className="flex flex-wrap gap-2">
+                    {Array(4).fill(0).map((_, index) => (
+                      <Skeleton key={index} width={60} height={32} className="rounded-full" />
+                    ))}
+                  </div>
+                </div>
+
+                {/* Availability Skeleton */}
+                <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Skeleton width={120} height={24} className="mb-3" />
+                    <Skeleton width="100%" height={60} className="rounded-lg" />
+                  </div>
+                  <div>
+                    <Skeleton width={120} height={24} className="mb-3" />
+                    <Skeleton width="100%" height={60} className="rounded-lg" />
+                  </div>
+                </div>
+              </div>
+
+              {/* About Section Skeleton */}
+              <div className="bg-gray-800 rounded-2xl p-6 shadow-2xl">
+                <Skeleton width={120} height={32} className="mx-auto mb-4" />
+                <Skeleton width="100%" height={80} className="rounded-lg" />
+              </div>
+
+              {/* Safety Rules Skeleton */}
+              <div className="bg-gray-800 rounded-2xl p-6 shadow-2xl">
+                <Skeleton width={200} height={32} className="mx-auto mb-4" />
+                <div className="space-y-3">
+                  <Skeleton width="100%" height={20} />
+                  <Skeleton width="100%" height={20} />
+                  <Skeleton width="100%" height={40} className="rounded-lg" />
+                </div>
+              </div>
+
+              {/* Reviews Section Skeleton */}
+              <div className="bg-gray-800 rounded-2xl p-6 shadow-2xl">
+                <Skeleton width="100%" height={56} className="rounded-xl" />
               </div>
             </div>
           </div>
@@ -658,14 +981,23 @@ export default function Creatorbyid () {
                 )}
               </div>
 
-              {/* Status Badge */}
-              <div className="flex items-center justify-center w-full gap-2 mb-4">
-                <div className={`w-3 h-3 rounded-full ${checkOnline() === 'online' ? 'bg-green-500' : 'bg-gray-500'}`}></div>
-                <span className="text-sm text-gray-300 capitalize">{checkOnline()}</span>
-                {creator.verify && (
+              {/* Status Badge - Only show when online */}
+              {checkOnline() === 'online' && (
+                <div className="flex items-center justify-center w-full gap-2 mb-4">
+                  <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                  <span className="text-sm text-gray-300 capitalize">online</span>
+                  {creator.verify && (
+                    <span className="px-2 py-1 bg-blue-600 text-white text-xs rounded-full">Verified</span>
+                  )}
+                </div>
+              )}
+              
+              {/* Verified badge only - show when offline but verified */}
+              {checkOnline() !== 'online' && creator.verify && (
+                <div className="flex items-center justify-center w-full gap-2 mb-4">
                   <span className="px-2 py-1 bg-blue-600 text-white text-xs rounded-full">Verified</span>
-                )}
-              </div>
+                </div>
+              )}
 
               {/* Main Content */}
               <div className="text-center">
@@ -677,8 +1009,15 @@ export default function Creatorbyid () {
             </div>
 
             {/* Image Gallery */}
-            <div className="bg-gray-800 rounded-2xl p-6 shadow-2xl">
+            <div className="bg-gray-800 rounded-2xl p-6 shadow-2xl relative">
               {checkimg()}
+              
+              {/* VIP Badge - positioned on top-left of creator image */}
+              {vipStatusFromRedux?.isVip && (
+                <div className="absolute top-2 left-20 z-50">
+                  <VIPBadge size="xxl" isVip={vipStatusFromRedux.isVip} vipEndDate={vipStatusFromRedux.vipEndDate} />
+                </div>
+              )}
             </div>
 
           {isModalOpen && (
@@ -766,7 +1105,16 @@ export default function Creatorbyid () {
                           });
                           return;
                         }
-                        addTocrush();
+                        if (removeCrush) {
+                          // If already in crush list, remove it
+                          addTocrush();
+                        } else {
+                          // If not in crush list, add it and navigate to collections
+                          addTocrush();
+                          setTimeout(() => {
+                            navigate("/collections");
+                          }, 1000); // Small delay to show the success state
+                        }
                       }}
                       disabled={dcb}
                     >
@@ -834,7 +1182,9 @@ export default function Creatorbyid () {
                 {/* Service Info */}
                 <div className="space-y-4">
                   <div className="flex justify-between items-center p-3 bg-gray-700 rounded-lg">
-                    <span className="text-gray-300 font-medium">💰 Price</span>
+                    <span className="text-gray-300 font-medium">
+                      {creator.hosttype === "Fan call" ? "📞 Call Rate" : "🚗 Transport Fare"}
+                    </span>
                     <span className="text-yellow-400 font-bold">
                       {creator.hosttype === "Fan call"
                         ? fmtPSPrice
@@ -916,6 +1266,28 @@ export default function Creatorbyid () {
                 <p className="text-gray-300 leading-relaxed text-center">
                   {creator.description}
                 </p>
+              </div>
+            </div>
+
+            {/* Safety Rules Section */}
+            <div className="bg-gray-800 rounded-2xl p-6 shadow-2xl">
+              <h2 className="text-2xl font-bold text-white mb-4 text-center">Safety Rules (Important!)</h2>
+              <div className="bg-gray-700 rounded-lg p-4">
+                <ul className="text-gray-300 space-y-3">
+                  <li className="flex items-start">
+                    <span className="text-red-400 mr-3 mt-1">•</span>
+                    <span>All meets are limited to 30 minutes.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-red-400 mr-3 mt-1">•</span>
+                    <span>Meets must happen in a public place only.</span>
+                  </li>
+                </ul>
+                <div className="mt-4 p-3 bg-yellow-900/20 border border-yellow-600/30 rounded-lg">
+                  <p className="text-yellow-300 text-sm text-center">
+                    <strong>What happens after 30 minutes is outside the platform&apos;s responsibility.</strong>
+                  </p>
+                </div>
               </div>
             </div>
 

@@ -11,7 +11,7 @@ export async function createCreatorMultipart(params: {
   token: string;
   userid: string;
   data: Record<string, any>;
-  photolink?: string[];
+  photolink?: File[];
 }) {
   const { token, userid, data, photolink = [] } = params;
 
@@ -20,18 +20,33 @@ export async function createCreatorMultipart(params: {
 
   const api = backend(token);
 
-  const validPhotoLinks = photolink.filter(link => typeof link === "string" && link.trim() !== "");
+  // Create FormData for file upload
+  const formData = new FormData();
+  
+  // Add all data fields
+  Object.entries(data).forEach(([key, value]) => {
+    if (Array.isArray(value)) {
+      value.forEach((item, index) => {
+        formData.append(`${key}[${index}]`, String(item));
+      });
+    } else {
+      formData.append(key, String(value));
+    }
+  });
 
-  const payload = {
-    ...data,
-    userid, // ✅ keep exactly as is for backend
-    photolink: validPhotoLinks,
-  };
+  // Add files
+  photolink.forEach((file, index) => {
+    formData.append(`photo${index}`, file);
+  });
 
-  console.log("[createCreatorMultipart] Payload ready:", payload);
+  console.log("[createCreatorMultipart] Sending FormData with files:", photolink.length);
+  console.log("[createCreatorMultipart] File names:", photolink.map(f => f.name));
+  console.log("[createCreatorMultipart] FormData entries:", Array.from(formData.entries()).map(([key, value]) => ({ key, type: typeof value, isFile: value instanceof File })));
 
-  const res = await api.put("/creator", payload, {
-    headers: { "Content-Type": "application/json" },
+  const res = await api.put("/creator", formData, {
+    headers: { 
+      "Content-Type": "multipart/form-data",
+    },
   });
 
   console.log("[createCreatorMultipart] Backend response:", res.data);
