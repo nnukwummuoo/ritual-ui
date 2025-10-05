@@ -34,6 +34,7 @@ const VIPPage = () => {
   // Track if we've already shown a toast to prevent duplicates
   const [hasShownToast, setHasShownToast] = React.useState(false);
   const [showCancelConfirm, setShowCancelConfirm] = React.useState(false);
+  const [showInsufficientGoldModal, setShowInsufficientGoldModal] = React.useState(false);
   
   // Get user ID from localStorage if not in Redux
   const getUserId = () => {
@@ -105,6 +106,12 @@ const VIPPage = () => {
   const handleUpgrade = async () => {
     if (!userId) {
       toast.error("Please log in to upgrade to VIP");
+      return;
+    }
+
+    // Check if user has sufficient gold balance
+    if (goldBalance < 250) {
+      setShowInsufficientGoldModal(true);
       return;
     }
 
@@ -333,22 +340,15 @@ const VIPPage = () => {
             ) : (
               // VIP is not active - show upgrade button
               <button
-                onClick={goldBalance < 250 ? () => router.push('/buy-gold') : handleUpgrade}
+                onClick={handleUpgrade}
                 disabled={upgradeLoading}
                 className={`w-1/2 py-4 px-3 rounded-lg transition-colors duration-300 transform hover:scale-105 font-bold ${
                   upgradeLoading
                     ? "bg-gray-500 text-white cursor-not-allowed"
-                    : goldBalance < 250
-                    ? "bg-blue-500 hover:bg-blue-600 text-white"
                     : "bg-orange-500 hover:bg-orange-600 text-white"
                 }`}
               >
-                {upgradeLoading 
-                  ? "Processing..." 
-                  : goldBalance < 250 
-                    ? "Top Up Gold" 
-                    : "Upgrade now (250 gold)"
-                }
+                {upgradeLoading ? "Processing..." : "Upgrade"}
               </button>
             )}
           </div>
@@ -373,6 +373,35 @@ const VIPPage = () => {
                     className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
                   >
                     Yes, Cancel Auto-Renewal
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Insufficient Gold Modal */}
+          {showInsufficientGoldModal && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+              <div className="bg-gray-800 rounded-lg p-6 max-w-md mx-4">
+                <h3 className="text-xl font-bold text-white mb-4">Insufficient Gold Balance</h3>
+                <p className="text-gray-300 mb-6">
+                  You need 250 gold to upgrade to VIP. You currently have {goldBalance} gold.
+                </p>
+                <div className="flex gap-3 justify-end">
+                  <button
+                    onClick={() => setShowInsufficientGoldModal(false)}
+                    className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowInsufficientGoldModal(false);
+                      router.push('/buy-gold');
+                    }}
+                    className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                  >
+                    Purchase Gold
                   </button>
                 </div>
               </div>
