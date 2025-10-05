@@ -191,7 +191,7 @@ const VIPPage = () => {
           {/* Header */}
           <div className="mb-8">
             <h1 className="text-3xl md:text-5xl font-bold text-white mb-4">
-              Upgrade to Premium
+              Upgrade to Vip
             </h1>
             <p className=" md:text-xl text-white opacity-90">
               Your experience. Your standards. Your choice.
@@ -212,8 +212,9 @@ const VIPPage = () => {
                     </svg>
                   </div>
                   <div>
-                    <h3 className="font-bold text-white">Verified Fan Badge</h3>
-                    <p className="text-white opacity-80 text-xs">Appears on your profile and messages</p>
+                    <h3 className="font-bold text-white">Verified Lion Badge</h3>
+                    <p className="text-white opacity-80 text-xs">Appears on your profile, messages</p>
+                    <p className="text-white opacity-80 text-xs">comments and requests</p>
                   </div>
                 </div>
 
@@ -244,7 +245,9 @@ const VIPPage = () => {
                   </div>
                   <div>
                     <h3 className="font-bold text-white">Golden Lion Animation</h3>
-                    <p className="text-white opacity-80 text-xs">appears when you enter VIP profiles & chats — your presence roars with status</p>
+                    <p className="text-white opacity-80 text-xs">appears when you enter</p>
+                    <p className="text-white opacity-80 text-xs"> VIP profiles & chats — your</p>
+                    <p className="text-white opacity-80 text-xs"> presence roars with status</p>
                   </div>
                 </div>
               </div>
