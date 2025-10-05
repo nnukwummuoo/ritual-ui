@@ -18,6 +18,7 @@ export interface RegisterState {
   email: string;
   password: string;
   forgetpassstate: string;
+  balance: number;
   conpasswordstate: string;
   chagepassword: string;
   creatorId?: string;
@@ -40,6 +41,7 @@ const initialState: RegisterState = {
   refreshtoken: "",
   accesstoken: "",
   logstats: "idle",
+  balance: 0,
   email: "",
   password: "",
   forgetpassstate: "idle",
@@ -203,6 +205,7 @@ const registerSlice = createSlice({
       state.userID = action.payload.userId;
       state.creatorId = action.payload.creatorId;
       state.creator_listing = action.payload.creator_listing;
+      state.balance = action.payload.balance || 0;
       // VIP status fields
       state.isVip = action.payload.isVip || false;
       state.vipStartDate = action.payload.vipStartDate;

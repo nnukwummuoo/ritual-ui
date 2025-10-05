@@ -7,20 +7,29 @@ import { RootState } from "@/store/store";
 import { upgradeToVip, checkVipStatus, clearVipError, cancelVip } from "@/store/vip";
 import { toast } from "material-react-toastify";
 import { URL as API_URL } from "@/api/config";
+import { useRouter } from "next/navigation";
 
 const VIPPage = () => {
   
   const dispatch = useDispatch();
+  const router = useRouter();
   
   // Get user data from Redux
   const loggedInUserId = useSelector((state: RootState) => state.register.userID);
   const vipStatus = useSelector((state: RootState) => state.vip.vipStatus);
   const upgradeLoading = useSelector((state: RootState) => state.vip.upgradeLoading);
   const upgradeError = useSelector((state: RootState) => state.vip.upgradeError);
+  const profile = useSelector((state: RootState) => state.profile);
+  const goldBalance = vipStatus?.goldBalance || Number(profile.balance) || 0;
   
-  // Coin balance state
-  const [coinBalance, setCoinBalance] = React.useState(0);
-  const [loadingCoins, setLoadingCoins] = React.useState(false);
+  // Debug gold balance
+  console.log("🔍 [VIP PAGE] Gold Balance Debug:", {
+    vipStatusGoldBalance: vipStatus?.goldBalance,
+    profileBalance: profile.balance,
+    convertedBalance: Number(profile.balance),
+    finalGoldBalance: goldBalance,
+    vipStatus: vipStatus
+  });
   
   // Track if we've already shown a toast to prevent duplicates
   const [hasShownToast, setHasShownToast] = React.useState(false);
@@ -43,45 +52,6 @@ const VIPPage = () => {
   const userId = loggedInUserId || getUserId();
 
 
-  // Add coins function
-  const addCoins = async (amount = 20) => {
-    if (!userId) {
-      toast.error("Please log in to add coins");
-      return;
-    }
-
-    setLoadingCoins(true);
-    try {
-      const response = await fetch(`${API_URL}/vip/add-coins`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ userid: userId, amount })
-      });
-
-      if (response.status === 404) {
-        toast.error("Backend server is not running. Please start the server with: cd mmekoapi && npm start");
-        return;
-      }
-
-      const data = await response.json();
-      
-      if (data.ok) {
-        setCoinBalance(data.newBalance);
-        toast.success(`Added ${amount} coins! New balance: ${data.newBalance}`);
-        dispatch(checkVipStatus(userId) as any);
-        fetchUserBalance();
-      } else {
-        toast.error(data.message || "Failed to add coins");
-      }
-    } catch (error) {
-      console.error("Add coins error:", error);
-      toast.error("Failed to add coins. Please try again.");
-    } finally {
-      setLoadingCoins(false);
-    }
-  };
 
   // Continue VIP (re-enable auto-renewal)
   const continueVip = async () => {
@@ -105,7 +75,6 @@ const VIPPage = () => {
         toast.success("VIP auto-renewal enabled!");
         // Refresh VIP status to get updated auto-renewal state
         dispatch(checkVipStatus(userId) as any);
-        fetchUserBalance();
       } else {
         toast.error(data.message || "Failed to continue VIP");
       }
@@ -115,40 +84,11 @@ const VIPPage = () => {
     }
   };
 
-  // Fetch user balance
-  const fetchUserBalance = async () => {
-    if (!userId) return;
-    
-    try {
-      const response = await fetch(`${API_URL}/vip/balance`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ userid: userId })
-      });
-
-      if (response.status === 404) {
-        toast.error("Backend server is not running. Please start the server with: cd mmekoapi && npm start");
-        return;
-      }
-
-      const data = await response.json();
-      
-      if (data.ok) {
-        setCoinBalance(data.coinBalance);
-      }
-    } catch (error) {
-      console.error("Error fetching user balance:", error);
-      toast.error("Cannot connect to backend server. Please ensure the server is running.");
-    }
-  };
 
   // Check VIP status on component mount
   useEffect(() => {
     if (userId) {
       dispatch(checkVipStatus(userId) as any);
-      fetchUserBalance();
     }
   }, [userId, dispatch]);
 
@@ -361,41 +301,15 @@ const VIPPage = () => {
                 <p className="text-green-300 text-sm">
                   Auto-renewal: {vipStatus.autoRenewal ? "Enabled" : "Disabled"}
                 </p>
-                <p className="text-green-300 text-sm">
-                  Coin Balance: {vipStatus.coinBalance || 0} coins
-                </p>
               </div>
             </div>
           )}
 
-          {/* Coin Balance Display */}
-          <div className="mb-8 p-4 bg-blue-600 bg-opacity-20 border border-blue-500 rounded-lg">
-            <div className="text-center">
-              <h3 className="text-xl font-bold text-blue-400 mb-2">💰 Coin Balance</h3>
-              <p className="text-blue-300 mb-4">
-                Current Balance: {coinBalance} coins
-              </p>
-              <p className="text-blue-300 text-sm mb-4">
-                VIP upgrade requires 10 coins
-              </p>
-              <button
-                onClick={() => addCoins(20)}
-                disabled={loadingCoins}
-                className={`px-6 py-3 rounded-lg font-bold transition-colors ${
-                  loadingCoins
-                    ? "bg-gray-500 text-white cursor-not-allowed"
-                    : "bg-blue-500 hover:bg-blue-600 text-white"
-                }`}
-              >
-                {loadingCoins ? "Adding..." : "Add 20 Coins"}
-              </button>
-            </div>
-          </div>
 
           {/* Pricing and CTA */}
           <div className="flex flex-row md:flex-row items-center mb-24 justify-between">
             <div className="flex flex-col justify-center items-center md:mb-0">
-              <div className="text-3xl font-bold text-white mb-2">$10/month</div>
+              <div className="text-1xl font-bold text-white mb-2">250 Gold/month</div>
               <p className="text-white opacity-80">Cancel anytime</p>
             </div>
            
@@ -419,19 +333,21 @@ const VIPPage = () => {
             ) : (
               // VIP is not active - show upgrade button
               <button
-                onClick={handleUpgrade}
-                disabled={upgradeLoading || coinBalance < 10}
+                onClick={goldBalance < 250 ? () => router.push('/buy-gold') : handleUpgrade}
+                disabled={upgradeLoading}
                 className={`w-1/2 py-4 px-3 rounded-lg transition-colors duration-300 transform hover:scale-105 font-bold ${
-                  upgradeLoading || coinBalance < 10
+                  upgradeLoading
                     ? "bg-gray-500 text-white cursor-not-allowed"
+                    : goldBalance < 250
+                    ? "bg-blue-500 hover:bg-blue-600 text-white"
                     : "bg-orange-500 hover:bg-orange-600 text-white"
                 }`}
               >
                 {upgradeLoading 
                   ? "Processing..." 
-                  : coinBalance < 10 
-                    ? `Need ${10 - coinBalance} more coins` 
-                    : "Upgrade now (10 coins)"
+                  : goldBalance < 250 
+                    ? "Top Up Gold" 
+                    : "Upgrade now (250 gold)"
                 }
               </button>
             )}
@@ -443,7 +359,7 @@ const VIPPage = () => {
               <div className="bg-gray-800 rounded-lg p-6 max-w-md mx-4">
                 <h3 className="text-xl font-bold text-white mb-4">Cancel VIP Auto-Renewal</h3>
                 <p className="text-gray-300 mb-6">
-                  Are you sure you want to cancel VIP auto-renewal? Your VIP will remain active until it expires, but it won't automatically renew.
+                  Are you sure you want to cancel VIP auto-renewal? Your VIP will remain active until it expires, but it won&apos;t automatically renew.
                 </p>
                 <div className="flex gap-3 justify-end">
                   <button

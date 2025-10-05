@@ -49,7 +49,7 @@ export default function Profile({name, firstname, lastname, src, url,gold_balanc
           })()}
           
           {/* VIP Lion Badge */}
-          <VIPBadge size="md" isVip={isVip} vipEndDate={vipEndDate} />
+          <VIPBadge size="xl" className='-top-5 -right-5' isVip={isVip} vipEndDate={vipEndDate} />
         </div>
         <div className='flex flex-col gap-1 font-bold w-full'>
         <p className=" group-hover:text-gray-400 text-xl">{firstname && lastname ? `${firstname} ${lastname}` : name}</p>

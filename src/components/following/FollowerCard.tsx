@@ -326,7 +326,7 @@ const FollowerCard: React.FC<FollowerCardProps> = ({ image, name, creatorid, use
           {/* VIP Lion Badge */}
           {(() => {
             console.log(`🔍 [FOLLOWER DEBUG] User: ${name} - isVip: ${isVip}, vipEndDate: ${vipEndDate}`);
-            return <VIPBadge size="md" className="absolute -top-1 -right-1" isVip={isVip} vipEndDate={vipEndDate} />;
+            return <VIPBadge size="xl" className="absolute -top-5 -right-5" isVip={isVip} vipEndDate={vipEndDate} />;
           })()}
         </div>
         <div className="flex flex-col gap-1 min-w-0 flex-1">

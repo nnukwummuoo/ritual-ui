@@ -26,7 +26,7 @@ const VIPBadge: React.FC<VIPBadgeProps> = ({
     md: 'w-6 h-6',      // Posts (x2) 
     lg: 'w-8 h-8',      // Follow cards (x2)
     xl: 'w-12 h-12',    // Side menu (x3)
-    xxl: 'w-20 h-20'    // Profile (x5)
+    xxl: 'w-24 h-24'    // Profile (much larger)
   };
 
   const iconSizes = {
@@ -34,7 +34,7 @@ const VIPBadge: React.FC<VIPBadgeProps> = ({
     md: { width: 26, height: 26 },    // Posts
     lg: { width: 32, height: 32 },    // Follow cards
     xl: { width: 48, height: 48 },    // Side menu
-    xxl: { width: 80, height: 80 }    // Profile
+    xxl: { width: 100, height: 100 }    // Profile (much larger)
   };
 
   return (

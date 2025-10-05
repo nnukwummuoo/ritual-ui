@@ -1347,7 +1347,7 @@ export const Chat = () => {
                 </div>
                 {/* VIP Badge for chat partner */}
                 {viewingProfile.status === "succeeded" && vipStatus?.isVip && (
-                  <VIPBadge size="md" className="absolute -top-1 -right-1" isVip={vipStatus.isVip} vipEndDate={vipStatus.vipEndDate} />
+                  <VIPBadge size="xl" className="absolute -top-3 -right-5" isVip={vipStatus.isVip} vipEndDate={vipStatus.vipEndDate} />
                 )}
               </div>
               

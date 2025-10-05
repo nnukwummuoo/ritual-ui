@@ -488,12 +488,12 @@ export default function PostsCard() {
        {(() => {
          // Check if current user is VIP
          if (isSelf && vipStatus?.isVip) {
-           return <VIPBadge size="md" className="absolute -top-1 -right-1" isVip={vipStatus.isVip} vipEndDate={vipStatus.vipEndDate} />;
+           return <VIPBadge size="xl" className="absolute -top-5 -right-5" isVip={vipStatus.isVip} vipEndDate={vipStatus.vipEndDate} />;
          }
 
          // Check if post author is VIP
          if (!isSelf && p?.user?.isVip) {
-           return <VIPBadge size="md" className="absolute -top-1 -right-1" isVip={p.user.isVip} vipEndDate={p.user.vipEndDate} />;
+           return <VIPBadge size="xl" className="absolute -top-5 -right-5" isVip={p.user.isVip} vipEndDate={p.user.vipEndDate} />;
          }
 
          return null;
@@ -731,7 +731,7 @@ export default function PostsCard() {
                             {(() => {
                               const isVipActive = c?.isVip && c?.vipEndDate && new Date(c.vipEndDate) > new Date();
                               return isVipActive && (
-                                <VIPBadge size="lg" className="absolute -top-1 -right-1" isVip={c.isVip} vipEndDate={c.vipEndDate} />
+                                <VIPBadge size="sm" className="absolute -top-1 -right-1.5" isVip={c.isVip} vipEndDate={c.vipEndDate} />
                               );
                             })()}
                           </div>
