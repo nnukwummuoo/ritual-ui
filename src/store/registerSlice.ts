@@ -22,7 +22,7 @@ export interface RegisterState {
   conpasswordstate: string;
   chagepassword: string;
   creatorId?: string;
-  creator_listing?: boolean;
+  creator_portfolio?: boolean;
   // VIP status fields
   isVip?: boolean;
   vipStartDate?: string;
@@ -204,7 +204,7 @@ const registerSlice = createSlice({
       state.accesstoken = action.payload.accesstoken;
       state.userID = action.payload.userId;
       state.creatorId = action.payload.creatorId;
-      state.creator_listing = action.payload.creator_listing;
+      state.creator_portfolio = action.payload.creator_portfolio;
       state.balance = action.payload.balance || 0;
       // VIP status fields
       state.isVip = action.payload.isVip || false;
@@ -290,7 +290,7 @@ const registerSlice = createSlice({
               accesstoken: action.payload.accessToken,
               userID: action.payload.userId,
               creatorId: action.payload.creatorId,
-              creator_listing: action.payload.creator_listing,
+              creator_portfolio: action.payload.creator_portfolio,
               // Include VIP status
               isVip: action.payload.isVip || false,
               vipStartDate: action.payload.vipStartDate || null,
@@ -306,7 +306,7 @@ const registerSlice = createSlice({
         state.accesstoken = action.payload.accessToken;
         state.userID = action.payload.userId;
         state.creatorId = action.payload.creatorId;
-        state.creator_listing = action.payload.creator_listing;
+        state.creator_portfolio = action.payload.creator_portfolio;
         // Set VIP status in Redux state
         state.isVip = action.payload.isVip || false;
         state.vipStartDate = action.payload.vipStartDate || null;

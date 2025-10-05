@@ -1,4 +1,4 @@
-//src/app/creators/create-creator/CreateCreatorListing.tsx
+//src/app/creators/create-creator/CreateCreatorPortfolio.tsx
 
 "use client";
 
@@ -15,7 +15,7 @@ import { toast, ToastContainer } from "material-react-toastify";
 import CountrySelect from "@/components/CountrySelect/CountrySelect";
 
 import "material-react-toastify/dist/ReactToastify.css";
-import "@/styles/CreateCreatorListing.css";
+import "@/styles/CreateCreatorPortfolio.css";
 import person from "../../icons/person.svg";
 import idcardicon from "../../icons/idcardIcon.svg";
 import deleteIcon from "../../icons/deleteicon.svg";
@@ -62,7 +62,7 @@ async function compressImage(file: File, opts?: { maxWidth?: number; maxHeight?:
   }
 }
 
-export default function CreateCreatorListing () {
+export default function CreateCreatorPortfolio () {
   // const firstname = useSelector((state: any) => state.profile.firstname);
   // const lastname = useSelector((state: any) => state.profile.lastname);
   // const login = useSelector((state: any) => state.register.logedin);
@@ -251,17 +251,17 @@ export default function CreateCreatorListing () {
       };
       const res = await createCreatorMultipart({ token, userid: userid!, data, files: photolink });
       // Prefer backend message if available
-      const okMsg = (res && (res.message || res.msg)) ? String(res.message || res.msg) : "Listing created successfully";
+      const okMsg = (res && (res.message || res.msg)) ? String(res.message || res.msg) : "Portfolio created successfully";
       toast.success(okMsg, { autoClose: 3000 });
       router.push("/creators");
     }catch(err:any){
       // Log full error for debugging
-      console.error("Failed to create listing", err?.response || err);
+      console.error("Failed to create portfolio", err?.response || err);
       const status = err?.response?.status;
       const data = err?.response?.data;
       const serverMsg = data?.message || data?.msg || data?.error || err?.message;
       const detail = typeof data === 'object' ? JSON.stringify(data).slice(0, 400) : String(data || "");
-      const msg = serverMsg ? String(serverMsg) : 'Failed to create listing';
+      const msg = serverMsg ? String(serverMsg) : 'Failed to create portfolio';
       toast.error(`${status ? `[${status}] ` : ""}${msg}${detail && serverMsg !== detail ? `\n${detail}` : ""}`, { autoClose: 6000 });
     }finally{
       setdisablebut(false);
@@ -294,7 +294,7 @@ export default function CreateCreatorListing () {
       <div className="pt-16 md:pt-8">
         <ToastContainer position="top-center" theme="dark" />
         <p className="text-2xl font-semibold text-center text-slate-300 sm:w-1/2">
-          Create New Listing 
+          Create New Portfolio 
         </p>
         <div className="form-container">
           <div className="w-full h-2 mb-6 bg-gray-700 rounded">

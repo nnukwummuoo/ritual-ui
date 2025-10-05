@@ -64,7 +64,7 @@ export const Menubar = () => {
 //   }
 //  }
 
-//  const creator_listing = ()=>{
+//  const creator_portfolio = ()=>{
 //   if(creator) {
 //     return true
 //   }else{
@@ -131,7 +131,7 @@ export const Menubar = () => {
 
 
         {
-          true && // creator_listing()
+          true && // creator_portfolio()
           <button className='flex flex-row mx-auto mt-2' onClick={()=>{
             router.push(`/creatorbyid/random_id_123`)
           }}>

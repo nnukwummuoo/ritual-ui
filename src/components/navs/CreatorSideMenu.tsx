@@ -87,7 +87,7 @@ export const CreatorSideMenu: React.FC<CreatorSideMenuProps> = ({
     }
   };
 
-  const creator_listing = () => {
+  const creator_portfolio = () => {
     if (creator) {
       return true;
     } else {

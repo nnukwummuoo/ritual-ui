@@ -17,7 +17,7 @@ import CountrySelect from "@/components/CountrySelect/CountrySelect";
 // Move static files into /public/icons
 import idcardicon from "/public/icons/idcardIcon.svg";
 import deleteIcon from "/public/icons/deleteicon.svg";
-import "@/styles/CreateCreatorListing.css";
+import "@/styles/CreateCreatorPortfolio.css";
 import { useAuthToken } from "@/lib/hooks/useAuthToken";
 import { editCreatorMultipart } from "@/api/creator";
 import { useUserId } from "@/lib/hooks/useUserId";
@@ -184,11 +184,11 @@ export default function Editcreator () {
       const doc1 = newImages[0];
       const doc2 = newImages[1];
       await editCreatorMultipart({ token, data,files:newImages.map(img=>img), doc1, doc2 });
-      toast.success("Listing updated successfully");
+      toast.success("Portfolio updated successfully");
       router.push(`/creators/${creatorID}`);
     } catch (err:any) {
-      console.error("Failed to update listing", err);
-      toast.error(typeof err === 'string' ? err : 'Failed to update listing');
+      console.error("Failed to update portfolio", err);
+      toast.error(typeof err === 'string' ? err : 'Failed to update portfolio');
     } finally {
       setdisablebut(false);
       setLoading(false);

@@ -505,7 +505,7 @@ export default function Creatorbyid () {
 
   if (!loading&&creator.userid&&!creator.hosttype&&!creator.price){
       const tst=toast.loading("Curating your creator, please wait!")
-      navigate("/creators/editcreatorlisting")
+      navigate("/creators/editcreatorportfolio")
       setLoading(true)
       setTimeout(()=>{
         toast.dismiss(tst)
@@ -581,7 +581,7 @@ export default function Creatorbyid () {
                   <div className="z-[100] absolute  bg-[#0e0a1f] flex flex-col text-left">
                     <button
                       onClick={(e) => {
-                        navigate("/creators/editcreatorlisting");
+                        navigate("/creators/editcreatorportfolio");
                       }}
                       className="text-white"
                     >
