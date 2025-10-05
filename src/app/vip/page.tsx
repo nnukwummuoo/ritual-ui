@@ -110,7 +110,7 @@ const VIPPage = () => {
     }
 
     // Check if user has sufficient gold balance
-    if (goldBalance < 250) {
+    if (goldBalance < 100) {
       setShowInsufficientGoldModal(true);
       return;
     }
@@ -319,7 +319,7 @@ const VIPPage = () => {
           {/* Pricing and CTA */}
           <div className="flex flex-row md:flex-row items-center mb-24 justify-between">
             <div className="flex flex-col justify-center items-center md:mb-0">
-              <div className="text-1xl font-bold text-white mb-2">250 Gold/month</div>
+              <div className="text-1xl font-bold text-white mb-2">100 Gold/month</div>
               <p className="text-white opacity-80">Cancel anytime</p>
             </div>
            
@@ -388,7 +388,7 @@ const VIPPage = () => {
               <div className="bg-gray-800 rounded-lg p-6 max-w-md mx-4">
                 <h3 className="text-xl font-bold text-white mb-4">Insufficient Gold Balance</h3>
                 <p className="text-gray-300 mb-6">
-                  You need 250 gold to upgrade to VIP. You currently have {goldBalance} gold.
+                  You need 100 gold to upgrade to VIP. You currently have {goldBalance} gold.
                 </p>
                 <div className="flex gap-3 justify-end">
                   <button
