@@ -24,9 +24,10 @@ type Props = {
   followingUser: boolean;
   id: string | undefined;
   creatorid: string | undefined;
+  checkuser: boolean;
 };
 
-const CreatorByIdNav = ({ creatorName, views, followingUser, id,creatorid }: Props) => {
+const CreatorByIdNav = ({ creatorName, views, followingUser, id,creatorid,checkuser }: Props) => {
   const dispatch = useDispatch<any>();
   const router = useRouter();
   const { postuserid, creatorID } = useParams<{ postuserid?: string; creatorID?: string }>();
@@ -82,7 +83,7 @@ const CreatorByIdNav = ({ creatorName, views, followingUser, id,creatorid }: Pro
   };
 
   return (
-    <div className="sticky top-0 z-30 flex items-center justify-between w-full mx-auto text-white bg-black bg-opacity-80 md:mr-auto md:ml-0">
+    <div className="sticky top-0 z-30 flex items-center justify-between w-full mx-auto text-white  bg-opacity-80 md:mr-auto md:ml-0">
       <div onClick={() => router.back()} className="cursor-pointer">
         <IoArrowBack className="w-5 h-5" />
       </div>
@@ -94,7 +95,8 @@ const CreatorByIdNav = ({ creatorName, views, followingUser, id,creatorid }: Pro
             {views} Views
           </p>
         </div>
-
+{checkuser ?<></>: (
+  <>
         <button
           className="flex flex-row items-center space-x-1 bg-orange-500 px-2 py-1 rounded-lg justify-center"
           onClick={onFollowClick}
@@ -108,6 +110,8 @@ const CreatorByIdNav = ({ creatorName, views, followingUser, id,creatorid }: Pro
           />
           {!isFollowing && <p>Follow</p>}
         </button>
+        </>
+        )}
       </div>
     </div>
   );

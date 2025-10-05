@@ -85,10 +85,8 @@ export async function editCreatorMultipart(params: {
   Object.entries(data).forEach(([key, value]) => {
     if (Array.isArray(value)) {
       value.forEach((v) => form.append(key, v));
-      console.log(`[editCreatorMultipart] Appended array field "${key}" with values:`, value);
     } else if (value !== undefined && value !== null) {
       form.append(key, String(value));
-      console.log(`[editCreatorMultipart] Appended field "${key}" with value:`, value);
     }
   });
 
@@ -96,21 +94,11 @@ export async function editCreatorMultipart(params: {
   [...(files || []), doc1, doc2].forEach((file, i) => {
     if (file) {
       form.append("updateCreatorPhotos", file as any);
-      console.log(
-        `[editCreatorMultipart] Appended updateCreatorPhotos[${i}]:`,
-        (file as any).name || "[blob-no-name]"
-      );
-    } else {
-      console.log(`[editCreatorMultipart] update file[${i}] is null or undefined, skipped`);
     }
   });
-
-  console.log("[editCreatorMultipart] Final FormData ready to send");
 
   const res = await api.post("/editcreator", form, {
     headers: { "Content-Type": "multipart/form-data" },
   });
-
-  console.log("[editCreatorMultipart] Backend response:", res.data);
   return res.data;
 }
