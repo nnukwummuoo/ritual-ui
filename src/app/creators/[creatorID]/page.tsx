@@ -678,7 +678,7 @@ export default function Creatorbyid () {
                 <h2 className="text-lg font-bold mb-4">Warning</h2>
                 <p className="mb-4">
                   Deleting this page will erase all your views permanently. This
-                  will lower your visibility if you create a new creator page. Are
+                  will lower your visibility if you create a new portfolio page. Are
                   you absolutely sure?
                 </p>
                 <div className="flex justify-end gap-4">
