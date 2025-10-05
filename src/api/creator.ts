@@ -64,7 +64,7 @@ export async function getMyCreator(params: { userid: string; token?: string }) {
   return data;
 }
 // -----------------------------
-// Edit Creator (multipart)
+// Edit Portfolio (multipart)
 // -----------------------------
 export async function editCreatorMultipart(params: {
   token: string;

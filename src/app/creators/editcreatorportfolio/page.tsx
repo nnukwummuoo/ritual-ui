@@ -217,7 +217,7 @@ export default function Editcreator () {
         <HeaderBackNav />
         <ToastContainer position="top-center" theme="dark" />
         <p className="text-2xl font-semibold text-center text-slate-300 sm:w-1/2">
-          Edit creator
+          Edit Portfolio
         </p>
         <div className="form-container">
           <div className="w-full h-2 mb-6 bg-gray-700 rounded">
