@@ -522,7 +522,6 @@ export const deletereview = createAsyncThunk(
 export const addcrush = createAsyncThunk("creator/addcrush ", async (data: any) => {
   try {
     let response = await axios.post(`${URL}/addcrush`, data);
-
     return response.data;
   } catch (err : any) {
     if (!err.response.data.message) {

@@ -10,10 +10,10 @@ import { countryList } from "@/components/CountrySelect/countryList";
 import { CreatorCard, CreatorCardProps } from "./_components/card";
 import CategoryButtonComponent from "./_components/CategoryButton";
 import { getMyCreator } from "@/api/creator";
+import VIPBadge from "@/components/VIPBadge";
 
 export default function CreatorPage() {
   // const login = useSelector((state: any) => state.register.logedin);
-  // const dispatch = useDispatch();
   // const mycreatorstatus = useSelector((state: any) => state.creator.mycreatorstatus);
   // const message = useSelector((state: any) => state.creator.message);
   // const mycreator = useSelector((state: any) => state.creator.mycreator);
@@ -47,9 +47,10 @@ export default function CreatorPage() {
   const [showmycreator, setshowmycreator] = useState(false);
   const [showhost, setshowhost] = useState(false);
   const [isModalOpen, setModalOpen] = useState(false);
-  const [categoryButton, setCategoryButton] = useState(" ");
+  const [categoryButton, setCategoryButton] = useState("All");
 
   const buttonData = [
+    { label: "All", value: "All" },
     { label: "Fan Call", value: "Fan Call" },
     { label: "Fan meet", value: "Fan meet" },
     { label: "Fan date", value: "Fan date" },
@@ -58,7 +59,8 @@ export default function CreatorPage() {
   const toggleModal = () => setShowCountries((prev) => !prev);
   const handleCategorybutton = (value: string) => {
     setCategoryButton(value);
-    setHosttypeSearchQuery(value);
+    // If "All" is selected, clear the filter (empty string shows all)
+    setHosttypeSearchQuery(value === "All" ? "" : value);
   };
 
   const toggleFullPageModal = () => setModalOpen(!isModalOpen);
@@ -132,6 +134,8 @@ export default function CreatorPage() {
 
   const user = useAuth();
 
+  // VIP status is now included directly from backend, no need for separate API calls
+
   // Fetch my created creators when session is available
   useEffect(() => {
     const run = async () => {
@@ -148,6 +152,14 @@ export default function CreatorPage() {
         const list = Array.isArray(res?.host) ? [...res.host] : 
                     Array.isArray(res) ? [...res] : 
                     Array.isArray(res?.data) ? [...res.data] : [];
+        
+        console.log(`📊 [CREATORS PAGE] Received ${list.length} creators from backend`);
+        console.log(`🦁 [CREATORS PAGE] VIP Status in response:`, list.map(c => ({ 
+          name: c.name, 
+          userid: c.userid, 
+          isVip: c.isVip, 
+          vipEndDate: c.vipEndDate 
+        })));
         
         setMyCreators(list);
       } catch (e: any) {
@@ -224,10 +236,9 @@ const mapToCard = (m: any): CreatorCardProps => {
     amountNum = amountVal;
   }
 
-  return {
+  const cardData = {
     photolink: photo,
     hosttype: m.hosttype || m.category || "",
-    online: Boolean(m.online),
     name: m.name || m.fullName || "",
     age: Number(m.age || 0),
     gender: m.gender || "",
@@ -238,7 +249,17 @@ const mapToCard = (m: any): CreatorCardProps => {
     userid: m.userid || m.hostid || m.ownerId || "",
     createdAt: m.createdAt || m.created_at || "",
     hostid: m.hostid,
+    // VIP status comes directly from backend
+    isVip: m.isVip || false,
+    vipEndDate: m.vipEndDate || null,
   };
+
+  // Debug log for VIP status
+  if (m.isVip || m.vipEndDate) {
+    console.log(`🦁 [MAPTOCARD] VIP Creator: ${cardData.name} (${cardData.userid}) - isVip: ${cardData.isVip}, vipEndDate: ${cardData.vipEndDate}`);
+  }
+
+  return cardData;
 };
 
 
@@ -275,10 +296,27 @@ const renderCreators = () => {
 
   const list: CreatorCardProps[] = myCreators.map((m) => {
     const card = mapToCard(m);
-    return {
+    const finalCard = {
       ...card,
       photolink: card.photolink || "/images/default-placeholder.png", // fallback image
     };
+    
+    // Debug log for final card data
+    console.log(`🎴 [RENDERCREATORS] Final card data for ${finalCard.name}:`, {
+      isVip: finalCard.isVip,
+      vipEndDate: finalCard.vipEndDate,
+      userid: finalCard.userid
+    });
+    
+    return finalCard;
+  });
+
+  // Filter creators based on selected category
+  const filteredList = list.filter((creator) => {
+    if (categoryButton === "All") {
+      return true; // Show all creators
+    }
+    return creator.hosttype === categoryButton;
   });
 
   if (!list.length) {
@@ -289,13 +327,26 @@ const renderCreators = () => {
     );
   }
 
+  if (!filteredList.length && list.length > 0) {
+    return (
+      <div className="mt-6 text-sm text-slate-400">
+        No creators found for "{categoryButton}" category.
+      </div>
+    );
+  }
+
   return (
     <ul className="grid grid-cols-2 gap-2 mt-4 mb-12 md:grid-cols-3">
-      {list.map((value) => (
-        <CreatorCard
-          key={value.creatorid || Math.random().toString(36)}
-          {...value}
-        />
+      {filteredList.map((value, index) => (
+        <li key={value.creatorid || Math.random().toString(36)} className="relative">
+          <CreatorCard {...value} />
+          {/* VIP Badge - positioned at page level on top of verified creators */}
+          {value.isVip && (
+            <div className="absolute -top-4 left-20 z-50">
+              <VIPBadge size="xxl" isVip={value.isVip} vipEndDate={value.vipEndDate} />
+            </div>
+          )}
+        </li>
       ))}
     </ul>
   );
@@ -311,7 +362,7 @@ const renderCreators = () => {
 
 
   return (
-    <div className="px-4 mt-10 sm:mx-10">
+    <div className="px-4 mt-2 sm:mx-4">
       <div className="text-slate-200 sm:w-1/2 sm:ml-16 md:w-full md:ml-0 md:mt-10 md:overflow-auto">
         <CategoryButtonComponent
           buttons={buttonData}

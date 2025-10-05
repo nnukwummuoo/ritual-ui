@@ -53,7 +53,7 @@ export default function Profile({name, firstname, lastname, src, url,gold_balanc
         </div>
         <div className='flex flex-col gap-1 font-bold w-full'>
         <p className=" group-hover:text-gray-400 text-xl">{firstname && lastname ? `${firstname} ${lastname}` : name}</p>
-        <p className=" group-hover:text-gray-400 text-blue-400">Basic Member</p>
+        <p className=" group-hover:text-gray-400 text-blue-400">{isVip ? "VIP" : "Basic Member"}</p>
         <p ><span>Gold bal:</span> <span className='text-yellow-500 font-bold text-[13px] ml-6'>{gold_balance}</span></p>
       
         </div>

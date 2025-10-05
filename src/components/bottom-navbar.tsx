@@ -1,5 +1,5 @@
 "use client";
-import React, { ReactNode } from "react";
+import React, { ReactNode, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import Navapp from "@/navs/NavApp";
@@ -7,8 +7,9 @@ import MenuProvider from "@/lib/context/MenuContext";
 import OpenMobileMenuBtn from "./OpenMobileMenuBtn";
 import { usePathname } from "next/navigation";
 import AnyaEyeIcon from "./icons/AnyaEyeIcon";
-import { useSelector } from "react-redux";
-import type { RootState } from "@/store/store";
+import { useSelector, useDispatch } from "react-redux";
+import type { RootState, AppDispatch } from "@/store/store";
+import { getmsgnitify } from "@/store/messageSlice";
 
 interface BottomNavBarItemProps {
   imgUrl?: string;
@@ -19,10 +20,23 @@ interface BottomNavBarItemProps {
   unreadCount?: number;
 }
 export default function BottomNavBar() {
-  const pathname = usePathname()
+  const pathname = usePathname();
+  const dispatch = useDispatch<AppDispatch>();
+  
+  // Get user data from Redux store
+  const userid = useSelector((state: RootState) => state.register.userID);
+  const token = useSelector((state: RootState) => state.register.refreshtoken);
+  const msgnotifystatus = useSelector((state: RootState) => state.message.msgnotifystatus);
   
   // Get message data from Redux store
   const recentmsg = useSelector((state: RootState) => state.message.recentmsg);
+  
+  // Fetch message notifications when component mounts
+  useEffect(() => {
+    if (userid && token && msgnotifystatus === "idle") {
+      dispatch(getmsgnitify({ userid }));
+    }
+  }, [userid, token, msgnotifystatus, dispatch]);
   
   // Calculate total unread messages
   const totalUnreadCount = React.useMemo(() => {

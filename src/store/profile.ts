@@ -238,13 +238,9 @@ export const getcollection = createAsyncThunk<{ data: CollectionData }, { userid
   "profile/getcollection",
   async (data) => {
     try {
-      //console.log('ontop get profile')
       let response = await axios.put(`${URL}/exclusivecontent`, data);
-      // console.log('under get profile')
-
       return response.data;
     } catch (err : any) {
-      // console.log('erro get profile')
       throw getErrorMessage(err);
     }
   }

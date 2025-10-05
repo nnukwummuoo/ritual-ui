@@ -21,6 +21,7 @@ import axios from "axios";
 import Image from "next/image";
 import { X, Paperclip, Send, File, Download } from "lucide-react";
 import VIPBadge from "@/components/VIPBadge";
+import { checkVipCelebration, markVipCelebrationViewed } from "@/api/vipCelebration";
 
 
 export const Chat = () => {
@@ -340,12 +341,71 @@ export const Chat = () => {
   }>>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // VIP celebration states
+  const [showVipCelebration, setShowVipCelebration] = useState(false);
+  const [vipCelebrationShown, setVipCelebrationShown] = useState(false);
+  const [celebrationChecked, setCelebrationChecked] = useState(false);
+
   // Function to scroll to bottom of messages
   const scrollToBottom = () => {
     if (msgListref.current) {
       msgListref.current.scrollTop = msgListref.current.scrollHeight;
     }
   };
+
+  // Check if VIP celebration should be shown (database-based)
+  const checkVipCelebrationStatus = React.useCallback(async (userId: string, viewerId: string) => {
+    if (!userId || !viewerId) return false;
+    
+    try {
+      const token = (() => {
+        try {
+          const raw = localStorage.getItem("login");
+          if (raw) {
+            const data = JSON.parse(raw);
+            return data?.refreshtoken || data?.accesstoken;
+          }
+        } catch (error) {
+          console.error("[Chat] Error retrieving token from localStorage:", error);
+        }
+        return "";
+      })();
+
+      if (!token) return false;
+
+      const response = await checkVipCelebration(userId, viewerId, token);
+      return response.shouldShowCelebration;
+    } catch (error) {
+      console.error('Error checking VIP celebration status:', error);
+      return false;
+    }
+  }, []);
+
+  // Mark VIP celebration as viewed (database-based)
+  const markVipCelebrationAsViewed = React.useCallback(async (userId: string, viewerId: string) => {
+    if (!userId || !viewerId) return;
+    
+    try {
+      const token = (() => {
+        try {
+          const raw = localStorage.getItem("login");
+          if (raw) {
+            const data = JSON.parse(raw);
+            return data?.refreshtoken || data?.accesstoken;
+          }
+        } catch (error) {
+          console.error("[Chat] Error retrieving token from localStorage:", error);
+        }
+        return "";
+      })();
+
+      if (!token) return;
+
+      await markVipCelebrationViewed(userId, viewerId, token);
+    } catch (error) {
+      console.error('Error marking VIP celebration as viewed:', error);
+    }
+  }, []);
 
   // Load userid from localStorage if not in Redux (same pattern as ProfilePage)
   React.useEffect(() => {
@@ -524,6 +584,43 @@ export const Chat = () => {
       setChatphotoError(false);
     }
   }, [viewingProfile, creatorid, dispatch]);
+
+  // Check VIP celebration status when VIP status is confirmed
+  useEffect(() => {
+    const checkCelebration = async () => {
+      if (vipStatus?.isVip && viewingProfile.status === "succeeded" && viewingProfile.userId && loggedInUserId && !celebrationChecked) {
+        setCelebrationChecked(true);
+        
+        try {
+          const shouldShow = await checkVipCelebrationStatus(viewingProfile.userId, loggedInUserId);
+          
+          if (shouldShow) {
+            setShowVipCelebration(true);
+            setVipCelebrationShown(true);
+            
+            // Mark as viewed in database
+            await markVipCelebrationAsViewed(viewingProfile.userId, loggedInUserId);
+            
+            // Hide the celebration after 5 seconds
+            setTimeout(() => {
+              setShowVipCelebration(false);
+            }, 5000);
+          }
+        } catch (error) {
+          console.error('Error checking VIP celebration:', error);
+        }
+      }
+    };
+
+    checkCelebration();
+  }, [vipStatus, viewingProfile.status, viewingProfile.userId, loggedInUserId, celebrationChecked, checkVipCelebrationStatus, markVipCelebrationAsViewed]);
+
+  // Reset VIP celebration tracking when switching users
+  useEffect(() => {
+    setVipCelebrationShown(false);
+    setShowVipCelebration(false);
+    setCelebrationChecked(false);
+  }, [creatorid]);
 
   // Force update chat info when creatorid changes to ensure profile is always shown
   useEffect(() => {
@@ -1309,6 +1406,21 @@ export const Chat = () => {
 
   return (
     <div className="h-full w-full flex flex-col">
+      {/* VIP Celebration Animation */}
+      {showVipCelebration && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 pointer-events-none">
+          <div className="relative w-64 h-64 md:w-96 md:h-96">
+            <Image
+              src="/lion.gif"
+              alt="VIP Celebration"
+              fill
+              className="object-contain"
+              priority
+            />
+          </div>
+        </div>
+      )}
+
       {/* Top Bar with Clean Design */}
       <div className=" bg-gray-800 backdrop-blur-sm border-b border-blue-700/30 p-3 sm:p-4 sticky top-0 z-50 flex-shrink-0">
         <div className="flex items-center justify-between">

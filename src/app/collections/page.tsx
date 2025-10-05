@@ -4,6 +4,7 @@ import { MdShoppingBag, MdFavorite } from "react-icons/md";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { FaSpinner } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
+import { useRouter } from "next/navigation";
 import type { AppDispatch, RootState } from "@/store/store";
 import { getcollection, deletecollection } from "@/store/profile";
 import { remove_Crush } from "@/store/creatorSlice";
@@ -99,12 +100,21 @@ const Crush: React.FC<{
   items: CollectionItem[];
   onRemove: (creatorid: string) => void;
 }> = ({ items, onRemove }) => {
+  const router = useRouter();
+  
+  const handleCreatorClick = (creator: any) => {
+    const creatorid = creator.creatorid || creator.creatorId || creator.id || creator._id;
+    if (creatorid) {
+      router.push(`/creators/${creatorid}`);
+    }
+  };
+
   return (
     <div className="mt-4">
-      <h2 className="text-white text-center mb-4 text-lg font-semibold">
-        List Of My Crush Creators
+      <h2 className="text-white text-center mb-6 text-2xl font-bold">
+        💜 My Crush List
       </h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {items?.length ? (
           items.map((it: any, idx: number) => {
             const src = it.photolink || it.photo || it.image || it.src || "";
@@ -112,22 +122,75 @@ const Crush: React.FC<{
             const status = it.status || "active";
             const type = it.type || "standard";
             const creatorid = it.creatorid || it.creatorId || it.id || it._id || String(idx);
+            const location = it.location || "Unknown";
+            const hosttype = it.hosttype || "Fan meet";
+            
             return (
-              <div key={String(creatorid)} className="relative">
-                <ImageCard src={src} status={status} type={type} name={name} />
-                <div className="absolute top-2 left-2">
+              <div 
+                key={String(creatorid)} 
+                className="relative bg-gray-800 rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 cursor-pointer group"
+                onClick={() => handleCreatorClick(it)}
+              >
+                <div className="relative">
+                  <img
+                    src={src}
+                    alt={name}
+                    className="w-full h-48 object-cover"
+                    onError={(e) => {
+                      e.currentTarget.src = "https://via.placeholder.com/300x200/374151/ffffff?text=No+Image";
+                    }}
+                  />
+                  
+                  {/* Online Status */}
+                  <div className="absolute top-3 right-3">
+                    <div className={`w-3 h-3 rounded-full ${status === "active" ? "bg-green-500" : "bg-gray-400"}`}></div>
+                  </div>
+                  
+                  {/* Remove Button */}
                   <button
-                    onClick={() => onRemove(String(creatorid))}
-                    className="px-2 py-1 text-xs rounded bg-red-600 text-white hover:bg-red-500"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onRemove(String(creatorid));
+                    }}
+                    className="absolute top-3 left-3 bg-red-600 hover:bg-red-700 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                    title="Remove from crush list"
                   >
-                    Remove
+                    ✕
                   </button>
+                  
+                  {/* Host Type Badge */}
+                  <div className="absolute bottom-3 left-3">
+                    <span className="bg-purple-600 text-white px-2 py-1 rounded-full text-xs font-semibold">
+                      {hosttype}
+                    </span>
+                  </div>
+                </div>
+                
+                <div className="p-4">
+                  <h3 className="text-white font-bold text-lg mb-1 truncate">{name}</h3>
+                  <p className="text-gray-400 text-sm mb-2">📍 {location}</p>
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-300 text-sm">
+                      {status === "active" ? "🟢 Online" : "🔴 Offline"}
+                    </span>
+                    <span className="text-purple-400 text-sm font-medium">View Profile →</span>
+                  </div>
                 </div>
               </div>
             );
           })
         ) : (
-          <div className="col-span-full text-center text-gray-400 py-10">No crush creators yet.</div>
+          <div className="col-span-full text-center py-16">
+            <div className="text-6xl mb-4">💔</div>
+            <h3 className="text-xl font-semibold text-gray-300 mb-2">No Crush Yet</h3>
+            <p className="text-gray-400 mb-6">Start adding creators to your crush list!</p>
+            <button
+              onClick={() => router.push('/creators')}
+              className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors duration-200"
+            >
+              Browse Creators
+            </button>
+          </div>
         )}
       </div>
     </div>
@@ -136,9 +199,47 @@ const Crush: React.FC<{
 
 const CollectionsPage: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const [activeTab, setActiveTab] = useState<"content" | "crush">("content");
-  const userid = useSelector((s: RootState) => s.register.userID);
-  const token = useSelector((s: RootState) => s.register.refreshtoken);
+  const [activeTab, setActiveTab] = useState<"content" | "crush">("crush");
+  const reduxUserid = useSelector((s: RootState) => s.register.userID);
+  const reduxToken = useSelector((s: RootState) => s.register.refreshtoken);
+  
+  // Get userid and token from Redux or localStorage as fallback
+  const [userid, setUserid] = useState<string>("");
+  const [token, setToken] = useState<string>("");
+  
+  useEffect(() => {
+    // Get userid
+    if (reduxUserid) {
+      setUserid(reduxUserid);
+    } else {
+      // Fallback to localStorage
+      try {
+        const stored = localStorage.getItem("login");
+        if (stored) {
+          const data = JSON.parse(stored);
+          setUserid(data?.userID || data?.userid || data?.id || "");
+        }
+      } catch (error) {
+        console.error("Error getting userid from localStorage:", error);
+      }
+    }
+    
+    // Get token
+    if (reduxToken) {
+      setToken(reduxToken);
+    } else {
+      // Fallback to localStorage
+      try {
+        const stored = localStorage.getItem("login");
+        if (stored) {
+          const data = JSON.parse(stored);
+          setToken(data?.refreshtoken || data?.accesstoken || "");
+        }
+      } catch (error) {
+        console.error("Error getting token from localStorage:", error);
+      }
+    }
+  }, [reduxUserid, reduxToken]);
   const collectionstats = useSelector((s: RootState) => s.profile.collectionstats);
   const collection_error = useSelector((s: RootState) => s.profile.fllowmsg as string);
   const listofcontent = useSelector((s: RootState) => s.profile.listofcontent as any[]);
@@ -146,7 +247,7 @@ const CollectionsPage: React.FC = () => {
 
   // Fetch collections when user is known
   useEffect(() => {
-    if (userid) {
+    if (userid && token) {
       dispatch(getcollection({ userid, token }));
     }
   }, [dispatch, userid, token]);

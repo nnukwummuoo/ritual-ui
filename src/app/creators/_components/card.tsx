@@ -5,18 +5,16 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 
 // import DummyCreatorImage from "/icons/mmekoDummy.png";
-// import onlineIcon from "/icons/onlineIcon.svg";
-// import offlineIcon from "/icons/offlineIcon.svg";
 // import femaleIcon from "/icons/femaleIcon.svg";
 // import maleIcon from "/icons/maleIcon.svg";
 // import transIcon from "/icons/transIcon.svg";
 import { getCountryData } from "@/api/getCountries";
+import VIPBadge from "@/components/VIPBadge";
 
 // Props interface
 export interface CreatorCardProps {
   photolink: string | null;
   hosttype: string;
-  online: boolean;
   name: string;
   age: number;
   gender: string;
@@ -26,7 +24,9 @@ export interface CreatorCardProps {
   creatorid: string;
   userid: string;
   createdAt: string;
-  hostid:string;
+  hostid: string;
+  isVip?: boolean;
+  vipEndDate?: string;
 }
 
 interface CountryData {
@@ -38,7 +38,6 @@ interface CountryData {
 export const CreatorCard = ({
   photolink,
   hosttype,
-  online,
   name,
   age,
   gender,
@@ -48,7 +47,9 @@ export const CreatorCard = ({
   creatorid,
   userid,
   createdAt,
-  hostid
+  hostid,
+  isVip = false,
+  vipEndDate
 }: CreatorCardProps) => {
   const router = useRouter();
   // const [hostImg, setHostImg] = useState<string>("/icons/mmekoDummy.png");
@@ -61,11 +62,19 @@ export const CreatorCard = ({
 
   // Check if creator was created within 7 days
   useEffect(() => {
-    if (createdAt) {
+    if (createdAt && createdAt !== '') {
       const creationDate = new Date(createdAt);
       const currentDate = new Date();
+      
+      // Check if the date is valid
+      if (isNaN(creationDate.getTime())) {
+        return;
+      }
+      
       const diffInMs = currentDate.getTime() - creationDate.getTime();
       const diffInDays = diffInMs / (1000 * 60 * 60 * 24);
+      
+      // Show NEW badge for creators created within 7 days
       setIsNew(diffInDays <= 7);
     }
   }, [createdAt]);
@@ -111,22 +120,10 @@ export const CreatorCard = ({
         />
       </div>
 
-      {/* Online/Offline Indicator */}
-      <div className="absolute top-0 left-0 w-6 h-6 m-1">
-        <Image
-          alt={online ? "online" : "offline"}
-          src={online ? "/icons/onlineIcon.svg" : "/icons/offlineIcon.svg"}
-          width={20}
-          height={20}
-          className={`object-cover rounded-full ${
-            online ? "bg-[#d3f6e0]" : "bg-[#ffd8d9]"
-          }`}
-        />
-      </div>
 
       {/* New Badge */}
       {isNew && (
-        <div className="absolute top-0 right-0 m-1">
+        <div className="absolute top-0 right-0 m-1 z-10">
           <span className="inline-flex items-center px-2 py-1 text-xs font-bold text-white bg-gradient-to-br from-blue-500 to-purple-600 shadow-2xl rounded-full">
             New
           </span>
