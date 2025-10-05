@@ -641,14 +641,14 @@ export const Chat = () => {
                 <div key={index} className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-4 w-full`}>
                   <div className={`w-1/2 px-4 py-3 rounded-2xl ${
                     isUser 
-                      ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-br-md' 
-                      : ' bg-gray-800/50 text-white rounded-bl-md border border-blue-700/30'
+                      ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-br-md shadow-lg shadow-blue-500/30' 
+                      : ' bg-gray-800/50 text-white rounded-bl-md border border-blue-700/30 shadow-lg shadow-blue-700/10'
                   }`}>
                     {/* VIP Badge for message sender */}
                     {!isUser && value.isVip && (
-                      <div className="flex items-center gap-2 mb-2">
+                      <div className="flex justify-end items-center gap-2 mb-2">
                           <VIPBadge size="md" isVip={value.isVip} vipEndDate={value.vipEndDate} />
-                        <span className="text-xs text-blue-300">VIP Message</span>
+                        <span className="text-xs p-1 rounded-full bg-gradient-to-b from-orange-500 to-orange-800 text-blue-300">VIP</span>
                       </div>
                     )}
                     <p className="text-sm">{value.content}</p>

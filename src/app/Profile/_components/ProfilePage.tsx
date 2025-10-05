@@ -1389,7 +1389,7 @@ const PostModal = () => {
     if (!showProfilePictureModal) return null;
 
     return (
-      <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black bg-opacity-90 p-4">
+      <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black bg-opacity-90 p-4" style={{zIndex: 9999}}>
         <div className="relative max-w-4xl w-full max-h-[90vh] flex flex-col">
           {/* Close Button */}
           <button
@@ -1401,23 +1401,36 @@ const PostModal = () => {
           
           {/* Profile Picture */}
           <div className="relative w-full h-full flex items-center justify-center">
-            <div className="relative w-full h-0 pb-[100%] max-h-[80vh]">
-              <div className="relative w-full h-full">
+            <div className="relative w-full max-w-md h-96 flex items-center justify-center">
                 {(() => {
                   const profileImage = photolink || avatarSrc;
                   const userName = `${firstname || ""} ${lastname || ""}`.trim();
                   const initials = userName.split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2) || "?";
                   
+                  
                   if (profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined") {
-                    return (
-                      <Image
-                        alt="Profile Picture"
-                        src={profileImage}
-                        fill
-                        className="object-contain rounded-lg"
-                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 70vw"
-                      />
-                    );
+                    // Check if it's a base64 image
+                    const isBase64 = profileImage.startsWith('data:image/');
+                    
+                    if (isBase64) {
+                      return (
+                        <img
+                          alt="Profile Picture"
+                          src={profileImage}
+                          className="max-w-full max-h-full object-contain rounded-lg"
+                        />
+                      );
+                    } else {
+                      return (
+                        <Image
+                          alt="Profile Picture"
+                          src={profileImage}
+                          width={400}
+                          height={400}
+                          className="object-contain rounded-lg"
+                        />
+                      );
+                    }
                   }
                   
                   return (
@@ -1428,8 +1441,7 @@ const PostModal = () => {
                 })()}
                 
                 {/* VIP Lion Badge */}
-                {profileOwnerVipStatus && <VIPBadge size="xl" className="absolute -top-4 -right-4" isVip={profileOwnerVipStatus} vipEndDate={vipStatus?.vipEndDate} />}
-              </div>
+                {profileOwnerVipStatus && <VIPBadge size="xxl" className="absolute top-2 right-2" isVip={profileOwnerVipStatus} vipEndDate={vipStatus?.vipEndDate} />}
             </div>
           </div>
           
@@ -1452,7 +1464,7 @@ const PostModal = () => {
     >
       {/* VIP Celebration Animation */}
       {showVipCelebration && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 pointer-events-none">
+        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black bg-opacity-50 pointer-events-none">
           <div className="relative w-64 h-64 md:w-96 md:h-96">
             <Image
               src="/lion.gif"
@@ -1534,7 +1546,7 @@ const PostModal = () => {
                       <div className="relative">
                         <div 
                         onClick={() => setShowProfilePictureModal(true)}
-                        className="w-24 h-24 rounded-full p-1 bg-gradient-to-r from-blue-500 to-purple-600">
+                        className="w-24 h-24 rounded-full p-1 bg-gradient-to-r from-blue-500 to-purple-600 cursor-pointer hover:scale-105 transition-transform">
                           {(() => {
                             const profileImage = photolink || avatarSrc;
                             const userName = `${firstname || ""} ${lastname || ""}`.trim();
@@ -1562,7 +1574,7 @@ const PostModal = () => {
                         
                         {/* VIP Lion Badge */}
                           {(() => {
-                            return profileOwnerVipStatus && <VIPBadge size="xxl" className="absolute -top-8 -right-8" isVip={profileOwnerVipStatus} vipEndDate={vipStatus?.vipEndDate} />;
+                            return profileOwnerVipStatus && <VIPBadge size="xxl" className="absolute -top-8 -right-8 pointer-events-none" isVip={profileOwnerVipStatus} vipEndDate={vipStatus?.vipEndDate} />;
                           })()}
                       </div>
                     </div>
