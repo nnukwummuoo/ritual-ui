@@ -672,7 +672,7 @@ export default function Creatorbyid () {
                 <h1 className="text-xl font-bold text-white mb-2">
                   {getStatus(String(creator?.hosttype))} {creator.name.split(" ")[0]}
                 </h1>
-                <p className="text-gray-300 text-1xl">{creator.name}</p>
+                <p className="text-gray-300 text-1xl">{creator.name} </p>
               </div>
             </div>
 
