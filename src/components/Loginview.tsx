@@ -82,7 +82,9 @@ export const Loginview = () => {
         nickname: res.user.nickname,
         _id: res.user._id,
         accessToken: res.user.accessToken,
-        refreshtoken: res.user.refreshtoken
+        refreshtoken: res.user.refreshtoken,
+        firstname: res.user.firstname,
+        lastname: res.user.lastname,
       };
 
       // Save to localStorage for useUserId hook
@@ -94,6 +96,8 @@ export const Loginview = () => {
             userID: res.user._id,
             refreshtoken: res.user.refreshtoken,
             accesstoken: res.user.accessToken,
+            firstname: res.user.firstname,
+            lastname: res.user.lastname, 
           })
         );
       } catch (e) {
