@@ -61,7 +61,7 @@ export const createcreator = createAsyncThunk<any, CreateCreatorPayload>(
       let formData = new FormData();
 
       if (data.photolink) {
-        data.photolink.forEach((image: File) => {
+        data.photolink.forEach((image: File, index: number) => {
           formData.append("creatorfiles", image);
         });
       }
@@ -95,7 +95,6 @@ export const createcreator = createAsyncThunk<any, CreateCreatorPayload>(
         formData.append("creatorFiles", value);
       });
 
-
       const response = await axios.put(`${URL}/creator`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
@@ -103,7 +102,6 @@ export const createcreator = createAsyncThunk<any, CreateCreatorPayload>(
       });
 
       if (response.status !== 200) {
-        // Post was not successfully created
         throw "Error updating your post";
       }
 

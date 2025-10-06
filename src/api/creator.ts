@@ -34,14 +34,10 @@ export async function createCreatorMultipart(params: {
     }
   });
 
-  // Add files
+  // Add files - use consistent field names that backend expects
   photolink.forEach((file, index) => {
-    formData.append(`photo${index}`, file);
+    formData.append('creatorfiles', file);
   });
-
-  console.log("[createCreatorMultipart] Sending FormData with files:", photolink.length);
-  console.log("[createCreatorMultipart] File names:", photolink.map(f => f.name));
-  console.log("[createCreatorMultipart] FormData entries:", Array.from(formData.entries()).map(([key, value]) => ({ key, type: typeof value, isFile: value instanceof File })));
 
   const res = await api.put("/creator", formData, {
     headers: { 
@@ -49,7 +45,6 @@ export async function createCreatorMultipart(params: {
     },
   });
 
-  console.log("[createCreatorMultipart] Backend response:", res.data);
   return res.data;
 }
 
@@ -86,10 +81,25 @@ export async function editCreatorMultipart(params: {
   data: Record<string, any>; // must include userId and creatorId
   files?: Array<File | Blob>;
 }) {
+  console.log("📡 [editCreatorMultipart] Starting edit API call");
+  console.log("📡 [editCreatorMultipart] Parameters:", {
+    userId: params.data.userId,
+    creatorId: params.data.creatorId,
+    token: params.token ? "present" : "missing",
+    filesCount: params.files?.length || 0
+  });
+
   const { token, data, files = [] } = params;
 
   if (!data.userId) throw new Error("Missing userId in data for editCreatorMultipart");
   if (!token) throw new Error("Missing token for editCreatorMultipart");
+
+  console.log("📡 [editCreatorMultipart] Files details:", {
+    count: files.length,
+    fileNames: files.map(f => f.name),
+    fileSizes: files.map(f => f.size),
+    fileTypes: files.map(f => f.type)
+  });
 
   const api = backend(token);
   const form = new FormData();
@@ -110,7 +120,14 @@ export async function editCreatorMultipart(params: {
     }
   });
 
-  console.log("[editCreatorMultipart] Sending data:", {
+  console.log("📡 [editCreatorMultipart] FormData entries:", Array.from(form.entries()).map(([key, value]) => ({ 
+    key, 
+    type: typeof value, 
+    isFile: value instanceof File,
+    value: value instanceof File ? `File: ${value.name}` : String(value).substring(0, 100)
+  })));
+
+  console.log("📡 [editCreatorMultipart] Sending data:", {
     userId: data.userId,
     creatorId: data.creatorId,
     existingImages: data.existingImages,
@@ -118,8 +135,18 @@ export async function editCreatorMultipart(params: {
     newFilesCount: files.length
   });
 
+  console.log("📡 [editCreatorMultipart] Making API request to /editcreator");
+
   const res = await api.post("/editcreator", form, {
     headers: { "Content-Type": "multipart/form-data" },
   });
+  
+  console.log("📡 [editCreatorMultipart] API response:", {
+    status: res.status,
+    statusText: res.statusText,
+    data: res.data
+  });
+  
+  console.log("✅ [editCreatorMultipart] Edit API call successful");
   return res.data;
 }
