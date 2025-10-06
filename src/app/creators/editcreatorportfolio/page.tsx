@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import PacmanLoader from "react-spinners/PacmanLoader";
 import Image from "next/image";
 import { useDispatch, useSelector } from "react-redux";
+import type { AppDispatch } from "@/store/store";
 import { useRouter } from "next/navigation";
 import { toast, ToastContainer } from "material-react-toastify";
 // import {
@@ -15,9 +16,7 @@ import HeaderBackNav from "@/components/navs/HeaderBackNav";
 import CountrySelect from "@/components/CountrySelect/CountrySelect";
 // import { useAuth } from "@/app/hooks/useAuth";
 
-// Move static files into /public/icons
-import idcardicon from "/public/icons/idcardIcon.svg";
-import deleteIcon from "/public/icons/deleteicon.svg";
+// Removed unused imports
 import "@/styles/CreateCreatorPortfolio.css";
 import { useAuthToken } from "@/lib/hooks/useAuthToken";
 import { editCreatorMultipart } from "@/api/creator";
@@ -36,7 +35,7 @@ export default function Editcreator () {
   const creator = useSelector((state: any) => state.creator.creatorbyid);
   const creatorID = (creator && (creator.hostid || creator.id || creator._id)) as string | undefined;
   // const message = useSelector((state) => state.creator.message);
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
   // const user = useAuth();
 
@@ -45,7 +44,6 @@ export default function Editcreator () {
   const reduxUserId = useSelector((state: any) => state.register.userID);
 
   const [loading, setLoading] = useState(false);
-  const [color, setColor] = useState("#d49115");
   const [showFileSizeModal, setShowFileSizeModal] = useState(false);
   const [name, setname] = useState("");
   const [age, setage] = useState( "");
@@ -63,11 +61,12 @@ export default function Editcreator () {
   const [description, setdescription] = useState("");
   const [disablebut, setdisablebut] = useState(false);
   const [hosttype, sethosttype] = useState("Fan meet");
-  const [photocount, setphotocount] = useState(0);
   const [step, setStep] = useState(1);
   const totalSteps = 3;
   const [showPriceGuide, setShowPriceGuide] = useState(false);
   const [newImages, setNewImages] = useState<any[]>([]);
+  const [existingImages, setExistingImages] = useState<string[]>([]);
+  const [imagesToDelete, setImagesToDelete] = useState<string[]>([]);
   const [times, setTimes] = useState<string[]>(
    []
   );
@@ -145,7 +144,17 @@ export default function Editcreator () {
     setInterested((prev) => (prev.length ? prev : toArray(creator.interestedin)));
     setTimes((prev) => (prev.length ? prev : toArray(creator.timeava)));
     setHours((prev) => (prev.length ? prev : toArray(creator.daysava)));
-  }, [creator, creatorID, router]);
+
+    // Handle existing images
+    if (creator.photolink) {
+      const existingImgArray = typeof creator.photolink === "string" 
+        ? creator.photolink.split(",").filter((url: string) => url.trim())
+        : Array.isArray(creator.photolink) 
+        ? creator.photolink.filter((url: string) => url.trim())
+        : [];
+      setExistingImages(existingImgArray);
+    }
+  }, [creator, creatorID, router, dispatch, hosttype, profile.firstname, profile.status, reduxUserId, userid]);
 
   // 🔥 Autofill full name from user profile (like side menu)
   useEffect(() => {
@@ -201,7 +210,7 @@ export default function Editcreator () {
   const checkuserInput = async () => {
     if (!age) return toast.error(`Age Empty`, { autoClose: 2000 });
     if (!hosttype) return toast.error(`Select host type`, { autoClose: 2000 });
-    if (newImages.length === 0)
+    if (newImages.length === 0 && existingImages.length === 0)
       return toast.error(`Please upload at least one image`, {
         autoClose: 2000,
       });
@@ -237,11 +246,21 @@ export default function Editcreator () {
         timeava: times.length > 0 ? times : creator?.timeava || [],
         daysava: hours.length > 0 ? hours : creator?.daysava || [],
         hosttype,
-        hostid: userid
+        hostid: userid,
+        // Include existing images that are not marked for deletion
+        existingImages: existingImages.filter(img => !imagesToDelete.includes(img)),
+        // Include images to delete
+        imagesToDelete: imagesToDelete
       };
-      const doc1 = newImages[0];
-      const doc2 = newImages[1];
-      await editCreatorMultipart({ token, data,files:newImages.map(img=>img), doc1, doc2 });
+      
+      // Only send new images if there are any
+      const filesToUpload = newImages.length > 0 ? newImages : [];
+      
+      await editCreatorMultipart({ 
+        token, 
+        data, 
+        files: filesToUpload
+      });
       toast.success("Portfolio updated successfully");
       router.push(`/creators/${creatorID}`);
     } catch (err:any) {
@@ -259,7 +278,12 @@ export default function Editcreator () {
 
   const removeNewImage = (index : any) => {
     setNewImages((prev) => prev.filter((_, i) => i !== index));
-    setphotocount((prev) => prev - 1);
+  };
+
+  const removeExistingImage = (index: number) => {
+    const imageToDelete = existingImages[index];
+    setImagesToDelete(prev => [...prev, imageToDelete]);
+    setExistingImages(prev => prev.filter((_, i) => i !== index));
   };
 
   const handleImageUpload = (files: any) => {
@@ -272,7 +296,6 @@ export default function Editcreator () {
       }
       
       setNewImages((prev : any) => [...prev, ...files]);
-      setphotocount((prev) => prev + files?.lenght);
     }
   };
   
@@ -650,14 +673,48 @@ export default function Editcreator () {
           >
             <div className="w-full p-4 shadow-md bg-slate-800 rounded-2xl">
               <label className="block text-lg font-semibold text-center text-slate-300">
-                Please Upload Your Photo
+                Manage Your Photos
               </label>
               <p className="mt-1 text-sm text-center text-slate-400">
-                {newImages.length} {newImages.length === 1 ? "Photo" : "Photos"}{" "}
-                Selected
+                {existingImages.length + newImages.length} {existingImages.length + newImages.length === 1 ? "Photo" : "Photos"}{" "}
+                Total
               </p>
-              <div
-                className="p-6 mt-4 text-center transition border-2 border-dashed cursor-pointer border-slate-500 hover:border-yellow-500 rounded-xl text-slate-400 hover:text-yellow-400"
+              
+              {/* Existing Images Section */}
+              {existingImages.length > 0 && (
+                <div className="mt-4">
+                  <h3 className="text-sm font-medium text-slate-300 mb-2">Current Photos</h3>
+                  <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
+                    {existingImages.map((imageUrl, index) => (
+                      <div key={`existing-${index}`} className="relative group">
+                        <Image
+                          width={100}
+                          height={100}
+                          alt={`existing-${index}`}
+                          src={imageUrl}
+                          className="object-cover w-full border rounded-lg h-36 border-slate-600"
+                        />
+                        <button
+                          onClick={() => removeExistingImage(index)}
+                          className="absolute p-1 text-xs text-white transition bg-red-500 rounded-full opacity-0 top-2 right-2 group-hover:opacity-100"
+                          title="Remove"
+                        >
+                          ✕
+                        </button>
+                        <div className="absolute px-2 py-1 text-xs text-white bg-blue-500 rounded bottom-2 left-2">
+                          Current
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Upload New Images Section */}
+              <div className="mt-4">
+                <h3 className="text-sm font-medium text-slate-300 mb-2">Add New Photos</h3>
+                <div
+                  className="p-6 text-center transition border-2 border-dashed cursor-pointer border-slate-500 hover:border-yellow-500 rounded-xl text-slate-400 hover:text-yellow-400"
                 onClick={() => fileInputRef.current?.click()}
               >
                 <p className="text-sm">
@@ -670,9 +727,13 @@ export default function Editcreator () {
                   accept="image/*"
                   onChange={(e) => {
                     if (e.target.files?.[0]) handleImageUpload(e.target.files);
-                  }} multiple
+                    }} 
+                    multiple
                 />
               </div>
+                
+                {/* New Images Preview */}
+                {newImages.length > 0 && (
               <div className="grid grid-cols-2 gap-4 mt-4 sm:grid-cols-3 md:grid-cols-4">
                 {newImages.map((file, index) => (
                   <div key={`new-${index}`} className="relative group">
@@ -695,6 +756,8 @@ export default function Editcreator () {
                     </div>
                   </div>
                 ))}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -710,9 +773,9 @@ export default function Editcreator () {
               Proceed
             </button>
             <div className="flex justify-between mt-3 overflow-hidden">
-              <PacmanLoader color={color} loading={loading} size={15} />
-              <PacmanLoader color={color} loading={loading} size={15} />
-              <PacmanLoader color={color} loading={loading} size={15} />
+              <PacmanLoader color="#d49115" loading={loading} size={15} />
+              <PacmanLoader color="#d49115" loading={loading} size={15} />
+              <PacmanLoader color="#d49115" loading={loading} size={15} />
             </div>
           </fieldset>
           <div

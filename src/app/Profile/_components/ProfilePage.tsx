@@ -1651,8 +1651,15 @@ const PostModal = () => {
                             <button
                               className="flex-1 bg-gradient-to-r from-orange-500 to-red-600 cursor-pointer py-1.5 px-3 rounded-lg hover:from-orange-600 hover:to-red-700 transition-all duration-200 hover:scale-105 text-center"
                               onClick={() => {
-                                // Navigate to creator profile or booking page
-                                router.push(`/creators/${viewingUserId}`);
+                                // Get the actual creator ID from profile data
+                                const creatorId = (profileData as any)?.creatorID || 
+                                               (profileData as any)?.creatorid || 
+                                               (profileData as any)?.creator_id ||
+                                               (profileData as any)?._id || // Fallback to profile ID
+                                               viewingUserId; // Last resort fallback
+                                
+                                // Navigate to creator profile using the actual creator ID
+                                router.push(`/creators/${creatorId}`);
                               }}
                             >
                               {hostType}

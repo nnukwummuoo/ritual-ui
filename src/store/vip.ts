@@ -36,9 +36,22 @@ export const checkVipStatus = createAsyncThunk(
     try {
       const response = await axios.post(`${URL}/vip/status`, { userid });
       return response.data;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(`❌ [VIP STORE] Error checking VIP status:`, error);
-      throw error.response?.data?.message || 'Failed to check VIP status';
+      
+      // Handle 404 specifically - user is not VIP
+      if (error && typeof error === 'object' && 'response' in error) {
+        const axiosError = error as { response?: { status?: number; data?: { message?: string } } };
+        if (axiosError.response?.status === 404) {
+          console.log(`ℹ️ [VIP STORE] User ${userid} is not VIP (404 response)`);
+          return { vipStatus: null };
+        }
+      }
+      
+      const errorMessage = error && typeof error === 'object' && 'response' in error 
+        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message 
+        : 'Failed to check VIP status';
+      throw errorMessage || 'Failed to check VIP status';
     }
   }
 );
@@ -53,8 +66,11 @@ export const upgradeToVip = createAsyncThunk(
         duration 
       });
       return response.data;
-    } catch (error: any) {
-      throw error.response?.data?.message || 'Failed to upgrade to VIP';
+    } catch (error: unknown) {
+      const errorMessage = error && typeof error === 'object' && 'response' in error 
+        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message 
+        : 'Failed to upgrade to VIP';
+      throw errorMessage || 'Failed to upgrade to VIP';
     }
   }
 );
@@ -66,8 +82,11 @@ export const cancelVip = createAsyncThunk(
     try {
       const response = await axios.post(`${URL}/vip/cancel`, { userid });
       return response.data;
-    } catch (error: any) {
-      throw error.response?.data?.message || 'Failed to cancel VIP';
+    } catch (error: unknown) {
+      const errorMessage = error && typeof error === 'object' && 'response' in error 
+        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message 
+        : 'Failed to cancel VIP';
+      throw errorMessage || 'Failed to cancel VIP';
     }
   }
 );
@@ -99,10 +118,19 @@ const vipSlice = createSlice({
         state.loading = false;
         state.vipStatus = action.payload.vipStatus;
         state.error = null;
+        
+        // Log VIP status for debugging
+        console.log(`🔍 [VIP STORE] VIP Status Updated:`, {
+          isVip: action.payload.vipStatus?.isVip,
+          vipEndDate: action.payload.vipStatus?.vipEndDate,
+          payload: action.payload
+        });
       })
       .addCase(checkVipStatus.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || 'Failed to check VIP status';
+        // Clear VIP status on error to prevent showing VIP when user is not VIP
+        state.vipStatus = null;
       });
 
     // Upgrade to VIP

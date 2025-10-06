@@ -45,7 +45,6 @@ import { useUserId } from "@/lib/hooks/useUserId";
 import { useAuth } from "@/lib/context/auth-context";
 import VIPBadge from "@/components/VIPBadge";
 import { checkVipCelebration, markVipCelebrationViewed } from "@/api/vipCelebration";
-import { checkVipStatus } from "@/store/vip";
 
 
 // Types
@@ -82,6 +81,40 @@ interface RootState {
       active: boolean;
       add: boolean;
       followingUser: boolean;
+      message: string;
+      creatorbyidstatus: string;
+      getreviewstats: string;
+      creatordeletestatus: string;
+      reviewList: Array<{ content: string; name: string; photolink: string; posttime: string; id: string; userid: string }>;
+      addcrush_stats: string;
+      remove_crush_stats: string;
+      creatorbyid: {
+        userid: string;
+        hostid: string;
+        name: string;
+        age: string;
+        location: string;
+        price: string;
+        duration: string;
+        bodytype: string;
+        smoke: string;
+        drink: string;
+        interestedin: string;
+        height: string;
+        weight: string;
+        description: string;
+        gender: string;
+        timeava: string;
+        daysava: string;
+        hosttype: string;
+        photolink: string | string[];
+        verify: boolean;
+        active: boolean;
+        add: boolean;
+        followingUser: boolean;
+        isVip?: boolean;
+        vipEndDate?: string;
+      };
     };
 }
 
@@ -163,8 +196,19 @@ export default function Creatorbyid () {
   );
   const creator = useSelector((state: RootState) => state.creator.creatorbyid);
 
-  // Get VIP status from Redux
-  const vipStatusFromRedux = useSelector((state: RootState) => state.vip.vipStatus);
+  // Get VIP status directly from creator data (like creators page)
+  const vipStatusFromCreator = creator?.isVip ? {
+    isVip: creator.isVip,
+    vipEndDate: creator.vipEndDate
+  } : null;
+  
+  // Debug logging
+  console.log("🔍 [CREATOR DETAIL] Creator data from backend:", creator);
+  console.log("🔍 [CREATOR DETAIL] Creator VIP status from backend:", {
+    isVip: creator?.isVip,
+    vipEndDate: creator?.vipEndDate
+  });
+  console.log("🔍 [CREATOR DETAIL] Final VIP status:", vipStatusFromCreator);
 
   // State
   const [user, setUser] = useState<{ refreshtoken: string } | null>(null);
@@ -226,17 +270,13 @@ export default function Creatorbyid () {
   }, [token]);
 
 
-  // Check VIP status for the creator being viewed
-  useEffect(() => {
-    if (Creator[0] && token) {
-      dispatch(checkVipStatus(Creator[0]));
-    }
-  }, [Creator[0], token, dispatch]);
+  // VIP status is now included directly from backend, no need for separate API call
 
   // Check VIP celebration status when VIP status is confirmed
   useEffect(() => {
     const checkCelebration = async () => {
-      if (vipStatusFromRedux?.isVip && creatorbyidstatus === "succeeded" && Creator[0] && userid && !celebrationChecked) {
+      // Only proceed if VIP status is confirmed from creator data
+      if (vipStatusFromCreator?.isVip === true && creatorbyidstatus === "succeeded" && Creator[0] && userid && !celebrationChecked) {
         setCelebrationChecked(true);
         
         try {
@@ -261,7 +301,7 @@ export default function Creatorbyid () {
     };
 
     checkCelebration();
-  }, [vipStatusFromRedux, creatorbyidstatus, Creator[0], userid, celebrationChecked, checkVipCelebrationStatus, markVipCelebrationAsViewed]);
+  }, [vipStatusFromCreator, creatorbyidstatus, Creator[0], userid, celebrationChecked, checkVipCelebrationStatus, markVipCelebrationAsViewed]);
 
   // Reset VIP celebration tracking when switching creators
   useEffect(() => {
@@ -540,7 +580,7 @@ export default function Creatorbyid () {
           oldlink,
           documentlink,
           photocount,
-          photolink: creator.photolink,
+          photolink: Array.isArray(creator.photolink) ? creator.photolink : [creator.photolink].filter(Boolean),
           hostid: creator.hostid,
           token,
           docCount,
@@ -676,10 +716,17 @@ export default function Creatorbyid () {
                 </div>
               </div>
 
-              {/* Image Gallery Skeleton */}
+              {/* Image Gallery Skeleton - Fixed size to match actual image */}
               <div className="bg-gray-800 rounded-2xl p-6 shadow-2xl">
-                <div className="flex justify-center">
-                  <Skeleton width={400} height={300} className="rounded-xl" />
+                <div className="pt-2 pb-4 md:pt-60">
+                  <div className="relative w-full h-[300px] overflow-hidden rounded-md">
+                    <Skeleton 
+                      width="100%" 
+                      height={300} 
+                      className="rounded-md" 
+                      style={{ maxWidth: '400px', margin: '0 auto' }}
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -831,10 +878,17 @@ export default function Creatorbyid () {
                 </div>
               </div>
 
-              {/* Image Gallery Skeleton */}
+              {/* Image Gallery Skeleton - Fixed size to match actual image */}
               <div className="bg-gray-800 rounded-2xl p-6 shadow-2xl">
-                <div className="flex justify-center">
-                  <Skeleton width={400} height={300} className="rounded-xl" />
+                <div className="pt-2 pb-4 md:pt-60">
+                  <div className="relative w-full h-[300px] overflow-hidden rounded-md">
+                    <Skeleton 
+                      width="100%" 
+                      height={300} 
+                      className="rounded-md" 
+                      style={{ maxWidth: '400px', margin: '0 auto' }}
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -1013,11 +1067,19 @@ export default function Creatorbyid () {
               {checkimg()}
               
               {/* VIP Badge - positioned on top-left of creator image */}
-              {vipStatusFromRedux?.isVip && (
-                <div className="absolute top-2 left-20 z-50">
-                  <VIPBadge size="xxl" isVip={vipStatusFromRedux.isVip} vipEndDate={vipStatusFromRedux.vipEndDate} />
-                </div>
-              )}
+              {(() => {
+                const shouldShowVip = vipStatusFromCreator?.isVip === true;
+                console.log("🎯 [VIP BADGE] Should show VIP:", shouldShowVip, {
+                  isVip: vipStatusFromCreator?.isVip,
+                  vipStatus: vipStatusFromCreator,
+                  creatorData: creator
+                });
+                return shouldShowVip && (
+                  <div className="absolute top-2 left-20 z-50">
+                    <VIPBadge size="xxl" isVip={vipStatusFromCreator.isVip} vipEndDate={vipStatusFromCreator.vipEndDate} />
+                  </div>
+                );
+              })()}
             </div>
 
           {isModalOpen && (
@@ -1183,7 +1245,7 @@ export default function Creatorbyid () {
                 <div className="space-y-4">
                   <div className="flex justify-between items-center p-3 bg-gray-700 rounded-lg">
                     <span className="text-gray-300 font-medium">
-                      {creator.hosttype === "Fan call" ? "📞 Call Rate" : "🚗 Transport Fare"}
+                      {creator.hosttype === "Fan call"|| "Fan Call" ? "📞 Call Rate" : "🚗 Transport Fare"}
                     </span>
                     <span className="text-yellow-400 font-bold">
                       {creator.hosttype === "Fan call"
@@ -1381,7 +1443,7 @@ export default function Creatorbyid () {
               <div onClick={(e) => e.stopPropagation()}>
                 <Requestform
                   setsuccess={setsuccess}
-                  price={creator.price}
+                  price={Number(creator.price) || 0}
                   toast={toast}
                   creatorid={creator.hostid}
                   type={creator.hosttype}
