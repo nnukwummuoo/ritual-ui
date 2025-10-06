@@ -204,7 +204,6 @@ const uploadToAppwrite = async (file: File): Promise<string> => {
 // checkuserInput
 // -----------------------------
 const checkuserInput = async () => {
-  console.log("[checkuserInput] Function called - starting validation");
   if (!name || name.trim() === "") return toast.error("Full name is required");
   if (!age) return toast.error("Age is required");
   if (!hosttype) return toast.error("Select host type");
@@ -248,10 +247,6 @@ const checkuserInput = async () => {
       hosttype: hosttypeNormalized,
       // photolink will be sent as files separately
     };
-
-    console.log("[checkuserInput] Sending payload to backend:", { token, userid, data });
-    console.log("[checkuserInput] Files to upload:", photolink.length, photolink.map(f => f.name));
-    console.log("[checkuserInput] About to call createCreatorMultipart API");
 
     await createCreatorMultipart({
       token,
@@ -771,6 +766,7 @@ const checkuserInput = async () => {
                   onChange={async (e: React.ChangeEvent<HTMLInputElement>) => {
                     const files = e.currentTarget.files;
                     if (!files || files.length === 0) return;
+                    
                     const selected: File[] = Array.from(files).filter((f) => f.type.startsWith("image/"));
                     
                     // Check for files larger than 5MB

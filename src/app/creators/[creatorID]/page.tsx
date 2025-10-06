@@ -486,7 +486,7 @@ export default function Creatorbyid () {
       return ("Meet and Greet with");
     } else if (normalizedHosttype == "Fan date") {
       return ("A Date with");
-    } else if (normalizedHosttype == "Fan call") {
+    } else if (normalizedHosttype == "Fan call" || "Fan Call") {
       return ("A Private Conversation with");
     } else {
       return ("Engage with");
@@ -1248,7 +1248,7 @@ export default function Creatorbyid () {
                       {creator.hosttype === "Fan call"|| "Fan Call" ? "📞 Call Rate" : "🚗 Transport Fare"}
                     </span>
                     <span className="text-yellow-400 font-bold">
-                      {creator.hosttype === "Fan call"
+                      {creator.hosttype === "Fan call" || "Fan Call"
                         ? fmtPSPrice
                         : `${formatCreatorPrices(creator.price)} GOLD`}
                     </span>
