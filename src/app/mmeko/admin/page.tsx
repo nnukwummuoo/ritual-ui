@@ -80,7 +80,7 @@ const AdminPage = () => {
 
   return (
     // Full-height page with flexbox for 20%/80% split
-    <div className="flex min-h-screen bg-[#111827] text-gray-200 font-sans">
+  <div className="flex min-h-screen h-screen bg-[#111827] text-gray-200 font-sans">
       {/* Sidebar: responsive width */}
       <aside className="w-16 md:w-[30%] bg-[#1F2937] flex flex-col justify-between">
         <div className="p-2 md:p-4">
@@ -114,7 +114,7 @@ const AdminPage = () => {
       </aside>
 
       {/* Main Content: responsive width */}
-      <main className="flex-1 p-4 md:p-8 overflow-y-auto">
+      <main className="flex-1 p-4 md:p-8 overflow-y-auto flex flex-col">
         <header className="flex justify-between items-center mb-6">
           <h2 className="text-2xl md:text-3xl font-bold text-white">{activeView}</h2>
           {notifyme && (
@@ -125,8 +125,8 @@ const AdminPage = () => {
         </header>
 
         {/* Content Section */}
-        <section className="h-full">
-          {renderContent()}
+        <section className="flex-1 flex items-center justify-center">
+          <div className="w-full">{renderContent()}</div>
         </section>
       </main>
     </div>
