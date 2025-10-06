@@ -115,7 +115,7 @@ const AdminPage = () => {
 
       {/* Main Content: responsive width */}
       <main className="flex-1 p-4 md:p-8 overflow-y-auto flex flex-col">
-        <header className="flex justify-between items-center mb-6">
+        <header className="flex justify-between items-center -mb-15">
           <h2 className="text-2xl md:text-3xl font-bold text-white">{activeView}</h2>
           {notifyme && (
             <span className="inline-flex items-center justify-center px-3 py-1 rounded-full text-sm font-semibold bg-emerald-600 text-white">
