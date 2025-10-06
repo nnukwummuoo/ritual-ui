@@ -269,15 +269,25 @@ const renderCreators = () => {
     return (
       <SkeletonTheme baseColor="#202020" highlightColor="#444">
         <div className="w-full p-4 space-y-4">
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-5">
-            {Array(6)
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+            {Array(8)
               .fill(0)
               .map((_, index) => (
                 <div
                   key={index}
-                  className="relative flex flex-col items-center p-4 bg-[#121212] rounded-lg"
+                  className="relative flex flex-col items-center p-4 bg-[#121212] rounded-lg shadow-lg"
                 >
-                  <Skeleton width={150} height={250} className="rounded-lg" />
+                  <Skeleton 
+                    width="100%" 
+                    height={250} 
+                    className="rounded-lg" 
+                    style={{ maxWidth: '200px' }}
+                  />
+                  <div className="mt-3 w-full space-y-2">
+                    <Skeleton width="80%" height={16} className="mx-auto" />
+                    <Skeleton width="60%" height={14} className="mx-auto" />
+                    <Skeleton width="40%" height={12} className="mx-auto" />
+                  </div>
                 </div>
               ))}
           </div>

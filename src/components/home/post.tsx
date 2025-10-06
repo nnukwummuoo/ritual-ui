@@ -17,6 +17,118 @@ import { toast } from "material-react-toastify";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 
+// Utility function to format relative time
+const formatRelativeTime = (timestamp: string | number | Date): string => {
+  try {
+    const now = new Date();
+    let time: Date;
+    
+    // Handle different timestamp formats
+    if (typeof timestamp === 'number') {
+      // If it's a number, check if it's in seconds or milliseconds
+      time = new Date(timestamp < 10000000000 ? timestamp * 1000 : timestamp);
+    } else if (typeof timestamp === 'string') {
+      // Try to parse the string - first check if it's a numeric string
+      if (/^\d+$/.test(timestamp)) {
+        // It's a numeric string, treat it as a number
+        const numTimestamp = parseInt(timestamp, 10);
+        time = new Date(numTimestamp < 10000000000 ? numTimestamp * 1000 : numTimestamp);
+      } else {
+        // Try to parse as a regular date string
+        time = new Date(timestamp);
+      }
+    } else {
+      time = new Date(timestamp);
+    }
+    
+    // Check if the date is valid
+    if (isNaN(time.getTime())) {
+      // Try alternative parsing methods for invalid timestamps
+      if (typeof timestamp === 'string') {
+        // Try parsing as ISO string or other formats
+        const altTime = new Date(timestamp.replace(/[^\d]/g, ''));
+        if (!isNaN(altTime.getTime())) {
+          time = altTime;
+        } else {
+          return 'recently'; // Fallback for completely invalid timestamps
+        }
+      } else if (typeof timestamp === 'number') {
+        // Try different number formats
+        if (timestamp > 1000000000000) {
+          // Already in milliseconds
+          time = new Date(timestamp);
+        } else if (timestamp > 1000000000) {
+          // In seconds, convert to milliseconds
+          time = new Date(timestamp * 1000);
+        } else {
+          return 'recently'; // Fallback for very small numbers
+        }
+      } else {
+        return 'recently'; // Fallback for other types
+      }
+      
+      // Final check after alternative parsing
+      if (isNaN(time.getTime())) {
+        return 'recently';
+      }
+    }
+    
+    // Check if the timestamp is in the future (more than 1 hour ahead)
+    const diffInSeconds = Math.floor((now.getTime() - time.getTime()) / 1000);
+    
+    // If the timestamp is in the future, show a different message
+    if (diffInSeconds < 0) {
+      const futureDiff = Math.abs(diffInSeconds);
+      if (futureDiff < 3600) { // Less than 1 hour in the future
+        return 'in a moment';
+      } else if (futureDiff < 86400) { // Less than 1 day in the future
+        const hours = Math.floor(futureDiff / 3600);
+        return `in ${hours}h`;
+      } else if (futureDiff < 31536000) { // Less than 1 year in the future
+        const days = Math.floor(futureDiff / 86400);
+        return `in ${days}d`;
+      } else {
+        // If it's more than a year in the future, it's likely a data issue
+        return 'recently';
+      }
+    }
+
+    if (diffInSeconds < 60) {
+      return 'just now';
+    }
+
+    const diffInMinutes = Math.floor(diffInSeconds / 60);
+    if (diffInMinutes < 60) {
+      return `${diffInMinutes}m ago`;
+    }
+
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    if (diffInHours < 24) {
+      return `${diffInHours}h ago`;
+    }
+
+    const diffInDays = Math.floor(diffInHours / 24);
+    if (diffInDays < 7) {
+      return `${diffInDays}d ago`;
+    }
+
+    const diffInWeeks = Math.floor(diffInDays / 7);
+    if (diffInWeeks < 4) {
+      return `${diffInWeeks}w ago`;
+    }
+
+    const diffInMonths = Math.floor(diffInDays / 30);
+    if (diffInMonths < 12) {
+      return `${diffInMonths}mo ago`;
+    }
+
+    const diffInYears = Math.floor(diffInDays / 365);
+    return `${diffInYears}y ago`;
+  } catch (error) {
+    return 'recently'; // More user-friendly fallback
+  }
+};
+
 export default function PostsCard() {
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
@@ -40,6 +152,7 @@ export default function PostsCard() {
   const [selfNick, setSelfNick] = React.useState<string | undefined>(undefined);
   const [selfName, setSelfName] = React.useState<string | undefined>(undefined);
   const [postResolve, setPostResolve] = React.useState<any[]>(posts);
+  const [timeUpdate, setTimeUpdate] = React.useState(0); // Used to trigger re-renders for time updates
   
   // Get current user's following list from Redux (same as Profile component)
   const followingList = useSelector((state: RootState) => {
@@ -66,6 +179,15 @@ export default function PostsCard() {
     isFollowing?: boolean;
     commentCount?: number;
   }>>({});
+
+  // Update time display every minute
+  React.useEffect(() => {
+    const interval = setInterval(() => {
+      setTimeUpdate(prev => prev + 1);
+    }, 60000); // Update every minute
+
+    return () => clearInterval(interval);
+  }, []);
 
   // Load userid and token from localStorage if not in Redux (same as Profile)
   React.useEffect(() => {
@@ -416,7 +538,7 @@ export default function PostsCard() {
         const idStr = (v: any) => (v == null ? undefined : String(v));
         const selfIdStr = idStr(loggedInUserId) || idStr(selfId);
         const liked = !!(selfIdStr && likedByArr.includes(selfIdStr));
-        const starred = !!(p?.starred || p?.faved || p?.favorited);
+        // const starred = !!(p?.starred || p?.faved || p?.favorited);
 
         const pid = p?.postid || p?.id || p?._id || idx;
         const uiState = ui[pid] || {};
@@ -530,7 +652,19 @@ export default function PostsCard() {
             {p?.createdAt && (
               <p className="my-3 text-gray-400 text-sm  cursor-pointer" onClick={()=>{
                 router.push(`/post/${p?._id}`)
-              }}>{new Date(p.createdAt).toLocaleString()}</p>
+              }}>
+                {(() => {
+                  // Try to format the timestamp
+                  const formatted = formatRelativeTime(p.createdAt);
+                  
+                  // If formatting failed, show a fallback
+                  if (formatted === 'Invalid time' || formatted === 'Unknown time') {
+                    return 'recently';
+                  }
+                  
+                  return formatted;
+                })()}
+              </p>
             )}
             
             {p?.content && (
@@ -731,14 +865,42 @@ export default function PostsCard() {
                             {(() => {
                               const isVipActive = c?.isVip && c?.vipEndDate && new Date(c.vipEndDate) > new Date();
                               return isVipActive && (
-                                <VIPBadge size="md" className="absolute -top-2 -right-2" isVip={c.isVip} vipEndDate={c.vipEndDate} />
+                                <VIPBadge size="lg" className="absolute -top-2 -right-2" isVip={c.isVip} vipEndDate={c.vipEndDate} />
                               );
                             })()}
                           </div>
                           <div className="flex-1">
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center justify-between">
                               <span className="font-medium text-gray-300">
                                 {c?.commentusername || c?.username || 'User'}
+                              </span>
+                              <span className="text-xs text-gray-500">
+                                {(() => {
+                                  // Try multiple possible timestamp fields, prioritizing commenttime from backend
+                                  const timestamp = c?.commenttime || 
+                                                  c?.date || 
+                                                  c?.createdAt || 
+                                                  c?.created_at || 
+                                                  c?.timestamp || 
+                                                  c?.time || 
+                                                  c?.postedAt || 
+                                                  c?.posted_at;
+                                  
+                                  
+                                  if (!timestamp) {
+                                    return 'Unknown time';
+                                  }
+                                  
+                                  // Try to format the timestamp
+                                  const formatted = formatRelativeTime(timestamp);
+                                  
+                                  // If formatting failed, show a fallback
+                                  if (formatted === 'Invalid time' || formatted === 'Unknown time') {
+                                    return 'recently';
+                                  }
+                                  
+                                  return formatted;
+                                })()}
                               </span>
                             </div>
                             <div className="text-gray-200 mt-1">
@@ -787,7 +949,7 @@ export default function PostsCard() {
                           if (uid && localPid && token) {
                             (dispatch(postcomment({ userid: uid, postid: localPid, content: text, token: token } as any)) as any)
                               .unwrap()
-                              .then((res: any) => {
+                              .then((_res: any) => {
                                 // Refresh comments after successful post
                                 dispatch(getpostcomment({ postid: localPid } as any))
                                   .unwrap()

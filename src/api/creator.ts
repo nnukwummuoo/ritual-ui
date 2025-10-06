@@ -85,10 +85,8 @@ export async function editCreatorMultipart(params: {
   token: string;
   data: Record<string, any>; // must include userId and creatorId
   files?: Array<File | Blob>;
-  doc1?: File | Blob;
-  doc2?: File | Blob;
 }) {
-  const { token, data, files, doc1, doc2 } = params;
+  const { token, data, files = [] } = params;
 
   if (!data.userId) throw new Error("Missing userId in data for editCreatorMultipart");
   if (!token) throw new Error("Missing token for editCreatorMultipart");
@@ -105,11 +103,19 @@ export async function editCreatorMultipart(params: {
     }
   });
 
-  // Attach update files
-  [...(files || []), doc1, doc2].forEach((file, i) => {
+  // Attach new files only (no duplicates)
+  files.forEach((file, i) => {
     if (file) {
       form.append("updateCreatorPhotos", file as any);
     }
+  });
+
+  console.log("[editCreatorMultipart] Sending data:", {
+    userId: data.userId,
+    creatorId: data.creatorId,
+    existingImages: data.existingImages,
+    imagesToDelete: data.imagesToDelete,
+    newFilesCount: files.length
   });
 
   const res = await api.post("/editcreator", form, {

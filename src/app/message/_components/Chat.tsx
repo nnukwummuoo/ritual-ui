@@ -349,7 +349,28 @@ export const Chat = () => {
   // Function to scroll to bottom of messages
   const scrollToBottom = () => {
     if (msgListref.current) {
-      msgListref.current.scrollTop = msgListref.current.scrollHeight;
+      // Use smooth scrolling for better mobile experience
+      msgListref.current.scrollTo({
+        top: msgListref.current.scrollHeight,
+        behavior: 'smooth'
+      });
+    }
+  };
+
+  // Enhanced scroll to bottom for mobile
+  const scrollToBottomMobile = () => {
+    if (msgListref.current) {
+      // Force immediate scroll for mobile
+      const element = msgListref.current;
+      element.scrollTop = element.scrollHeight;
+      
+      // Also try smooth scroll as fallback
+      setTimeout(() => {
+        element.scrollTo({
+          top: element.scrollHeight,
+          behavior: 'smooth'
+        });
+      }, 50);
     }
   };
 
@@ -475,7 +496,11 @@ export const Chat = () => {
       if (response.data.chats && Array.isArray(response.data.chats)) {
         setmessage(response.data.chats);
         // Scroll to bottom after messages are loaded
-        setTimeout(() => scrollToBottom(), 100);
+        requestAnimationFrame(() => {
+          setTimeout(() => {
+            scrollToBottomMobile();
+          }, 150);
+        });
       } else {
         setmessage([]);
       }
@@ -695,8 +720,12 @@ export const Chat = () => {
   // Auto-scroll to bottom when messages change
   useEffect(() => {
     if (message.length > 0) {
-      // Small delay to ensure DOM is updated
-      setTimeout(() => scrollToBottom(), 50);
+      // Use enhanced mobile scrolling
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          scrollToBottomMobile();
+        }, 100);
+      });
     }
   }, [message]);
 
@@ -961,7 +990,11 @@ export const Chat = () => {
             return [...prevMessages, info];
           });
           // Scroll to bottom when new message is added
-          setTimeout(() => scrollToBottom(), 50);
+          requestAnimationFrame(() => {
+            setTimeout(() => {
+              scrollToBottomMobile();
+            }, 100);
+          });
         }
       }
     };
@@ -1305,7 +1338,11 @@ export const Chat = () => {
       setmessage((value) => [...value, chats]);
       
       // Scroll to bottom after sending message
-      setTimeout(() => scrollToBottom(), 50);
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          scrollToBottomMobile();
+        }, 100);
+      });
       
       settext("");
       setSelectedFiles([]);
@@ -1405,7 +1442,11 @@ export const Chat = () => {
   }, [dispatch]);
 
   return (
-    <div className="h-full w-full flex flex-col">
+    <div className="h-full w-full flex flex-col" style={{ 
+      WebkitOverflowScrolling: 'touch',
+      overscrollBehavior: 'contain',
+      touchAction: 'pan-y'
+    }}>
       {/* VIP Celebration Animation */}
       {showVipCelebration && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 pointer-events-none">
@@ -1502,7 +1543,11 @@ export const Chat = () => {
       </div>
 
       {/* Messages Area - Clean Design */}
-      <div ref={msgListref} className="flex-1 overflow-y-auto p-3 sm:p-4 bg-transparent pb-20">
+      <div ref={msgListref} className="flex-1 overflow-y-auto p-3 sm:p-4 bg-transparent pb-20" style={{ 
+        WebkitOverflowScrolling: 'touch',
+        overscrollBehavior: 'contain',
+        scrollBehavior: 'smooth'
+      }}>
         {loading ? (
           <div className="space-y-4 w-full max-w-4xl mx-auto">
             <div className="flex justify-start mb-4 w-full">
