@@ -238,13 +238,9 @@ export const getcollection = createAsyncThunk<{ data: CollectionData }, { userid
   "profile/getcollection",
   async (data) => {
     try {
-      //console.log('ontop get profile')
       let response = await axios.put(`${URL}/exclusivecontent`, data);
-      // console.log('under get profile')
-
       return response.data;
     } catch (err : any) {
-      // console.log('erro get profile')
       throw getErrorMessage(err);
     }
   }
@@ -617,8 +613,8 @@ const profile = createSlice({
         state.State = (p as any).state ?? p.country ?? "";
         state.country = p.country ?? "";
         state.balance = p.balance ?? "";
-        // Backend may return either boolean creator or creator_listing
-        state.creator = (p as any).creator ?? (p as any).creator_listing ?? false as any;
+        // Backend may return either boolean creator or creator_portfolio
+        state.creator = (p as any).creator ?? (p as any).creator_portfolio ?? false as any;
         // Backend may use creatorId
         state.creatorID = (p as any).creatorID ?? (p as any).creatorId ?? "";
         state.creatorname = (p as any).creatorname ?? "";

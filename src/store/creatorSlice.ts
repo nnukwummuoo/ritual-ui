@@ -287,15 +287,10 @@ export const getmycreatorbyid = createAsyncThunk(
   "creator/getmycreatorbyid",
   async (data: any) => {
     try {
-      console.log("after info");
-
-      //console.log('ontop get profile')
       let response = await axios.patch(`${URL}/getcreatorbyid`, data);
-      // console.log('under get profile')
-
       return response.data;
     } catch (err : any) {
-      if (!err.response.data.message) {
+      if (!err.response?.data?.message) {
         throw "check internet connection";
       }
       throw err.response.data.message;
@@ -527,7 +522,6 @@ export const deletereview = createAsyncThunk(
 export const addcrush = createAsyncThunk("creator/addcrush ", async (data: any) => {
   try {
     let response = await axios.post(`${URL}/addcrush`, data);
-
     return response.data;
   } catch (err : any) {
     if (!err.response.data.message) {

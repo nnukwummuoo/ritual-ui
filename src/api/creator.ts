@@ -1,16 +1,17 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import backend from "@/api/backendApi";
 
 // -----------------------------
-// Create Listing (URLs for photolink)
+// Create Portfolio (URLs for photolink)
 // -----------------------------
 // -----------------------------
-// Create Listing (photolinks always strings)
+// Create Portfolio (photolinks always strings)
 // -----------------------------
 export async function createCreatorMultipart(params: {
   token: string;
   userid: string;
   data: Record<string, any>;
-  photolink?: string[];
+  photolink?: File[];
 }) {
   const { token, userid, data, photolink = [] } = params;
 
@@ -19,18 +20,33 @@ export async function createCreatorMultipart(params: {
 
   const api = backend(token);
 
-  const validPhotoLinks = photolink.filter(link => typeof link === "string" && link.trim() !== "");
+  // Create FormData for file upload
+  const formData = new FormData();
+  
+  // Add all data fields
+  Object.entries(data).forEach(([key, value]) => {
+    if (Array.isArray(value)) {
+      value.forEach((item, index) => {
+        formData.append(`${key}[${index}]`, String(item));
+      });
+    } else {
+      formData.append(key, String(value));
+    }
+  });
 
-  const payload = {
-    ...data,
-    userid, // ✅ keep exactly as is for backend
-    photolink: validPhotoLinks,
-  };
+  // Add files
+  photolink.forEach((file, index) => {
+    formData.append(`photo${index}`, file);
+  });
 
-  console.log("[createCreatorMultipart] Payload ready:", payload);
+  console.log("[createCreatorMultipart] Sending FormData with files:", photolink.length);
+  console.log("[createCreatorMultipart] File names:", photolink.map(f => f.name));
+  console.log("[createCreatorMultipart] FormData entries:", Array.from(formData.entries()).map(([key, value]) => ({ key, type: typeof value, isFile: value instanceof File })));
 
-  const res = await api.put("/creator", payload, {
-    headers: { "Content-Type": "application/json" },
+  const res = await api.put("/creator", formData, {
+    headers: { 
+      "Content-Type": "multipart/form-data",
+    },
   });
 
   console.log("[createCreatorMultipart] Backend response:", res.data);
@@ -47,31 +63,30 @@ export async function getMyCreator(params: { userid: string; token?: string }) {
   if (!userid) throw new Error("Missing userid for getMyCreator");
 
   const api = backend(token);
-  const res = await api.post("/getverifycreator", { userid }); // <-- make sure key matches backend
+  const res = await api.post("/creator", { userid }, {
+    headers: { "Content-Type": "application/json" } // <-- Fix: use JSON content type
+  });
   const data = res.data;
 
   if (data.ok && data.host) {
     // Ensure a fallback image exists
-    data.host = data.host.map(creator => ({
+    data.host = data.host.map((creator: any) => ({
       ...creator,
       displayImage: (creator.photolink && creator.photolink[0]) || "/default-image.png",
     }));
   }
 
-  console.log("[getMyCreator] Normalized response:", data);
   return data;
 }
 // -----------------------------
-// Edit Creator (multipart)
+// Edit Portfolio (multipart)
 // -----------------------------
 export async function editCreatorMultipart(params: {
   token: string;
   data: Record<string, any>; // must include userId and creatorId
   files?: Array<File | Blob>;
-  doc1?: File | Blob;
-  doc2?: File | Blob;
 }) {
-  const { token, data, files, doc1, doc2 } = params;
+  const { token, data, files = [] } = params;
 
   if (!data.userId) throw new Error("Missing userId in data for editCreatorMultipart");
   if (!token) throw new Error("Missing token for editCreatorMultipart");
@@ -83,32 +98,28 @@ export async function editCreatorMultipart(params: {
   Object.entries(data).forEach(([key, value]) => {
     if (Array.isArray(value)) {
       value.forEach((v) => form.append(key, v));
-      console.log(`[editCreatorMultipart] Appended array field "${key}" with values:`, value);
     } else if (value !== undefined && value !== null) {
       form.append(key, String(value));
-      console.log(`[editCreatorMultipart] Appended field "${key}" with value:`, value);
     }
   });
 
-  // Attach update files
-  [...(files || []), doc1, doc2].forEach((file, i) => {
+  // Attach new files only (no duplicates)
+  files.forEach((file, i) => {
     if (file) {
       form.append("updateCreatorPhotos", file as any);
-      console.log(
-        `[editCreatorMultipart] Appended updateCreatorPhotos[${i}]:`,
-        (file as any).name || "[blob-no-name]"
-      );
-    } else {
-      console.log(`[editCreatorMultipart] update file[${i}] is null or undefined, skipped`);
     }
   });
 
-  console.log("[editCreatorMultipart] Final FormData ready to send");
+  console.log("[editCreatorMultipart] Sending data:", {
+    userId: data.userId,
+    creatorId: data.creatorId,
+    existingImages: data.existingImages,
+    imagesToDelete: data.imagesToDelete,
+    newFilesCount: files.length
+  });
 
   const res = await api.post("/editcreator", form, {
     headers: { "Content-Type": "multipart/form-data" },
   });
-
-  console.log("[editCreatorMultipart] Backend response:", res.data);
   return res.data;
 }

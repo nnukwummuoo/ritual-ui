@@ -38,7 +38,7 @@ export const BottomNav = () => {
   // const user = useAuth();
   // const Allrequest = useSelector((state) => state.booking.Allrequest);
   // const req = [...Allrequest];
-  // const notificationsCount = user?.creator_listing
+  // const notificationsCount = user?.creator_portfolio
   //   ? req.filter((item) => item.status === "accepted" || item?.admindb === true)
   //       .length
   //   : req.length;

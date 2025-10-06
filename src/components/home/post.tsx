@@ -3,18 +3,133 @@
 import React, { useEffect, useLayoutEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "@/store/store";
-import { fetchposts, getallpost, hydrateFromCache } from "@/store/post";
+import { fetchposts, hydrateFromCache } from "@/store/post";
 import { getprofile, follow as followThunk, unfollow as unfollowThunk, getfollow } from "@/store/profile";
 import { postlike } from "@/store/like";
 import { getpostcomment, postcomment } from "@/store/comment";
+import { checkVipStatus } from "@/store/vip";
+import VIPBadge from "@/components/VIPBadge";
 import { URL as API_BASE } from "@/api/config";
 const PROD_BASE = "https://mmekoapi.onrender.com";
 import PostSkeleton from "../PostSkeleton";
 import PostActions from "./PostActions";
 import { toast } from "material-react-toastify";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
-export default function PostsCard({ type }: { type?: "video" | "image" | "text" }) {
+// Utility function to format relative time
+const formatRelativeTime = (timestamp: string | number | Date): string => {
+  try {
+    const now = new Date();
+    let time: Date;
+    
+    // Handle different timestamp formats
+    if (typeof timestamp === 'number') {
+      // If it's a number, check if it's in seconds or milliseconds
+      time = new Date(timestamp < 10000000000 ? timestamp * 1000 : timestamp);
+    } else if (typeof timestamp === 'string') {
+      // Try to parse the string - first check if it's a numeric string
+      if (/^\d+$/.test(timestamp)) {
+        // It's a numeric string, treat it as a number
+        const numTimestamp = parseInt(timestamp, 10);
+        time = new Date(numTimestamp < 10000000000 ? numTimestamp * 1000 : numTimestamp);
+      } else {
+        // Try to parse as a regular date string
+        time = new Date(timestamp);
+      }
+    } else {
+      time = new Date(timestamp);
+    }
+    
+    // Check if the date is valid
+    if (isNaN(time.getTime())) {
+      // Try alternative parsing methods for invalid timestamps
+      if (typeof timestamp === 'string') {
+        // Try parsing as ISO string or other formats
+        const altTime = new Date(timestamp.replace(/[^\d]/g, ''));
+        if (!isNaN(altTime.getTime())) {
+          time = altTime;
+        } else {
+          return 'recently'; // Fallback for completely invalid timestamps
+        }
+      } else if (typeof timestamp === 'number') {
+        // Try different number formats
+        if (timestamp > 1000000000000) {
+          // Already in milliseconds
+          time = new Date(timestamp);
+        } else if (timestamp > 1000000000) {
+          // In seconds, convert to milliseconds
+          time = new Date(timestamp * 1000);
+        } else {
+          return 'recently'; // Fallback for very small numbers
+        }
+      } else {
+        return 'recently'; // Fallback for other types
+      }
+      
+      // Final check after alternative parsing
+      if (isNaN(time.getTime())) {
+        return 'recently';
+      }
+    }
+    
+    // Check if the timestamp is in the future (more than 1 hour ahead)
+    const diffInSeconds = Math.floor((now.getTime() - time.getTime()) / 1000);
+    
+    // If the timestamp is in the future, show a different message
+    if (diffInSeconds < 0) {
+      const futureDiff = Math.abs(diffInSeconds);
+      if (futureDiff < 3600) { // Less than 1 hour in the future
+        return 'in a moment';
+      } else if (futureDiff < 86400) { // Less than 1 day in the future
+        const hours = Math.floor(futureDiff / 3600);
+        return `in ${hours}h`;
+      } else if (futureDiff < 31536000) { // Less than 1 year in the future
+        const days = Math.floor(futureDiff / 86400);
+        return `in ${days}d`;
+      } else {
+        // If it's more than a year in the future, it's likely a data issue
+        return 'recently';
+      }
+    }
+
+    if (diffInSeconds < 60) {
+      return 'just now';
+    }
+
+    const diffInMinutes = Math.floor(diffInSeconds / 60);
+    if (diffInMinutes < 60) {
+      return `${diffInMinutes}m ago`;
+    }
+
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    if (diffInHours < 24) {
+      return `${diffInHours}h ago`;
+    }
+
+    const diffInDays = Math.floor(diffInHours / 24);
+    if (diffInDays < 7) {
+      return `${diffInDays}d ago`;
+    }
+
+    const diffInWeeks = Math.floor(diffInDays / 7);
+    if (diffInWeeks < 4) {
+      return `${diffInWeeks}w ago`;
+    }
+
+    const diffInMonths = Math.floor(diffInDays / 30);
+    if (diffInMonths < 12) {
+      return `${diffInMonths}mo ago`;
+    }
+
+    const diffInYears = Math.floor(diffInDays / 365);
+    return `${diffInYears}y ago`;
+  } catch (error) {
+    return 'recently'; // More user-friendly fallback
+  }
+};
+
+export default function PostsCard() {
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
   const status = useSelector((s: RootState) => s.post.poststatus);
@@ -32,10 +147,12 @@ export default function PostsCard({ type }: { type?: "video" | "image" | "text" 
   const token = reduxToken || localToken;
   
   const { firstname, lastname, nickname, photolink } = useSelector((s: RootState) => s.profile);
+  const vipStatus = useSelector((s: RootState) => s.vip.vipStatus);
   const [selfId, setSelfId] = React.useState<string | undefined>(undefined);
   const [selfNick, setSelfNick] = React.useState<string | undefined>(undefined);
   const [selfName, setSelfName] = React.useState<string | undefined>(undefined);
   const [postResolve, setPostResolve] = React.useState<any[]>(posts);
+  const [timeUpdate, setTimeUpdate] = React.useState(0); // Used to trigger re-renders for time updates
   
   // Get current user's following list from Redux (same as Profile component)
   const followingList = useSelector((state: RootState) => {
@@ -62,6 +179,15 @@ export default function PostsCard({ type }: { type?: "video" | "image" | "text" 
     isFollowing?: boolean;
     commentCount?: number;
   }>>({});
+
+  // Update time display every minute
+  React.useEffect(() => {
+    const interval = setInterval(() => {
+      setTimeUpdate(prev => prev + 1);
+    }, 60000); // Update every minute
+
+    return () => clearInterval(interval);
+  }, []);
 
   // Load userid and token from localStorage if not in Redux (same as Profile)
   React.useEffect(() => {
@@ -91,6 +217,13 @@ export default function PostsCard({ type }: { type?: "video" | "image" | "text" 
       dispatch(getfollow({ userid: loggedInUserId, token }));
     }
   }, [loggedInUserId, token, dispatch]);
+
+  // Check VIP status for current user
+  useEffect(() => {
+    if (loggedInUserId) {
+      dispatch(checkVipStatus(loggedInUserId));
+    }
+  }, [loggedInUserId, dispatch]);
 
   useEffect(() => {
     try {
@@ -295,7 +428,7 @@ export default function PostsCard({ type }: { type?: "video" | "image" | "text" 
       
       dispatch(getfollow({ userid: loggedInUserId, token }));
       
-    } catch (error: unknown) {
+    } catch  {
       setUi(prev => ({
         ...prev,
         [postId]: {
@@ -304,7 +437,7 @@ export default function PostsCard({ type }: { type?: "video" | "image" | "text" 
         },
       }));
       
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      // const errorMessage = error instanceof Error ? error.message : String(error);
       toast.error(`Failed to ${currentlyFollowing ? 'unfollow' : 'follow'}. Please try again.`);
     }
   };
@@ -405,13 +538,13 @@ export default function PostsCard({ type }: { type?: "video" | "image" | "text" 
         const idStr = (v: any) => (v == null ? undefined : String(v));
         const selfIdStr = idStr(loggedInUserId) || idStr(selfId);
         const liked = !!(selfIdStr && likedByArr.includes(selfIdStr));
-        const starred = !!(p?.starred || p?.faved || p?.favorited);
+        // const starred = !!(p?.starred || p?.faved || p?.favorited);
 
         const pid = p?.postid || p?.id || p?._id || idx;
         const uiState = ui[pid] || {};
         const uiLiked = uiState.liked ?? liked;
         const uiLikeCount = uiState.likeCount ?? likeCount;
-        const uiStarred = uiState.starred ?? starred;
+       // const uiStarred = uiState.starred ?? starred;
         const uiOpen = !!uiState.open;
         const uiComments = uiState.comments ?? [];
         const uiInput = uiState.input ?? "";
@@ -426,46 +559,67 @@ export default function PostsCard({ type }: { type?: "video" | "image" | "text" 
           <div key={`${p?.postid || p?.id || idx}`} className="mx-auto max-w-[30rem] w-full bg-gray-800 rounded-md p-3">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-3">
-                <div 
-                  className="size-10 rounded-full overflow-hidden bg-gray-700 cursor-pointer hover:opacity-80 transition-opacity" 
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    router.push(`/Profile/${postAuthorId}`);
-                  }}
-                >
-                  {(() => {
-                    const profileImage = isSelf ? photolink : 
-                      p?.user?.photolink || 
-                      p?.user?.photoLink || 
-                      p?.user?.profileImage || 
-                      p?.user?.avatar || 
-                      p?.user?.image;
-                    
-                    const userName = isSelf ? `${firstname} ${lastname}`.trim() : 
-                      `${p?.user?.firstname || ""} ${p?.user?.lastname || ""}`.trim();
-                    
-                    const initials = userName.split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2) || "?";
-                    
-                    if (profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined") {
+                <div className="relative">
+                  <div 
+                    className="size-10 rounded-full overflow-hidden bg-gray-700 cursor-pointer hover:opacity-80 transition-opacity" 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      router.push(`/Profile/${postAuthorId}`);
+                    }}
+                  >
+                    {(() => {
+                      const profileImage = isSelf ? photolink : 
+                        p?.user?.photolink || 
+                        p?.user?.photoLink || 
+                        p?.user?.profileImage || 
+                        p?.user?.avatar || 
+                        p?.user?.image;
+                      
+                      const userName = isSelf ? `${firstname} ${lastname}`.trim() : 
+                        `${p?.user?.firstname || ""} ${p?.user?.lastname || ""}`.trim();
+                      
+                      const initials = userName.split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2) || "?";
+                      
+                      if (profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined") {
+                        return (
+                          <img
+                            alt="Profile picture"
+                            src={profileImage}
+                            className="object-cover w-full h-full"
+                            onError={(e) => {
+                              const target = e.currentTarget as HTMLImageElement;
+                              target.style.display = 'none';
+                              const nextElement = target.nextElementSibling as HTMLElement;
+                              if (nextElement) {
+                                nextElement.style.setProperty('display', 'flex');
+                              }
+                            }}
+                          />
+                        );
+                      }
+                      
                       return (
-                        <img
-                          alt="Profile picture"
-                          src={profileImage}
-                          className="object-cover w-full h-full"
-                          onError={(e) => {
-                            e.currentTarget.style.display = 'none';
-                            e.currentTarget.nextElementSibling?.style.setProperty('display', 'flex');
-                          }}
-                        />
+                        <div className="w-full h-full flex items-center justify-center text-white text-sm font-semibold bg-gray-600">
+                          {initials}
+                        </div>
                       );
-                    }
-                    
-                    return (
-                      <div className="w-full h-full flex items-center justify-center text-white text-sm font-semibold bg-gray-600">
-                        {initials}
-                      </div>
-                    );
-                  })()}
+                    })()}
+                  </div>
+                  
+       {/* VIP Lion Badge - show if the post author is VIP */}
+       {(() => {
+         // Check if current user is VIP
+         if (isSelf && vipStatus?.isVip) {
+           return <VIPBadge size="xl" className="absolute -top-5 -right-5" isVip={vipStatus.isVip} vipEndDate={vipStatus.vipEndDate} />;
+         }
+
+         // Check if post author is VIP
+         if (!isSelf && p?.user?.isVip) {
+           return <VIPBadge size="xl" className="absolute -top-5 -right-5" isVip={p.user.isVip} vipEndDate={p.user.vipEndDate} />;
+         }
+
+         return null;
+       })()}
                 </div>
                 <div 
                   className="flex-1 cursor-pointer" 
@@ -498,7 +652,19 @@ export default function PostsCard({ type }: { type?: "video" | "image" | "text" 
             {p?.createdAt && (
               <p className="my-3 text-gray-400 text-sm  cursor-pointer" onClick={()=>{
                 router.push(`/post/${p?._id}`)
-              }}>{new Date(p.createdAt).toLocaleString()}</p>
+              }}>
+                {(() => {
+                  // Try to format the timestamp
+                  const formatted = formatRelativeTime(p.createdAt);
+                  
+                  // If formatting failed, show a fallback
+                  if (formatted === 'Invalid time' || formatted === 'Unknown time') {
+                    return 'recently';
+                  }
+                  
+                  return formatted;
+                })()}
+              </p>
             )}
             
             {p?.content && (
@@ -508,28 +674,32 @@ export default function PostsCard({ type }: { type?: "video" | "image" | "text" 
             )}
             
             {postType == "image" && src && (
-              <img
-                src={src}
-                alt={p?.content || "post image"}
-                className="w-full max-h-[480px] object-contain rounded"
-                onError={(e) => {
-                  const img = e.currentTarget as HTMLImageElement & { dataset: any };
-                  if (!img.dataset.fallback1 && pathUrlPrimary) {
-                    img.dataset.fallback1 = "1";
-                    img.src = pathUrlPrimary;
-                    return;
-                  }
-                  if (!img.dataset.fallback2 && queryUrlFallback) {
-                    img.dataset.fallback2 = "1";
-                    img.src = queryUrlFallback;
-                    return;
-                  }
-                  if (!img.dataset.fallback3 && pathUrlFallback) {
-                    img.dataset.fallback3 = "1";
-                    img.src = pathUrlFallback;
-                  }
-                }}
-              />
+              <div className="w-full max-h-[480px] relative rounded overflow-hidden">
+                <Image
+                  src={src}
+                  alt={p?.content || "post image"}
+                  width={800}
+                  height={480}
+                  className="w-full h-auto object-contain"
+                  onError={(e) => {
+                    const img = e.currentTarget as HTMLImageElement & { dataset: any };
+                    if (!img.dataset.fallback1 && pathUrlPrimary) {
+                      img.dataset.fallback1 = "1";
+                      img.src = pathUrlPrimary;
+                      return;
+                    }
+                    if (!img.dataset.fallback2 && queryUrlFallback) {
+                      img.dataset.fallback2 = "1";
+                      img.src = queryUrlFallback;
+                      return;
+                    }
+                    if (!img.dataset.fallback3 && pathUrlFallback) {
+                      img.dataset.fallback3 = "1";
+                      img.src = pathUrlFallback;
+                    }
+                  }}
+                />
+              </div>
             )}
             
             {postType == "video" && src && (
@@ -596,7 +766,7 @@ export default function PostsCard({ type }: { type?: "video" | "image" | "text" 
                     postid: localPid,
                     token: token
                   } as any)).unwrap();
-                } catch (err) {
+                } catch {
                   setUi((prev) => ({
                     ...prev,
                     [localPid]: {
@@ -651,9 +821,6 @@ export default function PostsCard({ type }: { type?: "video" | "image" | "text" 
                     });
                 }
               }}
-              onMore={() => {
-                console.debug("more clicked", p?.id || p?.postid);
-              }}
             />
             
             {uiOpen && (
@@ -665,42 +832,81 @@ export default function PostsCard({ type }: { type?: "video" | "image" | "text" 
                     {uiComments && uiComments.length > 0 ? (
                       uiComments.map((c: any, i: number) => (
                         <div key={i} className="text-sm text-gray-200 flex items-start gap-2">
-                          <div className="flex-shrink-0 w-6 h-6 rounded-full bg-gray-600 flex items-center justify-center text-xs">
-                            {c?.commentuserphoto ? (
-                              <img 
-                                src={c.commentuserphoto} 
-                                alt="avatar" 
-                                className="w-full h-full rounded-full object-cover"
-                                onError={(e) => {
-                                  e.currentTarget.style.display = 'none';
-                                  const nextElement = e.currentTarget.nextElementSibling as HTMLElement;
-                                  if (nextElement) {
-                                    nextElement.style.display = 'block';
-                                  }
-                                }}
-                              />
-                            ) : null}
-                            <span style={{display: c?.commentuserphoto ? 'none' : 'block'}}>
+                          <div className="relative flex-shrink-0 w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center text-xs">
+                            {(() => {
+                              // Use the same logic as post author profile picture
+                              const profileImage = c?.commentuserphoto || c?.photo || c?.photolink || c?.photoLink || c?.profileImage || c?.avatar || c?.image;
+                              
+                              if (profileImage && profileImage.trim() && profileImage !== 'null' && profileImage !== 'undefined') {
+                                return (
+                                  <img
+                                    alt="Profile picture"
+                                    src={profileImage}
+                                    className="object-cover w-full h-full rounded-full"
+                                    onError={(e) => {
+                                      const target = e.currentTarget as HTMLImageElement;
+                                      target.style.display = 'none';
+                                      const nextElement = target.nextElementSibling as HTMLElement;
+                                      if (nextElement) {
+                                        nextElement.style.setProperty('display', 'flex');
+                                      }
+                                    }}
+                                  />
+                                );
+                              }
+                              
+                              return null;
+                            })()}
+                            <span style={{display: 'flex'}}>
                               {(c?.commentusername || c?.username || 'U').charAt(0).toUpperCase()}
                             </span>
+                            
+                            {/* VIP Badge for commenter */}
+                            {(() => {
+                              const isVipActive = c?.isVip && c?.vipEndDate && new Date(c.vipEndDate) > new Date();
+                              return isVipActive && (
+                                <VIPBadge size="lg" className="absolute -top-2 -right-2" isVip={c.isVip} vipEndDate={c.vipEndDate} />
+                              );
+                            })()}
                           </div>
                           <div className="flex-1">
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center justify-between">
                               <span className="font-medium text-gray-300">
                                 {c?.commentusername || c?.username || 'User'}
                               </span>
-                              {c?.commentnickname && (
-                                <span className="text-gray-500 text-xs">@{c.commentnickname}</span>
-                              )}
+                              <span className="text-xs text-gray-500">
+                                {(() => {
+                                  // Try multiple possible timestamp fields, prioritizing commenttime from backend
+                                  const timestamp = c?.commenttime || 
+                                                  c?.date || 
+                                                  c?.createdAt || 
+                                                  c?.created_at || 
+                                                  c?.timestamp || 
+                                                  c?.time || 
+                                                  c?.postedAt || 
+                                                  c?.posted_at;
+                                  
+                                  
+                                  if (!timestamp) {
+                                    return 'Unknown time';
+                                  }
+                                  
+                                  // Try to format the timestamp
+                                  const formatted = formatRelativeTime(timestamp);
+                                  
+                                  // If formatting failed, show a fallback
+                                  if (formatted === 'Invalid time' || formatted === 'Unknown time') {
+                                    return 'recently';
+                                  }
+                                  
+                                  return formatted;
+                                })()}
+                              </span>
                             </div>
                             <div className="text-gray-200 mt-1">
                               {c?.content || c?.comment || String(c)}
                             </div>
-                            {c?.commenttime && (
-                              <div className="text-xs text-gray-500 mt-1">
-                                {new Date(parseInt(c.commenttime)).toLocaleString()}
-                              </div>
-                            )}
+                            
                           </div>
                         </div>
                       ))
@@ -743,8 +949,7 @@ export default function PostsCard({ type }: { type?: "video" | "image" | "text" 
                           if (uid && localPid && token) {
                             (dispatch(postcomment({ userid: uid, postid: localPid, content: text, token: token } as any)) as any)
                               .unwrap()
-                              .then((res: any) => {
-                                console.log('Comment response:', res);
+                              .then((_res: any) => {
                                 // Refresh comments after successful post
                                 dispatch(getpostcomment({ postid: localPid } as any))
                                   .unwrap()

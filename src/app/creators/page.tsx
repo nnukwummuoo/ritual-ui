@@ -10,10 +10,10 @@ import { countryList } from "@/components/CountrySelect/countryList";
 import { CreatorCard, CreatorCardProps } from "./_components/card";
 import CategoryButtonComponent from "./_components/CategoryButton";
 import { getMyCreator } from "@/api/creator";
+import VIPBadge from "@/components/VIPBadge";
 
 export default function CreatorPage() {
   // const login = useSelector((state: any) => state.register.logedin);
-  // const dispatch = useDispatch();
   // const mycreatorstatus = useSelector((state: any) => state.creator.mycreatorstatus);
   // const message = useSelector((state: any) => state.creator.message);
   // const mycreator = useSelector((state: any) => state.creator.mycreator);
@@ -47,9 +47,10 @@ export default function CreatorPage() {
   const [showmycreator, setshowmycreator] = useState(false);
   const [showhost, setshowhost] = useState(false);
   const [isModalOpen, setModalOpen] = useState(false);
-  const [categoryButton, setCategoryButton] = useState(" ");
+  const [categoryButton, setCategoryButton] = useState("All");
 
   const buttonData = [
+    { label: "All", value: "All" },
     { label: "Fan Call", value: "Fan Call" },
     { label: "Fan meet", value: "Fan meet" },
     { label: "Fan date", value: "Fan date" },
@@ -58,7 +59,8 @@ export default function CreatorPage() {
   const toggleModal = () => setShowCountries((prev) => !prev);
   const handleCategorybutton = (value: string) => {
     setCategoryButton(value);
-    setHosttypeSearchQuery(value);
+    // If "All" is selected, clear the filter (empty string shows all)
+    setHosttypeSearchQuery(value === "All" ? "" : value);
   };
 
   const toggleFullPageModal = () => setModalOpen(!isModalOpen);
@@ -95,11 +97,18 @@ export default function CreatorPage() {
   useEffect(() => {
     const fetchCountries = async () => {
       try {
-        const response = await fetch("https://restcountries.com/v3.1/all");
+        // Use the fields parameter to get only needed data
+        const response = await fetch("https://restcountries.com/v3.1/all?fields=name,flags");
         const data = await response.json();
+        
+        // Check if data is an array
+        if (!Array.isArray(data)) {
+          throw new Error("Invalid data format from countries API");
+        }
+        
         const formattedCountries = data.map((country: any) => ({
-          name: country.name.common,
-          flag: country.flags.svg,
+          name: country.name?.common || country.name || "Unknown",
+          flag: country.flags?.svg || "../../icons/Mappamondo.svg",
         }));
 
         const countriesWithAll = [
@@ -110,7 +119,7 @@ export default function CreatorPage() {
         setDisplayedCountries(countriesWithAll);
         setCountries(countriesWithAll);
       } catch (error) {
-        console.log("Error fetching countries:", error);
+        // Use fallback to local country list
         const fallbackCountries = ["All", ...countryList].map((country) => ({
           name: country,
           flag: "../../icons/Mappamondo.svg",
@@ -125,6 +134,8 @@ export default function CreatorPage() {
 
   const user = useAuth();
 
+  // VIP status is now included directly from backend, no need for separate API calls
+
   // Fetch my created creators when session is available
   useEffect(() => {
     const run = async () => {
@@ -136,12 +147,23 @@ export default function CreatorPage() {
         }
         setLoading(true);
         const res = await getMyCreator({ userid: user.session._id, token: user.session.token });
-        const list = [...(res?.host||[])]
-        console.log("[GET /creator] parsed list length:", list.length);
+        
+        // Handle different response formats
+        const list = Array.isArray(res?.host) ? [...res.host] : 
+                    Array.isArray(res) ? [...res] : 
+                    Array.isArray(res?.data) ? [...res.data] : [];
+        
+        console.log(`📊 [CREATORS PAGE] Received ${list.length} creators from backend`);
+        console.log(`🦁 [CREATORS PAGE] VIP Status in response:`, list.map(c => ({ 
+          name: c.name, 
+          userid: c.userid, 
+          isVip: c.isVip, 
+          vipEndDate: c.vipEndDate 
+        })));
+        
         setMyCreators(list);
-      } catch (e) {
-        // console only, UI remains simple
-        console.error("Failed to load my creators", e);
+      } catch (e: any) {
+        setMyCreators([]);
       } finally {
         setLoading(false);
       }
@@ -214,10 +236,9 @@ const mapToCard = (m: any): CreatorCardProps => {
     amountNum = amountVal;
   }
 
-  return {
+  const cardData = {
     photolink: photo,
     hosttype: m.hosttype || m.category || "",
-    online: Boolean(m.online),
     name: m.name || m.fullName || "",
     age: Number(m.age || 0),
     gender: m.gender || "",
@@ -228,7 +249,17 @@ const mapToCard = (m: any): CreatorCardProps => {
     userid: m.userid || m.hostid || m.ownerId || "",
     createdAt: m.createdAt || m.created_at || "",
     hostid: m.hostid,
+    // VIP status comes directly from backend
+    isVip: m.isVip || false,
+    vipEndDate: m.vipEndDate || null,
   };
+
+  // Debug log for VIP status
+  if (m.isVip || m.vipEndDate) {
+    console.log(`🦁 [MAPTOCARD] VIP Creator: ${cardData.name} (${cardData.userid}) - isVip: ${cardData.isVip}, vipEndDate: ${cardData.vipEndDate}`);
+  }
+
+  return cardData;
 };
 
 
@@ -238,15 +269,25 @@ const renderCreators = () => {
     return (
       <SkeletonTheme baseColor="#202020" highlightColor="#444">
         <div className="w-full p-4 space-y-4">
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-5">
-            {Array(6)
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+            {Array(8)
               .fill(0)
               .map((_, index) => (
                 <div
                   key={index}
-                  className="relative flex flex-col items-center p-4 bg-[#121212] rounded-lg"
+                  className="relative flex flex-col items-center p-4 bg-[#121212] rounded-lg shadow-lg"
                 >
-                  <Skeleton width={150} height={250} className="rounded-lg" />
+                  <Skeleton 
+                    width="100%" 
+                    height={250} 
+                    className="rounded-lg" 
+                    style={{ maxWidth: '200px' }}
+                  />
+                  <div className="mt-3 w-full space-y-2">
+                    <Skeleton width="80%" height={16} className="mx-auto" />
+                    <Skeleton width="60%" height={14} className="mx-auto" />
+                    <Skeleton width="40%" height={12} className="mx-auto" />
+                  </div>
                 </div>
               ))}
           </div>
@@ -265,10 +306,27 @@ const renderCreators = () => {
 
   const list: CreatorCardProps[] = myCreators.map((m) => {
     const card = mapToCard(m);
-    return {
+    const finalCard = {
       ...card,
       photolink: card.photolink || "/images/default-placeholder.png", // fallback image
     };
+    
+    // Debug log for final card data
+    console.log(`🎴 [RENDERCREATORS] Final card data for ${finalCard.name}:`, {
+      isVip: finalCard.isVip,
+      vipEndDate: finalCard.vipEndDate,
+      userid: finalCard.userid
+    });
+    
+    return finalCard;
+  });
+
+  // Filter creators based on selected category
+  const filteredList = list.filter((creator) => {
+    if (categoryButton === "All") {
+      return true; // Show all creators
+    }
+    return creator.hosttype === categoryButton;
   });
 
   if (!list.length) {
@@ -279,13 +337,26 @@ const renderCreators = () => {
     );
   }
 
+  if (!filteredList.length && list.length > 0) {
+    return (
+      <div className="mt-6 text-sm text-slate-400">
+        No creators found for "{categoryButton}" category.
+      </div>
+    );
+  }
+
   return (
     <ul className="grid grid-cols-2 gap-2 mt-4 mb-12 md:grid-cols-3">
-      {list.map((value) => (
-        <CreatorCard
-          key={value.creatorid || Math.random().toString(36)}
-          {...value}
-        />
+      {filteredList.map((value, index) => (
+        <li key={value.creatorid || Math.random().toString(36)} className="relative">
+          <CreatorCard {...value} />
+          {/* VIP Badge - positioned at page level on top of verified creators */}
+          {value.isVip && (
+            <div className="absolute -top-4 left-20 z-50">
+              <VIPBadge size="xxl" isVip={value.isVip} vipEndDate={value.vipEndDate} />
+            </div>
+          )}
+        </li>
       ))}
     </ul>
   );
@@ -301,7 +372,7 @@ const renderCreators = () => {
 
 
   return (
-    <div className="px-4 mt-10 sm:mx-10">
+    <div className="px-4 mt-2 sm:mx-4">
       <div className="text-slate-200 sm:w-1/2 sm:ml-16 md:w-full md:ml-0 md:mt-10 md:overflow-auto">
         <CategoryButtonComponent
           buttons={buttonData}

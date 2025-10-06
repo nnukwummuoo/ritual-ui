@@ -10,6 +10,7 @@ import DropdownMenu from "./DropdownMenu";
 
 // Removed Redux import - using direct API calls instead
 import { getViewingProfile } from "@/store/viewingProfile";
+import { checkVipStatus } from "@/store/vip";
 
 import type { RootState } from "@/store/store";
 import { getSocket, startTyping, stopTyping } from "@/lib/socket";
@@ -19,6 +20,8 @@ import { URL as API_URL } from "@/api/config";
 import axios from "axios";
 import Image from "next/image";
 import { X, Paperclip, Send, File, Download } from "lucide-react";
+import VIPBadge from "@/components/VIPBadge";
+import { checkVipCelebration, markVipCelebrationViewed } from "@/api/vipCelebration";
 
 
 export const Chat = () => {
@@ -316,11 +319,17 @@ export const Chat = () => {
     messageId?: string; // Unique identifier for deduplication
     status?: 'sending' | 'sent' | 'delivered' | 'failed'; // Message status
     tempId?: string; // Temporary ID for optimistic updates
+    isVip?: boolean;
+    vipStartDate?: string;
+    vipEndDate?: string;
   }>>([]);
   // Removed Redux dependencies - using direct API calls instead
   
   // Get viewing profile data for the target user
   const viewingProfile = useSelector((state: RootState) => state.viewingProfile);
+  
+  // Get VIP status from Redux
+  const vipStatus = useSelector((state: RootState) => state.vip.vipStatus);
   
   // File upload states
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
@@ -332,12 +341,92 @@ export const Chat = () => {
   }>>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // VIP celebration states
+  const [showVipCelebration, setShowVipCelebration] = useState(false);
+  const [vipCelebrationShown, setVipCelebrationShown] = useState(false);
+  const [celebrationChecked, setCelebrationChecked] = useState(false);
+
   // Function to scroll to bottom of messages
   const scrollToBottom = () => {
     if (msgListref.current) {
-      msgListref.current.scrollTop = msgListref.current.scrollHeight;
+      // Use smooth scrolling for better mobile experience
+      msgListref.current.scrollTo({
+        top: msgListref.current.scrollHeight,
+        behavior: 'smooth'
+      });
     }
   };
+
+  // Enhanced scroll to bottom for mobile
+  const scrollToBottomMobile = () => {
+    if (msgListref.current) {
+      // Force immediate scroll for mobile
+      const element = msgListref.current;
+      element.scrollTop = element.scrollHeight;
+      
+      // Also try smooth scroll as fallback
+      setTimeout(() => {
+        element.scrollTo({
+          top: element.scrollHeight,
+          behavior: 'smooth'
+        });
+      }, 50);
+    }
+  };
+
+  // Check if VIP celebration should be shown (database-based)
+  const checkVipCelebrationStatus = React.useCallback(async (userId: string, viewerId: string) => {
+    if (!userId || !viewerId) return false;
+    
+    try {
+      const token = (() => {
+        try {
+          const raw = localStorage.getItem("login");
+          if (raw) {
+            const data = JSON.parse(raw);
+            return data?.refreshtoken || data?.accesstoken;
+          }
+        } catch (error) {
+          console.error("[Chat] Error retrieving token from localStorage:", error);
+        }
+        return "";
+      })();
+
+      if (!token) return false;
+
+      const response = await checkVipCelebration(userId, viewerId, token);
+      return response.shouldShowCelebration;
+    } catch (error) {
+      console.error('Error checking VIP celebration status:', error);
+      return false;
+    }
+  }, []);
+
+  // Mark VIP celebration as viewed (database-based)
+  const markVipCelebrationAsViewed = React.useCallback(async (userId: string, viewerId: string) => {
+    if (!userId || !viewerId) return;
+    
+    try {
+      const token = (() => {
+        try {
+          const raw = localStorage.getItem("login");
+          if (raw) {
+            const data = JSON.parse(raw);
+            return data?.refreshtoken || data?.accesstoken;
+          }
+        } catch (error) {
+          console.error("[Chat] Error retrieving token from localStorage:", error);
+        }
+        return "";
+      })();
+
+      if (!token) return;
+
+      await markVipCelebrationViewed(userId, viewerId, token);
+    } catch (error) {
+      console.error('Error marking VIP celebration as viewed:', error);
+    }
+  }, []);
 
   // Load userid from localStorage if not in Redux (same pattern as ProfilePage)
   React.useEffect(() => {
@@ -407,7 +496,11 @@ export const Chat = () => {
       if (response.data.chats && Array.isArray(response.data.chats)) {
         setmessage(response.data.chats);
         // Scroll to bottom after messages are loaded
-        setTimeout(() => scrollToBottom(), 100);
+        requestAnimationFrame(() => {
+          setTimeout(() => {
+            scrollToBottomMobile();
+          }, 150);
+        });
       } else {
         setmessage([]);
       }
@@ -501,6 +594,10 @@ export const Chat = () => {
       } else {
         set_Chatphoto("/icons/icons8-profile_user.png");
       }
+      
+      // Fetch VIP status for the chat partner
+      console.log(`🔍 [CHAT] Fetching VIP status for chat partner: ${viewingProfile.userId}`);
+      dispatch(checkVipStatus(viewingProfile.userId) as any);
     } else if (viewingProfile.status === "failed") {
       // Handle profile loading failure with better fallback
       const targetUserId = decodeURIComponent(creatorid || "");
@@ -511,7 +608,44 @@ export const Chat = () => {
       set_Chatphoto("/icons/icons8-profile_user.png");
       setChatphotoError(false);
     }
-  }, [viewingProfile, creatorid]);
+  }, [viewingProfile, creatorid, dispatch]);
+
+  // Check VIP celebration status when VIP status is confirmed
+  useEffect(() => {
+    const checkCelebration = async () => {
+      if (vipStatus?.isVip && viewingProfile.status === "succeeded" && viewingProfile.userId && loggedInUserId && !celebrationChecked) {
+        setCelebrationChecked(true);
+        
+        try {
+          const shouldShow = await checkVipCelebrationStatus(viewingProfile.userId, loggedInUserId);
+          
+          if (shouldShow) {
+            setShowVipCelebration(true);
+            setVipCelebrationShown(true);
+            
+            // Mark as viewed in database
+            await markVipCelebrationAsViewed(viewingProfile.userId, loggedInUserId);
+            
+            // Hide the celebration after 5 seconds
+            setTimeout(() => {
+              setShowVipCelebration(false);
+            }, 5000);
+          }
+        } catch (error) {
+          console.error('Error checking VIP celebration:', error);
+        }
+      }
+    };
+
+    checkCelebration();
+  }, [vipStatus, viewingProfile.status, viewingProfile.userId, loggedInUserId, celebrationChecked, checkVipCelebrationStatus, markVipCelebrationAsViewed]);
+
+  // Reset VIP celebration tracking when switching users
+  useEffect(() => {
+    setVipCelebrationShown(false);
+    setShowVipCelebration(false);
+    setCelebrationChecked(false);
+  }, [creatorid]);
 
   // Force update chat info when creatorid changes to ensure profile is always shown
   useEffect(() => {
@@ -586,8 +720,12 @@ export const Chat = () => {
   // Auto-scroll to bottom when messages change
   useEffect(() => {
     if (message.length > 0) {
-      // Small delay to ensure DOM is updated
-      setTimeout(() => scrollToBottom(), 50);
+      // Use enhanced mobile scrolling
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          scrollToBottomMobile();
+        }, 100);
+      });
     }
   }, [message]);
 
@@ -613,6 +751,10 @@ export const Chat = () => {
                         <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
                       </svg>
                       <span className="font-semibold">{isUser ? 'You sent' : `${value.name} sent`}</span>
+                      {/* VIP Badge for message sender */}
+                      {!isUser && value.isVip && (
+                        <VIPBadge size="md" isVip={value.isVip} vipEndDate={value.vipEndDate} />
+                      )}
 
                     </div>
                     <p className="text-lg font-bold mt-1">${value.content}</p>
@@ -625,9 +767,16 @@ export const Chat = () => {
                 <div key={index} className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-4 w-full`}>
                   <div className={`w-1/2 px-4 py-3 rounded-2xl ${
                     isUser 
-                      ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-br-md' 
-                      : ' bg-gray-800/50 text-white rounded-bl-md border border-blue-700/30'
+                      ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-br-md shadow-lg shadow-blue-500/30' 
+                      : ' bg-gray-800/50 text-white rounded-bl-md border border-blue-700/30 shadow-lg shadow-blue-700/10'
                   }`}>
+                    {/* VIP Badge for message sender */}
+                    {!isUser && value.isVip && (
+                      <div className="flex justify-end items-center gap-2 mb-2">
+                          <VIPBadge size="md" isVip={value.isVip} vipEndDate={value.vipEndDate} />
+                        <span className="text-xs py-1 px-2 rounded-full bg-gradient-to-b tracking-wider font-semibold from-[#fb8402] to-[#ad4d01] text-white">VIP</span>
+                      </div>
+                    )}
                     <p className="text-sm">{value.content}</p>
                     
                     {/* Display files if any */}
@@ -775,7 +924,10 @@ export const Chat = () => {
         date: string; 
         coin: boolean; 
         files?: string[]; 
-        fileCount?: number; 
+        fileCount?: number;
+        isVip?: boolean;
+        vipStartDate?: string;
+        vipEndDate?: string;
       }; 
       name: string; 
       photolink: string; 
@@ -802,7 +954,10 @@ export const Chat = () => {
           files: data.data.files || [],
           fileCount: data.data.fileCount || 0,
           messageId: `${data.data.fromid}-${data.data.date}`, // Create unique message ID
-          status: 'delivered' as const
+          status: 'delivered' as const,
+          isVip: data.data.isVip || false,
+          vipStartDate: data.data.vipStartDate,
+          vipEndDate: data.data.vipEndDate
         };
         
         // Check if this is a message from the current user (optimistic update)
@@ -835,7 +990,11 @@ export const Chat = () => {
             return [...prevMessages, info];
           });
           // Scroll to bottom when new message is added
-          setTimeout(() => scrollToBottom(), 50);
+          requestAnimationFrame(() => {
+            setTimeout(() => {
+              scrollToBottomMobile();
+            }, 100);
+          });
         }
       }
     };
@@ -1170,13 +1329,20 @@ export const Chat = () => {
         fileCount: fileUrls.length,
         messageId: `${content.fromid}-${content.date}`,
         status: 'sending' as const,
-        tempId: tempId
+        tempId: tempId,
+        isVip: false, // Current user's VIP status (will be updated by socket)
+        vipStartDate: undefined,
+        vipEndDate: undefined
       };
 
       setmessage((value) => [...value, chats]);
       
       // Scroll to bottom after sending message
-      setTimeout(() => scrollToBottom(), 50);
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          scrollToBottomMobile();
+        }, 100);
+      });
       
       settext("");
       setSelectedFiles([]);
@@ -1276,7 +1442,26 @@ export const Chat = () => {
   }, [dispatch]);
 
   return (
-    <div className="h-full w-full flex flex-col">
+    <div className="h-full w-full flex flex-col" style={{ 
+      WebkitOverflowScrolling: 'touch',
+      overscrollBehavior: 'contain',
+      touchAction: 'pan-y'
+    }}>
+      {/* VIP Celebration Animation */}
+      {showVipCelebration && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 pointer-events-none">
+          <div className="relative w-64 h-64 md:w-96 md:h-96">
+            <Image
+              src="/lion.gif"
+              alt="VIP Celebration"
+              fill
+              className="object-contain"
+              priority
+            />
+          </div>
+        </div>
+      )}
+
       {/* Top Bar with Clean Design */}
       <div className=" bg-gray-800 backdrop-blur-sm border-b border-blue-700/30 p-3 sm:p-4 sticky top-0 z-50 flex-shrink-0">
         <div className="flex items-center justify-between">
@@ -1292,24 +1477,30 @@ export const Chat = () => {
             
             <div className="flex items-center gap-3">
               {/* Profile Picture */}
-              <div className="w-12 h-12 rounded-full border-2 border-blue-600/50 overflow-hidden">
-                {loading || (!chatusername && !chatfirstname) ? (
-                  <div className="w-full h-full bg-gray-600 animate-pulse rounded-full"></div>
-                ) : Chatphoto && Chatphoto !== "/icons/icons8-profile_user.png" && !ChatphotoError ? (
-                  <Image
-                    src={Chatphoto}
-                    alt="profile"
-                    width={48}
-                    height={48}
-                    className="w-full h-full object-cover"
-                    onError={() => {
-                      setChatphotoError(true);
-                    }}
-                  />
-                ) : (
-                  <div className={`w-full h-full flex items-center justify-center text-white font-semibold ${getRandomColor(chatfirstname && chatlastname ? `${chatfirstname} ${chatlastname}`.trim() : chatusername || "User")}`}>
-                    {getUserInitials(chatfirstname && chatlastname ? `${chatfirstname} ${chatlastname}`.trim() : chatusername || "User")}
-                  </div>
+              <div className="relative">
+                <div className="w-12 h-12 rounded-full border-2 border-blue-600/50 overflow-hidden">
+                  {loading || (!chatusername && !chatfirstname) ? (
+                    <div className="w-full h-full bg-gray-600 animate-pulse rounded-full"></div>
+                  ) : Chatphoto && Chatphoto !== "/icons/icons8-profile_user.png" && !ChatphotoError ? (
+                    <Image
+                      src={Chatphoto}
+                      alt="profile"
+                      width={48}
+                      height={48}
+                      className="w-full h-full object-cover"
+                      onError={() => {
+                        setChatphotoError(true);
+                      }}
+                    />
+                  ) : (
+                    <div className={`w-full h-full flex items-center justify-center text-white font-semibold ${getRandomColor(chatfirstname && chatlastname ? `${chatfirstname} ${chatlastname}`.trim() : chatusername || "User")}`}>
+                      {getUserInitials(chatfirstname && chatlastname ? `${chatfirstname} ${chatlastname}`.trim() : chatusername || "User")}
+                    </div>
+                  )}
+                </div>
+                {/* VIP Badge for chat partner */}
+                {viewingProfile.status === "succeeded" && vipStatus?.isVip && (
+                  <VIPBadge size="xl" className="absolute -top-3 -right-5" isVip={vipStatus.isVip} vipEndDate={vipStatus.vipEndDate} />
                 )}
               </div>
               
@@ -1352,7 +1543,11 @@ export const Chat = () => {
       </div>
 
       {/* Messages Area - Clean Design */}
-      <div ref={msgListref} className="flex-1 overflow-y-auto p-3 sm:p-4 bg-transparent pb-20">
+      <div ref={msgListref} className="flex-1 overflow-y-auto p-3 sm:p-4 bg-transparent pb-20" style={{ 
+        WebkitOverflowScrolling: 'touch',
+        overscrollBehavior: 'contain',
+        scrollBehavior: 'smooth'
+      }}>
         {loading ? (
           <div className="space-y-4 w-full max-w-4xl mx-auto">
             <div className="flex justify-start mb-4 w-full">

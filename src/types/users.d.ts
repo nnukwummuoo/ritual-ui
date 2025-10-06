@@ -15,7 +15,7 @@ export interface RegisterState {
     conpasswordstate: string;
     chagepassword: string;
     creatorId?: string;
-    creator_listing?: boolean;
+    creator_portfolio?: boolean;
   }
   
   interface RegisterPayload {
@@ -29,5 +29,5 @@ export interface RegisterState {
     token?: string;
     accessToken?: string;
     creatorId?: string;
-    creator_listing?: boolean;
+    creator_portfolio?: boolean;
   }

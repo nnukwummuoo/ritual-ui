@@ -9,6 +9,7 @@ import Image from "next/image";
 import { MessageCircle } from "lucide-react";
 import { getSocket, joinUserRoom, leaveUserRoom, onUserOnline, onUserOffline, removeTypingListeners } from "@/lib/socket";
 import { useOnlineStatus } from "@/contexts/OnlineStatusContext";
+import VIPBadge from "@/components/VIPBadge";
 
 interface MessageItem {
   fromid: string;
@@ -24,6 +25,9 @@ interface MessageItem {
   unread?: boolean;
   value?: string;
   online?: boolean;
+  isVip?: boolean;
+  vipStartDate?: string;
+  vipEndDate?: string;
 }
 
 export const MessageList = () => {
@@ -400,6 +404,10 @@ export const MessageList = () => {
             {/* Online indicator */}
             {isUserOnline(otherUserId) && (
               <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-gray-900 rounded-full"></div>
+            )}
+            {/* VIP Badge */}
+            {message.isVip && (
+              <VIPBadge size="xl" className="absolute -top-5 -right-5" isVip={message.isVip} vipEndDate={message.vipEndDate} />
             )}
           </div>
 

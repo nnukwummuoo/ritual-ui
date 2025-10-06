@@ -18,10 +18,15 @@ export interface RegisterState {
   email: string;
   password: string;
   forgetpassstate: string;
+  balance: number;
   conpasswordstate: string;
   chagepassword: string;
   creatorId?: string;
-  creator_listing?: boolean;
+  creator_portfolio?: boolean;
+  // VIP status fields
+  isVip?: boolean;
+  vipStartDate?: string;
+  vipEndDate?: string;
 }
 
 
@@ -36,11 +41,16 @@ const initialState: RegisterState = {
   refreshtoken: "",
   accesstoken: "",
   logstats: "idle",
+  balance: 0,
   email: "",
   password: "",
   forgetpassstate: "idle",
   conpasswordstate: "idle",
   chagepassword: "idle",
+  // VIP status fields
+  isVip: false,
+  vipStartDate: undefined,
+  vipEndDate: undefined,
 };
 
 export const registernewUser = createAsyncThunk(
@@ -194,7 +204,19 @@ const registerSlice = createSlice({
       state.accesstoken = action.payload.accesstoken;
       state.userID = action.payload.userId;
       state.creatorId = action.payload.creatorId;
-      state.creator_listing = action.payload.creator_listing;
+      state.creator_portfolio = action.payload.creator_portfolio;
+      state.balance = action.payload.balance || 0;
+      // VIP status fields
+      state.isVip = action.payload.isVip || false;
+      state.vipStartDate = action.payload.vipStartDate;
+      state.vipEndDate = action.payload.vipEndDate;
+      
+      console.log(`🔍 [REGISTER SLICE] loginAuthUser - VIP Status:`, {
+        isVip: action.payload.isVip,
+        vipStartDate: action.payload.vipStartDate,
+        vipEndDate: action.payload.vipEndDate,
+        userID: action.payload.userID
+      });
     },
   },
 
@@ -268,7 +290,11 @@ const registerSlice = createSlice({
               accesstoken: action.payload.accessToken,
               userID: action.payload.userId,
               creatorId: action.payload.creatorId,
-              creator_listing: action.payload.creator_listing,
+              creator_portfolio: action.payload.creator_portfolio,
+              // Include VIP status
+              isVip: action.payload.isVip || false,
+              vipStartDate: action.payload.vipStartDate || null,
+              vipEndDate: action.payload.vipEndDate || null,
             })
           );
         } catch {}
@@ -280,7 +306,11 @@ const registerSlice = createSlice({
         state.accesstoken = action.payload.accessToken;
         state.userID = action.payload.userId;
         state.creatorId = action.payload.creatorId;
-        state.creator_listing = action.payload.creator_listing;
+        state.creator_portfolio = action.payload.creator_portfolio;
+        // Set VIP status in Redux state
+        state.isVip = action.payload.isVip || false;
+        state.vipStartDate = action.payload.vipStartDate || null;
+        state.vipEndDate = action.payload.vipEndDate || null;
       })
       .addCase(loginuser.rejected, (state, action) => {
         state.logstats = "failed";

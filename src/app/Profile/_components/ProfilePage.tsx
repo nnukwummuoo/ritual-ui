@@ -9,6 +9,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import { getprofile, getfollow, getAllUsers, follow, unfollow } from "@/store/profile";
 import { getViewingProfile, getViewingFollow, getAllUsersForViewing, clearViewingProfile } from "@/store/viewingProfile";
+import { checkVipStatus } from "@/store/vip";
 import type { AppDispatch, RootState } from "@/store/store";
 import { updateEdit } from "@/store/comprofile";
 import { getSocket } from "@/lib/socket";
@@ -23,6 +24,8 @@ import PostActions from "@/components/home/PostActions";
 import { toast } from "material-react-toastify";
 import { postlike } from "@/store/like";
 import { getpostcomment, postcomment } from "@/store/comment";
+import VIPBadge from "@/components/VIPBadge";
+import { checkVipCelebration, markVipCelebrationViewed } from "@/api/vipCelebration";
 // Add the same constants from PostsCard
 const PROD_BASE = "https://mmekoapi.onrender.com"; // fallback when local proxy is down
 
@@ -34,27 +37,27 @@ const formatNumber = (num: number): string => {
   return `${(num / 1000000).toFixed(1)}M`;
 };
 
-const Months = [
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December",
-];
+// const Months = [
+//   "January",
+//   "February",
+//   "March",
+//   "April",
+//   "May",
+//   "June",
+//   "July",
+//   "August",
+//   "September",
+//   "October",
+//   "November",
+//   "December",
+// ];
 
 export const Profile = () => {
   const params = useParams();
   const router = useRouter();
 
   const dispatch = useDispatch<AppDispatch>();
-  const fileRef = useRef<HTMLInputElement | null>(null);
+ // const fileRef = useRef<HTMLInputElement | null>(null);
   
   // State for user posts
   const [userPosts, setUserPosts] = useState<any[]>([]);
@@ -68,7 +71,20 @@ export const Profile = () => {
   // Get viewing profile data (for the profile being viewed)
   const viewingProfile = useSelector((s: RootState) => s.viewingProfile);
   
+  // Get VIP status from Redux
+  const vipStatus = useSelector((s: RootState) => s.vip.vipStatus);
+  
   const [showProfilePictureModal, setShowProfilePictureModal] = useState(false);
+  
+  // VIP status state for the profile owner (the user whose profile is being viewed)
+  const [profileOwnerVipStatus, setProfileOwnerVipStatus] = useState<boolean>(false);
+  
+  // VIP celebration animation state
+  const [showVipCelebration, setShowVipCelebration] = useState(false);
+  
+  // VIP celebration tracking state
+  const [vipCelebrationShown, setVipCelebrationShown] = useState(false);
+  const [celebrationChecked, setCelebrationChecked] = useState(false);
 
   // Get viewingUserId from params
   const viewingUserId = (params as any)?.userid as string;
@@ -156,6 +172,72 @@ export const Profile = () => {
   const [creatorid, setcreatorid] = useState<string[]>([]);
   const [isFollowing, setisFollowing] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+
+  // Check VIP status for the profile owner (the user whose profile is being viewed)
+  useEffect(() => {
+    if (viewingUserId) {
+      dispatch(checkVipStatus(viewingUserId));
+    }
+  }, [viewingUserId, dispatch]);
+
+  // Check if VIP celebration should be shown (database-based)
+  const checkVipCelebrationStatus = React.useCallback(async (userId: string, viewerId: string) => {
+    if (!userId || !viewerId || !token) return false;
+    
+    try {
+      const response = await checkVipCelebration(userId, viewerId, token);
+      return response.shouldShowCelebration;
+    } catch (error) {
+      console.error('Error checking VIP celebration status:', error);
+      return false;
+    }
+  }, [token]);
+
+  // Mark VIP celebration as viewed (database-based)
+  const markVipCelebrationAsViewed = React.useCallback(async (userId: string, viewerId: string) => {
+    if (!userId || !viewerId || !token) return;
+    
+    try {
+      await markVipCelebrationViewed(userId, viewerId, token);
+    } catch (error) {
+      console.error('Error marking VIP celebration as viewed:', error);
+    }
+  }, [token]);
+
+  // Update VIP status when Redux state changes
+  useEffect(() => {
+    setProfileOwnerVipStatus(vipStatus?.isVip || false);
+  }, [vipStatus]);
+
+  // Check VIP celebration status when VIP status is confirmed
+  useEffect(() => {
+    const checkCelebration = async () => {
+      if (vipStatus?.isVip && status !== 'loading' && viewingUserId && loggedInUserId && !celebrationChecked) {
+        setCelebrationChecked(true);
+        
+        try {
+          const shouldShow = await checkVipCelebrationStatus(viewingUserId, loggedInUserId);
+          
+          if (shouldShow) {
+            setShowVipCelebration(true);
+            setVipCelebrationShown(true);
+            
+            // Mark as viewed in database
+            await markVipCelebrationAsViewed(viewingUserId, loggedInUserId);
+            
+            // Hide the celebration after 5 seconds
+            setTimeout(() => {
+              setShowVipCelebration(false);
+            }, 5000);
+          }
+        } catch (error) {
+          console.error('Error checking VIP celebration:', error);
+        }
+      }
+    };
+
+    checkCelebration();
+  }, [vipStatus, status, viewingUserId, loggedInUserId, celebrationChecked, checkVipCelebrationStatus, markVipCelebrationAsViewed]);
 
   useEffect(() => {
     // Use the viewingUserId from params (the profile we're viewing)
@@ -526,6 +608,13 @@ export const Profile = () => {
   // Clear posts when switching users to prevent showing wrong posts
   useEffect(() => {
     setUserPosts([]);
+  }, [viewingUserId]);
+
+  // Reset VIP celebration tracking when switching users
+  useEffect(() => {
+    setVipCelebrationShown(false);
+    setShowVipCelebration(false);
+    setCelebrationChecked(false);
   }, [viewingUserId]);
 
   // Fetch posts when profile is loaded - ONLY for the specific user being viewed
@@ -1060,7 +1149,7 @@ const PostModal = () => {
         {/* Header */}
         <div className="p-4 border-b border-gray-800 flex justify-between items-center">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-gray-700 overflow-hidden">
+            <div className="relative w-10 h-10 rounded-full bg-gray-700 overflow-hidden">
               {(() => {
                 const profileImage = selectedPost.user?.photolink;
                 const userName = `${selectedPost.user?.firstname || ""} ${selectedPost.user?.lastname || ""}`.trim();
@@ -1084,6 +1173,11 @@ const PostModal = () => {
                   </div>
                 );
               })()}
+              
+              {/* VIP Lion Badge - show if the post author has VIP status */}
+              {selectedPost.user?.userid === viewingUserId && profileOwnerVipStatus && (
+                <VIPBadge size="sm" className="absolute -top-1 -right-1" isVip={profileOwnerVipStatus} vipEndDate={vipStatus?.vipEndDate} />
+              )}
             </div>
             <div>
               <p className="font-medium">
@@ -1204,7 +1298,7 @@ const PostModal = () => {
                       modalUi.comments.map((comment: any, index: number) => (
                         <div key={index} className="flex gap-3">
                           <div className="flex-shrink-0">
-                            <div className="w-8 h-8 rounded-full bg-gray-700 overflow-hidden">
+                            <div className="relative w-8 h-8 rounded-full bg-gray-700 overflow-hidden">
                               {(() => {
                                 const profileImage = comment.user?.photolink;
                                 const userName = comment.user?.username || comment.username || "User";
@@ -1228,6 +1322,11 @@ const PostModal = () => {
                                   </div>
                                 );
                               })()}
+                              
+                              {/* VIP Lion Badge - show if the commenter has VIP status */}
+                              {comment.user?.userid === viewingUserId && profileOwnerVipStatus && (
+                                <VIPBadge size="sm" className="absolute -top-1 -right-1" isVip={profileOwnerVipStatus} vipEndDate={vipStatus?.vipEndDate} />
+                              )}
                             </div>
                           </div>
                           <div className="flex-1">
@@ -1290,7 +1389,7 @@ const PostModal = () => {
     if (!showProfilePictureModal) return null;
 
     return (
-      <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black bg-opacity-90 p-4">
+      <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black bg-opacity-90 p-4" style={{zIndex: 9999}}>
         <div className="relative max-w-4xl w-full max-h-[90vh] flex flex-col">
           {/* Close Button */}
           <button
@@ -1302,30 +1401,47 @@ const PostModal = () => {
           
           {/* Profile Picture */}
           <div className="relative w-full h-full flex items-center justify-center">
-            <div className="relative w-full h-0 pb-[100%] max-h-[80vh]">
-              {(() => {
-                const profileImage = photolink || avatarSrc;
-                const userName = `${firstname || ""} ${lastname || ""}`.trim();
-                const initials = userName.split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2) || "?";
-                
-                if (profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined") {
+            <div className="relative w-full max-w-md h-96 flex items-center justify-center">
+                {(() => {
+                  const profileImage = photolink || avatarSrc;
+                  const userName = `${firstname || ""} ${lastname || ""}`.trim();
+                  const initials = userName.split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2) || "?";
+                  
+                  
+                  if (profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined") {
+                    // Check if it's a base64 image
+                    const isBase64 = profileImage.startsWith('data:image/');
+                    
+                    if (isBase64) {
+                      return (
+                        <img
+                          alt="Profile Picture"
+                          src={profileImage}
+                          className="max-w-full max-h-full object-contain rounded-lg"
+                        />
+                      );
+                    } else {
+                      return (
+                        <Image
+                          alt="Profile Picture"
+                          src={profileImage}
+                          width={400}
+                          height={400}
+                          className="object-contain rounded-lg"
+                        />
+                      );
+                    }
+                  }
+                  
                   return (
-                    <Image
-                      alt="Profile Picture"
-                      src={profileImage}
-                      fill
-                      className="object-contain rounded-lg"
-                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 70vw"
-                    />
+                    <div className="w-full h-full rounded-lg bg-gray-600 flex items-center justify-center text-white text-6xl font-bold">
+                      {initials}
+                    </div>
                   );
-                }
+                })()}
                 
-                return (
-                  <div className="w-full h-full rounded-lg bg-gray-600 flex items-center justify-center text-white text-6xl font-bold">
-                    {initials}
-                  </div>
-                );
-              })()}
+                {/* VIP Lion Badge */}
+                {profileOwnerVipStatus && <VIPBadge size="xxl" className="absolute top-2 right-2" isVip={profileOwnerVipStatus} vipEndDate={vipStatus?.vipEndDate} />}
             </div>
           </div>
           
@@ -1346,6 +1462,21 @@ const PostModal = () => {
       className="w-screen mx-auto sm:w-11/12 md:w-10/12 lg:w-9/12 xl:w-8/12"
       style={{ overflowY: "scroll" }}
     >
+      {/* VIP Celebration Animation */}
+      {showVipCelebration && (
+        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black bg-opacity-50 pointer-events-none">
+          <div className="relative w-64 h-64 md:w-96 md:h-96">
+            <Image
+              src="/lion.gif"
+              alt="VIP Celebration"
+              fill
+              className="object-contain"
+              priority
+            />
+          </div>
+        </div>
+      )}
+      
       {/* Post Modal */}
       {showPostModal && <PostModal />}
       {/* Profile Picture Modal */}
@@ -1412,32 +1543,39 @@ const PostModal = () => {
                 <div className="w-full px-2 ">
                   <div className="flex items-center  justify-between">
                     <div className="flex items-center justify-center w-1/3">
-                      <div 
-                      onClick={() => setShowProfilePictureModal(true)}
-                      className="w-24 h-24 rounded-full p-1 bg-gradient-to-r from-blue-500 to-purple-600">
-                        {(() => {
-                          const profileImage = photolink || avatarSrc;
-                          const userName = `${firstname || ""} ${lastname || ""}`.trim();
-                          const initials = userName.split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2) || "?";
-                          
-                          if (profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined") {
+                      <div className="relative">
+                        <div 
+                        onClick={() => setShowProfilePictureModal(true)}
+                        className="w-24 h-24 rounded-full p-1 bg-gradient-to-r from-blue-500 to-purple-600 cursor-pointer hover:scale-105 transition-transform">
+                          {(() => {
+                            const profileImage = photolink || avatarSrc;
+                            const userName = `${firstname || ""} ${lastname || ""}`.trim();
+                            const initials = userName.split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2) || "?";
+                            
+                            if (profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined") {
+                              return (
+                                <Image
+                                  alt="profile picture"
+                                  src={profileImage}
+                                  width={128}
+                                  height={128}
+                                  className="object-cover w-full h-full rounded-full"
+                                />
+                              );
+                            }
+                            
                             return (
-                              <Image
-                                alt="profile picture"
-                                src={profileImage}
-                                width={128}
-                                height={128}
-                                className="object-cover w-full h-full rounded-full"
-                              />
+                              <div className="w-full h-full rounded-full bg-gray-600 flex items-center justify-center text-white text-2xl font-bold">
+                                {initials}
+                              </div>
                             );
-                          }
-                          
-                          return (
-                            <div className="w-full h-full rounded-full bg-gray-600 flex items-center justify-center text-white text-2xl font-bold">
-                              {initials}
-                            </div>
-                          );
-                        })()}
+                          })()}
+                        </div>
+                        
+                        {/* VIP Lion Badge */}
+                          {(() => {
+                            return profileOwnerVipStatus && <VIPBadge size="xxl" className="absolute -top-8 -right-8 pointer-events-none" isVip={profileOwnerVipStatus} vipEndDate={vipStatus?.vipEndDate} />;
+                          })()}
                       </div>
                     </div>
                       <div className="flex flex-col items-start pl-7 gap-2 w-2/3">
@@ -1466,7 +1604,7 @@ const PostModal = () => {
                   <p className="text-blue-500">{nickname}</p>
                 
                 
-                  {(profile as any).creator_listing && (
+                  {(profile as any).creator_portfolio && (
                     <button
                       className="bg-[#7e3500] text-[#eedfcb] rounded-lg p-1 px-2 mt-3"
                     >
@@ -1477,29 +1615,64 @@ const PostModal = () => {
                   <div className="w-full overflow-x-hidden   mt-2">
                     <p className="text-slate-400 break-words">{bio || "Hey, I am using mmeko"}</p>
                   </div>
-              <div className="w-full flex items-center justify-center">
+              <div className="w-full -ml-2 flex items-center justify-center">
                     {viewingUserId !== loggedInUserId ? (
-                      <div className="flex flex-row-reverse mr-5 w-full justify-between items-center gap-2 mt-4">
-                        <div className="flex flex-row   w-1/2 rounded-lg">
-                          <button
-                            className="p-0 px-3 w-full bg-gray-800 cursor-pointer py-1.5 rounded-lg"
-
-                            onClick={() => {
-                              // Pass only the target user ID (the user being viewed) as creatorid
-                              // The Chat component will use this to fetch the target user's profile details
-                              const targetUserId = viewingUserId;
-                              router.push(`/message/${targetUserId}`);
-                            }}
-
-                          >
-                            Message
-                          </button>
-                        </div>
+                      <div className="flex flex-row-reverse w-full gap-2 mt-4">
+                        {/* Message Button */}
+                        <button
+                          className={`flex-1 bg-gray-800 cursor-pointer py-1.5 px-3 rounded-lg hover:bg-gray-700 transition-colors text-center`}
+                          onClick={() => {
+                            // Pass only the target user ID (the user being viewed) as creatorid
+                            // The Chat component will use this to fetch the target user's profile details
+                            const targetUserId = viewingUserId;
+                            router.push(`/message/${targetUserId}`);
+                          }}
+                        >
+                          Message
+                        </button>
+                        
+                        {/* Fan Meet Button - Only show if the profile owner has creator portfolio */}
+                        {(() => {
+                          // Check for creator properties based on the actual data structure
+                          const hasCreatorPortfolio = profileData && (
+                            (profileData as any).creator === true ||
+                            (profileData as any).creatorID ||
+                            (profileData as any).creatorname ||
+                            (profileData as any).exclusive_verify === true
+                          );
+                          
+                          // Get host type from profile data or default to "Fan meet"
+                          const hostType = (profileData as any)?.hosttype || 
+                                         (profileData as any)?.creatortDype || 
+                                         (profileData as any)?.creatorType ||
+                                         "Fan meet";
+                          
+                          return hasCreatorPortfolio && (
+                            <button
+                              className="flex-1 bg-gradient-to-r from-orange-500 to-red-600 cursor-pointer py-1.5 px-3 rounded-lg hover:from-orange-600 hover:to-red-700 transition-all duration-200 hover:scale-105 text-center"
+                              onClick={() => {
+                                // Get the actual creator ID from profile data
+                                const creatorId = (profileData as any)?.creatorID || 
+                                               (profileData as any)?.creatorid || 
+                                               (profileData as any)?.creator_id ||
+                                               (profileData as any)?._id || // Fallback to profile ID
+                                               viewingUserId; // Last resort fallback
+                                
+                                // Navigate to creator profile using the actual creator ID
+                                router.push(`/creators/${creatorId}`);
+                              }}
+                            >
+                              {hostType}
+                            </button>
+                          );
+                        })()}
+                        
+                        {/* Follow Button */}
                         <button
                           key={`follow-button-${isFollowing}`}
                           onClick={onFollowClick}
                           disabled={isProcessing}
-                          className={`flex w-1/2 justify-center gap-x-1 items-center flex-row p-1.5 rounded-lg cursor-pointer transition-all duration-200 ${
+                          className={`flex-1 flex justify-center gap-x-1 items-center py-1.5 px-3 rounded-lg cursor-pointer transition-all duration-200 ${
                             isFollowing 
                               ? "bg-gradient-to-r !from-blue-700 !to-purple-800" 
                               : "bg-gradient-to-r !from-blue-500 !to-purple-600"
@@ -1761,7 +1934,7 @@ const PostModal = () => {
                   ].map(review => (
                     <div key={review.id} className="bg-gray-900 rounded-lg p-4 flex flex-col">
                       <div className="flex items-center mb-3">
-                        <div className="w-10 h-10 rounded-full overflow-hidden mr-3 bg-gradient-to-r from-blue-500 to-purple-600 p-0.5">
+                        <div className="relative w-10 h-10 rounded-full overflow-hidden mr-3 bg-gradient-to-r from-blue-500 to-purple-600 p-0.5">
                           <div className="w-full h-full rounded-full overflow-hidden bg-black">
                             {(() => {
                               const profileImage = review.avatar;
@@ -1786,26 +1959,31 @@ const PostModal = () => {
                                 </div>
                               );
                             })()}
-                  </div>
-                  </div>
-                  <div>
-                          <div className="flex items-center">
-                            {[...Array(5)].map((_, i) => (
-                              <svg 
-                                key={i} 
-                                className={`w-4 h-4 ${i < review.rating ? "text-yellow-400" : "text-gray-600"}`} 
-                                fill="currentColor" 
-                                viewBox="0 0 20 20"
-                              >
-                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                              </svg>
-                            ))}
-                  </div>
-                          <p className="text-white font-medium">{review.name}</p>
-                  </div>
-                    </div>
-                      <p className="text-gray-300">{review.comment}</p>
+                          </div>
+                          
+                          {/* VIP Lion Badge - show if the profile owner has VIP status */}
+                          {profileOwnerVipStatus && (
+                            <VIPBadge size="sm" className="absolute -top-1 -right-1" isVip={profileOwnerVipStatus} vipEndDate={vipStatus?.vipEndDate} />
+                          )}
+                        </div>
                       </div>
+                      <div>
+                        <div className="flex items-center">
+                          {[...Array(5)].map((_, i) => (
+                            <svg 
+                              key={i} 
+                              className={`w-4 h-4 ${i < review.rating ? "text-yellow-400" : "text-gray-600"}`} 
+                              fill="currentColor" 
+                              viewBox="0 0 20 20"
+                            >
+                              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                            </svg>
+                          ))}
+                        </div>
+                        <p className="text-white font-medium">{review.name}</p>
+                      </div>
+                      <p className="text-gray-300">{review.comment}</p>
+                    </div>
                   ))}
                 </div>
               ),
