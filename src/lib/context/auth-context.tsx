@@ -18,8 +18,6 @@ export interface Session {
   token?: string;
   isAdmin?: boolean;
   refreshToken?: string;
-  firstname: string;
-  lastname: string;
 }
 
 // Define the AuthContext type
@@ -92,8 +90,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
           token: data.accesstoken || data.accessToken || data.token || "",
           refreshToken: data.refreshtoken || data.refreshToken || data.token || "",
           isAdmin: data.isAdmin ?? false, // Default to false if not provided
-          firstname: data.firstname,
-          lastname: data.lastname,
 });
     }
   } catch (e) {
