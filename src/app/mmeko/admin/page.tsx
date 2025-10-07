@@ -115,7 +115,7 @@ const AdminPage = () => {
                 {item.icon}
                 <span className="font-medium hidden md:inline ml-0 md:ml-2">{item.name}</span>
                 {item.name === "Creator Verification" && docCount > 0 && (
-                  <span className="ml-2 bg-red-500 text-white px-2 py-1 rounded-full text-xs">
+                  <span className="ml-2 bg-red-500 text-white px-1.5 py-1 rounded-full text-xs">
                     {docCount}
                   </span>
                 )}
