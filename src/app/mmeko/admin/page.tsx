@@ -11,7 +11,8 @@ import {
 } from "react-icons/io5";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "@/store/store";
-import { adminnotify } from "@/store/admin";
+import { adminnotify } from "@/store/admin"; 
+import { getdocument } from "@/store/creatorSlice";
 
 // Your actual components are used here, no changes needed for them
 import AdminVerifyDocumentPage from "./creator-verification/page";
@@ -29,6 +30,7 @@ const AdminPage = () => {
   const token = useSelector((s: RootState) => s.register.refreshtoken);
   const notifyme = useSelector((s: RootState) => s.admin.notifyme);
   const notifycount = useSelector((s: RootState) => s.admin.notifycount);
+  const docCount = useSelector((state: RootState) => state.creator.documents.length);
 
   // Notification logic remains unchanged
   useEffect(() => {
@@ -47,6 +49,11 @@ const AdminPage = () => {
       document.removeEventListener("visibilitychange", onVis);
     };
   }, [dispatch, token]);
+
+  // Fetch documents on mount to get the count
+  useEffect(() => {
+    dispatch(getdocument());
+  }, [dispatch]);
 
   // Sidebar navigation items
   const navdata = [
@@ -80,7 +87,7 @@ const AdminPage = () => {
 
   return (
     // Full-height page with flexbox for 20%/80% split
-  <div className="flex min-h-screen h-screen bg-[#111827] text-gray-200 font-sans">
+    <div className="flex min-h-screen h-screen bg-[#111827] text-gray-200 font-sans">
       {/* Sidebar: responsive width */}
       <aside className="w-16 md:w-[30%] bg-[#1F2937] flex flex-col justify-between">
         <div className="p-2 md:p-4">
@@ -107,6 +114,11 @@ const AdminPage = () => {
               >
                 {item.icon}
                 <span className="font-medium hidden md:inline ml-0 md:ml-2">{item.name}</span>
+                {item.name === "Creator Verification" && docCount > 0 && (
+                  <span className="ml-2 bg-red-500 text-white px-1.5 py-1 rounded-full text-xs">
+                    {docCount}
+                  </span>
+                )}
               </li>
             ))}
           </ul>

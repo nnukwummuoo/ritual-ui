@@ -8,20 +8,23 @@ import PacmanLoader from "react-spinners/RingLoader";
 
 export default function AdminVerifyDocumentPage() {
   const dispatch = useDispatch<AppDispatch>();
-  const docs = useSelector((state: RootState) => state.creator.documents); // Documents for all users
+  const userId = useSelector((state: RootState) => state.profile.userId);
+  const docs = useSelector((state: RootState) => state.creator.documents);
   const docStatus = useSelector((state: RootState) => state.creator.getdocumentstatus);
   const verifyStatus = useSelector((state: RootState) => state.creator.verifycreatorstatus);
   const rejectStatus = useSelector((state: RootState) => state.creator.rejectdocumentstatus);
 
-  // State to track fetched documents
-  const [userDocuments, setUserDocuments] = useState<any[]>([]);
+  const [pendingDocs, setPendingDocs] = useState<any[]>([]);
+  const [approvedDocs, setApprovedDocs] = useState<any[]>([]);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
 
-  // Fetch all documents on component mount
+  // Fetch documents on mount
   useEffect(() => {
     dispatch(getdocument()).then((result) => {
       if (result.meta.requestStatus === "fulfilled") {
-        setUserDocuments(result.payload.documents || []);
-        console.log("Documents:", result.payload.documents); // Debug log
+        const allDocs = result.payload.documents || [];
+        setPendingDocs(allDocs.filter((d: any) => !d.verify));
+        setApprovedDocs(allDocs.filter((d: any) => d.verify));
       }
     });
   }, [dispatch]);
@@ -30,7 +33,11 @@ export default function AdminVerifyDocumentPage() {
   const handleApprove = (docId: string, userId: string) => {
     dispatch(verifycreator({ userid: userId, docid: docId })).then((result) => {
       if (result.meta.requestStatus === "fulfilled") {
-        setUserDocuments((prev) => prev.filter((doc) => doc._id !== docId));
+        setPendingDocs((prev) => prev.filter((doc) => doc._id !== docId));
+        setApprovedDocs((prev) => [
+          ...prev,
+          { ...pendingDocs.find((doc) => doc._id === docId), verify: true },
+        ]);
       }
     });
   };
@@ -39,16 +46,140 @@ export default function AdminVerifyDocumentPage() {
   const handleReject = (docId: string, userId: string) => {
     dispatch(rejectdocument({ userid: userId, docid: docId })).then((result) => {
       if (result.meta.requestStatus === "fulfilled") {
-        setUserDocuments((prev) => prev.filter((doc) => doc._id !== docId));
+        setPendingDocs((prev) => prev.filter((doc) => doc._id !== docId));
       }
     });
   };
 
-  return (
-    <div className="container mx-auto mt-8 bg-gray-900 text-white min-h-screen">
-      <h1 className="text-2xl mb-6 font-bold text-center">Admin: Verify User Documents</h1>
+  // Handle image click for preview
+  const handleImageClick = (imageUrl: string) => {
+    setPreviewImage(imageUrl);
+  };
 
-      {/* Display loading state for documents */}
+  // Close preview
+  const handleClosePreview = () => {
+    setPreviewImage(null);
+  };
+
+  const renderDocumentCard = (doc: any, isApproved = false) => (
+    <div
+      key={doc._id}
+      className="bg-gray-800 p-6 rounded-lg shadow-lg border border-gray-700"
+    >
+      {/* Header Section */}
+      <div className="flex flex-col items-start mb-4">
+        <div>
+          <h2 className="text-xl font-semibold">
+            {doc.firstname} {doc.lastname}
+          </h2>
+          <p className="text-xs text-gray-400">Email: {doc.email || "N/A"}</p>
+          <p className="text-sm text-gray-400">
+            Document Type: {doc.documentType || "N/A"}
+          </p>
+          <p className="text-sm text-gray-400">
+            {doc.address || "N/A"}, {doc.country || "N/A"}
+          </p>
+          <p className="text-xs text-gray-500">
+            Submitted: {new Date(doc.createdAt).toLocaleString()}
+          </p>
+          <p className="text-xs text-gray-500">Creator Id: {doc._id || "N/A"}</p>
+        </div>
+        <div className="flex items-center space-x-4 mt-2">
+          <span className="px-3 py-1 bg-purple-600 rounded-full text-sm">
+            Creator Application
+          </span>
+          <span
+            className={`px-3 py-1 rounded-full text-sm ${
+              doc.verify ? "bg-green-600" : "bg-yellow-600"
+            }`}
+          >
+            Status: {doc.verify ? "approved" : "pending"}
+          </span>
+        </div>
+      </div>
+
+      {/* ID Photo */}
+      <div className="bg-gray-700 p-4 rounded-lg mb-4">
+        <h3 className="text-md font-medium mb-2">ID Photo</h3>
+        {doc.idPhotofile?.idPhotofilelink ? (
+          <img
+            src={doc.idPhotofile.idPhotofilelink}
+            alt="ID Photo"
+            className="w-full h-64 object-cover rounded-lg bg-pink-200 cursor-pointer"
+            onClick={() => handleImageClick(doc.idPhotofile.idPhotofilelink)}
+          />
+        ) : (
+          <div className="w-full h-64 bg-pink-200 flex items-center justify-center rounded-lg">
+            <p className="text-gray-500">No ID Photo Available</p>
+          </div>
+        )}
+      </div>
+
+      {/* Selfie with ID */}
+      <div className="bg-gray-700 p-4 rounded-lg">
+        <h3 className="text-md font-medium mb-2">Selfie with ID</h3>
+        {doc.holdingIdPhotofile?.holdingIdPhotofilelink ? (
+          <img
+            src={doc.holdingIdPhotofile.holdingIdPhotofilelink}
+            alt="Selfie with ID"
+            className="w-full h-64 object-cover rounded-lg bg-pink-200 cursor-pointer"
+            onClick={() => handleImageClick(doc.holdingIdPhotofile.holdingIdPhotofilelink)}
+          />
+        ) : (
+          <div className="w-full h-64 bg-pink-200 flex items-center justify-center rounded-lg">
+            <p className="text-gray-500">No Selfie with ID Available</p>
+          </div>
+        )}
+      </div>
+
+      {/* Buttons only for pending */}
+      {!isApproved && (
+        <div className="mt-6 flex justify-end space-x-4">
+          <button
+            onClick={() => handleApprove(doc._id, doc.userid)}
+            disabled={verifyStatus === "loading" || doc.verify}
+            className="bg-green-600 px-4 py-2 rounded-lg text-white hover:bg-green-700 disabled:bg-green-400"
+          >
+            {verifyStatus === "loading" ? "Approving..." : "Accept"}
+          </button>
+          <button
+            onClick={() => handleReject(doc._id, doc.userid)}
+            disabled={rejectStatus === "loading" || doc.verify}
+            className="bg-red-600 px-4 py-2 rounded-lg text-white hover:bg-red-700 disabled:bg-red-400"
+          >
+            {rejectStatus === "loading" ? "Rejecting..." : "Reject"}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+
+  return (
+    <div className="container mx-auto mt-8 bg-gray-900 text-white min-h-screen pb-16">
+      <h1 className="text-2xl mb-6 font-bold text-center">
+        Admin: Verify User Documents
+      </h1>
+
+      {/* Image Preview Modal */}
+      {previewImage && (
+        <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50">
+          <div className="relative max-w-4xl w-full">
+            <img
+              src={previewImage}
+              alt="Full Screen Preview"
+              className="w-full h-auto max-h-screen object-contain"
+            />
+            <button
+              onClick={handleClosePreview}
+              className="absolute top-4 right-4 bg-gray-800 text-white p-2 rounded-full hover:bg-gray-700"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Loading */}
       {docStatus === "loading" && (
         <div className="flex flex-col items-center mt-8">
           <PacmanLoader color="#d49115" loading={true} size={70} />
@@ -56,85 +187,41 @@ export default function AdminVerifyDocumentPage() {
         </div>
       )}
 
-      {/* Display error state for documents */}
+      {/* Error */}
       {docStatus === "failed" && (
         <p className="text-red-500 text-center">Failed to fetch documents.</p>
       )}
 
-      {/* Display documents */}
-      {docStatus === "succeeded" && userDocuments.length === 0 && (
-        <p className="text-center">No documents found.</p>
-      )}
-      {docStatus === "succeeded" && userDocuments.length > 0 && (
-        <div className="space-y-8">
-          {userDocuments.map((doc: any) => (
-            <div key={doc._id} className="bg-gray-800 p-6 rounded-lg shadow-lg border border-gray-700">
-              {/* Header Section */}
-              <div className="flex flex-col items-start mb-4">
-                <div>
-                  <h2 className="text-xl font-semibold">{doc.firstname} {doc.lastname}</h2>
-                  <p className="text-sm text-gray-400">{doc.address || "N/A"}, {doc.country || "N/A"}</p>
-                  <p className="text-xs text-gray-500">Submitted: {new Date(doc.createdAt).toLocaleString()}</p>
-                  <p className="text-xs text-gray-500">Creator Id: {doc._id || "N/A"}</p>
-                </div>
-                <div className="flex items-center space-x-4 mt-2">
-                  <span className="px-3 py-1 bg-purple-600 rounded-full text-sm">Creator Application</span>
-                  <span className="px-3 py-1 bg-green-600 rounded-full text-sm">Status: {doc.verify ? "accepted" : "pending"}</span>
-                </div>
+      {/* Pending Section */}
+      {docStatus === "succeeded" && (
+        <>
+          <div className="mb-12">
+            <h2 className="text-xl font-semibold mb-4 text-yellow-400">
+              Pending Applications ({pendingDocs.length})
+            </h2>
+            {pendingDocs.length === 0 ? (
+              <p className="text-gray-400">No pending documents.</p>
+            ) : (
+              <div className="space-y-8">
+                {pendingDocs.map((doc) => renderDocumentCard(doc, false))}
               </div>
+            )}
+          </div>
 
-              {/* ID Photo Section */}
-              <div className="bg-gray-700 p-4 rounded-lg mb-4">
-                <h3 className="text-md font-medium mb-2">ID Photo</h3>
-                {doc.idPhotofile?.idPhotofilelink ? (
-                  <img
-                    src={doc.idPhotofile.idPhotofilelink}
-                    alt="ID Photo"
-                    className="w-full h-64 object-cover rounded-lg bg-pink-200"
-                  />
-                ) : (
-                  <div className="w-full h-64 bg-pink-200 flex items-center justify-center rounded-lg">
-                    <p className="text-gray-500">No ID Photo Available</p>
-                  </div>
-                )}
+          {/* Approved Section */}
+          <div>
+            <h2 className="text-xl font-semibold mb-4 text-green-400">
+              Approved Applications ({approvedDocs.length})
+            </h2>
+            {approvedDocs.length === 0 ? (
+              <p className="text-gray-400">No approved documents yet.</p>
+            ) : (
+              <div className="space-y-8">
+                {approvedDocs.map((doc) => renderDocumentCard(doc, true))}
               </div>
-
-              {/* Selfie with ID Section */}
-              <div className="bg-gray-700 p-4 rounded-lg">
-                <h3 className="text-md font-medium mb-2">Selfie with ID</h3>
-                {doc.holdingIdPhotofile?.holdingIdPhotofilelink ? (
-                  <img
-                    src={doc.holdingIdPhotofile.holdingIdPhotofilelink}
-                    alt="Selfie with ID"
-                    className="w-full h-64 object-cover rounded-lg bg-pink-200"
-                  />
-                ) : (
-                  <div className="w-full h-64 bg-pink-200 flex items-center justify-center rounded-lg">
-                    <p className="text-gray-500">No Selfie with ID Available</p>
-                  </div>
-                )}
-              </div>
-
-              {/* Accept/Reject Buttons */}
-              <div className="mt-6 flex justify-end space-x-4">
-                <button
-                  onClick={() => handleApprove(doc._id, doc.userid)}
-                  disabled={verifyStatus === "loading" || doc.verify}
-                  className="bg-green-600 px-4 py-2 rounded-lg text-white hover:bg-green-700 disabled:bg-green-400"
-                >
-                  {verifyStatus === "loading" ? "Approving..." : "Accept"}
-                </button>
-                <button
-                  onClick={() => handleReject(doc._id, doc.userid)}
-                  disabled={rejectStatus === "loading" || doc.verify}
-                  className="bg-red-600 px-4 py-2 rounded-lg text-white hover:bg-red-700 disabled:bg-red-400"
-                >
-                  {rejectStatus === "loading" ? "Rejecting..." : "Reject"}
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
+            )}
+          </div>
+        </>
       )}
     </div>
   );

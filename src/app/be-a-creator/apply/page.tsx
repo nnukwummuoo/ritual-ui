@@ -232,6 +232,7 @@ export default function VerifiedUserForm() {
                     >
                       <option className="bg-black text-white" value="">Select Document Type</option>
                       <option className="bg-black text-white" value="passport">Passport</option>
+                      <option className="bg-black text-white" value="nationalId">ID Card</option>
                       <option className="bg-black text-white" value="driversLicense">Driver's License</option>
                     </select>
                   </div>
