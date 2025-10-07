@@ -72,6 +72,9 @@ export default function AdminVerifyDocumentPage() {
           <h2 className="text-xl font-semibold">
             {doc.firstname} {doc.lastname}
           </h2>
+          <p className="text-sm text-gray-400">
+            Date of Birth: {doc.dob || "N/A"}
+          </p>
           <p className="text-xs text-gray-400">Email: {doc.email || "N/A"}</p>
           <p className="text-sm text-gray-400">
             Document Type: {doc.documentType || "N/A"}
