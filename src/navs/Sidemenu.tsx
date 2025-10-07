@@ -134,12 +134,14 @@ const Sidemenu = () => {
   let firstname = "User";
   let lastname = "";
   let gold_balance = 0;
+  let pending_balance = 0;
   let admin = false;
   
   if (isCurrentUserProfile && profile?.firstname) {
     firstname = profile.firstname;
     lastname = profile.lastname || "";
     gold_balance = Number(profile.balance) || 0;
+    pending_balance = Number(profile.pending) || 0;
     admin = profile.admin || false;
   } else {
     // Try to get data from localStorage as fallback for Edge browser issues
@@ -260,6 +262,7 @@ const Sidemenu = () => {
                     lastname={lastname}
                     url={userId ? `/Profile/${userId}` : `/Profile`}
                     gold_balance={gold_balance}
+                    {...(pending_balance > 0 && { pending_balance })}
                     isVip={isVip || false}
                     vipEndDate={vipEndDate}
                     onClick={() => handleMenubar()}

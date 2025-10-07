@@ -12,6 +12,7 @@ import { toast, ToastContainer } from "material-react-toastify";
 import { Bookinginfo } from "@/components/bookingFrag/Bookinginfo";
 import { Bookingsuccess } from "@/components/bookingFrag/Bookingsuccess";
 import { Requestform } from "@/components/bookingFrag/Requestform";
+import { RequestDetailsForm } from "@/components/bookingFrag/RequestDetailsForm";
 import closeIcon from "@/icons/closeIcon.svg";
 import { getreview, getViews } from "@/store/creatorSlice";
 import { CreatorReview } from "./_components/Creator_review";
@@ -45,6 +46,7 @@ import { useUserId } from "@/lib/hooks/useUserId";
 import { useAuth } from "@/lib/context/auth-context";
 import VIPBadge from "@/components/VIPBadge";
 import { checkVipCelebration, markVipCelebrationViewed } from "@/api/vipCelebration";
+import { URL } from "@/api/config";
 
 
 // Types
@@ -56,6 +58,7 @@ interface RootState {
     };
     profile: {
       creatorID: string;
+      balance: string;
     };
     creator: {
       userid: string;
@@ -195,6 +198,7 @@ export default function Creatorbyid () {
     (state: RootState) => state.creator.remove_crush_stats
   );
   const creator = useSelector((state: RootState) => state.creator.creatorbyid);
+  const profile = useSelector((state: RootState) => state.profile);
 
   // Get VIP status directly from creator data (like creators page)
   const vipStatusFromCreator = creator?.isVip ? {
@@ -217,6 +221,7 @@ export default function Creatorbyid () {
   const [bookingclick, setbookingclick] = useState(false);
   const [success, setsuccess] = useState(false);
   const [requested, setrequested] = useState(false);
+  const [showRequestDetails, setShowRequestDetails] = useState(false);
   const [review_click, setreview_click] = useState(false);
   const [dcb, set_dcb] = useState(false);
   const [removeCrush, set_removeCrush] = useState(false);
@@ -655,6 +660,66 @@ export default function Creatorbyid () {
       set_dcb(true);
       set_crush_text("removing crush from list...");
       dispatch(remove_Crush({ userid, token, creatorid: creator.hostid }));
+    }
+  };
+
+  const handleRequestDetailsSubmit = async (details: { date: string; time: string; venue: string }) => {
+    console.log('Sending request with:', {
+      userid,
+      creatorid: creator.hostid,
+      creatorUserid: creator.userid,
+      type: creator.hosttype,
+      date: details.date,
+      time: details.time,
+      place: details.venue,
+      price: parseFloat(creator.price) || 0
+    });
+    
+    // Check if user has enough gold balance
+    const userBalance = parseFloat(profile.balance) || 0;
+    const requiredAmount = parseFloat(creator.price) || 0;
+    
+    if (userBalance < requiredAmount) {
+      toast.error(`Insufficient gold! You need ${requiredAmount} gold but only have ${userBalance} gold.`);
+      // Redirect to buy-gold page
+      setTimeout(() => {
+        navigate('/buy-gold');
+      }, 2000);
+      return;
+    }
+    
+    try {
+      const response = await fetch(`${URL}/bookhost`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userid,
+          creatorid: creator.hostid, // Use hostid for creator lookup in creatordb
+          type: creator.hosttype,
+          date: details.date,
+          time: details.time,
+          place: details.venue,
+          price: parseFloat(creator.price) || 0
+        })
+      });
+
+      if (response.ok) {
+        setShowRequestDetails(false);
+        setbookingclick(false);
+        toast.success('Fan meet request sent successfully!');
+        // Optionally navigate to notifications
+        setTimeout(() => {
+          navigate('/notifications/activity');
+        }, 2000);
+      } else {
+        const errorData = await response.json();
+        toast.error(errorData.message || 'Failed to send request');
+      }
+    } catch (error) {
+      console.error('Error sending request:', error);
+      toast.error('Error sending request');
     }
   };
 
@@ -1184,7 +1249,7 @@ export default function Creatorbyid () {
                       });
                       return;
                     }
-                    setbookingclick(true);
+                    setShowRequestDetails(true);
                   }}
                 >
                   🎯 Request {creator.hosttype}
@@ -1451,6 +1516,16 @@ export default function Creatorbyid () {
                 <Bookingsuccess setrequested={setrequested} />
               </div>
             </div>
+          )}
+
+          {showRequestDetails && (
+            <RequestDetailsForm
+              onDone={handleRequestDetailsSubmit}
+              onCancel={() => setShowRequestDetails(false)}
+              creatorName={creator.name}
+              creatorType={creator.hosttype}
+              price={parseFloat(creator.price) || 0}
+            />
           )}
           </div>
         </div>
