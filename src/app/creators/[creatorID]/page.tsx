@@ -202,13 +202,6 @@ export default function Creatorbyid () {
     vipEndDate: creator.vipEndDate
   } : null;
   
-  // Debug logging
-  console.log("🔍 [CREATOR DETAIL] Creator data from backend:", creator);
-  console.log("🔍 [CREATOR DETAIL] Creator VIP status from backend:", {
-    isVip: creator?.isVip,
-    vipEndDate: creator?.vipEndDate
-  });
-  console.log("🔍 [CREATOR DETAIL] Final VIP status:", vipStatusFromCreator);
 
   // State
   const [user, setUser] = useState<{ refreshtoken: string } | null>(null);
@@ -404,7 +397,7 @@ export default function Creatorbyid () {
     if (creatordeletestatus === "succeeded") {
       dispatch(changecreatorstatus("idle"));
       setLoading(false);
-      navigate("/creator");
+      navigate("/");
     }
 
     if (creatordeletestatus === "failed") {
@@ -457,7 +450,7 @@ export default function Creatorbyid () {
     if (creatordeletestatus === "succeeded") {
       dispatch(changecreatorstatus("idle"));
       setLoading(false);
-      navigate("/creator");
+      navigate("/");
     }
 
     if (creatordeletestatus === "failed") {
@@ -486,7 +479,7 @@ export default function Creatorbyid () {
       return ("Meet and Greet with");
     } else if (normalizedHosttype == "Fan date") {
       return ("A Date with");
-    } else if (normalizedHosttype == "Fan call" || "Fan Call") {
+    } else if (normalizedHosttype == "Fan call" || normalizedHosttype == "Fan Call") {
       return ("A Private Conversation with");
     } else {
       return ("Engage with");
@@ -1069,13 +1062,8 @@ export default function Creatorbyid () {
               {/* VIP Badge - positioned on top-left of creator image */}
               {(() => {
                 const shouldShowVip = vipStatusFromCreator?.isVip === true;
-                console.log("🎯 [VIP BADGE] Should show VIP:", shouldShowVip, {
-                  isVip: vipStatusFromCreator?.isVip,
-                  vipStatus: vipStatusFromCreator,
-                  creatorData: creator
-                });
                 return shouldShowVip && (
-                  <div className="absolute top-2 left-20 z-50">
+                  <div className="absolute top-2 left-20">
                     <VIPBadge size="xxl" isVip={vipStatusFromCreator.isVip} vipEndDate={vipStatusFromCreator.vipEndDate} />
                   </div>
                 );
@@ -1152,7 +1140,7 @@ export default function Creatorbyid () {
                           });
                           return;
                         }
-                        navigate(`/message/${creatorid.toString()}`);
+                        navigate(`/message/${creator.userid}`);
                       }}
                     >
                       💬 Message
@@ -1245,10 +1233,10 @@ export default function Creatorbyid () {
                 <div className="space-y-4">
                   <div className="flex justify-between items-center p-3 bg-gray-700 rounded-lg">
                     <span className="text-gray-300 font-medium">
-                      {creator.hosttype === "Fan call"|| "Fan Call" ? "📞 Call Rate" : "🚗 Transport Fare"}
+                      {creator.hosttype === "Fan call" || creator.hosttype === "Fan Call" ? "📞 Call Rate" : "🚗 Transport Fare"}
                     </span>
                     <span className="text-yellow-400 font-bold">
-                      {creator.hosttype === "Fan call" || "Fan Call"
+                      {creator.hosttype === "Fan call" || creator.hosttype === "Fan Call"
                         ? fmtPSPrice
                         : `${formatCreatorPrices(creator.price)} GOLD`}
                     </span>

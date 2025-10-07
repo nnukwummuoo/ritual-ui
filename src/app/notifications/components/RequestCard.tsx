@@ -147,7 +147,7 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
         </div>
       </div>
     ) : type === "creator" ? (
-      <FanActionBtn label="Renew request" className={fanActionClass} />
+      <FanActionBtn label="Chat Now" className={fanActionClass} />
     ) : (
       <FanActionBtn label="Renew request" className={fanActionClass} />
     )}

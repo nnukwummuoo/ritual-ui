@@ -73,38 +73,83 @@ const FollowingPage: React.FC = () => {
   useEffect(() => {
     // Get token from localStorage if not in Redux state
     let authToken = token;
+    let currentUserid = userid;
+    
     if (!authToken && typeof window !== 'undefined') {
       try {
         const loginData = localStorage.getItem('login');
         if (loginData) {
           const parsedData = JSON.parse(loginData);
           authToken = parsedData.refreshtoken || parsedData.accesstoken;
-          console.log("[FollowingPage] Retrieved token from localStorage:", !!authToken);
         }
       } catch (error) {
-        console.error("[FollowingPage] Error retrieving token from localStorage:", error);
+        // Silent fail
+      }
+    }
+    
+    // Get userid from localStorage if not in Redux
+    if (!currentUserid && typeof window !== 'undefined') {
+      try {
+        const loginData = localStorage.getItem('login');
+        if (loginData) {
+          const parsedData = JSON.parse(loginData);
+          currentUserid = parsedData.userID || parsedData.userid || parsedData.id;
+        }
+      } catch (error) {
+        // Silent fail
       }
     }
 
-    console.log("[FollowingPage] mount; creds", { userid, hasToken: Boolean(authToken) });
-    if (userid) {
-      console.log("[FollowingPage] dispatch getfollow with userid", { userid, hasToken: Boolean(authToken) });
-      dispatch(getfollow({ userid, token: authToken }));
+    if (currentUserid && authToken) {
+      dispatch(getfollow({ userid: currentUserid, token: authToken }));
       // Also fetch all users for discovery
-      dispatch(getAllUsers({ token: authToken, userid }));
+      dispatch(getAllUsers({ token: authToken, userid: currentUserid }));
     }
   }, [userid, token, dispatch]);
 
   const loading = getfollow_stats === "loading" || getAllUsers_stats === "loading";
   
-  // Get followers/following from API response
-  const apiFollowers: User[] = (getfollow_data?.followers as User[]) || [];
-  const apiFollowing: User[] = (getfollow_data?.following as User[]) || [];
+  // Get current userid from multiple sources (same logic as useEffect)
+  let currentUserid = userid;
+  if (!currentUserid && typeof window !== 'undefined') {
+    try {
+      const loginData = localStorage.getItem('login');
+      if (loginData) {
+        const parsedData = JSON.parse(loginData);
+        currentUserid = parsedData.userID || parsedData.userid || parsedData.id;
+      }
+    } catch (error) {
+      // Silent fail
+    }
+  }
   
-  // Use useMemo to prevent unnecessary re-renders
+  // Debug: Log current userid and data
+  console.log("🔍 [FollowingPage] Current userid:", currentUserid);
+  console.log("🔍 [FollowingPage] Raw followers data:", getfollow_data?.followers?.length || 0);
+  console.log("🔍 [FollowingPage] Raw following data:", getfollow_data?.following?.length || 0);
+  
+  // Get followers/following from API response and filter out current user
+  const apiFollowers: User[] = (getfollow_data?.followers as User[])?.filter(user => {
+    const isNotCurrentUser = String(user.id) !== String(currentUserid);
+    if (!isNotCurrentUser) {
+      console.log("🔍 [FollowingPage] Filtering out current user from followers:", { userId: user.id, currentUserid: currentUserid, userName: user.name });
+    }
+    return isNotCurrentUser;
+  }) || [];
+  const apiFollowing: User[] = (getfollow_data?.following as User[])?.filter(user => {
+    const isNotCurrentUser = String(user.id) !== String(currentUserid);
+    if (!isNotCurrentUser) {
+      console.log("🔍 [FollowingPage] Filtering out current user from following:", { userId: user.id, currentUserid: currentUserid, userName: user.name });
+    }
+    return isNotCurrentUser;
+  }) || [];
+  
+  // Use useMemo to prevent unnecessary re-renders and filter out current user
   const allUsers = React.useMemo(() => {
-    return (getAllUsers_data as User[]) || [];
-  }, [getAllUsers_data]);
+    return (getAllUsers_data as User[])?.filter(user => 
+      String(user._id) !== String(currentUserid)
+    ) || [];
+  }, [getAllUsers_data, currentUserid]);
   
   // Check if user object has followers/following arrays directly
   // This is for when the backend returns user data with these arrays
@@ -114,14 +159,13 @@ const FollowingPage: React.FC = () => {
         // Find current user in allUsers
         const currentUser = allUsers.find((user: any) => String(user._id) === String(userid));
         if (currentUser && Array.isArray(currentUser.following)) {
-          console.log("[FollowingPage] Found following array in user data:", currentUser.following);
+          // Found following array in user data
         }
       } catch (e) {
-        console.error("[FollowingPage] Error processing user data:", e);
+        // Silent fail
       }
     }
   }, [allUsers, userid]);
-  console.log("[FollowingPage] stats/data", { getfollow_stats, counts: { followers: apiFollowers.length, following: apiFollowing.length, allUsers: allUsers.length } });
 
   // Prefer "Following" if it has items; otherwise default to "Fans" if it has items
   // Always default to the Discover tab (index 2) when there are no followers/following
@@ -131,15 +175,13 @@ const FollowingPage: React.FC = () => {
     return 2; // Discover tab by default if no relationships exist
   }, [apiFollowing.length, apiFollowers.length]);
 
-  useEffect(() => {
-    console.log("[FollowingPage] render tabs", { loading });
-  }, [loading]);
 
   const followers = () => {
     // CHANGED: Show ALL users who follow me (both mutual and non-mutual follows)
     // These are users who follow me - regardless of whether I follow them back
     const followersData = apiFollowers.filter((user) =>
-      user.name.toLowerCase().includes(search.toLowerCase())
+      user.name.toLowerCase().includes(search.toLowerCase()) && 
+      String(user.id) !== String(currentUserid) // Exclude current user
     );
     
     return (
@@ -174,7 +216,8 @@ const FollowingPage: React.FC = () => {
     // These are users I follow - both mutual and non-mutual follows
     // Get all users I follow from apiFollowing (database is the source of truth)
     const combinedFollowing = apiFollowing.filter((user) =>
-      user.name.toLowerCase().includes(search.toLowerCase())
+      user.name.toLowerCase().includes(search.toLowerCase()) && 
+      String(user.id) !== String(currentUserid) // Exclude current user
     );
     
     return (

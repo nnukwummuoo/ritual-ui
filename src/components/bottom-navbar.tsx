@@ -10,6 +10,7 @@ import AnyaEyeIcon from "./icons/AnyaEyeIcon";
 import { useSelector, useDispatch } from "react-redux";
 import type { RootState, AppDispatch } from "@/store/store";
 import { getmsgnitify } from "@/store/messageSlice";
+import { getSocket } from "@/lib/socket";
 
 interface BottomNavBarItemProps {
   imgUrl?: string;
@@ -31,22 +32,100 @@ export default function BottomNavBar() {
   // Get message data from Redux store
   const recentmsg = useSelector((state: RootState) => state.message.recentmsg);
   
+  // Real-time unread count state
+  const [realTimeUnreadCount, setRealTimeUnreadCount] = React.useState(0);
+  
   // Fetch message notifications when component mounts
   useEffect(() => {
     if (userid && token && msgnotifystatus === "idle") {
       dispatch(getmsgnitify({ userid }));
     }
   }, [userid, token, msgnotifystatus, dispatch]);
-  
-  // Calculate total unread messages
-  const totalUnreadCount = React.useMemo(() => {
-    if (!recentmsg || !Array.isArray(recentmsg)) return 0;
+
+  // Socket integration for real-time message updates
+  useEffect(() => {
+    if (!userid) return;
+
+    // Try to get socket connection
+    const socket = getSocket();
+    if (!socket) {
+      // Fallback: poll for updates every 10 seconds if socket is not available
+      const intervalId = setInterval(() => {
+        if (userid && token) {
+          dispatch(getmsgnitify({ userid }));
+        }
+      }, 10000);
+      
+      return () => clearInterval(intervalId);
+    }
     
-    return recentmsg.reduce((total, message) => {
+    // Listen for new message events
+    const handleNewMessage = (data: any) => {
+      console.log("🔔 [BottomNavBar] New message received:", data);
+      // Refresh message notifications
+      if (userid && token) {
+        dispatch(getmsgnitify({ userid }));
+      }
+    };
+    
+    // Listen for message read events
+    const handleMessageRead = (data: any) => {
+      console.log("🔔 [BottomNavBar] Message read:", data);
+      // Refresh message notifications
+      if (userid && token) {
+        dispatch(getmsgnitify({ userid }));
+      }
+    };
+    
+    // Listen for message status updates
+    const handleMessageStatusUpdate = (data: any) => {
+      console.log("🔔 [BottomNavBar] Message status update:", data);
+      // Refresh message notifications
+      if (userid && token) {
+        dispatch(getmsgnitify({ userid }));
+      }
+    };
+    
+    socket.on('new_message', handleNewMessage);
+    socket.on('message_read', handleMessageRead);
+    socket.on('message_status_update', handleMessageStatusUpdate);
+    
+    return () => {
+      socket.off('new_message', handleNewMessage);
+      socket.off('message_read', handleMessageRead);
+      socket.off('message_status_update', handleMessageStatusUpdate);
+    };
+  }, [userid, token, dispatch]);
+  
+  // Calculate total unread messages with real-time updates
+  const totalUnreadCount = React.useMemo(() => {
+    if (!recentmsg || !Array.isArray(recentmsg)) return realTimeUnreadCount;
+    
+    const calculatedCount = recentmsg.reduce((total, message) => {
       const unreadCount = message.messagecount || message.unreadCount || 0;
       const hasUnread = message.unread || unreadCount > 0;
       return total + (hasUnread ? unreadCount : 0);
     }, 0);
+    
+    // Update real-time state when Redux data changes
+    if (calculatedCount !== realTimeUnreadCount) {
+      setRealTimeUnreadCount(calculatedCount);
+    }
+    
+    return calculatedCount;
+  }, [recentmsg, realTimeUnreadCount]);
+
+  // Update real-time count when Redux data changes
+  useEffect(() => {
+    if (recentmsg && Array.isArray(recentmsg)) {
+      const calculatedCount = recentmsg.reduce((total, message) => {
+        const unreadCount = message.messagecount || message.unreadCount || 0;
+        const hasUnread = message.unread || unreadCount > 0;
+        return total + (hasUnread ? unreadCount : 0);
+      }, 0);
+      
+      setRealTimeUnreadCount(calculatedCount);
+    }
   }, [recentmsg]);
 
   const routes: BottomNavBarItemProps[] = [
@@ -99,8 +178,8 @@ export default function BottomNavBar() {
                     width={100}
                     height={100}
                   />
-                  {/* Unread indicator */}
-                  {item.showUnreadIndicator && (
+                  {/* Unread indicator - always show for messages */}
+                  {(item.showUnreadIndicator || (item.route === "/message" && totalUnreadCount >= 0)) && (
                     <div className="absolute -top-1 -right-1 min-w-[18px] h-[18px] bg-white text-black text-xs rounded-full flex items-center justify-center font-semibold">
                       {item.unreadCount && item.unreadCount > 99 ? (
                         <span className="flex items-center">
@@ -108,7 +187,7 @@ export default function BottomNavBar() {
                           <span className="text-[10px] ml-0.5">+</span>
                         </span>
                       ) : (
-                        item.unreadCount
+                        item.unreadCount || 0
                       )}
                     </div>
                   )}

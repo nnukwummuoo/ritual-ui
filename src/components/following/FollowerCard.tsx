@@ -128,6 +128,17 @@ const FollowerCard: React.FC<FollowerCardProps> = ({ image, name, creatorid, use
     }
   };
 
+  const handleMessageClick = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent navigation when clicking message button
+    
+    if (!userId) {
+      return;
+    }
+    
+    // Navigate to message page with the user
+    router.push(`/message/${userId}`);
+  };
+
   const handleFollowToggle = async (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent navigation when clicking follow button
     
@@ -324,29 +335,26 @@ const FollowerCard: React.FC<FollowerCardProps> = ({ image, name, creatorid, use
           )}
           
           {/* VIP Lion Badge */}
-          {(() => {
-            console.log(`🔍 [FOLLOWER DEBUG] User: ${name} - isVip: ${isVip}, vipEndDate: ${vipEndDate}`);
-            return <VIPBadge size="xl" className="absolute -top-5 -right-5" isVip={isVip} vipEndDate={vipEndDate} />;
-          })()}
+          <VIPBadge size="xl" className="absolute -top-5 -right-5" isVip={isVip} vipEndDate={vipEndDate} />
         </div>
         <div className="flex flex-col gap-1 min-w-0 flex-1">
           <div className="text-white font-semibold truncate">{name}</div>
         </div>
       </div>
 
-      {/* Right side: Follow button taking full width and positioned at far right */}
+      {/* Right side: Follow/Message button taking full width and positioned at far right */}
       <div className="flex items-center justify-end w-1/3">
         {userId && userId !== currentUserId && (
           <button
-            onClick={handleFollowToggle}
+            onClick={isFollowing ? handleMessageClick : handleFollowToggle}
             disabled={isProcessing}
             className={`w-full max-w-[120px] px-4 py-2 rounded-full text-sm font-medium transition-colors ${
               isFollowing
-                ? "bg-gray-600 hover:bg-gray-700 text-white"
+                ? "bg-green-600 hover:bg-green-700 text-white"
                 : "bg-blue-600 hover:bg-blue-700 text-white"
             } ${isProcessing ? "opacity-70 cursor-not-allowed" : ""}`}
           >
-            {isProcessing ? "..." : isFollowing ? "Following" : "Follow"}
+            {isProcessing ? "..." : isFollowing ? "Message" : "Follow"}
           </button>
         )}
       </div>
