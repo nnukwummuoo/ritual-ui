@@ -67,6 +67,7 @@ const initialState = {
   State: "",
   country: "",
   balance: "",
+  pending: "0",
   admin: false,
   witdrawable: "",
   creator: "false",
@@ -613,6 +614,8 @@ const profile = createSlice({
         state.State = (p as any).state ?? p.country ?? "";
         state.country = p.country ?? "";
         state.balance = p.balance ?? "";
+        // Add pending balance field
+        (state as any).pending = p.pending ?? "0";
         // Backend may return either boolean creator or creator_portfolio
         state.creator = (p as any).creator ?? (p as any).creator_portfolio ?? false as any;
         // Backend may use creatorId
