@@ -30,7 +30,10 @@ const AdminPage = () => {
   const token = useSelector((s: RootState) => s.register.refreshtoken);
   const notifyme = useSelector((s: RootState) => s.admin.notifyme);
   const notifycount = useSelector((s: RootState) => s.admin.notifycount);
-  const docCount = useSelector((state: RootState) => state.creator.documents.length);
+  const docCount = useSelector(
+  (state: RootState) =>
+    state.creator.documents.filter((doc: any) => !doc.verify || doc.verify === "pending").length
+);
 
   // Notification logic remains unchanged
   useEffect(() => {
