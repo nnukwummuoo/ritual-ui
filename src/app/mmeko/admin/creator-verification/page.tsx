@@ -73,7 +73,9 @@ export default function AdminVerifyDocumentPage() {
               <div className="flex flex-col items-start mb-4">
                 <div>
                   <h2 className="text-xl font-semibold">{doc.firstname} {doc.lastname}</h2>
-                  <p className="text-sm text-gray-400">{doc.address || "N/A"}, {doc.country || "N/A"}</p>
+                  <p className="text-xs text-gray-500">Email: {doc.email || "N/A"}</p>
+                  <p className="text-sm text-gray-500">Document Type: {doc.documentType || "N/A"}</p>
+                  <p className="text-sm text-gray-500">{doc.address || "N/A"}, {doc.country || "N/A"}</p>
                   <p className="text-xs text-gray-500">Submitted: {new Date(doc.createdAt).toLocaleString()}</p>
                   <p className="text-xs text-gray-500">Creator Id: {doc._id || "N/A"}</p>
                 </div>
