@@ -6,6 +6,7 @@ import { toast } from 'material-react-toastify';
 import { URL } from '@/api/config';
 import { IoCalendarOutline, IoLocationOutline, IoTimeOutline, IoWarningOutline, IoCheckmarkCircleOutline } from 'react-icons/io5';
 import { getSocket } from '@/lib/socket';
+import { useRouter } from 'next/navigation';
 
 const cardStates = {
   request: "Request sent",
@@ -99,6 +100,7 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
   const [loading, setLoading] = useState(false);
   const [currentStatus, setCurrentStatus] = useState(status);
   const [showDetails, setShowDetails] = useState(false);
+  const router = useRouter();
 
   // Socket integration for real-time updates
   useEffect(() => {
@@ -115,10 +117,9 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
     }) => {
       // Check if this update is for this specific request
       if (data.bookingId === bookingId) {
-        console.log('📡 [Socket] Fan meet status update received:', data);
         
         // Update local status
-        setCurrentStatus(data.status as any);
+        setCurrentStatus(data.status as "request" | "expired" | "completed" | "accepted" | "declined" | "cancelled");
         
         // Notify parent component
         onStatusChange?.(data.bookingId, data.status);
@@ -196,8 +197,7 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
       } else {
         toast.error('Failed to accept request');
       }
-    } catch (err) {
-      console.error('Error accepting request:', err);
+    } catch {
       toast.error('Error accepting request');
     } finally {
       setLoading(false);
@@ -231,7 +231,7 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
         const errorData = await response.json();
         toast.error(errorData.message || 'Failed to decline request');
       }
-    } catch (err) {
+    } catch {
       toast.error('Error declining request');
     } finally {
       setLoading(false);
@@ -267,7 +267,7 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
           const errorData = await response.json();
           toast.error(errorData.message || 'Failed to cancel request');
         }
-      } catch (err) {
+      } catch {
         toast.error('Error cancelling request');
       } finally {
         setLoading(false);
@@ -297,11 +297,101 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
       } else {
         toast.error('Failed to complete fan meet');
       }
-    } catch (err) {
-      console.error('Error completing fan meet:', err);
+    } catch {
       toast.error('Error completing fan meet');
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Navigation functions
+  const handleRenewRequest = () => {
+    if (creatorid) {
+      router.push(`/creators/${creatorid}`);
+    }
+  };
+
+  const handleProfileClick = async () => {
+    if (creatorid) {
+      console.log('🔍 [RequestCard] Starting profile click with creatorid:', creatorid);
+      try {
+        // Fetch creator details to get the user ID
+        const response = await fetch(`${URL}/getcreatorbyid`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            hostid: creatorid,
+            userid: userid // Current user's ID
+          })
+        });
+        
+        console.log('🔍 [RequestCard] First API call response status:', response.status);
+        
+        if (response.ok) {
+          const data = await response.json();
+          console.log('🔍 [RequestCard] First API Response:', data);
+          if (data.ok && data.host && data.host.userid) {
+            console.log('🔍 [RequestCard] Navigating to profile:', data.host.userid);
+            // Navigate to the creator's profile using their user ID
+            router.push(`/Profile/${data.host.userid}`);
+            return; // Exit early on success
+          } else {
+            console.log('🔍 [RequestCard] Missing userid in first response:', { 
+              ok: data.ok, 
+              hasHost: !!data.host, 
+              hasUserid: !!(data.host && data.host.userid),
+              hostKeys: data.host ? Object.keys(data.host) : 'no host'
+            });
+          }
+        } else {
+          console.log('🔍 [RequestCard] First API call failed with status:', response.status);
+        }
+        
+        // If we reach here, the API call failed or didn't return user ID
+        // Try alternative approach: fetch creator directly
+        console.log('🔍 [RequestCard] Trying second API call...');
+        const creatorResponse = await fetch(`${URL}/getcreatorbyid`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            hostid: creatorid
+          })
+        });
+        
+        console.log('🔍 [RequestCard] Second API call response status:', creatorResponse.status);
+        
+        if (creatorResponse.ok) {
+          const creatorData = await creatorResponse.json();
+          console.log('🔍 [RequestCard] Second API Response:', creatorData);
+          if (creatorData.ok && creatorData.host && creatorData.host.userid) {
+            console.log('🔍 [RequestCard] Second attempt - Navigating to profile:', creatorData.host.userid);
+            router.push(`/Profile/${creatorData.host.userid}`);
+            return;
+          } else {
+            console.log('🔍 [RequestCard] Second attempt - Missing userid:', { 
+              ok: creatorData.ok, 
+              hasHost: !!creatorData.host, 
+              hasUserid: !!(creatorData.host && creatorData.host.userid),
+              hostKeys: creatorData.host ? Object.keys(creatorData.host) : 'no host'
+            });
+          }
+        } else {
+          console.log('🔍 [RequestCard] Second API call failed with status:', creatorResponse.status);
+        }
+        
+        // Final fallback: show error message
+        console.log('🔍 [RequestCard] All attempts failed, showing error');
+        toast.error('Unable to load creator profile');
+        
+      } catch (error) {
+        // Final fallback: show error message
+        console.log('🔍 [RequestCard] Error in profile click:', error);
+        toast.error('Unable to load creator profile');
+      }
     }
   };
 
@@ -309,7 +399,10 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
     <div className={`w-full flex flex-col gap-6 rounded-lg border-2 ${cardBorderVariance} p-4 mx-auto text-white bg-slate-800`}>
       <div className={`flex justify-between items-start gap-4 ${cardTextVariance}`}>
         <div className="flex gap-4">
-          <div className={`size-16 relative rounded-full border-4 overflow-hidden ${cardBorderVariance} bg-gray-900 flex items-center justify-center`}>
+          <div 
+            className={`size-16 relative rounded-full border-4 overflow-hidden ${cardBorderVariance} bg-gray-900 flex items-center justify-center cursor-pointer hover:opacity-80 transition-opacity`}
+            onClick={handleProfileClick}
+          >
             {img && img !== '/picture-1.jfif' && img !== '/default-image.png' ? (
               <Image src={img} width={100} alt="picture" height={100} className='absolute top-0 left-0 size-full object-cover' />
             ) : (
@@ -319,7 +412,7 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
             )}
           </div>
           <div className='text-sm'>
-            <p className='font-bold'>{name}</p>
+            <p className='font-bold cursor-pointer hover:text-blue-400 transition-colors' onClick={handleProfileClick}>{name}</p>
             <div className='flex gap-1'>{titles?.map((title, i)=> i === titles.length -1 ? <p key={title}>{title}</p> : <p key={title}>{title} &#x2022; </p>)}</div>
           </div>
         </div>
@@ -374,7 +467,7 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
     ) : type === "creator" ? (
       <FanActionBtn label="Chat Now" className={fanActionClass} />
     ) : (
-      <FanActionBtn label="Renew request" className={fanActionClass} />
+      <FanActionBtn label="Renew request" className={fanActionClass} onClick={handleRenewRequest} />
     )}
   </div>
 </div>
@@ -429,7 +522,6 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
           details={details} 
           onClose={() => setShowDetails(false)} 
           type={type}
-          name={name}
         />
       )}
     </div>
@@ -467,13 +559,11 @@ function Rating({label}: {label: string}){
 function DetailsModal({ 
   details, 
   onClose, 
-  type, 
-  name 
+  type
 }: { 
   details?: FanMeetDetails; 
   onClose: () => void; 
   type: "fan" | "creator";
-  name: string;
 }) {
   if (!details) {
     return (
@@ -561,7 +651,7 @@ function DetailsModal({
               <li>• Meets must happen in a public place only.</li>
             </ul>
             <p className="text-gray-500 text-xs mt-2">
-              What happens after 30 minutes is outside the platform's responsibility.
+              What happens after 30 minutes is outside the platform&apos;s responsibility.
             </p>
           </div>
         </div>

@@ -68,6 +68,7 @@ const initialState = {
   country: "",
   balance: "",
   pending: "0",
+  earnings: "0",
   admin: false,
   witdrawable: "",
   creator: "false",
@@ -616,6 +617,8 @@ const profile = createSlice({
         state.balance = p.balance ?? "";
         // Add pending balance field
         (state as any).pending = p.pending ?? "0";
+        // Add earnings field
+        (state as any).earnings = p.earnings ?? "0";
         // Backend may return either boolean creator or creator_portfolio
         state.creator = (p as any).creator ?? (p as any).creator_portfolio ?? false as any;
         // Backend may use creatorId
@@ -625,8 +628,6 @@ const profile = createSlice({
         state.photolink = (p as any).photolink ?? (p as any).photoLink ?? "";
         state.bio = (p as any).bio ?? "";
         state.admin = p.admin ?? false;
-        
-        // Log profile data update
         // Support both exclusive and exclusive_verify flags
         state.exclusive_verify = (p as any).exclusive ?? (p as any).exclusive_verify ?? false;
         state.emailnote = (p as any).emailnot ?? (p as any).emailnot === true; // boolean

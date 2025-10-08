@@ -1,18 +1,22 @@
 'use client';
 
 import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { 
     IoDocumentTextOutline, 
     IoShieldCheckmarkOutline, 
     IoCashOutline, 
     IoPeopleOutline, 
     IoGridOutline,
+    IoHomeOutline,
 } from "react-icons/io5";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "@/store/store";
 import { adminnotify } from "@/store/admin"; 
 import { getdocument } from "@/store/creatorSlice";
+import axios from "axios";
+import { URL } from "@/api/config";
+import { useAuthToken } from "@/lib/hooks/useAuthToken";
+import { useRouter } from "next/navigation";
 
 // Your actual components are used here, no changes needed for them
 import AdminVerifyDocumentPage from "./creator-verification/page";
@@ -21,28 +25,30 @@ import Users from "./users/page";
 import Reports from "./reports/page";
 
 const AdminPage = () => {
-  const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
+  const router = useRouter();
 
   // State defaults to "Reports" view
   const [activeView, setActiveView] = useState("Reports");
 
-  const token = useSelector((s: RootState) => s.register.refreshtoken);
+  const token = useAuthToken();
   const notifyme = useSelector((s: RootState) => s.admin.notifyme);
   const notifycount = useSelector((s: RootState) => s.admin.notifycount);
   const docCount = useSelector(
   (state: RootState) =>
-    state.creator.documents.filter((doc: any) => !doc.verify || doc.verify === "pending").length
+    state.creator.documents.filter((doc: { verify?: string }) => !doc.verify || doc.verify === "pending").length
 );
+
+  // State for pending withdrawal requests count
+  const [pendingWithdrawalsCount, setPendingWithdrawalsCount] = useState(0);
 
   // Notification logic remains unchanged
   useEffect(() => {
-    let timer: any;
     const ping = () => {
-      if (token) dispatch(adminnotify({ token } as any));
+      if (token) dispatch(adminnotify({ token } as any)); // eslint-disable-line @typescript-eslint/no-explicit-any
     };
     ping();
-    timer = setInterval(ping, 60000);
+    const timer = setInterval(ping, 60000);
     const onVis = () => {
       if (document.visibilityState === "visible") ping();
     };
@@ -57,6 +63,30 @@ const AdminPage = () => {
   useEffect(() => {
     dispatch(getdocument());
   }, [dispatch]);
+
+  // Fetch pending withdrawals count on mount and periodically
+  useEffect(() => {
+    const fetchPendingWithdrawalsCount = async () => {
+      try {
+        const res = await axios.get(`${URL}/withdraw-request`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        });
+        const allRequests = res.data.requests || [];
+        const pendingRequests = allRequests.filter((req: { status: string }) => req.status === 'pending');
+        setPendingWithdrawalsCount(pendingRequests.length);
+      } catch (err) {
+        console.error("Error fetching pending withdrawals count:", err);
+        setPendingWithdrawalsCount(0);
+      }
+    };
+
+    if (token) {
+      fetchPendingWithdrawalsCount();
+      // Refresh every 30 seconds
+      const interval = setInterval(fetchPendingWithdrawalsCount, 30000);
+      return () => clearInterval(interval);
+    }
+  }, [token]);
 
   // Sidebar navigation items
   const navdata = [
@@ -122,6 +152,11 @@ const AdminPage = () => {
                     {docCount}
                   </span>
                 )}
+                {item.name === "Withdrawal Requests" && pendingWithdrawalsCount > 0 && (
+                  <span className="ml-2 bg-yellow-500 text-white px-1.5 py-1 rounded-full text-xs">
+                    {pendingWithdrawalsCount}
+                  </span>
+                )}
               </li>
             ))}
           </ul>
@@ -132,11 +167,20 @@ const AdminPage = () => {
       <main className="flex-1 p-4 md:p-8 overflow-y-auto flex flex-col">
         <header className="flex justify-between items-center -mb-15">
           <h2 className="text-2xl md:text-3xl font-bold text-white">{activeView}</h2>
-          {notifyme && (
-            <span className="inline-flex items-center justify-center px-3 py-1 rounded-full text-sm font-semibold bg-emerald-600 text-white">
-              Notifications: {notifycount}
-            </span>
-          )}
+          <div className="flex items-center gap-3">
+            {notifyme && (
+              <span className="inline-flex items-center justify-center px-3 py-1 rounded-full text-sm font-semibold bg-emerald-600 text-white">
+                Notifications: {notifycount}
+              </span>
+            )}
+            <button
+              onClick={() => router.push('/')}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors duration-200"
+            >
+              <IoHomeOutline size={18} />
+              <span className="hidden sm:inline">Back to Home</span>
+            </button>
+          </div>
         </header>
 
         {/* Content Section */}

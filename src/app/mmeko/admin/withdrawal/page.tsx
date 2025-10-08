@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useEffect, useState } from "react";
@@ -11,7 +12,6 @@ import {
 import dynamic from "next/dynamic";
 import Swal from "sweetalert2";
 import { ToastContainer, toast } from "material-react-toastify";
-import { useSelector } from "react-redux";
 import { useAuthToken } from "@/lib/hooks/useAuthToken";
 import 'material-react-toastify/dist/ReactToastify.css';
 import { URL } from "@/api/config"; // adjust this path to match your setup
@@ -28,21 +28,6 @@ const WithdrawalRequests = () => {
   const [selected, setSelected] = useState<WithdrawalRequest | null>(null);
 
   const token = useAuthToken();
-
-  const fetchRequests = async () => {
-    try {
-      const res = await axios.get(`${URL}/withdraw-request`, {
-        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-      });
-      setWithdrawals(res.data.requests);
-      setLoading(false);
-    } catch (err) {
-      // Quietly fail: no toasts; leave a clean UI for later backend fixes
-      console.debug("[Withdrawals] fetch error suppressed:", err);
-      setWithdrawals([]);
-      setLoading(false);
-    }
-  };
 
   const markAsPaid = async (id: any) => {
     const result = await Swal.fire({
@@ -76,15 +61,40 @@ const WithdrawalRequests = () => {
   };
 
   useEffect(() => {
-    fetchRequests();
-  }, []);
+    const fetchRequests = async () => {
+      try {
+        console.log("Fetching withdrawal requests...");
+        const res = await axios.get(`${URL}/withdraw-request`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        });
+        // Sort by creation date, newest first
+        const sortedRequests = (res.data.requests || []).sort((a: any, b: any) => {
+          const dateA = new Date(a.createdAt || a.requestedAt || 0);
+          const dateB = new Date(b.createdAt || b.requestedAt || 0);
+          return dateB.getTime() - dateA.getTime();
+        });
+        setWithdrawals(sortedRequests);
+        setLoading(false);
+      } catch (err) {
+        console.error("[Withdrawals] fetch error:", err);
+        setWithdrawals([]);
+        setLoading(false);
+      }
+    };
+
+    if (token) {
+      fetchRequests();
+    }
+  }, [token]);
 
   return (
     <div className="min-h-screen bg-gray-900 text-white p-6">
       <ToastContainer position="top-center" />
-      <h1 className="text-2xl font-bold mb-6 text-emerald-400">
-        Withdrawal Requests
-      </h1>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold text-emerald-400">
+          Withdrawal Requests
+        </h1>
+      </div>
 
       {loading ? (
         <p className="text-center text-gray-300">Loading...</p>
@@ -97,7 +107,7 @@ const WithdrawalRequests = () => {
             >
               <div className="flex justify-between items-center mb-3">
                 <h2 className="text-lg font-semibold">
-                  {req.credentials?.accountHolder || "User"}
+                  {req.credentials?.fullName || "User"}
                 </h2>
                 <span
                   className={`text-sm px-3 py-1 rounded-full ${
@@ -165,13 +175,12 @@ const WithdrawalRequests = () => {
         {selected?.credentials ? (
           <div className="text-sm text-gray-700 space-y-2">
             <p><strong>Method:</strong> {selected.credentials.method}</p>
-            <p><strong>Full Name:</strong> {selected.credentials.fullName || selected.credentials.accountHolder}</p>
-            <p><strong>Account Number:</strong> {selected.credentials.accountNumber}</p>
-            <p><strong>Bank:</strong> {selected.credentials.bankName}</p>
-            <p><strong>Currency:</strong> {selected.credentials.currency}</p>
+            <p><strong>Full Name:</strong> {selected.credentials.fullName}</p>
             <p><strong>Email:</strong> {selected.credentials.email}</p>
             <p><strong>Phone:</strong> {selected.credentials.phone}</p>
             <p><strong>Country:</strong> {selected.credentials.country}</p>
+            <p><strong>Crypto Type:</strong> {(selected.credentials as any).cryptoType}</p>
+            <p><strong>Wallet Address:</strong> {(selected.credentials as any).walletAddress}</p>
           </div>
         ) : (
           <p>No account details found.</p>

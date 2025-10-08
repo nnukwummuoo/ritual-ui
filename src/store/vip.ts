@@ -43,7 +43,6 @@ export const checkVipStatus = createAsyncThunk(
       if (error && typeof error === 'object' && 'response' in error) {
         const axiosError = error as { response?: { status?: number; data?: { message?: string } } };
         if (axiosError.response?.status === 404) {
-          console.log(`ℹ️ [VIP STORE] User ${userid} is not VIP (404 response)`);
           return { vipStatus: null };
         }
       }
@@ -120,11 +119,6 @@ const vipSlice = createSlice({
         state.error = null;
         
         // Log VIP status for debugging
-        console.log(`🔍 [VIP STORE] VIP Status Updated:`, {
-          isVip: action.payload.vipStatus?.isVip,
-          vipEndDate: action.payload.vipStatus?.vipEndDate,
-          payload: action.payload
-        });
       })
       .addCase(checkVipStatus.rejected, (state, action) => {
         state.loading = false;

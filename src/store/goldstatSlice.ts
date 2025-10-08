@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import axios from 'axios';
 import { URL } from '@/api/config';
@@ -22,6 +23,7 @@ interface MonthlySummary {
 interface GoldstatState {
   earnings: MonthlySummary[];
   history: Transaction[];
+  transactions: Transaction[];
   loading: boolean;
   error: string | null;
 }
@@ -29,6 +31,7 @@ interface GoldstatState {
 const initialState: GoldstatState = {
   earnings: [],
   history: [],
+  transactions: [],
   loading: false,
   error: null,
 };
@@ -37,11 +40,14 @@ export const get_monthly_history = createAsyncThunk(
   'goldstat/get_monthly_history',
   async ({ userId, token }: { userId: string; token: string }, { rejectWithValue }) => {
     try {
+      console.log("🚀 [FRONTEND] Calling /statistics/monthly with:", { userid: userId, token });
       // API expects "userid" key (lowercase), map from our arg userId
       const response = await axios.post(`${URL}/statistics/monthly`, { userid: userId, token });
+      console.log("✅ [FRONTEND] API response received:", response.data);
       // Adjust response.data as per backend structure
       return response.data;
     } catch (err: any) {
+      console.log("❌ [FRONTEND] API error:", err.response?.data || err.message);
       return rejectWithValue(err.response?.data?.message || 'Failed to fetch monthly history');
     }
   }
@@ -62,6 +68,19 @@ export const get_my_history = createAsyncThunk(
   }
 );
 
+export const get_transaction_history = createAsyncThunk(
+  'goldstat/get_transaction_history',
+  async ({ userId, token }: { userId: string; token: string }, { rejectWithValue }) => {
+    try {
+        const response = await axios.post(`${URL}/transaction_history`, { userid: userId, token });
+      
+      return response.data;
+    } catch (err: any) {
+      return rejectWithValue(err.response?.data?.message || 'Failed to fetch transaction history');
+    }
+  }
+);
+
 const goldstatSlice = createSlice({
   name: 'goldstat',
   initialState,
@@ -72,9 +91,11 @@ const goldstatSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(get_monthly_history.fulfilled, (state, action: PayloadAction<MonthlySummary[]>) => {
+      .addCase(get_monthly_history.fulfilled, (state, action: PayloadAction<any>) => {
         state.loading = false;
-        state.earnings = action.payload;
+        // Extract Month array from backend response
+        state.earnings = action.payload.Month || action.payload;
+        console.log("📊 [FRONTEND] Earnings data received:", state.earnings);
       })
       .addCase(get_monthly_history.rejected, (state, action) => {
         state.loading = false;
@@ -89,6 +110,18 @@ const goldstatSlice = createSlice({
         state.history = action.payload;
       })
       .addCase(get_my_history.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(get_transaction_history.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(get_transaction_history.fulfilled, (state, action: PayloadAction<any>) => {
+        state.loading = false;
+        state.transactions = action.payload.transactions || [];
+      })
+      .addCase(get_transaction_history.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       });

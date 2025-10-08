@@ -18,8 +18,11 @@ export default function ConditionalLayout({ children, isAuthenticated }: Conditi
   // Check if it's a QuickChat [userid] route
   const isQuickChatRoute = pathname.includes('/message/') && pathname.split('/').length > 2;
   
-  // If it's a QuickChat [userid] route, render without main layout
-  if (isQuickChatRoute) {
+  // Check if it's an admin route
+  const isAdminRoute = pathname.includes('/mmeko/');
+  
+  // If it's a QuickChat [userid] route or admin route, render without main layout
+  if (isQuickChatRoute || isAdminRoute) {
     return <>{children}</>;
   }
   
