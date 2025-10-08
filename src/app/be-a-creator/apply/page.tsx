@@ -302,8 +302,8 @@ export default function VerifiedUserForm() {
                     </svg>
                   </div>
                 </div>
-                <h2 className="text-xl font-semibold mb-2">Application submitted.</h2>
-                <p className="text-slate-400 mb-4">Feedback will be shared within a few hours.</p>
+                <h2 className="text-xl font-semibold mb-2">Application Status</h2>
+                <p className="text-slate-400 mb-4">Your application has been submitted and is now in review. You will hear from us within few hours.</p>
                 <button
                   onClick={handleModalClose}
                   className="bg-gray-700 text-white px-5 py-2 rounded-lg hover:bg-gray-600 transition duration-300"

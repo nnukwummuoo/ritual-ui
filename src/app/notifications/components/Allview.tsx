@@ -1,177 +1,92 @@
-"use client"
+"use client";
 import React, { useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { getNotifications } from "@/store/profile";
+import { RootState, AppDispatch } from "@/store/store";
+import { useAuth } from "@/lib/context/auth-context";
 import PacmanLoader from "react-spinners/RingLoader";
-// import { useSelector, useDispatch } from "react-redux";
-// import { getall_request } from "../../../app/features/booking/booking";
-// import { Acceptedlist } from "./creatornotifylist/Acceptedlist";
-// import { Meetuplist } from "./creatornotifylist/Meetuplist";
-// import { List_of_message } from "../../users/List_of_message";
-// import { Gennavigation } from "../../../navs/Gennav";
-// import { Acceptedview } from "./Acceptedview";
-// import { useAuth } from "../../../hooks/useAuth";
-// import { Requestlist } from "./Requestlist";
+import { CheckCircle } from "lucide-react";
+import Link from "next/link";
 
 export const Allview = () => {
-  const [loading, setloading] = useState(true);
-  const [success, setsuccess] = useState(false);
-  const [reload, setReload] = useState(false);
-  //  const [loading, setLoading] = useState(false);
-  // useEffect(() => {
-  //   setAllBookings(Allrequest);
-  //   console.log(Allrequest);
-  // }, [Allrequest, reload]);
+  const dispatch = useDispatch<AppDispatch>();
+  const { session } = useAuth();
+  const token = session?.token;
 
-  // useEffect(() => {
-  //   fetchall_req();
-  // }, [reload]);
+  const { notifications, notifications_stats } = useSelector(
+    (state: RootState) => state.profile
+  );
+  const userId = useSelector((state: RootState) => state.profile.userId);
 
-  // const loggedUser = useAuth();
-  //     setloading(false);
-  //   }
-  //   if (allrequest_stats === "failed") {
-  //     setloading(false);
-  //   }
-  // }, [allrequest_stats]);
+  const [loading, setLoading] = useState(true);
 
-  // const getallrequest = () => {
-  //   if (loading === false) {
-  //     if (Allrequest.length > 0) {
-  //       // const allRequest = [...Allrequest];
-  //       // console.log(allRequest);
-  //       return allBookings.map((value, index) => {
-  //         if (
-  //           (value.creatorid !== Mycreator && value.status === "accepted") ||
-  //           value.status === "decline" ||
-  //           value.status === "completed"
-  //         ) {
-  //           return (
-  //             !loggedUser?.creator_portfolio && (
-  //               <ul className="flex flex-col items-center pl-2 pr-2 w-full mb-1">
-  //                 <Acceptedlist
-  //                   key={`${index}_${userid}`}
-  //                   name={value.name}
-  //                   photolink={value.photolink}
-  //                   status={value.status}
-  //                   type={value.type}
-  //                   date={value.date}
-  //                   time={value.time}
-  //                   creatorid={value.creatorid}
-  //                   creatoruserid={value.creatoruserid}
-  //                   amount={value.amount}
-  //                   id={value.id}
-  //                 />
-  //               </ul>
-  //             )
-  //           );
-  //         }
+  useEffect(() => {
+    if (userId && token) {
+      dispatch(getNotifications({ userid: userId, token }));
+    }
+  }, [dispatch, userId, token]);
 
-  //         if (value.status === "pending" && value.creatorid !== Mycreator) {
-  //           return (
-  //             !loggedUser?.creator_portfolio && (
-  //               <ul className="flex flex-col items-center pl-2 pr-2 w-full mb-1">
-  //                 <Requestlist
-  //                   photolink={value.photolink}
-  //                   creatorname={value.name}
-  //                   creatortype={value.type}
-  //                   date={value.date}
-  //                   time={value.time}
-  //                   creatorid={value.creatorid}
-  //                   id={value.id}
-  //                   setRequests={setAllBookings}
-  //                 />
-  //               </ul>
-  //             )
-  //           );
-  //         }
+  useEffect(() => {
+    setLoading(notifications_stats === "loading");
+  }, [notifications_stats]);
 
-  //         if (
-  //           value.status === "pending" ||
-  //           (value.status === "accepted" && value.creatorid === Mycreator)
-  //         ) {
-  //           let messaging = check_status(value.status, value.type, value.name);
-  //           return (
-  //             <ul className="flex flex-col items-center pl-2 pr-2 w-full mb-1">
-  //               <Meetuplist
-  //                 id={value.id}
-  //                 clientname={value.name}
-  //                 type={value.type}
-  //                 photolink={value.photolink}
-  //                 date={value.date}
-  //                 time={value.time}
-  //                 venue={value.place}
-  //                 postuserid={value.clientid}
-  //                 creatorid={value.creatorid}
-  //                 status={value.status}
-  //                 latter1={messaging}
-  //                 setRequests={setAllBookings}
-  //                 setReload={setReload}
-  //               />
-  //             </ul>
-  //           );
-  //         }
+  if (loading) {
+    return (
+      <div className="w-full h-full flex flex-col justify-center items-center">
+        <PacmanLoader color="#fff" loading={true} size={35} />
+        <p className="text-slate-400 text-xs mt-2">please wait...</p>
+      </div>
+    );
+  }
 
-  //         if (value.ismessage) {
-  //           return (
-  //             <ul className="flex flex-col items-center pl-2 pr-2">
-  //               <List_of_message
-  //                 id={value.id}
-  //                 time={value.time}
-  //                 message={value.message}
-  //                 Mycreator={Mycreator}
-  //                 setRequests={setAllBookings}
-  //               />
-  //             </ul>
-  //           );
-  //         }
-  //       });
-  //     } else {
-  //       return (
-  //         <div className="w-full h-full flex justify-center items-center mt-16">
-  //           <p className="text-slate-400  text-xs">
-  //             Notifications about your account will appear here.
-  //           </p>
-  //         </div>
-  //       );
-  //     }
-  //   }
-  // };
-
-  // const fetchall_req = async () => {
-  //   setloading(true);
-  //   await dispatch(getall_request({ userid, token, creatorid: Mycreator }));
-  //   setloading(false);
-  // };
-
-  // const check_status = (status, type, clientname) => {
-  //   if (status === "accepted") {
-  //     return (latter = `you accepted a ${type} request with ${clientname}`);
-  //   } else {
-  //     return (latter = `${clientname} Requested a ${type} with you`);
-  //   }
-  // };
+  if (!notifications || notifications.length === 0) {
+    return (
+      <div className="w-full h-full flex justify-center items-center">
+        <p className="text-slate-400 text-xs">
+          Notifications about your account will appear here.
+        </p>
+      </div>
+    );
+  }
 
   return (
-    <div className="w-full ">
-      <div className="w-full  flex flex-col mt-2 mb-5">
-        {loading && (
-          <div className="w-full h-full flex flex-col justify-center items-center">
-            <PacmanLoader
-              color={"#fff"}
-              loading={loading}
-              size={35}
-              aria-label="Loading Spinner"
-              data-testid="loader"
-            />
+    <div className="flex flex-col items-center w-full h-full p-4 space-y-4 min-h-screen">
+      {notifications.map((note: any) => (
+        <div
+          key={note._id}
+          className="relative bg-[#0B0F1A]/70 backdrop-blur-xl border border-slate-800 shadow-lg 
+                     rounded-2xl p-6 w-full max-w-md text-white transition hover:border-slate-700"
+        >
+          <div className="flex flex-col items-start space-y-3">
+            <div className="flex items-center space-x-2">
+              <div className="bg-green-500/10 p-1.5 rounded-full">
+                <CheckCircle className="text-green-500 w-5 h-5" />
+              </div>
+              <h2 className="text-base sm:text-lg font-semibold">
+                Application Status
+              </h2>
+            </div>
 
-            <p className="text-slate-400 text-xs">please wait...</p>
+            <p className="text-slate-300 text-sm sm:text-base leading-relaxed">
+              {note.message}
+            </p>
+
+            <div className="pt-2">
+              <Link href={`/creator/create`}>
+              <button
+                className="px-4 py-2 border border-slate-700 hover:border-slate-500 
+                          rounded-lg text-sm text-slate-200 transition">
+                Creator Portfolio
+              </button>
+            </Link>
+            </div>
+
+            <span className="absolute right-4 bottom-3 text-[10px] text-slate-500">
+              {new Date(note.createdAt).toLocaleString()}
+            </span>
           </div>
-        )}
-
-        <div className="w-full flex flex-col pb-7 overflow-auto mb-3">
-          {/* <Acceptedview /> */}
-          {/* {getallrequest()} */}
         </div>
-      </div>
+      ))}
     </div>
   );
 };
