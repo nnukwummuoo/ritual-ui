@@ -116,7 +116,6 @@ export default function VerifiedUserForm() {
 
   const handleModalClose = () => {
     setShowSuccessModal(false);
-    router.push("/notifications");
   };
 
   return (
