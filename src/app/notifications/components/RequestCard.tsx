@@ -1,7 +1,11 @@
 import Image from 'next/image';
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { BiTimeFive } from 'react-icons/bi'
 import { FaCoins } from 'react-icons/fa';
+import { toast } from 'material-react-toastify';
+import { URL } from '@/api/config';
+import { IoCalendarOutline, IoLocationOutline, IoTimeOutline, IoWarningOutline, IoCheckmarkCircleOutline } from 'react-icons/io5';
+import { getSocket } from '@/lib/socket';
 
 const cardStates = {
   request: "Request sent",
@@ -43,10 +47,10 @@ const creatorContent = {
   }
   
 }
-const fanContent = {
+const getFanContent = (price: number) => ({
   accepted: {
     head: "Fan Meet Accepted",
-    body: "By clicking 'Mark as complete' you confirm that your pending gold of 💰20 will be sent to the creator."},
+    body: `By clicking 'Mark as complete' you confirm that your pending gold of 💰 ${price} will be sent to the creator.`},
   completed: {
     head: "Fan Meet Completed",
     body: "How do you rate your experience?"},
@@ -65,8 +69,16 @@ const fanContent = {
     head: "Waiting For Creator\'s Response",
     body: "Your fan meet request has been sent. The creator has 24 hours to respond."
   }
-}
+})
 const statusArr = ["request", "expired", "completed", "accepted", "declined", "cancelled"] 
+
+interface FanMeetDetails {
+  date: string;
+  time: string;
+  venue: string;
+  duration?: string;
+}
+
 interface CardProps {
     exp: string;
     children?: React.ReactNode;
@@ -75,23 +87,236 @@ interface CardProps {
     name: string;
     img: string;
     status: "request" | "expired" | "completed" | "accepted" | "declined" | "cancelled";
+    bookingId?: string;
+    price?: number;
+    details?: FanMeetDetails;
+    userid?: string;
+    creatorid?: string;
+    onStatusChange?: (bookingId: string, newStatus: string) => void;
 }
 
-export default function RequestCard({exp, img, name, titles=["fan"], status, type="fan"}: CardProps) {
-  const cardBorderVariance = type === "creator" ? "border-blue-500" : type === "fan" && ["accepted", "completed"].includes(status) ? "border-green-500" : "border-yellow-500"
-  const cardTextVariance = type === "creator" ? "text-blue-500" : type === "fan" && ["accepted", "completed"].includes(status) ? "text-green-500" : "text-yellow-500"
+export default function RequestCard({exp, img, name, titles=["fan"], status, type="fan", bookingId, price, details, userid, creatorid, onStatusChange}: CardProps) {
+  const [loading, setLoading] = useState(false);
+  const [currentStatus, setCurrentStatus] = useState(status);
+  const [showDetails, setShowDetails] = useState(false);
+
+  // Socket integration for real-time updates
+  useEffect(() => {
+    const socket = getSocket();
+    if (!socket || !bookingId) return;
+
+    // Listen for fan meet request status updates
+    const handleFanMeetStatusUpdate = (data: { 
+      bookingId: string; 
+      status: string; 
+      userid: string; 
+      creatorid: string;
+      message?: string;
+    }) => {
+      // Check if this update is for this specific request
+      if (data.bookingId === bookingId) {
+        console.log('📡 [Socket] Fan meet status update received:', data);
+        
+        // Update local status
+        setCurrentStatus(data.status as any);
+        
+        // Notify parent component
+        onStatusChange?.(data.bookingId, data.status);
+        
+        // Show toast notification
+        if (data.message) {
+          toast.info(data.message);
+        } else {
+          // Default messages based on status
+          const statusMessages = {
+            'accepted': '🎉 Your fan meet request has been accepted!',
+            'declined': '❌ Your fan meet request was declined',
+            'cancelled': '🚫 Fan meet request was cancelled',
+            'completed': '✅ Fan meet has been completed!',
+            'expired': '⏰ Fan meet request has expired'
+          };
+          
+          const message = statusMessages[data.status as keyof typeof statusMessages];
+          if (message) {
+            toast.info(message);
+          }
+        }
+      }
+    };
+
+    // Listen for fan meet request updates
+    socket.on('fan_meet_status_update', handleFanMeetStatusUpdate);
+    
+    // Listen for general booking updates (fallback)
+    socket.on('booking_status_update', handleFanMeetStatusUpdate);
+
+    // Cleanup listeners on unmount
+    return () => {
+      socket.off('fan_meet_status_update', handleFanMeetStatusUpdate);
+      socket.off('booking_status_update', handleFanMeetStatusUpdate);
+    };
+  }, [bookingId, onStatusChange]);
+
+  // Update local status when prop changes
+  useEffect(() => {
+    setCurrentStatus(status);
+  }, [status]);
+  
+  
+  const cardBorderVariance = type === "creator" ? "border-blue-500" : type === "fan" && ["accepted", "completed"].includes(currentStatus) ? "border-green-500" : "border-yellow-500"
+  const cardTextVariance = type === "creator" ? "text-blue-500" : type === "fan" && ["accepted", "completed"].includes(currentStatus) ? "text-green-500" : "text-yellow-500"
 
   // shared action button base so buttons have same size / height
   const actionBtnBase = 'w-full px-6 py-3 rounded-lg transition-all duration-500 text-sm flex items-center justify-center';
   // Fan action style (uses base for consistent sizing)
   const fanActionClass = `${actionBtnBase} border border-gray-500 max-[490px]:text-xs text-gray-300 hover:bg-slate-700 bg-transparent`;
 
+  // API call functions
+  const handleAccept = async () => {
+    if (!bookingId || !details) return;
+    setLoading(true);
+    try {
+      const response = await fetch(`${URL}/acceptbook`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          creatorid: creatorid,
+          userid: userid,
+          date: details.date,
+          time: details.time
+        })
+      });
+      
+      if (response.ok) {
+        setCurrentStatus('accepted');
+        onStatusChange?.(bookingId, 'accepted');
+        toast.success('Request accepted successfully!');
+      } else {
+        toast.error('Failed to accept request');
+      }
+    } catch (err) {
+      console.error('Error accepting request:', err);
+      toast.error('Error accepting request');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDecline = async () => {
+    if (!bookingId || !details) return;
+    setLoading(true);
+    try {
+      const requestBody = {
+        creatorid: creatorid,
+        userid: userid,
+        date: details.date,
+        time: details.time
+      };
+      
+      const response = await fetch(`${URL}/declinebook`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody)
+      });
+      
+      if (response.ok) {
+        setCurrentStatus('declined');
+        onStatusChange?.(bookingId, 'declined');
+        toast.success('Request declined');
+      } else {
+        const errorData = await response.json();
+        toast.error(errorData.message || 'Failed to decline request');
+      }
+    } catch (err) {
+      toast.error('Error declining request');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+    const handleCancel = async () => {
+      if (!bookingId || !details || !userid || !creatorid) {
+        toast.error('Missing required data for cancel request');
+        return;
+      }
+      setLoading(true);
+      try {
+        const requestBody = {
+          id: bookingId,
+          userid: userid,
+          creatorid: creatorid
+        };
+        
+        const response = await fetch(`${URL}/cancelrequest`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(requestBody)
+        });
+        
+        if (response.ok) {
+          setCurrentStatus('cancelled');
+          onStatusChange?.(bookingId, 'cancelled');
+          toast.success('Request cancelled');
+        } else {
+          const errorData = await response.json();
+          toast.error(errorData.message || 'Failed to cancel request');
+        }
+      } catch (err) {
+        toast.error('Error cancelling request');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+  const handleComplete = async () => {
+    if (!bookingId) return;
+    setLoading(true);
+    try {
+      const response = await fetch(`${URL}/completebook`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          bookingId,
+          userid: userid,
+          creatorid: creatorid
+        })
+      });
+      
+      if (response.ok) {
+        setCurrentStatus('completed');
+        onStatusChange?.(bookingId, 'completed');
+        toast.success('Fan meet completed!');
+      } else {
+        toast.error('Failed to complete fan meet');
+      }
+    } catch (err) {
+      console.error('Error completing fan meet:', err);
+      toast.error('Error completing fan meet');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className={`w-full flex flex-col gap-6 rounded-lg border-2 ${cardBorderVariance} p-4 mx-auto text-white bg-slate-800`}>
       <div className={`flex justify-between items-start gap-4 ${cardTextVariance}`}>
         <div className="flex gap-4">
-          <div className={`size-16 relative rounded-full border-4 overflow-hidden ${cardBorderVariance} bg-gray-900`}>
-            <Image src={img} width={100} alt="picture" height={100} className='absolute top-0 left-0 size-full object-cover' />
+          <div className={`size-16 relative rounded-full border-4 overflow-hidden ${cardBorderVariance} bg-gray-900 flex items-center justify-center`}>
+            {img && img !== '/picture-1.jfif' && img !== '/default-image.png' ? (
+              <Image src={img} width={100} alt="picture" height={100} className='absolute top-0 left-0 size-full object-cover' />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center bg-gray-600 text-white font-bold text-xl">
+                {name.split(' ').map(n => n.charAt(0)).join('').toUpperCase().slice(0, 2)}
+              </div>
+            )}
           </div>
           <div className='text-sm'>
             <p className='font-bold'>{name}</p>
@@ -100,54 +325,54 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
         </div>
 
         <div className="flex flex-col items-end">
-          {status === "accepted" ? <p className="flex items-center gap-2 text-xl"><FaCoins /> 20</p> : <BiTimeFive className="text-2xl" />}
+          {currentStatus === "accepted" ? <p className="flex items-center gap-2 text-xl"><FaCoins /> {price || 20}</p> : <BiTimeFive className="text-2xl" />}
         </div>
       </div>
 
       <h3 className={`text-3xl md:text-4xl ${cardTextVariance}`}>{
-        type === "creator" ? creatorContent[status].head : fanContent[status].head
+        type === "creator" ? (creatorContent[currentStatus]?.head || "Unknown Status") : (getFanContent(price || 0)[currentStatus]?.head || "Unknown Status")
       }</h3>
 
-      <p className="text-sm md:text-base">{ type === "creator" ? creatorContent[status].body : fanContent[status].body }</p>
+      <p className="text-sm md:text-base">{ type === "creator" ? (creatorContent[currentStatus]?.body || "Status information not available") : (getFanContent(price || 0)[currentStatus]?.body || "Status information not available") }</p>
 
       {/* RATINGS */}
       <div className='flex gap-4 flex-wrap justify-center'>
-        {status === "completed" && ratings.map((v,i) => <Rating key={i} label={v} />)}
+        {currentStatus === "completed" && ratings.map((v,i) => <Rating key={i} label={v} />)}
       </div>
 
       <div className={`flex flex-col gap-4 items-end`}>
-        { statusArr.slice(1).includes(status) ? (
+        { statusArr.slice(1).includes(currentStatus) ? (
 // keep this row horizontal and make buttons equal width
 <div className="flex w-full items-stretch gap-3">
   <div className="flex-1 flex">
     <div className="w-full border border-gray-600 text-gray-500 px-3 py-2 rounded-lg text-xs md:text-sm flex items-center justify-center">
-      {cardStates[status as keyof typeof cardStates]}
+      {cardStates[currentStatus as keyof typeof cardStates]}
     </div>
   </div>
 
   <div className="flex-1">
-    { type === "creator" && status === "accepted" ? (
+    { type === "creator" && currentStatus === "accepted" ? (
       // Creator accepted → Renew + View details
       <div className="flex gap-3">
         <div className="flex-1">
           <FanActionBtn label="Chat Now" className={fanActionClass} />
         </div>
         <div className="flex-1">
-          <button className={fanActionClass}>View details</button>
+          <button className={fanActionClass} onClick={() => setShowDetails(true)}>View details</button>
         </div>
       </div>
-    ) : type === "fan" && status === "accepted" ? (
+    ) : type === "fan" && currentStatus === "accepted" ? (
       // Fan accepted → Mark complete + View details
       <div className="flex gap-3">
         <div className="flex-1">
-          <FanActionBtn label="Mark as complete" className={fanActionClass} />
+          <FanActionBtn label="Mark as complete" className={fanActionClass} onClick={handleComplete} disabled={loading} />
         </div>
         <div className="flex-1">
-          <button className={fanActionClass}>View details</button>
+          <button className={fanActionClass} onClick={() => setShowDetails(true)}>View details</button>
         </div>
       </div>
     ) : type === "creator" ? (
-      <FanActionBtn label="Renew request" className={fanActionClass} />
+      <FanActionBtn label="Chat Now" className={fanActionClass} />
     ) : (
       <FanActionBtn label="Renew request" className={fanActionClass} />
     )}
@@ -173,23 +398,23 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
                 // Creator: Accept | Decline | View details (equal widths)
                 <>
                   <div className='flex-1'>
-                    <CreatorActionBtn type='accept' />
+                    <CreatorActionBtn type='accept' onClick={handleAccept} disabled={loading} />
                   </div>
                   <div className='flex-1'>
-                    <CreatorActionBtn type='decline' />
+                    <CreatorActionBtn type='decline' onClick={handleDecline} disabled={loading} />
                   </div>
                   <div className='flex-1'>
-                    <button className={fanActionClass}>View details</button>
+                    <button className={fanActionClass} onClick={() => setShowDetails(true)}>View details</button>
                   </div>
                 </>
               ) : (
                 // Fan: Cancel request | View details side-by-side
                 <>
                   <div className='flex-1'>
-                    {type === "fan" && status === "request" && <FanActionBtn label='Cancel request' className={fanActionClass} />}
+                    {type === "fan" && currentStatus === "request" && <FanActionBtn label='Cancel request' className={fanActionClass} onClick={handleCancel} disabled={loading} />}
                   </div>
                   <div className='flex-1'>
-                    <button className={fanActionClass}>View details</button>
+                    <button className={fanActionClass} onClick={() => setShowDetails(true)}>View details</button>
                   </div>
                 </>
               )}
@@ -197,24 +422,167 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
           </>
         )}
       </div>
+
+      {/* Details Modal */}
+      {showDetails && (
+        <DetailsModal 
+          details={details} 
+          onClose={() => setShowDetails(false)} 
+          type={type}
+          name={name}
+        />
+      )}
     </div>
   );
 }
 
-function CreatorActionBtn({type}: {type: "accept" | "decline"}){
+function CreatorActionBtn({type, onClick, disabled}: {type: "accept" | "decline", onClick?: () => void, disabled?: boolean}){
   // Use same base sizing so heights match
   const base = 'w-full px-6 py-3 rounded-lg transition-all duration-500 text-white flex items-center justify-center';
-  return <button className={`${base} ${type === "accept" ? "hover:bg-green-700 bg-green-600" : "hover:bg-red-700 bg-red-600"}`}>
+  return <button 
+    className={`${base} ${type === "accept" ? "hover:bg-green-700 bg-green-600" : "hover:bg-red-700 bg-red-600"} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+    onClick={onClick}
+    disabled={disabled}
+  >
     {type === "accept" ? "Accept" : "Decline"}
   </button>
 };
 
-function FanActionBtn({label, className}: {label: string, className?: string}){
+function FanActionBtn({label, className, onClick, disabled}: {label: string, className?: string, onClick?: () => void, disabled?: boolean}){
   // allow overriding/using shared class; default uses the same base so sizing is consistent
   const defaultClass = 'w-full px-6 py-3 rounded-lg transition-all duration-500 text-sm flex items-center justify-center border border-gray-500 max-[490px]:text-xs text-gray-300 hover:bg-slate-700 bg-transparent';
-  return <button className={ className ? className : defaultClass }>{label}</button>
+  return <button 
+    className={`${className ? className : defaultClass} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+    onClick={onClick}
+    disabled={disabled}
+  >
+    {label}
+  </button>
 }
 
 function Rating({label}: {label: string}){
   return <div className='py-1 text-sm px-4 rounded-lg border border-gray-500 cursor-pointer bg-gray-800 transition-all duration-500 hover:bg-slate-700'>{label}</div>
+}
+
+function DetailsModal({ 
+  details, 
+  onClose, 
+  type, 
+  name 
+}: { 
+  details?: FanMeetDetails; 
+  onClose: () => void; 
+  type: "fan" | "creator";
+  name: string;
+}) {
+  if (!details) {
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="bg-white rounded-lg p-6 max-w-md w-full">
+          <h2 className="text-xl font-bold text-gray-800 mb-4">Fan Date / Meet Details</h2>
+          <p className="text-gray-600 mb-4">Details not available</p>
+          <button 
+            onClick={onClose}
+            className="w-full bg-gray-500 text-white py-2 px-4 rounded-lg hover:bg-gray-600 transition-colors"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const formatDate = (dateString: string) => {
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      });
+    } catch {
+      return dateString;
+    }
+  };
+
+  const formatTime = (timeString: string) => {
+    try {
+      const [hours, minutes] = timeString.split(':');
+      const hour = parseInt(hours);
+      const ampm = hour >= 12 ? 'PM' : 'AM';
+      const displayHour = hour % 12 || 12;
+      return `${displayHour}:${minutes} ${ampm}`;
+    } catch {
+      return timeString;
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-lg p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
+        <h2 className="text-xl font-bold text-gray-800 mb-6">Fan Date / Meet Details</h2>
+        
+        {/* Date & Time */}
+        <div className="flex items-start gap-3 mb-4">
+          <IoCalendarOutline className="text-gray-600 text-xl mt-1" />
+          <div>
+            <h3 className="font-semibold text-gray-800">Date & Time</h3>
+            <p className="text-gray-600">
+              {formatDate(details.date)} at {formatTime(details.time)}
+            </p>
+          </div>
+        </div>
+
+        {/* Venue */}
+        <div className="flex items-start gap-3 mb-4">
+          <IoLocationOutline className="text-gray-600 text-xl mt-1" />
+          <div>
+            <h3 className="font-semibold text-gray-800">Venue</h3>
+            <p className="text-gray-600">{details.venue}</p>
+          </div>
+        </div>
+
+        {/* Duration */}
+        <div className="flex items-start gap-3 mb-4">
+          <IoTimeOutline className="text-gray-600 text-xl mt-1" />
+          <div>
+            <h3 className="font-semibold text-gray-800">Duration</h3>
+            <p className="text-gray-600">{details.duration || "Maximum 30 minutes"}</p>
+          </div>
+        </div>
+
+        {/* Safety Rules */}
+        <div className="flex items-start gap-3 mb-4">
+          <IoWarningOutline className="text-orange-500 text-xl mt-1" />
+          <div>
+            <h3 className="font-semibold text-gray-800">Safety Rules (Important!)</h3>
+            <ul className="text-gray-600 text-sm mt-1 space-y-1">
+              <li>• All meets are limited to 30 minutes.</li>
+              <li>• Meets must happen in a public place only.</li>
+            </ul>
+            <p className="text-gray-500 text-xs mt-2">
+              What happens after 30 minutes is outside the platform's responsibility.
+            </p>
+          </div>
+        </div>
+
+        {/* Agreement - Only show for creators */}
+        {type === "creator" && (
+          <div className="flex items-start gap-3 mb-6">
+            <IoCheckmarkCircleOutline className="text-green-500 text-xl mt-1" />
+            <p className="text-gray-800 font-semibold text-sm">
+              By accepting this request, you agree to follow these rules.
+            </p>
+          </div>
+        )}
+
+        <button 
+          onClick={onClose}
+          className="w-full bg-blue-500 text-white py-3 px-4 rounded-lg hover:bg-blue-600 transition-colors font-semibold"
+        >
+          Close
+        </button>
+      </div>
+    </div>
+  );
 }

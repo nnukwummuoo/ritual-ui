@@ -77,6 +77,7 @@ export default function Editcreator () {
      []
   );
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const hosttypeInitialized = useRef(false);
   const token = useAuthToken();
 
   // Prefill fields from store creator and guard when missing
@@ -118,7 +119,11 @@ export default function Editcreator () {
     setsmoke(creator.smoke || "");
     setdrink(creator.drink || "");
     setdescription(creator.description || "");
-    sethosttype(creator.hosttype || hosttype);
+    // Only set hosttype if it hasn't been initialized yet (avoid overriding user changes)
+    if (creator.hosttype && !hosttypeInitialized.current) {
+      sethosttype(creator.hosttype);
+      hosttypeInitialized.current = true;
+    }
 
     // price and duration normalization
     if (typeof creator.price === "string") {
@@ -141,9 +146,22 @@ export default function Editcreator () {
       }
       return [];
     };
-    setInterested((prev) => (prev.length ? prev : toArray(creator.interestedin)));
-    setTimes((prev) => (prev.length ? prev : toArray(creator.timeava)));
-    setHours((prev) => (prev.length ? prev : toArray(creator.daysava)));
+    
+    // Only set if not already set to avoid overriding user changes
+    if (creator.interestedin && !interested.length) {
+      const rawInterested = toArray(creator.interestedin);
+      
+      // Convert to uppercase and remove duplicates
+      const upperCaseInterested = [...new Set(rawInterested.map(item => item.toUpperCase()))];
+      
+      setInterested(upperCaseInterested);
+    }
+    if (creator.timeava && !times.length) {
+      setTimes(toArray(creator.timeava));
+    }
+    if (creator.daysava && !hours.length) {
+      setHours(toArray(creator.daysava));
+    }
 
     // Handle existing images
     if (creator.photolink) {
@@ -154,7 +172,7 @@ export default function Editcreator () {
         : [];
       setExistingImages(existingImgArray);
     }
-  }, [creator, creatorID, router, dispatch, hosttype, profile.firstname, profile.status, reduxUserId, userid]);
+  }, [creator, creatorID, router, dispatch, hosttype, profile.firstname, profile.status, reduxUserId, userid, interested.length, times.length, hours.length]);
 
   // 🔥 Autofill full name from user profile (like side menu)
   useEffect(() => {
@@ -187,6 +205,7 @@ export default function Editcreator () {
     }
   }, [profile, reduxUserId, userid, name]);
 
+
   // useEffect(() => {
   //   if (!login) {
   //     router.push("/");
@@ -208,6 +227,22 @@ export default function Editcreator () {
   // }, [creatorupdatestatus, message, dispatch, router, creatorID]);
 
   const checkuserInput = async () => {
+    console.log("🔄 [EditCreatorPortfolio] Starting validation");
+    console.log("🔄 [EditCreatorPortfolio] Current state:", {
+      age,
+      hosttype,
+      newImagesCount: newImages.length,
+      existingImagesCount: existingImages.length,
+      totalImages: newImages.length + existingImages.length,
+      location,
+      price,
+      height,
+      description,
+      userid,
+      token: token ? "present" : "missing",
+      creatorID
+    });
+
     if (!age) return toast.error(`Age Empty`, { autoClose: 2000 });
     if (!hosttype) return toast.error(`Select host type`, { autoClose: 2000 });
     if (newImages.length === 0 && existingImages.length === 0)
@@ -227,6 +262,22 @@ export default function Editcreator () {
     try {
       setdisablebut(true);
       setLoading(true);
+      
+      // Prepare existing images (filter out deleted ones)
+      const preservedExistingImages = existingImages.filter(img => !imagesToDelete.includes(img));
+      
+      console.log("🔄 [EditCreatorPortfolio] Image analysis:", {
+        newImagesCount: newImages.length,
+        existingImagesCount: existingImages.length,
+        imagesToDeleteCount: imagesToDelete.length,
+        preservedExistingImagesCount: preservedExistingImages.length,
+        totalImagesAfterEdit: newImages.length + preservedExistingImages.length
+      });
+      
+      console.log("🔄 [EditCreatorPortfolio] Images to delete:", imagesToDelete);
+      console.log("🔄 [EditCreatorPortfolio] Preserved existing images:", preservedExistingImages);
+      console.log("🔄 [EditCreatorPortfolio] New images to upload:", newImages.map(f => f.name));
+      
       const data = {
         userId: userid, 
         creatorId: creatorID, 
@@ -248,19 +299,36 @@ export default function Editcreator () {
         hosttype,
         hostid: userid,
         // Include existing images that are not marked for deletion
-        existingImages: existingImages.filter(img => !imagesToDelete.includes(img)),
+        existingImages: preservedExistingImages,
         // Include images to delete
         imagesToDelete: imagesToDelete
       };
       
+      console.log("🔄 [EditCreatorPortfolio] Prepared data:", {
+        userId: data.userId,
+        creatorId: data.creatorId,
+        name: data.name,
+        existingImagesCount: data.existingImages.length,
+        imagesToDeleteCount: data.imagesToDelete.length,
+        newFilesCount: newImages.length,
+      });
+      
       // Only send new images if there are any
       const filesToUpload = newImages.length > 0 ? newImages : [];
+      
+      console.log("🔄 [EditCreatorPortfolio] Calling editCreatorMultipart with:", {
+        token: token ? "present" : "missing",
+        dataKeys: Object.keys(data),
+        filesToUploadCount: filesToUpload.length
+      });
       
       await editCreatorMultipart({ 
         token, 
         data, 
         files: filesToUpload
       });
+      
+      console.log("✅ [EditCreatorPortfolio] editCreatorMultipart completed successfully");
       toast.success("Portfolio updated successfully");
       router.push(`/creators/${creatorID}`);
     } catch (err:any) {
@@ -277,25 +345,56 @@ export default function Editcreator () {
   };
 
   const removeNewImage = (index : any) => {
-    setNewImages((prev) => prev.filter((_, i) => i !== index));
+    console.log("🔄 [EditCreatorPortfolio] Removing new image at index:", index);
+    setNewImages((prev) => {
+      const newList = prev.filter((_, i) => i !== index);
+      console.log("🔄 [EditCreatorPortfolio] New images after removal:", newList.length);
+      return newList;
+    });
   };
 
   const removeExistingImage = (index: number) => {
     const imageToDelete = existingImages[index];
-    setImagesToDelete(prev => [...prev, imageToDelete]);
-    setExistingImages(prev => prev.filter((_, i) => i !== index));
+    console.log("🔄 [EditCreatorPortfolio] Marking existing image for deletion:", {
+      index,
+      imageUrl: imageToDelete,
+      currentImagesToDelete: imagesToDelete.length
+    });
+    
+    setImagesToDelete(prev => {
+      const newList = [...prev, imageToDelete];
+      console.log("🔄 [EditCreatorPortfolio] Updated images to delete:", newList);
+      return newList;
+    });
+    
+    setExistingImages(prev => {
+      const newList = prev.filter((_, i) => i !== index);
+      console.log("🔄 [EditCreatorPortfolio] Remaining existing images:", newList.length);
+      return newList;
+    });
   };
 
   const handleImageUpload = (files: any) => {
+    console.log("🔄 [EditCreatorPortfolio] Handling image upload:", {
+      filesCount: files?.length || 0,
+      currentNewImages: newImages.length
+    });
+    
     if (files?.length) {
       // Check for files larger than 5MB
       const oversizedFiles = Array.from(files).filter((f: any) => f.size > 5 * 1024 * 1024);
       if (oversizedFiles.length > 0) {
+        console.log("⚠️ [EditCreatorPortfolio] Files too large, showing modal");
         setShowFileSizeModal(true);
         return;
       }
       
-      setNewImages((prev : any) => [...prev, ...files]);
+      console.log("🔄 [EditCreatorPortfolio] Adding new images:", Array.from(files).map((f: any) => f.name));
+      setNewImages((prev : any) => {
+        const newList = [...prev, ...files];
+        console.log("🔄 [EditCreatorPortfolio] Total new images after upload:", newList.length);
+        return newList;
+      });
     }
   };
   
@@ -568,13 +667,13 @@ export default function Editcreator () {
                   <option value="">Select</option>
                   <option value="Fan meet">Fan meet</option>
                   <option value="Fan date">Fan date</option>
-                  <option value="Fan Call">Fan Call</option>
+                  <option value="Fan call">Fan call</option>
                 </select>
               </div>
               <div className="flex items-center gap-2">
                 <label className="text-slate-300">
-                  {hosttype === "Fan Call" 
-                    ? "Set how much fans pay per minute for your Fan Call"
+                  {hosttype === "Fan call" 
+                    ? "Set how much fans pay per minute for your Fan call"
                     : "Enter transport fare fans will pay you"
                   }
                 </label>
@@ -823,13 +922,13 @@ export default function Editcreator () {
             <h3 className="text-xl font-bold text-white mb-4">Recommended Prices</h3>
             
             <div className="space-y-4">
-              {/* Fan Call */}
+              {/* Fan call */}
               <div className="bg-gray-800 p-4 rounded-lg">
                 <div className="flex items-center gap-3 mb-2">
                   <div className="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center">
                     📱
                   </div>
-                  <h4 className="text-white font-semibold">Fan Call (online)</h4>
+                  <h4 className="text-white font-semibold">Fan call (online)</h4>
                 </div>
                 <p className="text-yellow-400 font-bold text-lg">10 - 120 gold / min</p>
                 <p className="text-gray-300 text-sm">(≈ $0.40 - $0.80 / min)</p>

@@ -204,7 +204,6 @@ const uploadToAppwrite = async (file: File): Promise<string> => {
 // checkuserInput
 // -----------------------------
 const checkuserInput = async () => {
-  console.log("[checkuserInput] Function called - starting validation");
   if (!name || name.trim() === "") return toast.error("Full name is required");
   if (!age) return toast.error("Age is required");
   if (!hosttype) return toast.error("Select host type");
@@ -248,10 +247,6 @@ const checkuserInput = async () => {
       hosttype: hosttypeNormalized,
       // photolink will be sent as files separately
     };
-
-    console.log("[checkuserInput] Sending payload to backend:", { token, userid, data });
-    console.log("[checkuserInput] Files to upload:", photolink.length, photolink.map(f => f.name));
-    console.log("[checkuserInput] About to call createCreatorMultipart API");
 
     await createCreatorMultipart({
       token,
@@ -618,7 +613,7 @@ const checkuserInput = async () => {
                   value={hosttype}
                   onChange={(e) => {
                     sethosttype(e.currentTarget.value);
-                    if (e.currentTarget.value === "Fan Call") {
+                    if (e.currentTarget.value === "Fan call") {
                       MIN = "per minute";
                     } else {
                       MIN = "";
@@ -628,14 +623,14 @@ const checkuserInput = async () => {
                   <option value="">Select category</option>
                   <option value={`Fan meet`}>Fan meet</option>
                   <option value={`Fan date`}>Fan date</option>
-                  <option value={`Fan Call`}>Fan call</option>
+                  <option value={`Fan call`}>Fan call</option>
                 </select>
               </div>
 
               <div className="flex items-center gap-2">
                 <label className="text-slate-300">
-                  {hosttype === "Fan Call" 
-                    ? "Set how much fans pay per minute for your Fan Call"
+                  {hosttype === "Fan call" 
+                    ? "Set how much fans pay per minute for your Fan call"
                     : "Enter transport fare fans will pay you"
                   }
                 </label>
@@ -771,6 +766,7 @@ const checkuserInput = async () => {
                   onChange={async (e: React.ChangeEvent<HTMLInputElement>) => {
                     const files = e.currentTarget.files;
                     if (!files || files.length === 0) return;
+                    
                     const selected: File[] = Array.from(files).filter((f) => f.type.startsWith("image/"));
                     
                     // Check for files larger than 5MB
@@ -917,13 +913,13 @@ const checkuserInput = async () => {
             <h3 className="text-xl font-bold text-white mb-4">Recommended Prices</h3>
             
             <div className="space-y-4">
-              {/* Fan Call */}
+              {/* Fan call */}
               <div className="bg-gray-800 p-4 rounded-lg">
                 <div className="flex items-center gap-3 mb-2">
                   <div className="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center">
                     📱
                   </div>
-                  <h4 className="text-white font-semibold">Fan Call (online)</h4>
+                  <h4 className="text-white font-semibold">Fan call (online)</h4>
                 </div>
                 <p className="text-yellow-400 font-bold text-lg">10 - 120 gold / min</p>
                 <p className="text-gray-300 text-sm">(≈ $0.40 - $0.80 / min)</p>
