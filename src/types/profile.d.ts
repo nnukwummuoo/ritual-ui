@@ -80,3 +80,15 @@ export interface ProfileState extends Profile {
   testmsg: string;
   closedraw: boolean;
 }
+
+interface Notification {
+  _id: string;
+  userid: string;
+  message: string;
+  seen: boolean;
+  createdAt: string;
+}
+
+interface NotificationsData {
+  notifications: Notification[];
+}

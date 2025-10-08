@@ -3,7 +3,7 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { PayloadAction } from "@reduxjs/toolkit";
 import { URL } from "../api/config";
 import axios from "axios";
-import { ProfileState } from "@/types/profile";
+import { ProfileState, Notification } from "@/types/profile";
 import { RootState } from "@/store/store";
 
 // Define types for API responses
@@ -119,6 +119,11 @@ const initialState = {
   search_users: [] as any[],
   testmsg: "",
   closedraw: false,
+  notifications: [] as Notification[],
+  notifications_stats: "idle",
+  notifications_message: "",
+  mark_notifications_stats: "idle",
+  delete_notification_stats: "idle",
 };
 
 export const getprofile = createAsyncThunk<
@@ -564,6 +569,62 @@ export const delete_exclusive_thumb = createAsyncThunk<
   }
 );
 
+export const getNotifications = createAsyncThunk<
+  { notifications: Notification[] },
+  { userid: string; token: string }
+>("profile/getNotifications", async (data) => {
+  const headers = data.token
+    ? { Authorization: `Bearer ${data.token}`, "Content-Type": "application/json" }
+    : { "Content-Type": "application/json" };
+
+  const response = await axios.get(`${URL}/notifications/${data.userid}`, { headers });
+  console.log(response.data)
+  // ✅ normalize structure
+  return { notifications: response.data.notifications || [] };
+});
+
+export const markNotificationsSeen = createAsyncThunk<
+  { message: string },
+  { userid: string; token: string }
+>("profile/markNotificationsSeen", async (data) => {
+  try {
+    const headers = data.token
+      ? {
+          Authorization: `Bearer ${data.token}`,
+          "Content-Type": "application/json",
+        }
+      : {
+          "Content-Type": "application/json",
+        };
+    const response = await axios.put(`${URL}/notifications/mark-seen/${data.userid}`, {}, { headers });
+    return response.data;
+  } catch (err) {
+    console.error("[markNotificationsSeen] error", err);
+    throw getErrorMessageWithNetworkFallback(err);
+  }
+});
+
+export const deleteNotification = createAsyncThunk<
+  { message: string },
+  { id: string; token: string }
+>("profile/deleteNotification", async (data) => {
+  try {
+    const headers = data.token
+      ? {
+          Authorization: `Bearer ${data.token}`,
+          "Content-Type": "application/json",
+        }
+      : {
+          "Content-Type": "application/json",
+        };
+    const response = await axios.delete(`${URL}/notifications/${data.id}`, { headers });
+    return response.data;
+  } catch (err) {
+    console.error("[deleteNotification] error", err);
+    throw getErrorMessageWithNetworkFallback(err);
+  }
+});
+
 const profile = createSlice({
   name: "profile",
   initialState,
@@ -588,6 +649,9 @@ const profile = createSlice({
       state.removeblockstats = action.payload;
       state.updatesettingstats = action.payload;
       state.searchstats = action.payload;
+      state.notifications_stats = action.payload;
+      state.mark_notifications_stats = action.payload;
+      state.delete_notification_stats = action.payload;
     },
     setlastnote(state, action) {
       state.lastnote = action.payload;
@@ -839,6 +903,53 @@ const profile = createSlice({
         state.updatesettingstats = "failed";
         state.testmsg = action.error?.message ?? "Check internet connection";
       })
+      .addCase(getNotifications.pending, (state) => {
+        state.notifications_stats = "loading";
+      })
+      .addCase(getNotifications.fulfilled, (state, action) => {
+        state.notifications_stats = "succeeded";
+        // ✅ Store the notifications list
+        state.notifications = action.payload.notifications ?? [];
+        state.notifications_message = "";
+      })
+      .addCase(getNotifications.rejected, (state, action) => {
+        state.notifications_stats = "failed";
+        state.notifications_message =
+          action.error?.message ?? "Failed to load notifications";
+      })
+      .addCase(markNotificationsSeen.pending, (state) => {
+  state.mark_notifications_stats = "loading";
+      })
+      .addCase(markNotificationsSeen.fulfilled, (state) => {
+        state.mark_notifications_stats = "succeeded";
+        // ✅ Optionally mark all local notifications as seen
+        state.notifications = state.notifications.map((n) => ({
+          ...n,
+          seen: true,
+        }));
+      })
+      .addCase(markNotificationsSeen.rejected, (state, action) => {
+        state.mark_notifications_stats = "failed";
+        state.notifications_message =
+          action.error?.message ?? "Failed to mark notifications as seen";
+      })
+
+      .addCase(deleteNotification.pending, (state) => {
+        state.delete_notification_stats = "loading";
+      })
+      .addCase(deleteNotification.fulfilled, (state, action) => {
+        state.delete_notification_stats = "succeeded";
+        const deletedId = (action.meta.arg as any)?.id;
+        // ✅ Remove the deleted notification from local store
+        state.notifications = state.notifications.filter(
+          (n) => n._id !== deletedId
+        );
+      })
+      .addCase(deleteNotification.rejected, (state, action) => {
+        state.delete_notification_stats = "failed";
+        state.notifications_message =
+          action.error?.message ?? "Failed to delete notification";
+      })
       .addCase(getsearch.pending, (state, action) => {
         state.searchstats = "loading";
       })
@@ -849,7 +960,7 @@ const profile = createSlice({
       .addCase(getsearch.rejected, (state, action) => {
         state.searchstats = "failed";
         state.testmsg = action.error?.message ?? "Check internet connection";
-      });
+      }); 
   },
 });
 
