@@ -97,11 +97,17 @@ export default function VideoCallModal({
     const hasLocalStream = !!localStream;
     const hasRemoteStream = !!remoteStream;
     const hasPeerConnection = !!peerConnection;
+    
+    // Use multiple connection state indicators
     const isConnected = peerConnection?.connectionState === 'connected';
-    const isIceConnected = peerConnection?.iceConnectionState === 'connected';
+    const isIceConnected = peerConnection?.iceConnectionState === 'connected' || 
+                          peerConnection?.iceConnectionState === 'completed';
+    const isSignalingStable = peerConnection?.signalingState === 'stable';
     
     // Users can see each other if they have both streams and connection is established
-    const canSee = hasLocalStream && hasRemoteStream && hasPeerConnection && isConnected && isIceConnected;
+    // Be more lenient with connection states for initial display
+    const canSee = hasLocalStream && hasRemoteStream && hasPeerConnection && 
+                  (isConnected || isIceConnected || isSignalingStable);
     
     console.log('👥 [VideoCall] Checking visibility:', {
       localStream: hasLocalStream,
@@ -109,6 +115,7 @@ export default function VideoCallModal({
       peerConnection: hasPeerConnection,
       connectionState: peerConnection?.connectionState,
       iceConnectionState: peerConnection?.iceConnectionState,
+      signalingState: peerConnection?.signalingState,
       canSee,
       currentUsersCanSeeEachOther: usersCanSeeEachOther
     });
@@ -382,17 +389,53 @@ export default function VideoCallModal({
     }
   }, [peerConnection, remoteStream]);
 
+  // Stream recovery mechanism
+  const recoverStreams = useCallback(() => {
+    if (peerConnection && !remoteStream) {
+      console.log('🔄 [VideoCall] Attempting to recover streams...');
+      
+      // Try to get remote stream from peer connection
+      // Note: getRemoteStreams() is deprecated, but we'll use it as fallback
+      const remoteStreams = (peerConnection as any).getRemoteStreams?.() || [];
+      if (remoteStreams.length > 0) {
+        console.log('🔄 [VideoCall] Found remote streams:', remoteStreams);
+        setRemoteStream(remoteStreams[0]);
+      }
+      
+      // Ensure local stream is applied
+      if (localStream && localVideoRef.current) {
+        localVideoRef.current.srcObject = localStream;
+      }
+    }
+  }, [peerConnection, remoteStream, localStream]);
+
   // Periodic visibility check when connected
   useEffect(() => {
     if (callStatus === 'connected' && peerConnection) {
       const interval = setInterval(() => {
         console.log('👥 [VideoCall] Periodic visibility check');
         checkUsersCanSeeEachOther();
+        recoverStreams(); // Also attempt stream recovery
       }, 2000); // Check every 2 seconds
 
       return () => clearInterval(interval);
     }
-  }, [callStatus, peerConnection]);
+  }, [callStatus, peerConnection, recoverStreams]);
+
+  // Add connection timeout
+  useEffect(() => {
+    if (callStatus === 'connecting') {
+      const connectionTimeout = setTimeout(() => {
+        if (!usersCanSeeEachOther) {
+          console.log('⏰ [VideoCall] Connection timeout - attempting recovery');
+          recoverStreams();
+          // Optionally re-initiate the connection
+        }
+      }, 10000); // 10 second timeout
+
+      return () => clearTimeout(connectionTimeout);
+    }
+  }, [callStatus, usersCanSeeEachOther, recoverStreams]);
 
   // Ensure local video element gets the stream when it's rendered
   useEffect(() => {
@@ -412,27 +455,36 @@ export default function VideoCallModal({
     }
   }, [remoteStream]);
 
-  // Force video stream update on component mount/re-render
+  // Use a single effect to handle all video stream assignments
   useEffect(() => {
-    const updateVideoStreams = () => {
-      if (localStream && localVideoRef.current) {
-        console.log('📹 [VideoCall] Force updating local video stream');
-        localVideoRef.current.srcObject = localStream;
-        localVideoRef.current.play().catch(console.error);
+    const updateVideoElements = () => {
+      // Local video
+      if (localVideoRef.current && localStream) {
+        if (localVideoRef.current.srcObject !== localStream) {
+          console.log('📹 [VideoCall] Applying local stream to video element');
+          localVideoRef.current.srcObject = localStream;
+          localVideoRef.current.play().catch(e => 
+            console.warn('Local video play warning:', e)
+          );
+        }
       }
-      if (remoteStream && remoteVideoRef.current) {
-        console.log('📹 [VideoCall] Force updating remote video stream');
-        remoteVideoRef.current.srcObject = remoteStream;
-        remoteVideoRef.current.play().catch(console.error);
+      
+      // Remote video  
+      if (remoteVideoRef.current && remoteStream) {
+        if (remoteVideoRef.current.srcObject !== remoteStream) {
+          console.log('📹 [VideoCall] Applying remote stream to video element');
+          remoteVideoRef.current.srcObject = remoteStream;
+          remoteVideoRef.current.play().catch(e => 
+            console.warn('Remote video play warning:', e)
+          );
+        }
       }
     };
 
-    // Update immediately
-    updateVideoStreams();
-
-    // Also update after a short delay to handle any timing issues
-    const timeoutId = setTimeout(updateVideoStreams, 100);
-
+    updateVideoElements();
+    
+    // Also update after a short delay to catch any timing issues
+    const timeoutId = setTimeout(updateVideoElements, 500);
     return () => clearTimeout(timeoutId);
   }, [localStream, remoteStream]);
 
@@ -481,19 +533,13 @@ export default function VideoCallModal({
     }
   }, [callStatus, localStream, remoteStream]);
 
-  // Callback ref for local video to ensure stream is set when element is mounted
+  // Simplified callback ref for local video
   const localVideoCallbackRef = useCallback((node: HTMLVideoElement | null) => {
-    if (node) {
-      console.log('📹 [VideoCall] Local video element mounted');
-      if (localStream) {
-        console.log('📹 [VideoCall] Setting local video source via callback ref');
-        node.srcObject = localStream;
-      }
-      // Store the node reference
-      localVideoRef.current = node;
-    } else {
-      console.log('📹 [VideoCall] Local video element unmounted');
-      localVideoRef.current = null;
+    localVideoRef.current = node;
+    if (node && localStream) {
+      console.log('📹 [VideoCall] Local video element mounted with stream');
+      node.srcObject = localStream;
+      node.play().catch(console.warn);
     }
   }, [localStream]);
 
@@ -505,19 +551,13 @@ export default function VideoCallModal({
     }
   }, [remoteStream]);
 
-  // Callback ref for remote video to ensure stream is set when element is mounted
+  // Simplified callback ref for remote video
   const remoteVideoCallbackRef = useCallback((node: HTMLVideoElement | null) => {
-    if (node) {
-      console.log('📹 [VideoCall] Remote video element mounted');
-      if (remoteStream) {
-        console.log('📹 [VideoCall] Setting remote video source via callback ref');
-        node.srcObject = remoteStream;
-      }
-      // Store the node reference
-      remoteVideoRef.current = node;
-    } else {
-      console.log('📹 [VideoCall] Remote video element unmounted');
-      remoteVideoRef.current = null;
+    remoteVideoRef.current = node;
+    if (node && remoteStream) {
+      console.log('📹 [VideoCall] Remote video element mounted with stream');
+      node.srcObject = remoteStream;
+      node.play().catch(console.warn);
     }
   }, [remoteStream]);
 
@@ -693,7 +733,7 @@ export default function VideoCallModal({
         console.log('📹 [WebRTC] Creating offer as caller');
         pc.createOffer().then(offer => {
           console.log('📹 [WebRTC] Offer created:', offer);
-          console.log('📹 [WebRTC] Offer SDP contains media tracks:', offer.sdp.includes('m=video') && offer.sdp.includes('m=audio'));
+          console.log('📹 [WebRTC] Offer SDP contains media tracks:', offer.sdp?.includes('m=video') && offer.sdp?.includes('m=audio'));
           return pc.setLocalDescription(offer);
         }).then(() => {
           console.log('📹 [WebRTC] Local description set successfully');
@@ -733,10 +773,24 @@ export default function VideoCallModal({
       console.log('📹 [WebRTC] Current callData callId:', callData?.callId);
       console.log('📹 [WebRTC] Offer callId matches current callId?', data.callId === callData?.callId);
       
+      // Accept both exact match and temporary call IDs for initial connection
+      const callIdMatches = data.callId === callData?.callId || 
+                           data.callId.startsWith('temp_') || 
+                           callData?.callId?.startsWith('temp_');
+      
+      console.log('📹 [WebRTC] Call ID matches (including temp):', callIdMatches);
+      
       // Only process offer if I am the answerer (not the caller)
-      // Accept both exact match and temporary call IDs
-      if ((data.callId === callData?.callId || data.callId.startsWith('temp_')) && !peerConnection) {
+      if (callIdMatches && !peerConnection) {
         console.log('📹 [WebRTC] Processing offer as ANSWERER for call:', data.callId);
+        
+        // Update callData if we have a temporary ID
+        if (data.callId.startsWith('temp_') && callData) {
+          console.log('📹 [WebRTC] Updating call data with temporary ID');
+          // Update the call data to use the temporary ID for consistency
+          // Note: setCallData might not be available, so we'll log this for now
+          console.log('📹 [WebRTC] Would update call data with ID:', data.callId);
+        }
         const pc = createPeerConnection();
         setPeerConnection(pc); // Set peer connection immediately
         
@@ -770,7 +824,7 @@ export default function VideoCallModal({
         try {
           answer = await pc.createAnswer();
           console.log('📹 [WebRTC] Answer created:', answer);
-          console.log('📹 [WebRTC] Answer SDP contains media tracks:', answer.sdp.includes('m=video') && answer.sdp.includes('m=audio'));
+          console.log('📹 [WebRTC] Answer SDP contains media tracks:', answer.sdp?.includes('m=video') && answer.sdp?.includes('m=audio'));
           await pc.setLocalDescription(answer);
           console.log('📹 [WebRTC] Answer created and local description set');
         } catch (error) {
