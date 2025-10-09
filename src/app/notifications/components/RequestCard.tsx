@@ -7,6 +7,7 @@ import { URL } from '@/api/config';
 import { IoCalendarOutline, IoLocationOutline, IoTimeOutline, IoWarningOutline, IoCheckmarkCircleOutline } from 'react-icons/io5';
 import { getSocket } from '@/lib/socket';
 import { useRouter } from 'next/navigation';
+import { useVideoCall } from '@/contexts/VideoCallContext';
 
 const cardStates = {
   request: "Request sent",
@@ -22,55 +23,66 @@ const ratings = [
   "😐 Disconnected",
   
 ]
-const creatorContent = {
-  accepted: {
-    head: "Fan Meet Accepted",
-    body: "Please kindly remind your fan to mark as complete during or after the date — it only takes a second. If they don't, contact support within 24 hours.",
-  },
-  completed: {
-    head: "Fan Meet Completed",
-    body: "How do you rate your experience?"
-  },
-  declined: {
-    head: "Fan Meet Declined",
-    body: "You have declined the fan-meet request from your fan."
-  },
-  cancelled: {
-    head: "Fan Meet Cancelled",
-    body: "Your fan cancelled the request."},
-  expired: {
-    head: "Fan Meet Expired",
-    body: "You can ask the fan to renew request."
-  },
-  request: {
-    head: "New Fan Meet Request",
-    body: "You have 24 hours to accept or decline."
-  }
+const getCreatorContent = (hostType: string) => {
+  const typeText = hostType || "Fan Meet"; // Default to "Fan Meet" if not provided
   
-}
-const getFanContent = (price: number) => ({
-  accepted: {
-    head: "Fan Meet Accepted",
-    body: `By clicking 'Mark as complete' you confirm that your pending gold of 💰 ${price} will be sent to the creator.`},
-  completed: {
-    head: "Fan Meet Completed",
-    body: "How do you rate your experience?"},
-  declined: {
-    head: "Fan Meet Declined",
-    body: "Creator declined your request."
-  },
-  cancelled: {
-    head: "Fan Meet Cancelled",
-    body: "You have cancelled the request. You can renew this request anytime."},
-  expired: {
-    head: "Fan Meet Expired",
-    body: "Your request has expired. You can renew this request anytime."
-  },
-  request: {
-    head: "Waiting For Creator\'s Response",
-    body: "Your fan meet request has been sent. The creator has 24 hours to respond."
-  }
-})
+  return {
+    accepted: {
+      head: `${typeText} Accepted`,
+      body: "Please kindly remind your fan to mark as complete during or after the date — it only takes a second. If they don't, contact support within 24 hours.",
+    },
+    completed: {
+      head: `${typeText} Completed`,
+      body: "How do you rate your experience?"
+    },
+    declined: {
+      head: `${typeText} Declined`,
+      body: `You have declined the ${typeText.toLowerCase()} request from your fan.`
+    },
+    cancelled: {
+      head: `${typeText} Cancelled`,
+      body: "Your fan cancelled the request."
+    },
+    expired: {
+      head: `${typeText} Expired`,
+      body: "You can ask the fan to renew request."
+    },
+    request: {
+      head: `New ${typeText} Request`,
+      body: "You have 24 hours to accept or decline."
+    }
+  };
+};
+const getFanContent = (price: number, hostType: string) => {
+  const typeText = hostType || "Fan Meet"; // Default to "Fan Meet" if not provided
+  
+  return {
+    accepted: {
+      head: `${typeText} Accepted`,
+      body: `By clicking 'Mark as complete' you confirm that your pending gold of 💰 ${price} will be sent to the creator.`
+    },
+    completed: {
+      head: `${typeText} Completed`,
+      body: "How do you rate your experience?"
+    },
+    declined: {
+      head: `${typeText} Declined`,
+      body: "Creator declined your request."
+    },
+    cancelled: {
+      head: `${typeText} Cancelled`,
+      body: "You have cancelled the request. You can renew this request anytime."
+    },
+    expired: {
+      head: `${typeText} Expired`,
+      body: "Your request has expired. You can renew this request anytime."
+    },
+    request: {
+      head: "Waiting For Creator\'s Response",
+      body: `Your ${typeText.toLowerCase()} request has been sent. The creator has 24 hours to respond.`
+    }
+  };
+};
 const statusArr = ["request", "expired", "completed", "accepted", "declined", "cancelled"] 
 
 interface FanMeetDetails {
@@ -93,14 +105,16 @@ interface CardProps {
     details?: FanMeetDetails;
     userid?: string;
     creatorid?: string;
+    hosttype?: string;
     onStatusChange?: (bookingId: string, newStatus: string) => void;
 }
 
-export default function RequestCard({exp, img, name, titles=["fan"], status, type="fan", bookingId, price, details, userid, creatorid, onStatusChange}: CardProps) {
+export default function RequestCard({exp, img, name, titles=["fan"], status, type="fan", bookingId, price, details, userid, creatorid, hosttype, onStatusChange}: CardProps) {
   const [loading, setLoading] = useState(false);
   const [currentStatus, setCurrentStatus] = useState(status);
   const [showDetails, setShowDetails] = useState(false);
   const router = useRouter();
+  const { startVideoCall } = useVideoCall();
 
   // Socket integration for real-time updates
   useEffect(() => {
@@ -276,6 +290,16 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
 
   const handleComplete = async () => {
     if (!bookingId) return;
+    
+    // If it's a Fan Call, start video call instead of completing
+    if (hosttype === "Fan call") {
+      if (creatorid && name) {
+        startVideoCall(creatorid, name, img);
+      }
+      return;
+    }
+    
+    // For Fan Meet/Fan Date, complete the booking
     setLoading(true);
     try {
       const response = await fetch(`${URL}/completebook`, {
@@ -423,10 +447,10 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
       </div>
 
       <h3 className={`text-3xl md:text-4xl ${cardTextVariance}`}>{
-        type === "creator" ? (creatorContent[currentStatus]?.head || "Unknown Status") : (getFanContent(price || 0)[currentStatus]?.head || "Unknown Status")
+        type === "creator" ? (getCreatorContent(hosttype || "Fan Meet")[currentStatus]?.head || "Unknown Status") : (getFanContent(price || 0, hosttype || "Fan Meet")[currentStatus]?.head || "Unknown Status")
       }</h3>
 
-      <p className="text-sm md:text-base">{ type === "creator" ? (creatorContent[currentStatus]?.body || "Status information not available") : (getFanContent(price || 0)[currentStatus]?.body || "Status information not available") }</p>
+      <p className="text-sm md:text-base">{ type === "creator" ? (getCreatorContent(hosttype || "Fan Meet")[currentStatus]?.body || "Status information not available") : (getFanContent(price || 0, hosttype || "Fan Meet")[currentStatus]?.body || "Status information not available") }</p>
 
       {/* RATINGS */}
       <div className='flex gap-4 flex-wrap justify-center'>
@@ -455,10 +479,15 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
         </div>
       </div>
     ) : type === "fan" && currentStatus === "accepted" ? (
-      // Fan accepted → Mark complete + View details
+      // Fan accepted → Mark complete/Start call + View details
       <div className="flex gap-3">
         <div className="flex-1">
-          <FanActionBtn label="Mark as complete" className={fanActionClass} onClick={handleComplete} disabled={loading} />
+          <FanActionBtn 
+            label={hosttype === "Fan call" ? "Start call" : "Mark as complete"} 
+            className={fanActionClass} 
+            onClick={handleComplete} 
+            disabled={loading} 
+          />
         </div>
         <div className="flex-1">
           <button className={fanActionClass} onClick={() => setShowDetails(true)}>View details</button>
