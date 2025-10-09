@@ -71,6 +71,15 @@ export default function VideoCallModal({
                    peerConnection.connectionState === 'connected' && 
                    peerConnection.iceConnectionState === 'connected';
     
+    console.log('👥 [VideoCall] Checking visibility:', {
+      localStream: !!localStream,
+      remoteStream: !!remoteStream,
+      peerConnection: !!peerConnection,
+      connectionState: peerConnection?.connectionState,
+      iceConnectionState: peerConnection?.iceConnectionState,
+      canSee
+    });
+    
     if (canSee && !usersCanSeeEachOther) {
       console.log('👥 [VideoCall] ✅ Users can now see each other! Starting timer...');
       setUsersCanSeeEachOther(true);
@@ -162,7 +171,7 @@ export default function VideoCallModal({
     });
 
     setCallStatus('connected');
-    startCallTimer();
+    console.log('👥 [VideoCall] Call accepted - waiting for video streams to establish...');
   };
 
   // Handle decline call
@@ -435,8 +444,12 @@ export default function VideoCallModal({
     const pc = new RTCPeerConnection({
       iceServers: [
         { urls: 'stun:stun.l.google.com:19302' },
-        { urls: 'stun:stun1.l.google.com:19302' }
-      ]
+        { urls: 'stun:stun1.l.google.com:19302' },
+        { urls: 'stun:stun2.l.google.com:19302' },
+        { urls: 'stun:stun3.l.google.com:19302' },
+        { urls: 'stun:stun4.l.google.com:19302' }
+      ],
+      iceCandidatePoolSize: 10
     });
 
     // Handle incoming remote stream
@@ -480,6 +493,27 @@ export default function VideoCallModal({
         setTimeout(() => checkUsersCanSeeEachOther(), 100);
       } else if (pc.connectionState === 'failed') {
         console.log('❌ [WebRTC] Peer connection failed!');
+        console.log('❌ [WebRTC] Attempting to restart connection...');
+        setUsersCanSeeEachOther(false);
+        stopCallTimer();
+        
+        // Try to restart the connection after a delay
+        setTimeout(() => {
+          if (localStream && socket) {
+            console.log('🔄 [WebRTC] Restarting connection...');
+            // Close current connection and create new one
+            pc.close();
+            const newPc = createPeerConnection();
+            setPeerConnection(newPc);
+            
+            // Re-add local stream
+            localStream.getTracks().forEach(track => {
+              newPc.addTrack(track, localStream);
+            });
+          }
+        }, 2000);
+      } else if (pc.connectionState === 'disconnected') {
+        console.log('⚠️ [WebRTC] Peer connection disconnected');
         setUsersCanSeeEachOther(false);
         stopCallTimer();
       }
@@ -496,6 +530,12 @@ export default function VideoCallModal({
         console.log('❌ [WebRTC] ICE connection failed!');
         setUsersCanSeeEachOther(false);
         stopCallTimer();
+      } else if (pc.iceConnectionState === 'disconnected') {
+        console.log('⚠️ [WebRTC] ICE connection disconnected');
+        setUsersCanSeeEachOther(false);
+        stopCallTimer();
+      } else if (pc.iceConnectionState === 'checking') {
+        console.log('🔄 [WebRTC] ICE connection checking...');
       }
     };
 
@@ -575,6 +615,7 @@ export default function VideoCallModal({
       console.log('📹 [WebRTC] Offer callId matches current callId?', data.callId === callData?.callId);
       
       // Only process offer if I am the answerer (not the caller)
+      // Accept both exact match and temporary call IDs
       if ((data.callId === callData?.callId || data.callId.startsWith('temp_')) && !peerConnection) {
         console.log('📹 [WebRTC] Processing offer as ANSWERER for call:', data.callId);
         const pc = createPeerConnection();
@@ -624,6 +665,7 @@ export default function VideoCallModal({
       console.log('📹 [WebRTC] Answer callId matches current callId?', data.callId === callData?.callId);
       
       // Only process answer if I am the caller and have a peer connection
+      // Accept both exact match and temporary call IDs
       if ((data.callId === callData?.callId || data.callId.startsWith('temp_')) && peerConnection) {
         console.log('📹 [WebRTC] Processing answer as CALLER');
         console.log('📹 [WebRTC] Current peer connection state:', peerConnection.signalingState);
