@@ -80,6 +80,18 @@ export default function VideoCallModal({
     }
   };
 
+  // Debug function to check SDP content
+  const debugSDP = (description: RTCSessionDescription, label: string) => {
+    console.log(`🔍 [SDP Debug] ${label}:`, {
+      type: description.type,
+      sdp: description.sdp,
+      hasVideo: description.sdp.includes('m=video'),
+      hasAudio: description.sdp.includes('m=audio'),
+      videoTracks: (description.sdp.match(/a=msid:/g) || []).length,
+      audioTracks: (description.sdp.match(/a=rtcp-mux/g) || []).length
+    });
+  };
+
   // Check if users can see each other (both have streams and connection is established)
   const checkUsersCanSeeEachOther = () => {
     const hasLocalStream = !!localStream;
@@ -100,6 +112,16 @@ export default function VideoCallModal({
       canSee,
       currentUsersCanSeeEachOther: usersCanSeeEachOther
     });
+    
+    // Debug SDP if peer connection exists
+    if (peerConnection) {
+      if (peerConnection.localDescription) {
+        debugSDP(peerConnection.localDescription, 'Local Description');
+      }
+      if (peerConnection.remoteDescription) {
+        debugSDP(peerConnection.remoteDescription, 'Remote Description');
+      }
+    }
     
     if (canSee && !usersCanSeeEachOther) {
       console.log('👥 [VideoCall] ✅ Users can now see each other! Starting timer...');
@@ -377,8 +399,18 @@ export default function VideoCallModal({
     if (localStream && localVideoRef.current) {
       console.log('📹 [VideoCall] Setting local video source in useEffect');
       localVideoRef.current.srcObject = localStream;
+      localVideoRef.current.play().catch(console.error);
     }
   }, [localStream]);
+
+  // Ensure remote video element gets the stream when it's rendered
+  useEffect(() => {
+    if (remoteStream && remoteVideoRef.current) {
+      console.log('📹 [VideoCall] Setting remote video source in useEffect');
+      remoteVideoRef.current.srcObject = remoteStream;
+      remoteVideoRef.current.play().catch(console.error);
+    }
+  }, [remoteStream]);
 
   // Force video stream update on component mount/re-render
   useEffect(() => {
@@ -386,10 +418,12 @@ export default function VideoCallModal({
       if (localStream && localVideoRef.current) {
         console.log('📹 [VideoCall] Force updating local video stream');
         localVideoRef.current.srcObject = localStream;
+        localVideoRef.current.play().catch(console.error);
       }
       if (remoteStream && remoteVideoRef.current) {
         console.log('📹 [VideoCall] Force updating remote video stream');
         remoteVideoRef.current.srcObject = remoteStream;
+        remoteVideoRef.current.play().catch(console.error);
       }
     };
 
@@ -501,36 +535,47 @@ export default function VideoCallModal({
       iceCandidatePoolSize: 10
     });
 
-    // Handle incoming remote stream
+    // Handle incoming remote stream - CRITICAL: This must be set up BEFORE any offer/answer exchange
     pc.ontrack = (event) => {
-      console.log('📹 [WebRTC] Received remote stream:', event.streams[0]);
-      console.log('📹 [WebRTC] Remote stream tracks:', event.streams[0].getTracks().map(track => ({
-        kind: track.kind,
-        enabled: track.enabled,
-        readyState: track.readyState
-      })));
+      console.log('✅ [WebRTC] ontrack event fired!', event);
+      console.log('✅ [WebRTC] Event streams:', event.streams);
+      console.log('✅ [WebRTC] Event track:', event.track);
       
-      // Set remote stream and ensure it's maintained
-      const remoteStream = event.streams[0];
-      setRemoteStream(remoteStream);
-      
-      // Set video source immediately
-      if (remoteVideoRef.current) {
-        remoteVideoRef.current.srcObject = remoteStream;
-        console.log('📹 [WebRTC] Set remote video source');
-        console.log('👥 [VideoCall] Remote user video is now visible in main container');
+      if (event.streams && event.streams[0]) {
+        const remoteStream = event.streams[0];
+        console.log('✅ [WebRTC] Received remote stream:', remoteStream);
+        console.log('✅ [WebRTC] Remote stream ID:', remoteStream.id);
+        console.log('✅ [WebRTC] Remote stream active:', remoteStream.active);
+        console.log('✅ [WebRTC] Remote stream tracks:', remoteStream.getTracks().map(track => ({
+          kind: track.kind,
+          enabled: track.enabled,
+          readyState: track.readyState,
+          id: track.id
+        })));
+        
+        // Set remote stream in React state
+        setRemoteStream(remoteStream);
+        
+        // Set video source immediately
+        if (remoteVideoRef.current) {
+          remoteVideoRef.current.srcObject = remoteStream;
+          console.log('✅ [WebRTC] Set remote video source to video element');
+          console.log('👥 [VideoCall] Remote user video is now visible in main container');
+        } else {
+          console.log('❌ [WebRTC] Remote video ref is null, cannot set stream');
+        }
+        
+        // Store remote stream reference to prevent loss
+        (pc as any).remoteStream = remoteStream;
+        
+        // Check if users can now see each other
+        setTimeout(() => {
+          console.log('👥 [VideoCall] Checking visibility after remote stream received');
+          checkUsersCanSeeEachOther();
+        }, 100);
       } else {
-        console.log('❌ [WebRTC] Remote video ref is null, cannot set stream');
+        console.error('❌ [WebRTC] ontrack event fired but no streams found!', event);
       }
-      
-      // Store remote stream reference to prevent loss
-      (pc as any).remoteStream = remoteStream;
-      
-      // Check if users can now see each other
-      setTimeout(() => {
-        console.log('👥 [VideoCall] Checking visibility after remote stream received');
-        checkUsersCanSeeEachOther();
-      }, 100);
     };
 
     // Handle ICE candidates
@@ -632,18 +677,23 @@ export default function VideoCallModal({
         // Process any pending ICE candidates
         setTimeout(() => processPendingIceCandidates(pc), 100);
         
-        // Add local stream to peer connection
+        // CRITICAL: Add local stream tracks BEFORE creating offer
         if (localStream) {
-          console.log('📹 [WebRTC] Adding local stream tracks to peer connection');
+          console.log('📹 [WebRTC] Adding local stream tracks to peer connection BEFORE creating offer');
           localStream.getTracks().forEach(track => {
+            console.log('📹 [WebRTC] Adding track:', track.kind, track.id);
             pc.addTrack(track, localStream);
           });
+          console.log('📹 [WebRTC] All local tracks added to peer connection');
+        } else {
+          console.error('❌ [WebRTC] No local stream available when creating offer!');
         }
         
-        // Create and send offer (I am the caller)
+        // Create and send offer (I am the caller) - AFTER adding tracks
         console.log('📹 [WebRTC] Creating offer as caller');
         pc.createOffer().then(offer => {
-          console.log('📹 [WebRTC] Setting local description with offer');
+          console.log('📹 [WebRTC] Offer created:', offer);
+          console.log('📹 [WebRTC] Offer SDP contains media tracks:', offer.sdp.includes('m=video') && offer.sdp.includes('m=audio'));
           return pc.setLocalDescription(offer);
         }).then(() => {
           console.log('📹 [WebRTC] Local description set successfully');
@@ -693,12 +743,16 @@ export default function VideoCallModal({
         // Process any pending ICE candidates
         setTimeout(() => processPendingIceCandidates(pc), 100);
         
-        // Add local stream to peer connection
+        // CRITICAL: Add local stream tracks BEFORE setting remote description
         if (localStream) {
-          console.log('📹 [WebRTC] Adding local stream tracks to peer connection');
+          console.log('📹 [WebRTC] Adding local stream tracks to peer connection BEFORE setting remote description');
           localStream.getTracks().forEach(track => {
+            console.log('📹 [WebRTC] Adding track:', track.kind, track.id);
             pc.addTrack(track, localStream);
           });
+          console.log('📹 [WebRTC] All local tracks added to peer connection');
+        } else {
+          console.error('❌ [WebRTC] No local stream available when processing offer!');
         }
         
         // Set remote description and create answer
@@ -715,6 +769,8 @@ export default function VideoCallModal({
         let answer;
         try {
           answer = await pc.createAnswer();
+          console.log('📹 [WebRTC] Answer created:', answer);
+          console.log('📹 [WebRTC] Answer SDP contains media tracks:', answer.sdp.includes('m=video') && answer.sdp.includes('m=audio'));
           await pc.setLocalDescription(answer);
           console.log('📹 [WebRTC] Answer created and local description set');
         } catch (error) {
