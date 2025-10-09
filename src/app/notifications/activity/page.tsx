@@ -23,6 +23,7 @@ interface Request {
   venue?: string;
   userid?: string;
   creatorid?: string;
+  hosttype?: string;
 }
 
 export default function Activity() {
@@ -85,7 +86,8 @@ export default function Activity() {
               time: req.time,
               venue: req.place,
               userid: req.userid,
-              creatorid: req.creatorid
+              creatorid: req.creatorid,
+              hosttype: req.hosttype // Include the host type from backend
             };
           });
           
@@ -146,6 +148,7 @@ export default function Activity() {
           } : undefined}
           userid={request.userid}
           creatorid={request.creatorid}
+          hosttype={request.hosttype}
           onStatusChange={handleStatusChange}
         />
       ))}
