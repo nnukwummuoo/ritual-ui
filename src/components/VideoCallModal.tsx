@@ -37,6 +37,7 @@ export default function VideoCallModal({
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
   const callStartTimeRef = useRef<number>(0);
   const durationIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const pendingIceCandidatesRef = useRef<any[]>([]);
   const socket = getSocket();
 
   // Format call duration
@@ -62,6 +63,20 @@ export default function VideoCallModal({
     if (durationIntervalRef.current) {
       clearInterval(durationIntervalRef.current);
       durationIntervalRef.current = null;
+    }
+  };
+
+  // Process pending ICE candidates
+  const processPendingIceCandidates = async (pc: RTCPeerConnection) => {
+    console.log('📹 [WebRTC] Processing pending ICE candidates:', pendingIceCandidatesRef.current.length);
+    while (pendingIceCandidatesRef.current.length > 0) {
+      const candidate = pendingIceCandidatesRef.current.shift();
+      try {
+        await pc.addIceCandidate(candidate);
+        console.log('📹 [WebRTC] Added pending ICE candidate');
+      } catch (error) {
+        console.error('❌ [WebRTC] Error adding pending ICE candidate:', error);
+      }
     }
   };
 
@@ -544,7 +559,6 @@ export default function VideoCallModal({
       console.log('📹 [WebRTC] Signaling state:', pc.signalingState);
     };
 
-    setPeerConnection(pc);
     console.log('📹 [WebRTC] Peer connection created');
     return pc;
   };
@@ -562,6 +576,10 @@ export default function VideoCallModal({
         
         // Create peer connection and start call
         const pc = createPeerConnection();
+        setPeerConnection(pc); // Set peer connection immediately
+        
+        // Process any pending ICE candidates
+        setTimeout(() => processPendingIceCandidates(pc), 100);
         
         // Add local stream to peer connection
         if (localStream) {
@@ -619,6 +637,10 @@ export default function VideoCallModal({
       if ((data.callId === callData?.callId || data.callId.startsWith('temp_')) && !peerConnection) {
         console.log('📹 [WebRTC] Processing offer as ANSWERER for call:', data.callId);
         const pc = createPeerConnection();
+        setPeerConnection(pc); // Set peer connection immediately
+        
+        // Process any pending ICE candidates
+        setTimeout(() => processPendingIceCandidates(pc), 100);
         
         // Add local stream to peer connection
         if (localStream) {
@@ -692,13 +714,33 @@ export default function VideoCallModal({
       console.log('📹 [WebRTC] Received ICE candidate:', data);
       console.log('📹 [WebRTC] Current callData callId:', callData?.callId);
       console.log('📹 [WebRTC] ICE candidate callId matches current callId?', data.callId === callData?.callId);
+      console.log('📹 [WebRTC] Peer connection exists:', !!peerConnection);
+      console.log('📹 [WebRTC] ICE candidate callId starts with temp_:', data.callId.startsWith('temp_'));
       
       // Accept ICE candidate if callId matches OR if it's a temporary ID (for initial connection)
-      if ((data.callId === callData?.callId || data.callId.startsWith('temp_')) && peerConnection) {
-        console.log('📹 [WebRTC] Adding ICE candidate');
-        await peerConnection.addIceCandidate(data.candidate);
+      const shouldAccept = data.callId === callData?.callId || data.callId.startsWith('temp_');
+      console.log('📹 [WebRTC] Should accept ICE candidate:', shouldAccept);
+      
+      if (shouldAccept) {
+        if (peerConnection) {
+          console.log('📹 [WebRTC] Adding ICE candidate immediately');
+          try {
+            await peerConnection.addIceCandidate(data.candidate);
+            console.log('📹 [WebRTC] ICE candidate added successfully');
+          } catch (error) {
+            console.error('❌ [WebRTC] Error adding ICE candidate:', error);
+          }
+        } else {
+          console.log('📹 [WebRTC] Peer connection not ready, queuing ICE candidate');
+          pendingIceCandidatesRef.current.push(data.candidate);
+        }
       } else {
-        console.log('📹 [WebRTC] Ignoring ICE candidate - callId mismatch or no peer connection');
+        console.log('📹 [WebRTC] Ignoring ICE candidate - callId mismatch');
+        console.log('📹 [WebRTC] Debug info:', {
+          callIdMatch: data.callId === callData?.callId,
+          tempId: data.callId.startsWith('temp_'),
+          hasPeerConnection: !!peerConnection
+        });
       }
     };
 
