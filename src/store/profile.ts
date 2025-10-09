@@ -120,6 +120,7 @@ const initialState = {
   search_users: [] as any[],
   testmsg: "",
   closedraw: false,
+  checkApplicationStatus: "",
   notifications: [] as Notification[],
   notifications_stats: "idle",
   notifications_message: "",
@@ -570,6 +571,27 @@ export const delete_exclusive_thumb = createAsyncThunk<
   }
 );
 
+export const checkApplicationStatus = createAsyncThunk<
+  { status: "pending" | "rejected" | "none" },
+  { userid: string; token: string },
+  { rejectValue: { message: string } }
+>(
+  "profile/checkApplicationStatus",
+  async (data, thunkAPI) => {
+    try {
+      const response = await axios.get(`${URL}/checkdocumentstatus/${data.userid}`, {  // Changed to path param
+        headers: data.token
+          ? { Authorization: `Bearer ${data.token}`, "Content-Type": "application/json" }
+          : { "Content-Type": "application/json" },
+      });
+      return response.data;
+    } catch (err) {
+      const message = getErrorMessageWithNetworkFallback(err);
+      return thunkAPI.rejectWithValue({ message });
+    }
+  }
+);
+
 export const getNotifications = createAsyncThunk<
   { notifications: Notification[] },
   { userid: string; token: string }
@@ -650,6 +672,7 @@ const profile = createSlice({
       state.removeblockstats = action.payload;
       state.updatesettingstats = action.payload;
       state.searchstats = action.payload;
+      state.checkApplicationStatus = action.payload;
       state.notifications_stats = action.payload;
       state.mark_notifications_stats = action.payload;
       state.delete_notification_stats = action.payload;
@@ -951,6 +974,16 @@ const profile = createSlice({
         state.notifications_message =
           action.error?.message ?? "Failed to delete notification";
       })
+      .addCase(checkApplicationStatus.pending, (state) => {
+      state.status = "loading";
+      })
+    .addCase(checkApplicationStatus.fulfilled, (state, action) => {
+      state.status = "succeeded";
+     })
+    .addCase(checkApplicationStatus.rejected, (state, action) => {
+      state.status = "failed";
+      state.error = (action.payload as any)?.message ?? "Failed to check application status";
+    })
       .addCase(getsearch.pending, (state, action) => {
         state.searchstats = "loading";
       })
