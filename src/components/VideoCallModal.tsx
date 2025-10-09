@@ -48,23 +48,29 @@ export default function VideoCallModal({
   };
 
   // Start call timer - only when users can actually see each other
-  const startCallTimer = () => {
+  const startCallTimer = useCallback(() => {
+    if (durationIntervalRef.current) {
+      console.log('⏱️ [VideoCall] Timer already running, skipping start');
+      return; // Timer already running
+    }
+    
     console.log('⏱️ [VideoCall] Starting call timer - users can see each other');
     callStartTimeRef.current = Date.now();
     durationIntervalRef.current = setInterval(() => {
       const elapsed = Math.floor((Date.now() - callStartTimeRef.current) / 1000);
       setCallDuration(elapsed);
     }, 1000);
-  };
+  }, []);
 
   // Stop call timer
-  const stopCallTimer = () => {
+  const stopCallTimer = useCallback(() => {
     console.log('⏱️ [VideoCall] Stopping call timer');
     if (durationIntervalRef.current) {
       clearInterval(durationIntervalRef.current);
       durationIntervalRef.current = null;
     }
-  };
+    setCallDuration(0); // Reset duration when stopping
+  }, []);
 
   // Process pending ICE candidates
   const processPendingIceCandidates = async (pc: RTCPeerConnection) => {
@@ -92,56 +98,6 @@ export default function VideoCallModal({
     });
   };
 
-  // Check if users can see each other (both have streams and connection is established)
-  const checkUsersCanSeeEachOther = () => {
-    const hasLocalStream = !!localStream;
-    const hasRemoteStream = !!remoteStream;
-    const hasPeerConnection = !!peerConnection;
-    
-    // Use multiple connection state indicators
-    const isConnected = peerConnection?.connectionState === 'connected';
-    const isIceConnected = peerConnection?.iceConnectionState === 'connected' || 
-                          peerConnection?.iceConnectionState === 'completed';
-    const isSignalingStable = peerConnection?.signalingState === 'stable';
-    
-    // Users can see each other if they have both streams and connection is established
-    // Be more lenient with connection states for initial display
-    const canSee = hasLocalStream && hasRemoteStream && hasPeerConnection && 
-                  (isConnected || isIceConnected || isSignalingStable);
-    
-    console.log('👥 [VideoCall] Checking visibility:', {
-      localStream: hasLocalStream,
-      remoteStream: hasRemoteStream,
-      peerConnection: hasPeerConnection,
-      connectionState: peerConnection?.connectionState,
-      iceConnectionState: peerConnection?.iceConnectionState,
-      signalingState: peerConnection?.signalingState,
-      canSee,
-      currentUsersCanSeeEachOther: usersCanSeeEachOther
-    });
-    
-    // Debug SDP if peer connection exists
-    if (peerConnection) {
-      if (peerConnection.localDescription) {
-        debugSDP(peerConnection.localDescription, 'Local Description');
-      }
-      if (peerConnection.remoteDescription) {
-        debugSDP(peerConnection.remoteDescription, 'Remote Description');
-      }
-    }
-    
-    if (canSee && !usersCanSeeEachOther) {
-      console.log('👥 [VideoCall] ✅ Users can now see each other! Starting timer...');
-      setUsersCanSeeEachOther(true);
-      startCallTimer();
-    } else if (!canSee && usersCanSeeEachOther) {
-      console.log('👥 [VideoCall] ❌ Users can no longer see each other. Stopping timer...');
-      setUsersCanSeeEachOther(false);
-      stopCallTimer();
-    }
-    
-    return canSee;
-  };
 
   // Get user media
   const getUserMedia = async () => {
@@ -315,6 +271,61 @@ export default function VideoCallModal({
   // WebRTC setup
   const [peerConnection, setPeerConnection] = useState<RTCPeerConnection | null>(null);
 
+  // Check if users can see each other (both have streams and connection is established)
+  const checkUsersCanSeeEachOther = useCallback(() => {
+    const hasLocalStream = !!localStream;
+    const hasRemoteStream = !!remoteStream;
+    const hasPeerConnection = !!peerConnection;
+    
+    // Use multiple connection state indicators
+    const isConnected = peerConnection?.connectionState === 'connected';
+    const isIceConnected = peerConnection?.iceConnectionState === 'connected' || 
+                          peerConnection?.iceConnectionState === 'completed';
+    const isSignalingStable = peerConnection?.signalingState === 'stable';
+    
+    // Users can see each other if they have both streams and connection is established
+    // Be more lenient with connection states for initial display
+    const canSee = hasLocalStream && hasRemoteStream && hasPeerConnection && 
+                  (isConnected || isIceConnected || isSignalingStable);
+    
+    console.log('👥 [VideoCall] Checking visibility:', {
+      localStream: hasLocalStream,
+      remoteStream: hasRemoteStream,
+      peerConnection: hasPeerConnection,
+      connectionState: peerConnection?.connectionState,
+      iceConnectionState: peerConnection?.iceConnectionState,
+      signalingState: peerConnection?.signalingState,
+      canSee,
+      currentUsersCanSeeEachOther: usersCanSeeEachOther
+    });
+    
+    // Debug SDP if peer connection exists
+    if (peerConnection) {
+      if (peerConnection.localDescription) {
+        debugSDP(peerConnection.localDescription, 'Local Description');
+      }
+      if (peerConnection.remoteDescription) {
+        debugSDP(peerConnection.remoteDescription, 'Remote Description');
+      }
+    }
+    
+    // Use functional update to avoid stale state
+    setUsersCanSeeEachOther(prevState => {
+      if (canSee && !prevState) {
+        console.log('👥 [VideoCall] ✅ Users can now see each other! Starting timer...');
+        startCallTimer();
+        return true;
+      } else if (!canSee && prevState) {
+        console.log('👥 [VideoCall] ❌ Users can no longer see each other. Stopping timer...');
+        stopCallTimer();
+        return false;
+      }
+      return prevState;
+    });
+    
+    return canSee;
+  }, [localStream, remoteStream, peerConnection, usersCanSeeEachOther, startCallTimer, stopCallTimer]);
+
   // Auto-request user media when modal opens
   useEffect(() => {
     if (isOpen && !localStream) {
@@ -416,11 +427,11 @@ export default function VideoCallModal({
         console.log('👥 [VideoCall] Periodic visibility check');
         checkUsersCanSeeEachOther();
         recoverStreams(); // Also attempt stream recovery
-      }, 2000); // Check every 2 seconds
+      }, 5000); // Check every 5 seconds (reduced frequency)
 
       return () => clearInterval(interval);
     }
-  }, [callStatus, peerConnection, recoverStreams]);
+  }, [callStatus, peerConnection, recoverStreams, checkUsersCanSeeEachOther]);
 
   // Add connection timeout
   useEffect(() => {
@@ -436,6 +447,21 @@ export default function VideoCallModal({
       return () => clearTimeout(connectionTimeout);
     }
   }, [callStatus, usersCanSeeEachOther, recoverStreams]);
+
+  // Handle initial connection success (one-time)
+  useEffect(() => {
+    if (callStatus === 'connected' && 
+        peerConnection?.connectionState === 'connected' && 
+        peerConnection?.iceConnectionState === 'connected' && 
+        localStream && 
+        remoteStream && 
+        !usersCanSeeEachOther) {
+      
+      console.log('👥 [VideoCall] 🎉 Initial connection established! Starting timer...');
+      setUsersCanSeeEachOther(true);
+      startCallTimer();
+    }
+  }, [callStatus, peerConnection, localStream, remoteStream, usersCanSeeEachOther, startCallTimer]);
 
   // Ensure local video element gets the stream when it's rendered
   useEffect(() => {
