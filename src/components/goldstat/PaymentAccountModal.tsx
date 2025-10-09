@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
+import { RootState } from "../../store/store";
 import { URL } from "../../api/config";
 import CountrySelect from "../CountrySelect/CountrySelect";
 
@@ -17,6 +19,7 @@ interface PaymentAccount {
 interface PaymentAccountModalProps {
   accesstoken: string | undefined;
   userId: string | undefined;
+  onAccountAdded?: () => void;
 }
 
 interface FormData {
@@ -29,13 +32,61 @@ interface FormData {
   walletAddress?: string;
 }
 
-const PaymentAccountModal: React.FC<PaymentAccountModalProps> = ({ accesstoken, userId }) => {
+const PaymentAccountModal: React.FC<PaymentAccountModalProps> = ({ accesstoken, userId, onAccountAdded }) => {
   const [showModal, setShowModal] = useState<boolean>(false);
   const [formData, setFormData] = useState<FormData>({});
   const [agree, setAgree] = useState<boolean>(false);
   const [account, setAccount] = useState<PaymentAccount | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [isFetchingAccount, setIsFetchingAccount] = useState<boolean>(true);
+  
+  // Get user data from Redux
+  const userData = useSelector((state: RootState) => state.profile);
+
+  // Function to get user's full name from Redux or localStorage
+  const getUserFullName = () => {
+    console.log("getUserFullName - userData from Redux:", userData);
+    
+    // Try Redux first
+    if (userData?.firstname && userData?.lastname) {
+      const fullName = `${userData.firstname} ${userData.lastname}`;
+      console.log("Using Redux firstname + lastname:", fullName);
+      return fullName;
+    }
+    if (userData?.firstname) {
+      console.log("Using Redux firstname only:", userData.firstname);
+      return userData.firstname;
+    }
+    
+    // Fallback to localStorage
+    try {
+      const userData = localStorage.getItem('userData');
+      console.log("localStorage userData:", userData);
+      if (userData) {
+        const parsed = JSON.parse(userData);
+        const fullName = parsed.fullName || parsed.name || parsed.nickname || '';
+        console.log("Using localStorage:", fullName);
+        return fullName;
+      }
+    } catch (error) {
+      console.error('Error parsing localStorage userData:', error);
+    }
+    
+    console.log("No fullName found, returning empty string");
+    return '';
+  };
+
+  // Auto-fill form when modal opens
+  useEffect(() => {
+    if (showModal && !formData.fullName) {
+      const fullName = getUserFullName();
+      console.log("Auto-fill fullName:", fullName);
+      if (fullName) {
+        setFormData(prev => ({ ...prev, fullName }));
+        console.log("Setting formData with fullName:", fullName);
+      }
+    }
+  }, [showModal]);
 
   const fetchAccount = async () => {
     if (!userId || !accesstoken) {
@@ -107,6 +158,9 @@ const PaymentAccountModal: React.FC<PaymentAccountModalProps> = ({ accesstoken, 
       ...formData,
     };
 
+    console.log("Payment Account Payload:", payload);
+    console.log("Form Data:", formData);
+
     setLoading(true);
     try {
       const res = await fetch(`${URL}/addpayment`, {
@@ -130,6 +184,7 @@ const PaymentAccountModal: React.FC<PaymentAccountModalProps> = ({ accesstoken, 
       setFormData({});
       setAgree(false);
       await fetchAccount();
+      onAccountAdded?.();
     } catch (err) {
       console.error(err);
       alert("❌ Something went wrong");
@@ -151,6 +206,7 @@ const PaymentAccountModal: React.FC<PaymentAccountModalProps> = ({ accesstoken, 
         name={name}
         required={required}
         placeholder={placeholder}
+        value={formData[name as keyof FormData] || ''}
         className="border border-gray-600 rounded-md text-white bg-gray-700 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
         onChange={(e) => setFormData({ ...formData, [name]: e.target.value })}
       />
