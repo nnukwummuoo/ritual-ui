@@ -116,6 +116,7 @@ export default function VerifiedUserForm() {
 
   const handleModalClose = () => {
     setShowSuccessModal(false);
+    router.push("/");
   };
 
   return (
@@ -301,7 +302,7 @@ export default function VerifiedUserForm() {
                     </svg>
                   </div>
                 </div>
-                <h2 className="text-xl font-semibold mb-2">Application Status</h2>
+                <h2 className="text-xl font-semibold mb-2">Application Sucessfull</h2>
                 <p className="text-slate-400 mb-4">Your application has been submitted and is now in review. You will hear from us within few hours.</p>
                 <button
                   onClick={handleModalClose}
