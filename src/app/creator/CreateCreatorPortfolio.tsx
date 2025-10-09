@@ -17,7 +17,7 @@ import { createCreatorMultipart } from "@/api/creator";
 import { useAuth } from "@/lib/context/auth-context";
 import { useSelector, useDispatch } from "react-redux";
 import type { RootState, AppDispatch } from "@/store/store";
-import { getprofile } from "@/store/profile";
+import { getprofile, checkApplicationStatus } from "@/store/profile";
 
 // Appwrite imports
 import { Client, Storage } from "appwrite";
@@ -47,6 +47,7 @@ export default function CreateCreatorPortfolio() {
   // Get profile data from Redux (like side menu)
   const profile = useSelector((state: RootState) => state.profile);
   const reduxUserId = useSelector((state: RootState) => state.register.userID);
+  const applicationStatus = useSelector((state: RootState) => state.profile.checkApplicationStatus);
 
   const [loading, setLoading] = useState(false);
   const [color, setColor] = useState("#d49115");
@@ -73,6 +74,31 @@ export default function CreateCreatorPortfolio() {
   const [step, setStep] = useState(1);
   const totalSteps = 3;
   const [showPriceGuide, setShowPriceGuide] = useState(false);
+
+  // Check application status before rendering
+  useEffect(() => {
+    if (!userid || !token) {
+      toast.error("Please log in to create a creator portfolio.");
+      router.push("/");
+      return;
+    }
+
+    if (applicationStatus === "") {
+      dispatch(checkApplicationStatus({ userid, token }))
+        .unwrap()
+        .catch((error) => {
+          toast.error(error.message || "Failed to check application status");
+          router.push("/be-a-creator/apply");
+        });
+    } else if (applicationStatus !== "none") {
+      toast.error("Your application must be accepted before creating a portfolio.");
+      router.push("/be-a-creator/apply");
+    }
+  }, [userid, token, applicationStatus, dispatch, router]);
+
+  if (applicationStatus !== "none") {
+    return null; // or a loading spinner if needed
+  }
 
   // 🔥 Autofill full name from user profile (like side menu)
   useEffect(() => {
