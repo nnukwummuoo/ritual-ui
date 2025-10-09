@@ -1,11 +1,12 @@
 "use client";
+
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { getNotifications } from "@/store/profile";
 import { RootState, AppDispatch } from "@/store/store";
 import { useAuth } from "@/lib/context/auth-context";
 import PacmanLoader from "react-spinners/RingLoader";
-import { CheckCircle } from "lucide-react";
+import { CheckCircle, XCircle, Clock } from "lucide-react";
 import Link from "next/link";
 
 export const Allview = () => {
@@ -51,42 +52,80 @@ export const Allview = () => {
 
   return (
     <div className="flex flex-col items-center w-full h-full p-4 space-y-4 min-h-screen">
-      {notifications.map((note: any) => (
-        <div
-          key={note._id}
-          className="relative bg-[#0B0F1A]/70 backdrop-blur-xl border border-slate-800 shadow-lg 
-                     rounded-2xl p-6 w-full max-w-md text-white transition hover:border-slate-700"
-        >
-          <div className="flex flex-col items-start space-y-3">
-            <div className="flex items-center space-x-2">
-              <div className="bg-green-500/10 p-1.5 rounded-full">
-                <CheckCircle className="text-green-500 w-5 h-5" />
+      {notifications.map((note: any) => {
+        const message = note.message.toLowerCase();
+
+        // determine status from message
+        let status: "approved" | "rejected" | "pending" = "pending";
+        if (message.includes("approve")) status = "approved";
+        else if (message.includes("reject")) status = "rejected";
+
+        return (
+          <div
+            key={note._id}
+            className="relative bg-[#0B0F1A]/70 backdrop-blur-xl border border-slate-800 shadow-lg 
+                       rounded-2xl p-6 w-full max-w-md text-white transition hover:border-slate-700"
+          >
+            <div className="flex flex-col items-start space-y-3">
+              {/* Header + Icon */}
+              <div className="flex items-center space-x-2">
+                {status === "approved" && (
+                  <div className="bg-green-500/10 p-1.5 rounded-full">
+                    <CheckCircle className="text-green-500 w-5 h-5" />
+                  </div>
+                )}
+                {status === "rejected" && (
+                  <div className="bg-red-500/10 p-1.5 rounded-full">
+                    <XCircle className="text-red-500 w-5 h-5" />
+                  </div>
+                )}
+                {status === "pending" && (
+                  <div className="bg-yellow-500/10 p-1.5 rounded-full">
+                    <Clock className="text-yellow-500 w-5 h-5" />
+                  </div>
+                )}
+
+                <h2 className="text-base sm:text-lg font-semibold">
+                  Application Status
+                </h2>
               </div>
-              <h2 className="text-base sm:text-lg font-semibold">
-                Application Status
-              </h2>
+
+              {/* Message */}
+              <p className="text-slate-300 text-sm sm:text-base leading-relaxed">
+                {note.message}
+              </p>
+
+              {/* Buttons */}
+              {status === "approved" && (
+                <div className="pt-2">
+                  <Link href="/creator/create">
+                    <button
+                      className="px-4 py-2 border border-slate-700 hover:border-slate-500 
+                                rounded-lg text-sm text-slate-200 transition">
+                      Creator Portfolio
+                    </button>
+                  </Link>
+                </div>
+              )}
+
+              {status === "rejected" && (
+                <div className="pt-2">
+                  <button
+                    className="px-4 py-2 border border-slate-700 hover:border-slate-500 
+                              rounded-lg text-sm text-slate-200 transition">
+                    Reapply Later
+                  </button>
+                </div>
+              )}
+
+              {/* Pending has no button */}
+              <span className="absolute right-4 bottom-3 text-[10px] text-slate-500">
+                {new Date(note.createdAt).toLocaleString()}
+              </span>
             </div>
-
-            <p className="text-slate-300 text-sm sm:text-base leading-relaxed">
-              {note.message}
-            </p>
-
-            <div className="pt-2">
-              <Link href={`/creator/create`}>
-              <button
-                className="px-4 py-2 border border-slate-700 hover:border-slate-500 
-                          rounded-lg text-sm text-slate-200 transition">
-                Creator Portfolio
-              </button>
-            </Link>
-            </div>
-
-            <span className="absolute right-4 bottom-3 text-[10px] text-slate-500">
-              {new Date(note.createdAt).toLocaleString()}
-            </span>
           </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 };
