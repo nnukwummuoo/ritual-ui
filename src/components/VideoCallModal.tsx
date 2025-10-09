@@ -82,17 +82,23 @@ export default function VideoCallModal({
 
   // Check if users can see each other (both have streams and connection is established)
   const checkUsersCanSeeEachOther = () => {
-    const canSee = localStream && remoteStream && peerConnection && 
-                   peerConnection.connectionState === 'connected' && 
-                   peerConnection.iceConnectionState === 'connected';
+    const hasLocalStream = !!localStream;
+    const hasRemoteStream = !!remoteStream;
+    const hasPeerConnection = !!peerConnection;
+    const isConnected = peerConnection?.connectionState === 'connected';
+    const isIceConnected = peerConnection?.iceConnectionState === 'connected';
+    
+    // Users can see each other if they have both streams and connection is established
+    const canSee = hasLocalStream && hasRemoteStream && hasPeerConnection && isConnected && isIceConnected;
     
     console.log('👥 [VideoCall] Checking visibility:', {
-      localStream: !!localStream,
-      remoteStream: !!remoteStream,
-      peerConnection: !!peerConnection,
+      localStream: hasLocalStream,
+      remoteStream: hasRemoteStream,
+      peerConnection: hasPeerConnection,
       connectionState: peerConnection?.connectionState,
       iceConnectionState: peerConnection?.iceConnectionState,
-      canSee
+      canSee,
+      currentUsersCanSeeEachOther: usersCanSeeEachOther
     });
     
     if (canSee && !usersCanSeeEachOther) {
@@ -338,6 +344,34 @@ export default function VideoCallModal({
     }
   }, [usersCanSeeEachOther]);
 
+  // Monitor peer connection and remote stream state
+  useEffect(() => {
+    if (peerConnection && !remoteStream) {
+      console.log('👥 [VideoCall] Peer connection exists but no remote stream - checking for recovery');
+      // Try to recover remote stream from peer connection
+      const pcRemoteStream = (peerConnection as any).remoteStream;
+      if (pcRemoteStream) {
+        console.log('👥 [VideoCall] Recovering remote stream from peer connection');
+        setRemoteStream(pcRemoteStream);
+        if (remoteVideoRef.current) {
+          remoteVideoRef.current.srcObject = pcRemoteStream;
+        }
+      }
+    }
+  }, [peerConnection, remoteStream]);
+
+  // Periodic visibility check when connected
+  useEffect(() => {
+    if (callStatus === 'connected' && peerConnection) {
+      const interval = setInterval(() => {
+        console.log('👥 [VideoCall] Periodic visibility check');
+        checkUsersCanSeeEachOther();
+      }, 2000); // Check every 2 seconds
+
+      return () => clearInterval(interval);
+    }
+  }, [callStatus, peerConnection]);
+
   // Ensure local video element gets the stream when it's rendered
   useEffect(() => {
     if (localStream && localVideoRef.current) {
@@ -475,17 +509,28 @@ export default function VideoCallModal({
         enabled: track.enabled,
         readyState: track.readyState
       })));
-      setRemoteStream(event.streams[0]);
+      
+      // Set remote stream and ensure it's maintained
+      const remoteStream = event.streams[0];
+      setRemoteStream(remoteStream);
+      
+      // Set video source immediately
       if (remoteVideoRef.current) {
-        remoteVideoRef.current.srcObject = event.streams[0];
+        remoteVideoRef.current.srcObject = remoteStream;
         console.log('📹 [WebRTC] Set remote video source');
         console.log('👥 [VideoCall] Remote user video is now visible in main container');
       } else {
         console.log('❌ [WebRTC] Remote video ref is null, cannot set stream');
       }
       
+      // Store remote stream reference to prevent loss
+      (pc as any).remoteStream = remoteStream;
+      
       // Check if users can now see each other
-      setTimeout(() => checkUsersCanSeeEachOther(), 100);
+      setTimeout(() => {
+        console.log('👥 [VideoCall] Checking visibility after remote stream received');
+        checkUsersCanSeeEachOther();
+      }, 100);
     };
 
     // Handle ICE candidates
@@ -505,7 +550,10 @@ export default function VideoCallModal({
       if (pc.connectionState === 'connected') {
         console.log('📹 [WebRTC] Peer connection is now connected!');
         console.log('👥 [VideoCall] Connection established - checking if users can see each other...');
+        // Multiple checks to ensure visibility is detected
         setTimeout(() => checkUsersCanSeeEachOther(), 100);
+        setTimeout(() => checkUsersCanSeeEachOther(), 500);
+        setTimeout(() => checkUsersCanSeeEachOther(), 1000);
       } else if (pc.connectionState === 'failed') {
         console.log('❌ [WebRTC] Peer connection failed!');
         console.log('❌ [WebRTC] Attempting to restart connection...');
@@ -540,7 +588,10 @@ export default function VideoCallModal({
       if (pc.iceConnectionState === 'connected') {
         console.log('📹 [WebRTC] ICE connection is now connected!');
         console.log('👥 [VideoCall] ICE connection established - checking if users can see each other...');
+        // Multiple checks to ensure visibility is detected
         setTimeout(() => checkUsersCanSeeEachOther(), 100);
+        setTimeout(() => checkUsersCanSeeEachOther(), 500);
+        setTimeout(() => checkUsersCanSeeEachOther(), 1000);
       } else if (pc.iceConnectionState === 'failed') {
         console.log('❌ [WebRTC] ICE connection failed!');
         setUsersCanSeeEachOther(false);
