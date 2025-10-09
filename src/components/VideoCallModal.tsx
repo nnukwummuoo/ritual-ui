@@ -31,6 +31,7 @@ export default function VideoCallModal({
   const [callDuration, setCallDuration] = useState(0);
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
   const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
+  const [usersCanSeeEachOther, setUsersCanSeeEachOther] = useState(false);
   
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
@@ -45,8 +46,9 @@ export default function VideoCallModal({
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  // Start call timer
+  // Start call timer - only when users can actually see each other
   const startCallTimer = () => {
+    console.log('⏱️ [VideoCall] Starting call timer - users can see each other');
     callStartTimeRef.current = Date.now();
     durationIntervalRef.current = setInterval(() => {
       const elapsed = Math.floor((Date.now() - callStartTimeRef.current) / 1000);
@@ -56,10 +58,30 @@ export default function VideoCallModal({
 
   // Stop call timer
   const stopCallTimer = () => {
+    console.log('⏱️ [VideoCall] Stopping call timer');
     if (durationIntervalRef.current) {
       clearInterval(durationIntervalRef.current);
       durationIntervalRef.current = null;
     }
+  };
+
+  // Check if users can see each other (both have streams and connection is established)
+  const checkUsersCanSeeEachOther = () => {
+    const canSee = localStream && remoteStream && peerConnection && 
+                   peerConnection.connectionState === 'connected' && 
+                   peerConnection.iceConnectionState === 'connected';
+    
+    if (canSee && !usersCanSeeEachOther) {
+      console.log('👥 [VideoCall] ✅ Users can now see each other! Starting timer...');
+      setUsersCanSeeEachOther(true);
+      startCallTimer();
+    } else if (!canSee && usersCanSeeEachOther) {
+      console.log('👥 [VideoCall] ❌ Users can no longer see each other. Stopping timer...');
+      setUsersCanSeeEachOther(false);
+      stopCallTimer();
+    }
+    
+    return canSee;
   };
 
   // Get user media
@@ -92,6 +114,26 @@ export default function VideoCallModal({
       return stream;
     } catch (error) {
       console.error('❌ [VideoCall] Error accessing media devices:', error);
+      
+      // Handle specific error types
+      if (error.name === 'NotReadableError') {
+        console.error('❌ [VideoCall] Camera is already in use by another application');
+        // Try to stop any existing streams first
+        if (localStream) {
+          localStream.getTracks().forEach(track => track.stop());
+          setLocalStream(null);
+        }
+        // Retry after a short delay
+        setTimeout(() => {
+          console.log('📹 [VideoCall] Retrying media access...');
+          getUserMedia();
+        }, 1000);
+      } else if (error.name === 'NotAllowedError') {
+        console.error('❌ [VideoCall] Camera permission denied');
+      } else if (error.name === 'NotFoundError') {
+        console.error('❌ [VideoCall] No camera found');
+      }
+      
       return null;
     }
   };
@@ -218,7 +260,11 @@ export default function VideoCallModal({
   useEffect(() => {
     if (isOpen && !localStream) {
       console.log('📹 [VideoCall] Modal opened, requesting user media...');
-      getUserMedia();
+      // Add a small delay to prevent multiple simultaneous requests
+      const timeoutId = setTimeout(() => {
+        getUserMedia();
+      }, 100);
+      return () => clearTimeout(timeoutId);
     }
   }, [isOpen]);
 
@@ -253,7 +299,20 @@ export default function VideoCallModal({
         readyState: track.readyState
       })));
     }
+    // Check if users can see each other when remote stream changes
+    setTimeout(() => checkUsersCanSeeEachOther(), 100);
   }, [remoteStream]);
+
+  // Monitor visibility state changes
+  useEffect(() => {
+    console.log('👥 [VideoCall] Users can see each other:', usersCanSeeEachOther);
+    if (usersCanSeeEachOther) {
+      console.log('👥 [VideoCall] ✅ MAIN CONTAINER NOW SHOWS OTHER USER');
+      console.log('👥 [VideoCall] ✅ PICTURE-IN-PICTURE NOW SHOWS SELF');
+    } else {
+      console.log('👥 [VideoCall] ❌ MAIN CONTAINER SHOWS SELF (waiting for connection)');
+    }
+  }, [usersCanSeeEachOther]);
 
   // Ensure local video element gets the stream when it's rendered
   useEffect(() => {
@@ -284,6 +343,51 @@ export default function VideoCallModal({
 
     return () => clearTimeout(timeoutId);
   }, [localStream, remoteStream]);
+
+  // Additional effect to ensure streams persist during call status changes
+  useEffect(() => {
+    console.log('📹 [VideoCall] Call status changed to:', callStatus);
+    console.log('📹 [VideoCall] Local stream exists:', !!localStream);
+    console.log('📹 [VideoCall] Remote stream exists:', !!remoteStream);
+    
+    // Force stream updates when call status changes
+    if (callStatus === 'connected') {
+      setTimeout(() => {
+        if (localStream && localVideoRef.current) {
+          console.log('📹 [VideoCall] Re-applying local stream after connection');
+          localVideoRef.current.srcObject = localStream;
+        }
+        if (remoteStream && remoteVideoRef.current) {
+          console.log('📹 [VideoCall] Re-applying remote stream after connection');
+          remoteVideoRef.current.srcObject = remoteStream;
+        }
+      }, 200);
+    }
+  }, [callStatus, localStream, remoteStream]);
+
+  // Periodic stream health check
+  useEffect(() => {
+    if (callStatus === 'connected' && localStream) {
+      const healthCheck = setInterval(() => {
+        if (localStream && localVideoRef.current) {
+          // Check if video element has the stream
+          if (localVideoRef.current.srcObject !== localStream) {
+            console.log('📹 [VideoCall] Health check: Re-applying local stream');
+            localVideoRef.current.srcObject = localStream;
+          }
+        }
+        if (remoteStream && remoteVideoRef.current) {
+          // Check if video element has the stream
+          if (remoteVideoRef.current.srcObject !== remoteStream) {
+            console.log('📹 [VideoCall] Health check: Re-applying remote stream');
+            remoteVideoRef.current.srcObject = remoteStream;
+          }
+        }
+      }, 1000);
+
+      return () => clearInterval(healthCheck);
+    }
+  }, [callStatus, localStream, remoteStream]);
 
   // Callback ref for local video to ensure stream is set when element is mounted
   const localVideoCallbackRef = useCallback((node: HTMLVideoElement | null) => {
@@ -338,11 +442,22 @@ export default function VideoCallModal({
     // Handle incoming remote stream
     pc.ontrack = (event) => {
       console.log('📹 [WebRTC] Received remote stream:', event.streams[0]);
+      console.log('📹 [WebRTC] Remote stream tracks:', event.streams[0].getTracks().map(track => ({
+        kind: track.kind,
+        enabled: track.enabled,
+        readyState: track.readyState
+      })));
       setRemoteStream(event.streams[0]);
       if (remoteVideoRef.current) {
         remoteVideoRef.current.srcObject = event.streams[0];
         console.log('📹 [WebRTC] Set remote video source');
+        console.log('👥 [VideoCall] Remote user video is now visible in main container');
+      } else {
+        console.log('❌ [WebRTC] Remote video ref is null, cannot set stream');
       }
+      
+      // Check if users can now see each other
+      setTimeout(() => checkUsersCanSeeEachOther(), 100);
     };
 
     // Handle ICE candidates
@@ -359,11 +474,34 @@ export default function VideoCallModal({
     // Handle connection state changes
     pc.onconnectionstatechange = () => {
       console.log('📹 [WebRTC] Connection state:', pc.connectionState);
+      if (pc.connectionState === 'connected') {
+        console.log('📹 [WebRTC] Peer connection is now connected!');
+        console.log('👥 [VideoCall] Connection established - checking if users can see each other...');
+        setTimeout(() => checkUsersCanSeeEachOther(), 100);
+      } else if (pc.connectionState === 'failed') {
+        console.log('❌ [WebRTC] Peer connection failed!');
+        setUsersCanSeeEachOther(false);
+        stopCallTimer();
+      }
     };
 
     // Handle ICE connection state changes
     pc.oniceconnectionstatechange = () => {
       console.log('📹 [WebRTC] ICE connection state:', pc.iceConnectionState);
+      if (pc.iceConnectionState === 'connected') {
+        console.log('📹 [WebRTC] ICE connection is now connected!');
+        console.log('👥 [VideoCall] ICE connection established - checking if users can see each other...');
+        setTimeout(() => checkUsersCanSeeEachOther(), 100);
+      } else if (pc.iceConnectionState === 'failed') {
+        console.log('❌ [WebRTC] ICE connection failed!');
+        setUsersCanSeeEachOther(false);
+        stopCallTimer();
+      }
+    };
+
+    // Handle signaling state changes
+    pc.onsignalingstatechange = () => {
+      console.log('📹 [WebRTC] Signaling state:', pc.signalingState);
     };
 
     setPeerConnection(pc);
@@ -380,7 +518,7 @@ export default function VideoCallModal({
       if (data.callerId === currentUserId) {
         console.log('📹 [WebRTC] Processing call acceptance for caller - I am the CALLER');
         setCallStatus('connected');
-        startCallTimer();
+        console.log('👥 [VideoCall] Call accepted - waiting for video streams to establish...');
         
         // Create peer connection and start call
         const pc = createPeerConnection();
@@ -411,7 +549,7 @@ export default function VideoCallModal({
       } else {
         console.log('📹 [WebRTC] Processing call acceptance for answerer - I am the ANSWERER');
         setCallStatus('connected');
-        startCallTimer();
+        console.log('👥 [VideoCall] Call accepted - waiting for video streams to establish...');
         
         // I am the answerer, I should wait for the offer
         console.log('📹 [WebRTC] Waiting for offer from caller...');
@@ -557,8 +695,8 @@ export default function VideoCallModal({
   return (
     <div className="fixed inset-0 z-50 bg-black bg-opacity-90 flex items-center justify-center">
       <div className="w-full h-full flex flex-col">
-        {/* Call Timer - Top Center */}
-        {callStatus === 'connected' && (
+        {/* Call Timer - Top Center - Only show when users can see each other */}
+        {callStatus === 'connected' && usersCanSeeEachOther && (
           <div className="absolute top-8 left-1/2 transform -translate-x-1/2 z-10">
             <div className="bg-black bg-opacity-50 text-white px-4 py-2 rounded-lg">
               <span className="text-lg font-mono">{formatDuration(callDuration)}</span>
@@ -566,22 +704,45 @@ export default function VideoCallModal({
           </div>
         )}
 
-        {/* Remote Video - Main Display */}
+        {/* Main Video Display - Shows OTHER user when connected, self when not connected */}
         <div className="flex-1 relative bg-gray-900">
-          {remoteStream ? (
+          {remoteStream && usersCanSeeEachOther ? (
             <video
               ref={remoteVideoCallbackRef}
               autoPlay
               playsInline
               className="w-full h-full object-cover"
               onLoadedMetadata={() => {
-                console.log('📹 [VideoCall] Remote video metadata loaded');
+                console.log('📹 [VideoCall] Remote video metadata loaded - OTHER USER is now visible');
                 if (remoteVideoRef.current) {
                   remoteVideoRef.current.play().catch(console.error);
                 }
               }}
               onCanPlay={() => {
-                console.log('📹 [VideoCall] Remote video can play');
+                console.log('📹 [VideoCall] Remote video can play - OTHER USER video is ready');
+              }}
+              onError={(e) => {
+                console.error('❌ [VideoCall] Remote video error:', e);
+              }}
+            />
+          ) : localStream && !usersCanSeeEachOther ? (
+            <video
+              ref={localVideoCallbackRef}
+              autoPlay
+              playsInline
+              muted
+              className="w-full h-full object-cover"
+              onLoadedMetadata={() => {
+                console.log('📹 [VideoCall] Local video metadata loaded - SELF is visible (waiting for connection)');
+                if (localVideoRef.current) {
+                  localVideoRef.current.play().catch(console.error);
+                }
+              }}
+              onCanPlay={() => {
+                console.log('📹 [VideoCall] Local video can play - SELF video is ready');
+              }}
+              onError={(e) => {
+                console.error('❌ [VideoCall] Local video error:', e);
               }}
             />
           ) : (
@@ -612,28 +773,73 @@ export default function VideoCallModal({
           )}
         </div>
 
-        {/* Local Video - Picture in Picture */}
-        {localStream && (
+        {/* Picture in Picture - Shows SELF when OTHER user is in main, OTHER user when SELF is in main */}
+        {((remoteStream && usersCanSeeEachOther) || (localStream && !usersCanSeeEachOther)) && (
           <div className="absolute top-20 right-4 w-48 h-36 bg-gray-800 rounded-lg overflow-hidden border-2 border-white">
-            <video
-              ref={localVideoCallbackRef}
-              autoPlay
-              playsInline
-              muted
-              className="w-full h-full object-cover"
-              onLoadedMetadata={() => {
-                console.log('📹 [VideoCall] Local video metadata loaded');
-                if (localVideoRef.current) {
-                  localVideoRef.current.play().catch(console.error);
-                }
-              }}
-              onCanPlay={() => {
-                console.log('📹 [VideoCall] Local video can play');
-              }}
-            />
+            {remoteStream && usersCanSeeEachOther ? (
+              <video
+                ref={localVideoCallbackRef}
+                autoPlay
+                playsInline
+                muted
+                className="w-full h-full object-cover"
+                onLoadedMetadata={() => {
+                  console.log('📹 [VideoCall] Picture-in-picture: SELF video metadata loaded');
+                  if (localVideoRef.current) {
+                    localVideoRef.current.play().catch(console.error);
+                  }
+                }}
+                onCanPlay={() => {
+                  console.log('📹 [VideoCall] Picture-in-picture: SELF video can play');
+                }}
+                onError={(e) => {
+                  console.error('❌ [VideoCall] Picture-in-picture: SELF video error:', e);
+                }}
+              />
+            ) : (
+              <video
+                ref={remoteVideoCallbackRef}
+                autoPlay
+                playsInline
+                className="w-full h-full object-cover"
+                onLoadedMetadata={() => {
+                  console.log('📹 [VideoCall] Picture-in-picture: OTHER USER video metadata loaded');
+                  if (remoteVideoRef.current) {
+                    remoteVideoRef.current.play().catch(console.error);
+                  }
+                }}
+                onCanPlay={() => {
+                  console.log('📹 [VideoCall] Picture-in-picture: OTHER USER video can play');
+                }}
+                onError={(e) => {
+                  console.error('❌ [VideoCall] Picture-in-picture: OTHER USER video error:', e);
+                }}
+              />
+            )}
             <div className="absolute top-1 left-1 bg-black bg-opacity-50 text-white text-xs px-1 rounded">
-              You
+              {remoteStream && usersCanSeeEachOther ? 'You' : callData.callerName}
             </div>
+          </div>
+        )}
+
+        {/* Debug info - show stream status */}
+        {process.env.NODE_ENV === 'development' && (
+          <div className="absolute top-4 left-4 bg-black bg-opacity-75 text-white text-xs p-2 rounded max-w-xs">
+            <div>Call Status: {callStatus}</div>
+            <div>Local Stream: {localStream ? '✅' : '❌'}</div>
+            <div>Remote Stream: {remoteStream ? '✅' : '❌'}</div>
+            <div>Users Can See Each Other: {usersCanSeeEachOther ? '✅' : '❌'}</div>
+            <div>Timer Running: {durationIntervalRef.current ? '✅' : '❌'}</div>
+            <div>Peer Connection: {peerConnection ? '✅' : '❌'}</div>
+            {peerConnection && (
+              <>
+                <div>Connection State: {peerConnection.connectionState}</div>
+                <div>ICE State: {peerConnection.iceConnectionState}</div>
+                <div>Signaling State: {peerConnection.signalingState}</div>
+              </>
+            )}
+            <div>Call ID: {callData?.callId?.substring(0, 10)}...</div>
+            <div>Main Video: {remoteStream && usersCanSeeEachOther ? 'OTHER USER' : 'SELF'}</div>
           </div>
         )}
 
