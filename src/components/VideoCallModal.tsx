@@ -220,7 +220,7 @@ export default function VideoCallModal({
 
   // Handle insufficient funds
   const handleInsufficientFunds = () => {
-    alert('Insufficient funds to continue call');
+    alert('You have run out of gold to continue the call');
     handleEndCall();
   };
 

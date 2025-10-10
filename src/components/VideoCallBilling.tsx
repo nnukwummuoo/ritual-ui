@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
@@ -129,7 +130,7 @@ export default function VideoCallBilling({
   const handleBalanceUpdate = useCallback((data: any) => {
     console.log('💰 [Billing] Balance update received:', data);
     if (data.type === 'deduct') {
-      setCurrentBalance(data.gold);
+      setCurrentBalance(parseFloat(data.balance || '0'));
     } else if (data.type === 'earn') {
       setCurrentEarnings(data.earnings);
     }
