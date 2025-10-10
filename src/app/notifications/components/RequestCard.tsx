@@ -26,11 +26,22 @@ const ratings = [
 const getCreatorContent = (hostType: string) => {
   const typeText = hostType || "Fan Meet"; // Default to "Fan Meet" if not provided
   
-  return {
-    accepted: {
+  // Special handling for Fan Call
+  const getAcceptedContent = () => {
+    if (typeText.toLowerCase() === "fan call") {
+      return {
+        head: "📞 Please wait for the fan to start the call.",
+        body: "You've accepted the request — now relax and stay online. The fan will initiate the call when ready."
+      };
+    }
+    return {
       head: `${typeText} Accepted`,
       body: "Please kindly remind your fan to mark as complete during or after the date — it only takes a second. If they don't, contact support within 24 hours.",
-    },
+    };
+  };
+  
+  return {
+    accepted: getAcceptedContent(),
     completed: {
       head: `${typeText} Completed`,
       body: "How do you rate your experience?"
@@ -56,11 +67,22 @@ const getCreatorContent = (hostType: string) => {
 const getFanContent = (price: number, hostType: string) => {
   const typeText = hostType || "Fan Meet"; // Default to "Fan Meet" if not provided
   
-  return {
-    accepted: {
+  // Special handling for Fan Call
+  const getAcceptedContent = () => {
+    if (typeText.toLowerCase() === "fan call") {
+      return {
+        head: "✅ Your call request has been accepted.",
+        body: "You can now start the call when you're ready. Please ensure you have a stable connection before starting — once the call begins, billing starts per minute."
+      };
+    }
+    return {
       head: `${typeText} Accepted`,
       body: `By clicking 'Mark as complete' you confirm that your pending gold of 💰 ${price} will be sent to the creator.`
-    },
+    };
+  };
+  
+  return {
+    accepted: getAcceptedContent(),
     completed: {
       head: `${typeText} Completed`,
       body: "How do you rate your experience?"
@@ -551,6 +573,7 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
           details={details} 
           onClose={() => setShowDetails(false)} 
           type={type}
+          hosttype={hosttype}
         />
       )}
     </div>
@@ -588,11 +611,13 @@ function Rating({label}: {label: string}){
 function DetailsModal({ 
   details, 
   onClose, 
-  type
+  type,
+  hosttype
 }: { 
   details?: FanMeetDetails; 
   onClose: () => void; 
   type: "fan" | "creator";
+  hosttype?: string;
 }) {
   if (!details) {
     return (
@@ -670,20 +695,22 @@ function DetailsModal({
           </div>
         </div>
 
-        {/* Safety Rules */}
-        <div className="flex items-start gap-3 mb-4">
-          <IoWarningOutline className="text-orange-500 text-xl mt-1" />
-          <div>
-            <h3 className="font-semibold text-gray-800">Safety Rules (Important!)</h3>
-            <ul className="text-gray-600 text-sm mt-1 space-y-1">
-              <li>• All meets are limited to 30 minutes.</li>
-              <li>• Meets must happen in a public place only.</li>
-            </ul>
-            <p className="text-gray-500 text-xs mt-2">
-              What happens after 30 minutes is outside the platform&apos;s responsibility.
-            </p>
+        {/* Safety Rules - Only show for non-call requests */}
+        {hosttype?.toLowerCase() !== "fan call" && (
+          <div className="flex items-start gap-3 mb-4">
+            <IoWarningOutline className="text-orange-500 text-xl mt-1" />
+            <div>
+              <h3 className="font-semibold text-gray-800">Safety Rules (Important!)</h3>
+              <ul className="text-gray-600 text-sm mt-1 space-y-1">
+                <li>• All meets are limited to 30 minutes.</li>
+                <li>• Meets must happen in a public place only.</li>
+              </ul>
+              <p className="text-gray-500 text-xs mt-2">
+                What happens after 30 minutes is outside the platform&apos;s responsibility.
+              </p>
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Agreement - Only show for creators */}
         {type === "creator" && (
