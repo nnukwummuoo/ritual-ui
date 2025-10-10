@@ -102,21 +102,7 @@ export default function CreateCreatorPortfolio() {
   }, [userid, token, applicationStatus, dispatch, router]);
 
   // 🧠 Render guard (this runs safely after all hooks)
-  if (!statusChecked) {
-    return (
-      <div className="flex justify-center items-center h-screen text-white">
-        Checking your application status...
-      </div>
-    );
-  }
-
-  if (applicationStatus === "pending" || applicationStatus === "rejected") {
-    return (
-      <div className="flex justify-center items-center h-screen text-red-400">
-        Your application must be accepted before creating a portfolio.
-      </div>
-    );
-  }
+  
 
   // 🔥 Autofill full name from user profile (like side menu)
   useEffect(() => {
@@ -355,6 +341,21 @@ const checkuserInput = async () => {
 
   return (
     <>
+      {!statusChecked ? (
+        <div className="flex justify-center items-center h-screen text-white">
+          Checking your application status...
+        </div>
+      ) : applicationStatus === "pending" || applicationStatus === "rejected" ? (
+        <div className="flex justify-center items-center h-screen text-red-400">
+          Your application must be accepted before creating a portfolio.
+        </div>
+      ) : (
+        // your full form JSX goes here ⬇️
+        <div className="pt-16 md:pt-8">
+          <ToastContainer position="top-center" theme="dark" />
+          {/* ... rest of the component ... */}
+        </div>
+      )}
       <div className="pt-16 md:pt-8">
         <ToastContainer position="top-center" theme="dark" />
         <p className="text-2xl font-semibold text-center text-slate-300 sm:w-1/2">

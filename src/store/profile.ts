@@ -120,7 +120,7 @@ const initialState = {
   search_users: [] as any[],
   testmsg: "",
   closedraw: false,
-  checkApplicationStatus: "" ,
+  checkApplicationStatus: "",
   notifications: [] as Notification[],
   notifications_stats: "idle",
   notifications_message: "",
