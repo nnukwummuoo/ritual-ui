@@ -1,6 +1,9 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import Image from 'next/image';
 import { IoCall, IoCallSharp, IoVideocam, IoVideocamOff, IoMic, IoMicOff, IoClose } from 'react-icons/io5';
 import { getSocket } from '@/lib/socket';
 
@@ -430,19 +433,8 @@ export default function VideoCallModal({
 
         {/* Main Video Display */}
         <div className="flex-1 relative bg-gray-900 cursor-pointer" onClick={handleVideoAreaClick}>
-          {/* Remote video - main display when connected */}
-          {remoteStream && usersCanSeeEachOther && (
-            <video
-              ref={remoteVideoRef}
-              autoPlay
-              playsInline
-              className="w-full h-full object-cover"
-              onError={(e) => console.error('Remote video error:', e)}
-            />
-          )}
-          
-          {/* Local video - main display when not connected or as fallback */}
-          {(!remoteStream || !usersCanSeeEachOther) && localStream && (
+          {/* Local video - main display when connected */}
+          {localStream && usersCanSeeEachOther && (
             <video
               ref={localVideoRef}
               autoPlay
@@ -453,15 +445,28 @@ export default function VideoCallModal({
             />
           )}
           
+          {/* Remote video - main display when not connected or as fallback */}
+          {(!localStream || !usersCanSeeEachOther) && remoteStream && (
+            <video
+              ref={remoteVideoRef}
+              autoPlay
+              playsInline
+              className="w-full h-full object-cover"
+              onError={(e) => console.error('Remote video error:', e)}
+            />
+          )}
+          
           {/* Fallback UI when no streams */}
           {!localStream && !remoteStream && (
             <div className="w-full h-full flex items-center justify-center">
               <div className="text-center text-white">
                 <div className="w-32 h-32 bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
                   {callData.callerPhoto ? (
-                    <img 
+                    <Image 
                       src={callData.callerPhoto} 
                       alt={callData.callerName}
+                      width={128}
+                      height={128}
                       className="w-full h-full rounded-full object-cover"
                     />
                   ) : (
@@ -485,7 +490,14 @@ export default function VideoCallModal({
         {/* Picture in Picture */}
         {(localStream || remoteStream) && (
           <div className="absolute bottom-20 right-4 w-24 h-36 bg-gray-800 rounded-lg overflow-hidden border-2 border-white">
-            {usersCanSeeEachOther && localStream ? (
+            {usersCanSeeEachOther && remoteStream ? (
+              <video
+                ref={remoteVideoRef}
+                autoPlay
+                playsInline
+                className="w-full h-full object-cover"
+              />
+            ) : localStream ? (
               <video
                 ref={localVideoRef}
                 autoPlay
@@ -493,17 +505,7 @@ export default function VideoCallModal({
                 muted
                 className="w-full h-full object-cover"
               />
-            ) : remoteStream ? (
-              <video
-                ref={remoteVideoRef}
-                autoPlay
-                playsInline
-                className="w-full h-full object-cover"
-              />
             ) : null}
-            <div className="absolute top-1 left-1 bg-black bg-opacity-50 text-white text-xs px-1 rounded">
-              {usersCanSeeEachOther && localStream ? 'You' : callData.callerName}
-            </div>
           </div>
         )}
 
