@@ -38,8 +38,17 @@ export const RequestDetailsForm: React.FC<RequestDetailsFormProps> = ({
     const maxDate = new Date();
     maxDate.setDate(today.getDate() + 13);
     
+    // Check if selected date is today or tomorrow (not allowed)
+    const isTodayDate = isToday(selectedDate);
+    const isTomorrowDate = isTomorrow(selectedDate);
+    
+    if (isTodayDate || isTomorrowDate) {
+      toast.error("Today and tomorrow are not available for booking", { autoClose: 2000 });
+      return;
+    }
+    
     if (selectedDate < today) {
-      toast.error("Please select today or a future date", { autoClose: 2000 });
+      toast.error("Please select a future date", { autoClose: 2000 });
       return;
     }
     
@@ -64,12 +73,26 @@ export const RequestDetailsForm: React.FC<RequestDetailsFormProps> = ({
 
   const isDateAvailable = (date: Date) => {
     const { startDate, endDate } = getAvailableDates();
+    const isTodayDate = isToday(date);
+    const isTomorrowDate = isTomorrow(date);
+    
+    // Exclude today and tomorrow from available dates
+    if (isTodayDate || isTomorrowDate) {
+      return false;
+    }
+    
     return date >= startDate && date <= endDate;
   };
 
   const isToday = (date: Date) => {
     const today = new Date();
     return date.toDateString() === today.toDateString();
+  };
+
+  const isTomorrow = (date: Date) => {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    return date.toDateString() === tomorrow.toDateString();
   };
 
 
@@ -102,6 +125,7 @@ export const RequestDetailsForm: React.FC<RequestDetailsFormProps> = ({
       const isAvailable = isDateAvailable(currentDate);
       const isSelected = currentDate.toISOString().split('T')[0] === date;
       const isTodayDate = isToday(currentDate);
+      const isTomorrowDate = isTomorrow(currentDate);
       
       days.push(
         <button
@@ -111,9 +135,9 @@ export const RequestDetailsForm: React.FC<RequestDetailsFormProps> = ({
           className={`
             w-8 h-8 text-xs rounded-full transition-all duration-200 flex items-center justify-center
             ${!isCurrentMonth ? 'text-gray-500' : ''}
-            ${isTodayDate ? 'bg-blue-500 text-white font-bold hover:bg-blue-600 cursor-pointer' : ''}
-            ${isAvailable && !isTodayDate ? 'bg-green-500 text-white hover:bg-green-600 cursor-pointer' : ''}
-            ${!isAvailable && isCurrentMonth && !isTodayDate ? 'bg-gray-700 text-gray-500 cursor-not-allowed' : ''}
+            ${(isTodayDate || isTomorrowDate) ? 'bg-red-500 text-white cursor-not-allowed' : ''}
+            ${isAvailable && !isTodayDate && !isTomorrowDate ? 'bg-green-500 text-white hover:bg-green-600 cursor-pointer' : ''}
+            ${!isAvailable && isCurrentMonth && !isTodayDate && !isTomorrowDate ? 'bg-gray-700 text-gray-500 cursor-not-allowed' : ''}
             ${isSelected ? 'ring-2 ring-yellow-400' : ''}
           `}
         >
@@ -163,13 +187,13 @@ export const RequestDetailsForm: React.FC<RequestDetailsFormProps> = ({
                    month: 'long', 
                    day: 'numeric' 
                  }) : 'Click to select date'}
-               </span>
+              </span>
                <span className="text-gray-400">📅</span>
              </button>
              <p className="text-xs text-gray-400 text-right">
                Available: Today + 13 days
              </p>
-           </div>
+          </div>
 
           {/* Time Field */}
           <div className="flex items-center justify-between">
@@ -278,10 +302,10 @@ export const RequestDetailsForm: React.FC<RequestDetailsFormProps> = ({
                className="w-full bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
              >
                Close
-             </button>
-           </div>
+        </button>
+      </div>
          </div>
        )}
-     </div>
-   );
- };
+    </div>
+  );
+};
