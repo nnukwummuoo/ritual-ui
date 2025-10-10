@@ -45,10 +45,12 @@ export default function CreateCreatorPortfolio() {
   const dispatch = useDispatch<AppDispatch>();
 
   // Get profile data from Redux (like side menu)
+
   const profile = useSelector((state: RootState) => state.profile);
   const reduxUserId = useSelector((state: RootState) => state.register.userID);
   const applicationStatus = useSelector((state: RootState) => state.profile.checkApplicationStatus);
 
+  const [statusChecked, setStatusChecked] = useState(false);
   const [loading, setLoading] = useState(false);
   const [color, setColor] = useState("#d49115");
   const [showFileSizeModal, setShowFileSizeModal] = useState(false);
@@ -76,28 +78,44 @@ export default function CreateCreatorPortfolio() {
   const [showPriceGuide, setShowPriceGuide] = useState(false);
 
   // Check application status before rendering
-  useEffect(() => {
+   useEffect(() => {
     if (!userid || !token) {
       toast.error("Please log in to create a creator portfolio.");
       router.push("/");
       return;
     }
 
-    if (applicationStatus === "") {
-      dispatch(checkApplicationStatus({ userid, token }))
-        .unwrap()
-        .catch((error) => {
-          toast.error(error.message || "Failed to check application status");
-          router.push("/be-a-creator/apply");
-        });
-    } else if (applicationStatus !== "none") {
-      toast.error("Your application must be accepted before creating a portfolio.");
-      router.push("/be-a-creator/apply");
-    }
+    const checkStatus = async () => {
+      try {
+        if (applicationStatus === "") {
+          await dispatch(checkApplicationStatus({ userid, token })).unwrap();
+        }
+      } catch (error: any) {
+        toast.error(error.message || "Failed to check application status");
+        router.push("/be-a-creator/");
+      } finally {
+        setStatusChecked(true);
+      }
+    };
+
+    checkStatus();
   }, [userid, token, applicationStatus, dispatch, router]);
 
-  if (applicationStatus !== "none") {
-    return null; // or a loading spinner if needed
+  // 🧠 Render guard (this runs safely after all hooks)
+  if (!statusChecked) {
+    return (
+      <div className="flex justify-center items-center h-screen text-white">
+        Checking your application status...
+      </div>
+    );
+  }
+
+  if (applicationStatus === "pending" || applicationStatus === "rejected") {
+    return (
+      <div className="flex justify-center items-center h-screen text-red-400">
+        Your application must be accepted before creating a portfolio.
+      </div>
+    );
   }
 
   // 🔥 Autofill full name from user profile (like side menu)

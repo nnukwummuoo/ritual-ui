@@ -16,13 +16,14 @@ import { RootState, AppDispatch } from "@/store/store";
 import { toast, ToastContainer } from "material-react-toastify";
 import { checkApplicationStatus } from "@/store/profile";
 import { useAuth } from "@/lib/context/auth-context";
+import { useAuthToken } from "@/lib/hooks/useAuthToken";
 
 export default function VerifiedUserForm() {
   const dispatch: AppDispatch = useDispatch();
   const router = useRouter();
   const userId = useSelector((state: RootState) => state.profile.userId);
   const { session } = useAuth();
-  const token = session?.token;
+  const token = useAuthToken() || session?.token;
   const [loading, setLoading] = useState(false);
   const [color] = useState("#d49115");
   const [step, setStep] = useState(1);
