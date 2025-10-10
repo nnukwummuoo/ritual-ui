@@ -11,7 +11,6 @@ import { getViews } from "@/store/creatorSlice";
 import { RootState } from "@/store/store";
 import { useAuth } from "@/lib/context/auth-context";
 import PacmanLoader from "react-spinners/PacmanLoader";
-import PaymentAccountModal from "@/components/goldstat/PaymentAccountModal";
 import Image from "next/image";
 import { URL } from "@/api/config";
 
@@ -471,7 +470,7 @@ const HistoryPage = () => {
         </div>
       )}
 
-      {/* Payment Account Modal */}
+      {/* Payment Account Modal - Redirect to separate page */}
       {showPaymentModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-gray-800 p-6 rounded-lg shadow-lg w-full max-w-md mx-4">
@@ -487,15 +486,23 @@ const HistoryPage = () => {
             <p className="text-gray-300 mb-4">
               You need to add your payment account details before you can withdraw funds.
             </p>
-            <PaymentAccountModal 
-              accesstoken={session?.token} 
-              userId={session?._id}
-              onAccountAdded={() => {
-                setShowPaymentModal(false);
-                // After adding account, show the confirmation modal
-                setShowConfirmModal(true);
-              }}
-            />
+            <div className="space-y-3">
+              <button
+                onClick={() => {
+                  setShowPaymentModal(false);
+                  router.push('/goldstat/payment-account?return=withdrawal');
+                }}
+                className="w-full bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-500 hover:to-pink-400 transition-all text-white font-bold px-6 py-3 rounded-lg"
+              >
+                Go to Payment Account Page
+              </button>
+              <button
+                onClick={() => setShowPaymentModal(false)}
+                className="w-full bg-gray-600 hover:bg-gray-700 text-white font-medium px-6 py-3 rounded-lg"
+              >
+                Cancel
+              </button>
+            </div>
           </div>
         </div>
       )}

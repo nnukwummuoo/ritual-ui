@@ -164,16 +164,20 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
         if (data.message) {
           toast.info(data.message);
         } else {
-          // Default messages based on status
-          const statusMessages = {
-            'accepted': '🎉 Your fan meet request has been accepted!',
-            'declined': '❌ Your fan meet request was declined',
-            'cancelled': '🚫 Fan meet request was cancelled',
-            'completed': '✅ Fan meet has been completed!',
-            'expired': '⏰ Fan meet request has expired'
+          // Default messages based on status and host type
+          const getStatusMessage = (status: string, hostType?: string) => {
+            const serviceType = hostType || "Fan meet";
+            const statusMessages = {
+              'accepted': `🎉 Your ${serviceType} request has been accepted!`,
+              'declined': `❌ Your ${serviceType} request was declined`,
+              'cancelled': `🚫 ${serviceType} request was cancelled`,
+              'completed': `✅ ${serviceType} has been completed!`,
+              'expired': `⏰ ${serviceType} request has expired`
+            };
+            return statusMessages[status as keyof typeof statusMessages];
           };
           
-          const message = statusMessages[data.status as keyof typeof statusMessages];
+          const message = getStatusMessage(data.status, hosttype);
           if (message) {
             toast.info(message);
           }
@@ -339,12 +343,15 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
       if (response.ok) {
         setCurrentStatus('completed');
         onStatusChange?.(bookingId, 'completed');
-        toast.success('Fan meet completed!');
+        const serviceType = hosttype || "Fan meet";
+        toast.success(`${serviceType} completed!`);
       } else {
-        toast.error('Failed to complete fan meet');
+        const serviceType = hosttype || "Fan meet";
+        toast.error(`Failed to complete ${serviceType.toLowerCase()}`);
       }
     } catch {
-      toast.error('Error completing fan meet');
+      const serviceType = hosttype || "Fan meet";
+      toast.error(`Error completing ${serviceType.toLowerCase()}`);
     } finally {
       setLoading(false);
     }

@@ -150,6 +150,10 @@ export const VideoCallProvider: React.FC<VideoCallProviderProps> = ({ children }
           callData={videoCallData}
           currentUserId={session._id}
           currentUserName={session.name || session.firstname || 'Unknown'}
+          userBalance={session.gold || 0}
+          creatorEarnings={session.earnings || 0}
+          isCreator={session.isCreator || false}
+          callRate={1} // Default 1 gold per minute (can be dynamic later)
         />
       )}
     </VideoCallContext.Provider>

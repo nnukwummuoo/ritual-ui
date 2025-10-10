@@ -6,6 +6,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Image from 'next/image';
 import { IoCall, IoCallSharp, IoVideocam, IoVideocamOff, IoMic, IoMicOff, IoClose } from 'react-icons/io5';
 import { getSocket } from '@/lib/socket';
+import VideoCallBilling from './VideoCallBilling';
 
 interface VideoCallModalProps {
   isOpen: boolean;
@@ -19,6 +20,10 @@ interface VideoCallModalProps {
   } | null;
   currentUserId: string;
   currentUserName: string;
+  userBalance?: number; // Fan's gold balance
+  creatorEarnings?: number; // Creator's earnings
+  isCreator?: boolean; // Whether current user is a creator
+  callRate?: number; // Gold per minute rate
 }
 
 export default function VideoCallModal({ 
@@ -26,12 +31,15 @@ export default function VideoCallModal({
   onClose, 
   callData, 
   currentUserId, 
-  currentUserName 
+  currentUserName,
+  userBalance = 0,
+  creatorEarnings = 0,
+  isCreator = false,
+  callRate = 1
 }: VideoCallModalProps) {
   const [callStatus, setCallStatus] = useState<'ringing' | 'connecting' | 'connected' | 'ended'>('ringing');
   const [isVideoEnabled, setIsVideoEnabled] = useState(true);
   const [isAudioEnabled, setIsAudioEnabled] = useState(true);
-  const [callDuration, setCallDuration] = useState(0);
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
   const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
   const [usersCanSeeEachOther, setUsersCanSeeEachOther] = useState(false);
@@ -39,36 +47,10 @@ export default function VideoCallModal({
   
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
-  const callStartTimeRef = useRef<number>(0);
-  const durationIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const pendingIceCandidatesRef = useRef<any[]>([]);
   const controlsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [peerConnection, setPeerConnection] = useState<RTCPeerConnection | null>(null);
   const socket = getSocket();
-
-  // Simple timer functions
-  const startCallTimer = useCallback(() => {
-    if (durationIntervalRef.current) return;
-    console.log('⏱️ [VideoCall] Starting call timer');
-    callStartTimeRef.current = Date.now();
-    durationIntervalRef.current = setInterval(() => {
-      setCallDuration(Math.floor((Date.now() - callStartTimeRef.current) / 1000));
-    }, 1000);
-  }, []);
-
-  const stopCallTimer = useCallback(() => {
-    console.log('⏱️ [VideoCall] Stopping call timer');
-    if (durationIntervalRef.current) {
-      clearInterval(durationIntervalRef.current);
-      durationIntervalRef.current = null;
-    }
-  }, []);
-
-  const formatDuration = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-  };
 
   // Auto-hide controls functionality
   const showControlsTemporarily = useCallback(() => {
@@ -152,7 +134,6 @@ export default function VideoCallModal({
           if (canSee && !usersCanSeeEachOther) {
             console.log('👥 [VideoCall] Users can now see each other!');
             setUsersCanSeeEachOther(true);
-            startCallTimer();
           }
         }, 1000);
       }
@@ -164,7 +145,7 @@ export default function VideoCallModal({
     };
 
     return pc;
-  }, [socket, callData?.callId, localStream, remoteStream, usersCanSeeEachOther, startCallTimer]);
+  }, [socket, callData?.callId, localStream, remoteStream, usersCanSeeEachOther]);
 
   // Process pending ICE candidates
   const processPendingIceCandidates = useCallback(async (pc: RTCPeerConnection) => {
@@ -182,6 +163,13 @@ export default function VideoCallModal({
   // Handle accept call
   const handleAcceptCall = async () => {
     if (!callData || !socket) return;
+    
+    // Check if fan has sufficient funds before accepting
+    if (!isCreator && userBalance < callRate) {
+      alert('Insufficient funds, purchase gold');
+      handleDeclineCall();
+      return;
+    }
     
     setCallStatus('connecting');
     
@@ -230,9 +218,14 @@ export default function VideoCallModal({
     onClose();
   };
 
+  // Handle insufficient funds
+  const handleInsufficientFunds = () => {
+    alert('Insufficient funds to continue call');
+    handleEndCall();
+  };
+
   // Cleanup function
   const handleCleanup = useCallback(() => {
-    stopCallTimer();
     setUsersCanSeeEachOther(false);
     
     // Clear controls timeout
@@ -252,7 +245,7 @@ export default function VideoCallModal({
     }
     
     setRemoteStream(null);
-  }, [localStream, peerConnection, stopCallTimer]);
+  }, [localStream, peerConnection]);
 
   // Toggle video/audio
   const toggleVideo = () => {
@@ -422,13 +415,19 @@ export default function VideoCallModal({
   return (
     <div className="fixed inset-0 z-50 bg-black bg-opacity-90 flex items-center justify-center">
       <div className="w-full h-full flex flex-col">
-        {/* Call Timer */}
+        {/* Call Timer and Billing */}
         {callStatus === 'connected' && usersCanSeeEachOther && (
-          <div className="absolute top-8 left-1/2 transform -translate-x-1/2 z-10">
-            <div className="bg-black bg-opacity-50 text-white px-4 py-2 rounded-lg">
-              <span className="text-lg font-mono">{formatDuration(callDuration)}</span>
-            </div>
-          </div>
+          <VideoCallBilling
+            callId={callData?.callId}
+            callerId={callData?.callerId}
+            currentUserId={currentUserId}
+            isCreator={isCreator}
+            userBalance={userBalance}
+            creatorEarnings={creatorEarnings}
+            callRate={callRate}
+            isConnected={true}
+            onInsufficientFunds={handleInsufficientFunds}
+          />
         )}
 
         {/* Main Video Display */}
