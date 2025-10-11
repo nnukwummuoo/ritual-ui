@@ -74,7 +74,7 @@ export const Postlist = React.memo(
     timeoutId,
     setPosts,
     isProfilePage = false,
-    creatorId,
+    creator_portfoliio_Id,
     followers,
   }: postListConstants) => {
     const [following, set_following] = useState(false);

@@ -7,7 +7,7 @@ const CrushList: React.FC<CrushItem> = ({
   id,
   userid,
   hosttype,
-  creatorid,
+  creator_portfoliio_Id,
   location,
   online,
 }) => {

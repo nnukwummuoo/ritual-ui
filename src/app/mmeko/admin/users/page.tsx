@@ -69,7 +69,7 @@ export default function Users(): JSX.Element {
               refreshtoken: saved.refreshtoken,
               accesstoken: saved.accesstoken,
               userID: saved.userID,
-              creatorId: saved.creatorId,
+              creator_portfoliio_Id: saved.creator_portfoliio_Id,
               creator_portfolio: saved.creator_portfolio,
             })
           );

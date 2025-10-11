@@ -18,7 +18,7 @@ const acceptedFanReq = [
   type: "private show", //{value.type}
   date: "15/08/2025", //{value.date}
   time: "16:15:00", //{value.time}
-  creatorid: "9490040483hhrh3", //{value.creatorid}
+  creator_portfoliio_Id: "9490040483hhrh3", //{value.creator_portfoliio_Id}
   creatoruserid: "094399u505jkete", //{value.creatoruserid}
   amount: 50000, //{value.amount}
   id: "3539rjeprjer93i" //{value.id}
@@ -30,7 +30,7 @@ const acceptedFanReq = [
   type: "private show", //{value.type}
   date: "15/08/2025", //{value.date}
   time: "16:15:00", //{value.time}
-  creatorid: "9490040483hhrh3", //{value.creatorid}
+  creator_portfoliio_Id: "9490040483hhrh3", //{value.creator_portfoliio_Id}
   creatoruserid: "094399u505jkete", //{value.creatoruserid}
   amount: 50000, //{value.amount}
   id: "3539rjeprjer93i" //{value.id}
@@ -42,7 +42,7 @@ const acceptedFanReq = [
   type: "private show", //{value.type}
   date: "15/08/2025", //{value.date}
   time: "16:15:00", //{value.time}
-  creatorid: "9490040483hhrh3", //{value.creatorid}
+  creator_portfoliio_Id: "9490040483hhrh3", //{value.creator_portfoliio_Id}
   creatoruserid: "094399u505jkete", //{value.creatoruserid}
   amount: 50000, //{value.amount}
   id: "3539rjeprjer93i" //{value.id}
@@ -99,7 +99,7 @@ export const Acceptedview = () => {
                   type={value.type}
                   date={value.date}
                   time={value.time}
-                  creatorid={value.creatorid}
+                  creator_portfoliio_Id={value.creator_portfoliio_Id}
                   creatoruserid={value.creatoruserid}
                   amount={value.amount}
                   id={value.id}

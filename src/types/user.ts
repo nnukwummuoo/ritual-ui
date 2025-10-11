@@ -3,6 +3,6 @@ export interface User {
   name: string;
   image: string;
   canmessage: boolean;
-  creatorid: string;
+  creator_portfoliio_Id: string;
   following: boolean;
 }

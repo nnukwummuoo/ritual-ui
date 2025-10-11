@@ -286,7 +286,7 @@ export const getmycreatorbyid = createAsyncThunk(
   "creator/getmycreatorbyid",
   async (data: any) => {
     try {
-      let response = await axios.patch(`${URL}/getcreatorbyid`, data);
+      let response = await axios.patch(`${URL}/getcreatorbyportfolioid`, data);
       return response.data;
     } catch (err : any) {
       if (!err.response?.data?.message) {

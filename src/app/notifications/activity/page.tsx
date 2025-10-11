@@ -22,7 +22,7 @@ interface Request {
   time?: string;
   venue?: string;
   userid?: string;
-  creatorid?: string;
+  creator_portfoliio_Id?: string;
   hosttype?: string;
 }
 
@@ -86,7 +86,7 @@ export default function Activity() {
               time: req.time,
               venue: req.place,
               userid: req.userid,
-              creatorid: req.creatorid,
+              creator_portfoliio_Id: req.creator_portfoliio_Id,
               hosttype: req.hosttype // Include the host type from backend
             };
           });
@@ -147,7 +147,7 @@ export default function Activity() {
             venue: request.venue
           } : undefined}
           userid={request.userid}
-          creatorid={request.creatorid}
+          creator_portfoliio_Id={request.creator_portfoliio_Id}
           hosttype={request.hosttype}
           onStatusChange={handleStatusChange}
         />

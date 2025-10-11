@@ -74,7 +74,7 @@ const initialState = {
   creator: "false",
   status: "idle",
   error: "",
-  creatorID: "",
+  creator_portfolio_id: "",
   creatorphotolink: "",
   creatorname: "",
   photolink: "",
@@ -88,7 +88,7 @@ const initialState = {
   monthly: [] as any[],
   deposit_stats: "idle",
   deposit_message: "",
-  exclusive_verify: false,
+  creator_verified: false,
   follow_stats: "idle",
   unfollow_stats: "idle",
   getfollow_data: {} as FollowData,
@@ -708,15 +708,15 @@ const profile = createSlice({
         (state as any).earnings = p.earnings ?? "0";
         // Backend may return either boolean creator or creator_portfolio
         state.creator = (p as any).creator ?? (p as any).creator_portfolio ?? false as any;
-        // Backend may use creatorId
-        state.creatorID = (p as any).creatorID ?? (p as any).creatorId ?? "";
+        // Backend may use creator_portfoliio_Id
+        state.creator_portfolio_id = (p as any).creator_portfolio_id ?? (p as any).creator_portfoliio_Id ?? "";
         state.creatorname = (p as any).creatorname ?? "";
         state.creatorphotolink = (p as any).creatorphotolink ?? "";
         state.photolink = (p as any).photolink ?? (p as any).photoLink ?? "";
         state.bio = (p as any).bio ?? "";
         state.admin = p.admin ?? false;
-        // Support both exclusive and exclusive_verify flags
-        state.exclusive_verify = (p as any).exclusive ?? (p as any).exclusive_verify ?? false;
+        // Support both exclusive and creator_verified flags
+        state.creator_verified = (p as any).exclusive ?? (p as any).creator_verified ?? false;
         state.emailnote = (p as any).emailnot ?? (p as any).emailnot === true; // boolean
         state.pushnote = (p as any).pushnot ?? (p as any).pushnot === true; // boolean
         state.email = p.email ?? "";

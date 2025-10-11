@@ -32,9 +32,9 @@ import "react-loading-skeleton/dist/skeleton.css";
 import CreatorByIdNav from "./_components/CreatorByIdNav";
 import { formatCreatorPrices } from "./_utils/formatCreatorPrices";
 
-//import addcrush({inputs  : creatorid and userid})
+//import addcrush({inputs  : creator_portfoliio_Id and userid})
 //userid : the current user ID that wish to add the creator to its crush list
-//creatorid : the creator ID that this user wishes to add to its crush list
+//creator_portfoliio_Id : the creator ID that this user wishes to add to its crush list
 
 //method stats and api message for redux selectors
 // addcrush_stats and addcrush_message
@@ -57,7 +57,7 @@ interface RootState {
       refreshtoken: string;
     };
     profile: {
-      creatorID: string;
+      creator_portfolio_id: string;
       balance: string;
     };
     creator: {
@@ -123,8 +123,8 @@ interface RootState {
 
 
 export default function Creatorbyid () {
-    const params = useParams<{ creatorID: string }>();
-    const Creator = params?.creatorID?.split(",") || [];
+    const params = useParams<{ creator_portfolio_id: string }>();
+    const Creator = params?.creator_portfolio_id?.split(",") || [];
 
     const router = useRouter();
     const dispatch = useDispatch<AppDispatch>();
@@ -214,7 +214,7 @@ export default function Creatorbyid () {
   const [oldlink, setoldlink] = useState<string[]>([]);
   const [documentlink] = useState<string[]>([]);
   const [docCount] = useState(0);
-  const [creatorid] = useState<[string?, string?]>([
+  const [creator_portfoliio_Id] = useState<[string?, string?]>([
     Creator[1],
     userid,
   ]);
@@ -327,7 +327,7 @@ export default function Creatorbyid () {
     if (getreviewstats !== "loading") {
       dispatch(
         getreview({
-          creatorid: Creator[0],
+          creator_portfoliio_Id: Creator[0],
           token,
         })
       );
@@ -373,7 +373,7 @@ export default function Creatorbyid () {
   useEffect(() => {
     const fetchViews = async () => {
       const data = {
-        creatorId: Creator[0],
+        creator_portfoliio_Id: Creator[0],
         userId: userid || "",
         token: user?.refreshtoken || "",
       };
@@ -653,20 +653,20 @@ export default function Creatorbyid () {
     if (addcrush_stats !== "loading" && removeCrush === false) {
       set_dcb(true);
       set_crush_text("adding to crush list...");
-      dispatch(addcrush({ userid, token, creatorid: creator.hostid }));
+      dispatch(addcrush({ userid, token, creator_portfoliio_Id: creator.hostid }));
     }
 
     if (remove_crush_stats !== "loading" && removeCrush === true) {
       set_dcb(true);
       set_crush_text("removing crush from list...");
-      dispatch(remove_Crush({ userid, token, creatorid: creator.hostid }));
+      dispatch(remove_Crush({ userid, token, creator_portfoliio_Id: creator.hostid }));
     }
   };
 
   const handleRequestDetailsSubmit = async (details: { date: string; time: string; venue: string }) => {
     console.log('Sending request with:', {
       userid,
-      creatorid: creator.hostid,
+      creator_portfoliio_Id: creator.hostid,
       creatorUserid: creator.userid,
       type: creator.hosttype,
       date: details.date,
@@ -696,7 +696,7 @@ export default function Creatorbyid () {
         },
         body: JSON.stringify({
           userid,
-          creatorid: creator.hostid, // Use hostid for creator lookup in creatordb
+          creator_portfoliio_Id: creator.hostid, // Use hostid for creator lookup in creatordb
           type: creator.hosttype,
           date: details.date,
           time: details.time,
@@ -1044,7 +1044,7 @@ export default function Creatorbyid () {
                     creatorName={(creator?.name||" ").split(" ")[0]}
                     followingUser={creator.followingUser}
                     id={creator.userid}
-                    creatorid={creator.hostid}
+                    creator_portfoliio_Id={creator.hostid}
                     checkuser={checkuser()}
                   />
                 </div>
@@ -1498,7 +1498,7 @@ export default function Creatorbyid () {
                   setsuccess={setsuccess}
                   price={Number(creator.price) || 0}
                   toast={toast}
-                  creatorid={creator.hostid}
+                  creator_portfoliio_Id={creator.hostid}
                   type={creator.hosttype}
                   setrequested={setrequested}
                   creator={creator}

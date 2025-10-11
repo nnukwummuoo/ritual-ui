@@ -28,7 +28,7 @@ interface ListofCreatorsProps {
   location: string;
   interest: string[];
   amount: number;
-  creatorid: string;
+  creator_portfoliio_Id: string;
   userid: string;
   createdAt: string;
 }
@@ -43,13 +43,13 @@ export const ListofCreators: React.FC<ListofCreatorsProps> = ({
   location,
   interest,
   amount,
-  creatorid,
+  creator_portfoliio_Id,
   userid,
   createdAt,
 }) => {
   const router = useRouter();
   const [hostimg, sethostimg] = useState<string>(DummyCreatorImage.src);
-  const [creatorID] = useState([creatorid, userid]);
+  const [creator_portfolio_id] = useState([creator_portfoliio_Id, userid]);
   const [countryData, setCountryData] = useState({
     flag: "",
     abbreviation: "",
@@ -96,7 +96,7 @@ export const ListofCreators: React.FC<ListofCreatorsProps> = ({
     <li
       className="overflow-hidden cursor-pointer"
       onClick={() => {
-        router.push(`/creatorbyid/${creatorID.toString()}`);
+        router.push(`/creatorbyid/${creator_portfolio_id.toString()}`);
       }}
     >
       <div className="relative">

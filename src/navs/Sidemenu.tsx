@@ -187,25 +187,25 @@ const Sidemenu = () => {
 
 
 
-//  url={`/creators/${profile?.creatorId||profile?.creatorID}`}
+//  url={`/creators/${profile?.creator_portfoliio_Id||profile?.creator_portfolio_id}`}
 
   // MODEL BUTTON LOGIC - ALWAYS uses current user's creator data
   // This ensures the creator button reflects the current user's creator status
   const getCreatorButton = () => {
     // 1️⃣ Current user already has a creator → go to their creator profile
-    if (profile.creatorID) {
+    if (profile.creator_portfolio_id) {
     return (
       <MenuIconImg
         src="/icons/icons8-creator.png"
         name="My Portfolio"
-       url={`/creators/${profile.creatorID}`}
+       url={`/creators/${profile.creator_portfolio_id}`}
       // url="/creator/create"
       />
     );
   }
 
     // 2️⃣ Current user applied/verified but hasn't created a creator yet → go to create creator
-    if (profile.exclusive_verify) {
+    if (profile.creator_verified) {
     return (
       <MenuIconImg
         src="/icons/icons8-plus.png" 

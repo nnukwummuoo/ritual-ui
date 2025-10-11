@@ -235,7 +235,7 @@ const HistoryPage = () => {
     (state: RootState) => state.goldstat
   ) as { history: any; transactions: Transaction[]; loading: boolean; error: string | null };
   
-  const {  earnings, creatorID } = useSelector(
+  const {  earnings, creator_portfolio_id } = useSelector(
     (state: RootState) => state.profile
   );
   
@@ -318,11 +318,11 @@ const HistoryPage = () => {
       }
       
       // Get creator ID from profile data (same as creator page)
-      const creatorId = creatorID || session._id; // use profile creatorID or fallback to session ID
+      const creator_portfoliio_Id = creator_portfolio_id || session._id; // use profile creator_portfolio_id or fallback to session ID
       
       
       const data = {
-        creatorId: creatorId,
+        creator_portfoliio_Id: creator_portfoliio_Id,
         userId: session._id,
         token: session.token,
       };
@@ -349,7 +349,7 @@ const HistoryPage = () => {
     };
     
     fetchViews();
-  }, [session, dispatch, creatorID]);
+  }, [session, dispatch, creator_portfolio_id]);
 
   return (
     <div className="w-full max-w-md sm:max-w-lg lg:ml-36 min-h-screen py-8 px-6 text-white">

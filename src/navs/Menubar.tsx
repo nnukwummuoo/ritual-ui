@@ -24,7 +24,7 @@ export const Menubar = () => {
   // const balance =   useSelector(state=> state.profile.balance)
   // const withdraw =   useSelector(state=> state.profile.witdrawable)
   // const creator =   useSelector(state=> state.profile.creator)
-  // const creatorID =   useSelector(state=> state.profile.creatorID)
+  // const creator_portfolio_id =   useSelector(state=> state.profile.creator_portfolio_id)
   // const postuserid = useSelector(state => state.register.userID)
   // const [profilepics,setprofilepics] = useState();
   // const [username,setusername] = useState(nickname);

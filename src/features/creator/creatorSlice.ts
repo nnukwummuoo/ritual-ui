@@ -138,7 +138,7 @@
 //   "creator/getmycreatorbyid",
 //   async (data: any) => {
 //     try {
-//       const res = await axios.patch(`${URL}/getcreatorbyid`, data);
+//       const res = await axios.patch(`${URL}/getcreatorbyportfolioid`, data);
 //       return res.data;
 //     } catch (err) {
 //       catchError(err);

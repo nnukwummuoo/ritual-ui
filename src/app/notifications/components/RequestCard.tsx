@@ -126,12 +126,12 @@ interface CardProps {
     price?: number;
     details?: FanMeetDetails;
     userid?: string;
-    creatorid?: string;
+    creator_portfoliio_Id?: string;
     hosttype?: string;
     onStatusChange?: (bookingId: string, newStatus: string) => void;
 }
 
-export default function RequestCard({exp, img, name, titles=["fan"], status, type="fan", bookingId, price, details, userid, creatorid, hosttype, onStatusChange}: CardProps) {
+export default function RequestCard({exp, img, name, titles=["fan"], status, type="fan", bookingId, price, details, userid, creator_portfoliio_Id, hosttype, onStatusChange}: CardProps) {
   const [loading, setLoading] = useState(false);
   const [currentStatus, setCurrentStatus] = useState(status);
   const [showDetails, setShowDetails] = useState(false);
@@ -148,7 +148,7 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
       bookingId: string; 
       status: string; 
       userid: string; 
-      creatorid: string;
+      creator_portfoliio_Id: string;
       message?: string;
     }) => {
       // Check if this update is for this specific request
@@ -223,7 +223,7 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          creatorid: creatorid,
+          creator_portfoliio_Id: creator_portfoliio_Id,
           userid: userid,
           date: details.date,
           time: details.time
@@ -249,7 +249,7 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
     setLoading(true);
     try {
       const requestBody = {
-        creatorid: creatorid,
+        creator_portfoliio_Id: creator_portfoliio_Id,
         userid: userid,
         date: details.date,
         time: details.time
@@ -279,7 +279,7 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
   };
 
     const handleCancel = async () => {
-      if (!bookingId || !details || !userid || !creatorid) {
+      if (!bookingId || !details || !userid || !creator_portfoliio_Id) {
         toast.error('Missing required data for cancel request');
         return;
       }
@@ -288,7 +288,7 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
         const requestBody = {
           id: bookingId,
           userid: userid,
-          creatorid: creatorid
+          creator_portfoliio_Id: creator_portfoliio_Id
         };
         
         const response = await fetch(`${URL}/cancelrequest`, {
@@ -319,8 +319,8 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
     
     // If it's a Fan Call, start video call instead of completing
     if (hosttype === "Fan call") {
-      if (creatorid && name) {
-        startVideoCall(creatorid, name, img);
+      if (creator_portfoliio_Id && name) {
+        startVideoCall(creator_portfoliio_Id, name, img);
       }
       return;
     }
@@ -336,7 +336,7 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
         body: JSON.stringify({
           bookingId,
           userid: userid,
-          creatorid: creatorid
+          creator_portfoliio_Id: creator_portfoliio_Id
         })
       });
       
@@ -359,23 +359,23 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
 
   // Navigation functions
   const handleRenewRequest = () => {
-    if (creatorid) {
-      router.push(`/creators/${creatorid}`);
+    if (creator_portfoliio_Id) {
+      router.push(`/creators/${creator_portfoliio_Id}`);
     }
   };
 
   const handleProfileClick = async () => {
-    if (creatorid) {
-      console.log('🔍 [RequestCard] Starting profile click with creatorid:', creatorid);
+    if (creator_portfoliio_Id) {
+      console.log('🔍 [RequestCard] Starting profile click with creator_portfoliio_Id:', creator_portfoliio_Id);
       try {
         // Fetch creator details to get the user ID
-        const response = await fetch(`${URL}/getcreatorbyid`, {
+        const response = await fetch(`${URL}/getcreatorbyportfolioid`, {
           method: 'PATCH',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            hostid: creatorid,
+            hostid: creator_portfoliio_Id,
             userid: userid // Current user's ID
           })
         });
@@ -405,13 +405,13 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
         // If we reach here, the API call failed or didn't return user ID
         // Try alternative approach: fetch creator directly
         console.log('🔍 [RequestCard] Trying second API call...');
-        const creatorResponse = await fetch(`${URL}/getcreatorbyid`, {
+        const creatorResponse = await fetch(`${URL}/getcreatorbyportfolioid`, {
           method: 'PATCH',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            hostid: creatorid
+            hostid: creator_portfoliio_Id
           })
         });
         

@@ -21,7 +21,7 @@ export interface CreatorCardProps {
   location: string;
   interest: string[];
   amount: number;
-  creatorid: string;
+  creator_portfoliio_Id: string;
   userid: string;
   createdAt: string;
   hostid: string;
@@ -44,7 +44,7 @@ export const CreatorCard = ({
   location,
   interest,
   amount,
-  creatorid,
+  creator_portfoliio_Id,
   userid,
   createdAt,
   hostid,

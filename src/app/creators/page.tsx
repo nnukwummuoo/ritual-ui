@@ -245,7 +245,7 @@ const mapToCard = (m: any): CreatorCardProps => {
     location: m.location || "",
     interest: m.interestedin || m.interests || [],
     amount: amountNum,
-    creatorid: m._id || m.id || m.creatorid || "",
+    creator_portfoliio_Id: m._id || m.id || m.creator_portfoliio_Id || "",
     userid: m.userid || m.hostid || m.ownerId || "",
     createdAt: m.createdAt || m.created_at || "",
     hostid: m.hostid,
@@ -348,7 +348,7 @@ const renderCreators = () => {
   return (
     <ul className="grid grid-cols-2 gap-2 mt-4 mb-12 md:grid-cols-3">
       {filteredList.map((value, index) => (
-        <li key={value.creatorid || Math.random().toString(36)} className="relative">
+        <li key={value.creator_portfoliio_Id || Math.random().toString(36)} className="relative">
           <CreatorCard {...value} />
           {/* VIP Badge - positioned at page level on top of verified creators */}
           {value.isVip && (

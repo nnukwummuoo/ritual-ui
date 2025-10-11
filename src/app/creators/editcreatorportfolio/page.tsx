@@ -33,7 +33,7 @@ export default function Editcreator () {
   // );
   const userid = useUserId();
   const creator = useSelector((state: any) => state.creator.creatorbyid);
-  const creatorID = (creator && (creator.hostid || creator.id || creator._id)) as string | undefined;
+  const creator_portfolio_id = (creator && (creator.hostid || creator.id || creator._id)) as string | undefined;
   // const message = useSelector((state) => state.creator.message);
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
@@ -83,7 +83,7 @@ export default function Editcreator () {
   // Prefill fields from store creator and guard when missing
   useEffect(() => {
     // If there is no creator context, redirect back to creators list
-    if (!creator || !creatorID) {
+    if (!creator || !creator_portfolio_id) {
       toast.info("Open a creator page before editing", { autoClose: 2000 });
       router.push("/creators");
       return;
@@ -172,7 +172,7 @@ export default function Editcreator () {
         : [];
       setExistingImages(existingImgArray);
     }
-  }, [creator, creatorID, router, dispatch, hosttype, profile.firstname, profile.status, reduxUserId, userid, interested.length, times.length, hours.length]);
+  }, [creator, creator_portfolio_id, router, dispatch, hosttype, profile.firstname, profile.status, reduxUserId, userid, interested.length, times.length, hours.length]);
 
   // 🔥 Autofill full name from user profile (like side menu)
   useEffect(() => {
@@ -216,7 +216,7 @@ export default function Editcreator () {
   //   if (creatorupdatestatus === "succeeded") {
   //     toast.success(`${message}`, { autoClose: 2000 });
   //     dispatch(changecreatorstatus("idle"));
-  //     router.push(`/creatorbyid/${creatorID}`);
+  //     router.push(`/creatorbyid/${creator_portfolio_id}`);
   //   }
   //   if (creatorupdatestatus === "failed") {
   //     setdisablebut(false);
@@ -224,7 +224,7 @@ export default function Editcreator () {
   //     toast.error(`${message}`, { autoClose: 5000 });
   //     dispatch(changecreatorstatus("idle"));
   //   }
-  // }, [creatorupdatestatus, message, dispatch, router, creatorID]);
+  // }, [creatorupdatestatus, message, dispatch, router, creator_portfolio_id]);
 
   const checkuserInput = async () => {
     console.log("🔄 [EditCreatorPortfolio] Starting validation");
@@ -240,7 +240,7 @@ export default function Editcreator () {
       description,
       userid,
       token: token ? "present" : "missing",
-      creatorID
+      creator_portfolio_id
     });
 
     if (!age) return toast.error(`Age Empty`, { autoClose: 2000 });
@@ -257,7 +257,7 @@ export default function Editcreator () {
 
     if (!userid) return toast.error("Missing user, please login again");
     if (!token) return toast.error("Missing token");
-    if (!creatorID) return toast.error("Missing creator id");
+    if (!creator_portfolio_id) return toast.error("Missing creator id");
 
     try {
       setdisablebut(true);
@@ -280,7 +280,7 @@ export default function Editcreator () {
       
       const data = {
         userId: userid, 
-        creatorId: creatorID, 
+        creator_portfoliio_Id: creator_portfolio_id, 
         name,
         age,
         location,
@@ -306,7 +306,7 @@ export default function Editcreator () {
       
       console.log("🔄 [EditCreatorPortfolio] Prepared data:", {
         userId: data.userId,
-        creatorId: data.creatorId,
+        creator_portfoliio_Id: data.creator_portfoliio_Id,
         name: data.name,
         existingImagesCount: data.existingImages.length,
         imagesToDeleteCount: data.imagesToDelete.length,
@@ -330,7 +330,7 @@ export default function Editcreator () {
       
       console.log("✅ [EditCreatorPortfolio] editCreatorMultipart completed successfully");
       toast.success("Portfolio updated successfully");
-      router.push(`/creators/${creatorID}`);
+      router.push(`/creators/${creator_portfolio_id}`);
     } catch (err:any) {
       console.error("Failed to update portfolio", err);
       toast.error(typeof err === 'string' ? err : 'Failed to update portfolio');
