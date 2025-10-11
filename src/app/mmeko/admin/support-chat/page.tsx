@@ -68,6 +68,7 @@ const AdminSupportChat = () => {
   const [loading, setLoading] = useState(true);
   const [sendingMessage, setSendingMessage] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>('');
+  const [categoryFilter, setCategoryFilter] = useState<string>('');
   const [searchTerm, setSearchTerm] = useState('');
   const [showChatView, setShowChatView] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -232,15 +233,24 @@ const AdminSupportChat = () => {
     };
   }, [selectedChat]);
 
-  // Filter and sort chats based on search term and VIP priority
+  // Get unique categories from all chats
+  const uniqueCategories = React.useMemo(() => {
+    const categories = supportChats.map(chat => chat.category);
+    return [...new Set(categories)].sort();
+  }, [supportChats]);
+
+  // Filter and sort chats based on search term, category filter, and VIP priority
   const filteredAndSortedChats = React.useMemo(() => {
-    // First filter based on search term
+    // First filter based on search term and category
     const filtered = supportChats.filter(chat => {
       const userName = `${chat.userid.firstname} ${chat.userid.lastname}`.toLowerCase();
       const category = chat.category.toLowerCase();
       const search = searchTerm.toLowerCase();
       
-      return userName.includes(search) || category.includes(search) || chat.lastMessage.toLowerCase().includes(search);
+      const matchesSearch = userName.includes(search) || category.includes(search) || chat.lastMessage.toLowerCase().includes(search);
+      const matchesCategory = !categoryFilter || chat.category === categoryFilter;
+      
+      return matchesSearch && matchesCategory;
     });
 
     // Then sort: VIP users first, then by status priority, then by date
@@ -265,7 +275,7 @@ const AdminSupportChat = () => {
       // Priority 3: Sort by last message date (most recent first)
       return b.lastMessageDate - a.lastMessageDate;
     });
-  }, [supportChats, searchTerm]);
+  }, [supportChats, searchTerm, categoryFilter]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -306,7 +316,7 @@ const AdminSupportChat = () => {
           </div>
 
           {/* Status Filter */}
-          <div className="flex gap-1 md:gap-2 flex-wrap">
+          <div className="flex gap-1 md:gap-2 flex-wrap mb-3">
             <button
               onClick={() => setStatusFilter('')}
               className={`px-2 md:px-3 py-1 rounded-full text-xs font-medium ${
@@ -339,6 +349,31 @@ const AdminSupportChat = () => {
             >
               Closed
             </button>
+          </div>
+
+          {/* Category Filter */}
+          <div className="overflow-x-auto">
+            <div className="flex gap-1 md:gap-2 min-w-max pb-1">
+              <button
+                onClick={() => setCategoryFilter('')}
+                className={`px-2 md:px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap flex-shrink-0 ${
+                  categoryFilter === '' ? 'bg-purple-500' : 'bg-gray-700'
+                }`}
+              >
+                All Categories
+              </button>
+              {uniqueCategories.map((category) => (
+                <button
+                  key={category}
+                  onClick={() => setCategoryFilter(category)}
+                  className={`px-2 md:px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap flex-shrink-0 ${
+                    categoryFilter === category ? 'bg-purple-500' : 'bg-gray-700'
+                  }`}
+                >
+                  {category}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
