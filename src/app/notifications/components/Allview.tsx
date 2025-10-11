@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -59,6 +60,25 @@ export const Allview = () => {
         let status: "approved" | "rejected" | "pending" = "pending";
         if (message.includes("approve")) status = "approved";
         else if (message.includes("reject")) status = "rejected";
+        else if (message.includes("follow") || message.includes("unfollow") || message.includes("like") || message.includes("comment") || message.includes("message") || message.includes("booking") || message.includes("request")) {
+          status = "approved"; // These are informational notifications, not pending actions
+        }
+
+        // determine title based on notification type
+        let title = "Application Status";
+        if (message.includes("follow")) {
+          title = "Follow Notification";
+        } else if (message.includes("unfollow")) {
+          title = "Unfollow Notification";
+        } else if (message.includes("like")) {
+          title = "Like Notification";
+        } else if (message.includes("comment")) {
+          title = "Comment Notification";
+        } else if (message.includes("message")) {
+          title = "Message Notification";
+        } else if (message.includes("booking") || message.includes("request")) {
+          title = "Booking Notification";
+        }
 
         return (
           <div
@@ -86,7 +106,7 @@ export const Allview = () => {
                 )}
 
                 <h2 className="text-base sm:text-lg font-semibold">
-                  Application Status
+                  {title}
                 </h2>
               </div>
 
@@ -96,7 +116,7 @@ export const Allview = () => {
               </p>
 
               {/* Buttons */}
-              {status === "approved" && (
+              {status === "approved" && title === "Application Status" && (
                 <div className="pt-2">
                   <Link href="/creator/create">
                     <button
@@ -115,6 +135,45 @@ export const Allview = () => {
                               rounded-lg text-sm text-slate-200 transition">
                     Reapply Later
                   </button>
+                </div>
+              )}
+
+              {/* Follow/Unfollow notifications show appropriate buttons */}
+              {(title === "Follow Notification" || title === "Unfollow Notification") && (
+                <div className="pt-2">
+                  <Link href="/creators">
+                    <button
+                      className="px-4 py-2 border border-slate-700 hover:border-slate-500 
+                                rounded-lg text-sm text-slate-200 transition">
+                      View Creators
+                    </button>
+                  </Link>
+                </div>
+              )}
+
+              {/* Booking notifications show activity button */}
+              {title === "Booking Notification" && (
+                <div className="pt-2">
+                  <Link href="/notifications/activity">
+                    <button
+                      className="px-4 py-2 border border-slate-700 hover:border-slate-500 
+                                rounded-lg text-sm text-slate-200 transition">
+                      View Activity
+                    </button>
+                  </Link>
+                </div>
+              )}
+
+              {/* Message notifications show messages button */}
+              {title === "Message Notification" && (
+                <div className="pt-2">
+                  <Link href="/message">
+                    <button
+                      className="px-4 py-2 border border-slate-700 hover:border-slate-500 
+                                rounded-lg text-sm text-slate-200 transition">
+                      View Messages
+                    </button>
+                  </Link>
                 </div>
               )}
 
