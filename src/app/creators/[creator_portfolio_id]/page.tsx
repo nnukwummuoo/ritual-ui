@@ -666,7 +666,7 @@ export default function Creatorbyid () {
   const handleRequestDetailsSubmit = async (details: { date: string; time: string; venue: string }) => {
     console.log('Sending request with:', {
       userid,
-      creator_portfoliio_Id: creator.hostid,
+      creator_portfolio_id: creator.hostid,
       creatorUserid: creator.userid,
       type: creator.hosttype,
       date: details.date,
@@ -696,7 +696,7 @@ export default function Creatorbyid () {
         },
         body: JSON.stringify({
           userid,
-          creator_portfoliio_Id: creator.hostid, // Use hostid for creator lookup in creatordb
+          creator_portfolio_id: creator.hostid, // Use hostid for creator lookup in creatordb
           type: creator.hosttype,
           date: details.date,
           time: details.time,
@@ -1498,7 +1498,7 @@ export default function Creatorbyid () {
                   setsuccess={setsuccess}
                   price={Number(creator.price) || 0}
                   toast={toast}
-                  creator_portfoliio_Id={creator.hostid}
+                  creator_portfolio_id={creator.hostid}
                   type={creator.hosttype}
                   setrequested={setrequested}
                   creator={creator}

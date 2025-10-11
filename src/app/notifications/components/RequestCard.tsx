@@ -105,6 +105,42 @@ const getFanContent = (price: number, hostType: string) => {
     }
   };
 };
+
+// Function to get the appropriate details title based on host type
+const getDetailsTitle = (hostType: string) => {
+  const typeText = hostType || "Fan Meet";
+  
+  // Map different host types to their appropriate detail titles
+  const titleMap: Record<string, string> = {
+    "fan call": "Call Details",
+    "fan meet": "Meet Details", 
+    "fan date": "Date Details",
+    "fan hangout": "Hangout Details",
+    "fan chat": "Chat Details"
+  };
+  
+  // Check for exact matches first
+  const lowerType = typeText.toLowerCase();
+  if (titleMap[lowerType]) {
+    return titleMap[lowerType];
+  }
+  
+  // Check for partial matches
+  if (lowerType.includes("call")) {
+    return "Call Details";
+  } else if (lowerType.includes("meet")) {
+    return "Meet Details";
+  } else if (lowerType.includes("date")) {
+    return "Date Details";
+  } else if (lowerType.includes("hangout")) {
+    return "Hangout Details";
+  } else if (lowerType.includes("chat")) {
+    return "Chat Details";
+  }
+  
+  // Default fallback
+  return `${typeText} Details`;
+};
 const statusArr = ["request", "expired", "completed", "accepted", "declined", "cancelled"] 
 
 interface FanMeetDetails {
@@ -132,6 +168,14 @@ interface CardProps {
 }
 
 export default function RequestCard({exp, img, name, titles=["fan"], status, type="fan", bookingId, price, details, userid, creator_portfolio_id, hosttype, onStatusChange}: CardProps) {
+  console.log('🔍 [RequestCard] Props received:', {
+    type,
+    name,
+    creator_portfolio_id,
+    hosttype,
+    status,
+    bookingId
+  });
   const [loading, setLoading] = useState(false);
   const [currentStatus, setCurrentStatus] = useState(status);
   const [showDetails, setShowDetails] = useState(false);
@@ -196,7 +240,7 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
       socket.off('fan_meet_status_update', handleFanMeetStatusUpdate);
       socket.off('booking_status_update', handleFanMeetStatusUpdate);
     };
-  }, [bookingId, onStatusChange]);
+  }, [bookingId, onStatusChange, hosttype]);
 
   // Update local status when prop changes
   useEffect(() => {
@@ -630,7 +674,7 @@ function DetailsModal({
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
         <div className="bg-white rounded-lg p-6 max-w-md w-full">
-          <h2 className="text-xl font-bold text-gray-800 mb-4">Fan Date / Meet Details</h2>
+          <h2 className="text-xl font-bold text-gray-800 mb-4">{getDetailsTitle(hosttype || "Fan Meet")}</h2>
           <p className="text-gray-600 mb-4">Details not available</p>
           <button 
             onClick={onClose}
@@ -671,7 +715,7 @@ function DetailsModal({
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
-        <h2 className="text-xl font-bold text-gray-800 mb-6">Fan Date / Meet Details</h2>
+        <h2 className="text-xl font-bold text-gray-800 mb-6">{getDetailsTitle(hosttype || "Fan Meet")}</h2>
         
         {/* Date & Time */}
         <div className="flex items-start gap-3 mb-4">

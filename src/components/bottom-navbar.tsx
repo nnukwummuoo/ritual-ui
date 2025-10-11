@@ -9,7 +9,7 @@ import { usePathname } from "next/navigation";
 import AnyaEyeIcon from "./icons/AnyaEyeIcon";
 import { useSelector, useDispatch } from "react-redux";
 import type { RootState, AppDispatch } from "@/store/store";
-import { getmsgnitify } from "@/store/messageSlice";
+import { getmsgnitify, getmessagenotication } from "@/store/messageSlice";
 import { getSocket } from "@/lib/socket";
 
 interface BottomNavBarItemProps {
@@ -31,28 +31,82 @@ export default function BottomNavBar() {
   
   // Get message data from Redux store
   const recentmsg = useSelector((state: RootState) => state.message.recentmsg);
+  const msgnitocations = useSelector((state: RootState) => state.message.msgnitocations);
+  const mymessagenotifystatus = useSelector((state: RootState) => state.message.mymessagenotifystatus);
+
+  // Fallback to localStorage for user data (like other components do)
+  const [localUserData, setLocalUserData] = React.useState<{userid: string, token: string}>({userid: '', token: ''});
   
-  // Real-time unread count state
-  const [realTimeUnreadCount, setRealTimeUnreadCount] = React.useState(0);
+  React.useEffect(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const raw = localStorage.getItem("login");
+        if (raw) {
+          const data = JSON.parse(raw);
+          const localUserid = data?.userID || data?.userid || data?.id || '';
+          const localToken = data?.refreshtoken || data?.accesstoken || '';
+          
+          if (localUserid && localToken) {
+            setLocalUserData({ userid: localUserid, token: localToken });
+          }
+        }
+      } catch {
+        // Silent error handling
+      }
+    }
+  }, []);
+
+  // Use Redux data if available, otherwise use localStorage data
+  const finalUserid = userid || localUserData.userid;
+  const finalToken = token || localUserData.token;
   
+
   // Fetch message notifications when component mounts
   useEffect(() => {
-    if (userid && token && msgnotifystatus === "idle") {
-      dispatch(getmsgnitify({ userid }));
+    if (finalUserid && finalToken && msgnotifystatus === "idle") {
+      dispatch(getmsgnitify({ userid: finalUserid, token: finalToken }));
     }
-  }, [userid, token, msgnotifystatus, dispatch]);
+  }, [finalUserid, finalToken, msgnotifystatus, dispatch]);
+
+  // Also fetch message notifications from the other endpoint
+  useEffect(() => {
+    if (finalUserid && finalToken && mymessagenotifystatus === "idle") {
+      dispatch(getmessagenotication({ userid: finalUserid, token: finalToken }));
+    }
+  }, [finalUserid, finalToken, mymessagenotifystatus, dispatch]);
+
+  // Also fetch messages when userid changes (e.g., after login)
+  useEffect(() => {
+    if (finalUserid && finalToken) {
+      dispatch(getmsgnitify({ userid: finalUserid, token: finalToken }));
+      dispatch(getmessagenotication({ userid: finalUserid, token: finalToken }));
+    }
+  }, [finalUserid, finalToken, dispatch]);
+
+  // Force fetch messages after a short delay to ensure user is logged in
+  useEffect(() => {
+    if (finalUserid && finalToken) {
+      const timer = setTimeout(() => {
+        dispatch(getmsgnitify({ userid: finalUserid, token: finalToken }));
+        dispatch(getmessagenotication({ userid: finalUserid, token: finalToken }));
+      }, 1000); // 1 second delay
+      
+      return () => clearTimeout(timer);
+    }
+  }, [finalUserid, finalToken, dispatch]);
 
   // Socket integration for real-time message updates
   useEffect(() => {
-    if (!userid) return;
+    if (!finalUserid) return;
 
     // Try to get socket connection
     const socket = getSocket();
     if (!socket) {
       // Fallback: poll for updates every 10 seconds if socket is not available
       const intervalId = setInterval(() => {
-        if (userid && token) {
-          dispatch(getmsgnitify({ userid }));
+        if (finalUserid && finalToken) {
+          dispatch(getmsgnitify({ userid: finalUserid, token: finalToken }));
+          dispatch(getmessagenotication({ userid: finalUserid, token: finalToken }));
         }
       }, 10000);
       
@@ -60,29 +114,29 @@ export default function BottomNavBar() {
     }
     
     // Listen for new message events
-    const handleNewMessage = (data: any) => {
-      console.log("🔔 [BottomNavBar] New message received:", data);
-      // Refresh message notifications
-      if (userid && token) {
-        dispatch(getmsgnitify({ userid }));
+    const handleNewMessage = () => {
+      // Refresh message notifications from both endpoints
+      if (finalUserid && finalToken) {
+        dispatch(getmsgnitify({ userid: finalUserid, token: finalToken }));
+        dispatch(getmessagenotication({ userid: finalUserid, token: finalToken }));
       }
     };
     
     // Listen for message read events
-    const handleMessageRead = (data: any) => {
-      console.log("🔔 [BottomNavBar] Message read:", data);
-      // Refresh message notifications
-      if (userid && token) {
-        dispatch(getmsgnitify({ userid }));
+    const handleMessageRead = () => {
+      // Refresh message notifications from both endpoints
+      if (finalUserid && finalToken) {
+        dispatch(getmsgnitify({ userid: finalUserid, token: finalToken }));
+        dispatch(getmessagenotication({ userid: finalUserid, token: finalToken }));
       }
     };
     
     // Listen for message status updates
-    const handleMessageStatusUpdate = (data: any) => {
-      console.log("🔔 [BottomNavBar] Message status update:", data);
-      // Refresh message notifications
-      if (userid && token) {
-        dispatch(getmsgnitify({ userid }));
+    const handleMessageStatusUpdate = () => {
+      // Refresh message notifications from both endpoints
+      if (finalUserid && finalToken) {
+        dispatch(getmsgnitify({ userid: finalUserid, token: finalToken }));
+        dispatch(getmessagenotication({ userid: finalUserid, token: finalToken }));
       }
     };
     
@@ -95,38 +149,36 @@ export default function BottomNavBar() {
       socket.off('message_read', handleMessageRead);
       socket.off('message_status_update', handleMessageStatusUpdate);
     };
-  }, [userid, token, dispatch]);
+  }, [finalUserid, finalToken, dispatch]);
   
-  // Calculate total unread messages with real-time updates
+  // Calculate total unread messages - check both data sources
   const totalUnreadCount = React.useMemo(() => {
-    if (!recentmsg || !Array.isArray(recentmsg)) return realTimeUnreadCount;
+    let total = 0;
     
-    const calculatedCount = recentmsg.reduce((total, message) => {
-      const unreadCount = message.messagecount || message.unreadCount || 0;
-      const hasUnread = message.unread || unreadCount > 0;
-      return total + (hasUnread ? unreadCount : 0);
-    }, 0);
-    
-    // Update real-time state when Redux data changes
-    if (calculatedCount !== realTimeUnreadCount) {
-      setRealTimeUnreadCount(calculatedCount);
-    }
-    
-    return calculatedCount;
-  }, [recentmsg, realTimeUnreadCount]);
-
-  // Update real-time count when Redux data changes
-  useEffect(() => {
-    if (recentmsg && Array.isArray(recentmsg)) {
-      const calculatedCount = recentmsg.reduce((total, message) => {
-        const unreadCount = message.messagecount || message.unreadCount || 0;
-        const hasUnread = message.unread || unreadCount > 0;
-        return total + (hasUnread ? unreadCount : 0);
+    // Check recentmsg first
+    if (recentmsg && Array.isArray(recentmsg) && recentmsg.length > 0) {
+      total += recentmsg.reduce((sum, message) => {
+        const unreadCount = message.unreadCount || 0;
+        if (unreadCount > 0) {
+          return sum + unreadCount;
+        }
+        return sum;
       }, 0);
-      
-      setRealTimeUnreadCount(calculatedCount);
     }
-  }, [recentmsg]);
+    
+    // Check msgnitocations as well
+    if (msgnitocations && Array.isArray(msgnitocations) && msgnitocations.length > 0) {
+      total += msgnitocations.reduce((sum, message) => {
+        const unreadCount = message.messagecount || 0;
+        if (unreadCount > 0) {
+          return sum + unreadCount;
+        }
+        return sum;
+      }, 0);
+    }
+    
+    return total;
+  }, [recentmsg, msgnitocations]);
 
   const routes: BottomNavBarItemProps[] = [
     {
@@ -178,8 +230,8 @@ export default function BottomNavBar() {
                     width={100}
                     height={100}
                   />
-                  {/* Unread indicator - always show for messages */}
-                  {(item.showUnreadIndicator || (item.route === "/message" && totalUnreadCount >= 0)) && (
+                  {/* Unread indicator - only show when there are unread messages */}
+                  {item.showUnreadIndicator && (
                     <div className="absolute -top-1 -right-1 min-w-[18px] h-[18px] bg-white text-black text-xs rounded-full flex items-center justify-center font-semibold">
                       {item.unreadCount && item.unreadCount > 99 ? (
                         <span className="flex items-center">
