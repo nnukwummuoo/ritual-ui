@@ -5,6 +5,7 @@ import { FaCoins } from 'react-icons/fa';
 import { toast } from 'material-react-toastify';
 import { URL } from '@/api/config';
 import { IoCalendarOutline, IoLocationOutline, IoTimeOutline, IoWarningOutline, IoCheckmarkCircleOutline } from 'react-icons/io5';
+import VIPBadge from "@/components/VIPBadge";
 import { getSocket } from '@/lib/socket';
 import { useRouter } from 'next/navigation';
 import { useVideoCall } from '@/contexts/VideoCallContext';
@@ -164,10 +165,12 @@ interface CardProps {
     userid?: string;
     creator_portfolio_id?: string;
     hosttype?: string;
+    isVip?: boolean;
+    vipEndDate?: string | null;
     onStatusChange?: (bookingId: string, newStatus: string) => void;
 }
 
-export default function RequestCard({exp, img, name, titles=["fan"], status, type="fan", bookingId, price, details, userid, creator_portfolio_id, hosttype, onStatusChange}: CardProps) {
+export default function RequestCard({exp, img, name, titles=["fan"], status, type="fan", bookingId, price, details, userid, creator_portfolio_id, hosttype, isVip=false, vipEndDate=null, onStatusChange}: CardProps) {
   console.log('🔍 [RequestCard] Props received:', {
     type,
     name,
@@ -277,12 +280,15 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
       if (response.ok) {
         setCurrentStatus('accepted');
         onStatusChange?.(bookingId, 'accepted');
-        toast.success('Request accepted successfully!');
+        const serviceType = hosttype || "Fan meet";
+        toast.success(`${serviceType} request accepted successfully!`);
       } else {
-        toast.error('Failed to accept request');
+        const serviceType = hosttype || "Fan meet";
+        toast.error(`Failed to accept ${serviceType.toLowerCase()} request`);
       }
     } catch {
-      toast.error('Error accepting request');
+      const serviceType = hosttype || "Fan meet";
+      toast.error(`Error accepting ${serviceType.toLowerCase()} request`);
     } finally {
       setLoading(false);
     }
@@ -310,13 +316,16 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
       if (response.ok) {
         setCurrentStatus('declined');
         onStatusChange?.(bookingId, 'declined');
-        toast.success('Request declined');
+        const serviceType = hosttype || "Fan meet";
+        toast.success(`${serviceType} request declined`);
       } else {
         const errorData = await response.json();
-        toast.error(errorData.message || 'Failed to decline request');
+        const serviceType = hosttype || "Fan meet";
+        toast.error(errorData.message || `Failed to decline ${serviceType.toLowerCase()} request`);
       }
     } catch {
-      toast.error('Error declining request');
+      const serviceType = hosttype || "Fan meet";
+      toast.error(`Error declining ${serviceType.toLowerCase()} request`);
     } finally {
       setLoading(false);
     }
@@ -346,13 +355,16 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
         if (response.ok) {
           setCurrentStatus('cancelled');
           onStatusChange?.(bookingId, 'cancelled');
-          toast.success('Request cancelled');
+          const serviceType = hosttype || "Fan meet";
+          toast.success(`${serviceType} request cancelled`);
         } else {
           const errorData = await response.json();
-          toast.error(errorData.message || 'Failed to cancel request');
+          const serviceType = hosttype || "Fan meet";
+          toast.error(errorData.message || `Failed to cancel ${serviceType.toLowerCase()} request`);
         }
       } catch {
-        toast.error('Error cancelling request');
+        const serviceType = hosttype || "Fan meet";
+        toast.error(`Error cancelling ${serviceType.toLowerCase()} request`);
       } finally {
         setLoading(false);
       }
@@ -408,92 +420,20 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
     }
   };
 
-  const handleProfileClick = async () => {
-    if (creator_portfolio_id) {
-      console.log('🔍 [RequestCard] Starting profile click with creator_portfolio_id:', creator_portfolio_id);
-      try {
-        // Fetch creator details to get the user ID
-        const response = await fetch(`${URL}/getcreatorbyportfolioid`, {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            hostid: creator_portfolio_id,
-            userid: userid // Current user's ID
-          })
-        });
-        
-        console.log('🔍 [RequestCard] First API call response status:', response.status);
-        
-        if (response.ok) {
-          const data = await response.json();
-          console.log('🔍 [RequestCard] First API Response:', data);
-          if (data.ok && data.host && data.host.userid) {
-            console.log('🔍 [RequestCard] Navigating to profile:', data.host.userid);
-            // Navigate to the creator's profile using their user ID
-            router.push(`/Profile/${data.host.userid}`);
-            return; // Exit early on success
-          } else {
-            console.log('🔍 [RequestCard] Missing userid in first response:', { 
-              ok: data.ok, 
-              hasHost: !!data.host, 
-              hasUserid: !!(data.host && data.host.userid),
-              hostKeys: data.host ? Object.keys(data.host) : 'no host'
-            });
-          }
-        } else {
-          console.log('🔍 [RequestCard] First API call failed with status:', response.status);
-        }
-        
-        // If we reach here, the API call failed or didn't return user ID
-        // Try alternative approach: fetch creator directly
-        console.log('🔍 [RequestCard] Trying second API call...');
-        const creatorResponse = await fetch(`${URL}/getcreatorbyportfolioid`, {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            hostid: creator_portfolio_id
-          })
-        });
-        
-        console.log('🔍 [RequestCard] Second API call response status:', creatorResponse.status);
-        
-        if (creatorResponse.ok) {
-          const creatorData = await creatorResponse.json();
-          console.log('🔍 [RequestCard] Second API Response:', creatorData);
-          if (creatorData.ok && creatorData.host && creatorData.host.userid) {
-            console.log('🔍 [RequestCard] Second attempt - Navigating to profile:', creatorData.host.userid);
-            router.push(`/Profile/${creatorData.host.userid}`);
-            return;
-          } else {
-            console.log('🔍 [RequestCard] Second attempt - Missing userid:', { 
-              ok: creatorData.ok, 
-              hasHost: !!creatorData.host, 
-              hasUserid: !!(creatorData.host && creatorData.host.userid),
-              hostKeys: creatorData.host ? Object.keys(creatorData.host) : 'no host'
-            });
-          }
-        } else {
-          console.log('🔍 [RequestCard] Second API call failed with status:', creatorResponse.status);
-        }
-        
-        // Final fallback: show error message
-        console.log('🔍 [RequestCard] All attempts failed, showing error');
-        toast.error('Unable to load creator profile');
-        
-      } catch (error) {
-        // Final fallback: show error message
-        console.log('🔍 [RequestCard] Error in profile click:', error);
-        toast.error('Unable to load creator profile');
-      }
+  const handleProfileClick = () => {
+    // The userid prop contains the ID of the person whose details are shown on the card
+    // If fan clicks -> go to creator's profile (userid = creator's user ID)
+    // If creator clicks -> go to fan's profile (userid = fan's user ID)
+    if (userid) {
+      router.push(`/Profile/${userid}`);
+    } else if (creator_portfolio_id) {
+      // Fallback: if no userid, try to get creator's profile
+      router.push(`/creators/${creator_portfolio_id}`);
     }
   };
 
   return (
-    <div className={`w-full flex flex-col gap-6 rounded-lg border-2 ${cardBorderVariance} p-4 mx-auto text-white bg-slate-800`}>
+    <div className={`w-full flex flex-col gap-6 rounded-lg border-2 ${cardBorderVariance} p-4 mx-auto text-white bg-slate-800 overflow-visible`}>
       <div className={`flex justify-between items-start gap-4 ${cardTextVariance}`}>
         <div className="flex gap-4">
           <div 
@@ -507,9 +447,12 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
                 {name.split(' ').map(n => n.charAt(0)).join('').toUpperCase().slice(0, 2)}
               </div>
             )}
+            
           </div>
           <div className='text-sm'>
-            <p className='font-bold cursor-pointer hover:text-blue-400 transition-colors' onClick={handleProfileClick}>{name}</p>
+            <div className='flex items-center gap-2'>
+              <p className='font-bold cursor-pointer hover:text-blue-400 transition-colors' onClick={handleProfileClick}>{name}</p>
+            </div>
             <div className='flex gap-1'>{titles?.map((title, i)=> i === titles.length -1 ? <p key={title}>{title}</p> : <p key={title}>{title} &#x2022; </p>)}</div>
           </div>
         </div>
@@ -542,10 +485,18 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
 
   <div className="flex-1">
     { type === "creator" && currentStatus === "accepted" ? (
-      // Creator accepted → Renew + View details
+      // Creator accepted → Chat Now + View details
       <div className="flex gap-3">
         <div className="flex-1">
-          <FanActionBtn label="Chat Now" className={fanActionClass} />
+          <FanActionBtn 
+            label="Chat Now" 
+            className={fanActionClass} 
+            onClick={() => {
+              if (userid) {
+                router.push(`/message/${userid}`);
+              }
+            }}
+          />
         </div>
         <div className="flex-1">
           <button className={fanActionClass} onClick={() => setShowDetails(true)}>View details</button>
@@ -567,7 +518,15 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
         </div>
       </div>
     ) : type === "creator" ? (
-      <FanActionBtn label="Chat Now" className={fanActionClass} />
+      <FanActionBtn 
+        label="Chat Now" 
+        className={fanActionClass} 
+        onClick={() => {
+          if (userid) {
+            router.push(`/message/${userid}`);
+          }
+        }}
+      />
     ) : (
       <FanActionBtn label="Renew request" className={fanActionClass} onClick={handleRenewRequest} />
     )}
@@ -764,7 +723,7 @@ function DetailsModal({
         )}
 
         {/* Agreement - Only show for creators */}
-        {type === "creator" && (
+        {type === "creator" && hosttype !== "Fan call" && hosttype !== "Fan Call" && (
           <div className="flex items-start gap-3 mb-6">
             <IoCheckmarkCircleOutline className="text-green-500 text-xl mt-1" />
             <p className="text-gray-800 font-semibold text-sm">

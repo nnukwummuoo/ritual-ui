@@ -8,6 +8,7 @@ import {
     IoPeopleOutline, 
     IoGridOutline,
     IoHomeOutline,
+    IoChatbubbleOutline,
 } from "react-icons/io5";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "@/store/store";
@@ -23,6 +24,7 @@ import AdminVerifyDocumentPage from "./creator-verification/page";
 import WithdrawalRequests from "./withdrawal/page";
 import Users from "./users/page";
 import Reports from "./reports/page";
+import AdminSupportChat from "./support-chat/page";
 
 const AdminPage = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -41,6 +43,9 @@ const AdminPage = () => {
 
   // State for pending withdrawal requests count
   const [pendingWithdrawalsCount, setPendingWithdrawalsCount] = useState(0);
+  
+  // State for support chat count
+  const [supportChatCount, setSupportChatCount] = useState(0);
 
   // Notification logic remains unchanged
   useEffect(() => {
@@ -88,12 +93,40 @@ const AdminPage = () => {
     }
   }, [token]);
 
+  // Fetch support chat count on mount and periodically
+  useEffect(() => {
+    const fetchSupportChatCount = async () => {
+      try {
+        const res = await axios.get(`${URL}/support-chat/admin/all?status=open`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        });
+        const openChats = res.data.supportChats || [];
+        setSupportChatCount(openChats.length);
+      } catch (err) {
+        console.error("Error fetching support chat count:", err);
+        setSupportChatCount(0);
+      }
+    };
+
+    if (token) {
+      fetchSupportChatCount();
+      // Refresh every 30 seconds
+      const interval = setInterval(fetchSupportChatCount, 30000);
+      return () => clearInterval(interval);
+    }
+  }, [token]);
+
   // Sidebar navigation items
   const navdata = [
     {
       name: "Reports",
       icon: <IoDocumentTextOutline size={22} />,
       component: <Reports />,
+    },
+    {
+      name: "Support Chat",
+      icon: <IoChatbubbleOutline size={22} />,
+      component: <AdminSupportChat />,
     },
     {
       name: "Creator Verification",
@@ -152,6 +185,11 @@ const AdminPage = () => {
                     {docCount}
                   </span>
                 )}
+                {item.name === "Support Chat" && supportChatCount > 0 && (
+                  <span className="ml-2 bg-red-500 text-white px-1.5 py-1 rounded-full text-xs">
+                    {supportChatCount}
+                  </span>
+                )}
                 {item.name === "Withdrawal Requests" && pendingWithdrawalsCount > 0 && (
                   <span className="ml-2 bg-yellow-500 text-white px-1.5 py-1 rounded-full text-xs">
                     {pendingWithdrawalsCount}
@@ -164,28 +202,31 @@ const AdminPage = () => {
       </aside>
 
       {/* Main Content: responsive width */}
-      <main className="flex-1 p-4 md:p-8 overflow-y-auto flex flex-col">
-        <header className="flex justify-between items-center -mb-15">
-          <h2 className="text-2xl md:text-3xl font-bold text-white">{activeView}</h2>
-          <div className="flex items-center gap-3">
-            {notifyme && (
-              <span className="inline-flex items-center justify-center px-3 py-1 rounded-full text-sm font-semibold bg-emerald-600 text-white">
-                Notifications: {notifycount}
-              </span>
-            )}
-            <button
-              onClick={() => router.push('/')}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors duration-200"
-            >
-              <IoHomeOutline size={18} />
-              <span className="hidden sm:inline">Back to Home</span>
-            </button>
-          </div>
-        </header>
+      <main className="flex-1 overflow-y-auto flex flex-col">
+        {/* Header - hidden for Support Chat */}
+        {activeView !== "Support Chat" && (
+          <header className="flex justify-between items-center p-4 md:p-8 pb-0">
+            <h2 className="text-2xl md:text-3xl font-bold text-white">{activeView}</h2>
+            <div className="flex items-center gap-3">
+              {notifyme && (
+                <span className="inline-flex items-center justify-center px-3 py-1 rounded-full text-sm font-semibold bg-emerald-600 text-white">
+                  Notifications: {notifycount}
+                </span>
+              )}
+              <button
+                onClick={() => router.push('/')}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors duration-200"
+              >
+                <IoHomeOutline size={18} />
+                <span className="hidden sm:inline">Back to Home</span>
+              </button>
+            </div>
+          </header>
+        )}
 
         {/* Content Section */}
-        <section className="flex-1 flex items-center justify-center">
-          <div className="w-full">{renderContent()}</div>
+        <section className={`flex-1 ${activeView === "Support Chat" ? "h-full" : "flex items-center justify-center p-4 md:p-8 pt-4"}`}>
+          <div className="w-full h-full">{renderContent()}</div>
         </section>
       </main>
     </div>

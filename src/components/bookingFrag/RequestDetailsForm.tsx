@@ -97,12 +97,20 @@ export const RequestDetailsForm: React.FC<RequestDetailsFormProps> = ({
 
 
   const formatDateForInput = (date: Date) => {
-    return date.toISOString().split('T')[0];
+    // Use local date formatting to avoid timezone issues
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   };
 
   const handleDateSelect = (selectedDate: Date) => {
     if (isDateAvailable(selectedDate)) {
-      setDate(formatDateForInput(selectedDate));
+      const formattedDate = formatDateForInput(selectedDate);
+      console.log('Selected date:', selectedDate);
+      console.log('Formatted date:', formattedDate);
+      console.log('Date string:', selectedDate.toDateString());
+      setDate(formattedDate);
       setShowCalendar(false); // Close calendar after selection
     }
   };
@@ -123,7 +131,7 @@ export const RequestDetailsForm: React.FC<RequestDetailsFormProps> = ({
       
       const isCurrentMonth = currentDate.getMonth() === month;
       const isAvailable = isDateAvailable(currentDate);
-      const isSelected = currentDate.toISOString().split('T')[0] === date;
+      const isSelected = formatDateForInput(currentDate) === date;
       const isTodayDate = isToday(currentDate);
       const isTomorrowDate = isTomorrow(currentDate);
       
@@ -273,8 +281,8 @@ export const RequestDetailsForm: React.FC<RequestDetailsFormProps> = ({
              
              {/* Calendar Grid */}
              <div className="grid grid-cols-7 gap-1 mb-3">
-               {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day) => (
-                 <div key={day} className="text-center text-xs text-gray-400 font-medium py-2">
+               {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, index) => (
+                 <div key={`day-${index}`} className="text-center text-xs text-gray-400 font-medium py-2">
                    {day}
                  </div>
                ))}
