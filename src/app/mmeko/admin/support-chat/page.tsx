@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -16,6 +18,7 @@ import {
 } from 'react-icons/io5';
 import Image from 'next/image';
 import { getSocket } from '@/lib/socket';
+import VIPBadge from '@/components/VIPBadge';
 
 interface SupportChat {
   _id: string;
@@ -25,6 +28,8 @@ interface SupportChat {
     lastname: string;
     photolink: string;
     email: string;
+    isVip?: boolean;
+    vipEndDate?: string;
   };
   category: string;
   status: 'open' | 'pending' | 'closed';
@@ -35,6 +40,8 @@ interface SupportChat {
     toid: string;
     date: number;
     isAdmin: boolean;
+    isVip?: boolean;
+    vipEndDate?: string;
   }>;
   lastMessage: string;
   lastMessageDate: number;
@@ -48,6 +55,8 @@ interface ChatMessage {
   toid: string;
   date: number;
   isAdmin: boolean;
+  isVip?: boolean;
+  vipEndDate?: string;
 }
 
 const AdminSupportChat = () => {
@@ -223,14 +232,40 @@ const AdminSupportChat = () => {
     };
   }, [selectedChat]);
 
-  // Filter chats based on search term
-  const filteredChats = supportChats.filter(chat => {
-    const userName = `${chat.userid.firstname} ${chat.userid.lastname}`.toLowerCase();
-    const category = chat.category.toLowerCase();
-    const search = searchTerm.toLowerCase();
-    
-    return userName.includes(search) || category.includes(search) || chat.lastMessage.toLowerCase().includes(search);
-  });
+  // Filter and sort chats based on search term and VIP priority
+  const filteredAndSortedChats = React.useMemo(() => {
+    // First filter based on search term
+    const filtered = supportChats.filter(chat => {
+      const userName = `${chat.userid.firstname} ${chat.userid.lastname}`.toLowerCase();
+      const category = chat.category.toLowerCase();
+      const search = searchTerm.toLowerCase();
+      
+      return userName.includes(search) || category.includes(search) || chat.lastMessage.toLowerCase().includes(search);
+    });
+
+    // Then sort: VIP users first, then by status priority, then by date
+    return filtered.sort((a: SupportChat, b: SupportChat) => {
+      // Priority 1: VIP users first
+      if (a.userid.isVip && !b.userid.isVip) {
+        return -1;
+      }
+      if (b.userid.isVip && !a.userid.isVip) {
+        return 1;
+      }
+
+      // Priority 2: Status priority (open > pending > closed)
+      const statusPriority = { 'open': 3, 'pending': 2, 'closed': 1 };
+      const aStatusPriority = statusPriority[a.status] || 0;
+      const bStatusPriority = statusPriority[b.status] || 0;
+      
+      if (aStatusPriority !== bStatusPriority) {
+        return bStatusPriority - aStatusPriority;
+      }
+
+      // Priority 3: Sort by last message date (most recent first)
+      return b.lastMessageDate - a.lastMessageDate;
+    });
+  }, [supportChats, searchTerm]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -313,12 +348,12 @@ const AdminSupportChat = () => {
             <div className="flex items-center justify-center h-32">
               <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
             </div>
-          ) : filteredChats.length === 0 ? (
+          ) : filteredAndSortedChats.length === 0 ? (
             <div className="p-4 text-center text-gray-400">
               No support chats found
             </div>
           ) : (
-            filteredChats.map((chat) => (
+            filteredAndSortedChats.map((chat) => (
               <div
                 key={chat._id}
                 onClick={() => loadChatMessages(chat._id)}
@@ -327,19 +362,31 @@ const AdminSupportChat = () => {
                 }`}
               >
                 <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-700 flex-shrink-0">
-                    {chat.userid.photolink ? (
-                      <Image
-                        src={chat.userid.photolink}
-                        alt={chat.userid.firstname}
-                        width={40}
-                        height={40}
-                        className="w-full h-full object-cover"
+                  <div className="relative flex-shrink-0">
+                    <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-700">
+                      {chat.userid.photolink ? (
+                        <Image
+                          src={chat.userid.photolink}
+                          alt={chat.userid.firstname}
+                          width={40}
+                          height={40}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-gray-600 text-white font-bold">
+                          {chat.userid.firstname.charAt(0)}
+                        </div>
+                      )}
+                    </div>
+                    
+                    {/* VIP Badge for chat list - positioned relative to parent container */}
+                    {chat.userid.isVip && (
+                      <VIPBadge 
+                        size="lg" 
+                        className="absolute -top-2 -right-2 z-50" 
+                        isVip={chat.userid.isVip} 
+                        vipEndDate={chat.userid.vipEndDate} 
                       />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-gray-600 text-white font-bold">
-                        {chat.userid.firstname.charAt(0)}
-                      </div>
                     )}
                   </div>
                   
@@ -388,19 +435,31 @@ const AdminSupportChat = () => {
                     <IoArrowBackOutline className="w-5 h-5" />
                   </button>
                   
-                  <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-700">
-                    {selectedChat.userid.photolink ? (
-                      <Image
-                        src={selectedChat.userid.photolink}
-                        alt={selectedChat.userid.firstname}
-                        width={40}
-                        height={40}
-                        className="w-full h-full object-cover"
+                  <div className="relative">
+                    <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-700">
+                      {selectedChat.userid.photolink ? (
+                        <Image
+                          src={selectedChat.userid.photolink}
+                          alt={selectedChat.userid.firstname}
+                          width={40}
+                          height={40}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-gray-600 text-white font-bold">
+                          {selectedChat.userid.firstname.charAt(0)}
+                        </div>
+                      )}
+                    </div>
+                    
+                    {/* VIP Badge for chat header - positioned relative to parent container */}
+                    {selectedChat.userid.isVip && (
+                      <VIPBadge 
+                        size="lg" 
+                        className="absolute -top-1 -right-1 z-50" 
+                        isVip={selectedChat.userid.isVip} 
+                        vipEndDate={selectedChat.userid.vipEndDate} 
                       />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-gray-600 text-white font-bold">
-                        {selectedChat.userid.firstname.charAt(0)}
-                      </div>
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -459,6 +518,13 @@ const AdminSupportChat = () => {
                           : 'bg-gray-700 text-white'
                       }`}
                     >
+                      {/* VIP Badge for user messages */}
+                      {!isAdmin && message.isVip && (
+                        <div className="flex justify-end items-center gap-2 mb-2">
+                          <VIPBadge size="sm" isVip={message.isVip} vipEndDate={message.vipEndDate} />
+                          <span className="text-xs py-1 px-2 rounded-full bg-gradient-to-r tracking-wider font-semibold from-[#fb8402] to-[#ad4d01] text-white">VIP</span>
+                        </div>
+                      )}
                       <p className="text-sm md:text-base break-words">{message.content}</p>
                       <p className="text-xs opacity-70 mt-1">
                         {new Date(message.date).toLocaleString()}

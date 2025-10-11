@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import React, { useEffect, useRef, useState } from "react";
@@ -44,8 +45,10 @@ export const SupportChat = () => {
   const [showCategorySelection, setShowCategorySelection] = useState(false);
   const [supportChat, setSupportChat] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isFirstMessage, setIsFirstMessage] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Load userid from localStorage if not in Redux
   React.useEffect(() => {
@@ -72,16 +75,6 @@ export const SupportChat = () => {
       try {
         setIsLoading(true);
         
-        // Check for support message from form
-        const supportMessage = localStorage.getItem("supportMessage");
-        
-        if (supportMessage) {
-          // Create new support chat with category selection
-          setShowCategorySelection(true);
-          localStorage.removeItem("supportMessage");
-          return;
-        }
-        
         // Try to get existing support chat
         const response = await fetch(`${API_URL}/support-chat/user/${loggedInUserId}`);
         
@@ -90,17 +83,24 @@ export const SupportChat = () => {
           if (data.ok && data.supportChat) {
             setSupportChat(data.supportChat);
             setMessages(data.supportChat.messages || []);
+            
+            // Check if chat is closed - if so, clear messages
+            if (data.supportChat.status === 'closed') {
+              setMessages([]);
+              setSupportChat(null);
+              setIsFirstMessage(true); // Allow new chat to start
+            }
           } else {
-            // No active chat found, show category selection
-            setShowCategorySelection(true);
+            // No active chat found, prepare for first message
+            setIsFirstMessage(true);
           }
         } else {
-          // Error or no chat found, show category selection
-          setShowCategorySelection(true);
+          // Error or no chat found, prepare for first message
+          setIsFirstMessage(true);
         }
       } catch (error) {
         console.error('Error loading support chat:', error);
-        setShowCategorySelection(true);
+        setIsFirstMessage(true);
       } finally {
         setIsLoading(false);
       }
@@ -138,10 +138,23 @@ export const SupportChat = () => {
       }
     };
 
+    // Listen for chat status updates (when admin marks as closed)
+    const handleChatStatusUpdate = (data: any) => {
+      if (data.userid === loggedInUserId && data.status === 'closed') {
+        // Clear all messages and reset chat state
+        setMessages([]);
+        setSupportChat(null);
+        setIsFirstMessage(true);
+        toast.info('Chat has been closed. You can start a new conversation.');
+      }
+    };
+
     socket.on('support_message_received', handleSupportMessage);
+    socket.on('support_chat_status_update', handleChatStatusUpdate);
 
     return () => {
       socket.off('support_message_received', handleSupportMessage);
+      socket.off('support_chat_status_update', handleChatStatusUpdate);
     };
   }, [loggedInUserId]);
 
@@ -151,18 +164,18 @@ export const SupportChat = () => {
     
     if (!isTyping) {
       setIsTyping(true);
-      startTyping('support');
+      startTyping('support', loggedInUserId);
     }
     
     // Clear existing timeout
-    if (window.typingTimeout) {
-      clearTimeout(window.typingTimeout);
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
     }
     
     // Set new timeout
-    window.typingTimeout = setTimeout(() => {
+    typingTimeoutRef.current = setTimeout(() => {
       setIsTyping(false);
-      stopTyping('support');
+      stopTyping('support', loggedInUserId);
     }, 2000);
   };
 
@@ -189,7 +202,8 @@ export const SupportChat = () => {
   // Handle category selection
   const handleCategorySelect = async (category: string) => {
     try {
-      const supportMessage = localStorage.getItem("supportMessage") || "Hello, I need help with " + category.toLowerCase();
+      // Use the current text as the message, or default message
+      const supportMessage = text.trim() || "Hello, I need help with " + category.toLowerCase();
       
       const response = await fetch(`${API_URL}/support-chat/create-or-get`, {
         method: 'POST',
@@ -208,6 +222,8 @@ export const SupportChat = () => {
         setSupportChat(data.supportChat);
         setMessages(data.supportChat.messages || []);
         setShowCategorySelection(false);
+        setIsFirstMessage(false); // No longer first message
+        setText(""); // Clear the input
         localStorage.removeItem("supportMessage");
         toast.success('Support chat created successfully!');
       } else {
@@ -222,6 +238,13 @@ export const SupportChat = () => {
   // Send message function
   const send_chat = async (messageText: string) => {
     if (!messageText.trim() && selectedFiles.length === 0) return;
+    
+    // If this is the first message and no support chat exists, show category selection
+    if (isFirstMessage && !supportChat) {
+      setShowCategorySelection(true);
+      return;
+    }
+    
     if (!supportChat) return;
     
     try {
@@ -298,7 +321,7 @@ export const SupportChat = () => {
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-700">
                 <Image
-                  src={supportPhoto}
+                  src="/support.png"
                   alt={supportName}
                   width={40}
                   height={40}
