@@ -7,7 +7,9 @@ import {
   IoConstructOutline, 
   IoBulbOutline, 
   IoBugOutline, 
-  IoHelpCircleOutline 
+  IoHelpCircleOutline,
+  IoFlagOutline,
+  IoWarningOutline
 } from 'react-icons/io5';
 
 interface CategorySelectionProps {
@@ -45,6 +47,18 @@ const categories = [
     label: 'Bug Report',
     icon: IoBugOutline,
     description: 'Report bugs or unexpected behavior'
+  },
+  {
+    id: 'Report a Fan',
+    label: 'Report a Fan',
+    icon: IoFlagOutline,
+    description: 'Report inappropriate behavior or content from a fan'
+  },
+  {
+    id: 'Report a Creator',
+    label: 'Report a Creator',
+    icon: IoWarningOutline,
+    description: 'Report inappropriate behavior or content from a creator'
   },
   {
     id: 'Other',
