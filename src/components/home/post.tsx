@@ -830,7 +830,22 @@ export default function PostsCard() {
                 ) : (
                   <div className="space-y-2">
                     {uiComments && uiComments.length > 0 ? (
-                      uiComments.map((c: any, i: number) => (
+                      // Sort comments: VIP users first, then by timestamp
+                      uiComments
+                        .sort((a: any, b: any) => {
+                          // Priority 1: VIP users first
+                          const aIsVip = a?.isVip && a?.vipEndDate && new Date(a.vipEndDate) > new Date();
+                          const bIsVip = b?.isVip && b?.vipEndDate && new Date(b.vipEndDate) > new Date();
+                          
+                          if (aIsVip && !bIsVip) return -1;
+                          if (bIsVip && !aIsVip) return 1;
+                          
+                          // Priority 2: Sort by timestamp (most recent first)
+                          const aTime = a?.commenttime || a?.date || a?.createdAt || 0;
+                          const bTime = b?.commenttime || b?.date || b?.createdAt || 0;
+                          return bTime - aTime;
+                        })
+                        .map((c: any, i: number) => (
                         <div key={i} className="text-sm text-gray-200 flex items-start gap-2">
                           <div className="relative flex-shrink-0 w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center text-xs">
                             {(() => {
