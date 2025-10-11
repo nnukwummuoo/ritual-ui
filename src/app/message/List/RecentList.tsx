@@ -30,7 +30,7 @@ export const RecentList: React.FC<RecentListProps> = ({
   online,
 }) => {
   const [userphoto, setUserphoto] = useState<any>(dodo);
-  const [creator_portfolio_id, setCreator_portfoliio_Id] = useState<string[]>([]);
+  const [creator_portfolio_id, setCreator_portfolio_id] = useState<string[]>([]);
   const router = useRouter();
 
   const myid = useSelector((state: any) => state.register.userID);
@@ -43,10 +43,10 @@ export const RecentList: React.FC<RecentListProps> = ({
 
   useEffect(() => {
     if (fromid === myid) {
-      setCreator_portfoliio_Id([toid, fromid]);
+      setCreator_portfolio_id([toid, fromid]);
     }
     if (toid === myid) {
-      setCreator_portfoliio_Id([fromid, toid]);
+      setCreator_portfolio_id([fromid, toid]);
     }
 
     if (photolink) {

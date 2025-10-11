@@ -932,10 +932,10 @@ export const Chat = () => {
       name: string; 
       photolink: string; 
     }) => {
-      const decodedCreator_portfoliio_Id = decodeURIComponent(creator_portfolio_id);
+      const decodedCreator_portfolio_id = decodeURIComponent(creator_portfolio_id);
       
       // Since we now pass only the target user ID, we don't need to split by comma
-      const targetUserId = decodedCreator_portfoliio_Id;
+      const targetUserId = decodedCreator_portfolio_id;
       
       // Check if this message is between the current user and target user
       const isFromTargetToCurrent = (data.data.fromid === targetUserId && data.data.toid === loggedInUserId);
@@ -1250,10 +1250,10 @@ export const Chat = () => {
       return;
     }
 
-    const decodedCreator_portfoliio_Id = decodeURIComponent(creator_portfolio_id);
+    const decodedCreator_portfolio_id = decodeURIComponent(creator_portfolio_id);
     
     // Since we now pass only the target user ID, we don't need to split by comma
-    const targetUserId = decodedCreator_portfoliio_Id;
+    const targetUserId = decodedCreator_portfolio_id;
 
     console.log("🔍 [CHAT] Debug info:");
     console.log("🔍 [CHAT] creator_portfolio_id from params:", creator_portfolio_id);
