@@ -708,7 +708,8 @@ export default function Creatorbyid () {
       if (response.ok) {
         setShowRequestDetails(false);
         setbookingclick(false);
-        toast.success('Fan meet request sent successfully!');
+        const serviceType = creator.hosttype || "Fan meet";
+        toast.success(`${serviceType} request sent successfully!`);
         // Optionally navigate to notifications
         setTimeout(() => {
           navigate('/notifications/activity');

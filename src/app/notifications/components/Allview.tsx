@@ -141,11 +141,11 @@ export const Allview = () => {
               {/* Follow/Unfollow notifications show appropriate buttons */}
               {(title === "Follow Notification" || title === "Unfollow Notification") && (
                 <div className="pt-2">
-                  <Link href="/creators">
+                  <Link href="/following">
                     <button
                       className="px-4 py-2 border border-slate-700 hover:border-slate-500 
                                 rounded-lg text-sm text-slate-200 transition">
-                      View Creators
+                      View Following
                     </button>
                   </Link>
                 </div>

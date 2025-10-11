@@ -4,7 +4,8 @@
 import React, { useState, useEffect } from 'react'
 import RequestCard from '../components/RequestCard';
 import { useUserId } from '@/lib/hooks/useUserId';
-import {URL} from "@/api/config"
+import {URL} from "@/api/config";
+import VIPBadge from "@/components/VIPBadge";
 
 interface Request {
   bookingId: string;
@@ -14,6 +15,8 @@ interface Request {
     name: string;
     photolink: string;
     isCreator: boolean;
+    isVip?: boolean;
+    vipEndDate?: string | null;
   };
   timeRemaining?: string;
   price: number;
@@ -131,26 +134,39 @@ export default function Activity() {
   return (
     <div className='flex flex-col gap-8 max-w-[26rem] mx-auto'>
       {requests.map((request: Request) => (
-        <RequestCard
-          key={request.bookingId}
-          type={request.type}
-          img={request.otherUser?.photolink || "/picture-1.jfif"}
-          status={request.status}
-          name={request.otherUser?.name || "Unknown User"}
-          titles={request.otherUser?.isCreator ? ["Creator"] : ["Fan"]}
-          exp={request.timeRemaining || "Expired"}
-          bookingId={request.bookingId}
-          price={request.price}
-          details={request.date && request.time && request.venue ? {
-            date: request.date,
-            time: request.time,
-            venue: request.venue
-          } : undefined}
-          userid={request.userid}
-          creator_portfolio_id={request.creator_portfolio_id}
-          hosttype={request.hosttype}
-          onStatusChange={handleStatusChange}
-        />
+        <div key={request.bookingId} className="relative">
+          <RequestCard
+            type={request.type}
+            img={request.otherUser?.photolink || "/picture-1.jfif"}
+            status={request.status}
+            name={request.otherUser?.name || "Unknown User"}
+            titles={request.otherUser?.isCreator ? ["Creator"] : ["Fan"]}
+            exp={request.timeRemaining || "Expired"}
+            bookingId={request.bookingId}
+            price={request.price}
+            details={request.date && request.time && request.venue ? {
+              date: request.date,
+              time: request.time,
+              venue: request.venue
+            } : undefined}
+            userid={request.userid}
+            creator_portfolio_id={request.creator_portfolio_id}
+            hosttype={request.hosttype}
+            isVip={request.otherUser?.isVip || false}
+            vipEndDate={request.otherUser?.vipEndDate}
+            onStatusChange={handleStatusChange}
+          />
+          
+          {/* VIP Badge - positioned outside the card */}
+          {request.otherUser?.isVip && (
+            <VIPBadge 
+              size="xl" 
+              className="absolute top-2 left-12 z-10" 
+              isVip={request.otherUser.isVip} 
+              vipEndDate={request.otherUser.vipEndDate || undefined} 
+            />
+          )}
+        </div>
       ))}
   </div>
   );
