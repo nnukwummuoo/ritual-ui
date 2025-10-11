@@ -14,7 +14,7 @@ export interface RegisterState {
     forgetpassstate: string;
     conpasswordstate: string;
     chagepassword: string;
-    creator_portfoliio_Id?: string;
+    creator_portfolio_id?: string;
     creator_portfolio?: boolean;
   }
   
@@ -28,6 +28,6 @@ export interface RegisterState {
     id?: string;
     token?: string;
     accessToken?: string;
-    creator_portfoliio_Id?: string;
+    creator_portfolio_id?: string;
     creator_portfolio?: boolean;
   }

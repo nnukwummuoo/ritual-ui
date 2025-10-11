@@ -41,7 +41,7 @@ export const Chat = () => {
   // const profilename = useSelector((state) => state.profile.firstname);
   const dispatch = useDispatch();
 
-  const { creator_portfoliio_Id } = useParams<{ creator_portfoliio_Id: string }>();
+  const { creator_portfolio_id } = useParams<{ creator_portfolio_id: string }>();
 
   const router = useRouter();
 
@@ -449,14 +449,14 @@ export const Chat = () => {
 
   // Direct API call to fetch messages (skip Redux)
   const fetchMessagesDirectly = React.useCallback(async () => {
-    if (!creator_portfoliio_Id || !loggedInUserId) {
+    if (!creator_portfolio_id || !loggedInUserId) {
       return;
     }
 
     setLoading(true);
 
     try {
-      const targetUserId = decodeURIComponent(creator_portfoliio_Id);
+      const targetUserId = decodeURIComponent(creator_portfolio_id);
       const token = (() => {
         try {
           const raw = localStorage.getItem("login");
@@ -475,7 +475,7 @@ export const Chat = () => {
       })();
 
       const requestData = {
-        creator_portfoliio_Id: targetUserId,
+        creator_portfolio_id: targetUserId,
         clientid: loggedInUserId
       };
 
@@ -522,7 +522,7 @@ export const Chat = () => {
         toast.error(`Failed to load messages: ${error.response?.data?.message || error.message}`);
       }
     }
-  }, [creator_portfoliio_Id, loggedInUserId]);
+  }, [creator_portfolio_id, loggedInUserId]);
 
   // Chat info is now handled by viewingProfile only (no Redux chatinfo)
 
@@ -545,11 +545,11 @@ export const Chat = () => {
     };
   }, []);
 
-  // Fetch target user profile details when creator_portfoliio_Id changes or route changes
+  // Fetch target user profile details when creator_portfolio_id changes or route changes
   useEffect(() => {
-    if (!creator_portfoliio_Id || !loggedInUserId) return;
+    if (!creator_portfolio_id || !loggedInUserId) return;
 
-    const targetUserId = decodeURIComponent(creator_portfoliio_Id);
+    const targetUserId = decodeURIComponent(creator_portfolio_id);
     
     // Get token from localStorage or Redux
     const token = (() => {
@@ -578,7 +578,7 @@ export const Chat = () => {
       // @ts-expect-error - Redux dispatch type issue
       dispatch(getViewingProfile({ userid: targetUserId, token }));
     }
-  }, [creator_portfoliio_Id, loggedInUserId, dispatch, routeChangeKey]);
+  }, [creator_portfolio_id, loggedInUserId, dispatch, routeChangeKey]);
 
   // Update chat info from viewing profile when it loads
   useEffect(() => {
@@ -600,7 +600,7 @@ export const Chat = () => {
       dispatch(checkVipStatus(viewingProfile.userId) as any);
     } else if (viewingProfile.status === "failed") {
       // Handle profile loading failure with better fallback
-      const targetUserId = decodeURIComponent(creator_portfoliio_Id || "");
+      const targetUserId = decodeURIComponent(creator_portfolio_id || "");
       const fallbackName = `User ${targetUserId.slice(-6)}`;
       
       setfirstname(fallbackName);
@@ -608,7 +608,7 @@ export const Chat = () => {
       set_Chatphoto("/icons/icons8-profile_user.png");
       setChatphotoError(false);
     }
-  }, [viewingProfile, creator_portfoliio_Id, dispatch]);
+  }, [viewingProfile, creator_portfolio_id, dispatch]);
 
   // Check VIP celebration status when VIP status is confirmed
   useEffect(() => {
@@ -645,11 +645,11 @@ export const Chat = () => {
     setVipCelebrationShown(false);
     setShowVipCelebration(false);
     setCelebrationChecked(false);
-  }, [creator_portfoliio_Id]);
+  }, [creator_portfolio_id]);
 
-  // Force update chat info when creator_portfoliio_Id changes to ensure profile is always shown
+  // Force update chat info when creator_portfolio_id changes to ensure profile is always shown
   useEffect(() => {
-    if (creator_portfoliio_Id && viewingProfile.status === "succeeded" && viewingProfile.userId) {
+    if (creator_portfolio_id && viewingProfile.status === "succeeded" && viewingProfile.userId) {
       setChatphotoError(false); // Reset error state for new profile
       const photoLink = (viewingProfile as any).photolink;
       if (photoLink && photoLink.trim() !== "" && photoLink !== "null" && photoLink !== "undefined") {
@@ -658,7 +658,7 @@ export const Chat = () => {
         set_Chatphoto("/icons/icons8-profile_user.png");
       }
     }
-  }, [creator_portfoliio_Id, viewingProfile]);
+  }, [creator_portfolio_id, viewingProfile]);
 
   // Fallback to ensure loading is set to false after a reasonable time
   useEffect(() => {
@@ -666,8 +666,8 @@ export const Chat = () => {
       setLoading(false);
       
       // If profile still hasn't loaded, set fallback values
-      if (!chatusername && creator_portfoliio_Id) {
-        const targetUserId = decodeURIComponent(creator_portfoliio_Id);
+      if (!chatusername && creator_portfolio_id) {
+        const targetUserId = decodeURIComponent(creator_portfolio_id);
         const fallbackName = `User ${targetUserId.slice(-6)}`;
         
         setchatusername(fallbackName);
@@ -678,12 +678,12 @@ export const Chat = () => {
     }, 5000); // 5 second fallback - reduced from 10 seconds
 
     return () => clearTimeout(fallbackTimeout);
-  }, [creator_portfoliio_Id, chatusername]);
+  }, [creator_portfolio_id, chatusername]);
 
   // Enhanced fallback to ensure chat info is set even if there are timing issues
   useEffect(() => {
-    if (creator_portfoliio_Id && (!chatusername || !chatfirstname)) {
-      const targetUserId = decodeURIComponent(creator_portfoliio_Id);
+    if (creator_portfolio_id && (!chatusername || !chatfirstname)) {
+      const targetUserId = decodeURIComponent(creator_portfolio_id);
       
       // Try to get a better fallback name from the user ID
       const fallbackName = `User ${targetUserId.slice(-6)}`; // Show last 6 chars for better identification
@@ -700,12 +700,12 @@ export const Chat = () => {
       set_Chatphoto("/icons/icons8-profile_user.png");
       setChatphotoError(false);
     }
-  }, [creator_portfoliio_Id, chatusername, chatfirstname]);
+  }, [creator_portfolio_id, chatusername, chatfirstname]);
 
   // Additional useEffect to handle navigation from MessageList (skip Redux)
   useEffect(() => {
-    // Only proceed if we have both creator_portfoliio_Id and loggedInUserId
-    if (!creator_portfoliio_Id || !loggedInUserId) {
+    // Only proceed if we have both creator_portfolio_id and loggedInUserId
+    if (!creator_portfolio_id || !loggedInUserId) {
       return;
     }
 
@@ -715,7 +715,7 @@ export const Chat = () => {
 
     // Use direct API call instead of Redux
     fetchMessagesDirectly();
-  }, [creator_portfoliio_Id, loggedInUserId, fetchMessagesDirectly]);
+  }, [creator_portfolio_id, loggedInUserId, fetchMessagesDirectly]);
 
   // Auto-scroll to bottom when messages change
   useEffect(() => {
@@ -883,7 +883,7 @@ export const Chat = () => {
   // Direct API call when component loads (skip Redux)
   useEffect(() => {
 
-    if (!creator_portfoliio_Id) {
+    if (!creator_portfolio_id) {
       return;
     }
 
@@ -893,7 +893,7 @@ export const Chat = () => {
     
     // Always fetch messages when component loads
     fetchMessagesDirectly();
-  }, [creator_portfoliio_Id, loggedInUserId, reduxUserId, localUserid, fetchMessagesDirectly]);
+  }, [creator_portfolio_id, loggedInUserId, reduxUserId, localUserid, fetchMessagesDirectly]);
 
 
   // Socket connection and real-time message handling
@@ -932,7 +932,7 @@ export const Chat = () => {
       name: string; 
       photolink: string; 
     }) => {
-      const decodedCreator_portfoliio_Id = decodeURIComponent(creator_portfoliio_Id);
+      const decodedCreator_portfoliio_Id = decodeURIComponent(creator_portfolio_id);
       
       // Since we now pass only the target user ID, we don't need to split by comma
       const targetUserId = decodedCreator_portfoliio_Id;
@@ -1003,13 +1003,13 @@ export const Chat = () => {
 
     // Typing event listeners
     const handleTypingStart = (data: { fromUserId: string, toUserId: string }) => {
-      if (data.fromUserId === creator_portfoliio_Id && data.toUserId === loggedInUserId) {
+      if (data.fromUserId === creator_portfolio_id && data.toUserId === loggedInUserId) {
         setOtherUserTyping(true);
       }
     };
 
     const handleTypingStop = (data: { fromUserId: string, toUserId: string }) => {
-      if (data.fromUserId === creator_portfoliio_Id && data.toUserId === loggedInUserId) {
+      if (data.fromUserId === creator_portfolio_id && data.toUserId === loggedInUserId) {
         setOtherUserTyping(false);
       }
     };
@@ -1028,7 +1028,7 @@ export const Chat = () => {
       socket.off('typing_stop', handleTypingStop);
     };
 
-  }, [loggedInUserId, creator_portfoliio_Id]);
+  }, [loggedInUserId, creator_portfolio_id]);
 
 
   // useEffect(() => {
@@ -1054,7 +1054,7 @@ export const Chat = () => {
   //     setLoading(false);
 
   //     socket.on("LiveChat", (data) => {
-  //       let ids = creator_portfoliio_Id.split(",");
+  //       let ids = creator_portfolio_id.split(",");
   //       if (ids[0] === data.data.fromid && MYID === data.data.toid) {
   //         // console.log(data)
   //         dispatch(updatemessage({ date: data.data.date, token }));
@@ -1102,7 +1102,7 @@ export const Chat = () => {
 
   // const send_coin = () => {
   //   if (check_balance()) {
-  //     let ids = creator_portfoliio_Id.split(",");
+  //     let ids = creator_portfolio_id.split(",");
 
   //     if (giftstats !== "loading") {
   //       let content = {
@@ -1115,14 +1115,14 @@ export const Chat = () => {
   //         coin: true,
   //       };
 
-  //       //let ids = creator_portfoliio_Id.split(",");
+  //       //let ids = creator_portfolio_id.split(",");
 
   //       socket.emit("message", content);
   //       setsendL(true);
   //       dispatch(
   //         send_gift({
   //           token,
-  //           creator_portfoliio_Id: ids[0],
+  //           creator_portfolio_id: ids[0],
   //           userid: userid,
   //           amount: `${gold_amount}`,
   //         })
@@ -1250,13 +1250,13 @@ export const Chat = () => {
       return;
     }
 
-    const decodedCreator_portfoliio_Id = decodeURIComponent(creator_portfoliio_Id);
+    const decodedCreator_portfoliio_Id = decodeURIComponent(creator_portfolio_id);
     
     // Since we now pass only the target user ID, we don't need to split by comma
     const targetUserId = decodedCreator_portfoliio_Id;
 
     console.log("🔍 [CHAT] Debug info:");
-    console.log("🔍 [CHAT] creator_portfoliio_Id from params:", creator_portfoliio_Id);
+    console.log("🔍 [CHAT] creator_portfolio_id from params:", creator_portfolio_id);
     console.log("🔍 [CHAT] targetUserId after decode:", targetUserId);
     console.log("🔍 [CHAT] loggedInUserId:", loggedInUserId);
 
@@ -1523,7 +1523,7 @@ export const Chat = () => {
                       </div>
                       <span className="text-xs text-blue-300">Typing...</span>
                     </div>
-                  ) : isUserOnline(creator_portfoliio_Id) ? (
+                  ) : isUserOnline(creator_portfolio_id) ? (
                     <div className="flex items-center gap-1">
                       <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                       <span className="text-xs text-green-400">Online</span>
@@ -1660,10 +1660,10 @@ export const Chat = () => {
               settext(e.target.value);
               
               // Handle typing indicators
-              if (e.target.value.trim() && loggedInUserId && creator_portfoliio_Id) {
+              if (e.target.value.trim() && loggedInUserId && creator_portfolio_id) {
                 if (!isTyping) {
                   setIsTyping(true);
-                  startTyping(loggedInUserId, creator_portfoliio_Id);
+                  startTyping(loggedInUserId, creator_portfolio_id);
                 }
                 
                 // Clear existing timeout
@@ -1674,13 +1674,13 @@ export const Chat = () => {
                 // Set new timeout to stop typing after 2 seconds of inactivity
                 const timeout = setTimeout(() => {
                   setIsTyping(false);
-                  stopTyping(loggedInUserId, creator_portfoliio_Id);
+                  stopTyping(loggedInUserId, creator_portfolio_id);
                 }, 2000);
                 
                 setTypingTimeout(timeout);
               } else if (!e.target.value.trim() && isTyping) {
                 setIsTyping(false);
-                stopTyping(loggedInUserId, creator_portfoliio_Id);
+                stopTyping(loggedInUserId, creator_portfolio_id);
                 if (typingTimeout) {
                   clearTimeout(typingTimeout);
                   setTypingTimeout(null);

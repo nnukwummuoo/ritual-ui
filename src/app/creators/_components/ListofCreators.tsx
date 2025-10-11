@@ -28,7 +28,7 @@ interface ListofCreatorsProps {
   location: string;
   interest: string[];
   amount: number;
-  creator_portfoliio_Id: string;
+  creator_portfolio_id: string;
   userid: string;
   createdAt: string;
 }
@@ -43,13 +43,13 @@ export const ListofCreators: React.FC<ListofCreatorsProps> = ({
   location,
   interest,
   amount,
-  creator_portfoliio_Id,
+  creator_portfolio_id,
   userid,
   createdAt,
 }) => {
   const router = useRouter();
   const [hostimg, sethostimg] = useState<string>(DummyCreatorImage.src);
-  const [creator_portfolio_id] = useState([creator_portfoliio_Id, userid]);
+  const [creator_portfolio_id] = useState([creator_portfolio_id, userid]);
   const [countryData, setCountryData] = useState({
     flag: "",
     abbreviation: "",

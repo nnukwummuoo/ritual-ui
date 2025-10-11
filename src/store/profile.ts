@@ -708,8 +708,8 @@ const profile = createSlice({
         (state as any).earnings = p.earnings ?? "0";
         // Backend may return either boolean creator or creator_portfolio
         state.creator = (p as any).creator ?? (p as any).creator_portfolio ?? false as any;
-        // Backend may use creator_portfoliio_Id
-        state.creator_portfolio_id = (p as any).creator_portfolio_id ?? (p as any).creator_portfoliio_Id ?? "";
+        // Backend may use creator_portfolio_id
+        state.creator_portfolio_id = (p as any).creator_portfolio_id ?? (p as any).creator_portfolio_id ?? "";
         state.creatorname = (p as any).creatorname ?? "";
         state.creatorphotolink = (p as any).creatorphotolink ?? "";
         state.photolink = (p as any).photolink ?? (p as any).photoLink ?? "";

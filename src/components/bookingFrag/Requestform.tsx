@@ -13,7 +13,7 @@ import { useUserId } from "@/lib/hooks/useUserId";
 interface RequestFormProps {
   setsuccess: (value: boolean) => void;
   setrequested: (value: boolean) => void;
-  creator_portfoliio_Id: string;
+  creator_portfolio_id: string;
   type: string;
   toast: {
     error: (msg: string, options?: { autoClose?: number }) => void;
@@ -25,7 +25,7 @@ interface RequestFormProps {
 export const Requestform: React.FC<RequestFormProps> = ({
   setsuccess,
   setrequested,
-  creator_portfoliio_Id,
+  creator_portfolio_id,
   type,
   price,
   creator
@@ -88,7 +88,7 @@ export const Requestform: React.FC<RequestFormProps> = ({
           time,
           date,
           userid: userid,
-          creator_portfoliio_Id: creator.hostid,
+          creator_portfolio_id: creator.hostid,
           type: creator.hosttype,
           price: creator.price
         });

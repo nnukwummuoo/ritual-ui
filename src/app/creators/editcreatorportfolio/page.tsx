@@ -280,7 +280,7 @@ export default function Editcreator () {
       
       const data = {
         userId: userid, 
-        creator_portfoliio_Id: creator_portfolio_id, 
+        creator_portfolio_id: creator_portfolio_id, 
         name,
         age,
         location,
@@ -306,7 +306,7 @@ export default function Editcreator () {
       
       console.log("🔄 [EditCreatorPortfolio] Prepared data:", {
         userId: data.userId,
-        creator_portfoliio_Id: data.creator_portfoliio_Id,
+        creator_portfolio_id: data.creator_portfolio_id,
         name: data.name,
         existingImagesCount: data.existingImages.length,
         imagesToDeleteCount: data.imagesToDelete.length,

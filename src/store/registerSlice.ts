@@ -21,7 +21,7 @@ export interface RegisterState {
   balance: number;
   conpasswordstate: string;
   chagepassword: string;
-  creator_portfoliio_Id?: string;
+  creator_portfolio_id?: string;
   creator_portfolio?: boolean;
   // VIP status fields
   isVip?: boolean;
@@ -203,7 +203,7 @@ const registerSlice = createSlice({
       state.refreshtoken = action.payload.refreshtoken;
       state.accesstoken = action.payload.accesstoken;
       state.userID = action.payload.userId;
-      state.creator_portfoliio_Id = action.payload.creator_portfoliio_Id;
+      state.creator_portfolio_id = action.payload.creator_portfolio_id;
       state.creator_portfolio = action.payload.creator_portfolio;
       state.balance = action.payload.balance || 0;
       // VIP status fields
@@ -289,7 +289,7 @@ const registerSlice = createSlice({
               refreshtoken: action.payload.token,
               accesstoken: action.payload.accessToken,
               userID: action.payload.userId,
-              creator_portfoliio_Id: action.payload.creator_portfoliio_Id,
+              creator_portfolio_id: action.payload.creator_portfolio_id,
               creator_portfolio: action.payload.creator_portfolio,
               // Include VIP status
               isVip: action.payload.isVip || false,
@@ -305,7 +305,7 @@ const registerSlice = createSlice({
         state.refreshtoken = action.payload.token;
         state.accesstoken = action.payload.accessToken;
         state.userID = action.payload.userId;
-        state.creator_portfoliio_Id = action.payload.creator_portfoliio_Id;
+        state.creator_portfolio_id = action.payload.creator_portfolio_id;
         state.creator_portfolio = action.payload.creator_portfolio;
         // Set VIP status in Redux state
         state.isVip = action.payload.isVip || false;

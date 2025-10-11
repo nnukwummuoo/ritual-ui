@@ -78,13 +78,13 @@ export async function getMyCreator(params: { userid: string; token?: string }) {
 // -----------------------------
 export async function editCreatorMultipart(params: {
   token: string;
-  data: Record<string, any>; // must include userId and creator_portfoliio_Id
+  data: Record<string, any>; // must include userId and creator_portfolio_id
   files?: Array<File | Blob>;
 }) {
   console.log("📡 [editCreatorMultipart] Starting edit API call");
   console.log("📡 [editCreatorMultipart] Parameters:", {
     userId: params.data.userId,
-    creator_portfoliio_Id: params.data.creator_portfoliio_Id,
+    creator_portfolio_id: params.data.creator_portfolio_id,
     token: params.token ? "present" : "missing",
     filesCount: params.files?.length || 0
   });
@@ -129,7 +129,7 @@ export async function editCreatorMultipart(params: {
 
   console.log("📡 [editCreatorMultipart] Sending data:", {
     userId: data.userId,
-    creator_portfoliio_Id: data.creator_portfoliio_Id,
+    creator_portfolio_id: data.creator_portfolio_id,
     existingImages: data.existingImages,
     imagesToDelete: data.imagesToDelete,
     newFilesCount: files.length

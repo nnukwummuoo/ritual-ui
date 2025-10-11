@@ -13,7 +13,7 @@ const DropdownMenu = () => {
   const [blocking, setBlocking] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   
-  const { creator_portfoliio_Id } = useParams<{ creator_portfoliio_Id: string }>();
+  const { creator_portfolio_id } = useParams<{ creator_portfolio_id: string }>();
   const router = useRouter();
   const userid = useSelector((state: RootState) => state.register.userID);
   
@@ -97,7 +97,7 @@ const DropdownMenu = () => {
 
     console.log("🔍 [BLOCK] Debug info:");
     console.log("🔍 [BLOCK] loggedInUserId:", loggedInUserId);
-    console.log("🔍 [BLOCK] creator_portfoliio_Id from params:", creator_portfoliio_Id);
+    console.log("🔍 [BLOCK] creator_portfolio_id from params:", creator_portfolio_id);
     console.log("🔍 [BLOCK] Redux userid:", userid);
     console.log("🔍 [BLOCK] Profile userid:", profileUserId);
     console.log("🔍 [BLOCK] Local userid:", localUserid);
@@ -145,8 +145,8 @@ const DropdownMenu = () => {
       }
     }
 
-    if (!finalUserId || !creator_portfoliio_Id) {
-      console.error("❌ [BLOCK] Missing required IDs:", { finalUserId, creator_portfoliio_Id });
+    if (!finalUserId || !creator_portfolio_id) {
+      console.error("❌ [BLOCK] Missing required IDs:", { finalUserId, creator_portfolio_id });
       toast.error("Unable to block user. Please log in and try again.");
       return;
     }
@@ -174,11 +174,11 @@ const DropdownMenu = () => {
         return;
       }
 
-      const targetUserId = decodeURIComponent(creator_portfoliio_Id);
+      const targetUserId = decodeURIComponent(creator_portfolio_id);
       console.log("🔍 [BLOCK] targetUserId after decode:", targetUserId);
-      console.log("🔍 [BLOCK] Original creator_portfoliio_Id:", creator_portfoliio_Id);
+      console.log("🔍 [BLOCK] Original creator_portfolio_id:", creator_portfolio_id);
       console.log("🔍 [BLOCK] Decoded targetUserId length:", targetUserId.length);
-      console.log("🔍 [BLOCK] Original creator_portfoliio_Id length:", creator_portfoliio_Id.length);
+      console.log("🔍 [BLOCK] Original creator_portfolio_id length:", creator_portfolio_id.length);
 
       if (!targetUserId || targetUserId === 'undefined' || targetUserId === 'null' || targetUserId.length < 10) {
         console.error("❌ [BLOCK] Invalid targetUserId:", targetUserId);

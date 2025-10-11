@@ -22,6 +22,6 @@ export type postListConstants = {
     timeoutId: NodeJS.Timeout | null,
     setPosts: React.Dispatch<React.SetStateAction<any[]>>,
     isProfilePage?: boolean,
-    creator_portfoliio_Id?: string,
+    creator_portfolio_id?: string,
     followers?: string[],
   }

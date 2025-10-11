@@ -243,11 +243,11 @@ const booking = createSlice({
       state.paystats = "idle";
     },
     deleterequest(state, action) {
-      let { creator_portfoliio_Id, date, time } = action.payload;
+      let { creator_portfolio_id, date, time } = action.payload;
 
       let index = state.requests.findIndex((value) => {
         return (
-          value.creator_portfoliio_Id === creator_portfoliio_Id &&
+          value.creator_portfolio_id === creator_portfolio_id &&
           value.date === date &&
           value.time === time
         );
@@ -255,7 +255,7 @@ const booking = createSlice({
 
       let index2 = state.Allrequest.findIndex((value) => {
         return (
-          value.creator_portfoliio_Id === creator_portfoliio_Id &&
+          value.creator_portfolio_id === creator_portfolio_id &&
           value.date === date &&
           value.time === time
         );
@@ -270,11 +270,11 @@ const booking = createSlice({
       }
     },
     deleteCreator(state, action) {
-      let { creator_portfoliio_Id, date, time } = action.payload;
+      let { creator_portfolio_id, date, time } = action.payload;
 
       let index = state.acceptedList.findIndex((value) => {
         return (
-          value.creator_portfoliio_Id === creator_portfoliio_Id &&
+          value.creator_portfolio_id === creator_portfolio_id &&
           value.date === date &&
           value.time === time
         );
@@ -282,7 +282,7 @@ const booking = createSlice({
 
       let index2 = state.Allrequest.findIndex((value) => {
         return (
-          value.creator_portfoliio_Id === creator_portfoliio_Id &&
+          value.creator_portfolio_id === creator_portfolio_id &&
           value.date === date &&
           value.time === time
         );

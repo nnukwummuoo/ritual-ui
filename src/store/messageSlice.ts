@@ -51,7 +51,7 @@ export const getchat = createAsyncThunk< { chats: any[]; chatInfo: any }, any>("
     };
 
     console.log("📤 [GETCHAT_API] Request data with token:", {
-      creator_portfoliio_Id: requestData.creator_portfoliio_Id,
+      creator_portfolio_id: requestData.creator_portfolio_id,
       clientid: requestData.clientid,
       hasToken: !!requestData.token
     });

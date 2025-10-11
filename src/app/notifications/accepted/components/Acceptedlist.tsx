@@ -32,7 +32,7 @@ interface AcceptedProps {
   type: string;
   date: string;
   time: string;
-  creator_portfoliio_Id: string;
+  creator_portfolio_id: string;
   photolink: string;
   id: string;
   creatoruserid: string;
@@ -44,7 +44,7 @@ export const Acceptedlist = ({
   type,
   date,
   time,
-  creator_portfoliio_Id,
+  creator_portfolio_id,
   photolink,
   id,
   creatoruserid,
@@ -85,16 +85,16 @@ export const Acceptedlist = ({
 
   // useEffect(() => {
   //   if (paystats === "succeeded") {
-  //     dispatch(deleteCreator({ creator_portfoliio_Id: creator_portfoliio_Id, date: date, time: time }));
-  //     dispatch(getall_request({ userid, token, creator_portfoliio_Id: Mycreator }));
+  //     dispatch(deleteCreator({ creator_portfolio_id: creator_portfolio_id, date: date, time: time }));
+  //     dispatch(getall_request({ userid, token, creator_portfolio_id: Mycreator }));
   //     dispatch(acceptedr_req({ userid, token }));
   //     dispatch(resetstat());
   //     // setloading(!loading);
   //   }
 
   //   if (cancelstats === "succeeded") {
-  //     dispatch(deleteCreator({ creator_portfoliio_Id: creator_portfoliio_Id, date: date, time: time }));
-  //     dispatch(getall_request({ userid, token, creator_portfoliio_Id: Mycreator }));
+  //     dispatch(deleteCreator({ creator_portfolio_id: creator_portfolio_id, date: date, time: time }));
+  //     dispatch(getall_request({ userid, token, creator_portfolio_id: Mycreator }));
   //     dispatch(acceptedr_req({ userid, token }));
   //     dispatch(resetstat());
   //     setloading(!loading);
@@ -136,7 +136,7 @@ export const Acceptedlist = ({
   // const paycomlete = () => {
   //   if (paystats !== "Loading") {
   //     const response = dispatch(
-  //       completepayment({ token, userid, creator_portfoliio_Id, date, time, id })
+  //       completepayment({ token, userid, creator_portfolio_id, date, time, id })
   //     );
   //   }
   // };
@@ -155,7 +155,7 @@ export const Acceptedlist = ({
           //     return;
           //   }
           //   console.log("creator price " + amount);
-          //   let creator_portfoliio_Id2 = [
+          //   let creator_portfolio_id2 = [
           //     creatoruserid,
           //     userid,
           //     "caller",
@@ -163,7 +163,7 @@ export const Acceptedlist = ({
           //     amount,
           //     balance,
           //   ];
-          //   dispatch(add_call_data(creator_portfoliio_Id2));
+          //   dispatch(add_call_data(creator_portfolio_id2));
           //   navigate(`/privatecall`);
           // }}
         >
@@ -189,14 +189,14 @@ export const Acceptedlist = ({
   // const ()=>{} = () => {
   //   if (cancelstats !== "loading") {
   //     setloading(!loading);
-  //     dispatch(Cancelrequest({ token, creator_portfoliio_Id, userid, date, time }));
+  //     dispatch(Cancelrequest({ token, creator_portfolio_id, userid, date, time }));
   //   }
   // };
 
   // const reviewbutton = () => {
   //   if (reviewstats !== "loading") {
   //     setloading(true);
-  //     dispatch(review({ token, userid, creator_portfoliio_Id, content: revcontent }));
+  //     dispatch(review({ token, userid, creator_portfolio_id, content: revcontent }));
   //   }
   // };
   const [initialStatus, setInitialStatus] = useState("Mark as Completed");
@@ -259,7 +259,7 @@ export const Acceptedlist = ({
             //     return;
             //   }
             //   console.log("creator price " + amount);
-            //   let creator_portfoliio_Id2 = [
+            //   let creator_portfolio_id2 = [
             //     creatoruserid,
             //     userid,
             //     "caller",
@@ -267,7 +267,7 @@ export const Acceptedlist = ({
             //     amount,
             //     balance,
             //   ];
-            //   dispatch(add_call_data(creator_portfoliio_Id2));
+            //   dispatch(add_call_data(creator_portfolio_id2));
             //   navigate(`/privatecall`);
             // }}
           >

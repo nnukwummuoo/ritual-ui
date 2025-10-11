@@ -60,7 +60,7 @@ const FollowingPage: React.FC = () => {
                 refreshtoken: data.refreshtoken || "",
                 accesstoken: data.accesstoken || "",
                 userID: data.userID || "",
-                creator_portfoliio_Id: data.creator_portfoliio_Id,
+                creator_portfolio_id: data.creator_portfolio_id,
                 creator_portfolio: data.creator_portfolio,
               })
             );
@@ -199,7 +199,7 @@ const FollowingPage: React.FC = () => {
                 key={`fan_${index}_${user.id}`}
                 image={user.image || ""}
                 name={user.name}
-                creator_portfoliio_Id={user.creator_portfoliio_Id}
+                creator_portfolio_id={user.creator_portfolio_id}
                 userId={user.id}
                 isVip={user.isVip || false}
                 vipStartDate={user.vipStartDate}
@@ -237,7 +237,7 @@ const FollowingPage: React.FC = () => {
                   key={`following_${index}_${user.id}`}
                   image={user.image || ""}
                   name={user.name}
-                  creator_portfoliio_Id={user.creator_portfoliio_Id}
+                  creator_portfolio_id={user.creator_portfolio_id}
                   userId={user.id}
                   isVip={user.isVip || false}
                   vipStartDate={user.vipStartDate}
@@ -294,7 +294,7 @@ const FollowingPage: React.FC = () => {
                 key={`discover_${index}_${user._id}`}
                 image={user.photolink || ""}
                 name={`${user.firstname} ${user.lastname}`.trim()}
-                creator_portfoliio_Id={user.creator_portfoliio_Id || ""}
+                creator_portfolio_id={user.creator_portfolio_id || ""}
                 userId={user._id}
                 isVip={user.isVip || false}
                 vipStartDate={user.vipStartDate}

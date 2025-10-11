@@ -187,7 +187,7 @@ const Sidemenu = () => {
 
 
 
-//  url={`/creators/${profile?.creator_portfoliio_Id||profile?.creator_portfolio_id}`}
+//  url={`/creators/${profile?.creator_portfolio_id||profile?.creator_portfolio_id}`}
 
   // MODEL BUTTON LOGIC - ALWAYS uses current user's creator data
   // This ensures the creator button reflects the current user's creator status
