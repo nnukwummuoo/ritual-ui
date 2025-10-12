@@ -46,6 +46,7 @@ export const SupportChat = () => {
   const [supportChat, setSupportChat] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isFirstMessage, setIsFirstMessage] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<string>('');
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -200,38 +201,13 @@ export const SupportChat = () => {
   };
 
   // Handle category selection
-  const handleCategorySelect = async (category: string) => {
-    try {
-      // Use the current text as the message, or default message
-      const supportMessage = text.trim() || "Hello, I need help with " + category.toLowerCase();
-      
-      const response = await fetch(`${API_URL}/support-chat/create-or-get`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          userid: loggedInUserId,
-          category: category,
-          message: supportMessage
-        })
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setSupportChat(data.supportChat);
-        setMessages(data.supportChat.messages || []);
-        setShowCategorySelection(false);
-        setIsFirstMessage(false); // No longer first message
-        setText(""); // Clear the input
-        localStorage.removeItem("supportMessage");
-        toast.success('Support chat created successfully!');
-      } else {
-        toast.error('Failed to create support chat');
-      }
-    } catch (error) {
-      console.error('Error creating support chat:', error);
-      toast.error('Error creating support chat');
+  const handleCategorySelect = (category: string) => {
+    setSelectedCategory(category);
+    setShowCategorySelection(false);
+    
+    // Set default message text based on category if no text is entered
+    if (!text.trim()) {
+      setText("Hello, I need help with " + category.toLowerCase());
     }
   };
 
@@ -240,32 +216,55 @@ export const SupportChat = () => {
     if (!messageText.trim() && selectedFiles.length === 0) return;
     
     // If this is the first message and no support chat exists, show category selection
-    if (isFirstMessage && !supportChat) {
+    if (isFirstMessage && !supportChat && !selectedCategory) {
       setShowCategorySelection(true);
       return;
     }
     
-    if (!supportChat) return;
-    
     try {
-      const response = await fetch(`${API_URL}/support-chat/send-message`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          userid: loggedInUserId,
-          message: messageText,
-          files: [] // TODO: Handle file uploads
-        })
-      });
+      let response;
+      
+      // If this is the first message with a selected category, create chat and send message
+      if (isFirstMessage && selectedCategory && !supportChat) {
+        response = await fetch(`${API_URL}/support-chat/create-or-get`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            userid: loggedInUserId,
+            category: selectedCategory,
+            message: messageText
+          })
+        });
+      } else if (supportChat) {
+        // Send message to existing chat
+        response = await fetch(`${API_URL}/support-chat/send-message`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            userid: loggedInUserId,
+            message: messageText,
+            files: [] // TODO: Handle file uploads
+          })
+        });
+      } else {
+        toast.error('Please select a category first');
+        return;
+      }
 
       if (response.ok) {
         const data = await response.json();
+        setSupportChat(data.supportChat);
         setMessages(data.supportChat.messages || []);
+        // Clear input immediately
         setText("");
         setSelectedFiles([]);
         setPreviewFiles([]);
+        setIsFirstMessage(false);
+        setSelectedCategory(''); // Clear selected category after first message
         toast.success('Message sent successfully!');
       } else {
         toast.error('Failed to send message');
@@ -273,6 +272,8 @@ export const SupportChat = () => {
     } catch (error) {
       console.error('Error sending message:', error);
       toast.error('Error sending message');
+      // Clear input even on error to prevent stuck text
+      setText("");
     }
   };
 

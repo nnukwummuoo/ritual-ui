@@ -78,7 +78,7 @@ export const CategorySelection: React.FC<CategorySelectionProps> = ({
     setSelectedCategory(categoryId);
   };
 
-  const handleSendMessage = () => {
+  const handleConfirmSelection = () => {
     if (selectedCategory) {
       onCategorySelect(selectedCategory);
     }
@@ -140,11 +140,11 @@ export const CategorySelection: React.FC<CategorySelectionProps> = ({
         </div>
 
         <button
-          onClick={handleSendMessage}
+          onClick={handleConfirmSelection}
           disabled={!selectedCategory}
           className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 disabled:from-gray-600 disabled:to-gray-700 disabled:cursor-not-allowed text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200"
         >
-          Send Message
+          Select Category
         </button>
       </div>
     </div>

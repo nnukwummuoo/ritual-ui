@@ -171,14 +171,6 @@ interface CardProps {
 }
 
 export default function RequestCard({exp, img, name, titles=["fan"], status, type="fan", bookingId, price, details, userid, creator_portfolio_id, hosttype, isVip=false, vipEndDate=null, onStatusChange}: CardProps) {
-  console.log('🔍 [RequestCard] Props received:', {
-    type,
-    name,
-    creator_portfolio_id,
-    hosttype,
-    status,
-    bookingId
-  });
   const [loading, setLoading] = useState(false);
   const [currentStatus, setCurrentStatus] = useState(status);
   const [showDetails, setShowDetails] = useState(false);

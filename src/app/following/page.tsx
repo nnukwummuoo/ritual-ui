@@ -107,7 +107,7 @@ const FollowingPage: React.FC = () => {
     }
   }, [userid, token, dispatch]);
 
-  const loading = getfollow_stats === "loading" || getAllUsers_stats === "loading";
+  const loading = getfollow_stats === "loading";
   
   // Get current userid from multiple sources (same logic as useEffect)
   let currentUserid = userid;
@@ -123,24 +123,15 @@ const FollowingPage: React.FC = () => {
     }
   }
   
-  // Debug: Log current userid and data
-  console.log("🔍 [FollowingPage] Current userid:", currentUserid);
-  console.log("🔍 [FollowingPage] Raw followers data:", getfollow_data?.followers?.length || 0);
-  console.log("🔍 [FollowingPage] Raw following data:", getfollow_data?.following?.length || 0);
+  
   
   // Get followers/following from API response and filter out current user
   const apiFollowers: User[] = (getfollow_data?.followers as User[])?.filter(user => {
     const isNotCurrentUser = String(user.id) !== String(currentUserid);
-    if (!isNotCurrentUser) {
-      console.log("🔍 [FollowingPage] Filtering out current user from followers:", { userId: user.id, currentUserid: currentUserid, userName: user.name });
-    }
     return isNotCurrentUser;
   }) || [];
   const apiFollowing: User[] = (getfollow_data?.following as User[])?.filter(user => {
     const isNotCurrentUser = String(user.id) !== String(currentUserid);
-    if (!isNotCurrentUser) {
-      console.log("🔍 [FollowingPage] Filtering out current user from following:", { userId: user.id, currentUserid: currentUserid, userName: user.name });
-    }
     return isNotCurrentUser;
   }) || [];
   

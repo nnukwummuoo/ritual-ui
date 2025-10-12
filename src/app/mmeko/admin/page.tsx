@@ -25,6 +25,7 @@ import WithdrawalRequests from "./withdrawal/page";
 import Users from "./users/page";
 import Reports from "./reports/page";
 import AdminSupportChat from "./support-chat/page";
+import PushNotificationToggle from "@/components/PushNotificationToggle";
 
 const AdminPage = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -163,6 +164,17 @@ const AdminPage = () => {
               <IoGridOutline color="white" />
             </div>
             <h1 className="text-xl font-bold text-white hidden md:inline">Dashboard</h1>
+          </div>
+
+          {/* Push Notifications Toggle */}
+          <div className="mb-6 p-3 bg-gray-800 rounded-lg">
+            <div className="flex items-center justify-center md:justify-start gap-2 mb-2">
+              <IoChatbubbleOutline color="white" size={20} />
+              <span className="font-medium text-white hidden md:inline">Push Notifications</span>
+            </div>
+            <div className="flex justify-center md:justify-start">
+              <PushNotificationToggle size="sm" showLabel={false} />
+            </div>
           </div>
 
           {/* Navigation */}

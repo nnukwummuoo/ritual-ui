@@ -41,7 +41,8 @@ export const Chat = () => {
   // const profilename = useSelector((state) => state.profile.firstname);
   const dispatch = useDispatch();
 
-  const { creator_portfolio_id } = useParams<{ creator_portfolio_id: string }>();
+  const params = useParams<{ creator_portfolio_id: string }>();
+  const creator_portfolio_id = params?.creator_portfolio_id;
 
   const router = useRouter();
 
@@ -457,20 +458,25 @@ export const Chat = () => {
 
     try {
       const targetUserId = decodeURIComponent(creator_portfolio_id);
+      
+      // Validate the decoded user ID
+      if (!targetUserId || targetUserId === 'undefined' || targetUserId === 'null' || targetUserId.length < 10) {
+        console.error("❌ [CHAT] Invalid targetUserId after decode:", targetUserId);
+        toast.error("Invalid user ID. Please try again.");
+        setLoading(false);
+        return;
+      }
       const token = (() => {
         try {
           const raw = localStorage.getItem("login");
           if (raw) {
             const data = JSON.parse(raw);
             const token = data?.refreshtoken || data?.accesstoken;
-            console.log("🔍 [CHAT] Token retrieved:", token ? "Present" : "Missing");
-            console.log("🔍 [CHAT] Token type:", data?.refreshtoken ? "refresh" : "access");
-            return token;
+      return token;
           }
         } catch (error) {
           console.error("[Chat] Error retrieving token from localStorage:", error);
         }
-        console.log("❌ [CHAT] No token found in localStorage");
         return "";
       })();
 
@@ -479,10 +485,6 @@ export const Chat = () => {
         clientid: loggedInUserId
       };
 
-      console.log("🔍 [CHAT] Fetching messages with data:", requestData);
-      console.log("🔍 [CHAT] API URL:", `${API_URL}/getcurrentchat`);
-      console.log("🔍 [CHAT] Token being sent:", token);
-      console.log("🔍 [CHAT] Token length:", token?.length);
 
       const response = await axios.put(`${API_URL}/getcurrentchat`, requestData, {
         headers: {
@@ -491,7 +493,6 @@ export const Chat = () => {
         },
       });
 
-      console.log("✅ [CHAT] Messages fetched successfully:", response.data);
 
       if (response.data.chats && Array.isArray(response.data.chats)) {
         setmessage(response.data.chats);
@@ -508,9 +509,6 @@ export const Chat = () => {
       setLoading(false);
     } catch (error: any) {
       console.error("❌ [CHAT] Error fetching messages:", error);
-      console.error("❌ [CHAT] Error response:", error.response?.data);
-      console.error("❌ [CHAT] Error status:", error.response?.status);
-      console.error("❌ [CHAT] Error headers:", error.response?.headers);
       
       setLoading(false);
       
@@ -547,9 +545,17 @@ export const Chat = () => {
 
   // Fetch target user profile details when creator_portfolio_id changes or route changes
   useEffect(() => {
-    if (!creator_portfolio_id || !loggedInUserId) return;
+    if (!creator_portfolio_id || !loggedInUserId) {
+      return;
+    }
 
     const targetUserId = decodeURIComponent(creator_portfolio_id);
+    
+    // Validate the decoded user ID
+    if (!targetUserId || targetUserId === 'undefined' || targetUserId === 'null' || targetUserId.length < 10) {
+      console.error("❌ [CHAT] Invalid targetUserId for profile fetch:", targetUserId);
+      return;
+    }
     
     // Get token from localStorage or Redux
     const token = (() => {
@@ -566,11 +572,20 @@ export const Chat = () => {
     })();
 
     if (token) {
-      // Clear previous profile data first to ensure fresh loading
+      // AGGRESSIVE STATE RESET: Clear ALL previous profile data immediately
       setchatusername("");
       setfirstname("");
       setlastname("");
       set_Chatphoto("/icons/icons8-profile_user.png");
+      setChatphotoError(false);
+      
+      // Clear messages to prevent showing old messages
+      setmessage([]);
+      
+      // Clear VIP celebration state
+      setShowVipCelebration(false);
+      setVipCelebrationShown(false);
+      setCelebrationChecked(false);
       
       // Clear Redux viewing profile state to force fresh fetch
       dispatch({ type: 'viewingProfile/clearViewingProfile' });
@@ -582,25 +597,31 @@ export const Chat = () => {
 
   // Update chat info from viewing profile when it loads
   useEffect(() => {
-    if (viewingProfile.status === "succeeded" && viewingProfile.userId) {
-      setfirstname(viewingProfile.firstname || "");
-      setlastname(viewingProfile.lastname || "");
-      setchatusername(viewingProfile.nickname || "");
+    if (viewingProfile.status === "succeeded" && viewingProfile.userId && creator_portfolio_id) {
+      // CRITICAL: Only update if the viewingProfile.userId matches the current creator_portfolio_id
+      const currentTargetUserId = decodeURIComponent(creator_portfolio_id);
       
-      // Ensure we have a valid photo link
-      const photoLink = (viewingProfile as any).photolink;
-      if (photoLink && photoLink.trim() !== "" && photoLink !== "null" && photoLink !== "undefined") {
-        set_Chatphoto(photoLink);
-      } else {
-        set_Chatphoto("/icons/icons8-profile_user.png");
+      if (viewingProfile.userId === currentTargetUserId) {
+        setfirstname(viewingProfile.firstname || "");
+        setlastname(viewingProfile.lastname || "");
+        setchatusername(viewingProfile.nickname || "");
+        
+        // Ensure we have a valid photo link
+        const photoLink = (viewingProfile as any).photolink;
+        if (photoLink && photoLink.trim() !== "" && photoLink !== "null" && photoLink !== "undefined") {
+          set_Chatphoto(photoLink);
+        } else {
+          set_Chatphoto("/icons/icons8-profile_user.png");
+        }
+        
+        // Fetch VIP status for the chat partner
+        if (viewingProfile.userId && viewingProfile.userId.length >= 10) {
+          dispatch(checkVipStatus(viewingProfile.userId) as any);
+        }
       }
-      
-      // Fetch VIP status for the chat partner
-      console.log(`🔍 [CHAT] Fetching VIP status for chat partner: ${viewingProfile.userId}`);
-      dispatch(checkVipStatus(viewingProfile.userId) as any);
-    } else if (viewingProfile.status === "failed") {
+    } else if (viewingProfile.status === "failed" && creator_portfolio_id) {
       // Handle profile loading failure with better fallback
-      const targetUserId = decodeURIComponent(creator_portfolio_id || "");
+      const targetUserId = decodeURIComponent(creator_portfolio_id);
       const fallbackName = `User ${targetUserId.slice(-6)}`;
       
       setfirstname(fallbackName);
@@ -613,32 +634,37 @@ export const Chat = () => {
   // Check VIP celebration status when VIP status is confirmed
   useEffect(() => {
     const checkCelebration = async () => {
-      if (vipStatus?.isVip && viewingProfile.status === "succeeded" && viewingProfile.userId && loggedInUserId && !celebrationChecked) {
-        setCelebrationChecked(true);
+      if (vipStatus?.isVip && viewingProfile.status === "succeeded" && viewingProfile.userId && loggedInUserId && !celebrationChecked && creator_portfolio_id) {
+        // CRITICAL: Only check celebration if the VIP user matches the current chat user
+        const currentTargetUserId = decodeURIComponent(creator_portfolio_id);
         
-        try {
-          const shouldShow = await checkVipCelebrationStatus(viewingProfile.userId, loggedInUserId);
+        if (viewingProfile.userId === currentTargetUserId) {
+          setCelebrationChecked(true);
           
-          if (shouldShow) {
-            setShowVipCelebration(true);
-            setVipCelebrationShown(true);
+          try {
+            const shouldShow = await checkVipCelebrationStatus(viewingProfile.userId, loggedInUserId);
             
-            // Mark as viewed in database
-            await markVipCelebrationAsViewed(viewingProfile.userId, loggedInUserId);
-            
-            // Hide the celebration after 5 seconds
-            setTimeout(() => {
-              setShowVipCelebration(false);
-            }, 5000);
+            if (shouldShow) {
+              setShowVipCelebration(true);
+              setVipCelebrationShown(true);
+              
+              // Mark as viewed in database
+              await markVipCelebrationAsViewed(viewingProfile.userId, loggedInUserId);
+              
+              // Hide the celebration after 5 seconds
+              setTimeout(() => {
+                setShowVipCelebration(false);
+              }, 5000);
+            }
+          } catch (error) {
+            console.error('Error checking VIP celebration:', error);
           }
-        } catch (error) {
-          console.error('Error checking VIP celebration:', error);
         }
       }
     };
 
     checkCelebration();
-  }, [vipStatus, viewingProfile.status, viewingProfile.userId, loggedInUserId, celebrationChecked, checkVipCelebrationStatus, markVipCelebrationAsViewed]);
+  }, [vipStatus, viewingProfile.status, viewingProfile.userId, loggedInUserId, celebrationChecked, creator_portfolio_id, checkVipCelebrationStatus, markVipCelebrationAsViewed]);
 
   // Reset VIP celebration tracking when switching users
   useEffect(() => {
@@ -647,15 +673,37 @@ export const Chat = () => {
     setCelebrationChecked(false);
   }, [creator_portfolio_id]);
 
+  // Reset all chat state when switching users (additional safety)
+  useEffect(() => {
+    // This runs whenever creator_portfolio_id changes
+    return () => {
+      // Cleanup function - runs when the effect is about to re-run or component unmounts
+      setchatusername("");
+      setfirstname("");
+      setlastname("");
+      set_Chatphoto("/icons/icons8-profile_user.png");
+      setChatphotoError(false);
+      setmessage([]);
+      setShowVipCelebration(false);
+      setVipCelebrationShown(false);
+      setCelebrationChecked(false);
+    };
+  }, [creator_portfolio_id]);
+
   // Force update chat info when creator_portfolio_id changes to ensure profile is always shown
   useEffect(() => {
     if (creator_portfolio_id && viewingProfile.status === "succeeded" && viewingProfile.userId) {
-      setChatphotoError(false); // Reset error state for new profile
-      const photoLink = (viewingProfile as any).photolink;
-      if (photoLink && photoLink.trim() !== "" && photoLink !== "null" && photoLink !== "undefined") {
-        set_Chatphoto(photoLink);
-      } else {
-        set_Chatphoto("/icons/icons8-profile_user.png");
+      // CRITICAL: Only update if the viewingProfile.userId matches the current creator_portfolio_id
+      const currentTargetUserId = decodeURIComponent(creator_portfolio_id);
+      
+      if (viewingProfile.userId === currentTargetUserId) {
+        setChatphotoError(false); // Reset error state for new profile
+        const photoLink = (viewingProfile as any).photolink;
+        if (photoLink && photoLink.trim() !== "" && photoLink !== "null" && photoLink !== "undefined") {
+          set_Chatphoto(photoLink);
+        } else {
+          set_Chatphoto("/icons/icons8-profile_user.png");
+        }
       }
     }
   }, [creator_portfolio_id, viewingProfile]);
@@ -685,20 +733,23 @@ export const Chat = () => {
     if (creator_portfolio_id && (!chatusername || !chatfirstname)) {
       const targetUserId = decodeURIComponent(creator_portfolio_id);
       
-      // Try to get a better fallback name from the user ID
-      const fallbackName = `User ${targetUserId.slice(-6)}`; // Show last 6 chars for better identification
-      
-      // Only set fallback if we don't have any name yet
-      if (!chatusername) {
-        setchatusername(fallbackName);
+      // Validate the decoded user ID before setting fallback
+      if (targetUserId && targetUserId !== 'undefined' && targetUserId !== 'null' && targetUserId.length >= 10) {
+        // Try to get a better fallback name from the user ID
+        const fallbackName = `User ${targetUserId.slice(-6)}`; // Show last 6 chars for better identification
+        
+        // Only set fallback if we don't have any name yet
+        if (!chatusername) {
+          setchatusername(fallbackName);
+        }
+        if (!chatfirstname) {
+          setfirstname(fallbackName);
+        }
+        
+        // Set default profile picture
+        set_Chatphoto("/icons/icons8-profile_user.png");
+        setChatphotoError(false);
       }
-      if (!chatfirstname) {
-        setfirstname(fallbackName);
-      }
-      
-      // Set default profile picture
-      set_Chatphoto("/icons/icons8-profile_user.png");
-      setChatphotoError(false);
     }
   }, [creator_portfolio_id, chatusername, chatfirstname]);
 
@@ -932,10 +983,20 @@ export const Chat = () => {
       name: string; 
       photolink: string; 
     }) => {
+      if (!creator_portfolio_id) {
+        return;
+      }
+
       const decodedCreator_portfolio_id = decodeURIComponent(creator_portfolio_id);
       
       // Since we now pass only the target user ID, we don't need to split by comma
       const targetUserId = decodedCreator_portfolio_id;
+      
+      // Validate the decoded user ID
+      if (!targetUserId || targetUserId === 'undefined' || targetUserId === 'null' || targetUserId.length < 10) {
+        console.error("❌ [CHAT] Invalid targetUserId in socket handler:", targetUserId);
+        return;
+      }
       
       // Check if this message is between the current user and target user
       const isFromTargetToCurrent = (data.data.fromid === targetUserId && data.data.toid === loggedInUserId);
@@ -1003,13 +1064,13 @@ export const Chat = () => {
 
     // Typing event listeners
     const handleTypingStart = (data: { fromUserId: string, toUserId: string }) => {
-      if (data.fromUserId === creator_portfolio_id && data.toUserId === loggedInUserId) {
+      if (creator_portfolio_id && data.fromUserId === creator_portfolio_id && data.toUserId === loggedInUserId) {
         setOtherUserTyping(true);
       }
     };
 
     const handleTypingStop = (data: { fromUserId: string, toUserId: string }) => {
-      if (data.fromUserId === creator_portfolio_id && data.toUserId === loggedInUserId) {
+      if (creator_portfolio_id && data.fromUserId === creator_portfolio_id && data.toUserId === loggedInUserId) {
         setOtherUserTyping(false);
       }
     };
@@ -1250,24 +1311,25 @@ export const Chat = () => {
       return;
     }
 
+    if (!creator_portfolio_id) {
+      toast.error("Invalid chat session. Please try again.");
+      return;
+    }
+
     const decodedCreator_portfolio_id = decodeURIComponent(creator_portfolio_id);
     
     // Since we now pass only the target user ID, we don't need to split by comma
     const targetUserId = decodedCreator_portfolio_id;
 
-    console.log("🔍 [CHAT] Debug info:");
-    console.log("🔍 [CHAT] creator_portfolio_id from params:", creator_portfolio_id);
-    console.log("🔍 [CHAT] targetUserId after decode:", targetUserId);
-    console.log("🔍 [CHAT] loggedInUserId:", loggedInUserId);
 
     if (!loggedInUserId) {
       toast.error("Please log in to send messages");
       return;
     }
 
-    if (!targetUserId || targetUserId === 'undefined' || targetUserId === 'null') {
+    if (!targetUserId || targetUserId === 'undefined' || targetUserId === 'null' || targetUserId.length < 10) {
       console.error("❌ [CHAT] Invalid targetUserId:", targetUserId);
-      toast.error("Invalid recipient");
+      toast.error("Invalid recipient. Please try again.");
       return;
     }
 
@@ -1441,6 +1503,37 @@ export const Chat = () => {
     };
   }, [dispatch]);
 
+  // Early return if we don't have valid user data
+  if (!creator_portfolio_id || !loggedInUserId) {
+    return (
+      <div className="h-full w-full flex flex-col items-center justify-center">
+        <div className="text-center">
+          <p className="text-white text-lg mb-2">Loading chat...</p>
+          <p className="text-gray-400 text-sm">Please wait while we connect you</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Validate the decoded user ID
+  const decodedUserId = decodeURIComponent(creator_portfolio_id);
+  if (!decodedUserId || decodedUserId === 'undefined' || decodedUserId === 'null' || decodedUserId.length < 10) {
+    return (
+      <div className="h-full w-full flex flex-col items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-400 text-lg mb-2">Invalid Chat</p>
+          <p className="text-gray-400 text-sm">The user ID is invalid. Please try again.</p>
+          <button 
+            onClick={() => router.back()}
+            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          >
+            Go Back
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="h-full w-full flex flex-col" style={{ 
       WebkitOverflowScrolling: 'touch',
@@ -1523,7 +1616,7 @@ export const Chat = () => {
                       </div>
                       <span className="text-xs text-blue-300">Typing...</span>
                     </div>
-                  ) : isUserOnline(creator_portfolio_id) ? (
+                  ) : (creator_portfolio_id && isUserOnline(creator_portfolio_id)) ? (
                     <div className="flex items-center gap-1">
                       <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                       <span className="text-xs text-green-400">Online</span>
@@ -1660,7 +1753,7 @@ export const Chat = () => {
               settext(e.target.value);
               
               // Handle typing indicators
-              if (e.target.value.trim() && loggedInUserId && creator_portfolio_id) {
+              if (e.target.value.trim() && loggedInUserId && creator_portfolio_id && creator_portfolio_id.length >= 10) {
                 if (!isTyping) {
                   setIsTyping(true);
                   startTyping(loggedInUserId, creator_portfolio_id);
@@ -1678,7 +1771,7 @@ export const Chat = () => {
                 }, 2000);
                 
                 setTypingTimeout(timeout);
-              } else if (!e.target.value.trim() && isTyping) {
+              } else if (!e.target.value.trim() && isTyping && creator_portfolio_id) {
                 setIsTyping(false);
                 stopTyping(loggedInUserId, creator_portfolio_id);
                 if (typingTimeout) {

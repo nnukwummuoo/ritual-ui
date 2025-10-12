@@ -5,6 +5,7 @@ import { store } from "@/store/store";
 import { AuthProvider } from "@/lib/context/auth-context";
 import { OnlineStatusProvider } from "@/contexts/OnlineStatusContext";
 import { VideoCallProvider } from "@/contexts/VideoCallContext";
+import { PushNotificationProvider } from "@/contexts/PushNotificationContext";
 import GlobalSocketConnection from "@/components/GlobalSocketConnection";
 import { SnackbarProvider } from "notistack";
 import { Suspense } from "react";
@@ -31,9 +32,11 @@ export default function Providers({ children }: { children: React.ReactNode }) {
         <AuthProvider>
           <OnlineStatusProvider>
             <VideoCallProvider>
-              <GlobalSocketConnection />
-              <ClientToastContainer position="top-center"/>
-              <Suspense fallback={<Loader />}>{children}</Suspense>
+              <PushNotificationProvider>
+                <GlobalSocketConnection />
+                <ClientToastContainer position="top-center"/>
+                <Suspense fallback={<Loader />}>{children}</Suspense>
+              </PushNotificationProvider>
             </VideoCallProvider>
           </OnlineStatusProvider>
         </AuthProvider>

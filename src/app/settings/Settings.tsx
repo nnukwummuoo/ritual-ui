@@ -6,6 +6,7 @@ import { IoMdNotificationsOutline } from "react-icons/io";
 import { AiOutlineSafetyCertificate } from "react-icons/ai";
 import { IoMdInformationCircleOutline } from "react-icons/io";
 import { useRouter } from "next/navigation";
+import PushNotificationToggle from "@/components/PushNotificationToggle";
 
 // import { useSelector } from "react-redux";
 // import HeaderBackNav from "../../navs/HeaderBackNav";
@@ -56,6 +57,20 @@ export const SettingPage = () => {
         <h4 className="text-lg font-bold text-center text-white sm:block">SETTING</h4>
       </header>
       <div className="pt-4">
+        {/* Push Notifications Toggle */}
+        <div className="mb-6 p-4 bg-gray-800 rounded-lg">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <IoMdNotificationsOutline color="white" size={20} />
+              <h4 className="text-lg font-semibold text-white">Push Notifications</h4>
+            </div>
+          </div>
+          <div className="ml-8">
+            <PushNotificationToggle size="md" showLabel={true} />
+          </div>
+        </div>
+
+
         {navdata.map((nav, index) => (
           <div
             className="flex items-center justify-between mb-6 "
