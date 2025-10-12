@@ -150,6 +150,7 @@ const AdminSupportChat = () => {
       if (response.ok) {
         const data = await response.json();
         setMessages(data.supportChat.messages || []);
+        // Clear input immediately
         setNewMessage('');
         toast.success('Message sent successfully');
         // Refresh chat list to update last message
@@ -160,6 +161,8 @@ const AdminSupportChat = () => {
     } catch (error) {
       console.error('Error sending message:', error);
       toast.error('Error sending message');
+      // Clear input even on error to prevent stuck text
+      setNewMessage('');
     } finally {
       setSendingMessage(false);
     }
@@ -513,24 +516,46 @@ const AdminSupportChat = () => {
                   <div className="flex gap-1">
                     <button
                       onClick={() => updateChatStatus(selectedChat._id, 'open')}
-                      className="p-2 hover:bg-gray-700 rounded-lg transition-colors"
-                      title="Mark as Open"
+                      disabled={selectedChat.status === 'closed'}
+                      className={`p-2 rounded-lg transition-colors ${
+                        selectedChat.status === 'closed' 
+                          ? 'opacity-50 cursor-not-allowed' 
+                          : 'hover:bg-gray-700'
+                      }`}
+                      title={selectedChat.status === 'closed' ? 'Cannot change status - Chat is closed' : 'Mark as Open'}
                     >
-                      <IoChatbubbleOutline className="w-4 h-4 text-blue-400" />
+                      <IoChatbubbleOutline className={`w-4 h-4 ${
+                        selectedChat.status === 'closed' ? 'text-gray-500' : 'text-blue-400'
+                      }`} />
                     </button>
                     <button
                       onClick={() => updateChatStatus(selectedChat._id, 'pending')}
-                      className="p-2 hover:bg-gray-700 rounded-lg transition-colors"
-                      title="Mark as Pending"
+                      disabled={selectedChat.status === 'closed'}
+                      className={`p-2 rounded-lg transition-colors ${
+                        selectedChat.status === 'closed' 
+                          ? 'opacity-50 cursor-not-allowed' 
+                          : 'hover:bg-gray-700'
+                      }`}
+                      title={selectedChat.status === 'closed' ? 'Cannot change status - Chat is closed' : 'Mark as Pending'}
                     >
-                      <IoTimeOutline className="w-4 h-4 text-yellow-400" />
+                      <IoTimeOutline className={`w-4 h-4 ${
+                        selectedChat.status === 'closed' ? 'text-gray-500' : 'text-yellow-400'
+                      }`} />
                     </button>
                     <button
                       onClick={() => updateChatStatus(selectedChat._id, 'closed')}
-                      className="p-2 hover:bg-gray-700 rounded-lg transition-colors"
-                      title="Mark as Closed"
+                      className={`p-2 rounded-lg transition-colors ${
+                        selectedChat.status === 'closed' 
+                          ? 'bg-red-500/20 cursor-not-allowed' 
+                          : 'hover:bg-gray-700'
+                      }`}
+                      title={selectedChat.status === 'closed' ? 'Chat is already closed' : 'Mark as Closed'}
                     >
-                      <IoCheckmarkCircleOutline className="w-4 h-4 text-green-400" />
+                      {selectedChat.status === 'closed' ? (
+                        <IoCloseCircleOutline className="w-4 h-4 text-red-400" />
+                      ) : (
+                        <IoCheckmarkCircleOutline className="w-4 h-4 text-green-400" />
+                      )}
                     </button>
                   </div>
                 </div>

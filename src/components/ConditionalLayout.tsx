@@ -1,11 +1,13 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { ReactNode } from "react";
+import { ReactNode, useState, useEffect } from "react";
 import Sidebar from "@/components/sidebar";
 import Navbar from "@/components/navbar";
 import BottomNavBar from "@/components/bottom-navbar";
 import ShouldRenderPopUp from "@/components/ShouldRenderPopUp";
+import { NotificationPermissionModal } from "@/components/NotificationPermissionModal";
+import { usePushNotificationContext } from "@/contexts/PushNotificationContext";
 
 interface ConditionalLayoutProps {
   children: ReactNode;
@@ -14,12 +16,40 @@ interface ConditionalLayoutProps {
 
 export default function ConditionalLayout({ children, isAuthenticated }: ConditionalLayoutProps) {
   const pathname = usePathname();
+  const [showNotificationModal, setShowNotificationModal] = useState(false);
+  const { isSupported, permission, subscribe } = usePushNotificationContext();
   
   // Check if it's a QuickChat [userid] route
   const isQuickChatRoute = pathname.includes('/message/') && pathname.split('/').length > 2;
   
   // Check if it's an admin route
   const isAdminRoute = pathname.includes('/mmeko/');
+
+  // Show notification permission modal for authenticated users who haven't granted permission
+  useEffect(() => {
+    if (isAuthenticated && isSupported && permission === 'default') {
+      // Check if user has seen the notification modal before
+      const hasSeenModal = localStorage.getItem('notification-modal-seen');
+      if (!hasSeenModal) {
+        setShowNotificationModal(true);
+      }
+    }
+  }, [isAuthenticated, isSupported, permission]);
+
+  const handleEnableNotifications = async () => {
+    try {
+      await subscribe();
+      setShowNotificationModal(false);
+      localStorage.setItem('notification-modal-seen', 'true');
+    } catch (error) {
+      console.error('Error enabling notifications:', error);
+    }
+  };
+
+  const handleCloseModal = () => {
+    setShowNotificationModal(false);
+    localStorage.setItem('notification-modal-seen', 'true');
+  };
   
   // If it's a QuickChat [userid] route or admin route, render without main layout
   if (isQuickChatRoute || isAdminRoute) {
@@ -28,19 +58,29 @@ export default function ConditionalLayout({ children, isAuthenticated }: Conditi
   
   // Otherwise, render with main layout
   return (
-    <main className="flex overflow-hidden h-screen relative">
-      <Sidebar />
-      <Navbar isAuthenticated={isAuthenticated} />
-      <div className="w-full grid grid-cols-1 grid-rows-[auto_1fr_auto] overflow-hidden mt-12">
-        <div className="scrollbar overflow-y-auto w-full pt-4 grid grid-cols-[60fr_40fr] max-[1200px]:grid-cols-[75fr_25fr] max-[600px]:grid-cols-1 justify-between">
-          <div className="w-full max-[1000px]:max-w-[90%]  max-[800px]:max-w-[100%]">
-            {children}
+    <>
+      <main className="flex overflow-hidden h-screen relative">
+        <Sidebar />
+        <Navbar isAuthenticated={isAuthenticated} />
+        <div className="w-full grid grid-cols-1 grid-rows-[auto_1fr_auto] overflow-hidden mt-12">
+          <div className="scrollbar overflow-y-auto w-full pt-4 grid grid-cols-[60fr_40fr] max-[1200px]:grid-cols-[75fr_25fr] max-[600px]:grid-cols-1 justify-between">
+            <div className="w-full max-[1000px]:max-w-[90%]  max-[800px]:max-w-[100%]">
+              {children}
+            </div>
+            <div className="w-full h-full max-[1000px]:w-0"></div>
           </div>
-          <div className="w-full h-full max-[1000px]:w-0"></div>
+          {isAuthenticated && <BottomNavBar />}
+          {!isAuthenticated && <ShouldRenderPopUp />}
         </div>
-        {isAuthenticated && <BottomNavBar />}
-        {!isAuthenticated && <ShouldRenderPopUp />}
-      </div>
-    </main>
+      </main>
+      
+      {/* Notification Permission Modal */}
+      {showNotificationModal && (
+        <NotificationPermissionModal
+          onClose={handleCloseModal}
+          onEnable={handleEnableNotifications}
+        />
+      )}
+    </>
   );
 }

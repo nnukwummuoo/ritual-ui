@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -153,13 +155,7 @@ export default function CreatorPage() {
                     Array.isArray(res) ? [...res] : 
                     Array.isArray(res?.data) ? [...res.data] : [];
         
-        console.log(`📊 [CREATORS PAGE] Received ${list.length} creators from backend`);
-        console.log(`🦁 [CREATORS PAGE] VIP Status in response:`, list.map(c => ({ 
-          name: c.name, 
-          userid: c.userid, 
-          isVip: c.isVip, 
-          vipEndDate: c.vipEndDate 
-        })));
+        
         
         setMyCreators(list);
       } catch (e: any) {
@@ -213,7 +209,7 @@ const mapToCard = (m: any): CreatorCardProps => {
   };
 
   // Try multiple fields in order
-  let rawPhoto =
+  const rawPhoto =
     pickValidPhoto(m.photolink) ||
     pickValidPhoto(m.photo) ||
     pickValidPhoto(m.image) ||
@@ -254,10 +250,6 @@ const mapToCard = (m: any): CreatorCardProps => {
     vipEndDate: m.vipEndDate || null,
   };
 
-  // Debug log for VIP status
-  if (m.isVip || m.vipEndDate) {
-    console.log(`🦁 [MAPTOCARD] VIP Creator: ${cardData.name} (${cardData.userid}) - isVip: ${cardData.isVip}, vipEndDate: ${cardData.vipEndDate}`);
-  }
 
   return cardData;
 };
@@ -311,12 +303,7 @@ const renderCreators = () => {
       photolink: card.photolink || "/images/default-placeholder.png", // fallback image
     };
     
-    // Debug log for final card data
-    console.log(`🎴 [RENDERCREATORS] Final card data for ${finalCard.name}:`, {
-      isVip: finalCard.isVip,
-      vipEndDate: finalCard.vipEndDate,
-      userid: finalCard.userid
-    });
+  ;
     
     return finalCard;
   });
@@ -340,7 +327,7 @@ const renderCreators = () => {
   if (!filteredList.length && list.length > 0) {
     return (
       <div className="mt-6 text-sm text-slate-400">
-        No creators found for "{categoryButton}" category.
+        No creators found for &quot;{categoryButton}&quot; category.
       </div>
     );
   }
@@ -352,7 +339,7 @@ const renderCreators = () => {
           <CreatorCard {...value} />
           {/* VIP Badge - positioned at page level on top of verified creators */}
           {value.isVip && (
-            <div className="absolute -top-4 left-20 z-50">
+            <div className="absolute -top-4 left-20 ">
               <VIPBadge size="xxl" isVip={value.isVip} vipEndDate={value.vipEndDate} />
             </div>
           )}
@@ -476,7 +463,7 @@ const renderCreators = () => {
 
             {filteredManualCountries.length === 0 && searchQuery && (
               <div className="text-center text-gray-500 mt-4">
-                No countries found matching "{searchQuery}"
+                No countries found matching &ldquo;{searchQuery}&quot;
               </div>
             )}
           </div>
