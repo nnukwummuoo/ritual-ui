@@ -18,6 +18,7 @@ interface ViewingProfileState {
   creator_portfolio_id: string;
   creatorname: string;
   creatorphotolink: string;
+  hosttype: string;
   creator_verified: boolean;
   createdAt: string;
   balance: string;
@@ -57,6 +58,7 @@ const initialState: ViewingProfileState = {
   creator_portfolio_id: "",
   creatorname: "",
   creatorphotolink: "",
+  hosttype: "Fan meet",
   creator_verified: false,
   createdAt: "",
   balance: "",
@@ -161,6 +163,7 @@ const viewingProfileSlice = createSlice({
         state.creator_portfolio_id = (p as any).creator_portfolio_id ?? (p as any).creator_portfolio_id ?? "";
         state.creatorname = (p as any).creatorname ?? "";
         state.creatorphotolink = (p as any).creatorphotolink ?? "";
+        state.hosttype = (p as any).hosttype ?? "Fan meet";
         state.photolink = (p as any).photolink ?? (p as any).photoLink ?? "";
         state.bio = (p as any).bio ?? "";
         state.admin = p.admin ?? false;

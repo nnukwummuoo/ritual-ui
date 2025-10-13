@@ -1,4 +1,5 @@
 import axios from "axios";
+import { URL } from "../../api/config";
 
 /**
  * Defines the shape of the data required for changing a password.
@@ -17,7 +18,7 @@ interface ChangePasswordPayload {
  */
 export const changePassword = async (payload: ChangePasswordPayload) => {
   try {
-    const res = await axios.post(`${process.env.NEXT_PUBLIC_API}/changepassword`, payload, { withCredentials: true });
+    const res = await axios.post(`${URL}/changepassword`, payload, { withCredentials: true });
     return res.data;
   } catch (error: any) {
     // Log the full error for debugging purposes

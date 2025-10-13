@@ -3,6 +3,7 @@
 import { NextRequest } from "next/server";
 import { jwtVerify, SignJWT } from "jose";
 import axios from "axios";
+import { URL } from "../../api/config";
 
 export type user = { nickname: string; password: string };
 export type payload = { user: user };
@@ -35,7 +36,7 @@ export async function decryptData(input: string): Promise<{ status: string; body
 export async function isRegistered(payload: { nickname: string; password: string }): Promise<{ user?: any; error?: string }> {
   try {
     const res = await axios.post(
-      `${process.env.NEXT_PUBLIC_API}/login`,
+      `${URL}/login`,
       { nickname: payload.nickname.toLowerCase().trim(), password: payload.password },
       { withCredentials: true }
     );

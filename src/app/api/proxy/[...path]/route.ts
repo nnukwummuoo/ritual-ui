@@ -15,9 +15,18 @@ export async function PUT(request: NextRequest, { params }: { params: { path: st
 }
 
 async function handleRequest(request: NextRequest, path: string) {
-  const targetUrl = process.env.NODE_ENV === 'development'
-    ? `http://localhost:3100/${path}`  // Your backend
-    : `https://mmekoapi.onrender.com/${path}`;
+  // Check if request is coming from network IP
+  const hostname = request.headers.get('host') || '';
+  let targetUrl: string;
+  
+  if (hostname.includes('10.245.95.157')) {
+    // Network access - route to localhost backend
+    targetUrl = `http://localhost:3100/${path}`;
+  } else if (process.env.NODE_ENV === 'development') {
+    targetUrl = `http://localhost:3100/${path}`;
+  } else {
+    targetUrl = `https://mmekoapi.onrender.com/${path}`;
+  }
 
   try {
     const body = request.method !== 'GET' ? await request.json() : undefined;

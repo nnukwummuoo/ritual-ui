@@ -11,6 +11,8 @@ import { useSelector, useDispatch } from "react-redux";
 import type { RootState, AppDispatch } from "@/store/store";
 import { getmsgnitify, getmessagenotication } from "@/store/messageSlice";
 import { getSocket } from "@/lib/socket";
+import { useNotificationIndicator } from "@/hooks/useNotificationIndicator";
+import { NotificationIndicator } from "@/components/NotificationIndicator";
 
 interface BottomNavBarItemProps {
   imgUrl?: string;
@@ -59,6 +61,9 @@ export default function BottomNavBar() {
   // Use Redux data if available, otherwise use localStorage data
   const finalUserid = userid || localUserData.userid;
   const finalToken = token || localUserData.token;
+  
+  // Get notification indicator data
+  const { hasUnread: hasUnreadNotifications, unreadCount: unreadNotificationCount } = useNotificationIndicator();
   
 
   // Fetch message notifications when component mounts
@@ -194,7 +199,9 @@ export default function BottomNavBar() {
     {
       imgUrl: "/icons/icons8-notification-1.png",
       route: "/notifications",
-      name: "Notifications"
+      name: "Notifications",
+      showUnreadIndicator: hasUnreadNotifications,
+      unreadCount: unreadNotificationCount
     },
     {
       icon: <AnyaEyeIcon active={pathname === "/search"} />,

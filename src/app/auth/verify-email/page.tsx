@@ -8,6 +8,7 @@ import "../register/styles.css"
 // import { Routes ,Route,useNavigate} from 'react-router-dom'
 import { ToastContainer,toast } from 'material-react-toastify'
 import axios from "axios";
+import { URL } from "../../../api/config";
 import { useRouter, useSearchParams } from "next/navigation";
 import Tick from "@/components/tick-animation/Tick";
 import { revalidate } from "@/lib/utils/revalidate";
@@ -62,7 +63,7 @@ export default function ConfirmPassCode(){
       if(codeComplete.length < 5) return toast.error("Code is incomplete")
         setStatus("checking")
         try{
-          const res = await axios.post(process.env.NEXT_PUBLIC_API+"/verifyemail", {email, code: codeComplete}, {withCredentials: true})
+          const res = await axios.post(`${URL}/verifyemail`, {email, code: codeComplete}, {withCredentials: true})
           if(res.status !== 200) throw Error("Email verification failed") 
           setIsRegisterComplete(true)
           captureUser = {email: res.data.data.user, password: res.data.data.password, method: "signup"}

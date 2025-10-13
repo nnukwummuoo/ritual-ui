@@ -29,7 +29,37 @@ export default function VideoCallBilling({
   const [callDuration, setCallDuration] = useState(0);
   const [currentBalance, setCurrentBalance] = useState(userBalance);
   const [currentEarnings, setCurrentEarnings] = useState(creatorEarnings);
+  const [callSpecificEarnings, setCallSpecificEarnings] = useState(0); // Earnings from this specific call
   const [lastBilledMinute, setLastBilledMinute] = useState(0);
+  
+  // Use refs to avoid infinite re-renders
+  const currentBalanceRef = useRef(userBalance);
+  const callRateRef = useRef(callRate);
+  const callDurationRef = useRef(0);
+  const lastBilledMinuteRef = useRef(0);
+
+  // Update balance when props change
+  useEffect(() => {
+    setCurrentBalance(userBalance);
+    currentBalanceRef.current = userBalance;
+  }, [userBalance, isCreator, callRate]);
+
+  useEffect(() => {
+    setCurrentEarnings(creatorEarnings);
+  }, [creatorEarnings, isCreator]);
+  
+  // Update refs when values change
+  useEffect(() => {
+    callRateRef.current = callRate;
+  }, [callRate]);
+  
+  useEffect(() => {
+    callDurationRef.current = callDuration;
+  }, [callDuration]);
+  
+  useEffect(() => {
+    lastBilledMinuteRef.current = lastBilledMinute;
+  }, [lastBilledMinute]);
   
   const callStartTimeRef = useRef<number>(0);
   const durationIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -46,7 +76,7 @@ export default function VideoCallBilling({
   // Start call timer
   const startCallTimer = useCallback(() => {
     if (durationIntervalRef.current) return;
-    console.log('⏱️ [Billing] Starting call timer');
+    // Starting call timer
     callStartTimeRef.current = Date.now();
     durationIntervalRef.current = setInterval(() => {
       setCallDuration(Math.floor((Date.now() - callStartTimeRef.current) / 1000));
@@ -55,7 +85,7 @@ export default function VideoCallBilling({
 
   // Stop call timer
   const stopCallTimer = useCallback(() => {
-    console.log('⏱️ [Billing] Stopping call timer');
+    // Stopping call timer
     if (durationIntervalRef.current) {
       clearInterval(durationIntervalRef.current);
       durationIntervalRef.current = null;
@@ -63,62 +93,58 @@ export default function VideoCallBilling({
     setCallDuration(0);
   }, []);
 
-  // Start billing system
+  // Start billing system (ONLY for fans, not creators)
   const startBilling = useCallback(() => {
-    console.log('💰 [Billing] Starting billing system');
+    // Only start billing for fans, not creators
+    if (isCreator) {
+      return;
+    }
     setLastBilledMinute(0);
+    lastBilledMinuteRef.current = 0;
     
     const interval = setInterval(() => {
-      const currentMinute = Math.floor(callDuration / 60);
+      const currentMinute = Math.floor(callDurationRef.current / 60);
       
-      if (currentMinute > lastBilledMinute) {
-        console.log(`💰 [Billing] Billing for minute ${currentMinute}`);
+      if (currentMinute > lastBilledMinuteRef.current) {
+        // Billing for minute (fan only)
         
         // Check if fan has enough balance
-        if (!isCreator && currentBalance < callRate) {
-          console.log('💰 [Billing] Insufficient funds - ending call');
+        if (currentBalanceRef.current < callRateRef.current) {
+          // Insufficient funds - ending call
           onInsufficientFunds();
           return;
         }
         
-        // Deduct from fan's balance and add to creator's earnings
-        if (!isCreator) {
-          setCurrentBalance(prev => {
-            const newBalance = prev - callRate;
-            console.log(`💰 [Billing] Fan balance: ${prev} -> ${newBalance}`);
-            return newBalance;
-          });
-        }
-        
-        if (isCreator) {
-          setCurrentEarnings(prev => {
-            const newEarnings = prev + callRate;
-            console.log(`💰 [Billing] Creator earnings: ${prev} -> ${newEarnings}`);
-            return newEarnings;
-          });
-        }
-        
         setLastBilledMinute(currentMinute);
+        lastBilledMinuteRef.current = currentMinute;
         
-        // Emit billing event to backend
+        // Emit billing event to backend (backend will handle balance deduction)
         if (socket && callId && callerId) {
+          console.log('💰 [Billing] Sending billing event:', {
+            callId: callId,
+            callerId: callerId,
+            currentUserId,
+            amount: callRateRef.current,
+            minute: currentMinute
+          });
+          
           socket.emit('video_call_billing', {
             callId: callId,
             callerId: callerId,
             currentUserId,
-            amount: callRate,
+            amount: callRateRef.current,
             minute: currentMinute
           });
         }
       }
     }, 1000); // Check every second
     
-    setBillingInterval(interval);
-  }, [callDuration, lastBilledMinute, currentBalance, callRate, isCreator, socket, callId, callerId, currentUserId, onInsufficientFunds]);
+    billingIntervalRef.current = interval;
+  }, [isCreator, socket, callId, callerId, currentUserId, onInsufficientFunds]);
 
   // Stop billing system
   const stopBilling = useCallback(() => {
-    console.log('💰 [Billing] Stopping billing system');
+    // Stopping billing system
     if (billingIntervalRef.current) {
       clearInterval(billingIntervalRef.current);
       billingIntervalRef.current = null;
@@ -127,19 +153,26 @@ export default function VideoCallBilling({
 
   // Handle balance updates from backend
   const handleBalanceUpdate = useCallback((data: any) => {
-    console.log('💰 [Billing] Balance update received:', data);
     if (data.type === 'deduct') {
-      setCurrentBalance(data.gold);
+      const newBalance = parseInt(data.balance) || 0;
+      setCurrentBalance(newBalance);
+      currentBalanceRef.current = newBalance;
     } else if (data.type === 'earn') {
       setCurrentEarnings(data.earnings);
+      // Add to call-specific earnings
+      if (data.callEarnings) {
+        setCallSpecificEarnings(prev => prev + data.callEarnings);
+      }
     }
   }, []);
 
-  // Handle insufficient funds from backend
+  // Handle insufficient funds from backend (only for fans)
   const handleInsufficientFunds = useCallback((data: any) => {
-    console.log('💰 [Billing] Insufficient funds:', data);
-    onInsufficientFunds();
-  }, [onInsufficientFunds]);
+    // Only handle insufficient funds for fans, not creators
+    if (!isCreator) {
+      onInsufficientFunds();
+    }
+  }, [onInsufficientFunds, isCreator]);
 
   // Start timer and billing when connected
   useEffect(() => {
@@ -194,8 +227,8 @@ export default function VideoCallBilling({
         {isCreator && (
           <div className="flex items-center gap-2 text-green-400">
             <span className="text-sm">💎</span>
-            <span className="font-semibold">{currentEarnings}</span>
-            <span className="text-xs">Earnings</span>
+            <span className="font-semibold">{callSpecificEarnings}</span>
+            <span className="text-xs">This Call</span>
           </div>
         )}
       </div>

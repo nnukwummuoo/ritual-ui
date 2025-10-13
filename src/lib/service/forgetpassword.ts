@@ -1,4 +1,5 @@
 import axios from "axios";
+import { URL } from "../../api/config";
 
 /**
  * Defines the shape of the data required for password reset.
@@ -17,7 +18,7 @@ interface ForgetPasswordPayload {
  */
 export const forgetpass = async (payload: ForgetPasswordPayload) => {
   try {
-    const res = await axios.post(`${process.env.NEXT_PUBLIC_API}/forgetpassword`, payload, { withCredentials: true });
+    const res = await axios.post(`${URL}/forgetpassword`, payload, { withCredentials: true });
     return res.data;
   } catch (error: any) {
     // Log the full error for debugging purposes

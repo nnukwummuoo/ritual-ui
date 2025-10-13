@@ -318,11 +318,11 @@ const HistoryPage = () => {
       }
       
       // Get creator ID from profile data (same as creator page)
-      const creator_portfolio_id = creator_portfolio_id || session._id; // use profile creator_portfolio_id or fallback to session ID
+      const portfolioId = creator_portfolio_id || session._id; // use profile creator_portfolio_id or fallback to session ID
       
       
       const data = {
-        creator_portfolio_id: creator_portfolio_id,
+        creator_portfolio_id: portfolioId,
         userId: session._id,
         token: session.token,
       };

@@ -29,11 +29,11 @@ export const SettingPage = () => {
       linktitle: "account",
     },
 
-    {
-      name: "Notification",
-      icon: <IoMdNotificationsOutline color="white" size={20} />,
-      linktitle: "notification",
-    },
+    // {
+    //   name: "Notification",
+    //   icon: <IoMdNotificationsOutline color="white" size={20} />,
+    //   linktitle: "notification",
+    // },
     {
       name: "Privacy & safety",
       icon: <AiOutlineSafetyCertificate color="white" size={20} />,

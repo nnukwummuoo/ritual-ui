@@ -6,6 +6,7 @@ import RequestCard from '../components/RequestCard';
 import { useUserId } from '@/lib/hooks/useUserId';
 import {URL} from "@/api/config";
 import VIPBadge from "@/components/VIPBadge";
+import { useNotificationIndicator } from "@/hooks/useNotificationIndicator";
 
 interface Request {
   bookingId: string;
@@ -26,6 +27,7 @@ interface Request {
   venue?: string;
   userid?: string;
   creator_portfolio_id?: string;
+  targetUserId?: string; // Add target user ID for profile navigation
   hosttype?: string;
 }
 
@@ -33,6 +35,9 @@ export default function Activity() {
   const [requests, setRequests] = useState<Request[]>([]);
   const [loading, setLoading] = useState(true);
   const userid = useUserId();
+  
+  // Get notification indicator data
+  const { hasUnread, unreadCount, totalCount } = useNotificationIndicator();
 
   useEffect(() => {
     // Helper function to normalize status values
@@ -90,6 +95,7 @@ export default function Activity() {
               venue: req.place,
               userid: req.userid,
               creator_portfolio_id: req.creator_portfolio_id,
+              targetUserId: req.targetUserId, // Add target user ID for profile navigation
               hosttype: req.hosttype // Include the host type from backend
             };
           });
@@ -133,6 +139,23 @@ export default function Activity() {
 
   return (
     <div className='flex flex-col gap-8 max-w-[26rem] mx-auto'>
+      {/* Activity Header with Notification Indicators */}
+      <div className="bg-[#0B0F1A]/70 backdrop-blur-xl border border-slate-800 rounded-2xl p-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-semibold text-white">Activity</h2>
+          <div className="flex items-center gap-2">
+            {hasUnread && (
+              <div className="bg-red-500 text-white text-xs px-2 py-1 rounded-full font-bold">
+                {unreadCount} new
+              </div>
+            )}
+            <span className="text-slate-400 text-sm">
+              {totalCount} notifications
+            </span>
+          </div>
+        </div>
+      </div>
+      
       {requests.map((request: Request) => (
         <div key={request.bookingId} className="relative">
           <RequestCard
@@ -151,6 +174,7 @@ export default function Activity() {
             } : undefined}
             userid={request.userid}
             creator_portfolio_id={request.creator_portfolio_id}
+            targetUserId={request.targetUserId}
             hosttype={request.hosttype}
             isVip={request.otherUser?.isVip || false}
             vipEndDate={request.otherUser?.vipEndDate}
@@ -171,4 +195,3 @@ export default function Activity() {
   </div>
   );
 }
-

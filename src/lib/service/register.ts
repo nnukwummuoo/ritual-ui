@@ -1,4 +1,5 @@
 import axios from "axios";
+import { URL } from "../../api/config";
 
 /**
  * Defines the shape of the data required for user registration.
@@ -23,7 +24,7 @@ interface RegistrationPayload {
  */
 export const register = async (payload: RegistrationPayload) => {
   try {
-    const res = await axios.post(`${process.env.NEXT_PUBLIC_API}/register`, payload, { withCredentials: true });
+    const res = await axios.post(`${URL}/register`, payload, { withCredentials: true });
     return res.data;
   } catch (error: any) {
     // Log the full error for debugging purposes

@@ -1642,10 +1642,7 @@ const PostModal = () => {
                           );
                           
                           // Get host type from profile data or default to "Fan meet"
-                          const hostType = (profileData as any)?.hosttype || 
-                                         (profileData as any)?.creatortDype || 
-                                         (profileData as any)?.creatorType ||
-                                         "Fan meet";
+                          const hostType = (profileData as any)?.hosttype || "Fan meet";
                           
                           return hasCreatorPortfolio && (
                             <button

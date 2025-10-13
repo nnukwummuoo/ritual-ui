@@ -9,6 +9,7 @@ import { FaAngleLeft } from "react-icons/fa";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Allview } from "./components/Allview";
+import { useNotificationIndicator } from "@/hooks/useNotificationIndicator";
 
 const style =
   " hover:bg-gradient-to-r hover:from-blue-400 hover:to-purple-500 hover:bg-clip-text hover:text-transparent";
@@ -20,6 +21,9 @@ export const Creatornotify = ({ children }: { children: React.ReactNode }) => {
   const [request, setrequest] = useState("");
   const [accepted, setaccepted] = useState("");
   const divFocusRef = useRef<HTMLDivElement>(null);
+  
+  // Get notification indicator data
+  const { hasUnread, unreadCount } = useNotificationIndicator();
 
   useEffect(() => {
     divFocusRef.current && divFocusRef.current.focus();
@@ -40,7 +44,7 @@ export const Creatornotify = ({ children }: { children: React.ReactNode }) => {
             <h4 className="text-lg font-bold text-white">Notifications</h4>
           </div>
           <div className="flex gap-2 mb-8">
-            <HeadBtn label="All" route="/notifications?id=randomid" />
+            <HeadBtn label="All" route="/notifications?id=randomid" showIndicator={hasUnread} count={unreadCount} />
             <HeadBtn label="Activity" route="/notifications/activity" />
           </div>
         </header>
@@ -55,17 +59,27 @@ export const Creatornotify = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
-function HeadBtn({ label, route }: { label: string; route: string }) {
+function HeadBtn({ label, route, showIndicator = false, count = 0 }: { 
+  label: string; 
+  route: string; 
+  showIndicator?: boolean; 
+  count?: number; 
+}) {
   const pathname = usePathname();
   const endpoint: boolean = route.split("?").includes(pathname);
   return (
     <Link
       href={route}
-      className={`w-full font-bold transition-all duration-500 p-2 border border-gray-800 text-center text-slate-400 rounded-2xl hover:bg-gray-900 ${
+      className={`w-full font-bold transition-all duration-500 p-2 border border-gray-800 text-center text-slate-400 rounded-2xl hover:bg-gray-900 relative ${
         endpoint ? "bg-gray-800" : "bg-transparent"
       }`}
     >
       {label}
+      {showIndicator && (
+        <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full font-bold min-w-[16px] h-4 flex items-center justify-center">
+          {count > 99 ? '99+' : count}
+        </div>
+      )}
     </Link>
   );
 }

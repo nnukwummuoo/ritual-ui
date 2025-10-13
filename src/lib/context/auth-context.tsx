@@ -18,6 +18,12 @@ export interface Session {
   token?: string;
   isAdmin?: boolean;
   refreshToken?: string;
+  name?: string;
+  firstname?: string;
+  gold?: number;
+  balance?: string; // Balance from database (String type)
+  earnings?: number;
+  isCreator?: boolean;
 }
 
 // Define the AuthContext type
@@ -85,17 +91,31 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     if (raw) {
       const data = JSON.parse(raw) || {};
       setSession({
-          _id: data.userID || data._id || data.id || "",
-          nickname: data.nickname || "",
-          token: data.accesstoken || data.accessToken || data.token || "",
-          refreshToken: data.refreshtoken || data.refreshToken || data.token || "",
-          isAdmin: data.isAdmin ?? false, // Default to false if not provided
+        _id: data.userID || data._id || data.id || "",
+        nickname: data.nickname || "",
+        token: data.accesstoken || data.accessToken || data.token || "",
+        refreshToken: data.refreshtoken || data.refreshToken || data.token || "",
+        isAdmin: data.isAdmin ?? false, // Default to false if not provided
+        name: data.name || "",
+        firstname: data.firstname || "",
+        gold: data.gold || 0,
+        balance: data.balance || "0", // Balance from database (String type)
+        earnings: data.earnings || 0,
+        isCreator: data.isCreator || false,
 });
+      // Set isLoggedIn to true if we have valid session data
+      if (data.nickname && (data.userID || data._id || data.id)) {
+        setIsLoggedIn(true);
+      }
+    } else {
+      // No session data, ensure user is logged out
+      setIsLoggedIn(false);
+      setSession(null);
     }
   } catch (e) {
     // ignore
   }
-}, [isLoggedIn]); // Remove status dependency to prevent loops
+}, []); // Run once on mount
 
 
 
