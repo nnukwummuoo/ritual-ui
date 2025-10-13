@@ -17,7 +17,7 @@ import { createCreatorMultipart } from "@/api/creator";
 import { useAuth } from "@/lib/context/auth-context";
 import { useSelector, useDispatch } from "react-redux";
 import type { RootState, AppDispatch } from "@/store/store";
-import { getprofile, checkApplicationStatus } from "@/store/profile";
+import { getprofile } from "@/store/profile";
 
 // Appwrite imports
 import { Client, Storage } from "appwrite";
@@ -48,9 +48,8 @@ export default function CreateCreatorPortfolio() {
 
   const profile = useSelector((state: RootState) => state.profile);
   const reduxUserId = useSelector((state: RootState) => state.register.userID);
-  const applicationStatus = useSelector((state: RootState) => state.profile.checkApplicationStatus);
+  const isCreatorVerified = useSelector((state: RootState) => state.profile.creator_verified);
 
-  const [statusChecked, setStatusChecked] = useState(false);
   const [loading, setLoading] = useState(false);
   const [color, setColor] = useState("#d49115");
   const [showFileSizeModal, setShowFileSizeModal] = useState(false);
@@ -76,33 +75,6 @@ export default function CreateCreatorPortfolio() {
   const [step, setStep] = useState(1);
   const totalSteps = 3;
   const [showPriceGuide, setShowPriceGuide] = useState(false);
-
-  // Check application status before rendering
-   useEffect(() => {
-    if (!userid || !token) {
-      toast.error("Please log in to create a creator portfolio.");
-      router.push("/");
-      return;
-    }
-
-    const checkStatus = async () => {
-      try {
-        if (applicationStatus === "") {
-          await dispatch(checkApplicationStatus({ userid, token })).unwrap();
-        }
-      } catch (error: any) {
-        toast.error(error.message || "Failed to check application status");
-        router.push("/be-a-creator/");
-      } finally {
-        setStatusChecked(true);
-      }
-    };
-
-    checkStatus();
-  }, [userid, token, applicationStatus, dispatch, router]);
-
-  // 🧠 Render guard (this runs safely after all hooks)
-  
 
   // 🔥 Autofill full name from user profile (like side menu)
   useEffect(() => {
@@ -337,25 +309,17 @@ const checkuserInput = async () => {
   };
 
 
+if (!isCreatorVerified) {
+  return (
+    <div className="flex items-center justify-center min-h-screen bg-gray-900">
+      <p className="text-xl text-white">You are not verified yet</p>
+    </div>
+  );
+}
 
 
   return (
     <>
-      {!statusChecked ? (
-        <div className="flex justify-center items-center h-screen text-white">
-          Checking your application status...
-        </div>
-      ) : applicationStatus === "pending" || applicationStatus === "rejected" ? (
-        <div className="flex justify-center items-center h-screen text-red-400">
-          Your application must be accepted before creating a portfolio.
-        </div>
-      ) : (
-        // your full form JSX goes here ⬇️
-        <div className="pt-16 md:pt-8">
-          <ToastContainer position="top-center" theme="dark" />
-          {/* ... rest of the component ... */}
-        </div>
-      )}
       <div className="pt-16 md:pt-8">
         <ToastContainer position="top-center" theme="dark" />
         <p className="text-2xl font-semibold text-center text-slate-300 sm:w-1/2">
