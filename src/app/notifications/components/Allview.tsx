@@ -9,6 +9,7 @@ import { useAuth } from "@/lib/context/auth-context";
 import PacmanLoader from "react-spinners/RingLoader";
 import { CheckCircle, XCircle, Clock } from "lucide-react";
 import Link from "next/link";
+import { useNotificationIndicator } from "@/hooks/useNotificationIndicator";
 
 export const Allview = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -19,6 +20,9 @@ export const Allview = () => {
     (state: RootState) => state.profile
   );
   const userId = useSelector((state: RootState) => state.profile.userId);
+  
+  // Get notification indicator data
+  const { hasUnread, unreadCount, totalCount } = useNotificationIndicator();
 
   const [loading, setLoading] = useState(true);
 
@@ -53,6 +57,25 @@ export const Allview = () => {
 
   return (
     <div className="flex flex-col items-center w-full h-full p-4 space-y-4 min-h-screen">
+      {/* Notification Header */}
+      <div className="w-full max-w-md mb-4">
+        <div className="bg-[#0B0F1A]/70 backdrop-blur-xl border border-slate-800 rounded-2xl p-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-white">Notifications</h2>
+            <div className="flex items-center gap-2">
+              {hasUnread && (
+                <div className="bg-red-500 text-white text-xs px-2 py-1 rounded-full font-bold">
+                  {unreadCount} new
+                </div>
+              )}
+              <span className="text-slate-400 text-sm">
+                {totalCount} total
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+      
       {notifications.map((note: any) => {
         const message = note.message.toLowerCase();
 
@@ -83,9 +106,17 @@ export const Allview = () => {
         return (
           <div
             key={note._id}
-            className="relative bg-[#0B0F1A]/70 backdrop-blur-xl border border-slate-800 shadow-lg 
-                       rounded-2xl p-6 w-full max-w-md text-white transition hover:border-slate-700"
+            className={`relative bg-[#0B0F1A]/70 backdrop-blur-xl border shadow-lg 
+                       rounded-2xl p-6 w-full max-w-md text-white transition hover:border-slate-700 ${
+                         !note.seen 
+                           ? 'border-blue-500 bg-blue-500/5' 
+                           : 'border-slate-800'
+                       }`}
           >
+            {/* Unread indicator */}
+            {!note.seen && (
+              <div className="absolute top-3 right-3 w-2 h-2 bg-blue-500 rounded-full"></div>
+            )}
             <div className="flex flex-col items-start space-y-3">
               {/* Header + Icon */}
               <div className="flex items-center space-x-2">

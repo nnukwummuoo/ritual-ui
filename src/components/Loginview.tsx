@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { ToastContainer } from "material-react-toastify";
 import Input from "./Input";
 import Processing from "./tick-animation/LoginProcessing";
@@ -33,7 +33,7 @@ type User = {
 export const Loginview = () => {
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const { setIsLoggedIn, setStatus, isLoggedIn, status } = useAuth();
-  const [user, setUser] = useState<User | undefined>();
+  const [, setUser] = useState<User | undefined>();
 
   // Debug status changes - removed to prevent console spam
 
@@ -106,7 +106,7 @@ export const Loginview = () => {
       
       // Create session immediately after successful login (like registration)
       try {
-        const sessionResult = await fetch(`${process.env.NEXT_PUBLIC_URL}/api/session`, {
+        const sessionResult = await fetch(`/api/session`, {
           method: "POST",
           body: JSON.stringify({ 
             nickname: userData.nickname, 
@@ -125,7 +125,7 @@ export const Loginview = () => {
       // Redirect after successful login
       setTimeout(() => {
         window.location.href = "/";
-      }, 1000);
+      }, 500);
       
     } catch (error) {
       console.error("Login error:", error);

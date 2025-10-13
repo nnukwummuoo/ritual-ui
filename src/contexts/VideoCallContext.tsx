@@ -4,19 +4,30 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { getSocket } from '@/lib/socket';
 import VideoCallModal from '@/components/VideoCallModal';
 import { useAuth } from '@/lib/context/auth-context';
+import { URL } from '@/api/config';
 
 interface VideoCallData {
   callId: string;
   callerId: string;
   callerName: string;
   callerPhoto?: string;
+  callerIsVip?: boolean;
+  callerVipEndDate?: string | null;
   isIncoming: boolean;
+  answererId?: string;
+  answererName?: string;
+  answererPhoto?: string;
+  answererIsVip?: boolean;
+  answererVipEndDate?: string | null;
+  userBalance?: number;
+  callRate?: number;
+  isCreator?: boolean;
 }
 
 interface VideoCallContextType {
   isVideoCallOpen: boolean;
   videoCallData: VideoCallData | null;
-  startVideoCall: (answererId: string, answererName: string, answererPhoto?: string) => void;
+  startVideoCall: (answererId: string, answererName: string, price?: number) => Promise<void>;
   closeVideoCall: () => void;
 }
 
@@ -41,34 +52,106 @@ export const VideoCallProvider: React.FC<VideoCallProviderProps> = ({ children }
   const socket = getSocket();
 
   // Start a video call
-  const startVideoCall = (answererId: string, answererName: string, answererPhoto?: string) => {
+  const startVideoCall = async (answererId: string, answererName: string, price?: number) => {
     if (!socket || !session?._id) return;
 
-    console.log('🎥 [VideoCall] Starting call:', {
-      callerId: session._id,
-      callerName: session.name || session.firstname || 'Unknown',
-      answererId: answererId,
-      answererName: answererName
-    });
+    try {
+      // Get current user balance and creator status from database
+      const response = await fetch(`${URL}/getprofile`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userid: session._id
+        })
+      });
 
-    const callData: VideoCallData = {
-      callId: `temp_${Date.now()}`, // Temporary ID until we get the real one from server
-      callerId: answererId,
-      callerName: answererName,
-      callerPhoto: answererPhoto,
-      isIncoming: false
-    };
+      if (!response.ok) {
+        throw new Error('Failed to fetch user profile');
+      }
 
-    setVideoCallData(callData);
-    setIsVideoCallOpen(true);
+      const data = await response.json();
+      const userBalance = parseInt(data.profile?.balance) || 0; // Parse balance as integer
+      const isCreator = data.profile?.creator || false; // Get creator status from database
+      const callRate = price || 1; // Use price from request card, default to 1 if not provided
+      
+      if (userBalance < callRate) {
+        alert('Insufficient funds to start call. Please purchase gold first.');
+        return;
+      }
 
-    // Emit start call event
-    socket.emit('video_call_start', {
-      callerId: session._id,
-      callerName: session.name || session.firstname || 'Unknown',
-      answererId: answererId,
-      answererName: answererName
-    });
+      // Get answerer's profile information
+      let answererPhoto = '';
+      let answererIsVip = false;
+      let answererVipEndDate = null;
+      
+      try {
+        const answererResponse = await fetch(`${URL}/getprofile`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            userid: answererId
+          })
+        });
+
+        if (answererResponse.ok) {
+          const answererData = await answererResponse.json();
+          answererPhoto = answererData.profile?.photolink || '';
+          answererIsVip = answererData.profile?.isVip || false;
+          answererVipEndDate = answererData.profile?.vipEndDate || null;
+        }
+      } catch (error) {
+        console.error('Error fetching answerer profile:', error);
+      }
+
+      // Starting call
+      socket.emit('video_call_start', {
+        callerId: session._id,
+        callerName: session.name || session.firstname || 'Unknown',
+        callerPhoto: (session as { photolink?: string })?.photolink || '',
+        answererId: answererId,
+        answererName: answererName,
+        answererPhoto: answererPhoto,
+        userBalance: userBalance,
+        callRate: callRate
+      });
+
+      const callData: VideoCallData = {
+        callId: `temp_${Date.now()}`, // Temporary ID until we get the real one from server
+        callerId: session._id,
+        callerName: session.name || session.firstname || 'Unknown',
+        callerPhoto: (session as { photolink?: string })?.photolink || '',
+        answererId: answererId,
+        answererName: answererName,
+        answererPhoto: answererPhoto,
+        answererIsVip: answererIsVip,
+        answererVipEndDate: answererVipEndDate,
+        userBalance: userBalance, // Use real-time balance from database
+        callRate: callRate,
+        isCreator: isCreator, // Use creator status from database
+        isIncoming: false
+      };
+      
+
+      setVideoCallData(callData);
+      setIsVideoCallOpen(true);
+
+      // Emit start call event
+      socket.emit('video_call_start', {
+        callerId: session._id,
+        callerName: session.name || session.firstname || 'Unknown',
+        callerPhoto: (session as { photolink?: string })?.photolink || '',
+        answererId: answererId,
+        answererName: answererName,
+        answererPhoto: answererPhoto
+      });
+    } catch (error) {
+      console.error('Error checking user balance:', error);
+      alert('Error checking your balance. Please try again.');
+    }
   };
 
   // Close video call
@@ -81,20 +164,83 @@ export const VideoCallProvider: React.FC<VideoCallProviderProps> = ({ children }
   useEffect(() => {
     if (!socket || !session?._id) return;
 
-    const handleIncomingCall = (data: any) => {
-      const callData: VideoCallData = {
-        callId: data.callId,
-        callerId: data.callerId,
-        callerName: data.callerName,
-        callerPhoto: data.callerPhoto,
-        isIncoming: true
-      };
+    const handleIncomingCall = async (data: { callId: string; callerId: string; callerName: string; callerPhoto?: string }) => {
+      try {
+        // Get current user profile to determine creator status
+        const response = await fetch(`${URL}/getprofile`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            userid: session._id
+          })
+        });
 
-      setVideoCallData(callData);
-      setIsVideoCallOpen(true);
+        if (!response.ok) {
+          throw new Error('Failed to fetch user profile');
+        }
+
+        const profileData = await response.json();
+        const isCreator = profileData.profile?.creator || false;
+
+        // Get caller's (fan's) profile information
+        let callerPhoto = data.callerPhoto || '';
+        let callerIsVip = false;
+        let callerVipEndDate = null;
+        
+        try {
+          const callerResponse = await fetch(`${URL}/getprofile`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              userid: data.callerId
+            })
+          });
+
+          if (callerResponse.ok) {
+            const callerData = await callerResponse.json();
+            callerPhoto = callerData.profile?.photolink || data.callerPhoto || '';
+            callerIsVip = callerData.profile?.isVip || false;
+            callerVipEndDate = callerData.profile?.vipEndDate || null;
+          }
+        } catch (error) {
+          console.error('Error fetching caller profile:', error);
+        }
+
+        const callData: VideoCallData = {
+          callId: data.callId,
+          callerId: data.callerId,
+          callerName: data.callerName,
+          callerPhoto: callerPhoto,
+          callerIsVip: callerIsVip,
+          callerVipEndDate: callerVipEndDate,
+          isCreator: isCreator, // Use creator status from database
+          isIncoming: true
+        };
+
+        setVideoCallData(callData);
+        setIsVideoCallOpen(true);
+      } catch (error) {
+        console.error('Error fetching user profile for incoming call:', error);
+        // Fallback to session data if API call fails
+        const callData: VideoCallData = {
+          callId: data.callId,
+          callerId: data.callerId,
+          callerName: data.callerName,
+          callerPhoto: data.callerPhoto,
+          isCreator: session.isCreator || false, // Fallback to session
+          isIncoming: true
+        };
+
+        setVideoCallData(callData);
+        setIsVideoCallOpen(true);
+      }
     };
 
-    const handleCallAccepted = (data: any) => {
+    const handleCallAccepted = (data: { callId: string }) => {
       console.log('📞 [VideoCall] Call accepted, updating call ID:', data.callId);
       // Update call data with real call ID if we have a temporary one
       if (videoCallData?.callId.startsWith('temp_')) {
@@ -103,16 +249,22 @@ export const VideoCallProvider: React.FC<VideoCallProviderProps> = ({ children }
       }
     };
 
-    const handleCallDeclined = (data: any) => {
+    const handleCallDeclined = () => {
       closeVideoCall();
     };
 
-    const handleCallEnded = (data: any) => {
+    const handleCallEnded = () => {
       closeVideoCall();
     };
 
-    const handleCallError = (data: any) => {
+    const handleCallError = (data: { message: string }) => {
       console.error('Video call error:', data.message);
+      closeVideoCall();
+    };
+
+    const handleCallTimeout = () => {
+      console.log('📞 [VideoCall] Call timeout - closing modal for answerer');
+      // For the answerer (creator), just close the modal without any special message
       closeVideoCall();
     };
 
@@ -121,6 +273,7 @@ export const VideoCallProvider: React.FC<VideoCallProviderProps> = ({ children }
     socket.on('video_call_declined', handleCallDeclined);
     socket.on('video_call_ended', handleCallEnded);
     socket.on('video_call_error', handleCallError);
+    socket.on('video_call_timeout', handleCallTimeout);
 
     return () => {
       socket.off('video_call_incoming', handleIncomingCall);
@@ -128,8 +281,9 @@ export const VideoCallProvider: React.FC<VideoCallProviderProps> = ({ children }
       socket.off('video_call_declined', handleCallDeclined);
       socket.off('video_call_ended', handleCallEnded);
       socket.off('video_call_error', handleCallError);
+      socket.off('video_call_timeout', handleCallTimeout);
     };
-  }, [socket, session?._id, videoCallData?.callId]);
+  }, [socket, session?._id, session?.isCreator, videoCallData?.callId]);
 
   const contextValue: VideoCallContextType = {
     isVideoCallOpen,
@@ -148,12 +302,12 @@ export const VideoCallProvider: React.FC<VideoCallProviderProps> = ({ children }
           isOpen={isVideoCallOpen}
           onClose={closeVideoCall}
           callData={videoCallData}
-          currentUserId={session._id}
+          currentUserId={session._id || ''}
           currentUserName={session.name || session.firstname || 'Unknown'}
-          userBalance={session.gold || 0}
+          userBalance={videoCallData?.userBalance || 0}
           creatorEarnings={session.earnings || 0}
-          isCreator={session.isCreator || false}
-          callRate={1} // Default 1 gold per minute (can be dynamic later)
+          isCreator={videoCallData?.isCreator || false}
+          callRate={videoCallData?.callRate || 1}
         />
       )}
     </VideoCallContext.Provider>

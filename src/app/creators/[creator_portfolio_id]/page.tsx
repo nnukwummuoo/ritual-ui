@@ -159,12 +159,14 @@ export default function Creatorbyid () {
   }, [useridFromHook, session?._id, reduxUserid]);
   const reduxToken = useSelector((state: RootState) => state.register.refreshtoken);
   
-  // Get token from Redux or localStorage as fallback
+  // Get token from Redux, session, or localStorage as fallback
   const [token, setToken] = useState<string>("");
   
   useEffect(() => {
     if (reduxToken) {
       setToken(reduxToken);
+    } else if (session?.token) {
+      setToken(session.token);
     } else {
       // Fallback to localStorage
       try {
@@ -177,7 +179,7 @@ export default function Creatorbyid () {
         // Silent fail
       }
     }
-  }, [reduxToken]);
+  }, [reduxToken, session?.token]);
   const message = useSelector((state: RootState) => state.creator.message);
   const creatorbyidstatus = useSelector(
     (state: RootState) => state.creator.creatorbyidstatus
@@ -372,15 +374,20 @@ export default function Creatorbyid () {
 
   useEffect(() => {
     const fetchViews = async () => {
+      if (!Creator[0] || !userid) {
+        return;
+      }
+      
       const data = {
-        creator_portfoliio_Id: Creator[0],
-        userId: userid || "",
-        token: user?.refreshtoken || "",
+        creator_portfolio_id: Creator[0],
+        userId: userid,
       };
+      
       const response = await dispatch(getViews(data));
 
       try {
         const payload = response?.payload?.response;
+        
         if (!payload) {
           setViews(0);
           return;
@@ -388,7 +395,6 @@ export default function Creatorbyid () {
   
         // Ensure payload is a valid JSON string
         const parsed = typeof payload === "string" ? JSON.parse(payload) : payload;
-  
         setViews(parsed?.views ?? 0);
       } catch (err) {
         setViews(0);
@@ -396,7 +402,7 @@ export default function Creatorbyid () {
     };
     
     fetchViews();
-  }, [user]);
+  }, [Creator[0], userid, dispatch]);
 
   useEffect(() => {
     if (creatordeletestatus === "succeeded") {

@@ -164,13 +164,14 @@ interface CardProps {
     details?: FanMeetDetails;
     userid?: string;
     creator_portfolio_id?: string;
+    targetUserId?: string; // Add target user ID for profile navigation
     hosttype?: string;
     isVip?: boolean;
     vipEndDate?: string | null;
     onStatusChange?: (bookingId: string, newStatus: string) => void;
 }
 
-export default function RequestCard({exp, img, name, titles=["fan"], status, type="fan", bookingId, price, details, userid, creator_portfolio_id, hosttype, isVip=false, vipEndDate=null, onStatusChange}: CardProps) {
+export default function RequestCard({exp, img, name, titles=["fan"], status, type="fan", bookingId, price, details, userid, creator_portfolio_id, targetUserId, hosttype, isVip=false, vipEndDate=null, onStatusChange}: CardProps) {
   const [loading, setLoading] = useState(false);
   const [currentStatus, setCurrentStatus] = useState(status);
   const [showDetails, setShowDetails] = useState(false);
@@ -368,7 +369,7 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
     // If it's a Fan Call, start video call instead of completing
     if (hosttype === "Fan call") {
       if (creator_portfolio_id && name) {
-        startVideoCall(creator_portfolio_id, name, img);
+        startVideoCall(creator_portfolio_id, name, price || 1);
       }
       return;
     }
@@ -413,14 +414,10 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
   };
 
   const handleProfileClick = () => {
-    // The userid prop contains the ID of the person whose details are shown on the card
-    // If fan clicks -> go to creator's profile (userid = creator's user ID)
-    // If creator clicks -> go to fan's profile (userid = fan's user ID)
-    if (userid) {
-      router.push(`/Profile/${userid}`);
-    } else if (creator_portfolio_id) {
-      // Fallback: if no userid, try to get creator's profile
-      router.push(`/creators/${creator_portfolio_id}`);
+    // Navigate to the target user's profile
+    // Use targetUserId which is the correct user ID for the person whose profile we want to view
+    if (targetUserId) {
+      router.push(`/Profile/${targetUserId}`);
     }
   };
 
@@ -484,8 +481,16 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
             label="Chat Now" 
             className={fanActionClass} 
             onClick={() => {
-              if (userid) {
+              // For messaging, we need the user ID of the person we want to message
+              // If this is a creator viewing a fan's request, userid is the fan's ID
+              // If this is a fan viewing a creator's request, we need the creator's user ID
+              if (type === "creator" && userid) {
+                // Creator wants to message the fan
                 router.push(`/message/${userid}`);
+              } else if (type === "fan" && creator_portfolio_id) {
+                // Fan wants to message the creator - we need to get creator's user ID
+                // For now, use creator_portfolio_id as fallback
+                router.push(`/message/${creator_portfolio_id}`);
               }
             }}
           />
@@ -514,6 +519,7 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
         label="Chat Now" 
         className={fanActionClass} 
         onClick={() => {
+          // Creator wants to message the fan
           if (userid) {
             router.push(`/message/${userid}`);
           }

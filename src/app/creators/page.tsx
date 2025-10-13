@@ -316,6 +316,18 @@ const renderCreators = () => {
     return creator.hosttype === categoryButton;
   });
 
+  // Sort creators: VIP first, then by latest creation date
+  const sortedList = filteredList.sort((a, b) => {
+    // VIP creators come first
+    if (a.isVip && !b.isVip) return -1;
+    if (!a.isVip && b.isVip) return 1;
+    
+    // If both are VIP or both are not VIP, sort by creation date (latest first)
+    const dateA = new Date(a.createdAt).getTime();
+    const dateB = new Date(b.createdAt).getTime();
+    return dateB - dateA; // Latest first
+  });
+
   if (!list.length) {
     return (
       <div className="mt-6 text-sm text-slate-400">
@@ -324,7 +336,7 @@ const renderCreators = () => {
     );
   }
 
-  if (!filteredList.length && list.length > 0) {
+  if (!sortedList.length && list.length > 0) {
     return (
       <div className="mt-6 text-sm text-slate-400">
         No creators found for &quot;{categoryButton}&quot; category.
@@ -334,7 +346,7 @@ const renderCreators = () => {
 
   return (
     <ul className="grid grid-cols-2 gap-2 mt-4 mb-12 md:grid-cols-3">
-      {filteredList.map((value, index) => (
+      {sortedList.map((value, index) => (
         <li key={value.creator_portfolio_id || Math.random().toString(36)} className="relative">
           <CreatorCard {...value} />
           {/* VIP Badge - positioned at page level on top of verified creators */}

@@ -77,6 +77,7 @@ const initialState = {
   creator_portfolio_id: "",
   creatorphotolink: "",
   creatorname: "",
+  hosttype: "Fan meet",
   photolink: "",
   bio: "",
   createdAt: "",
@@ -715,6 +716,8 @@ const profile = createSlice({
         state.photolink = (p as any).photolink ?? (p as any).photoLink ?? "";
         state.bio = (p as any).bio ?? "";
         state.admin = p.admin ?? false;
+        // Add hosttype field from creator data
+        (state as any).hosttype = (p as any).hosttype ?? "Fan meet";
         // Support both exclusive and creator_verified flags
         state.creator_verified = (p as any).exclusive ?? (p as any).creator_verified ?? false;
         state.emailnote = (p as any).emailnot ?? (p as any).emailnot === true; // boolean
