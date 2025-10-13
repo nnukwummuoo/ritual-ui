@@ -5,8 +5,10 @@ import { FaCoins } from 'react-icons/fa';
 import { toast } from 'material-react-toastify';
 import { URL } from '@/api/config';
 import { IoCalendarOutline, IoLocationOutline, IoTimeOutline, IoWarningOutline, IoCheckmarkCircleOutline } from 'react-icons/io5';
+import VIPBadge from "@/components/VIPBadge";
 import { getSocket } from '@/lib/socket';
 import { useRouter } from 'next/navigation';
+import { useVideoCall } from '@/contexts/VideoCallContext';
 
 const cardStates = {
   request: "Request sent",
@@ -22,55 +24,124 @@ const ratings = [
   "😐 Disconnected",
   
 ]
-const creatorContent = {
-  accepted: {
-    head: "Fan Meet Accepted",
-    body: "Please kindly remind your fan to mark as complete during or after the date — it only takes a second. If they don't, contact support within 24 hours.",
-  },
-  completed: {
-    head: "Fan Meet Completed",
-    body: "How do you rate your experience?"
-  },
-  declined: {
-    head: "Fan Meet Declined",
-    body: "You have declined the fan-meet request from your fan."
-  },
-  cancelled: {
-    head: "Fan Meet Cancelled",
-    body: "Your fan cancelled the request."},
-  expired: {
-    head: "Fan Meet Expired",
-    body: "You can ask the fan to renew request."
-  },
-  request: {
-    head: "New Fan Meet Request",
-    body: "You have 24 hours to accept or decline."
+const getCreatorContent = (hostType: string) => {
+  const typeText = hostType || "Fan Meet"; // Default to "Fan Meet" if not provided
+  
+  // Special handling for Fan Call
+  const getAcceptedContent = () => {
+    if (typeText.toLowerCase() === "fan call") {
+      return {
+        head: "📞 Please wait for the fan to start the call.",
+        body: "You've accepted the request — now relax and stay online. The fan will initiate the call when ready."
+      };
+    }
+    return {
+      head: `${typeText} Accepted`,
+      body: "Please kindly remind your fan to mark as complete during or after the date — it only takes a second. If they don't, contact support within 24 hours.",
+    };
+  };
+  
+  return {
+    accepted: getAcceptedContent(),
+    completed: {
+      head: `${typeText} Completed`,
+      body: "How do you rate your experience?"
+    },
+    declined: {
+      head: `${typeText} Declined`,
+      body: `You have declined the ${typeText.toLowerCase()} request from your fan.`
+    },
+    cancelled: {
+      head: `${typeText} Cancelled`,
+      body: "Your fan cancelled the request."
+    },
+    expired: {
+      head: `${typeText} Expired`,
+      body: "You can ask the fan to renew request."
+    },
+    request: {
+      head: `New ${typeText} Request`,
+      body: "You have 24 hours to accept or decline."
+    }
+  };
+};
+const getFanContent = (price: number, hostType: string) => {
+  const typeText = hostType || "Fan Meet"; // Default to "Fan Meet" if not provided
+  
+  // Special handling for Fan Call
+  const getAcceptedContent = () => {
+    if (typeText.toLowerCase() === "fan call") {
+      return {
+        head: "✅ Your call request has been accepted.",
+        body: "You can now start the call when you're ready. Please ensure you have a stable connection before starting — once the call begins, billing starts per minute."
+      };
+    }
+    return {
+      head: `${typeText} Accepted`,
+      body: `By clicking 'Mark as complete' you confirm that your pending gold of 💰 ${price} will be sent to the creator.`
+    };
+  };
+  
+  return {
+    accepted: getAcceptedContent(),
+    completed: {
+      head: `${typeText} Completed`,
+      body: "How do you rate your experience?"
+    },
+    declined: {
+      head: `${typeText} Declined`,
+      body: "Creator declined your request."
+    },
+    cancelled: {
+      head: `${typeText} Cancelled`,
+      body: "You have cancelled the request. You can renew this request anytime."
+    },
+    expired: {
+      head: `${typeText} Expired`,
+      body: "Your request has expired. You can renew this request anytime."
+    },
+    request: {
+      head: "Waiting For Creator\'s Response",
+      body: `Your ${typeText.toLowerCase()} request has been sent. The creator has 24 hours to respond.`
+    }
+  };
+};
+
+// Function to get the appropriate details title based on host type
+const getDetailsTitle = (hostType: string) => {
+  const typeText = hostType || "Fan Meet";
+  
+  // Map different host types to their appropriate detail titles
+  const titleMap: Record<string, string> = {
+    "fan call": "Call Details",
+    "fan meet": "Meet Details", 
+    "fan date": "Date Details",
+    "fan hangout": "Hangout Details",
+    "fan chat": "Chat Details"
+  };
+  
+  // Check for exact matches first
+  const lowerType = typeText.toLowerCase();
+  if (titleMap[lowerType]) {
+    return titleMap[lowerType];
   }
   
-}
-const getFanContent = (price: number) => ({
-  accepted: {
-    head: "Fan Meet Accepted",
-    body: `By clicking 'Mark as complete' you confirm that your pending gold of 💰 ${price} will be sent to the creator.`},
-  completed: {
-    head: "Fan Meet Completed",
-    body: "How do you rate your experience?"},
-  declined: {
-    head: "Fan Meet Declined",
-    body: "Creator declined your request."
-  },
-  cancelled: {
-    head: "Fan Meet Cancelled",
-    body: "You have cancelled the request. You can renew this request anytime."},
-  expired: {
-    head: "Fan Meet Expired",
-    body: "Your request has expired. You can renew this request anytime."
-  },
-  request: {
-    head: "Waiting For Creator\'s Response",
-    body: "Your fan meet request has been sent. The creator has 24 hours to respond."
+  // Check for partial matches
+  if (lowerType.includes("call")) {
+    return "Call Details";
+  } else if (lowerType.includes("meet")) {
+    return "Meet Details";
+  } else if (lowerType.includes("date")) {
+    return "Date Details";
+  } else if (lowerType.includes("hangout")) {
+    return "Hangout Details";
+  } else if (lowerType.includes("chat")) {
+    return "Chat Details";
   }
-})
+  
+  // Default fallback
+  return `${typeText} Details`;
+};
 const statusArr = ["request", "expired", "completed", "accepted", "declined", "cancelled"] 
 
 interface FanMeetDetails {
@@ -92,15 +163,20 @@ interface CardProps {
     price?: number;
     details?: FanMeetDetails;
     userid?: string;
-    creatorid?: string;
+    creator_portfolio_id?: string;
+    targetUserId?: string; // Add target user ID for profile navigation
+    hosttype?: string;
+    isVip?: boolean;
+    vipEndDate?: string | null;
     onStatusChange?: (bookingId: string, newStatus: string) => void;
 }
 
-export default function RequestCard({exp, img, name, titles=["fan"], status, type="fan", bookingId, price, details, userid, creatorid, onStatusChange}: CardProps) {
+export default function RequestCard({exp, img, name, titles=["fan"], status, type="fan", bookingId, price, details, userid, creator_portfolio_id, targetUserId, hosttype, isVip=false, vipEndDate=null, onStatusChange}: CardProps) {
   const [loading, setLoading] = useState(false);
   const [currentStatus, setCurrentStatus] = useState(status);
   const [showDetails, setShowDetails] = useState(false);
   const router = useRouter();
+  const { startVideoCall } = useVideoCall();
 
   // Socket integration for real-time updates
   useEffect(() => {
@@ -112,7 +188,7 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
       bookingId: string; 
       status: string; 
       userid: string; 
-      creatorid: string;
+      creator_portfolio_id: string;
       message?: string;
     }) => {
       // Check if this update is for this specific request
@@ -128,16 +204,20 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
         if (data.message) {
           toast.info(data.message);
         } else {
-          // Default messages based on status
-          const statusMessages = {
-            'accepted': '🎉 Your fan meet request has been accepted!',
-            'declined': '❌ Your fan meet request was declined',
-            'cancelled': '🚫 Fan meet request was cancelled',
-            'completed': '✅ Fan meet has been completed!',
-            'expired': '⏰ Fan meet request has expired'
+          // Default messages based on status and host type
+          const getStatusMessage = (status: string, hostType?: string) => {
+            const serviceType = hostType || "Fan meet";
+            const statusMessages = {
+              'accepted': `🎉 Your ${serviceType} request has been accepted!`,
+              'declined': `❌ Your ${serviceType} request was declined`,
+              'cancelled': `🚫 ${serviceType} request was cancelled`,
+              'completed': `✅ ${serviceType} has been completed!`,
+              'expired': `⏰ ${serviceType} request has expired`
+            };
+            return statusMessages[status as keyof typeof statusMessages];
           };
           
-          const message = statusMessages[data.status as keyof typeof statusMessages];
+          const message = getStatusMessage(data.status, hosttype);
           if (message) {
             toast.info(message);
           }
@@ -156,7 +236,7 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
       socket.off('fan_meet_status_update', handleFanMeetStatusUpdate);
       socket.off('booking_status_update', handleFanMeetStatusUpdate);
     };
-  }, [bookingId, onStatusChange]);
+  }, [bookingId, onStatusChange, hosttype]);
 
   // Update local status when prop changes
   useEffect(() => {
@@ -183,7 +263,7 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          creatorid: creatorid,
+          creator_portfolio_id: creator_portfolio_id,
           userid: userid,
           date: details.date,
           time: details.time
@@ -193,12 +273,15 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
       if (response.ok) {
         setCurrentStatus('accepted');
         onStatusChange?.(bookingId, 'accepted');
-        toast.success('Request accepted successfully!');
+        const serviceType = hosttype || "Fan meet";
+        toast.success(`${serviceType} request accepted successfully!`);
       } else {
-        toast.error('Failed to accept request');
+        const serviceType = hosttype || "Fan meet";
+        toast.error(`Failed to accept ${serviceType.toLowerCase()} request`);
       }
     } catch {
-      toast.error('Error accepting request');
+      const serviceType = hosttype || "Fan meet";
+      toast.error(`Error accepting ${serviceType.toLowerCase()} request`);
     } finally {
       setLoading(false);
     }
@@ -209,7 +292,7 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
     setLoading(true);
     try {
       const requestBody = {
-        creatorid: creatorid,
+        creator_portfolio_id: creator_portfolio_id,
         userid: userid,
         date: details.date,
         time: details.time
@@ -226,20 +309,23 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
       if (response.ok) {
         setCurrentStatus('declined');
         onStatusChange?.(bookingId, 'declined');
-        toast.success('Request declined');
+        const serviceType = hosttype || "Fan meet";
+        toast.success(`${serviceType} request declined`);
       } else {
         const errorData = await response.json();
-        toast.error(errorData.message || 'Failed to decline request');
+        const serviceType = hosttype || "Fan meet";
+        toast.error(errorData.message || `Failed to decline ${serviceType.toLowerCase()} request`);
       }
     } catch {
-      toast.error('Error declining request');
+      const serviceType = hosttype || "Fan meet";
+      toast.error(`Error declining ${serviceType.toLowerCase()} request`);
     } finally {
       setLoading(false);
     }
   };
 
     const handleCancel = async () => {
-      if (!bookingId || !details || !userid || !creatorid) {
+      if (!bookingId || !details || !userid || !creator_portfolio_id) {
         toast.error('Missing required data for cancel request');
         return;
       }
@@ -248,7 +334,7 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
         const requestBody = {
           id: bookingId,
           userid: userid,
-          creatorid: creatorid
+          creator_portfolio_id: creator_portfolio_id
         };
         
         const response = await fetch(`${URL}/cancelrequest`, {
@@ -262,13 +348,16 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
         if (response.ok) {
           setCurrentStatus('cancelled');
           onStatusChange?.(bookingId, 'cancelled');
-          toast.success('Request cancelled');
+          const serviceType = hosttype || "Fan meet";
+          toast.success(`${serviceType} request cancelled`);
         } else {
           const errorData = await response.json();
-          toast.error(errorData.message || 'Failed to cancel request');
+          const serviceType = hosttype || "Fan meet";
+          toast.error(errorData.message || `Failed to cancel ${serviceType.toLowerCase()} request`);
         }
       } catch {
-        toast.error('Error cancelling request');
+        const serviceType = hosttype || "Fan meet";
+        toast.error(`Error cancelling ${serviceType.toLowerCase()} request`);
       } finally {
         setLoading(false);
       }
@@ -276,6 +365,16 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
 
   const handleComplete = async () => {
     if (!bookingId) return;
+    
+    // If it's a Fan Call, start video call instead of completing
+    if (hosttype === "Fan call") {
+      if (creator_portfolio_id && name) {
+        startVideoCall(creator_portfolio_id, name, price || 1);
+      }
+      return;
+    }
+    
+    // For Fan Meet/Fan Date, complete the booking
     setLoading(true);
     try {
       const response = await fetch(`${URL}/completebook`, {
@@ -286,19 +385,22 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
         body: JSON.stringify({
           bookingId,
           userid: userid,
-          creatorid: creatorid
+          creator_portfolio_id: creator_portfolio_id
         })
       });
       
       if (response.ok) {
         setCurrentStatus('completed');
         onStatusChange?.(bookingId, 'completed');
-        toast.success('Fan meet completed!');
+        const serviceType = hosttype || "Fan meet";
+        toast.success(`${serviceType} completed!`);
       } else {
-        toast.error('Failed to complete fan meet');
+        const serviceType = hosttype || "Fan meet";
+        toast.error(`Failed to complete ${serviceType.toLowerCase()}`);
       }
     } catch {
-      toast.error('Error completing fan meet');
+      const serviceType = hosttype || "Fan meet";
+      toast.error(`Error completing ${serviceType.toLowerCase()}`);
     } finally {
       setLoading(false);
     }
@@ -306,97 +408,21 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
 
   // Navigation functions
   const handleRenewRequest = () => {
-    if (creatorid) {
-      router.push(`/creators/${creatorid}`);
+    if (creator_portfolio_id) {
+      router.push(`/creators/${creator_portfolio_id}`);
     }
   };
 
-  const handleProfileClick = async () => {
-    if (creatorid) {
-      console.log('🔍 [RequestCard] Starting profile click with creatorid:', creatorid);
-      try {
-        // Fetch creator details to get the user ID
-        const response = await fetch(`${URL}/getcreatorbyid`, {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            hostid: creatorid,
-            userid: userid // Current user's ID
-          })
-        });
-        
-        console.log('🔍 [RequestCard] First API call response status:', response.status);
-        
-        if (response.ok) {
-          const data = await response.json();
-          console.log('🔍 [RequestCard] First API Response:', data);
-          if (data.ok && data.host && data.host.userid) {
-            console.log('🔍 [RequestCard] Navigating to profile:', data.host.userid);
-            // Navigate to the creator's profile using their user ID
-            router.push(`/Profile/${data.host.userid}`);
-            return; // Exit early on success
-          } else {
-            console.log('🔍 [RequestCard] Missing userid in first response:', { 
-              ok: data.ok, 
-              hasHost: !!data.host, 
-              hasUserid: !!(data.host && data.host.userid),
-              hostKeys: data.host ? Object.keys(data.host) : 'no host'
-            });
-          }
-        } else {
-          console.log('🔍 [RequestCard] First API call failed with status:', response.status);
-        }
-        
-        // If we reach here, the API call failed or didn't return user ID
-        // Try alternative approach: fetch creator directly
-        console.log('🔍 [RequestCard] Trying second API call...');
-        const creatorResponse = await fetch(`${URL}/getcreatorbyid`, {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            hostid: creatorid
-          })
-        });
-        
-        console.log('🔍 [RequestCard] Second API call response status:', creatorResponse.status);
-        
-        if (creatorResponse.ok) {
-          const creatorData = await creatorResponse.json();
-          console.log('🔍 [RequestCard] Second API Response:', creatorData);
-          if (creatorData.ok && creatorData.host && creatorData.host.userid) {
-            console.log('🔍 [RequestCard] Second attempt - Navigating to profile:', creatorData.host.userid);
-            router.push(`/Profile/${creatorData.host.userid}`);
-            return;
-          } else {
-            console.log('🔍 [RequestCard] Second attempt - Missing userid:', { 
-              ok: creatorData.ok, 
-              hasHost: !!creatorData.host, 
-              hasUserid: !!(creatorData.host && creatorData.host.userid),
-              hostKeys: creatorData.host ? Object.keys(creatorData.host) : 'no host'
-            });
-          }
-        } else {
-          console.log('🔍 [RequestCard] Second API call failed with status:', creatorResponse.status);
-        }
-        
-        // Final fallback: show error message
-        console.log('🔍 [RequestCard] All attempts failed, showing error');
-        toast.error('Unable to load creator profile');
-        
-      } catch (error) {
-        // Final fallback: show error message
-        console.log('🔍 [RequestCard] Error in profile click:', error);
-        toast.error('Unable to load creator profile');
-      }
+  const handleProfileClick = () => {
+    // Navigate to the target user's profile
+    // Use targetUserId which is the correct user ID for the person whose profile we want to view
+    if (targetUserId) {
+      router.push(`/Profile/${targetUserId}`);
     }
   };
 
   return (
-    <div className={`w-full flex flex-col gap-6 rounded-lg border-2 ${cardBorderVariance} p-4 mx-auto text-white bg-slate-800`}>
+    <div className={`w-full flex flex-col gap-6 rounded-lg border-2 ${cardBorderVariance} p-4 mx-auto text-white bg-slate-800 overflow-visible`}>
       <div className={`flex justify-between items-start gap-4 ${cardTextVariance}`}>
         <div className="flex gap-4">
           <div 
@@ -410,9 +436,12 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
                 {name.split(' ').map(n => n.charAt(0)).join('').toUpperCase().slice(0, 2)}
               </div>
             )}
+            
           </div>
           <div className='text-sm'>
-            <p className='font-bold cursor-pointer hover:text-blue-400 transition-colors' onClick={handleProfileClick}>{name}</p>
+            <div className='flex items-center gap-2'>
+              <p className='font-bold cursor-pointer hover:text-blue-400 transition-colors' onClick={handleProfileClick}>{name}</p>
+            </div>
             <div className='flex gap-1'>{titles?.map((title, i)=> i === titles.length -1 ? <p key={title}>{title}</p> : <p key={title}>{title} &#x2022; </p>)}</div>
           </div>
         </div>
@@ -423,10 +452,10 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
       </div>
 
       <h3 className={`text-3xl md:text-4xl ${cardTextVariance}`}>{
-        type === "creator" ? (creatorContent[currentStatus]?.head || "Unknown Status") : (getFanContent(price || 0)[currentStatus]?.head || "Unknown Status")
+        type === "creator" ? (getCreatorContent(hosttype || "Fan Meet")[currentStatus]?.head || "Unknown Status") : (getFanContent(price || 0, hosttype || "Fan Meet")[currentStatus]?.head || "Unknown Status")
       }</h3>
 
-      <p className="text-sm md:text-base">{ type === "creator" ? (creatorContent[currentStatus]?.body || "Status information not available") : (getFanContent(price || 0)[currentStatus]?.body || "Status information not available") }</p>
+      <p className="text-sm md:text-base">{ type === "creator" ? (getCreatorContent(hosttype || "Fan Meet")[currentStatus]?.body || "Status information not available") : (getFanContent(price || 0, hosttype || "Fan Meet")[currentStatus]?.body || "Status information not available") }</p>
 
       {/* RATINGS */}
       <div className='flex gap-4 flex-wrap justify-center'>
@@ -445,27 +474,57 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
 
   <div className="flex-1">
     { type === "creator" && currentStatus === "accepted" ? (
-      // Creator accepted → Renew + View details
+      // Creator accepted → Chat Now + View details
       <div className="flex gap-3">
         <div className="flex-1">
-          <FanActionBtn label="Chat Now" className={fanActionClass} />
+          <FanActionBtn 
+            label="Chat Now" 
+            className={fanActionClass} 
+            onClick={() => {
+              // For messaging, we need the user ID of the person we want to message
+              // If this is a creator viewing a fan's request, userid is the fan's ID
+              // If this is a fan viewing a creator's request, we need the creator's user ID
+              if (type === "creator" && userid) {
+                // Creator wants to message the fan
+                router.push(`/message/${userid}`);
+              } else if (type === "fan" && creator_portfolio_id) {
+                // Fan wants to message the creator - we need to get creator's user ID
+                // For now, use creator_portfolio_id as fallback
+                router.push(`/message/${creator_portfolio_id}`);
+              }
+            }}
+          />
         </div>
         <div className="flex-1">
           <button className={fanActionClass} onClick={() => setShowDetails(true)}>View details</button>
         </div>
       </div>
     ) : type === "fan" && currentStatus === "accepted" ? (
-      // Fan accepted → Mark complete + View details
+      // Fan accepted → Mark complete/Start call + View details
       <div className="flex gap-3">
         <div className="flex-1">
-          <FanActionBtn label="Mark as complete" className={fanActionClass} onClick={handleComplete} disabled={loading} />
+          <FanActionBtn 
+            label={hosttype === "Fan call" ? "Start call" : "Mark as complete"} 
+            className={fanActionClass} 
+            onClick={handleComplete} 
+            disabled={loading} 
+          />
         </div>
         <div className="flex-1">
           <button className={fanActionClass} onClick={() => setShowDetails(true)}>View details</button>
         </div>
       </div>
     ) : type === "creator" ? (
-      <FanActionBtn label="Chat Now" className={fanActionClass} />
+      <FanActionBtn 
+        label="Chat Now" 
+        className={fanActionClass} 
+        onClick={() => {
+          // Creator wants to message the fan
+          if (userid) {
+            router.push(`/message/${userid}`);
+          }
+        }}
+      />
     ) : (
       <FanActionBtn label="Renew request" className={fanActionClass} onClick={handleRenewRequest} />
     )}
@@ -522,6 +581,7 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
           details={details} 
           onClose={() => setShowDetails(false)} 
           type={type}
+          hosttype={hosttype}
         />
       )}
     </div>
@@ -559,17 +619,19 @@ function Rating({label}: {label: string}){
 function DetailsModal({ 
   details, 
   onClose, 
-  type
+  type,
+  hosttype
 }: { 
   details?: FanMeetDetails; 
   onClose: () => void; 
   type: "fan" | "creator";
+  hosttype?: string;
 }) {
   if (!details) {
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
         <div className="bg-white rounded-lg p-6 max-w-md w-full">
-          <h2 className="text-xl font-bold text-gray-800 mb-4">Fan Date / Meet Details</h2>
+          <h2 className="text-xl font-bold text-gray-800 mb-4">{getDetailsTitle(hosttype || "Fan Meet")}</h2>
           <p className="text-gray-600 mb-4">Details not available</p>
           <button 
             onClick={onClose}
@@ -610,7 +672,7 @@ function DetailsModal({
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
-        <h2 className="text-xl font-bold text-gray-800 mb-6">Fan Date / Meet Details</h2>
+        <h2 className="text-xl font-bold text-gray-800 mb-6">{getDetailsTitle(hosttype || "Fan Meet")}</h2>
         
         {/* Date & Time */}
         <div className="flex items-start gap-3 mb-4">
@@ -641,23 +703,25 @@ function DetailsModal({
           </div>
         </div>
 
-        {/* Safety Rules */}
-        <div className="flex items-start gap-3 mb-4">
-          <IoWarningOutline className="text-orange-500 text-xl mt-1" />
-          <div>
-            <h3 className="font-semibold text-gray-800">Safety Rules (Important!)</h3>
-            <ul className="text-gray-600 text-sm mt-1 space-y-1">
-              <li>• All meets are limited to 30 minutes.</li>
-              <li>• Meets must happen in a public place only.</li>
-            </ul>
-            <p className="text-gray-500 text-xs mt-2">
-              What happens after 30 minutes is outside the platform&apos;s responsibility.
-            </p>
+        {/* Safety Rules - Only show for non-call requests */}
+        {hosttype?.toLowerCase() !== "fan call" && (
+          <div className="flex items-start gap-3 mb-4">
+            <IoWarningOutline className="text-orange-500 text-xl mt-1" />
+            <div>
+              <h3 className="font-semibold text-gray-800">Safety Rules (Important!)</h3>
+              <ul className="text-gray-600 text-sm mt-1 space-y-1">
+                <li>• All meets are limited to 30 minutes.</li>
+                <li>• Meets must happen in a public place only.</li>
+              </ul>
+              <p className="text-gray-500 text-xs mt-2">
+                What happens after 30 minutes is outside the platform&apos;s responsibility.
+              </p>
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Agreement - Only show for creators */}
-        {type === "creator" && (
+        {type === "creator" && hosttype !== "Fan call" && hosttype !== "Fan Call" && (
           <div className="flex items-start gap-3 mb-6">
             <IoCheckmarkCircleOutline className="text-green-500 text-xl mt-1" />
             <p className="text-gray-800 font-semibold text-sm">

@@ -1,0 +1,237 @@
+"use client";
+
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { getSocket } from '@/lib/socket';
+
+interface VideoCallBillingProps {
+  callId?: string;
+  callerId?: string;
+  currentUserId: string;
+  isCreator: boolean;
+  userBalance: number; // Fan's gold balance
+  creatorEarnings: number; // Creator's earnings
+  callRate: number; // Gold per minute rate
+  isConnected: boolean;
+  onInsufficientFunds: () => void; // Callback when fan runs out of money
+}
+
+export default function VideoCallBilling({
+  callId,
+  callerId,
+  currentUserId,
+  isCreator,
+  userBalance,
+  creatorEarnings,
+  callRate,
+  isConnected,
+  onInsufficientFunds
+}: VideoCallBillingProps) {
+  const [callDuration, setCallDuration] = useState(0);
+  const [currentBalance, setCurrentBalance] = useState(userBalance);
+  const [currentEarnings, setCurrentEarnings] = useState(creatorEarnings);
+  const [callSpecificEarnings, setCallSpecificEarnings] = useState(0); // Earnings from this specific call
+  const [lastBilledMinute, setLastBilledMinute] = useState(0);
+  
+  // Use refs to avoid infinite re-renders
+  const currentBalanceRef = useRef(userBalance);
+  const callRateRef = useRef(callRate);
+  const callDurationRef = useRef(0);
+  const lastBilledMinuteRef = useRef(0);
+
+  // Update balance when props change
+  useEffect(() => {
+    setCurrentBalance(userBalance);
+    currentBalanceRef.current = userBalance;
+  }, [userBalance, isCreator, callRate]);
+
+  useEffect(() => {
+    setCurrentEarnings(creatorEarnings);
+  }, [creatorEarnings, isCreator]);
+  
+  // Update refs when values change
+  useEffect(() => {
+    callRateRef.current = callRate;
+  }, [callRate]);
+  
+  useEffect(() => {
+    callDurationRef.current = callDuration;
+  }, [callDuration]);
+  
+  useEffect(() => {
+    lastBilledMinuteRef.current = lastBilledMinute;
+  }, [lastBilledMinute]);
+  
+  const callStartTimeRef = useRef<number>(0);
+  const durationIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const billingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const socket = getSocket();
+
+  // Format duration display
+  const formatDuration = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  // Start call timer
+  const startCallTimer = useCallback(() => {
+    if (durationIntervalRef.current) return;
+    // Starting call timer
+    callStartTimeRef.current = Date.now();
+    durationIntervalRef.current = setInterval(() => {
+      setCallDuration(Math.floor((Date.now() - callStartTimeRef.current) / 1000));
+    }, 1000);
+  }, []);
+
+  // Stop call timer
+  const stopCallTimer = useCallback(() => {
+    // Stopping call timer
+    if (durationIntervalRef.current) {
+      clearInterval(durationIntervalRef.current);
+      durationIntervalRef.current = null;
+    }
+    setCallDuration(0);
+  }, []);
+
+  // Start billing system (ONLY for fans, not creators)
+  const startBilling = useCallback(() => {
+    // Only start billing for fans, not creators
+    if (isCreator) {
+      return;
+    }
+    setLastBilledMinute(0);
+    lastBilledMinuteRef.current = 0;
+    
+    const interval = setInterval(() => {
+      const currentMinute = Math.floor(callDurationRef.current / 60);
+      
+      if (currentMinute > lastBilledMinuteRef.current) {
+        // Billing for minute (fan only)
+        
+        // Check if fan has enough balance
+        if (currentBalanceRef.current < callRateRef.current) {
+          // Insufficient funds - ending call
+          onInsufficientFunds();
+          return;
+        }
+        
+        setLastBilledMinute(currentMinute);
+        lastBilledMinuteRef.current = currentMinute;
+        
+        // Emit billing event to backend (backend will handle balance deduction)
+        if (socket && callId && callerId) {
+          console.log('💰 [Billing] Sending billing event:', {
+            callId: callId,
+            callerId: callerId,
+            currentUserId,
+            amount: callRateRef.current,
+            minute: currentMinute
+          });
+          
+          socket.emit('video_call_billing', {
+            callId: callId,
+            callerId: callerId,
+            currentUserId,
+            amount: callRateRef.current,
+            minute: currentMinute
+          });
+        }
+      }
+    }, 1000); // Check every second
+    
+    billingIntervalRef.current = interval;
+  }, [isCreator, socket, callId, callerId, currentUserId, onInsufficientFunds]);
+
+  // Stop billing system
+  const stopBilling = useCallback(() => {
+    // Stopping billing system
+    if (billingIntervalRef.current) {
+      clearInterval(billingIntervalRef.current);
+      billingIntervalRef.current = null;
+    }
+  }, []);
+
+  // Handle balance updates from backend
+  const handleBalanceUpdate = useCallback((data: any) => {
+    if (data.type === 'deduct') {
+      const newBalance = parseInt(data.balance) || 0;
+      setCurrentBalance(newBalance);
+      currentBalanceRef.current = newBalance;
+    } else if (data.type === 'earn') {
+      setCurrentEarnings(data.earnings);
+      // Add to call-specific earnings
+      if (data.callEarnings) {
+        setCallSpecificEarnings(prev => prev + data.callEarnings);
+      }
+    }
+  }, []);
+
+  // Handle insufficient funds from backend (only for fans)
+  const handleInsufficientFunds = useCallback((data: any) => {
+    // Only handle insufficient funds for fans, not creators
+    if (!isCreator) {
+      onInsufficientFunds();
+    }
+  }, [onInsufficientFunds, isCreator]);
+
+  // Start timer and billing when connected
+  useEffect(() => {
+    if (isConnected) {
+      startCallTimer();
+      startBilling();
+    } else {
+      stopCallTimer();
+      stopBilling();
+    }
+  }, [isConnected, startCallTimer, startBilling, stopCallTimer, stopBilling]);
+
+  // Socket event listeners for balance updates
+  useEffect(() => {
+    if (!socket) return;
+
+    socket.on('balance_updated', handleBalanceUpdate);
+    socket.on('insufficient_funds', handleInsufficientFunds);
+
+    return () => {
+      socket.off('balance_updated', handleBalanceUpdate);
+      socket.off('insufficient_funds', handleInsufficientFunds);
+    };
+  }, [socket, handleBalanceUpdate, handleInsufficientFunds]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      stopCallTimer();
+      stopBilling();
+    };
+  }, [stopCallTimer, stopBilling]);
+
+  if (!isConnected) return null;
+
+  return (
+    <div className="absolute top-8 left-1/2 transform -translate-x-1/2 z-10">
+      <div className="bg-black bg-opacity-50 text-white px-4 py-2 rounded-lg flex items-center gap-4">
+        {/* Call Timer */}
+        <span className="text-lg font-mono">{formatDuration(callDuration)}</span>
+        
+        {/* Fan Balance Display */}
+        {!isCreator && (
+          <div className="flex items-center gap-2 text-yellow-400">
+            <span className="text-sm">💰</span>
+            <span className="font-semibold">{currentBalance}</span>
+            <span className="text-xs">Gold</span>
+          </div>
+        )}
+        
+        {/* Creator Earnings Display */}
+        {isCreator && (
+          <div className="flex items-center gap-2 text-green-400">
+            <span className="text-sm">💎</span>
+            <span className="font-semibold">{callSpecificEarnings}</span>
+            <span className="text-xs">This Call</span>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

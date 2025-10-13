@@ -21,7 +21,7 @@ export interface CreatorCardProps {
   location: string;
   interest: string[];
   amount: number;
-  creatorid: string;
+  creator_portfolio_id: string;
   userid: string;
   createdAt: string;
   hostid: string;
@@ -44,7 +44,7 @@ export const CreatorCard = ({
   location,
   interest,
   amount,
-  creatorid,
+  creator_portfolio_id,
   userid,
   createdAt,
   hostid,
@@ -123,7 +123,7 @@ export const CreatorCard = ({
 
       {/* New Badge */}
       {isNew && (
-        <div className="absolute top-0 right-0 m-1 z-10">
+        <div className="absolute top-0 right-0 m-1 ">
           <span className="inline-flex items-center px-2 py-1 text-xs font-bold text-white bg-gradient-to-br from-blue-500 to-purple-600 shadow-2xl rounded-full">
             New
           </span>

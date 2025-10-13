@@ -56,25 +56,33 @@ export default function GlobalSocketConnection() {
 
     // Wait for socket to be connected
     if (!socket.connected) {
-      socket.on("connect", () => {
+      const handleConnect = () => {
         // Join user room for online status (same as message components)
         joinUserRoom(userid);
+        console.log('🌐 [GlobalSocket] Emitting online status for user:', userid, 'Type:', typeof userid);
         socket.emit("online", userid);
         setHasConnected(true);
-      });
-      return;
+      };
+      
+      socket.on("connect", handleConnect);
+      
+      return () => {
+        socket.off("connect", handleConnect);
+      };
     }
 
     // Join user room for online status (same as message components)
     joinUserRoom(userid);
     
     // Emit online status when user is authenticated
+    console.log('🌐 [GlobalSocket] Emitting online status for user:', userid, 'Type:', typeof userid);
     socket.emit("online", userid);
     setHasConnected(true);
     
     // Set up heartbeat to keep user online
     const heartbeatInterval = setInterval(() => {
       if (socket && socket.connected) {
+        console.log('💓 [GlobalSocket] Sending heartbeat for user:', userid);
         socket.emit("heartbeat", userid);
       }
     }, 15000); // Send heartbeat every 15 seconds
@@ -84,12 +92,11 @@ export default function GlobalSocketConnection() {
       if (socket && userid) {
         leaveUserRoom(userid);
         socket.emit("offline", userid);
-        setHasConnected(false);
       }
       // Clear heartbeat interval
       clearInterval(heartbeatInterval);
     };
-  }, [userid, isLoggedIn, localUserid, localIsLoggedIn, hasConnected]);
+  }, [userid, isLoggedIn, localUserid, localIsLoggedIn]); // Removed hasConnected from dependencies
 
   // This component doesn't render anything
   return null;

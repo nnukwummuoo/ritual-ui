@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -8,6 +9,7 @@ import { useAuth } from "@/lib/context/auth-context";
 import PacmanLoader from "react-spinners/RingLoader";
 import { CheckCircle, XCircle, Clock } from "lucide-react";
 import Link from "next/link";
+import { useNotificationIndicator } from "@/hooks/useNotificationIndicator";
 
 export const Allview = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -18,6 +20,9 @@ export const Allview = () => {
     (state: RootState) => state.profile
   );
   const userId = useSelector((state: RootState) => state.profile.userId);
+  
+  // Get notification indicator data
+  const { hasUnread, unreadCount, totalCount } = useNotificationIndicator();
 
   const [loading, setLoading] = useState(true);
 
@@ -52,6 +57,25 @@ export const Allview = () => {
 
   return (
     <div className="flex flex-col items-center w-full h-full p-4 space-y-4 min-h-screen">
+      {/* Notification Header */}
+      <div className="w-full max-w-md mb-4">
+        <div className="bg-[#0B0F1A]/70 backdrop-blur-xl border border-slate-800 rounded-2xl p-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-white">Notifications</h2>
+            <div className="flex items-center gap-2">
+              {hasUnread && (
+                <div className="bg-red-500 text-white text-xs px-2 py-1 rounded-full font-bold">
+                  {unreadCount} new
+                </div>
+              )}
+              <span className="text-slate-400 text-sm">
+                {totalCount} total
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+      
       {notifications.map((note: any) => {
         const message = note.message.toLowerCase();
 
@@ -59,13 +83,40 @@ export const Allview = () => {
         let status: "approved" | "rejected" | "pending" = "pending";
         if (message.includes("approve")) status = "approved";
         else if (message.includes("reject")) status = "rejected";
+        else if (message.includes("follow") || message.includes("unfollow") || message.includes("like") || message.includes("comment") || message.includes("message") || message.includes("booking") || message.includes("request")) {
+          status = "approved"; // These are informational notifications, not pending actions
+        }
+
+        // determine title based on notification type
+        let title = "Application Status";
+        if (message.includes("follow")) {
+          title = "Follow Notification";
+        } else if (message.includes("unfollow")) {
+          title = "Unfollow Notification";
+        } else if (message.includes("like")) {
+          title = "Like Notification";
+        } else if (message.includes("comment")) {
+          title = "Comment Notification";
+        } else if (message.includes("message")) {
+          title = "Message Notification";
+        } else if (message.includes("booking") || message.includes("request")) {
+          title = "Booking Notification";
+        }
 
         return (
           <div
             key={note._id}
-            className="relative bg-[#0B0F1A]/70 backdrop-blur-xl border border-slate-800 shadow-lg 
-                       rounded-2xl p-6 w-full max-w-md text-white transition hover:border-slate-700"
+            className={`relative bg-[#0B0F1A]/70 backdrop-blur-xl border shadow-lg 
+                       rounded-2xl p-6 w-full max-w-md text-white transition hover:border-slate-700 ${
+                         !note.seen 
+                           ? 'border-blue-500 bg-blue-500/5' 
+                           : 'border-slate-800'
+                       }`}
           >
+            {/* Unread indicator */}
+            {!note.seen && (
+              <div className="absolute top-3 right-3 w-2 h-2 bg-blue-500 rounded-full"></div>
+            )}
             <div className="flex flex-col items-start space-y-3">
               {/* Header + Icon */}
               <div className="flex items-center space-x-2">
@@ -86,7 +137,7 @@ export const Allview = () => {
                 )}
 
                 <h2 className="text-base sm:text-lg font-semibold">
-                  Application Status
+                  {title}
                 </h2>
               </div>
 
@@ -96,7 +147,7 @@ export const Allview = () => {
               </p>
 
               {/* Buttons */}
-              {status === "approved" && (
+              {status === "approved" && title === "Application Status" && (
                 <div className="pt-2">
                   <Link href="/creator/create">
                     <button
@@ -116,6 +167,45 @@ export const Allview = () => {
                               rounded-lg text-sm text-slate-200 transition">
                     Reapply Later
                   </button>
+                  </Link>
+                </div>
+              )}
+
+              {/* Follow/Unfollow notifications show appropriate buttons */}
+              {(title === "Follow Notification" || title === "Unfollow Notification") && (
+                <div className="pt-2">
+                  <Link href="/following">
+                    <button
+                      className="px-4 py-2 border border-slate-700 hover:border-slate-500 
+                                rounded-lg text-sm text-slate-200 transition">
+                      View Following
+                    </button>
+                  </Link>
+                </div>
+              )}
+
+              {/* Booking notifications show activity button */}
+              {title === "Booking Notification" && (
+                <div className="pt-2">
+                  <Link href="/notifications/activity">
+                    <button
+                      className="px-4 py-2 border border-slate-700 hover:border-slate-500 
+                                rounded-lg text-sm text-slate-200 transition">
+                      View Activity
+                    </button>
+                  </Link>
+                </div>
+              )}
+
+              {/* Message notifications show messages button */}
+              {title === "Message Notification" && (
+                <div className="pt-2">
+                  <Link href="/message">
+                    <button
+                      className="px-4 py-2 border border-slate-700 hover:border-slate-500 
+                                rounded-lg text-sm text-slate-200 transition">
+                      View Messages
+                    </button>
                   </Link>
                 </div>
               )}

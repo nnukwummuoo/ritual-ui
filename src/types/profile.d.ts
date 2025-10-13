@@ -12,12 +12,12 @@ export interface Profile {
   admin: boolean;
   witdrawable: string;
   creator: string;
-  creatorID: string | null;
+  creator_portfolio_id: string | null;
   creatorphotolink: string | null;
   creatorname: string | null;
   photolink: string | null;
   bio: string | null;
-  exclusive_verify: boolean;
+  creator_verified: boolean;
   emailnote: boolean;
   pushnote: boolean;
   /** ISO date string when the profile/user was created. Optional; set by getprofile reducer. */

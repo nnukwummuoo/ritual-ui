@@ -15,7 +15,7 @@ import axios from 'axios';
     let [color, setColor] = useState("#d49115");
     
     const userid = useSelector((state: RootState) => state.register.userID);
-    const profileUserId = useSelector((state: RootState) => state.profile?.userId || state.profile?.creatorID);
+    const profileUserId = useSelector((state: RootState) => state.profile?.userId || state.profile?.creator_portfolio_id);
     
     // Get userid from localStorage if not in Redux (same pattern as DropdownMenu)
     const [localUserid, setLocalUserid] = React.useState("");

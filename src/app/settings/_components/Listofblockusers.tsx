@@ -24,7 +24,7 @@ export const Listofblockusers: React.FC<ListOfBlockUsersProps> = ({ id, photolin
 
 let timeout: number | undefined;
 const userid = useSelector((state: RootState) => state.register.userID as string);
-const profileUserId = useSelector((state: RootState) => state.profile?.userId || state.profile?.creatorID);
+const profileUserId = useSelector((state: RootState) => state.profile?.userId || state.profile?.creator_portfolio_id);
 
 // Get userid from localStorage if not in Redux (same pattern as DropdownMenu)
 const [localUserid, setLocalUserid] = React.useState("");

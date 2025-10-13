@@ -55,7 +55,7 @@ export const CreatorSideMenu: React.FC<CreatorSideMenuProps> = ({
   const [profile_photo, setprofile_photo] = useState(profileIcon);
   const postuserid = useSelector((state : any) => state.register.userID);
   const balance = useSelector((state : any) => state.profile.balance);
-  const creatorID = useSelector((state : any) => state.profile.creatorID);
+  const creator_portfolio_id = useSelector((state : any) => state.profile.creator_portfolio_id);
   const creator = useSelector((state : any) => state.profile.creator);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [upgrade, setUpgrade] = useState(false)

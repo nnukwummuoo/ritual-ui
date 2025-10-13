@@ -1,5 +1,5 @@
 interface Request {
-    creatorid: string;
+    creator_portfolio_id: string;
     date: string;
     time: string;
     [key: string]: any; // fallback for other props

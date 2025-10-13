@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -13,7 +14,7 @@ import { useUserId } from "@/lib/hooks/useUserId";
 interface RequestFormProps {
   setsuccess: (value: boolean) => void;
   setrequested: (value: boolean) => void;
-  creatorid: string;
+  creator_portfolio_id: string;
   type: string;
   toast: {
     error: (msg: string, options?: { autoClose?: number }) => void;
@@ -25,7 +26,7 @@ interface RequestFormProps {
 export const Requestform: React.FC<RequestFormProps> = ({
   setsuccess,
   setrequested,
-  creatorid,
+  creator_portfolio_id,
   type,
   price,
   creator
@@ -64,9 +65,12 @@ export const Requestform: React.FC<RequestFormProps> = ({
     }
   }, [bookingstats, bookingmessage, dispatch, setrequested, setsuccess, toast]);
 
-  const maxDate = format(addMonths(new Date(), 13), "yyyy-MM-dd");
+  // Set max date to 3 months from today
+  const maxDate = format(addMonths(new Date(), 3), "yyyy-MM-dd");
 
   const checkInput = async () => {
+    console.log('Form data:', { date, time, place });
+    
     if (!time) {
       toast.error("Input time", { autoClose: 2000 });
       return;
@@ -81,18 +85,21 @@ export const Requestform: React.FC<RequestFormProps> = ({
     }
 
     if (bookingstats !== "loading") {
+      setLoading(true);
       const tst=toast.loading("Your request is being processed")
       try {
+        console.log('Sending booking request with date:', date);
         const res = await bookAcreator({
           place,
           time,
           date,
           userid: userid,
-          creatorid: creator.hostid,
+          creator_portfolio_id: creator.hostid,
           type: creator.hosttype,
           price: creator.price
         });
-        toast.success("Your request has been submitted and sent to "+(creator?.name||"The creator"))
+        const serviceType = creator.hosttype || "Fan meet";
+        toast.success(`Your ${serviceType} request has been submitted and sent to ${creator?.name || "The creator"}`)
         setsuccess(true)
         setrequested(true)
       } catch (err) {
@@ -119,7 +126,12 @@ export const Requestform: React.FC<RequestFormProps> = ({
             className="flex-1 p-2 rounded-md bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"
             min={new Date().toISOString().split("T")[0]}
             max={maxDate}
-            onInput={(e) => setDate(e.currentTarget.value)}
+            value={date}
+            onChange={(e) => {
+              console.log('Date selected:', e.target.value);
+              setDate(e.target.value);
+            }}
+            required
           />
         </div>
 
@@ -129,7 +141,8 @@ export const Requestform: React.FC<RequestFormProps> = ({
           <input
             type="time"
             className="flex-1 p-2 rounded-md bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"
-            onInput={(e) => setTime(e.currentTarget.value)}
+            value={time}
+            onChange={(e) => setTime(e.target.value)}
           />
         </div>
 
@@ -139,20 +152,22 @@ export const Requestform: React.FC<RequestFormProps> = ({
           <input
             type="text"
             className="flex-1 p-2 rounded-md bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"
-            onInput={(e) => setPlace(e.currentTarget.value)}
+            value={place}
+            onChange={(e) => setPlace(e.target.value)}
           />
         </div>
 
         {/* Submit button */}
         <div className="flex justify-center mt-6">
           <button
-            className="bg-yellow-500 hover:bg-yellow-600 text-black text-sm px-4 py-2 rounded-md shadow-md transition duration-200"
+            className="bg-yellow-500 hover:bg-yellow-600 text-black text-sm px-4 py-2 rounded-md shadow-md transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
             onClick={(e) => {
               e.preventDefault();
               checkInput();
             }}
+            disabled={loading}
           >
-            Done
+            {loading ? "Processing..." : "Done"}
           </button>
         </div>
 

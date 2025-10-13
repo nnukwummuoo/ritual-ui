@@ -33,7 +33,7 @@ export const UnreadList: React.FC<UnreadListProps> = ({
   online,
 }) => {
   const [userphoto, setuserphoto] = useState<string>(dodo.src);
-  const [creatorid, setcreatorid] = useState<string[]>([]);
+  const [creator_portfolio_id, setcreator_portfolio_id] = useState<string[]>([]);
   const router = useRouter();
 
   const myid = useSelector((state: RootState) => state.register.userID);
@@ -44,7 +44,7 @@ export const UnreadList: React.FC<UnreadListProps> = ({
     : format(date1, 'MM/dd/yyyy');
 
   useEffect(() => {
-    setcreatorid([fromid, toid]);
+    setcreator_portfolio_id([fromid, toid]);
 
     if (photolink) {
       setuserphoto(photolink);
@@ -59,7 +59,7 @@ export const UnreadList: React.FC<UnreadListProps> = ({
     <li
       className="mb-1 cursor-pointer hover:bg-blue-700/30 transition-colors"
       onClick={() => {
-        router.push(`/message/${creatorid.toString()}`);
+        router.push(`/message/${creator_portfolio_id.toString()}`);
       }}
     >
       <div className="flex items-center justify-between px-4 py-4 mx-2 rounded-xl bg-blue-800/40 border border-blue-700/30">

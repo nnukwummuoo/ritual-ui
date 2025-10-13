@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -284,19 +285,54 @@ export const MessageList = () => {
     router.push(`/message/${targetUserId}`);
   };
 
-  // Filter messages based on search query
-  const filteredMessages = recentmsg?.filter((message: MessageItem) => {
-    if (!searchQuery.trim()) return true;
+  // Filter and sort messages based on search query and VIP priority
+  const filteredAndSortedMessages = React.useMemo(() => {
+    if (!recentmsg) return [];
     
-    const searchLower = searchQuery.toLowerCase();
-    const fullName = message.firstname && message.lastname ? `${message.firstname} ${message.lastname}`.trim() : message.name;
-    const nameMatch = fullName.toLowerCase().includes(searchLower);
-    const firstNameMatch = message.firstname?.toLowerCase().includes(searchLower) || false;
-    const lastNameMatch = message.lastname?.toLowerCase().includes(searchLower) || false;
-    const contentMatch = message.content.toLowerCase().includes(searchLower);
-    
-    return nameMatch || firstNameMatch || lastNameMatch || contentMatch;
-  }) || [];
+    // First filter based on search query
+    const filtered = recentmsg.filter((message: MessageItem) => {
+      if (!searchQuery.trim()) return true;
+      
+      const searchLower = searchQuery.toLowerCase();
+      const fullName = message.firstname && message.lastname ? `${message.firstname} ${message.lastname}`.trim() : message.name;
+      const nameMatch = fullName.toLowerCase().includes(searchLower);
+      const firstNameMatch = message.firstname?.toLowerCase().includes(searchLower) || false;
+      const lastNameMatch = message.lastname?.toLowerCase().includes(searchLower) || false;
+      const contentMatch = message.content.toLowerCase().includes(searchLower);
+      
+      return nameMatch || firstNameMatch || lastNameMatch || contentMatch;
+    });
+
+    // Then sort: VIP users with unread messages first, then by date
+    return filtered.sort((a: MessageItem, b: MessageItem) => {
+      // Check if user has unread messages
+      const aUnreadCount = a.messagecount || a.unreadCount || 0;
+      const aHasUnread = a.unread || aUnreadCount > 0;
+      const bUnreadCount = b.messagecount || b.unreadCount || 0;
+      const bHasUnread = b.unread || bUnreadCount > 0;
+
+      // Priority 1: VIP users with unread messages
+      if (a.isVip && aHasUnread && !(b.isVip && bHasUnread)) {
+        return -1;
+      }
+      if (b.isVip && bHasUnread && !(a.isVip && aHasUnread)) {
+        return 1;
+      }
+
+      // Priority 2: Non-VIP users with unread messages
+      if (aHasUnread && !bHasUnread && !a.isVip) {
+        return -1;
+      }
+      if (bHasUnread && !aHasUnread && !b.isVip) {
+        return 1;
+      }
+
+      // Priority 3: Sort by date (most recent first)
+      const aDate = new Date(Number(a.date)).getTime();
+      const bDate = new Date(Number(b.date)).getTime();
+      return bDate - aDate;
+    });
+  }, [recentmsg, searchQuery]);
 
   if (!isLoggedIn || !userid) {
     return (
@@ -352,7 +388,7 @@ export const MessageList = () => {
       </div>
 
       {/* Messages List */}
-      {filteredMessages.length === 0 ? (
+      {filteredAndSortedMessages.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-8">
           <MessageCircle className="w-8 h-8 text-gray-400 mb-2" />
           <p className="text-gray-400 text-center">No messages found</p>
@@ -361,7 +397,7 @@ export const MessageList = () => {
           </p>
         </div>
       ) : (
-        filteredMessages.map((message: MessageItem, index: number) => {
+        filteredAndSortedMessages.map((message: MessageItem, index: number) => {
         // Get the other user ID and their profile picture
         const otherUserId = message.fromid === userid ? message.toid : message.fromid;
         const userProfilePicture = profilePictures[otherUserId];

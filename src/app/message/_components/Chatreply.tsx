@@ -15,7 +15,7 @@ export const Chatreply = ({ img, username, content, date, id, className }: { img
   
   //console.log('post date '+ date)
   // const userid = useSelector((state) => state.register.userID);
-  // const Mycreator = useSelector((state) => state.profile.creatorID);
+  // const Mycreator = useSelector((state) => state.profile.creator_portfolio_id);
 
   // useEffect(() => {
 

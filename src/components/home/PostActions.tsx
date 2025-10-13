@@ -57,7 +57,7 @@ function DotsIcon({ post }: { post: any }) { // eslint-disable-line @typescript-
   
   // Get user ID from Redux and localStorage
   const reduxUserid = useSelector((state: RootState) => state.register.userID);
-  const profileUserId = useSelector((state: RootState) => state.profile?.userId || state.profile?.creatorID);
+  const profileUserId = useSelector((state: RootState) => state.profile?.userId || state.profile?.creator_portfolio_id);
   const [localUserid, setLocalUserid] = React.useState("");
   
   React.useEffect(() => {
@@ -298,7 +298,7 @@ export default function PostActions({
   
   // Get user ID from Redux and localStorage
   const reduxUserid = useSelector((state: RootState) => state.register.userID);
-  const profileUserId = useSelector((state: RootState) => state.profile?.userId || state.profile?.creatorID);
+  const profileUserId = useSelector((state: RootState) => state.profile?.userId || state.profile?.creator_portfolio_id);
   const [localUserid, setLocalUserid] = React.useState("");
   
   React.useEffect(() => {

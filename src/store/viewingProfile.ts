@@ -15,10 +15,11 @@ interface ViewingProfileState {
   country: string;
   active: boolean;
   creator: boolean;
-  creatorID: string;
+  creator_portfolio_id: string;
   creatorname: string;
   creatorphotolink: string;
-  exclusive_verify: boolean;
+  hosttype: string;
+  creator_verified: boolean;
   createdAt: string;
   balance: string;
   admin: boolean;
@@ -54,10 +55,11 @@ const initialState: ViewingProfileState = {
   country: "",
   active: false,
   creator: false,
-  creatorID: "",
+  creator_portfolio_id: "",
   creatorname: "",
   creatorphotolink: "",
-  exclusive_verify: false,
+  hosttype: "Fan meet",
+  creator_verified: false,
   createdAt: "",
   balance: "",
   admin: false,
@@ -158,13 +160,14 @@ const viewingProfileSlice = createSlice({
         state.country = p.country ?? "";
         state.balance = p.balance ?? "";
         state.creator = (p as any).creator ?? (p as any).creator_portfolio ?? false;
-        state.creatorID = (p as any).creatorID ?? (p as any).creatorId ?? "";
+        state.creator_portfolio_id = (p as any).creator_portfolio_id ?? (p as any).creator_portfolio_id ?? "";
         state.creatorname = (p as any).creatorname ?? "";
         state.creatorphotolink = (p as any).creatorphotolink ?? "";
+        state.hosttype = (p as any).hosttype ?? "Fan meet";
         state.photolink = (p as any).photolink ?? (p as any).photoLink ?? "";
         state.bio = (p as any).bio ?? "";
         state.admin = p.admin ?? false;
-        state.exclusive_verify = (p as any).exclusive ?? (p as any).exclusive_verify ?? false;
+        state.creator_verified = (p as any).exclusive ?? (p as any).creator_verified ?? false;
         state.createdAt = (p as any).createdAt ?? "";
       })
       .addCase(getViewingProfile.rejected, (state, action) => {

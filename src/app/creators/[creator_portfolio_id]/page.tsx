@@ -32,9 +32,9 @@ import "react-loading-skeleton/dist/skeleton.css";
 import CreatorByIdNav from "./_components/CreatorByIdNav";
 import { formatCreatorPrices } from "./_utils/formatCreatorPrices";
 
-//import addcrush({inputs  : creatorid and userid})
+//import addcrush({inputs  : creator_portfoliio_Id and userid})
 //userid : the current user ID that wish to add the creator to its crush list
-//creatorid : the creator ID that this user wishes to add to its crush list
+//creator_portfoliio_Id : the creator ID that this user wishes to add to its crush list
 
 //method stats and api message for redux selectors
 // addcrush_stats and addcrush_message
@@ -57,7 +57,7 @@ interface RootState {
       refreshtoken: string;
     };
     profile: {
-      creatorID: string;
+      creator_portfolio_id: string;
       balance: string;
     };
     creator: {
@@ -123,8 +123,8 @@ interface RootState {
 
 
 export default function Creatorbyid () {
-    const params = useParams<{ creatorID: string }>();
-    const Creator = params?.creatorID?.split(",") || [];
+    const params = useParams<{ creator_portfolio_id: string }>();
+    const Creator = params?.creator_portfolio_id?.split(",") || [];
 
     const router = useRouter();
     const dispatch = useDispatch<AppDispatch>();
@@ -159,12 +159,14 @@ export default function Creatorbyid () {
   }, [useridFromHook, session?._id, reduxUserid]);
   const reduxToken = useSelector((state: RootState) => state.register.refreshtoken);
   
-  // Get token from Redux or localStorage as fallback
+  // Get token from Redux, session, or localStorage as fallback
   const [token, setToken] = useState<string>("");
   
   useEffect(() => {
     if (reduxToken) {
       setToken(reduxToken);
+    } else if (session?.token) {
+      setToken(session.token);
     } else {
       // Fallback to localStorage
       try {
@@ -177,7 +179,7 @@ export default function Creatorbyid () {
         // Silent fail
       }
     }
-  }, [reduxToken]);
+  }, [reduxToken, session?.token]);
   const message = useSelector((state: RootState) => state.creator.message);
   const creatorbyidstatus = useSelector(
     (state: RootState) => state.creator.creatorbyidstatus
@@ -214,7 +216,7 @@ export default function Creatorbyid () {
   const [oldlink, setoldlink] = useState<string[]>([]);
   const [documentlink] = useState<string[]>([]);
   const [docCount] = useState(0);
-  const [creatorid] = useState<[string?, string?]>([
+  const [creator_portfoliio_Id] = useState<[string?, string?]>([
     Creator[1],
     userid,
   ]);
@@ -327,7 +329,7 @@ export default function Creatorbyid () {
     if (getreviewstats !== "loading") {
       dispatch(
         getreview({
-          creatorid: Creator[0],
+          creator_portfoliio_Id: Creator[0],
           token,
         })
       );
@@ -372,15 +374,20 @@ export default function Creatorbyid () {
 
   useEffect(() => {
     const fetchViews = async () => {
+      if (!Creator[0] || !userid) {
+        return;
+      }
+      
       const data = {
-        creatorId: Creator[0],
-        userId: userid || "",
-        token: user?.refreshtoken || "",
+        creator_portfolio_id: Creator[0],
+        userId: userid,
       };
+      
       const response = await dispatch(getViews(data));
 
       try {
         const payload = response?.payload?.response;
+        
         if (!payload) {
           setViews(0);
           return;
@@ -388,7 +395,6 @@ export default function Creatorbyid () {
   
         // Ensure payload is a valid JSON string
         const parsed = typeof payload === "string" ? JSON.parse(payload) : payload;
-  
         setViews(parsed?.views ?? 0);
       } catch (err) {
         setViews(0);
@@ -396,7 +402,7 @@ export default function Creatorbyid () {
     };
     
     fetchViews();
-  }, [user]);
+  }, [Creator[0], userid, dispatch]);
 
   useEffect(() => {
     if (creatordeletestatus === "succeeded") {
@@ -653,20 +659,20 @@ export default function Creatorbyid () {
     if (addcrush_stats !== "loading" && removeCrush === false) {
       set_dcb(true);
       set_crush_text("adding to crush list...");
-      dispatch(addcrush({ userid, token, creatorid: creator.hostid }));
+      dispatch(addcrush({ userid, token, creator_portfoliio_Id: creator.hostid }));
     }
 
     if (remove_crush_stats !== "loading" && removeCrush === true) {
       set_dcb(true);
       set_crush_text("removing crush from list...");
-      dispatch(remove_Crush({ userid, token, creatorid: creator.hostid }));
+      dispatch(remove_Crush({ userid, token, creator_portfoliio_Id: creator.hostid }));
     }
   };
 
   const handleRequestDetailsSubmit = async (details: { date: string; time: string; venue: string }) => {
     console.log('Sending request with:', {
       userid,
-      creatorid: creator.hostid,
+      creator_portfolio_id: creator.hostid,
       creatorUserid: creator.userid,
       type: creator.hosttype,
       date: details.date,
@@ -696,7 +702,7 @@ export default function Creatorbyid () {
         },
         body: JSON.stringify({
           userid,
-          creatorid: creator.hostid, // Use hostid for creator lookup in creatordb
+          creator_portfolio_id: creator.hostid, // Use hostid for creator lookup in creatordb
           type: creator.hosttype,
           date: details.date,
           time: details.time,
@@ -708,7 +714,8 @@ export default function Creatorbyid () {
       if (response.ok) {
         setShowRequestDetails(false);
         setbookingclick(false);
-        toast.success('Fan meet request sent successfully!');
+        const serviceType = creator.hosttype || "Fan meet";
+        toast.success(`${serviceType} request sent successfully!`);
         // Optionally navigate to notifications
         setTimeout(() => {
           navigate('/notifications/activity');
@@ -1044,7 +1051,7 @@ export default function Creatorbyid () {
                     creatorName={(creator?.name||" ").split(" ")[0]}
                     followingUser={creator.followingUser}
                     id={creator.userid}
-                    creatorid={creator.hostid}
+                    creator_portfoliio_Id={creator.hostid}
                     checkuser={checkuser()}
                   />
                 </div>
@@ -1498,7 +1505,7 @@ export default function Creatorbyid () {
                   setsuccess={setsuccess}
                   price={Number(creator.price) || 0}
                   toast={toast}
-                  creatorid={creator.hostid}
+                  creator_portfolio_id={creator.hostid}
                   type={creator.hosttype}
                   setrequested={setrequested}
                   creator={creator}

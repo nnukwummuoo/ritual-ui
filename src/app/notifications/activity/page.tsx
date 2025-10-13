@@ -4,7 +4,9 @@
 import React, { useState, useEffect } from 'react'
 import RequestCard from '../components/RequestCard';
 import { useUserId } from '@/lib/hooks/useUserId';
-import {URL} from "@/api/config"
+import {URL} from "@/api/config";
+import VIPBadge from "@/components/VIPBadge";
+import { useNotificationIndicator } from "@/hooks/useNotificationIndicator";
 
 interface Request {
   bookingId: string;
@@ -14,6 +16,8 @@ interface Request {
     name: string;
     photolink: string;
     isCreator: boolean;
+    isVip?: boolean;
+    vipEndDate?: string | null;
   };
   timeRemaining?: string;
   price: number;
@@ -22,13 +26,18 @@ interface Request {
   time?: string;
   venue?: string;
   userid?: string;
-  creatorid?: string;
+  creator_portfolio_id?: string;
+  targetUserId?: string; // Add target user ID for profile navigation
+  hosttype?: string;
 }
 
 export default function Activity() {
   const [requests, setRequests] = useState<Request[]>([]);
   const [loading, setLoading] = useState(true);
   const userid = useUserId();
+  
+  // Get notification indicator data
+  const { hasUnread, unreadCount, totalCount } = useNotificationIndicator();
 
   useEffect(() => {
     // Helper function to normalize status values
@@ -85,7 +94,9 @@ export default function Activity() {
               time: req.time,
               venue: req.place,
               userid: req.userid,
-              creatorid: req.creatorid
+              creator_portfolio_id: req.creator_portfolio_id,
+              targetUserId: req.targetUserId, // Add target user ID for profile navigation
+              hosttype: req.hosttype // Include the host type from backend
             };
           });
           
@@ -128,28 +139,59 @@ export default function Activity() {
 
   return (
     <div className='flex flex-col gap-8 max-w-[26rem] mx-auto'>
+      {/* Activity Header with Notification Indicators */}
+      <div className="bg-[#0B0F1A]/70 backdrop-blur-xl border border-slate-800 rounded-2xl p-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-semibold text-white">Activity</h2>
+          <div className="flex items-center gap-2">
+            {hasUnread && (
+              <div className="bg-red-500 text-white text-xs px-2 py-1 rounded-full font-bold">
+                {unreadCount} new
+              </div>
+            )}
+            <span className="text-slate-400 text-sm">
+              {totalCount} notifications
+            </span>
+          </div>
+        </div>
+      </div>
+      
       {requests.map((request: Request) => (
-        <RequestCard
-          key={request.bookingId}
-          type={request.type}
-          img={request.otherUser?.photolink || "/picture-1.jfif"}
-          status={request.status}
-          name={request.otherUser?.name || "Unknown User"}
-          titles={request.otherUser?.isCreator ? ["Creator"] : ["Fan"]}
-          exp={request.timeRemaining || "Expired"}
-          bookingId={request.bookingId}
-          price={request.price}
-          details={request.date && request.time && request.venue ? {
-            date: request.date,
-            time: request.time,
-            venue: request.venue
-          } : undefined}
-          userid={request.userid}
-          creatorid={request.creatorid}
-          onStatusChange={handleStatusChange}
-        />
+        <div key={request.bookingId} className="relative">
+          <RequestCard
+            type={request.type}
+            img={request.otherUser?.photolink || "/picture-1.jfif"}
+            status={request.status}
+            name={request.otherUser?.name || "Unknown User"}
+            titles={request.otherUser?.isCreator ? ["Creator"] : ["Fan"]}
+            exp={request.timeRemaining || "Expired"}
+            bookingId={request.bookingId}
+            price={request.price}
+            details={request.date && request.time && request.venue ? {
+              date: request.date,
+              time: request.time,
+              venue: request.venue
+            } : undefined}
+            userid={request.userid}
+            creator_portfolio_id={request.creator_portfolio_id}
+            targetUserId={request.targetUserId}
+            hosttype={request.hosttype}
+            isVip={request.otherUser?.isVip || false}
+            vipEndDate={request.otherUser?.vipEndDate}
+            onStatusChange={handleStatusChange}
+          />
+          
+          {/* VIP Badge - positioned outside the card */}
+          {request.otherUser?.isVip && (
+            <VIPBadge 
+              size="xl" 
+              className="absolute top-2 left-12 z-10" 
+              isVip={request.otherUser.isVip} 
+              vipEndDate={request.otherUser.vipEndDate || undefined} 
+            />
+          )}
+        </div>
       ))}
   </div>
   );
 }
-

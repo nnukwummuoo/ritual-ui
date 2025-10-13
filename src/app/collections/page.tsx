@@ -98,14 +98,14 @@ const Content: React.FC<{
 
 const Crush: React.FC<{
   items: CollectionItem[];
-  onRemove: (creatorid: string) => void;
+  onRemove: (creator_portfolio_id: string) => void;
 }> = ({ items, onRemove }) => {
   const router = useRouter();
   
   const handleCreatorClick = (creator: any) => {
-    const creatorid = creator.creatorid || creator.creatorId || creator.id || creator._id;
-    if (creatorid) {
-      router.push(`/creators/${creatorid}`);
+    const creator_portfolio_id = creator.creator_portfolio_id || creator.creator_portfolio_id || creator.id || creator._id;
+    if (creator_portfolio_id) {
+      router.push(`/creators/${creator_portfolio_id}`);
     }
   };
 
@@ -121,13 +121,13 @@ const Crush: React.FC<{
             const name = it.creatorname || it.name || it.nickname || "Creator";
             const status = it.status || "active";
             const type = it.type || "standard";
-            const creatorid = it.creatorid || it.creatorId || it.id || it._id || String(idx);
+            const creator_portfolio_id = it.creator_portfolio_id || it.creator_portfolio_id || it.id || it._id || String(idx);
             const location = it.location || "Unknown";
             const hosttype = it.hosttype || "Fan meet";
             
             return (
               <div 
-                key={String(creatorid)} 
+                key={String(creator_portfolio_id)} 
                 className="relative bg-gray-800 rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 cursor-pointer group"
                 onClick={() => handleCreatorClick(it)}
               >
@@ -150,7 +150,7 @@ const Crush: React.FC<{
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      onRemove(String(creatorid));
+                      onRemove(String(creator_portfolio_id));
                     }}
                     className="absolute top-3 left-3 bg-red-600 hover:bg-red-700 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200"
                     title="Remove from crush list"
@@ -319,9 +319,9 @@ const CollectionsPage: React.FC = () => {
               ) : (
                 <Crush
                   items={listofcrush || []}
-                  onRemove={async (creatorid) => {
+                  onRemove={async (creator_portfolio_id) => {
                     try {
-                      await dispatch(remove_Crush({ userid, token, creatorid })).unwrap();
+                      await dispatch(remove_Crush({ userid, token, creator_portfolio_id })).unwrap();
                       await dispatch(getcollection({ userid, token }));
                     } catch (e) {
                       // noop

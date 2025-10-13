@@ -30,7 +30,7 @@ export const RecentList: React.FC<RecentListProps> = ({
   online,
 }) => {
   const [userphoto, setUserphoto] = useState<any>(dodo);
-  const [creatorid, setCreatorid] = useState<string[]>([]);
+  const [creator_portfolio_id, setCreator_portfolio_id] = useState<string[]>([]);
   const router = useRouter();
 
   const myid = useSelector((state: any) => state.register.userID);
@@ -43,10 +43,10 @@ export const RecentList: React.FC<RecentListProps> = ({
 
   useEffect(() => {
     if (fromid === myid) {
-      setCreatorid([toid, fromid]);
+      setCreator_portfolio_id([toid, fromid]);
     }
     if (toid === myid) {
-      setCreatorid([fromid, toid]);
+      setCreator_portfolio_id([fromid, toid]);
     }
 
     if (photolink) {
@@ -65,13 +65,13 @@ export const RecentList: React.FC<RecentListProps> = ({
     <li
       className="mb-1 cursor-pointer hover:bg-blue-700/30 transition-colors"
       onClick={() => {
-        router.push(`/message/${creatorid.toString()}`);
+        router.push(`/message/${creator_portfolio_id.toString()}`);
       }}
       role="button"
       tabIndex={0}
       onKeyPress={(e) => {
         if (e.key === 'Enter') {
-          router.push(`/message/${creatorid.toString()}`);
+          router.push(`/message/${creator_portfolio_id.toString()}`);
         }
       }}
     >

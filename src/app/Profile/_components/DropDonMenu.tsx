@@ -20,7 +20,7 @@ const DropdownMenu = ({ userId, isOwnProfile = false }: DropdownMenuProps) => {
   const [blocking, setBlocking] = useState(false);
   
   const userid = useSelector((state: RootState) => state.register.userID);
-  const profileUserId = useSelector((state: RootState) => state.profile?.userId || state.profile?.creatorID);
+  const profileUserId = useSelector((state: RootState) => state.profile?.userId || state.profile?.creator_portfolio_id);
   
   // Get userid from localStorage if not in Redux
   const [localUserid, setLocalUserid] = React.useState("");

@@ -11,14 +11,14 @@ import VIPBadge from "@/components/VIPBadge";
 interface FollowerCardProps {
   image: string;
   name: string;
-  creatorid: string;
+  creator_portfolio_id: string;
   userId?: string; // User ID for following functionality
   isVip?: boolean;
   vipStartDate?: string;
   vipEndDate?: string;
 }
 
-const FollowerCard: React.FC<FollowerCardProps> = ({ image, name, creatorid, userId, isVip = false, vipStartDate, vipEndDate }) => {
+const FollowerCard: React.FC<FollowerCardProps> = ({ image, name, creator_portfolio_id, userId, isVip = false, vipStartDate, vipEndDate }) => {
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
   const currentUserId = useSelector((state: RootState) => state.register.userID);
@@ -123,8 +123,8 @@ const FollowerCard: React.FC<FollowerCardProps> = ({ image, name, creatorid, use
   const handleProfileClick = () => {
     if (userId) {
       router.push(`/Profile/${userId}`);
-    } else if (creatorid) {
-      router.push(`/creators/${creatorid}`);
+    } else if (creator_portfolio_id) {
+      router.push(`/creators/${creator_portfolio_id}`);
     }
   };
 

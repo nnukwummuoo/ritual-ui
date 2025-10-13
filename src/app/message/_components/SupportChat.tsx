@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import React, { useEffect, useRef, useState } from "react";
@@ -13,6 +14,7 @@ import { URL as API_URL } from "@/api/config";
 import axios from "axios";
 import Image from "next/image";
 import { X, Paperclip, Send, File, Download } from "lucide-react";
+import { CategorySelection } from "@/components/support/CategorySelection";
 
 export const SupportChat = () => {
   const msgListref = useRef<HTMLDivElement>(null);
@@ -38,8 +40,16 @@ export const SupportChat = () => {
   const [isTyping, setIsTyping] = useState(false);
   const [otherUserTyping, setOtherUserTyping] = useState(false);
   const [isOtherUserOnline, setIsOtherUserOnline] = useState(true);
+  
+  // Support chat specific state
+  const [showCategorySelection, setShowCategorySelection] = useState(false);
+  const [supportChat, setSupportChat] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isFirstMessage, setIsFirstMessage] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<string>('');
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Load userid from localStorage if not in Redux
   React.useEffect(() => {
@@ -58,45 +68,95 @@ export const SupportChat = () => {
     }
   }, [reduxUserId]);
 
-  // Load messages including support form message
+  // Load support chat
   useEffect(() => {
-    const mockMessages = [
-      {
-        _id: '1',
-        content: 'Hello! Welcome to Mmeko Support. How can I help you today?',
-        fromid: 'support',
-        toid: loggedInUserId,
-        date: Date.now() - 300000, // 5 minutes ago
-        user: {
-          firstname: 'Mmeko',
-          lastname: 'Support',
-          photolink: supportPhoto
-        }
-      }
-    ];
-
-    // Check for support message from form
-    const supportMessage = localStorage.getItem("supportMessage");
-    if (supportMessage) {
-      const userMessage = {
-        _id: '2',
-        content: supportMessage,
-        fromid: loggedInUserId,
-        toid: 'support',
-        date: Date.now() - 60000, // 1 minute ago
-        user: {
-          firstname: 'You',
-          lastname: '',
-          photolink: ''
-        }
-      };
-      mockMessages.push(userMessage);
+    const loadSupportChat = async () => {
+      if (!loggedInUserId) return;
       
-      // Clear the support message from localStorage
-      localStorage.removeItem("supportMessage");
-    }
+      try {
+        setIsLoading(true);
+        
+        // Try to get existing support chat
+        const response = await fetch(`${API_URL}/support-chat/user/${loggedInUserId}`);
+        
+        if (response.ok) {
+          const data = await response.json();
+          if (data.ok && data.supportChat) {
+            setSupportChat(data.supportChat);
+            setMessages(data.supportChat.messages || []);
+            
+            // Check if chat is closed - if so, clear messages
+            if (data.supportChat.status === 'closed') {
+              setMessages([]);
+              setSupportChat(null);
+              setIsFirstMessage(true); // Allow new chat to start
+            }
+          } else {
+            // No active chat found, prepare for first message
+            setIsFirstMessage(true);
+          }
+        } else {
+          // Error or no chat found, prepare for first message
+          setIsFirstMessage(true);
+        }
+      } catch (error) {
+        console.error('Error loading support chat:', error);
+        setIsFirstMessage(true);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-    setMessages(mockMessages);
+    loadSupportChat();
+  }, [loggedInUserId]);
+
+  // Socket integration for real-time support chat
+  useEffect(() => {
+    const socket = getSocket();
+    if (!socket || !loggedInUserId) return;
+
+    // Join support chat room
+    socket.emit('join_support_chat', { userid: loggedInUserId });
+
+    // Listen for new support messages
+    const handleSupportMessage = (data: any) => {
+      if (data.userid === loggedInUserId) {
+        // Reload messages to get the latest
+        const loadMessages = async () => {
+          try {
+            const response = await fetch(`${API_URL}/support-chat/user/${loggedInUserId}`);
+            if (response.ok) {
+              const data = await response.json();
+              if (data.ok && data.supportChat) {
+                setMessages(data.supportChat.messages || []);
+              }
+            }
+          } catch (error) {
+            console.error('Error reloading messages:', error);
+          }
+        };
+        loadMessages();
+      }
+    };
+
+    // Listen for chat status updates (when admin marks as closed)
+    const handleChatStatusUpdate = (data: any) => {
+      if (data.userid === loggedInUserId && data.status === 'closed') {
+        // Clear all messages and reset chat state
+        setMessages([]);
+        setSupportChat(null);
+        setIsFirstMessage(true);
+        toast.info('Chat has been closed. You can start a new conversation.');
+      }
+    };
+
+    socket.on('support_message_received', handleSupportMessage);
+    socket.on('support_chat_status_update', handleChatStatusUpdate);
+
+    return () => {
+      socket.off('support_message_received', handleSupportMessage);
+      socket.off('support_chat_status_update', handleChatStatusUpdate);
+    };
   }, [loggedInUserId]);
 
   // Handle typing indicators
@@ -105,18 +165,18 @@ export const SupportChat = () => {
     
     if (!isTyping) {
       setIsTyping(true);
-      startTyping('support');
+      startTyping('support', loggedInUserId);
     }
     
     // Clear existing timeout
-    if (window.typingTimeout) {
-      clearTimeout(window.typingTimeout);
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
     }
     
     // Set new timeout
-    window.typingTimeout = setTimeout(() => {
+    typingTimeoutRef.current = setTimeout(() => {
       setIsTyping(false);
-      stopTyping('support');
+      stopTyping('support', loggedInUserId);
     }, 2000);
   };
 
@@ -140,44 +200,81 @@ export const SupportChat = () => {
     });
   };
 
+  // Handle category selection
+  const handleCategorySelect = (category: string) => {
+    setSelectedCategory(category);
+    setShowCategorySelection(false);
+    
+    // Set default message text based on category if no text is entered
+    if (!text.trim()) {
+      setText("Hello, I need help with " + category.toLowerCase());
+    }
+  };
+
   // Send message function
   const send_chat = async (messageText: string) => {
     if (!messageText.trim() && selectedFiles.length === 0) return;
     
-    const newMessage = {
-      _id: Date.now().toString(),
-      content: messageText,
-      fromid: loggedInUserId,
-      toid: 'support',
-      date: Date.now(),
-      user: {
-        firstname: 'You',
-        lastname: '',
-        photolink: ''
+    // If this is the first message and no support chat exists, show category selection
+    if (isFirstMessage && !supportChat && !selectedCategory) {
+      setShowCategorySelection(true);
+      return;
+    }
+    
+    try {
+      let response;
+      
+      // If this is the first message with a selected category, create chat and send message
+      if (isFirstMessage && selectedCategory && !supportChat) {
+        response = await fetch(`${API_URL}/support-chat/create-or-get`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            userid: loggedInUserId,
+            category: selectedCategory,
+            message: messageText
+          })
+        });
+      } else if (supportChat) {
+        // Send message to existing chat
+        response = await fetch(`${API_URL}/support-chat/send-message`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            userid: loggedInUserId,
+            message: messageText,
+            files: [] // TODO: Handle file uploads
+          })
+        });
+      } else {
+        toast.error('Please select a category first');
+        return;
       }
-    };
-    
-    setMessages(prev => [...prev, newMessage]);
-    setText("");
-    setSelectedFiles([]);
-    setPreviewFiles([]);
-    
-    // Simulate support response after 2 seconds
-    setTimeout(() => {
-      const supportResponse = {
-        _id: (Date.now() + 1).toString(),
-        content: 'Thank you for your message. Our support team will get back to you shortly.',
-        fromid: 'support',
-        toid: loggedInUserId,
-        date: Date.now(),
-        user: {
-          firstname: 'Mmeko',
-          lastname: 'Support',
-          photolink: supportPhoto
-        }
-      };
-      setMessages(prev => [...prev, supportResponse]);
-    }, 2000);
+
+      if (response.ok) {
+        const data = await response.json();
+        setSupportChat(data.supportChat);
+        setMessages(data.supportChat.messages || []);
+        // Clear input immediately
+        setText("");
+        setSelectedFiles([]);
+        setPreviewFiles([]);
+        setIsFirstMessage(false);
+        setSelectedCategory(''); // Clear selected category after first message
+        toast.success('Message sent successfully!');
+      } else {
+        toast.error('Failed to send message');
+      }
+    } catch (error) {
+      console.error('Error sending message:', error);
+      toast.error('Error sending message');
+      // Clear input even on error to prevent stuck text
+      setText("");
+    }
   };
 
   // Auto-scroll to bottom
@@ -187,8 +284,28 @@ export const SupportChat = () => {
     }
   }, [messages]);
 
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="h-full w-full flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <p className="text-white">Loading support chat...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="h-full w-full flex flex-col">
+      {/* Category Selection Modal */}
+      {showCategorySelection && (
+        <CategorySelection
+          onCategorySelect={handleCategorySelect}
+          onClose={() => setShowCategorySelection(false)}
+        />
+      )}
+
       {/* Top Bar with Support Info */}
       <div className="bg-gray-800 backdrop-blur-sm border-b border-gray-700/30 p-3 sm:p-4 sticky top-0 z-50 flex-shrink-0">
         <div className="flex items-center justify-between">
@@ -205,7 +322,7 @@ export const SupportChat = () => {
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-700">
                 <Image
-                  src={supportPhoto}
+                  src="/support.png"
                   alt={supportName}
                   width={40}
                   height={40}
@@ -215,6 +332,11 @@ export const SupportChat = () => {
               <div>
                 <h2 className="text-lg font-semibold text-white">{supportName}</h2>
                 <p className="text-sm text-green-400">{supportStatus}</p>
+                {supportChat?.category && (
+                  <p className="text-xs text-blue-400 mt-1">
+                    Category: {supportChat.category}
+                  </p>
+                )}
               </div>
             </div>
           </div>
@@ -224,43 +346,33 @@ export const SupportChat = () => {
       {/* Messages Area */}
       <div ref={msgListref} className="flex-1 overflow-y-auto p-3 sm:p-4 bg-transparent">
         <div className="space-y-4 w-full max-w-4xl mx-auto">
-          {messages.map((message) => {
-            const isUser = message.fromid === loggedInUserId;
-            return (
-              <div key={message._id} className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-4 w-full`}>
-                <div className={`w-1/2 px-4 py-3 rounded-2xl ${
-                  isUser 
-                    ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-br-md' 
-                    : 'bg-gray-800/50 text-white rounded-bl-md border border-gray-700/30'
-                }`}>
-                  <div className="flex items-center gap-2">
-                    <div className="flex space-x-1">
-                      <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
-                      <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse" style={{animationDelay: '0.2s'}}></div>
-                      <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse" style={{animationDelay: '0.4s'}}></div>
-                    </div>
-                    <span className="text-sm text-gray-300">Typing...</span>
+          {messages.length === 0 ? (
+            <div className="text-center py-8">
+              <p className="text-gray-400">No messages yet. Start the conversation!</p>
+            </div>
+          ) : (
+            messages.map((message) => {
+              const isUser = message.fromid === loggedInUserId;
+              const isAdmin = message.isAdmin;
+              
+              return (
+                <div key={message._id} className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-4 w-full`}>
+                  <div className={`w-1/2 px-4 py-3 rounded-2xl ${
+                    isUser 
+                      ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-br-md' 
+                      : isAdmin
+                      ? 'bg-gradient-to-r from-green-500 to-teal-600 text-white rounded-bl-md'
+                      : 'bg-gray-800/50 text-white rounded-bl-md border border-gray-700/30'
+                  }`}>
+                    <p className="text-sm">{message.content}</p>
+                    <p className="text-xs opacity-70 mt-1">
+                      {new Date(message.date).toLocaleTimeString()}
+                    </p>
                   </div>
                 </div>
-              </div>
-            );
-          })}
-          
-          {/* Show actual messages */}
-          {messages.map((message) => {
-            const isUser = message.fromid === loggedInUserId;
-            return (
-              <div key={message._id} className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-4 w-full`}>
-                <div className={`w-1/2 px-4 py-3 rounded-2xl ${
-                  isUser 
-                    ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-br-md' 
-                    : 'bg-gray-800/50 text-white rounded-bl-md border border-gray-700/30'
-                }`}>
-                  <p className="text-sm">{message.content}</p>
-                </div>
-              </div>
-            );
-          })}
+              );
+            })
+          )}
         </div>
       </div>
 

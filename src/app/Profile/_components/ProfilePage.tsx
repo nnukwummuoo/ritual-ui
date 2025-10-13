@@ -169,7 +169,7 @@ export const Profile = () => {
   // URL params and auth info ready
   const formatter = new Intl.NumberFormat("en-US");
 
-  const [creatorid, setcreatorid] = useState<string[]>([]);
+  const [creator_portfolio_id, setcreator_portfolio_id] = useState<string[]>([]);
   const [isFollowing, setisFollowing] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -776,7 +776,7 @@ export const Profile = () => {
   
   const cantfandc = () => {
     if (loggedInUserId && viewingUserId) {
-      setcreatorid([viewingUserId, loggedInUserId]);
+      setcreator_portfolio_id([viewingUserId, loggedInUserId]);
     }
   };
 
@@ -1622,7 +1622,7 @@ const PostModal = () => {
                         <button
                           className={`flex-1 bg-gray-800 cursor-pointer py-1.5 px-3 rounded-lg hover:bg-gray-700 transition-colors text-center`}
                           onClick={() => {
-                            // Pass only the target user ID (the user being viewed) as creatorid
+                            // Pass only the target user ID (the user being viewed) as creator_portfolio_id
                             // The Chat component will use this to fetch the target user's profile details
                             const targetUserId = viewingUserId;
                             router.push(`/message/${targetUserId}`);
@@ -1636,30 +1636,27 @@ const PostModal = () => {
                           // Check for creator properties based on the actual data structure
                           const hasCreatorPortfolio = profileData && (
                             (profileData as any).creator === true ||
-                            (profileData as any).creatorID ||
+                            (profileData as any).creator_portfolio_id ||
                             (profileData as any).creatorname ||
-                            (profileData as any).exclusive_verify === true
+                            (profileData as any).creator_verified === true
                           );
                           
                           // Get host type from profile data or default to "Fan meet"
-                          const hostType = (profileData as any)?.hosttype || 
-                                         (profileData as any)?.creatortDype || 
-                                         (profileData as any)?.creatorType ||
-                                         "Fan meet";
+                          const hostType = (profileData as any)?.hosttype || "Fan meet";
                           
                           return hasCreatorPortfolio && (
                             <button
                               className="flex-1 bg-gradient-to-r from-orange-500 to-red-600 cursor-pointer py-1.5 px-3 rounded-lg hover:from-orange-600 hover:to-red-700 transition-all duration-200 hover:scale-105 text-center"
                               onClick={() => {
                                 // Get the actual creator ID from profile data
-                                const creatorId = (profileData as any)?.creatorID || 
-                                               (profileData as any)?.creatorid || 
+                                const creator_portfolio_id = (profileData as any)?.creator_portfolio_id || 
+                                               (profileData as any)?.creator_portfolio_id || 
                                                (profileData as any)?.creator_id ||
                                                (profileData as any)?._id || // Fallback to profile ID
                                                viewingUserId; // Last resort fallback
                                 
                                 // Navigate to creator profile using the actual creator ID
-                                router.push(`/creators/${creatorId}`);
+                                router.push(`/creators/${creator_portfolio_id}`);
                               }}
                             >
                               {hostType}

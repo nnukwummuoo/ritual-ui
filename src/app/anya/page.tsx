@@ -9,7 +9,7 @@ import Image from 'next/image';
 export default function AnyaButton() {
 
     const handleClick = () => {
-        toast.info("👁️ The Eye is watching... Anya is not awake yet. Unlocking soon.", {
+        toast.info("👁️ The Eye is watching... Anya is not awake yet. Unlocking soon..", {
           position: "bottom-center",
           autoClose: 3000,
           hideProgressBar: true,

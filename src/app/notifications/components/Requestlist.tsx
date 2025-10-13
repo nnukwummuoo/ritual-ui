@@ -16,7 +16,7 @@ interface Request {
   date: string,
   photolink: string,
   time: string,
-  creatorid: string,
+  creator_portfolio_id: string,
   id: string,
   setRequests: ()=> void,
 }
@@ -26,7 +26,7 @@ export function Requestlist({
   date,
   photolink,
   time,
-  creatorid,
+  creator_portfolio_id,
   id,
   setRequests,
 }: Request) {
@@ -45,7 +45,7 @@ export function Requestlist({
 
   // useEffect(() => {
   //   if (cancelstats === "succeeded") {
-  //     dispatch(deleterequest({ creatorid: creatorid, date: date, time: time }));
+  //     dispatch(deleterequest({ creator_portfolio_id: creator_portfolio_id, date: date, time: time }));
   //     dispatch(resetstat());
   //     setloading(!loading);
   //   }
@@ -61,7 +61,7 @@ export function Requestlist({
   //     Cancelrequest({
   //       token,
   //       userid,
-  //       creatorid,
+  //       creator_portfolio_id,
   //       time,
   //       date,
   //       id,

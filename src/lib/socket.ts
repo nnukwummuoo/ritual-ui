@@ -128,7 +128,11 @@ export const getSocket = () => {
       // Smart configuration: use local server if available, fallback to production
       let socketUrl: string;
       
-      if (process.env.NODE_ENV === "development") {
+      // Check if accessing via network IP first
+      if (window.location.hostname === '10.245.95.157') {
+        // Network access - use network backend (backend listens on 0.0.0.0)
+        socketUrl = "http://10.245.95.157:3100";
+      } else if (process.env.NODE_ENV === "development") {
         // Development: always use local server
         socketUrl = "http://localhost:3100";
       } else {
@@ -177,9 +181,31 @@ export const getSocket = () => {
         console.error("❌ [Socket] Error details:", err);
         console.error("❌ [Socket] Attempted URL:", socketUrl);
         
+        // If connecting to network server failed, try localhost as fallback
+        if (socketUrl === "http://10.245.95.157:3100") {
+          console.log("🔄 [Socket] Network server not available, trying localhost...");
+          
+          // Disconnect current socket
+          if (socket) {
+            socket.disconnect();
+          }
+          
+          // Create new socket with localhost URL
+          socket = io("http://localhost:3100", {
+            withCredentials: true,
+            autoConnect: true,
+            reconnection: true,
+            reconnectionAttempts: 5,
+            reconnectionDelay: 1000,
+            transports: ["websocket", "polling"]
+          });
+          
+          // Re-attach event listeners
+          attachSocketEvents(socket, "http://localhost:3100");
+        }
         // If connecting to local server failed and we're in production build on localhost,
         // try connecting to production server as fallback
-        if (socketUrl === "http://localhost:3100" && 
+        else if (socketUrl === "http://localhost:3100" && 
             process.env.NODE_ENV === "production" && 
             (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
           
