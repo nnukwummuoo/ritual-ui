@@ -6,14 +6,7 @@ import { useSelector } from "react-redux";
 import { toast } from "material-react-toastify";
 import { golds } from "@/data/intresttypes";
 import { getPaymentLink } from "@/api/payment";
-
-interface RootState {
-  register: {
-    refreshtoken: string;
-    userId: string;
-    logedin: boolean;
-  };
-}
+import {RootState} from "@/store/store"
 
 // Icons for tags
 const tagIcons: Record<string, React.ReactNode> = {
@@ -28,11 +21,11 @@ const Topup: React.FC = () => {
   const [currencyValue, setCurrencyValue] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(false);
 
-  const userID = useSelector((state: RootState) => state.register.userId);
+  const userId = useSelector((state: RootState) => state.profile.userId);
   const login = useSelector((state: RootState) => state.register.logedin);
 
   const pay = async () => {
-    if (!login) {
+    if (!userId) {
       toast.error("Please log in to purchase gold", { autoClose: 2000 });
       return;
     }
@@ -52,11 +45,11 @@ const Topup: React.FC = () => {
 
       const res = await getPaymentLink(
         amount,
-        userID,
-        "usdtbep20",
+        userId,
+        "usdtbsc",
         `Gold Pack Purchase: ${currencyValue} Gold`
       );
-
+      console.log(res);
       if (res?.checkoutUrl) {
         window.open(res.checkoutUrl, "_blank");
       } else {
