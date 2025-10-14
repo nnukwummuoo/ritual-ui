@@ -45,8 +45,10 @@ export default function CreateCreatorPortfolio() {
   const dispatch = useDispatch<AppDispatch>();
 
   // Get profile data from Redux (like side menu)
+
   const profile = useSelector((state: RootState) => state.profile);
   const reduxUserId = useSelector((state: RootState) => state.register.userID);
+  const isCreatorVerified = useSelector((state: RootState) => state.profile.creator_verified);
 
   const [loading, setLoading] = useState(false);
   const [color, setColor] = useState("#d49115");
@@ -307,6 +309,13 @@ const checkuserInput = async () => {
   };
 
 
+if (!isCreatorVerified) {
+  return (
+    <div className="flex items-center justify-center min-h-screen bg-gray-900">
+      <p className="text-xl text-white">You are not verified yet</p>
+    </div>
+  );
+}
 
 
   return (

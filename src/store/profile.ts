@@ -1083,6 +1083,7 @@ const profile = createSlice({
       })
     .addCase(checkApplicationStatus.fulfilled, (state, action) => {
       state.status = "succeeded";
+      state.checkApplicationStatus = action.payload.status;
      })
     .addCase(checkApplicationStatus.rejected, (state, action) => {
       state.status = "failed";

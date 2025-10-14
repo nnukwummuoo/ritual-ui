@@ -138,7 +138,45 @@ export const Register = () => {
   }, [formValues, country, step]);
 
   const copyToClipboard = () => { navigator.clipboard.writeText(secretPhrase.join(" ")); setCopied(true); toast.success("Phrase copied!", { style: { backgroundColor: "#111" } }); setTimeout(() => setCopied(false), 2000); };
-  const downloadPhrase = () => { const element = document.createElement("a"); const file = new Blob([secretPhrase.join(" ")], { type: 'text/plain' }); element.href = URL.createObjectURL(file); element.download = "recovery-phrase.txt"; document.body.appendChild(element); element.click(); document.body.removeChild(element); };
+
+  const downloadPhrase = () => {
+  const htmlContent = `
+    <html>
+      <head>
+        <title>Recovery Phrase</title>
+        <style>
+          body {
+            font-family: Arial, sans-serif;
+            font-size: 32px;
+            font-weight: bold;
+            color: #111;
+            text-align: center;
+            margin-top: 100px;
+          }
+          .word {
+            display: inline-block;
+            margin: 8px 12px;
+            padding: 10px 15px;
+            border: 2px solid #333;
+            border-radius: 8px;
+          }
+        </style>
+      </head>
+      <body>
+        ${secretPhrase
+          .map((word) => `<div class="word">${word}</div>`)
+          .join("")}
+      </body>
+    </html>
+  `;
+  const element = document.createElement("a");
+  const file = new Blob([htmlContent], { type: "text/html" });
+  element.href = URL.createObjectURL(file);
+  element.download = "recovery-phrase.html";
+  document.body.appendChild(element);
+  element.click();
+  document.body.removeChild(element);
+}
 
   // Validation logic for each step
   const validateStep = (currentStep: number): boolean => {
@@ -374,7 +412,6 @@ export const Register = () => {
               <div className="phrase-grid">
                 {secretPhrase.map((word, index) => (
                   <div className="phrase-item" key={index}>
-                    <span className="phrase-number">{index + 1}</span>
                     <span className="phrase-word">{word}</span>
                   </div>
                 ))}
