@@ -53,10 +53,12 @@ export const Chat = () => {
   
   const loggedInUserId = reduxUserId || localUserid;
 
+
   const [chatphotolink, setchatphotolink] = useState("");
   const [chatusername, setchatusername] = useState("");
   const [chatfirstname, setfirstname] = useState("");
   const [chatlastname, setlastname] = useState("");
+  
 
   const [Chatphoto, set_Chatphoto] = useState("/icons/icons8-profile_user.png");
   const [ChatphotoError, setChatphotoError] = useState(false);
@@ -302,6 +304,7 @@ export const Chat = () => {
 
   const [text, settext] = useState("");
   const [loading, setLoading] = useState(true);
+  
   const [isTyping, setIsTyping] = useState(false);
   const [otherUserTyping, setOtherUserTyping] = useState(false);
   const [typingTimeout, setTypingTimeout] = useState<NodeJS.Timeout | null>(null);
@@ -461,18 +464,17 @@ export const Chat = () => {
       
       // Validate the decoded user ID
       if (!targetUserId || targetUserId === 'undefined' || targetUserId === 'null' || targetUserId.length < 10) {
-        console.error("❌ [CHAT] Invalid targetUserId after decode:", targetUserId);
         toast.error("Invalid user ID. Please try again.");
         setLoading(false);
         return;
       }
+      
       const token = (() => {
         try {
           const raw = localStorage.getItem("login");
           if (raw) {
             const data = JSON.parse(raw);
-            const token = data?.refreshtoken || data?.accesstoken;
-      return token;
+            return data?.refreshtoken || data?.accesstoken;
           }
         } catch (error) {
           console.error("[Chat] Error retrieving token from localStorage:", error);
@@ -485,14 +487,12 @@ export const Chat = () => {
         clientid: loggedInUserId
       };
 
-
       const response = await axios.put(`${API_URL}/getcurrentchat`, requestData, {
         headers: {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${token}`
         },
       });
-
 
       if (response.data.chats && Array.isArray(response.data.chats)) {
         setmessage(response.data.chats);
@@ -508,7 +508,12 @@ export const Chat = () => {
 
       setLoading(false);
     } catch (error: any) {
-      console.error("❌ [CHAT] Error fetching messages:", error);
+      console.error("❌ [CHAT] Error fetching messages:", {
+        error: error.message,
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data
+      });
       
       setLoading(false);
       
@@ -545,7 +550,12 @@ export const Chat = () => {
 
   // Fetch target user profile details when creator_portfolio_id changes or route changes
   useEffect(() => {
-    if (!creator_portfolio_id || !loggedInUserId) {
+    if (!creator_portfolio_id) {
+      return;
+    }
+
+    // If we don't have loggedInUserId yet, wait a bit for it to load from localStorage
+    if (!loggedInUserId) {
       return;
     }
 
@@ -553,7 +563,6 @@ export const Chat = () => {
     
     // Validate the decoded user ID
     if (!targetUserId || targetUserId === 'undefined' || targetUserId === 'null' || targetUserId.length < 10) {
-      console.error("❌ [CHAT] Invalid targetUserId for profile fetch:", targetUserId);
       return;
     }
     
@@ -620,14 +629,8 @@ export const Chat = () => {
         }
       }
     } else if (viewingProfile.status === "failed" && creator_portfolio_id) {
-      // Handle profile loading failure with better fallback
-      const targetUserId = decodeURIComponent(creator_portfolio_id);
-      const fallbackName = `User ${targetUserId.slice(-6)}`;
-      
-      setfirstname(fallbackName);
-      setchatusername(fallbackName);
-      set_Chatphoto("/icons/icons8-profile_user.png");
-      setChatphotoError(false);
+      // Don't set fallback values - let it stay blank until real data loads
+      // Keep loading true so it shows loading state instead of blank
     }
   }, [viewingProfile, creator_portfolio_id, dispatch]);
 
@@ -711,52 +714,27 @@ export const Chat = () => {
   // Fallback to ensure loading is set to false after a reasonable time
   useEffect(() => {
     const fallbackTimeout = setTimeout(() => {
+      // Only set loading to false if we have real user data
+      if (chatusername || chatfirstname) {
       setLoading(false);
-      
-      // If profile still hasn't loaded, set fallback values
-      if (!chatusername && creator_portfolio_id) {
-        const targetUserId = decodeURIComponent(creator_portfolio_id);
-        const fallbackName = `User ${targetUserId.slice(-6)}`;
-        
-        setchatusername(fallbackName);
-        setfirstname(fallbackName);
-        set_Chatphoto("/icons/icons8-profile_user.png");
-        setChatphotoError(false);
       }
-    }, 5000); // 5 second fallback - reduced from 10 seconds
+      // If no real data, keep loading state active
+    }, 8000); // Increased to 8 seconds to give profile fetch more time
 
     return () => clearTimeout(fallbackTimeout);
-  }, [creator_portfolio_id, chatusername]);
+  }, [creator_portfolio_id, chatusername, chatfirstname]);
 
   // Enhanced fallback to ensure chat info is set even if there are timing issues
-  useEffect(() => {
-    if (creator_portfolio_id && (!chatusername || !chatfirstname)) {
-      const targetUserId = decodeURIComponent(creator_portfolio_id);
-      
-      // Validate the decoded user ID before setting fallback
-      if (targetUserId && targetUserId !== 'undefined' && targetUserId !== 'null' && targetUserId.length >= 10) {
-        // Try to get a better fallback name from the user ID
-        const fallbackName = `User ${targetUserId.slice(-6)}`; // Show last 6 chars for better identification
-        
-        // Only set fallback if we don't have any name yet
-        if (!chatusername) {
-          setchatusername(fallbackName);
-        }
-        if (!chatfirstname) {
-          setfirstname(fallbackName);
-        }
-        
-        // Set default profile picture
-        set_Chatphoto("/icons/icons8-profile_user.png");
-        setChatphotoError(false);
-      }
-    }
-  }, [creator_portfolio_id, chatusername, chatfirstname]);
+  // REMOVED: This was causing race conditions with real profile data
 
   // Additional useEffect to handle navigation from MessageList (skip Redux)
   useEffect(() => {
     // Only proceed if we have both creator_portfolio_id and loggedInUserId
-    if (!creator_portfolio_id || !loggedInUserId) {
+    if (!creator_portfolio_id) {
+      return;
+    }
+
+    if (!loggedInUserId) {
       return;
     }
 
@@ -1504,7 +1482,26 @@ export const Chat = () => {
   }, [dispatch]);
 
   // Early return if we don't have valid user data
-  if (!creator_portfolio_id || !loggedInUserId) {
+  // Only return early if we're sure we don't have the data (not just loading)
+  if (!creator_portfolio_id) {
+    return (
+      <div className="h-full w-full flex flex-col items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-400 text-lg mb-2">Invalid Chat</p>
+          <p className="text-gray-400 text-sm">No user ID provided. Please try again.</p>
+          <button 
+            onClick={() => router.back()}
+            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          >
+            Go Back
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // If we don't have loggedInUserId yet, show loading but don't block the component
+  if (!loggedInUserId) {
     return (
       <div className="h-full w-full flex flex-col items-center justify-center">
         <div className="text-center">
@@ -1517,6 +1514,7 @@ export const Chat = () => {
 
   // Validate the decoded user ID
   const decodedUserId = decodeURIComponent(creator_portfolio_id);
+
   if (!decodedUserId || decodedUserId === 'undefined' || decodedUserId === 'null' || decodedUserId.length < 10) {
     return (
       <div className="h-full w-full flex flex-col items-center justify-center">
@@ -1533,6 +1531,7 @@ export const Chat = () => {
       </div>
     );
   }
+
 
   return (
     <div className="h-full w-full flex flex-col" style={{ 
@@ -1603,7 +1602,7 @@ export const Chat = () => {
                   <div className="h-5 bg-gray-600 animate-pulse rounded w-24"></div>
                 ) : (
                   <p className="font-bold text-white text-lg">
-                    {chatfirstname && chatlastname ? `${chatfirstname} ${chatlastname}`.trim() : chatusername || "User"}
+                    {chatfirstname && chatlastname ? `${chatfirstname} ${chatlastname}`.trim() : chatusername}
                   </p>
                 )}
                 <div className="flex items-center gap-2">

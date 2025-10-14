@@ -196,7 +196,11 @@ export default function Creatorbyid () {
   );
   
   // Get ratings from profile store (new 5-star rating system)
-  const { ratings, ratings_stats, totalRatings, averageRating, ratingCounts } = useSelector((s: RootState) => s.profile);
+  const ratings = useSelector((s: RootState) => (s.profile as any).ratings || []);
+  const ratings_stats = useSelector((s: RootState) => (s.profile as any).ratings_stats || 'idle');
+  const totalRatings = useSelector((s: RootState) => (s.profile as any).totalRatings || 0);
+  const averageRating = useSelector((s: RootState) => (s.profile as any).averageRating || 0);
+  const ratingCounts = useSelector((s: RootState) => (s.profile as any).ratingCounts || {});
   const addcrush_stats = useSelector(
     (state: RootState) => state.creator.addcrush_stats
   );
@@ -250,6 +254,26 @@ export default function Creatorbyid () {
     router.push(path);
   };
 
+  // Helper function to get current user ID with localStorage fallback
+  const getCurrentUserId = () => {
+    let currentUserId = userid;
+    
+    // If userid is not available, try to get it from localStorage as fallback
+    if (!currentUserId) {
+      try {
+        const stored = localStorage.getItem("login");
+        if (stored) {
+          const data = JSON.parse(stored);
+          currentUserId = data?.userID || data?.userid || data?.id || "";
+        }
+      } catch (error) {
+        console.error('Error getting userid from localStorage:', error);
+      }
+    }
+    
+    return currentUserId;
+  };
+
   // Check VIP celebration status (database-based)
   const checkVipCelebrationStatus = React.useCallback(async (userId: string, viewerId: string) => {
     if (!userId || !viewerId || !token) return false;
@@ -279,19 +303,21 @@ export default function Creatorbyid () {
   // Check VIP celebration status when VIP status is confirmed
   useEffect(() => {
     const checkCelebration = async () => {
+      const currentUserId = getCurrentUserId();
+
       // Only proceed if VIP status is confirmed from creator data
-      if (vipStatusFromCreator?.isVip === true && creatorbyidstatus === "succeeded" && Creator[0] && userid && !celebrationChecked) {
+      if (vipStatusFromCreator?.isVip === true && creatorbyidstatus === "succeeded" && Creator[0] && currentUserId && !celebrationChecked) {
         setCelebrationChecked(true);
         
         try {
-          const shouldShow = await checkVipCelebrationStatus(Creator[0], userid);
+          const shouldShow = await checkVipCelebrationStatus(Creator[0], currentUserId);
           
           if (shouldShow) {
             setShowVipCelebration(true);
             setVipCelebrationShown(true);
             
             // Mark as viewed in database
-            await markVipCelebrationAsViewed(Creator[0], userid);
+            await markVipCelebrationAsViewed(Creator[0], currentUserId);
             
             // Hide the celebration after 5 seconds
             setTimeout(() => {
@@ -315,8 +341,9 @@ export default function Creatorbyid () {
   }, [Creator[0]]);
 
   useEffect(() => {
+    const currentUserId = getCurrentUserId();
 
-    if (!userid || !Creator[0]) {
+    if (!currentUserId || !Creator[0]) {
       return;
     }
 
@@ -325,7 +352,7 @@ export default function Creatorbyid () {
         getmycreatorbyid({
           hostid: Creator[0],
           token,
-          userid,
+          userid: currentUserId,
         })
       );
     }
@@ -380,13 +407,15 @@ export default function Creatorbyid () {
 
   useEffect(() => {
     const fetchViews = async () => {
-      if (!Creator[0] || !userid) {
+      const currentUserId = getCurrentUserId();
+
+      if (!Creator[0] || !currentUserId) {
         return;
       }
       
       const data = {
         creator_portfolio_id: Creator[0],
-        userId: userid,
+        userId: currentUserId,
       };
       
       const response = await dispatch(getViews(data));
@@ -479,8 +508,10 @@ export default function Creatorbyid () {
   }, [creatordeletestatus]);
 
   const checkuser = () => {
-    if (userid) {
-      if (creator.userid === userid) {
+    const currentUserId = getCurrentUserId();
+
+    if (currentUserId) {
+      if (creator.userid === currentUserId) {
         return true;
       } else {
         return false;
@@ -611,7 +642,9 @@ export default function Creatorbyid () {
   };
 
   const Cantchat = () => {
-    if (creator.userid === userid) {
+    const currentUserId = getCurrentUserId();
+
+    if (creator.userid === currentUserId) {
       return false;
     } else {
       return true;
@@ -667,32 +700,37 @@ export default function Creatorbyid () {
   };
 
   const addTocrush = () => {
+    const currentUserId = getCurrentUserId();
+
     console.log('🔍 [addTocrush] Debug:', { 
       addcrush_stats, 
       removeCrush, 
-      userid, 
+      userid: currentUserId, 
       token: token ? 'present' : 'missing', 
-      creator_hostid: creator.hostid 
+      creator_hostid: creator.hostid,
+      creator_userid: creator.userid
     });
     
     if (addcrush_stats !== "loading" && removeCrush === false) {
       set_dcb(true);
       set_crush_text("adding to crush list...");
-      console.log('🔍 [addTocrush] Dispatching addcrush:', { userid, token, creator_portfolio_id: creator.hostid });
-      dispatch(addcrush({ userid, token, creator_portfolio_id: creator.hostid }));
+      console.log('🔍 [addTocrush] Dispatching addcrush:', { userid: currentUserId, token, creator_portfolio_id: creator.hostid });
+      dispatch(addcrush({ userid: currentUserId, token, creator_portfolio_id: creator.hostid }));
     }
 
     if (remove_crush_stats !== "loading" && removeCrush === true) {
       set_dcb(true);
       set_crush_text("removing crush from list...");
-      console.log('🔍 [addTocrush] Dispatching remove_Crush:', { userid, token, creator_portfolio_id: creator.hostid });
-      dispatch(remove_Crush({ userid, token, creator_portfolio_id: creator.hostid }));
+      console.log('🔍 [addTocrush] Dispatching remove_Crush:', { userid: currentUserId, token, creator_portfolio_id: creator.hostid });
+      dispatch(remove_Crush({ userid: currentUserId, token, creator_portfolio_id: creator.hostid }));
     }
   };
 
   const handleRequestDetailsSubmit = async (details: { date: string; time: string; venue: string }) => {
+    const currentUserId = getCurrentUserId();
+
     console.log('Sending request with:', {
-      userid,
+      userid: currentUserId,
       creator_portfolio_id: creator.hostid,
       creatorUserid: creator.userid,
       type: creator.hosttype,
@@ -722,7 +760,7 @@ export default function Creatorbyid () {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          userid,
+          userid: currentUserId,
           creator_portfolio_id: creator.hostid, // Use hostid for creator lookup in creatordb
           type: creator.hosttype,
           date: details.date,

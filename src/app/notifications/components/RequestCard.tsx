@@ -11,6 +11,7 @@ import { getSocket } from '@/lib/socket';
 import { useRouter } from 'next/navigation';
 import { useVideoCall } from '@/contexts/VideoCallContext';
 import RatingModal from '@/components/RatingModal';
+import FanRatingModal from '@/components/FanRatingModal';
 import { useSelector } from "react-redux";
 import { RootState } from "@/store/store";
 
@@ -202,6 +203,15 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
   const [submittedRating, setSubmittedRating] = useState(0); // Track the submitted rating
   const [showFeedbackModal, setShowFeedbackModal] = useState(false); // For creator to view feedback
   const [ratingData, setRatingData] = useState<{rating: number, feedback: string, fanName: string} | null>(null); // Store rating data for creator view
+  
+  // Creator rating state (creator rating fan)
+  const [showFanRatingModal, setShowFanRatingModal] = useState(false);
+  const [fanRatingLoading, setFanRatingLoading] = useState(false);
+  const [selectedFanRating, setSelectedFanRating] = useState(0);
+  const [submittedFanRating, setSubmittedFanRating] = useState(0); // Track the submitted fan rating
+  const [showFanFeedbackModal, setShowFanFeedbackModal] = useState(false); // For fan to view feedback
+  const [fanRatingData, setFanRatingData] = useState<{rating: number, feedback: string, creatorName: string} | null>(null); // Store fan rating data for fan view
+  
   const router = useRouter();
   const { startVideoCall } = useVideoCall();
   
@@ -244,12 +254,12 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
       return;
     }
 
-    // For fans: check if they have rated this booking
+    // For fans: check if they have rated this booking (fan-to-creator)
     if (type === "fan" && currentStatus === "completed") {
       try {
         // Force localhost for development
         const apiUrl = process.env.NODE_ENV === "development" ? "http://localhost:3100" : URL;
-        const response = await fetch(`${apiUrl}/review/check/${bookingId}/${userId}`);
+        const response = await fetch(`${apiUrl}/review/check/${bookingId}/${userId}/fan-to-creator`);
         const data = await response.json();
         
         if (data.ok && data.hasRated) {
@@ -262,12 +272,12 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
       }
     }
 
-    // For creators: check if this booking has been rated by the fan
+    // For creators: check if this booking has been rated by the fan (fan-to-creator)
     if (type === "creator" && currentStatus === "completed") {
       try {
         // Force localhost for development
         const apiUrl = process.env.NODE_ENV === "development" ? "http://localhost:3100" : URL;
-        const response = await fetch(`${apiUrl}/review/check/${bookingId}/${userid}`); // Use fan's userid
+        const response = await fetch(`${apiUrl}/review/check/${bookingId}/${userid}/fan-to-creator`); // Use fan's userid
         const data = await response.json();
         
         if (data.ok && data.hasRated) {
@@ -286,7 +296,55 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
         setRatingData(null);
       }
     }
-  }, [bookingId, currentUserId, type, currentStatus, userid, name]);
+
+    // For creators: also check if creator has rated the fan (creator-to-fan)
+    if (type === "creator" && currentStatus === "completed") {
+      try {
+        const apiUrl = process.env.NODE_ENV === "development" ? "http://localhost:3100" : URL;
+        const fanRatingResponse = await fetch(`${apiUrl}/review/check/${bookingId}/${userId}/creator-to-fan`);
+        const fanRatingData = await fanRatingResponse.json();
+        
+        if (fanRatingData.ok && fanRatingData.hasRated) {
+          setSubmittedFanRating(fanRatingData.rating);
+          setFanRatingData({
+            rating: fanRatingData.rating,
+            feedback: fanRatingData.feedback,
+            creatorName: "You"
+          });
+        } else {
+          setSubmittedFanRating(0);
+          setFanRatingData(null);
+        }
+      } catch (error) {
+        setSubmittedFanRating(0);
+        setFanRatingData(null);
+      }
+    }
+
+    // For fans: check if creator has rated them (creator-to-fan)
+    if (type === "fan" && currentStatus === "completed") {
+      try {
+        const apiUrl = process.env.NODE_ENV === "development" ? "http://localhost:3100" : URL;
+        const fanRatingResponse = await fetch(`${apiUrl}/review/check/${bookingId}/${creator_portfolio_id}/creator-to-fan`);
+        const fanRatingData = await fanRatingResponse.json();
+        
+        if (fanRatingData.ok && fanRatingData.hasRated) {
+          setSubmittedFanRating(fanRatingData.rating);
+          setFanRatingData({
+            rating: fanRatingData.rating,
+            feedback: fanRatingData.feedback,
+            creatorName: name
+          });
+        } else {
+          setSubmittedFanRating(0);
+          setFanRatingData(null);
+        }
+      } catch (error) {
+        setSubmittedFanRating(0);
+        setFanRatingData(null);
+      }
+    }
+  }, [bookingId, currentUserId, type, currentStatus, userid, name, creator_portfolio_id]);
 
   // Check for existing rating when component loads or dependencies change
   useEffect(() => {
@@ -541,7 +599,20 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
     }
     
 
+    console.log('🔍 [handleRatingSubmit] Fan rating creator - checking IDs:', {
+      bookingId,
+      creator_portfolio_id,
+      userId,
+      currentUserId,
+      userid
+    });
+
     if (!bookingId || !creator_portfolio_id || !userId) {
+      console.error('❌ [handleRatingSubmit] Missing required information:', {
+        bookingId: !!bookingId,
+        creator_portfolio_id: !!creator_portfolio_id,
+        userId: !!userId
+      });
       toast.error("Missing required information for rating");
       return;
     }
@@ -554,8 +625,11 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
         fanId: userId, // Use current logged-in user ID
         rating,
         feedback,
-        hostType: hosttype || "Fan Meet"
+        hostType: hosttype || "Fan Meet",
+        ratingType: "fan-to-creator"
       };
+
+      console.log('📤 [handleRatingSubmit] Sending request to backend:', requestBody);
 
       // Force localhost for development
       const apiUrl = process.env.NODE_ENV === "development" ? "http://localhost:3100" : URL;
@@ -581,6 +655,105 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
       toast.error("Failed to submit rating. Please try again.");
     } finally {
       setRatingLoading(false);
+    }
+  };
+
+  // Handle fan rating submission (creator rating fan)
+  const handleFanRatingSubmit = async (rating: number, feedback: string) => {
+    console.log('🔍 [handleFanRatingSubmit] Frontend starting fan rating submission:', {
+      rating,
+      feedback: feedback.substring(0, 50) + '...',
+      bookingId,
+      currentUserId,
+      userid,
+      hosttype,
+      timestamp: new Date().toISOString()
+    });
+
+    // Get user ID from Redux state or localStorage as fallback
+    let userId = currentUserId;
+    
+    // Fallback to localStorage if Redux doesn't have it
+    if (!userId && typeof window !== 'undefined') {
+      try {
+        const loginData = localStorage.getItem('login');
+        if (loginData) {
+          const parsedData = JSON.parse(loginData);
+          userId = parsedData.userID || parsedData.userid || parsedData.id;
+          console.log('🔍 [handleFanRatingSubmit] Got userId from localStorage:', userId);
+        }
+      } catch (error) {
+        console.error('❌ [handleFanRatingSubmit] Error parsing login data:', error);
+        // Error parsing login data - continue with current userId
+      }
+    }
+    
+    console.log('🔍 [handleFanRatingSubmit] Final userId values:', {
+      currentUserId,
+      userId,
+      userid,
+      bookingId: !!bookingId
+    });
+    
+    if (!bookingId || !userId || !userid) {
+      console.error('❌ [handleFanRatingSubmit] Missing required information:', {
+        bookingId: !!bookingId,
+        userId: !!userId,
+        userid: !!userid
+      });
+      toast.error("Missing required information for rating");
+      return;
+    }
+
+    setFanRatingLoading(true);
+    try {
+      const requestBody = {
+        bookingId,
+        creatorId: userId, // Current user is the creator (when type === "creator")
+        fanId: userid, // Fan who made the booking
+        rating,
+        feedback,
+        hostType: hosttype || "Fan Meet",
+        ratingType: "creator-to-fan"
+      };
+
+      console.log('📤 [handleFanRatingSubmit] Sending request to backend:', requestBody);
+
+      // Force localhost for development
+      const apiUrl = process.env.NODE_ENV === "development" ? "http://localhost:3100" : URL;
+      console.log('🌐 [handleFanRatingSubmit] Using API URL:', apiUrl);
+      
+      const response = await fetch(`${apiUrl}/review/submit`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody)
+      });
+
+      console.log('📥 [handleFanRatingSubmit] Response status:', response.status);
+      
+      if (response.ok) {
+        const successData = await response.json();
+        console.log('✅ [handleFanRatingSubmit] Success response:', successData);
+        toast.success("Thank you for rating your fan!");
+        setSubmittedFanRating(rating); // Save the submitted rating
+        setShowFanRatingModal(false);
+        setSelectedFanRating(0); // Reset selected rating
+      } else {
+        const errorData = await response.json();
+        console.error('❌ [handleFanRatingSubmit] Error response:', {
+          status: response.status,
+          statusText: response.statusText,
+          errorData
+        });
+        toast.error(errorData.message || "Failed to submit rating");
+      }
+    } catch (error) {
+      console.error('❌ [handleFanRatingSubmit] Network/parsing error:', error);
+      toast.error("Failed to submit rating. Please try again.");
+    } finally {
+      setFanRatingLoading(false);
     }
   };
 
@@ -708,6 +881,79 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
         </div>
       )}
 
+      {/* Creator Rating Stars - Show for creators when completed (to rate the fan) */}
+      {type === "creator" && currentStatus === "completed" && (
+        <div className="flex flex-col items-center gap-2 py-3 border-t border-gray-600 pt-3">
+          <p className="text-sm text-gray-400 mb-2">Rate your fan:</p>
+          <div className="flex justify-center gap-2">
+            {[1, 2, 3, 4, 5].map((star) => {
+              const isFilled = star <= submittedFanRating;
+              const isClickable = submittedFanRating === 0; // Only clickable if no rating submitted yet
+              
+              return (
+                <button
+                  key={star}
+                  onClick={() => {
+                    if (isClickable) {
+                      setShowFanRatingModal(true);
+                      // Store the selected rating for the modal
+                      setSelectedFanRating(star);
+                    }
+                  }}
+                  className={`text-4xl transition-colors focus:outline-none ${
+                    isClickable ? "hover:scale-110 cursor-pointer" : "cursor-default"
+                  }`}
+                  disabled={!isClickable}
+                >
+                  <span className={`transition-colors ${
+                    isFilled ? "text-yellow-400" : "text-gray-400"
+                  } ${isClickable ? "hover:text-yellow-400" : ""}`}>
+                    ★
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+          {submittedFanRating > 0 && (
+            <p className="text-sm text-green-500 font-medium">
+              ✓ Fan rating submitted ({submittedFanRating} star{submittedFanRating !== 1 ? 's' : ''})
+            </p>
+          )}
+        </div>
+      )}
+
+      {/* Fan Rating Stars - Show for fans when completed (to view creator's rating of them) */}
+      {type === "fan" && currentStatus === "completed" && submittedFanRating > 0 && (
+        <div className="flex flex-col items-center gap-2 py-3 border-t border-gray-600 pt-3">
+          <p className="text-sm text-gray-400 mb-2">Rating from {name}:</p>
+          <div className="flex justify-center gap-2">
+            {[1, 2, 3, 4, 5].map((star) => {
+              const isFilled = star <= submittedFanRating;
+              
+              return (
+                <button
+                  key={star}
+                  onClick={() => {
+                    if (fanRatingData) {
+                      setShowFanFeedbackModal(true);
+                    }
+                  }}
+                  className="text-4xl transition-colors focus:outline-none hover:scale-110 cursor-pointer"
+                >
+                  <span className={`transition-colors ${
+                    isFilled ? "text-yellow-400" : "text-gray-400"
+                  } hover:text-yellow-400`}>
+                    ★
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+          <p className="text-sm text-blue-400 font-medium cursor-pointer hover:text-blue-300" onClick={() => setShowFanFeedbackModal(true)}>
+            Click stars to view feedback
+          </p>
+        </div>
+      )}
 
       {/* Rating Modal */}
       <RatingModal
@@ -721,6 +967,20 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
         hostType={hosttype}
         loading={ratingLoading}
         preSelectedRating={selectedRating}
+      />
+
+      {/* Fan Rating Modal */}
+      <FanRatingModal
+        isOpen={showFanRatingModal}
+        onClose={() => {
+          setShowFanRatingModal(false);
+          setSelectedFanRating(0);
+        }}
+        onSubmit={handleFanRatingSubmit}
+        fanName={name}
+        hostType={hosttype}
+        loading={fanRatingLoading}
+        preSelectedRating={selectedFanRating}
       />
 
       {/* Feedback Modal for Creators */}
@@ -759,6 +1019,50 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
 
             <button
               onClick={() => setShowFeedbackModal(false)}
+              className="w-full bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Fan Feedback Modal for Fans */}
+      {showFanFeedbackModal && fanRatingData && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999] p-4">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full">
+            <h2 className="text-xl font-bold text-gray-800 mb-4">Rating & Feedback</h2>
+            
+            <div className="mb-4">
+              <p className="text-sm text-gray-600 mb-2">Rating from {fanRatingData.creatorName}:</p>
+              <div className="flex gap-1">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <span
+                    key={star}
+                    className={`text-2xl ${
+                      star <= fanRatingData.rating ? "text-yellow-400" : "text-gray-300"
+                    }`}
+                  >
+                    ★
+                  </span>
+                ))}
+                <span className="ml-2 text-gray-600 font-medium">
+                  {fanRatingData.rating} out of 5 stars
+                </span>
+              </div>
+            </div>
+
+            {fanRatingData.feedback && (
+              <div className="mb-6">
+                <h3 className="text-sm font-semibold text-gray-800 mb-2">Feedback:</h3>
+                <p className="text-gray-700 bg-gray-50 p-3 rounded-lg text-sm">
+                  "{fanRatingData.feedback}"
+                </p>
+              </div>
+            )}
+
+            <button
+              onClick={() => setShowFanFeedbackModal(false)}
               className="w-full bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors"
             >
               Close
@@ -819,6 +1123,12 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
         onClick={() => {
           // Creator wants to message the fan
           if (userid) {
+            console.log('🔍 [RequestCard] Chat Now button clicked (single):', {
+              userid,
+              creator_portfolio_id,
+              currentUserId,
+              timestamp: new Date().toISOString()
+            });
             router.push(`/message/${userid}`);
           }
         }}

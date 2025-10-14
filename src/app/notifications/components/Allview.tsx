@@ -112,7 +112,7 @@ export const Allview = () => {
         } else if (message.includes("booking") || message.includes("request")) {
           title = "Booking Notification";
         } else if (message.includes("missed") && message.includes("call")) {
-          title = "Missed Call";
+          title = "Missed Fan Call";
         } else if (message.includes("fan meet") || message.includes("fan date")) {
           title = "Fan Meet Request";
         } else if (message.includes("accept") || message.includes("decline") || message.includes("cancel") || message.includes("complete")) {
@@ -227,7 +227,7 @@ export const Allview = () => {
               )}
 
               {/* Missed call notifications show activity button */}
-              {title === "Missed Call" && (
+              {title === "Missed Fan Call" && (
                 <div className="pt-2">
                   <Link href="/notifications/activity">
                     <button

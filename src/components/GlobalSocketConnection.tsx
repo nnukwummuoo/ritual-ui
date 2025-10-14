@@ -103,7 +103,7 @@ export default function GlobalSocketConnection() {
         // Show browser notification if permission is granted
         if ('Notification' in window && Notification.permission === 'granted') {
           new Notification('Missed Video Call', {
-            body: `You missed a video call from ${data.callerName || 'Unknown User'}`,
+            body: `You missed a Fan call from ${data.callerName || 'Unknown User'}`,
             icon: data.callerPhoto || '/icons/logo.png',
             tag: `missed-call-${data.callId}`,
             requireInteraction: true

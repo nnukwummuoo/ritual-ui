@@ -173,7 +173,24 @@ export default function Activity() {
 
   return (
     <div className='flex flex-col gap-8 max-w-[26rem] mx-auto'>
-     
+      {/* Activity Header */}
+      <div className="w-full max-w-md mb-4">
+        <div className="bg-[#0B0F1A]/70 backdrop-blur-xl border border-slate-800 rounded-2xl p-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-white">Activity</h2>
+            <div className="flex items-center gap-2">
+              {hasUnread && (
+                <div className="bg-red-500 text-white text-xs px-2 py-1 rounded-full font-bold">
+                  {unreadCount} new
+                </div>
+              )}
+              <span className="text-slate-400 text-sm">
+                {requests.length} total
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
       
       {requests.map((request: Request) => (
         <div key={request.bookingId} className="relative">
