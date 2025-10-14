@@ -175,7 +175,7 @@ export const RequestDetailsForm: React.FC<RequestDetailsFormProps> = ({
             Request {creatorType} with {creatorName}
           </p>
           <p className="text-yellow-400 font-semibold mt-2">
-            💰 {price} GOLD will be deducted from your balance
+            💰 {price}  Gold will be deducted from your balance per minute during the call
           </p>
         </div>
 

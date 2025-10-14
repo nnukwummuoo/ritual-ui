@@ -3,6 +3,16 @@
 import React, { useState } from "react";
 import { FaAngleLeft, FaQuestionCircle, FaEnvelope, FaPhone, FaClock } from "react-icons/fa";
 import { useRouter } from "next/navigation";
+import { useSelector } from "react-redux";
+
+// Types
+interface RootState {
+  register: {
+    userID: string;
+    logedin: boolean;
+    refreshtoken: string;
+  };
+}
 
 const SupportPage: React.FC = () => {
   const router = useRouter();
@@ -10,6 +20,29 @@ const SupportPage: React.FC = () => {
   const [message, setMessage] = useState<string>("");
   const [email, setEmail] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+
+  // Get user ID from Redux
+  const reduxUserid = useSelector((state: RootState) => state.register.userID);
+
+  // Helper function to get current user ID with localStorage fallback
+  const getCurrentUserId = () => {
+    let currentUserId = reduxUserid;
+    
+    // If userid is not available from Redux, try to get it from localStorage as fallback
+    if (!currentUserId) {
+      try {
+        const stored = localStorage.getItem("login");
+        if (stored) {
+          const data = JSON.parse(stored);
+          currentUserId = data?.userID || data?.userid || data?.id || "";
+        }
+      } catch (error) {
+        console.error('Error getting userid from localStorage:', error);
+      }
+    }
+    
+    return currentUserId;
+  };
 
   const categories = [
     { id: "account", label: "Account Issues", icon: "👤" },
@@ -278,7 +311,14 @@ Timestamp: ${new Date().toLocaleString()}`;
               </h2>
               <div className="space-y-3">
                 <button
-                  onClick={() => router.push("/profile")}
+                  onClick={() => {
+                    const currentUserId = getCurrentUserId();
+                    if (currentUserId) {
+                      router.push(`/profile/${currentUserId}`);
+                    } else {
+                      router.push("/profile");
+                    }
+                  }}
                   className="w-full text-left p-3 bg-gray-700 rounded-lg hover:bg-gray-600 transition-colors"
                 >
                   View My Profile
@@ -290,7 +330,7 @@ Timestamp: ${new Date().toLocaleString()}`;
                   Account Settings
                 </button>
                 <button
-                  onClick={() => router.push("/messages/supportchat")}
+                  onClick={() => router.push("/message/supportchat")}
                   className="w-full text-left p-3 bg-gray-700 rounded-lg hover:bg-gray-600 transition-colors"
                 >
                   Mmeko support
