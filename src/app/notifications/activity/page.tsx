@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
@@ -6,7 +7,11 @@ import RequestCard from '../components/RequestCard';
 import { useUserId } from '@/lib/hooks/useUserId';
 import {URL} from "@/api/config";
 import VIPBadge from "@/components/VIPBadge";
-import { useNotificationIndicator } from "@/hooks/useNotificationIndicator";
+import { useActivityNotificationIndicator } from "@/hooks/useActivityNotificationIndicator";
+import { useDispatch, useSelector } from "react-redux";
+import { markActivityNotificationsSeen } from "@/store/profile";
+import { RootState, AppDispatch } from "@/store/store";
+import { useAuth } from "@/lib/context/auth-context";
 
 interface Request {
   bookingId: string;
@@ -35,9 +40,15 @@ export default function Activity() {
   const [requests, setRequests] = useState<Request[]>([]);
   const [loading, setLoading] = useState(true);
   const userid = useUserId();
+  const dispatch = useDispatch<AppDispatch>();
+  const { session } = useAuth();
+  const token = session?.token;
   
-  // Get notification indicator data
-  const { hasUnread, unreadCount, totalCount } = useNotificationIndicator();
+  // Get notification data from Redux store
+  const { notifications } = useSelector((state: RootState) => state.profile);
+  
+  // Get activity notification indicator data
+  const { hasUnread, unreadCount, totalCount } = useActivityNotificationIndicator();
 
   useEffect(() => {
     // Helper function to normalize status values
@@ -112,6 +123,29 @@ export default function Activity() {
     fetchRequests();
   }, [userid]);
 
+  // Mark activity notifications as seen when component mounts
+  useEffect(() => {
+    if (userid && token && notifications && notifications.length > 0) {
+      // Only mark activity-related notifications as seen (booking, request, fan meet related)
+      const activityNotifications = notifications.filter(notification => {
+        const message = notification.message.toLowerCase();
+        return (message.includes('booking') || 
+                message.includes('request') ||
+                message.includes('fan meet') ||
+                message.includes('accepted') ||
+                message.includes('declined') ||
+                message.includes('cancelled') ||
+                message.includes('expired') ||
+                message.includes('completed')) && !notification.seen;
+      });
+      
+      if (activityNotifications.length > 0) {
+        // Mark only activity notifications as seen
+        dispatch(markActivityNotificationsSeen({ userid: userid, token }));
+      }
+    }
+  }, [dispatch, userid, token, notifications]);
+
   const handleStatusChange = (bookingId: string, newStatus: string) => {
     setRequests(prev => prev.map(req => 
       req.bookingId === bookingId ? { ...req, status: newStatus as Request['status'] } : req
@@ -129,7 +163,7 @@ export default function Activity() {
   if (requests.length === 0) {
     return (
       <div className='flex flex-col gap-8 max-w-[26rem] mx-auto'>
-        <div className="text-center text-white">No fan meet requests yet</div>
+        <div className="text-center text-white">No fan requests yet</div>
         <div className="text-center text-gray-400 text-sm">
           Fan meet requests will appear here when you send or receive them
         </div>
@@ -139,22 +173,7 @@ export default function Activity() {
 
   return (
     <div className='flex flex-col gap-8 max-w-[26rem] mx-auto'>
-      {/* Activity Header with Notification Indicators */}
-      <div className="bg-[#0B0F1A]/70 backdrop-blur-xl border border-slate-800 rounded-2xl p-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-white">Activity</h2>
-          <div className="flex items-center gap-2">
-            {hasUnread && (
-              <div className="bg-red-500 text-white text-xs px-2 py-1 rounded-full font-bold">
-                {unreadCount} new
-              </div>
-            )}
-            <span className="text-slate-400 text-sm">
-              {totalCount} notifications
-            </span>
-          </div>
-        </div>
-      </div>
+     
       
       {requests.map((request: Request) => (
         <div key={request.bookingId} className="relative">

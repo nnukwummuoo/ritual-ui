@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
 import React, { useEffect, useRef, useState } from "react";
@@ -7,7 +8,7 @@ import Tabs from "./Tabs";
 import DropdownMenu from "./DropDonMenu";
 import { useParams, useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
-import { getprofile, getfollow, getAllUsers, follow, unfollow } from "@/store/profile";
+import { getprofile, getfollow, getAllUsers, follow, unfollow, getCreatorRatings } from "@/store/profile";
 import { getViewingProfile, getViewingFollow, getAllUsersForViewing, clearViewingProfile } from "@/store/viewingProfile";
 import { checkVipStatus } from "@/store/vip";
 import type { AppDispatch, RootState } from "@/store/store";
@@ -73,6 +74,14 @@ export const Profile = () => {
   
   // Get VIP status from Redux
   const vipStatus = useSelector((s: RootState) => s.vip.vipStatus);
+  
+  // Get ratings from Redux
+  const { ratings, ratings_stats, totalRatings, averageRating, ratingCounts } = useSelector((s: RootState) => s.profile);
+  
+  // Debug logs for ratings state
+  React.useEffect(() => {
+    console.log('🔍 [ProfilePage] Reviews Debug:', { ratings_stats, ratings: ratings.length, totalRatings, averageRating, ratingCounts });
+  }, [ratings_stats, ratings, totalRatings, averageRating, ratingCounts]);
   
   const [showProfilePictureModal, setShowProfilePictureModal] = useState(false);
   
@@ -172,6 +181,7 @@ export const Profile = () => {
   const [creator_portfolio_id, setcreator_portfolio_id] = useState<string[]>([]);
   const [isFollowing, setisFollowing] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const fetchedCreatorsRef = useRef<Set<string>>(new Set());
 
   // Check VIP status for the profile owner (the user whose profile is being viewed)
   useEffect(() => {
@@ -617,17 +627,44 @@ export const Profile = () => {
     setCelebrationChecked(false);
   }, [viewingUserId]);
 
-  // Fetch posts when profile is loaded - ONLY for the specific user being viewed
+  // Fetch posts and reviews when profile is loaded - ONLY for the specific user being viewed
   useEffect(() => {
-    if (targetUserId) {
+    if (targetUserId && token) {
       // Add a small delay to ensure other API calls complete first
       const timer = setTimeout(() => {
         fetchUserPosts(String(targetUserId));
+        
+        // Also fetch reviews if this is a creator profile
+        // Check if profileData exists and has creator properties
+        if (profileData && (
+          (profileData as any).creator === true ||
+          (profileData as any).creator_portfolio_id ||
+          (profileData as any).creatorname ||
+          (profileData as any).creator_verified === true
+        )) {
+          const creatorId = (profileData as any).creator_portfolio_id || targetUserId;
+          console.log('🔍 [ProfilePage] Fetching ratings for creator:', { creatorId, targetUserId, profileData: profileData ? 'present' : 'missing', token: token ? 'present' : 'missing' });
+          
+          // Check if we've already fetched for this creator to prevent duplicate calls
+          if (!fetchedCreatorsRef.current.has(creatorId)) {
+            fetchedCreatorsRef.current.add(creatorId);
+            dispatch(getCreatorRatings({ creatorId, token }));
+          } else {
+            console.log('🔍 [ProfilePage] Already fetched ratings for creator:', creatorId);
+          }
+        } else {
+          console.log('🔍 [ProfilePage] Not a creator profile, skipping ratings fetch:', { profileData: profileData ? 'present' : 'missing' });
+        }
       }, 500);
       
       return () => clearTimeout(timer);
     }
-  }, [targetUserId, token, fetchUserPosts]);
+  }, [targetUserId, token, fetchUserPosts, dispatch, profileData]);
+
+  // Clear fetched creators ref when target user changes
+  useEffect(() => {
+    fetchedCreatorsRef.current.clear();
+  }, [targetUserId]);
 
   // Handle follow/unfollow button click - EXACT same pattern as following page
   const onFollowClick = async () => {
@@ -817,8 +854,8 @@ export const Profile = () => {
     const isUrl = isHttpUrl || isBlobUrl || isDataUrl;
     const queryUrlPrimary = asString ? `${API_URL}/api/image/view?publicId=${encodeURIComponent(asString)}` : "";
     const pathUrlPrimary = asString ? `${API_URL}/api/image/view/${encodeURIComponent(asString)}` : "";
-    const queryUrlFallback = asString ? `${PROD_BASE}/api/image/view?publicId=${encodeURIComponent(asString)}` : "";
-    const pathUrlFallback = asString ? `${PROD_BASE}/api/image/view/${encodeURIComponent(asString)}` : "";
+    const queryUrlFallback = asString ? `${API_URL}/api/image/view?publicId=${encodeURIComponent(asString)}` : "";
+    const pathUrlFallback = asString ? `${API_URL}/api/image/view/${encodeURIComponent(asString)}` : "";
     const src = isUrl ? asString : queryUrlPrimary;
 
     return {
@@ -1302,7 +1339,7 @@ const PostModal = () => {
                               {(() => {
                                 const profileImage = comment.user?.photolink;
                                 const userName = comment.user?.username || comment.username || "User";
-                                const initials = userName.split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2) || "?";
+                                const initials = userName.split(/\s+/).map((n: string) => n[0]).join('').toUpperCase().slice(0, 2) || "?";
                                 
                                 if (profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined") {
                                   return (
@@ -1889,102 +1926,159 @@ const PostModal = () => {
                 </div>
               ),
             },
-            {
+            // Only show reviews tab for creators
+            ...(profileData && (
+              (profileData as any).creator === true ||
+              (profileData as any).creator_portfolio_id ||
+              (profileData as any).creatorname ||
+              (profileData as any).creator_verified === true
+            ) ? [{
               id: "reviews",
-              icon: ({ className }) => (
+              icon: ({ className }: { className?: string }) => (
                 <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
                 </svg>
               ),
-              count: 5,
+              count: totalRatings,
               content: (
                 <div className="space-y-4 py-4">
-                  {[
-                    {
-                      id: 1,
-                      name: "John Doe",
-                      rating: 5,
-                      comment: "Excellent service and support. Highly recommend!",
-                      avatar: "/icons/profile.png"
-                    },
-                    {
-                      id: 2,
-                      name: "Jane Smith",
-                      rating: 5,
-                      comment: "Amazing content! Worth every penny. Will definitely follow for more updates.",
-                      avatar: "/icons/profile.png"
-                    },
-                    {
-                      id: 3,
-                      name: "Michael Brown",
-                      rating: 4,
-                      comment: "Great experience overall. Very responsive and professional.",
-                      avatar: "/icons/profile.png"
-                    },
-                    {
-                      id: 4,
-                      name: "Sarah Johnson",
-                      rating: 5,
-                      comment: "Incredible talent! The content exceeded my expectations.",
-                      avatar: "/icons/profile.png"
-                    }
-                  ].map(review => (
-                    <div key={review.id} className="bg-gray-900 rounded-lg p-4 flex flex-col">
-                      <div className="flex items-center mb-3">
-                        <div className="relative w-10 h-10 rounded-full overflow-hidden mr-3 bg-gradient-to-r from-blue-500 to-purple-600 p-0.5">
-                          <div className="w-full h-full rounded-full overflow-hidden bg-black">
-                            {(() => {
-                              const profileImage = review.avatar;
-                              const userName = review.name;
-                              const initials = userName.split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2) || "?";
-                              
-                              if (profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined") {
-                                return (
-                                  <Image 
-                                    src={profileImage} 
-                                    alt={review.name} 
-                                    width={40} 
-                                    height={40} 
-                                    className="w-full h-full object-cover"
-                                  />
-                                );
-                              }
-                              
-                              return (
-                                <div className="w-full h-full bg-gray-600 flex items-center justify-center text-white text-sm font-semibold">
-                                  {initials}
-                                </div>
-                              );
-                            })()}
+                  {/* Rating Summary */}
+                  {totalRatings > 0 && (
+                    <div className="bg-gray-900 rounded-lg p-4 mb-6">
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-3">
+                          <div className="text-3xl font-bold text-white">{averageRating.toFixed(1)}</div>
+                          <div>
+                            <div className="flex items-center gap-1">
+                              {[...Array(5)].map((_, i) => (
+                                <svg 
+                                  key={i} 
+                                  className={`w-5 h-5 ${i < Math.floor(averageRating) ? "text-yellow-400" : "text-gray-600"}`} 
+                                  fill="currentColor" 
+                                  viewBox="0 0 20 20"
+                                >
+                                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                </svg>
+                              ))}
+                            </div>
+                            <p className="text-gray-400 text-sm">Based on {totalRatings} review{totalRatings !== 1 ? 's' : ''}</p>
                           </div>
-                          
-                          {/* VIP Lion Badge - show if the profile owner has VIP status */}
-                          {profileOwnerVipStatus && (
-                            <VIPBadge size="sm" className="absolute -top-1 -right-1" isVip={profileOwnerVipStatus} vipEndDate={vipStatus?.vipEndDate} />
-                          )}
                         </div>
                       </div>
-                      <div>
-                        <div className="flex items-center">
-                          {[...Array(5)].map((_, i) => (
-                            <svg 
-                              key={i} 
-                              className={`w-4 h-4 ${i < review.rating ? "text-yellow-400" : "text-gray-600"}`} 
-                              fill="currentColor" 
-                              viewBox="0 0 20 20"
-                            >
-                              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                            </svg>
-                          ))}
-                        </div>
-                        <p className="text-white font-medium">{review.name}</p>
+                      
+                      {/* Rating Breakdown */}
+                      <div className="space-y-2">
+                        {[5, 4, 3, 2, 1].map((star) => {
+                          const count = (ratingCounts as any)[star] || 0;
+                          const percentage = totalRatings > 0 ? (count / totalRatings) * 100 : 0;
+                          return (
+                            <div key={star} className="flex items-center gap-3">
+                              <span className="text-sm text-gray-400 w-8">{star}</span>
+                              <svg className="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                              </svg>
+                              <div className="flex-1 bg-gray-700 rounded-full h-2">
+                                <div 
+                                  className="bg-yellow-400 h-2 rounded-full transition-all duration-300" 
+                                  style={{ width: `${percentage}%` }}
+                                />
+                              </div>
+                              <span className="text-sm text-gray-400 w-8 text-right">{count}</span>
+                            </div>
+                          );
+                        })}
                       </div>
-                      <p className="text-gray-300">{review.comment}</p>
                     </div>
-                  ))}
+                  )}
+
+                  {/* Reviews List */}
+                  
+                  {ratings_stats === "loading" ? (
+                    <div className="space-y-4">
+                      {Array.from({ length: 3 }).map((_, index) => (
+                        <div key={index} className="bg-gray-900 rounded-lg p-4 animate-pulse">
+                          <div className="flex items-center mb-3">
+                            <div className="w-10 h-10 bg-gray-700 rounded-full mr-3" />
+                            <div className="flex-1">
+                              <div className="h-4 bg-gray-700 rounded w-24 mb-2" />
+                              <div className="h-3 bg-gray-700 rounded w-16" />
+                            </div>
+                          </div>
+                          <div className="h-4 bg-gray-700 rounded w-full mb-2" />
+                          <div className="h-4 bg-gray-700 rounded w-3/4" />
+                        </div>
+                      ))}
+                    </div>
+                  ) : ratings.length === 0 ? (
+                    <div className="text-center py-12 text-gray-500">
+                      <svg className="w-12 h-12 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                      </svg>
+                      <p>No reviews yet</p>
+                      <p className="text-sm">Reviews will appear here when fans rate their experiences</p>
+                    </div>
+                  ) : (
+                    ratings.map((review) => (
+                      <div key={review._id || review.bookingId} className="bg-gray-900 rounded-lg p-4 flex flex-col">
+                        <div className="flex items-center mb-3">
+                          <div className="relative w-10 h-10 rounded-full overflow-hidden mr-3 bg-gradient-to-r from-blue-500 to-purple-600 p-0.5">
+                            <div className="w-full h-full rounded-full overflow-hidden bg-black">
+                              {(() => {
+                                const profileImage = review.fanPhoto;
+                                const userName = review.fanName;
+                                const initials = userName.split(/\s+/).map((n: string) => n[0]).join('').toUpperCase().slice(0, 2) || "?";
+                                
+                                if (profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined") {
+                                  return (
+                                    <Image 
+                                      src={profileImage} 
+                                      alt={review.fanName} 
+                                      width={40} 
+                                      height={40} 
+                                      className="w-full h-full object-cover"
+                                    />
+                                  );
+                                }
+                                
+                                return (
+                                  <div className="w-full h-full bg-gray-600 flex items-center justify-center text-white text-sm font-semibold">
+                                    {initials}
+                                  </div>
+                                );
+                              })()}
+                            </div>
+                          </div>
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2">
+                              <p className="text-white font-medium">{review.fanName}</p>
+                              {review.fanNickname && (
+                                <p className="text-gray-400 text-sm">@{review.fanNickname}</p>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-1 mt-1">
+                              {[...Array(5)].map((_, i) => (
+                                <svg 
+                                  key={i} 
+                                  className={`w-4 h-4 ${i < review.rating ? "text-yellow-400" : "text-gray-600"}`} 
+                                  fill="currentColor" 
+                                  viewBox="0 0 20 20"
+                                >
+                                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                </svg>
+                              ))}
+                              <span className="text-gray-400 text-sm ml-2">
+                                {review.hostType} • {new Date(review.createdAt).toLocaleDateString()}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                        <p className="text-gray-300">{review.feedback}</p>
+                      </div>
+                    ))
+                  )}
                 </div>
               ),
-            },
+            }] : [])
           ]}
         />
       </div>

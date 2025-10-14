@@ -25,11 +25,11 @@ type Props = {
   views: number;
   followingUser: boolean;
   id: string | undefined;
-  creator_portfoliio_Id: string | undefined;
+  creator_portfolio_id: string | undefined;
   checkuser: boolean;
 };
 
-const CreatorByIdNav = ({ creatorName, views, followingUser, id,creator_portfoliio_Id,checkuser }: Props) => {
+const CreatorByIdNav = ({ creatorName, views, followingUser, id, creator_portfolio_id: creatorPortfolioId, checkuser }: Props) => {
   const dispatch = useDispatch<any>();
   const router = useRouter();
   const { postuserid, creator_portfolio_id } = useParams<{ postuserid?: string; creator_portfolio_id?: string }>();

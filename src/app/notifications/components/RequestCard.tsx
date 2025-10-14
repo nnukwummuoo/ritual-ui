@@ -1,5 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import Image from 'next/image';
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { BiTimeFive } from 'react-icons/bi'
 import { FaCoins } from 'react-icons/fa';
 import { toast } from 'material-react-toastify';
@@ -9,6 +10,9 @@ import VIPBadge from "@/components/VIPBadge";
 import { getSocket } from '@/lib/socket';
 import { useRouter } from 'next/navigation';
 import { useVideoCall } from '@/contexts/VideoCallContext';
+import RatingModal from '@/components/RatingModal';
+import { useSelector } from "react-redux";
+import { RootState } from "@/store/store";
 
 const cardStates = {
   request: "Request sent",
@@ -18,13 +22,8 @@ const cardStates = {
   expired: "Request expired",
   completed: "Request completed"
 }
-const ratings = [
-  "😍 Loved it",
-  "🙂 Decent",
-  "😐 Disconnected",
-  
-]
-const getCreatorContent = (hostType: string) => {
+// Remove old ratings array - we'll use the new 5-star system
+const getCreatorContent = (hostType: string, hasRating: boolean = false) => {
   const typeText = hostType || "Fan Meet"; // Default to "Fan Meet" if not provided
   
   // Special handling for Fan Call
@@ -40,13 +39,24 @@ const getCreatorContent = (hostType: string) => {
       body: "Please kindly remind your fan to mark as complete during or after the date — it only takes a second. If they don't, contact support within 24 hours.",
     };
   };
+
+  // Different content for completed status based on whether fan has rated
+  const getCompletedContent = () => {
+    if (hasRating) {
+      return {
+        head: `${typeText} Completed`,
+        body: "Your fan has rated this experience. Click the stars below to view their feedback."
+      };
+    }
+    return {
+      head: `${typeText} Completed`,
+      body: "The experience has been completed successfully."
+    };
+  };
   
   return {
     accepted: getAcceptedContent(),
-    completed: {
-      head: `${typeText} Completed`,
-      body: "How do you rate your experience?"
-    },
+    completed: getCompletedContent(),
     declined: {
       head: `${typeText} Declined`,
       body: `You have declined the ${typeText.toLowerCase()} request from your fan.`
@@ -65,7 +75,7 @@ const getCreatorContent = (hostType: string) => {
     }
   };
 };
-const getFanContent = (price: number, hostType: string) => {
+const getFanContent = (price: number, hostType: string, hasRating: boolean = false) => {
   const typeText = hostType || "Fan Meet"; // Default to "Fan Meet" if not provided
   
   // Special handling for Fan Call
@@ -81,13 +91,24 @@ const getFanContent = (price: number, hostType: string) => {
       body: `By clicking 'Mark as complete' you confirm that your pending gold of 💰 ${price} will be sent to the creator.`
     };
   };
+
+  // Different content for completed status based on whether fan has rated
+  const getCompletedContent = () => {
+    if (hasRating) {
+      return {
+        head: `${typeText} Completed`,
+        body: "Thank you for rating this experience!"
+      };
+    }
+    return {
+      head: `${typeText} Completed`,
+      body: "How do you rate your experience?"
+    };
+  };
   
   return {
     accepted: getAcceptedContent(),
-    completed: {
-      head: `${typeText} Completed`,
-      body: "How do you rate your experience?"
-    },
+    completed: getCompletedContent(),
     declined: {
       head: `${typeText} Declined`,
       body: "Creator declined your request."
@@ -175,8 +196,102 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
   const [loading, setLoading] = useState(false);
   const [currentStatus, setCurrentStatus] = useState(status);
   const [showDetails, setShowDetails] = useState(false);
+  const [showRatingModal, setShowRatingModal] = useState(false);
+  const [ratingLoading, setRatingLoading] = useState(false);
+  const [selectedRating, setSelectedRating] = useState(0);
+  const [submittedRating, setSubmittedRating] = useState(0); // Track the submitted rating
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false); // For creator to view feedback
+  const [ratingData, setRatingData] = useState<{rating: number, feedback: string, fanName: string} | null>(null); // Store rating data for creator view
   const router = useRouter();
   const { startVideoCall } = useVideoCall();
+  
+  // Get current user ID from Redux state
+  const currentUserId = useSelector((state: RootState) => state.profile.userId);
+  
+  // Debug log for user ID sources
+  useEffect(() => {
+    let loginUserId = null;
+    try {
+      const loginData = localStorage.getItem('login');
+      if (loginData) {
+        const parsedData = JSON.parse(loginData);
+        loginUserId = parsedData.userID || parsedData.userid || parsedData.id;
+      }
+    } catch (error) {
+      // Error parsing login data - continue with current userId
+    }
+    
+  }, [currentUserId, userid, creator_portfolio_id, type]);
+
+
+  // Check for existing rating when component loads
+  const checkExistingRating = useCallback(async () => {
+    // Get user ID from Redux or localStorage fallback
+    let userId = currentUserId;
+    if (!userId && typeof window !== 'undefined') {
+      try {
+        const loginData = localStorage.getItem('login');
+        if (loginData) {
+          const parsedData = JSON.parse(loginData);
+          userId = parsedData.userID || parsedData.userid || parsedData.id;
+        }
+      } catch (error) {
+        // Error parsing login data - continue with current userId
+      }
+    }
+
+    if (!bookingId || !userId) {
+      return;
+    }
+
+    // For fans: check if they have rated this booking
+    if (type === "fan" && currentStatus === "completed") {
+      try {
+        // Force localhost for development
+        const apiUrl = process.env.NODE_ENV === "development" ? "http://localhost:3100" : URL;
+        const response = await fetch(`${apiUrl}/review/check/${bookingId}/${userId}`);
+        const data = await response.json();
+        
+        if (data.ok && data.hasRated) {
+          setSubmittedRating(data.rating);
+        } else {
+          setSubmittedRating(0);
+        }
+      } catch (error) {
+        setSubmittedRating(0);
+      }
+    }
+
+    // For creators: check if this booking has been rated by the fan
+    if (type === "creator" && currentStatus === "completed") {
+      try {
+        // Force localhost for development
+        const apiUrl = process.env.NODE_ENV === "development" ? "http://localhost:3100" : URL;
+        const response = await fetch(`${apiUrl}/review/check/${bookingId}/${userid}`); // Use fan's userid
+        const data = await response.json();
+        
+        if (data.ok && data.hasRated) {
+          setSubmittedRating(data.rating);
+          setRatingData({
+            rating: data.rating,
+            feedback: data.feedback,
+            fanName: name // Use the fan's name from props
+          });
+        } else {
+          setSubmittedRating(0);
+          setRatingData(null);
+        }
+      } catch (error) {
+        setSubmittedRating(0);
+        setRatingData(null);
+      }
+    }
+  }, [bookingId, currentUserId, type, currentStatus, userid, name]);
+
+  // Check for existing rating when component loads or dependencies change
+  useEffect(() => {
+    checkExistingRating();
+  }, [checkExistingRating]);
 
   // Socket integration for real-time updates
   useEffect(() => {
@@ -196,6 +311,8 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
         
         // Update local status
         setCurrentStatus(data.status as "request" | "expired" | "completed" | "accepted" | "declined" | "cancelled");
+        
+        // Don't auto-show rating modal - let user click stars manually
         
         // Notify parent component
         onStatusChange?.(data.bookingId, data.status);
@@ -242,6 +359,7 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
   useEffect(() => {
     setCurrentStatus(status);
   }, [status]);
+
   
   
   const cardBorderVariance = type === "creator" ? "border-blue-500" : type === "fan" && ["accepted", "completed"].includes(currentStatus) ? "border-green-500" : "border-yellow-500"
@@ -273,8 +391,7 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
       if (response.ok) {
         setCurrentStatus('accepted');
         onStatusChange?.(bookingId, 'accepted');
-        const serviceType = hosttype || "Fan meet";
-        toast.success(`${serviceType} request accepted successfully!`);
+        // Don't show toast here - the socket notification will handle it
       } else {
         const serviceType = hosttype || "Fan meet";
         toast.error(`Failed to accept ${serviceType.toLowerCase()} request`);
@@ -309,8 +426,7 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
       if (response.ok) {
         setCurrentStatus('declined');
         onStatusChange?.(bookingId, 'declined');
-        const serviceType = hosttype || "Fan meet";
-        toast.success(`${serviceType} request declined`);
+        // Don't show toast here - the socket notification will handle it
       } else {
         const errorData = await response.json();
         const serviceType = hosttype || "Fan meet";
@@ -348,8 +464,7 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
         if (response.ok) {
           setCurrentStatus('cancelled');
           onStatusChange?.(bookingId, 'cancelled');
-          const serviceType = hosttype || "Fan meet";
-          toast.success(`${serviceType} request cancelled`);
+          // Don't show toast here - the socket notification will handle it
         } else {
           const errorData = await response.json();
           const serviceType = hosttype || "Fan meet";
@@ -392,8 +507,9 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
       if (response.ok) {
         setCurrentStatus('completed');
         onStatusChange?.(bookingId, 'completed');
-        const serviceType = hosttype || "Fan meet";
-        toast.success(`${serviceType} completed!`);
+        
+        // Don't auto-show rating modal - let user click stars manually
+        // Don't show toast here - the socket notification will handle it
       } else {
         const serviceType = hosttype || "Fan meet";
         toast.error(`Failed to complete ${serviceType.toLowerCase()}`);
@@ -403,6 +519,68 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
       toast.error(`Error completing ${serviceType.toLowerCase()}`);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Handle rating submission
+  const handleRatingSubmit = async (rating: number, feedback: string) => {
+    // Get user ID from Redux state or localStorage as fallback
+    let userId = currentUserId;
+    
+    // Fallback to localStorage if Redux doesn't have it
+    if (!userId && typeof window !== 'undefined') {
+      try {
+        const loginData = localStorage.getItem('login');
+        if (loginData) {
+          const parsedData = JSON.parse(loginData);
+          userId = parsedData.userID || parsedData.userid || parsedData.id;
+        }
+      } catch (error) {
+        // Error parsing login data - continue with current userId
+      }
+    }
+    
+
+    if (!bookingId || !creator_portfolio_id || !userId) {
+      toast.error("Missing required information for rating");
+      return;
+    }
+
+    setRatingLoading(true);
+    try {
+      const requestBody = {
+        bookingId,
+        creatorId: creator_portfolio_id,
+        fanId: userId, // Use current logged-in user ID
+        rating,
+        feedback,
+        hostType: hosttype || "Fan Meet"
+      };
+
+      // Force localhost for development
+      const apiUrl = process.env.NODE_ENV === "development" ? "http://localhost:3100" : URL;
+      const response = await fetch(`${apiUrl}/review/submit`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody)
+      });
+
+      if (response.ok) {
+        const successData = await response.json();
+        toast.success("Thank you for your rating!");
+        setSubmittedRating(rating); // Save the submitted rating
+        setShowRatingModal(false);
+        setSelectedRating(0); // Reset selected rating
+      } else {
+        const errorData = await response.json();
+        toast.error(errorData.message || "Failed to submit rating");
+      }
+    } catch (error) {
+      toast.error("Failed to submit rating. Please try again.");
+    } finally {
+      setRatingLoading(false);
     }
   };
 
@@ -452,15 +630,142 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
       </div>
 
       <h3 className={`text-3xl md:text-4xl ${cardTextVariance}`}>{
-        type === "creator" ? (getCreatorContent(hosttype || "Fan Meet")[currentStatus]?.head || "Unknown Status") : (getFanContent(price || 0, hosttype || "Fan Meet")[currentStatus]?.head || "Unknown Status")
+        type === "creator" ? (getCreatorContent(hosttype || "Fan Meet", submittedRating > 0)[currentStatus]?.head || "Unknown Status") : (getFanContent(price || 0, hosttype || "Fan Meet", submittedRating > 0)[currentStatus]?.head || "Unknown Status")
       }</h3>
 
-      <p className="text-sm md:text-base">{ type === "creator" ? (getCreatorContent(hosttype || "Fan Meet")[currentStatus]?.body || "Status information not available") : (getFanContent(price || 0, hosttype || "Fan Meet")[currentStatus]?.body || "Status information not available") }</p>
+      <p className="text-sm md:text-base">{ type === "creator" ? (getCreatorContent(hosttype || "Fan Meet", submittedRating > 0)[currentStatus]?.body || "Status information not available") : (getFanContent(price || 0, hosttype || "Fan Meet", submittedRating > 0)[currentStatus]?.body || "Status information not available") }</p>
 
-      {/* RATINGS */}
-      <div className='flex gap-4 flex-wrap justify-center'>
-        {currentStatus === "completed" && ratings.map((v,i) => <Rating key={i} label={v} />)}
-      </div>
+      {/* Rating Stars - Show for fans when completed */}
+      {type === "fan" && currentStatus === "completed" && (
+        <div className="flex flex-col items-center gap-2 py-3">
+          <div className="flex justify-center gap-2">
+            {[1, 2, 3, 4, 5].map((star) => {
+              const isFilled = star <= submittedRating;
+              const isClickable = submittedRating === 0; // Only clickable if no rating submitted yet
+              
+              return (
+                <button
+                  key={star}
+                  onClick={() => {
+                    if (isClickable) {
+                      setShowRatingModal(true);
+                      // Store the selected rating for the modal
+                      setSelectedRating(star);
+                    }
+                  }}
+                  className={`text-4xl transition-colors focus:outline-none ${
+                    isClickable ? "hover:scale-110 cursor-pointer" : "cursor-default"
+                  }`}
+                  disabled={!isClickable}
+                >
+                  <span className={`transition-colors ${
+                    isFilled ? "text-yellow-400" : "text-gray-400"
+                  } ${isClickable ? "hover:text-yellow-400" : ""}`}>
+                    ★
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+          {submittedRating > 0 && (
+            <p className="text-sm text-green-500 font-medium">
+              ✓ Rating submitted ({submittedRating} star{submittedRating !== 1 ? 's' : ''})
+            </p>
+          )}
+        </div>
+      )}
+
+      {/* Rating Stars - Show for creators when completed and rated */}
+      {type === "creator" && currentStatus === "completed" && submittedRating > 0 && (
+        <div className="flex flex-col items-center gap-2 py-3">
+          <p className="text-sm text-gray-400 mb-2">Rating from {name}:</p>
+          <div className="flex justify-center gap-2">
+            {[1, 2, 3, 4, 5].map((star) => {
+              const isFilled = star <= submittedRating;
+              
+              return (
+                <button
+                  key={star}
+                  onClick={() => {
+                    if (ratingData) {
+                      setShowFeedbackModal(true);
+                    }
+                  }}
+                  className="text-4xl transition-colors focus:outline-none hover:scale-110 cursor-pointer"
+                >
+                  <span className={`transition-colors ${
+                    isFilled ? "text-yellow-400" : "text-gray-400"
+                  } hover:text-yellow-400`}>
+                    ★
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+          <p className="text-sm text-blue-400 font-medium cursor-pointer hover:text-blue-300" onClick={() => setShowFeedbackModal(true)}>
+            Click stars to view feedback
+          </p>
+        </div>
+      )}
+
+
+      {/* Rating Modal */}
+      <RatingModal
+        isOpen={showRatingModal}
+        onClose={() => {
+          setShowRatingModal(false);
+          setSelectedRating(0);
+        }}
+        onSubmit={handleRatingSubmit}
+        creatorName={name}
+        hostType={hosttype}
+        loading={ratingLoading}
+        preSelectedRating={selectedRating}
+      />
+
+      {/* Feedback Modal for Creators */}
+      {showFeedbackModal && ratingData && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999] p-4">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full">
+            <h2 className="text-xl font-bold text-gray-800 mb-4">Rating & Feedback</h2>
+            
+            <div className="mb-4">
+              <p className="text-sm text-gray-600 mb-2">Rating from {ratingData.fanName}:</p>
+              <div className="flex gap-1">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <span
+                    key={star}
+                    className={`text-2xl ${
+                      star <= ratingData.rating ? "text-yellow-400" : "text-gray-300"
+                    }`}
+                  >
+                    ★
+                  </span>
+                ))}
+                <span className="ml-2 text-gray-600 font-medium">
+                  {ratingData.rating} out of 5 stars
+                </span>
+              </div>
+            </div>
+
+            {ratingData.feedback && (
+              <div className="mb-6">
+                <h3 className="text-sm font-semibold text-gray-800 mb-2">Feedback:</h3>
+                <p className="text-gray-700 bg-gray-50 p-3 rounded-lg text-sm">
+                  "{ratingData.feedback}"
+                </p>
+              </div>
+            )}
+
+            <button
+              onClick={() => setShowFeedbackModal(false)}
+              className="w-full bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
 
       <div className={`flex flex-col gap-4 items-end`}>
         { statusArr.slice(1).includes(currentStatus) ? (
@@ -481,16 +786,9 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
             label="Chat Now" 
             className={fanActionClass} 
             onClick={() => {
-              // For messaging, we need the user ID of the person we want to message
-              // If this is a creator viewing a fan's request, userid is the fan's ID
-              // If this is a fan viewing a creator's request, we need the creator's user ID
-              if (type === "creator" && userid) {
-                // Creator wants to message the fan
+              // Creator wants to message the fan
+              if (userid) {
                 router.push(`/message/${userid}`);
-              } else if (type === "fan" && creator_portfolio_id) {
-                // Fan wants to message the creator - we need to get creator's user ID
-                // For now, use creator_portfolio_id as fallback
-                router.push(`/message/${creator_portfolio_id}`);
               }
             }}
           />
@@ -602,7 +900,7 @@ function CreatorActionBtn({type, onClick, disabled}: {type: "accept" | "decline"
 
 function FanActionBtn({label, className, onClick, disabled}: {label: string, className?: string, onClick?: () => void, disabled?: boolean}){
   // allow overriding/using shared class; default uses the same base so sizing is consistent
-  const defaultClass = 'w-full px-6 py-3 rounded-lg transition-all duration-500 text-sm flex items-center justify-center border border-gray-500 max-[490px]:text-xs text-gray-300 hover:bg-slate-700 bg-transparent';
+  const defaultClass = 'w-full px-4 py-3 rounded-lg transition-all duration-500 text-sm flex items-center justify-center border border-gray-500 max-[490px]:text-xs text-gray-300 hover:bg-slate-700 bg-transparent';
   return <button 
     className={`${className ? className : defaultClass} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
     onClick={onClick}
@@ -612,9 +910,7 @@ function FanActionBtn({label, className, onClick, disabled}: {label: string, cla
   </button>
 }
 
-function Rating({label}: {label: string}){
-  return <div className='py-1 text-sm px-4 rounded-lg border border-gray-500 cursor-pointer bg-gray-800 transition-all duration-500 hover:bg-slate-700'>{label}</div>
-}
+// Old Rating component removed - using new 5-star system
 
 function DetailsModal({ 
   details, 

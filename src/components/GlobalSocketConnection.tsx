@@ -1,10 +1,12 @@
 "use client";
 import { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { getSocket, joinUserRoom, leaveUserRoom } from "@/lib/socket";
 import type { RootState } from "@/store/store";
+import { getNotifications } from "@/store/profile";
 
 export default function GlobalSocketConnection() {
+  const dispatch = useDispatch();
   const reduxUserid = useSelector((state: RootState) => state.register.userID);
   const reduxIsLoggedIn = useSelector((state: RootState) => state.register.logedin);
   
@@ -87,16 +89,43 @@ export default function GlobalSocketConnection() {
       }
     }, 15000); // Send heartbeat every 15 seconds
 
+      // Handle missed call notifications
+      const handleMissedCall = (data: any) => {
+        // Refresh notifications to show the new missed call
+        if (userid) {
+          try {
+            dispatch(getNotifications({ userid, token: null }));
+          } catch (error) {
+            console.error('Error dispatching getNotifications:', error);
+          }
+        }
+        
+        // Show browser notification if permission is granted
+        if ('Notification' in window && Notification.permission === 'granted') {
+          new Notification('Missed Video Call', {
+            body: `You missed a video call from ${data.callerName || 'Unknown User'}`,
+            icon: data.callerPhoto || '/icons/logo.png',
+            tag: `missed-call-${data.callId}`,
+            requireInteraction: true
+          });
+        }
+      };
+
+      // Listen for missed call notifications
+      socket.on('video_call_missed', handleMissedCall);
+
     // Cleanup on unmount or when user logs out
     return () => {
       if (socket && userid) {
         leaveUserRoom(userid);
         socket.emit("offline", userid);
+        // Remove missed call listener
+        socket.off('video_call_missed', handleMissedCall);
       }
       // Clear heartbeat interval
       clearInterval(heartbeatInterval);
     };
-  }, [userid, isLoggedIn, localUserid, localIsLoggedIn]); // Removed hasConnected from dependencies
+  }, [userid, isLoggedIn, localUserid, localIsLoggedIn, dispatch]); // Added dispatch dependency
 
   // This component doesn't render anything
   return null;

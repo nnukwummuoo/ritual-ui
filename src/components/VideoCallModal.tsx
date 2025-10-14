@@ -92,7 +92,13 @@ export default function VideoCallModal({
           setCallTimeout(true);
           // Emit timeout event to terminate the call for both users
           if (socket) {
-            socket.emit('video_call_timeout', { callId: callData?.callId });
+            socket.emit('video_call_timeout', { 
+              callId: callData?.callId,
+              callerId: callData?.callerId,
+              callerName: callData?.callerName,
+              answererId: callData?.answererId,
+              answererName: callData?.answererName
+            });
           }
         }
       }, 30000); // 30 seconds
@@ -658,12 +664,19 @@ export default function VideoCallModal({
       }
     };
 
+    const handleMissedCall = (data: any) => {
+      console.log('📞 [VideoCall] Missed call notification received:', data);
+      // This will be handled by the socket listener in the parent component
+      // to create notifications and push notifications
+    };
+
     socket.on('video_call_accepted', handleCallAccepted);
     socket.on('video_call_offer', handleOffer);
     socket.on('video_call_answer', handleAnswer);
     socket.on('video_call_ice_candidate', handleIceCandidate);
     socket.on('video_call_ended', handleCallEnded);
     socket.on('video_call_timeout', handleCallTimeout);
+    socket.on('video_call_missed', handleMissedCall);
 
     return () => {
       socket.off('video_call_accepted', handleCallAccepted);
@@ -672,6 +685,7 @@ export default function VideoCallModal({
       socket.off('video_call_ice_candidate', handleIceCandidate);
       socket.off('video_call_ended', handleCallEnded);
       socket.off('video_call_timeout', handleCallTimeout);
+      socket.off('video_call_missed', handleMissedCall);
     };
   }, [socket, isOpen, currentUserId, callData, peerConnection, localStream, createPeerConnection, handleCleanup, onClose]);
 
@@ -694,31 +708,6 @@ export default function VideoCallModal({
   return (
     <div className="fixed inset-0 z-50 bg-black bg-opacity-90 flex items-center justify-center">
       <div className="w-full h-full flex flex-col">
-        {/* Insecure Context Warning */}
-        {showInsecureWarning && (
-          <div className="bg-yellow-600 text-white p-4 text-center">
-            <div className="flex items-center justify-center gap-2">
-              <span>⚠️</span>
-              <span className="font-semibold">Camera/Microphone Access Limited</span>
-            </div>
-            <p className="text-sm mt-1">
-              {(() => {
-                const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-                if (isMobile) {
-                  return "Mobile browsers require HTTPS for camera access. Use localhost:3000 on your computer or set up HTTPS.";
-                } else {
-                  return "Video calls require HTTPS or localhost. Please access via localhost:3000 for full functionality.";
-                }
-              })()}
-            </p>
-            <button 
-              onClick={() => setShowInsecureWarning(false)}
-              className="mt-2 px-3 py-1 bg-yellow-700 rounded text-sm hover:bg-yellow-800"
-            >
-              Dismiss
-            </button>
-          </div>
-        )}
         
         {/* Media Error Modal */}
         {mediaError && (
@@ -816,7 +805,7 @@ export default function VideoCallModal({
                     }
                   </p>
                   {isCreator && (
-                    <p className="text-sm text-blue-400">Creator</p>
+                    <p className="text-sm text-blue-400">Fan</p>
                   )}
                 </div>
                 
@@ -843,7 +832,7 @@ export default function VideoCallModal({
                         }
                       </p>
                       {isCreator && (
-                        <p className="text-sm text-blue-400">Creator</p>
+                        <p className="text-sm text-blue-400">Fan</p>
                       )}
                       <p className="text-sm text-gray-400">
                         {callData?.isIncoming ? 'Incoming call...' : 'Calling...'}

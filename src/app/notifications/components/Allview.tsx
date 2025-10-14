@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { getNotifications } from "@/store/profile";
+import { getNotifications, markNotificationsSeen } from "@/store/profile";
 import { RootState, AppDispatch } from "@/store/store";
 import { useAuth } from "@/lib/context/auth-context";
 import PacmanLoader from "react-spinners/RingLoader";
@@ -31,6 +31,16 @@ export const Allview = () => {
       dispatch(getNotifications({ userid: userId, token }));
     }
   }, [dispatch, userId, token]);
+
+  // Mark notifications as seen when component mounts (user is viewing notifications)
+  useEffect(() => {
+    if (userId && token && notifications && notifications.length > 0) {
+      const hasUnreadNotifications = notifications.some(notification => !notification.seen);
+      if (hasUnreadNotifications) {
+        dispatch(markNotificationsSeen({ userid: userId, token }));
+      }
+    }
+  }, [dispatch, userId, token, notifications]);
 
   useEffect(() => {
     setLoading(notifications_stats === "loading");
@@ -83,7 +93,7 @@ export const Allview = () => {
         let status: "approved" | "rejected" | "pending" = "pending";
         if (message.includes("approve")) status = "approved";
         else if (message.includes("reject")) status = "rejected";
-        else if (message.includes("follow") || message.includes("unfollow") || message.includes("like") || message.includes("comment") || message.includes("message") || message.includes("booking") || message.includes("request")) {
+        else if (message.includes("follow") || message.includes("unfollow") || message.includes("like") || message.includes("comment") || message.includes("message") || message.includes("booking") || message.includes("request") || message.includes("missed") || message.includes("accept") || message.includes("decline") || message.includes("cancel") || message.includes("complete")) {
           status = "approved"; // These are informational notifications, not pending actions
         }
 
@@ -101,6 +111,12 @@ export const Allview = () => {
           title = "Message Notification";
         } else if (message.includes("booking") || message.includes("request")) {
           title = "Booking Notification";
+        } else if (message.includes("missed") && message.includes("call")) {
+          title = "Missed Call";
+        } else if (message.includes("fan meet") || message.includes("fan date")) {
+          title = "Fan Meet Request";
+        } else if (message.includes("accept") || message.includes("decline") || message.includes("cancel") || message.includes("complete")) {
+          title = "Activity Update";
         }
 
         return (
@@ -203,6 +219,45 @@ export const Allview = () => {
                       className="px-4 py-2 border border-slate-700 hover:border-slate-500 
                                 rounded-lg text-sm text-slate-200 transition">
                       View Messages
+                    </button>
+                  </Link>
+                </div>
+              )}
+
+              {/* Missed call notifications show activity button */}
+              {title === "Missed Call" && (
+                <div className="pt-2">
+                  <Link href="/notifications/activity">
+                    <button
+                      className="px-4 py-2 border border-slate-700 hover:border-slate-500 
+                                rounded-lg text-sm text-slate-200 transition">
+                      View Activity
+                    </button>
+                  </Link>
+                </div>
+              )}
+
+              {/* Fan meet request notifications show activity button */}
+              {title === "Fan Meet Request" && (
+                <div className="pt-2">
+                  <Link href="/notifications/activity">
+                    <button
+                      className="px-4 py-2 border border-slate-700 hover:border-slate-500 
+                                rounded-lg text-sm text-slate-200 transition">
+                      View Activity
+                    </button>
+                  </Link>
+                </div>
+              )}
+
+              {/* Activity update notifications show activity button */}
+              {title === "Activity Update" && (
+                <div className="pt-2">
+                  <Link href="/notifications/activity">
+                    <button
+                      className="px-4 py-2 border border-slate-700 hover:border-slate-500 
+                                rounded-lg text-sm text-slate-200 transition">
+                      View Activity
                     </button>
                   </Link>
                 </div>

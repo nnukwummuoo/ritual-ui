@@ -248,6 +248,9 @@ const mapToCard = (m: any): CreatorCardProps => {
     // VIP status comes directly from backend
     isVip: m.isVip || false,
     vipEndDate: m.vipEndDate || null,
+    // View count and online status for sorting
+    views: m.views || m.viewCount || 0,
+    isOnline: m.isOnline || m.online || false,
   };
 
 
@@ -316,16 +319,50 @@ const renderCreators = () => {
     return creator.hosttype === categoryButton;
   });
 
-  // Sort creators: VIP first, then by latest creation date
+  // Sort creators with priority: VIP + Online > High Views + Online > Online > High Views > Others
   const sortedList = filteredList.sort((a, b) => {
-    // VIP creators come first
-    if (a.isVip && !b.isVip) return -1;
-    if (!a.isVip && b.isVip) return 1;
+    // Priority scoring system
+    const getPriority = (creator: CreatorCardProps) => {
+      const views = creator.views || 0;
+      const isOnline = creator.isOnline || false;
+      let score = 0;
+      
+      // VIP + Online = highest priority (1000+ points)
+      if (creator.isVip && isOnline) score += 1000;
+      
+      // High views + Online = second priority (500+ points)
+      if (views >= 100 && isOnline) score += 500;
+      
+      // Online status = third priority (100+ points)
+      if (isOnline) score += 100;
+      
+      // High views = fourth priority (50+ points)
+      if (views >= 100) score += 50;
+      
+      // Medium views = fifth priority (20+ points)
+      if (views >= 50) score += 20;
+      
+      // Low views = sixth priority (10+ points)
+      if (views >= 10) score += 10;
+      
+      // Add view count as tiebreaker (0.1 points per view)
+      score += views * 0.1;
+      
+      return score;
+    };
     
-    // If both are VIP or both are not VIP, sort by creation date (latest first)
+    const scoreA = getPriority(a);
+    const scoreB = getPriority(b);
+    
+    // Sort by priority score (highest first)
+    if (scoreA !== scoreB) {
+      return scoreB - scoreA;
+    }
+    
+    // If scores are equal, sort by creation date (latest first)
     const dateA = new Date(a.createdAt).getTime();
     const dateB = new Date(b.createdAt).getTime();
-    return dateB - dateA; // Latest first
+    return dateB - dateA;
   });
 
   if (!list.length) {

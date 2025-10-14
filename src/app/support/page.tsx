@@ -128,6 +128,61 @@ const SupportPage: React.FC = () => {
       ]
     },
     {
+      section: "❓ FAQ – Fan Meet / Fan Date Expiration",
+      questions: [
+        {
+          question: "What happens if the meet or date doesn't happen within 7 days?",
+          answer: "🕒 If 7 days pass and the fan didn't marks it as complete, the system automatically refunds the fan's transport fare (unless a creator complaint was filed)."
+        },
+        {
+          question: "What if the creator didn't show up?",
+          answer: "🚫 The fan will automatically receive a refund after 7 days if the meet/date was not completed and no creator complaint was made."
+        },
+        {
+          question: "What if the fan didn't show up?",
+          answer: "❌ If the creator reports that the fan didn't show, the platform will investigate before the payment will be released to the creator."
+        },
+        {
+          question: "Why 7 days?",
+          answer: "📅 Seven days gives both sides enough time to reschedule once while keeping requests active and organized."
+        }
+      ]
+    },
+    {
+      section: "❓ FAQ – Fan Call Expiration",
+      questions: [
+        {
+          question: "What happens if my Fan Call request isn't answered or started?",
+          answer: "🕒 If your Fan Call doesn't start within 48 hours after acceptance, it expires automatically.\nNo money is deducted, and you can always send a new request later."
+        },
+        {
+          question: "Will I lose any gold or balance if it expires?",
+          answer: "💰 No. Fan Call payments are only deducted during the live call, not before."
+        },
+        {
+          question: "Why is there a 48-hour limit?",
+          answer: "⏳ This helps fans and creators stay active and ensures requests don't pile up or get forgotten."
+        }
+      ]
+    },
+    {
+      section: "❓ FAQ: Attendance & No-Show Policy",
+      questions: [
+        {
+          question: "What if a fan doesn't show up for a Fan Meet or Fan Date?",
+          answer: "🚫 If a fan fails to show up at the agreed time and location, the transport fare is automatically sent to the creator to cover her time and travel.\nNo refund will be issued to the fan once the creator has already arrived or waited at the meeting spot."
+        },
+        {
+          question: "What if a creator doesn't show up for a Fan Meet or Fan Date?",
+          answer: "⚠ If a creator fails to appear or cancels last-minute, the fan will receive a full refund of the transport fare.\nRepeated no-shows by creators may result in account suspension or removal from the Fan Meet/Fan Date program."
+        },
+        {
+          question: "How do both sides stay protected?",
+          answer: "🛡 The platform tracks confirmations, time logs, and attendance reports to ensure fairness.\nWe recommend both sides take a quick photo or check-in proof at the public venue for verification if needed."
+        }
+      ]
+    },
+    {
       section: "💬 Contact Support",
       questions: [
         {

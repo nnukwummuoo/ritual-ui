@@ -12,9 +12,6 @@ interface FollowData {
   following: Array<any>;
 }
 
-interface UsersData {
-  users: Array<any>;
-}
 
 interface CollectionData {
   allcontent: Array<any>;
@@ -126,6 +123,12 @@ const initialState = {
   notifications_stats: "idle",
   notifications_message: "",
   mark_notifications_stats: "idle",
+  ratings: [] as any[],
+  ratings_stats: "idle",
+  ratings_message: "",
+  totalRatings: 0,
+  averageRating: 0,
+  ratingCounts: {},
   delete_notification_stats: "idle",
 };
 
@@ -602,7 +605,6 @@ export const getNotifications = createAsyncThunk<
     : { "Content-Type": "application/json" };
 
   const response = await axios.get(`${URL}/notifications/${data.userid}`, { headers });
-  console.log(response.data)
   // ✅ normalize structure
   return { notifications: response.data.notifications || [] };
 });
@@ -624,6 +626,55 @@ export const markNotificationsSeen = createAsyncThunk<
     return response.data;
   } catch (err) {
     console.error("[markNotificationsSeen] error", err);
+    throw getErrorMessageWithNetworkFallback(err);
+  }
+});
+
+export const markActivityNotificationsSeen = createAsyncThunk<
+  { message: string },
+  { userid: string; token: string }
+>("profile/markActivityNotificationsSeen", async (data) => {
+  try {
+    const headers = data.token
+      ? {
+          Authorization: `Bearer ${data.token}`,
+          "Content-Type": "application/json",
+        }
+      : {
+          "Content-Type": "application/json",
+        };
+    const response = await axios.put(`${URL}/notifications/mark-activity-seen/${data.userid}`, {}, { headers });
+    return response.data;
+  } catch (err) {
+    console.error("[markActivityNotificationsSeen] error", err);
+    throw getErrorMessageWithNetworkFallback(err);
+  }
+});
+
+// Fetch ratings for a creator
+export const getCreatorRatings = createAsyncThunk<
+  { ratings: any[]; totalRatings: number; averageRating: number; ratingCounts: any },
+  { creatorId: string; token: string }
+>("profile/getCreatorRatings", async (data) => {
+  try {
+    const headers = data.token
+      ? {
+          Authorization: `Bearer ${data.token}`,
+          "Content-Type": "application/json",
+        }
+      : {
+          "Content-Type": "application/json",
+        };
+    // Force localhost for development
+    const apiUrl = process.env.NODE_ENV === "development" ? "http://localhost:3100" : URL;
+    console.log('🔍 [getCreatorRatings] Making API call:', { creatorId: data.creatorId, token: data.token ? 'present' : 'missing', url: `${apiUrl}/review/creator/${data.creatorId}` });
+    
+    const response = await axios.get(`${apiUrl}/review/creator/${data.creatorId}`, { headers });
+    
+    console.log('📥 [getCreatorRatings] API response:', response.data);
+    return response.data;
+  } catch (err) {
+    console.error('❌ [getCreatorRatings] Error:', err);
     throw getErrorMessageWithNetworkFallback(err);
   }
 });
@@ -960,6 +1011,56 @@ const profile = createSlice({
         state.notifications_message =
           action.error?.message ?? "Failed to mark notifications as seen";
       })
+      .addCase(markActivityNotificationsSeen.pending, (state) => {
+        state.mark_notifications_stats = "loading";
+      })
+      .addCase(markActivityNotificationsSeen.fulfilled, (state) => {
+        state.mark_notifications_stats = "succeeded";
+        // ✅ Mark only activity notifications as seen locally
+        state.notifications = state.notifications.map((n) => {
+          const message = n.message.toLowerCase();
+          const isActivityNotification = message.includes('booking') || 
+                                       message.includes('request') ||
+                                       message.includes('fan meet') ||
+                                       message.includes('accepted') ||
+                                       message.includes('declined') ||
+                                       message.includes('cancelled') ||
+                                       message.includes('expired') ||
+                                       message.includes('completed');
+          
+          if (isActivityNotification) {
+            return { ...n, seen: true };
+          }
+          return n;
+        });
+      })
+        .addCase(markActivityNotificationsSeen.rejected, (state, action) => {
+            state.mark_notifications_stats = "failed";
+            state.notifications_message =
+              action.error?.message ?? "Failed to mark activity notifications as seen";
+        })
+        .addCase(getCreatorRatings.pending, (state) => {
+            state.ratings_stats = "loading";
+        })
+        .addCase(getCreatorRatings.fulfilled, (state, action) => {
+            console.log('✅ [getCreatorRatings] Redux fulfilled:', action.payload);
+            state.ratings_stats = "succeeded";
+            state.ratings = action.payload.ratings || [];
+            state.totalRatings = action.payload.totalRatings || 0;
+            state.averageRating = action.payload.averageRating || 0;
+            state.ratingCounts = action.payload.ratingCounts || {};
+            console.log('✅ [getCreatorRatings] State updated:', {
+                ratings_stats: state.ratings_stats,
+                ratings: state.ratings.length,
+                totalRatings: state.totalRatings,
+                averageRating: state.averageRating
+            });
+        })
+        .addCase(getCreatorRatings.rejected, (state, action) => {
+            state.ratings_stats = "failed";
+            state.ratings_message =
+              action.error?.message ?? "Failed to fetch ratings";
+        })
 
       .addCase(deleteNotification.pending, (state) => {
         state.delete_notification_stats = "loading";
