@@ -740,11 +740,12 @@ export default function Creatorbyid () {
       price: parseFloat(creator.price) || 0
     });
     
-    // Check if user has enough gold balance
+    // Check if user has enough gold balance (skip for Fan call requests)
     const userBalance = parseFloat(profile.balance) || 0;
     const requiredAmount = parseFloat(creator.price) || 0;
     
-    if (userBalance < requiredAmount) {
+    // Only check balance for Fan meet and Fan date, not for Fan call
+    if (creator.hosttype !== "Fan call" && creator.hosttype !== "Fan Call" && userBalance < requiredAmount) {
       toast.error(`Insufficient gold! You need ${requiredAmount} gold but only have ${userBalance} gold.`);
       // Redirect to buy-gold page
       setTimeout(() => {

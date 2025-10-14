@@ -424,9 +424,9 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
   const cardTextVariance = type === "creator" ? "text-blue-500" : type === "fan" && ["accepted", "completed"].includes(currentStatus) ? "text-green-500" : "text-yellow-500"
 
   // shared action button base so buttons have same size / height
-  const actionBtnBase = 'w-full px-6 py-3 rounded-lg transition-all duration-500 text-sm flex items-center justify-center';
+  const actionBtnBase = 'w-full px-3 sm:px-6 py-2 sm:py-3 rounded-lg transition-all duration-500 text-xs sm:text-sm flex items-center justify-center';
   // Fan action style (uses base for consistent sizing)
-  const fanActionClass = `${actionBtnBase} border border-gray-500 max-[490px]:text-xs text-gray-300 hover:bg-slate-700 bg-transparent`;
+  const fanActionClass = `${actionBtnBase} border border-gray-500 text-gray-300 hover:bg-slate-700 bg-transparent`;
 
   // API call functions
   const handleAccept = async () => {
@@ -1152,28 +1152,28 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
               </div>
             </div>
 
-            {/* Action buttons row: ALWAYS horizontal (no stacked layout) */}
-            <div className='w-full flex flex-row gap-4 items-center'>
+            {/* Action buttons row: Responsive layout for small screens */}
+            <div className='w-full flex flex-row gap-2 sm:gap-4 items-center'>
               { type === "creator" ? (
-                // Creator: Accept | Decline | View details (equal widths)
+                // Creator: Accept | Decline | View details (responsive widths)
                 <>
-                  <div className='flex-1'>
+                  <div className='flex-1 min-w-0'>
                     <CreatorActionBtn type='accept' onClick={handleAccept} disabled={loading} />
                   </div>
-                  <div className='flex-1'>
+                  <div className='flex-1 min-w-0'>
                     <CreatorActionBtn type='decline' onClick={handleDecline} disabled={loading} />
                   </div>
-                  <div className='flex-1'>
+                  <div className='flex-1 min-w-0'>
                     <button className={fanActionClass} onClick={() => setShowDetails(true)}>View details</button>
                   </div>
                 </>
               ) : (
                 // Fan: Cancel request | View details side-by-side
                 <>
-                  <div className='flex-1'>
+                  <div className='flex-1 min-w-0'>
                     {type === "fan" && currentStatus === "request" && <FanActionBtn label='Cancel request' className={fanActionClass} onClick={handleCancel} disabled={loading} />}
                   </div>
-                  <div className='flex-1'>
+                  <div className='flex-1 min-w-0'>
                     <button className={fanActionClass} onClick={() => setShowDetails(true)}>View details</button>
                   </div>
                 </>
@@ -1197,8 +1197,8 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
 }
 
 function CreatorActionBtn({type, onClick, disabled}: {type: "accept" | "decline", onClick?: () => void, disabled?: boolean}){
-  // Use same base sizing so heights match
-  const base = 'w-full px-6 py-3 rounded-lg transition-all duration-500 text-white flex items-center justify-center';
+  // Use same base sizing so heights match - responsive padding and text
+  const base = 'w-full px-3 sm:px-6 py-2 sm:py-3 rounded-lg transition-all duration-500 text-xs sm:text-sm text-white flex items-center justify-center';
   return <button 
     className={`${base} ${type === "accept" ? "hover:bg-green-700 bg-green-600" : "hover:bg-red-700 bg-red-600"} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
     onClick={onClick}
@@ -1210,7 +1210,7 @@ function CreatorActionBtn({type, onClick, disabled}: {type: "accept" | "decline"
 
 function FanActionBtn({label, className, onClick, disabled}: {label: string, className?: string, onClick?: () => void, disabled?: boolean}){
   // allow overriding/using shared class; default uses the same base so sizing is consistent
-  const defaultClass = 'w-full px-4 py-3 rounded-lg transition-all duration-500 text-sm flex items-center justify-center border border-gray-500 max-[490px]:text-xs text-gray-300 hover:bg-slate-700 bg-transparent';
+  const defaultClass = 'w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg transition-all duration-500 text-xs sm:text-sm flex items-center justify-center border border-gray-500 text-gray-300 hover:bg-slate-700 bg-transparent';
   return <button 
     className={`${className ? className : defaultClass} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
     onClick={onClick}
