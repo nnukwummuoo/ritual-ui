@@ -76,6 +76,11 @@ export const VideoCallProvider: React.FC<VideoCallProviderProps> = ({ children }
       const isCreator = data.profile?.creator || false; // Get creator status from database
       const callRate = price || 1; // Use price from request card, default to 1 if not provided
       
+      // Get caller's name from database profile
+      const callerName = data.profile?.firstname && data.profile?.lastname 
+        ? `${data.profile.firstname} ${data.profile.lastname}` 
+        : data.profile?.firstname || data.profile?.username || 'Unknown User';
+      
       if (userBalance < callRate) {
         alert('Insufficient funds to start call. Please purchase gold first.');
         return;
@@ -108,10 +113,11 @@ export const VideoCallProvider: React.FC<VideoCallProviderProps> = ({ children }
       }
 
       // Starting call
+      
       socket.emit('video_call_start', {
         callerId: session._id,
-        callerName: session.name || session.firstname || 'Unknown',
-        callerPhoto: (session as { photolink?: string })?.photolink || '',
+        callerName: callerName,
+        callerPhoto: data.profile?.photolink || (session as { photolink?: string })?.photolink || '',
         answererId: answererId,
         answererName: answererName,
         answererPhoto: answererPhoto,
@@ -122,8 +128,8 @@ export const VideoCallProvider: React.FC<VideoCallProviderProps> = ({ children }
       const callData: VideoCallData = {
         callId: `temp_${Date.now()}`, // Temporary ID until we get the real one from server
         callerId: session._id,
-        callerName: session.name || session.firstname || 'Unknown',
-        callerPhoto: (session as { photolink?: string })?.photolink || '',
+        callerName: callerName,
+        callerPhoto: data.profile?.photolink || (session as { photolink?: string })?.photolink || '',
         answererId: answererId,
         answererName: answererName,
         answererPhoto: answererPhoto,
@@ -142,8 +148,8 @@ export const VideoCallProvider: React.FC<VideoCallProviderProps> = ({ children }
       // Emit start call event
       socket.emit('video_call_start', {
         callerId: session._id,
-        callerName: session.name || session.firstname || 'Unknown',
-        callerPhoto: (session as { photolink?: string })?.photolink || '',
+        callerName: callerName,
+        callerPhoto: data.profile?.photolink || (session as { photolink?: string })?.photolink || '',
         answererId: answererId,
         answererName: answererName,
         answererPhoto: answererPhoto
@@ -165,6 +171,13 @@ export const VideoCallProvider: React.FC<VideoCallProviderProps> = ({ children }
     if (!socket || !session?._id) return;
 
     const handleIncomingCall = async (data: { callId: string; callerId: string; callerName: string; callerPhoto?: string }) => {
+      console.log('📞 [VideoCall] Received incoming call:', {
+        callId: data.callId,
+        callerId: data.callerId,
+        callerName: data.callerName,
+        callerPhoto: data.callerPhoto
+      });
+      
       try {
         // Get current user profile to determine creator status
         const response = await fetch(`${URL}/getprofile`, {
@@ -296,20 +309,20 @@ export const VideoCallProvider: React.FC<VideoCallProviderProps> = ({ children }
     <VideoCallContext.Provider value={contextValue}>
       {children}
       
-      {/* Video Call Modal */}
-      {isVideoCallOpen && videoCallData && session && (
-        <VideoCallModal
-          isOpen={isVideoCallOpen}
-          onClose={closeVideoCall}
-          callData={videoCallData}
-          currentUserId={session._id || ''}
-          currentUserName={session.name || session.firstname || 'Unknown'}
-          userBalance={videoCallData?.userBalance || 0}
-          creatorEarnings={session.earnings || 0}
-          isCreator={videoCallData?.isCreator || false}
-          callRate={videoCallData?.callRate || 1}
-        />
-      )}
+       {/* Video Call Modal */}
+       {isVideoCallOpen && videoCallData && session && (
+         <VideoCallModal
+           isOpen={isVideoCallOpen}
+           onClose={closeVideoCall}
+           callData={videoCallData}
+           currentUserId={session._id || ''}
+           currentUserName={videoCallData?.callerName || 'Unknown'}
+           userBalance={videoCallData?.userBalance || 0}
+           creatorEarnings={session.earnings || 0}
+           isCreator={videoCallData?.isCreator || false}
+           callRate={videoCallData?.callRate || 1}
+         />
+       )}
     </VideoCallContext.Provider>
   );
 };

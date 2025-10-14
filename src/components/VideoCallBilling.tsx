@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { getSocket } from '@/lib/socket';
+import Image from 'next/image';
 
 interface VideoCallBillingProps {
   callId?: string;
@@ -217,7 +218,18 @@ export default function VideoCallBilling({
         {/* Fan Balance Display */}
         {!isCreator && (
           <div className="flex items-center gap-2 text-yellow-400">
-            <span className="text-sm">💰</span>
+            <Image
+              src="/gold.png"
+              alt="Gold"
+              width={16}
+              height={16}
+            />
+            <Image
+              src="/gold.png"
+              alt="Gold"
+              width={16}
+              height={16}
+            />
             <span className="font-semibold">{currentBalance}</span>
             <span className="text-xs">Gold</span>
           </div>
@@ -226,7 +238,18 @@ export default function VideoCallBilling({
         {/* Creator Earnings Display */}
         {isCreator && (
           <div className="flex items-center gap-2 text-green-400">
-            <span className="text-sm">💎</span>
+            <Image
+              src="/gold.png"
+              alt="Gold"
+              width={16}
+              height={16}
+            />
+            <Image
+              src="/gold.png"
+              alt="Gold"
+              width={16}
+              height={16}
+            />
             <span className="font-semibold">{callSpecificEarnings}</span>
             <span className="text-xs">This Call</span>
           </div>

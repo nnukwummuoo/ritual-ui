@@ -520,9 +520,12 @@ export const deletereview = createAsyncThunk(
 
 export const addcrush = createAsyncThunk("creator/addcrush ", async (data: any) => {
   try {
+    console.log('🔍 [addcrush] Redux action called with data:', data);
     let response = await axios.post(`${URL}/addcrush`, data);
+    console.log('📥 [addcrush] Backend response:', response.data);
     return response.data;
   } catch (err : any) {
+    console.error('❌ [addcrush] Error:', err);
     if (!err.response.data.message) {
       throw "check internet connection";
     }

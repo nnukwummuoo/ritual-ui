@@ -14,7 +14,8 @@ import { Bookingsuccess } from "@/components/bookingFrag/Bookingsuccess";
 import { Requestform } from "@/components/bookingFrag/Requestform";
 import { RequestDetailsForm } from "@/components/bookingFrag/RequestDetailsForm";
 import closeIcon from "@/icons/closeIcon.svg";
-import { getreview, getViews } from "@/store/creatorSlice";
+import { getViews } from "@/store/creatorSlice";
+import { getCreatorRatings } from "@/store/profile";
 import { CreatorReview } from "./_components/Creator_review";
 
 import { useSelector, useDispatch } from "react-redux";
@@ -32,9 +33,9 @@ import "react-loading-skeleton/dist/skeleton.css";
 import CreatorByIdNav from "./_components/CreatorByIdNav";
 import { formatCreatorPrices } from "./_utils/formatCreatorPrices";
 
-//import addcrush({inputs  : creator_portfoliio_Id and userid})
+//import addcrush({inputs  : creator_portfolio_id and userid})
 //userid : the current user ID that wish to add the creator to its crush list
-//creator_portfoliio_Id : the creator ID that this user wishes to add to its crush list
+//creator_portfolio_id : the creator ID that this user wishes to add to its crush list
 
 //method stats and api message for redux selectors
 // addcrush_stats and addcrush_message
@@ -193,6 +194,9 @@ export default function Creatorbyid () {
   const reviewList = useSelector(
     (state: RootState) => state.creator.reviewList || []
   );
+  
+  // Get ratings from profile store (new 5-star rating system)
+  const { ratings, ratings_stats, totalRatings, averageRating, ratingCounts } = useSelector((s: RootState) => s.profile);
   const addcrush_stats = useSelector(
     (state: RootState) => state.creator.addcrush_stats
   );
@@ -216,7 +220,7 @@ export default function Creatorbyid () {
   const [oldlink, setoldlink] = useState<string[]>([]);
   const [documentlink] = useState<string[]>([]);
   const [docCount] = useState(0);
-  const [creator_portfoliio_Id] = useState<[string?, string?]>([
+  const [creator_portfolio_id] = useState<[string?, string?]>([
     Creator[1],
     userid,
   ]);
@@ -326,10 +330,12 @@ export default function Creatorbyid () {
       );
     }
 
-    if (getreviewstats !== "loading") {
+    // Fetch ratings using the new 5-star rating system
+    if (ratings_stats !== "loading") {
+      console.log('🔍 [CreatorPortfolio] Fetching ratings for creator:', { creatorId: Creator[0], token: token ? 'present' : 'missing' });
       dispatch(
-        getreview({
-          creator_portfoliio_Id: Creator[0],
+        getCreatorRatings({
+          creatorId: Creator[0],
           token,
         })
       );
@@ -614,7 +620,7 @@ export default function Creatorbyid () {
 
   const Check_review = () => {
     setreview_click(true);
-    if (getreviewstats === "loading") {
+    if (ratings_stats === "loading") {
       setLoading1(true);
     } else {
       setLoading1(false);
@@ -631,17 +637,22 @@ export default function Creatorbyid () {
 
   const show_review = () => {
     if (loading1 === false) {
-      if (reviewList.length > 0) {
-        return reviewList.map((value: { content: string; name: string; photolink: string; posttime: string; id: string; userid: string }, index: number) => {
+      console.log('🔍 [CreatorPortfolio] Showing reviews:', { ratings: ratings.length, totalRatings, averageRating });
+      
+      if (ratings.length > 0) {
+        return ratings.map((rating: any, index: number) => {
           return (
             <CreatorReview
               key={index}
-              content={value.content}
-              name={value.name}
-              photolink={value.photolink}
-              posttime={value.posttime}
-              id={value.id}
-              userid={value.userid}
+              content={rating.feedback}
+              name={rating.fanName}
+              photolink={rating.fanPhoto}
+              posttime={rating.createdAt}
+              id={rating._id}
+              userid={rating.fanId}
+              rating={rating.rating}
+              hostType={rating.hostType}
+              bookingId={rating.bookingId}
             />
           );
         });
@@ -656,16 +667,26 @@ export default function Creatorbyid () {
   };
 
   const addTocrush = () => {
+    console.log('🔍 [addTocrush] Debug:', { 
+      addcrush_stats, 
+      removeCrush, 
+      userid, 
+      token: token ? 'present' : 'missing', 
+      creator_hostid: creator.hostid 
+    });
+    
     if (addcrush_stats !== "loading" && removeCrush === false) {
       set_dcb(true);
       set_crush_text("adding to crush list...");
-      dispatch(addcrush({ userid, token, creator_portfoliio_Id: creator.hostid }));
+      console.log('🔍 [addTocrush] Dispatching addcrush:', { userid, token, creator_portfolio_id: creator.hostid });
+      dispatch(addcrush({ userid, token, creator_portfolio_id: creator.hostid }));
     }
 
     if (remove_crush_stats !== "loading" && removeCrush === true) {
       set_dcb(true);
       set_crush_text("removing crush from list...");
-      dispatch(remove_Crush({ userid, token, creator_portfoliio_Id: creator.hostid }));
+      console.log('🔍 [addTocrush] Dispatching remove_Crush:', { userid, token, creator_portfolio_id: creator.hostid });
+      dispatch(remove_Crush({ userid, token, creator_portfolio_id: creator.hostid }));
     }
   };
 
@@ -1051,7 +1072,7 @@ export default function Creatorbyid () {
                     creatorName={(creator?.name||" ").split(" ")[0]}
                     followingUser={creator.followingUser}
                     id={creator.userid}
-                    creator_portfoliio_Id={creator.hostid}
+                    creator_portfolio_id={creator.hostid}
                     checkuser={checkuser()}
                   />
                 </div>
@@ -1431,7 +1452,7 @@ export default function Creatorbyid () {
                   <span>⭐</span>
                   <span>View Reviews</span>
                   <span className="bg-white text-blue-600 px-2 py-1 rounded-full text-sm font-bold">
-                    {reviewList.length}
+                    {totalRatings}
                   </span>
                 </div>
               </button>
@@ -1439,14 +1460,14 @@ export default function Creatorbyid () {
 
           {review_click && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
-              <div className="bg-gray-800 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[80vh] overflow-hidden">
-                <div className="flex justify-between items-center p-6 border-b border-gray-700">
-                  <h2 className="text-2xl font-bold text-white">Reviews</h2>
+              <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[80vh] overflow-hidden">
+                <div className="flex justify-between items-center p-6 border-b border-gray-200">
+                  <h2 className="text-2xl font-bold text-black">Reviews</h2>
                   <button
                     onClick={(e) => {
                       setreview_click(false);
                     }}
-                    className="p-2 bg-gray-700 hover:bg-gray-600 rounded-full transition-colors duration-200"
+                    className="p-2 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors duration-200"
                   >
                     <Image
                       alt="closeIcon"
@@ -1466,7 +1487,7 @@ export default function Creatorbyid () {
                         aria-label="Loading Spinner"
                         data-testid="loader"
                       />
-                      <p className="text-gray-300 mt-4">Loading reviews...</p>
+                      <p className="text-black mt-4">Loading reviews...</p>
                     </div>
                   )}
 

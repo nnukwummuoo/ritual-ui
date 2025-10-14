@@ -39,7 +39,7 @@ self.addEventListener('push', (event) => {
   let notificationData = {
     title: 'MmeKo',
     body: 'You have a new notification',
-    icon: '/icons/icons8-profile_Icon1.png',
+    icon: '/icons/m-logo.png',
     badge: '/icons/icons8-profile_Icon1.png',
     tag: 'mmeko-notification',
     requireInteraction: true,
@@ -47,12 +47,12 @@ self.addEventListener('push', (event) => {
       {
         action: 'open',
         title: 'Open App',
-        icon: '/icons/icons8-profile_Icon1.png'
+        icon: '/icons/m-logo.png'
       },
       {
         action: 'close',
         title: 'Close',
-        icon: '/icons/icons8-profile_Icon1.png'
+        icon: '/icons/m-logo.png'
       }
     ],
     data: {
@@ -146,12 +146,12 @@ self.addEventListener('push', (event) => {
             {
               action: 'view',
               title: 'View',
-              icon: '/icons/icons8-profile_Icon1.png'
+              icon: '/icons/m-logo.png'
             },
             {
               action: 'close',
               title: 'Close',
-              icon: '/icons/icons8-profile_Icon1.png'
+              icon: '/icons/m-logo.png'
             }
           ]
         };
@@ -167,7 +167,7 @@ self.addEventListener('push', (event) => {
       icon: notificationData.icon,
       tag: notificationData.tag,
       requireInteraction: true
-    });
+    });   
   });
 
   event.waitUntil(promiseChain);

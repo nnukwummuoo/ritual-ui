@@ -8,6 +8,7 @@ import BottomNavBar from "@/components/bottom-navbar";
 import ShouldRenderPopUp from "@/components/ShouldRenderPopUp";
 import { NotificationPermissionModal } from "@/components/NotificationPermissionModal";
 import { usePushNotificationContext } from "@/contexts/PushNotificationContext";
+import GlobalNotificationFetcher from "@/components/GlobalNotificationFetcher";
 
 interface ConditionalLayoutProps {
   children: ReactNode;
@@ -59,6 +60,9 @@ export default function ConditionalLayout({ children, isAuthenticated }: Conditi
   // Otherwise, render with main layout
   return (
     <>
+      {/* Global notification fetcher for authenticated users */}
+      {isAuthenticated && <GlobalNotificationFetcher />}
+      
       <main className="flex overflow-hidden h-screen relative">
         <Sidebar />
         <Navbar isAuthenticated={isAuthenticated} />

@@ -18,6 +18,9 @@ interface CreatorReviewProps {
   id: string;
   userid: string;
   posttime: string;
+  rating?: number;
+  hostType?: string;
+  bookingId?: string;
 }
 
 export const CreatorReview: React.FC<CreatorReviewProps> = ({
@@ -27,6 +30,9 @@ export const CreatorReview: React.FC<CreatorReviewProps> = ({
   id,
   userid,
   posttime,
+  rating,
+  hostType,
+  bookingId,
 }) => {
   const date1 = new Date(parseInt(posttime));
   const date = format(date1, "MM/dd/yyyy 'at' h:mm a");
@@ -77,9 +83,28 @@ export const CreatorReview: React.FC<CreatorReviewProps> = ({
         />
 
         {/* Content */}
-        <div className="flex flex-col ml-2 bg-slate-500 p-2 rounded-md">
-          <p className="bg-slate-300 font-bold text-white text-sm">{name}</p>
-          <p className="text-xs text-yellow-500">{content}</p>
+        <div className="flex flex-col ml-2 bg-white p-2 rounded-md border border-gray-200">
+          <div className="flex items-center gap-2 mb-1">
+            <p className="font-bold text-black text-sm">{name}</p>
+            {rating && (
+              <div className="flex gap-1">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <span
+                    key={star}
+                    className={`text-sm ${
+                      star <= rating ? "text-yellow-400" : "text-gray-400"
+                    }`}
+                  >
+                    ★
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+          {hostType && (
+            <p className="text-xs text-blue-600 mb-1">{hostType} Experience</p>
+          )}
+          <p className="text-xs text-black">{content}</p>
         </div>
 
         {/* Delete button */}
@@ -99,12 +124,10 @@ export const CreatorReview: React.FC<CreatorReviewProps> = ({
               aria-label="Loading Spinner"
               data-testid="loader"
             />
-            <p className="text-xs text-yellow-500">Deleting... wait</p>
+            <p className="text-xs text-black">Deleting... wait</p>
           </div>
         )}
       </div>
-
-      <p className="font-bold text-yellow-500 text-xs ml-4">{date}</p>
     </div>
   );
 };
