@@ -79,6 +79,22 @@ export interface ProfileState extends Profile {
   // Misc
   testmsg: string;
   closedraw: boolean;
+
+  // Ratings (5-star rating system)
+  ratings: any[];
+  ratings_stats: "idle" | "loading" | "succeeded" | "failed";
+  ratings_message: string;
+  totalRatings: number;
+  averageRating: number;
+  ratingCounts: any;
+
+  // Fan ratings (ratings received by fans from creators)
+  fanRatings: any[];
+  fanRatings_stats: "idle" | "loading" | "succeeded" | "failed";
+  fanRatings_message: string;
+  totalFanRatings: number;
+  averageFanRating: number;
+  fanRatingCounts: any;
 }
 
 interface Notification {

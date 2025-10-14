@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
@@ -28,8 +29,8 @@ interface VideoCallModalProps {
   } | null;
   currentUserId: string;
   currentUserName: string;
-  userBalance?: number; // Fan's gold balance
-  creatorEarnings?: number; // Creator's earnings
+  userBalance?: number; // Current user's gold balance (used when they initiate calls)
+  creatorEarnings?: number; // Creator's earnings (only shown when creator answers calls)
   isCreator?: boolean; // Whether current user is a creator
   callRate?: number; // Gold per minute rate
 }
@@ -398,10 +399,11 @@ export default function VideoCallModal({
     );
   };
 
-  // Handle insufficient funds (only for fans)
+  // Handle insufficient funds (for whoever is paying for the call)
   const handleInsufficientFunds = () => {
-    // Only show insufficient funds alert for fans, not creators
-    if (!isCreator) {
+    // Show insufficient funds alert for whoever initiated the call (the one paying)
+    const isCaller = callData?.callerId === currentUserId;
+    if (isCaller) {
       alert('Insufficient funds to continue call');
       handleEndCall();
     }
@@ -759,6 +761,7 @@ export default function VideoCallModal({
             callRate={callRate}
             isConnected={true}
             onInsufficientFunds={handleInsufficientFunds}
+            callData={callData}
           />
         )}
 
@@ -804,9 +807,7 @@ export default function VideoCallModal({
                       : (callData?.answererName || 'User')
                     }
                   </p>
-                  {isCreator && (
-                    <p className="text-sm text-blue-400">Fan</p>
-                  )}
+                  <p className="text-sm text-blue-400">Creator</p>
                 </div>
                 
                 {/* Call again button - only show for outgoing calls */}
@@ -831,9 +832,7 @@ export default function VideoCallModal({
                           : (callData?.answererName || 'User')
                         }
                       </p>
-                      {isCreator && (
-                        <p className="text-sm text-blue-400">Fan</p>
-                      )}
+                      <p className="text-sm text-blue-400">Creator</p>
                       <p className="text-sm text-gray-400">
                         {callData?.isIncoming ? 'Incoming call...' : 'Calling...'}
                       </p>

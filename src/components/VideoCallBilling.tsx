@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
@@ -9,11 +11,16 @@ interface VideoCallBillingProps {
   callerId?: string;
   currentUserId: string;
   isCreator: boolean;
-  userBalance: number; // Fan's gold balance
-  creatorEarnings: number; // Creator's earnings
+  userBalance: number; // Current user's gold balance (used when they initiate calls)
+  creatorEarnings: number; // Creator's earnings (only shown when creator answers calls)
   callRate: number; // Gold per minute rate
   isConnected: boolean;
-  onInsufficientFunds: () => void; // Callback when fan runs out of money
+  onInsufficientFunds: () => void; // Callback when caller runs out of money
+  callData?: {
+    callerId: string;
+    isIncoming: boolean;
+    answererId?: string;
+  } | null;
 }
 
 export default function VideoCallBilling({
@@ -25,7 +32,8 @@ export default function VideoCallBilling({
   creatorEarnings,
   callRate,
   isConnected,
-  onInsufficientFunds
+  onInsufficientFunds,
+  callData
 }: VideoCallBillingProps) {
   const [callDuration, setCallDuration] = useState(0);
   const [currentBalance, setCurrentBalance] = useState(userBalance);
@@ -38,6 +46,23 @@ export default function VideoCallBilling({
   const callRateRef = useRef(callRate);
   const callDurationRef = useRef(0);
   const lastBilledMinuteRef = useRef(0);
+
+  // Determine billing logic based on who initiated the call
+  const isCaller = callData?.callerId === currentUserId;
+  const isAnswerer = !isCaller;
+  const shouldBeBilled = isCaller; // Only the caller (initiator) pays - regardless of user type
+  const shouldEarn = isAnswerer && isCreator; // Only creators earn when they answer calls (from any caller)
+  
+  // Log billing logic for debugging
+  console.log('💰 [Billing] Logic:', {
+    currentUserId,
+    callerId: callData?.callerId,
+    isCaller,
+    isAnswerer,
+    isCreator,
+    shouldBeBilled,
+    shouldEarn
+  });
 
   // Update balance when props change
   useEffect(() => {
@@ -94,10 +119,10 @@ export default function VideoCallBilling({
     setCallDuration(0);
   }, []);
 
-  // Start billing system (ONLY for fans, not creators)
+  // Start billing system (ONLY for the caller, not the answerer)
   const startBilling = useCallback(() => {
-    // Only start billing for fans, not creators
-    if (isCreator) {
+    // Only start billing for the caller (whoever initiated the call)
+    if (!shouldBeBilled) {
       return;
     }
     setLastBilledMinute(0);
@@ -107,9 +132,9 @@ export default function VideoCallBilling({
       const currentMinute = Math.floor(callDurationRef.current / 60);
       
       if (currentMinute > lastBilledMinuteRef.current) {
-        // Billing for minute (fan only)
+        // Billing for minute (caller only)
         
-        // Check if fan has enough balance
+        // Check if caller has enough balance
         if (currentBalanceRef.current < callRateRef.current) {
           // Insufficient funds - ending call
           onInsufficientFunds();
@@ -121,14 +146,7 @@ export default function VideoCallBilling({
         
         // Emit billing event to backend (backend will handle balance deduction)
         if (socket && callId && callerId) {
-          console.log('💰 [Billing] Sending billing event:', {
-            callId: callId,
-            callerId: callerId,
-            currentUserId,
-            amount: callRateRef.current,
-            minute: currentMinute
-          });
-          
+      
           socket.emit('video_call_billing', {
             callId: callId,
             callerId: callerId,
@@ -141,7 +159,7 @@ export default function VideoCallBilling({
     }, 1000); // Check every second
     
     billingIntervalRef.current = interval;
-  }, [isCreator, socket, callId, callerId, currentUserId, onInsufficientFunds]);
+  }, [shouldBeBilled, socket, callId, callerId, currentUserId, onInsufficientFunds, isCaller]);
 
   // Stop billing system
   const stopBilling = useCallback(() => {
@@ -167,13 +185,13 @@ export default function VideoCallBilling({
     }
   }, []);
 
-  // Handle insufficient funds from backend (only for fans)
+  // Handle insufficient funds from backend (only for the caller)
   const handleInsufficientFunds = useCallback((data: any) => {
-    // Only handle insufficient funds for fans, not creators
-    if (!isCreator) {
+    // Only handle insufficient funds for the caller (whoever is paying)
+    if (shouldBeBilled) {
       onInsufficientFunds();
     }
-  }, [onInsufficientFunds, isCreator]);
+  }, [onInsufficientFunds, shouldBeBilled]);
 
   // Start timer and billing when connected
   useEffect(() => {
@@ -215,8 +233,8 @@ export default function VideoCallBilling({
         {/* Call Timer */}
         <span className="text-lg font-mono">{formatDuration(callDuration)}</span>
         
-        {/* Fan Balance Display */}
-        {!isCreator && (
+        {/* Balance Display - Show for the caller (whoever is paying) */}
+        {shouldBeBilled && (
           <div className="flex items-center gap-2 text-yellow-400">
             <Image
               src="/gold.png"
@@ -224,34 +242,24 @@ export default function VideoCallBilling({
               width={16}
               height={16}
             />
-            <Image
-              src="/gold.png"
-              alt="Gold"
-              width={16}
-              height={16}
-            />
+         
             <span className="font-semibold">{currentBalance}</span>
             <span className="text-xs">Gold</span>
           </div>
         )}
         
-        {/* Creator Earnings Display */}
-        {isCreator && (
-          <div className="flex items-center gap-2 text-green-400">
+        {/* Creator Earnings Display - Show for creators when they answer calls */}
+        {shouldEarn && (
+          <div className="flex items-center gap-2 text-yellow-400">
             <Image
               src="/gold.png"
               alt="Gold"
               width={16}
               height={16}
             />
-            <Image
-              src="/gold.png"
-              alt="Gold"
-              width={16}
-              height={16}
-            />
+          
             <span className="font-semibold">{callSpecificEarnings}</span>
-            <span className="text-xs">This Call</span>
+            <span className="text-xs">Gold</span>
           </div>
         )}
       </div>

@@ -129,6 +129,13 @@ const initialState = {
   totalRatings: 0,
   averageRating: 0,
   ratingCounts: {},
+  // Fan ratings (ratings received by fans from creators)
+  fanRatings: [] as any[],
+  fanRatings_stats: "idle",
+  fanRatings_message: "",
+  totalFanRatings: 0,
+  averageFanRating: 0,
+  fanRatingCounts: {},
   delete_notification_stats: "idle",
 };
 
@@ -667,14 +674,34 @@ export const getCreatorRatings = createAsyncThunk<
         };
     // Force localhost for development
     const apiUrl = process.env.NODE_ENV === "development" ? "http://localhost:3100" : URL;
-    console.log('🔍 [getCreatorRatings] Making API call:', { creatorId: data.creatorId, token: data.token ? 'present' : 'missing', url: `${apiUrl}/review/creator/${data.creatorId}` });
-    
-    const response = await axios.get(`${apiUrl}/review/creator/${data.creatorId}`, { headers });
-    
-    console.log('📥 [getCreatorRatings] API response:', response.data);
+    const response = await axios.get(`${apiUrl}/review/user/${data.creatorId}/fan-to-creator`, { headers });
     return response.data;
   } catch (err) {
     console.error('❌ [getCreatorRatings] Error:', err);
+    throw getErrorMessageWithNetworkFallback(err);
+  }
+});
+
+// Fetch ratings for a fan
+export const getFanRatings = createAsyncThunk<
+  { ratings: any[]; totalRatings: number; averageRating: number; ratingCounts: any },
+  { fanId: string; token: string }
+>("profile/getFanRatings", async (data) => {
+  try {
+    const headers = data.token
+      ? {
+          Authorization: `Bearer ${data.token}`,
+          "Content-Type": "application/json",
+        }
+      : {
+          "Content-Type": "application/json",
+        };
+    // Force localhost for development
+    const apiUrl = process.env.NODE_ENV === "development" ? "http://localhost:3100" : URL;
+    const response = await axios.get(`${apiUrl}/review/user/${data.fanId}/creator-to-fan`, { headers });
+    return response.data;
+  } catch (err) {
+    console.error('❌ [getFanRatings] Error:', err);
     throw getErrorMessageWithNetworkFallback(err);
   }
 });
@@ -1043,23 +1070,31 @@ const profile = createSlice({
             state.ratings_stats = "loading";
         })
         .addCase(getCreatorRatings.fulfilled, (state, action) => {
-            console.log('✅ [getCreatorRatings] Redux fulfilled:', action.payload);
             state.ratings_stats = "succeeded";
             state.ratings = action.payload.ratings || [];
             state.totalRatings = action.payload.totalRatings || 0;
             state.averageRating = action.payload.averageRating || 0;
             state.ratingCounts = action.payload.ratingCounts || {};
-            console.log('✅ [getCreatorRatings] State updated:', {
-                ratings_stats: state.ratings_stats,
-                ratings: state.ratings.length,
-                totalRatings: state.totalRatings,
-                averageRating: state.averageRating
-            });
         })
         .addCase(getCreatorRatings.rejected, (state, action) => {
             state.ratings_stats = "failed";
             state.ratings_message =
               action.error?.message ?? "Failed to fetch ratings";
+        })
+        .addCase(getFanRatings.pending, (state) => {
+            state.fanRatings_stats = "loading";
+        })
+        .addCase(getFanRatings.fulfilled, (state, action) => {
+            state.fanRatings_stats = "succeeded";
+            state.fanRatings = action.payload.ratings || [];
+            state.totalFanRatings = action.payload.totalRatings || 0;
+            state.averageFanRating = action.payload.averageRating || 0;
+            state.fanRatingCounts = action.payload.ratingCounts || {};
+        })
+        .addCase(getFanRatings.rejected, (state, action) => {
+            state.fanRatings_stats = "failed";
+            state.fanRatings_message =
+              action.error?.message ?? "Failed to fetch fan ratings";
         })
 
       .addCase(deleteNotification.pending, (state) => {

@@ -516,46 +516,24 @@ const AdminSupportChat = () => {
                   <div className="flex gap-1">
                     <button
                       onClick={() => updateChatStatus(selectedChat._id, 'open')}
-                      disabled={selectedChat.status === 'closed'}
-                      className={`p-2 rounded-lg transition-colors ${
-                        selectedChat.status === 'closed' 
-                          ? 'opacity-50 cursor-not-allowed' 
-                          : 'hover:bg-gray-700'
-                      }`}
-                      title={selectedChat.status === 'closed' ? 'Cannot change status - Chat is closed' : 'Mark as Open'}
+                      className="p-2 rounded-lg transition-colors hover:bg-gray-700"
+                      title="Mark as Open"
                     >
-                      <IoChatbubbleOutline className={`w-4 h-4 ${
-                        selectedChat.status === 'closed' ? 'text-gray-500' : 'text-blue-400'
-                      }`} />
+                      <IoChatbubbleOutline className="w-4 h-4 text-blue-400" />
                     </button>
                     <button
                       onClick={() => updateChatStatus(selectedChat._id, 'pending')}
-                      disabled={selectedChat.status === 'closed'}
-                      className={`p-2 rounded-lg transition-colors ${
-                        selectedChat.status === 'closed' 
-                          ? 'opacity-50 cursor-not-allowed' 
-                          : 'hover:bg-gray-700'
-                      }`}
-                      title={selectedChat.status === 'closed' ? 'Cannot change status - Chat is closed' : 'Mark as Pending'}
+                      className="p-2 rounded-lg transition-colors hover:bg-gray-700"
+                      title="Mark as Pending"
                     >
-                      <IoTimeOutline className={`w-4 h-4 ${
-                        selectedChat.status === 'closed' ? 'text-gray-500' : 'text-yellow-400'
-                      }`} />
+                      <IoTimeOutline className="w-4 h-4 text-yellow-400" />
                     </button>
                     <button
                       onClick={() => updateChatStatus(selectedChat._id, 'closed')}
-                      className={`p-2 rounded-lg transition-colors ${
-                        selectedChat.status === 'closed' 
-                          ? 'bg-red-500/20 cursor-not-allowed' 
-                          : 'hover:bg-gray-700'
-                      }`}
-                      title={selectedChat.status === 'closed' ? 'Chat is already closed' : 'Mark as Closed'}
+                      className="p-2 rounded-lg transition-colors hover:bg-gray-700"
+                      title="Mark as Closed"
                     >
-                      {selectedChat.status === 'closed' ? (
-                        <IoCloseCircleOutline className="w-4 h-4 text-red-400" />
-                      ) : (
-                        <IoCheckmarkCircleOutline className="w-4 h-4 text-green-400" />
-                      )}
+                      <IoCheckmarkCircleOutline className="w-4 h-4 text-green-400" />
                     </button>
                   </div>
                 </div>
