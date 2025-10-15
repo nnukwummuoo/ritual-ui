@@ -35,6 +35,7 @@ const AdminPage = () => {
   const [activeView, setActiveView] = useState("Reports");
 
   const token = useAuthToken();
+  const userID = useSelector((s: RootState) => s.register.userID);
   const notifyme = useSelector((s: RootState) => s.admin.notifyme);
   const notifycount = useSelector((s: RootState) => s.admin.notifycount);
   const docCount = useSelector(
@@ -51,7 +52,7 @@ const AdminPage = () => {
   // Notification logic remains unchanged
   useEffect(() => {
     const ping = () => {
-      if (token) dispatch(adminnotify({ token } as any)); // eslint-disable-line @typescript-eslint/no-explicit-any
+      if (token && userID) dispatch(adminnotify({ userid: userID } as any)); // eslint-disable-line @typescript-eslint/no-explicit-any
     };
     ping();
     const timer = setInterval(ping, 60000);
@@ -63,7 +64,7 @@ const AdminPage = () => {
       clearInterval(timer);
       document.removeEventListener("visibilitychange", onVis);
     };
-  }, [dispatch, token]);
+  }, [dispatch, token, userID]);
 
   // Fetch documents on mount to get the count
   useEffect(() => {

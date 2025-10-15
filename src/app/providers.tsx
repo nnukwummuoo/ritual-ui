@@ -4,7 +4,7 @@ import { Provider } from "react-redux";
 import { store } from "@/store/store";
 import { AuthProvider } from "@/lib/context/auth-context";
 import { OnlineStatusProvider } from "@/contexts/OnlineStatusContext";
-import { VideoCallProvider } from "@/contexts/VideoCallContext";
+import { VideoCallProvider } from "@/contexts/FanCallContext";
 import { PushNotificationProvider } from "@/contexts/PushNotificationContext";
 import GlobalSocketConnection from "@/components/GlobalSocketConnection";
 import { SnackbarProvider } from "notistack";

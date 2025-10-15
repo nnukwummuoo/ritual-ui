@@ -147,7 +147,7 @@ export default function VideoCallBilling({
         // Emit billing event to backend (backend will handle balance deduction)
         if (socket && callId && callerId) {
       
-          socket.emit('video_call_billing', {
+          socket.emit('fan_call_billing', {
             callId: callId,
             callerId: callerId,
             currentUserId,

@@ -2,11 +2,11 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { getSocket } from '@/lib/socket';
-import VideoCallModal from '@/components/VideoCallModal';
+import FanCallModal from '@/components/FanCallModal';
 import { useAuth } from '@/lib/context/auth-context';
 import { URL } from '@/api/config';
 
-interface VideoCallData {
+interface FanCallData {
   callId: string;
   callerId: string;
   callerName: string;
@@ -26,7 +26,7 @@ interface VideoCallData {
 
 interface VideoCallContextType {
   isVideoCallOpen: boolean;
-  videoCallData: VideoCallData | null;
+  videoCallData: FanCallData | null;
   startVideoCall: (answererId: string, answererName: string, price?: number) => Promise<void>;
   closeVideoCall: () => void;
 }
@@ -47,7 +47,7 @@ interface VideoCallProviderProps {
 
 export const VideoCallProvider: React.FC<VideoCallProviderProps> = ({ children }) => {
   const [isVideoCallOpen, setIsVideoCallOpen] = useState(false);
-  const [videoCallData, setVideoCallData] = useState<VideoCallData | null>(null);
+  const [videoCallData, setVideoCallData] = useState<FanCallData | null>(null);
   const { session } = useAuth();
   const socket = getSocket();
 
@@ -114,7 +114,7 @@ export const VideoCallProvider: React.FC<VideoCallProviderProps> = ({ children }
 
       // Starting call
       
-      socket.emit('video_call_start', {
+      socket.emit('fan_call_start', {
         callerId: session._id,
         callerName: callerName,
         callerPhoto: data.profile?.photolink || (session as { photolink?: string })?.photolink || '',
@@ -125,7 +125,7 @@ export const VideoCallProvider: React.FC<VideoCallProviderProps> = ({ children }
         callRate: callRate
       });
 
-      const callData: VideoCallData = {
+      const callData: FanCallData = {
         callId: `temp_${Date.now()}`, // Temporary ID until we get the real one from server
         callerId: session._id,
         callerName: callerName,
@@ -146,7 +146,7 @@ export const VideoCallProvider: React.FC<VideoCallProviderProps> = ({ children }
       setIsVideoCallOpen(true);
 
       // Emit start call event
-      socket.emit('video_call_start', {
+      socket.emit('fan_call_start', {
         callerId: session._id,
         callerName: callerName,
         callerPhoto: data.profile?.photolink || (session as { photolink?: string })?.photolink || '',
@@ -223,7 +223,7 @@ export const VideoCallProvider: React.FC<VideoCallProviderProps> = ({ children }
           console.error('Error fetching caller profile:', error);
         }
 
-        const callData: VideoCallData = {
+        const callData: FanCallData = {
           callId: data.callId,
           callerId: data.callerId,
           callerName: data.callerName,
@@ -239,7 +239,7 @@ export const VideoCallProvider: React.FC<VideoCallProviderProps> = ({ children }
       } catch (error) {
         console.error('Error fetching user profile for incoming call:', error);
         // Fallback to session data if API call fails
-        const callData: VideoCallData = {
+        const callData: FanCallData = {
           callId: data.callId,
           callerId: data.callerId,
           callerName: data.callerName,
@@ -281,20 +281,20 @@ export const VideoCallProvider: React.FC<VideoCallProviderProps> = ({ children }
       closeVideoCall();
     };
 
-    socket.on('video_call_incoming', handleIncomingCall);
-    socket.on('video_call_accepted', handleCallAccepted);
-    socket.on('video_call_declined', handleCallDeclined);
-    socket.on('video_call_ended', handleCallEnded);
-    socket.on('video_call_error', handleCallError);
-    socket.on('video_call_timeout', handleCallTimeout);
+    socket.on('fan_call_incoming', handleIncomingCall);
+    socket.on('fan_call_accepted', handleCallAccepted);
+    socket.on('fan_call_declined', handleCallDeclined);
+    socket.on('fan_call_ended', handleCallEnded);
+    socket.on('fan_call_error', handleCallError);
+    socket.on('fan_call_timeout', handleCallTimeout);
 
     return () => {
-      socket.off('video_call_incoming', handleIncomingCall);
-      socket.off('video_call_accepted', handleCallAccepted);
-      socket.off('video_call_declined', handleCallDeclined);
-      socket.off('video_call_ended', handleCallEnded);
-      socket.off('video_call_error', handleCallError);
-      socket.off('video_call_timeout', handleCallTimeout);
+      socket.off('fan_call_incoming', handleIncomingCall);
+      socket.off('fan_call_accepted', handleCallAccepted);
+      socket.off('fan_call_declined', handleCallDeclined);
+      socket.off('fan_call_ended', handleCallEnded);
+      socket.off('fan_call_error', handleCallError);
+      socket.off('fan_call_timeout', handleCallTimeout);
     };
   }, [socket, session?._id, session?.isCreator, videoCallData?.callId]);
 
@@ -311,7 +311,7 @@ export const VideoCallProvider: React.FC<VideoCallProviderProps> = ({ children }
       
        {/* Video Call Modal */}
        {isVideoCallOpen && videoCallData && session && (
-         <VideoCallModal
+         <FanCallModal
            isOpen={isVideoCallOpen}
            onClose={closeVideoCall}
            callData={videoCallData}

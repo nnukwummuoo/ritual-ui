@@ -38,10 +38,32 @@ export default function PaymentAccountPage() {
   const [loading, setLoading] = useState<boolean>(false);
   const [isFetchingAccount, setIsFetchingAccount] = useState<boolean>(true);
   const [returnToWithdrawal, setReturnToWithdrawal] = useState<boolean>(false);
+  const [walletError, setWalletError] = useState<string>("");
   
   // Get user data from Redux and session from useAuth (same as history page)
   const userData = useSelector((state: RootState) => state.profile);
   const { session } = useAuth();
+
+  // Wallet address validation function
+  const validateWalletAddress = (address: string): boolean => {
+    if (!address) return false;
+    
+    // Check if it starts with 0x and has exactly 42 characters
+    if (!address.startsWith('0x') || address.length !== 42) {
+      setWalletError("Invalid wallet address. Please enter a valid USDT (BEP20) address.");
+      return false;
+    }
+    
+    // Check if it contains only valid hexadecimal characters after 0x
+    const hexPattern = /^0x[0-9a-fA-F]{40}$/;
+    if (!hexPattern.test(address)) {
+      setWalletError("Invalid wallet address. Please enter a valid USDT (BEP20) address.");
+      return false;
+    }
+    
+    setWalletError("");
+    return true;
+  };
 
   // Function to get user's full name from Redux or localStorage
   const getUserFullName = useCallback(() => {
@@ -160,6 +182,11 @@ export default function PaymentAccountPage() {
       return;
     }
 
+    // Validate wallet address if it's provided
+    if (formData.walletAddress && !validateWalletAddress(formData.walletAddress)) {
+      return; // Error message is already set by validateWalletAddress
+    }
+
     const payload = {
       method: "crypto",
       ...formData,
@@ -225,28 +252,28 @@ export default function PaymentAccountPage() {
     </div>
   );
 
-  const renderSelect = (
-    name: string,
-    label: string,
-    options: { value: string; label: string }[]
-  ) => (
-    <div className="flex flex-col gap-1">
-      <label className="text-left text-sm text-gray-300">{label}</label>
-      <select
-        name={name}
-        required
-        className="border border-gray-600 text-white bg-gray-700 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-        onChange={(e) => setFormData({ ...formData, [name]: e.target.value })}
-      >
-        <option value="">Select {label}</option>
-        {options.map((opt) => (
-          <option key={opt.value} value={opt.value} className="text-black">
-            {opt.label}
-          </option>
-        ))}
-      </select>
-    </div>
-  );
+  // const renderSelect = (
+  //   name: string,
+  //   label: string,
+  //   options: { value: string; label: string }[]
+  // ) => (
+  //   <div className="flex flex-col gap-1">
+  //     <label className="text-left text-sm text-gray-300">{label}</label>
+  //     <select
+  //       name={name}
+  //       required
+  //       className="border border-gray-600 text-white bg-gray-700 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+  //       onChange={(e) => setFormData({ ...formData, [name]: e.target.value })}
+  //     >
+  //       <option value="">Select {label}</option>
+  //       {options.map((opt) => (
+  //         <option key={opt.value} value={opt.value} className="text-black">
+  //           {opt.label}
+  //         </option>
+  //       ))}
+  //     </select>
+  //   </div>
+  // );
 
   return (
     <div className="min-h-screen bg-gray-900 text-white p-4">
@@ -319,12 +346,32 @@ export default function PaymentAccountPage() {
                   <label className="text-left text-sm text-gray-300">Country of Residence</label>
                   <CountrySelect onSelectCountry={(country) => setFormData({ ...formData, country })} />
                 </div>
-                {renderSelect("cryptoType", "Cryptocurrency Type", [
-                  { value: "BTC", label: "Bitcoin (BTC)" },
-                  { value: "USDT_TRC20", label: "USDT (Tether, TRC20)" },
-                  { value: "USDT_ERC20", label: "USDT (Bep20, ERC20)" },
-                ])}
-                {renderInput("walletAddress", "Wallet Address")}
+               
+                <div className="flex flex-col gap-1">
+                  <label className="text-left text-sm text-gray-300">Wallet Address</label>
+                  <input
+                    type="text"
+                    name="walletAddress"
+                    required
+                    placeholder="Wallet Address BEP20"
+                    value={formData.walletAddress || ''}
+                    className={`border rounded-md text-white bg-gray-700 px-3 py-2 text-sm focus:outline-none focus:ring-2 ${
+                      walletError 
+                        ? 'border-red-500 focus:ring-red-500' 
+                        : 'border-gray-600 focus:ring-purple-500'
+                    }`}
+                    onChange={(e) => {
+                      setFormData({ ...formData, walletAddress: e.target.value });
+                      // Clear error when user starts typing
+                      if (walletError) {
+                        setWalletError("");
+                      }
+                    }}
+                  />
+                  {walletError && (
+                    <p className="text-red-400 text-xs mt-1">{walletError}</p>
+                  )}
+                </div>
 
                 <label className="flex items-start gap-2 text-sm text-gray-400">
                   <input

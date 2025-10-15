@@ -7,10 +7,10 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Image from 'next/image';
 import { IoCall, IoCallSharp, IoVideocam, IoVideocamOff, IoMic, IoMicOff, IoClose } from 'react-icons/io5';
 import { getSocket } from '@/lib/socket';
-import VideoCallBilling from './VideoCallBilling';
+import VideoCallBilling from './FanCallBilling';
 import VIPBadge from './VIPBadge';
 
-interface VideoCallModalProps {
+interface FanCallModalProps {
   isOpen: boolean;
   onClose: () => void;
   callData: {
@@ -35,7 +35,7 @@ interface VideoCallModalProps {
   callRate?: number; // Gold per minute rate
 }
 
-export default function VideoCallModal({ 
+export default function FanCallModal({ 
   isOpen, 
   onClose, 
   callData, 
@@ -45,7 +45,7 @@ export default function VideoCallModal({
   creatorEarnings = 0, 
   isCreator = false, 
   callRate = 1 
-}: VideoCallModalProps) {
+}: FanCallModalProps) {
   const [callStatus, setCallStatus] = useState<'ringing' | 'connecting' | 'connected' | 'ended'>('ringing');
   const [isVideoEnabled, setIsVideoEnabled] = useState(true);
   const [isAudioEnabled, setIsAudioEnabled] = useState(true);
@@ -93,7 +93,7 @@ export default function VideoCallModal({
           setCallTimeout(true);
           // Emit timeout event to terminate the call for both users
           if (socket) {
-            socket.emit('video_call_timeout', { 
+            socket.emit('fan_call_timeout', { 
               callId: callData?.callId,
               callerId: callData?.callerId,
               callerName: callData?.callerName,
@@ -241,7 +241,7 @@ export default function VideoCallModal({
     // Handle ICE candidates
     pc.onicecandidate = (event) => {
       if (event.candidate && socket && callData?.callId) {
-        socket.emit('video_call_ice_candidate', {
+        socket.emit('fan_call_ice_candidate', {
           callId: callData.callId,
           candidate: event.candidate
         });
@@ -297,7 +297,7 @@ export default function VideoCallModal({
       }
     }
 
-    socket.emit('video_call_accept', {
+    socket.emit('fan_call_accept', {
       callId: callData.callId,
       callerId: callData.callerId,
       answererId: currentUserId,
@@ -311,7 +311,7 @@ export default function VideoCallModal({
   const handleDeclineCall = () => {
     if (!callData || !socket) return;
     
-    socket.emit('video_call_decline', {
+    socket.emit('fan_call_decline', {
       callId: callData.callId,
       callerId: callData.callerId,
       answererId: currentUserId
@@ -324,7 +324,7 @@ export default function VideoCallModal({
   const handleEndCall = () => {
     if (!socket) return;
     
-    socket.emit('video_call_end', {
+    socket.emit('fan_call_end', {
       callId: callData?.callId,
       callerId: callData?.callerId,
       userId: currentUserId
@@ -342,7 +342,7 @@ export default function VideoCallModal({
     setCallStartTime(Date.now());
     
     // Emit call again event
-    socket?.emit('video_call_start', {
+    socket?.emit('fan_call_start', {
       answererId: callData.callerId,
       answererName: callData.callerName,
       callerId: currentUserId,
@@ -555,7 +555,7 @@ export default function VideoCallModal({
           return pc.setLocalDescription(offer);
         }).then(() => {
           console.log('📞 [VideoCall] Sending offer to remote peer');
-          socket.emit('video_call_offer', {
+          socket.emit('fan_call_offer', {
             callId: callData?.callId,
             offer: pc.localDescription
           });
@@ -598,7 +598,7 @@ export default function VideoCallModal({
           await pc.setLocalDescription(answer);
           
           console.log('📞 [VideoCall] Sending answer to remote peer');
-          socket.emit('video_call_answer', {
+          socket.emit('fan_call_answer', {
             callId: callData?.callId || data.callId,
             answer: answer
           });
@@ -672,22 +672,22 @@ export default function VideoCallModal({
       // to create notifications and push notifications
     };
 
-    socket.on('video_call_accepted', handleCallAccepted);
-    socket.on('video_call_offer', handleOffer);
-    socket.on('video_call_answer', handleAnswer);
-    socket.on('video_call_ice_candidate', handleIceCandidate);
-    socket.on('video_call_ended', handleCallEnded);
-    socket.on('video_call_timeout', handleCallTimeout);
-    socket.on('video_call_missed', handleMissedCall);
+    socket.on('fan_call_accepted', handleCallAccepted);
+    socket.on('fan_call_offer', handleOffer);
+    socket.on('fan_call_answer', handleAnswer);
+    socket.on('fan_call_ice_candidate', handleIceCandidate);
+    socket.on('fan_call_ended', handleCallEnded);
+    socket.on('fan_call_timeout', handleCallTimeout);
+    socket.on('fan_call_missed', handleMissedCall);
 
     return () => {
-      socket.off('video_call_accepted', handleCallAccepted);
-      socket.off('video_call_offer', handleOffer);
-      socket.off('video_call_answer', handleAnswer);
-      socket.off('video_call_ice_candidate', handleIceCandidate);
-      socket.off('video_call_ended', handleCallEnded);
-      socket.off('video_call_timeout', handleCallTimeout);
-      socket.off('video_call_missed', handleMissedCall);
+      socket.off('fan_call_accepted', handleCallAccepted);
+      socket.off('fan_call_offer', handleOffer);
+      socket.off('fan_call_answer', handleAnswer);
+      socket.off('fan_call_ice_candidate', handleIceCandidate);
+      socket.off('fan_call_ended', handleCallEnded);
+      socket.off('fan_call_timeout', handleCallTimeout);
+      socket.off('fan_call_missed', handleMissedCall);
     };
   }, [socket, isOpen, currentUserId, callData, peerConnection, localStream, createPeerConnection, handleCleanup, onClose]);
 
@@ -708,12 +708,12 @@ export default function VideoCallModal({
   if (!isOpen || !callData) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black bg-opacity-90 flex items-center justify-center">
+    <div className="fixed inset-0 z-[9999] bg-black bg-opacity-90 flex items-center justify-center">
       <div className="w-full h-full flex flex-col">
         
         {/* Media Error Modal */}
         {mediaError && (
-          <div className="fixed inset-0 z-60 bg-black bg-opacity-90 flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[10000] bg-black bg-opacity-90 flex items-center justify-center p-4">
             <div className="bg-white rounded-lg max-w-md w-full p-6">
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">

@@ -10,7 +10,7 @@ interface BookingInfoProps {
   type?: string;
 }
 
-export const Bookinginfo: React.FC<BookingInfoProps> = ({
+export const Requestinfo: React.FC<BookingInfoProps> = ({
   setbookclick,
   amount,
   setsuccess,

@@ -73,7 +73,7 @@ export default function Activity() {
       
       try {
         // Use the dedicated fan meet requests endpoint
-        const response = await fetch(`${URL}/getallfanmeetrequests`, {
+        const response = await fetch(`${URL}/getallfanrequests`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
