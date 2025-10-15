@@ -110,7 +110,7 @@ export const Allview = () => {
         } else if (message.includes("message")) {
           title = "Message Notification";
         } else if (message.includes("booking") || message.includes("request")) {
-          title = "Booking Notification";
+          title = "Request Notification";
         } else if (message.includes("missed") && message.includes("call")) {
           title = "Missed Fan Call";
         } else if (message.includes("fan meet") || message.includes("fan date")) {

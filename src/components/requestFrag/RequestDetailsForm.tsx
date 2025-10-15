@@ -43,7 +43,7 @@ export const RequestDetailsForm: React.FC<RequestDetailsFormProps> = ({
     const isTomorrowDate = isTomorrow(selectedDate);
     
     if (isTodayDate || isTomorrowDate) {
-      toast.error("Today and tomorrow are not available for booking", { autoClose: 2000 });
+      toast.error("Today and tomorrow are not available for Request", { autoClose: 2000 });
       return;
     }
     
