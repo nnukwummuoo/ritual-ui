@@ -59,7 +59,7 @@ const TermCondition = () => {
         </p>
 
         <p className="mb-6">
-         Creator is paid per call booked.
+         Creator is paid per call requested.
           </p>
 
 
@@ -101,7 +101,7 @@ const TermCondition = () => {
           </p>
 
           <p className="mb-6">
-         All Fan Meets and Fan Dates booked through the platform are limited
+         All Fan Meets and Fan Dates requested through the platform are limited
           to a maximum of 30 minutes. This rule is in place to promote safety, 
           fairness, and a casual, non-exploitative fan experience.
           </p>

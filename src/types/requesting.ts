@@ -5,15 +5,13 @@ interface Request {
     [key: string]: any; // fallback for other props
 }
   
-export interface BookingState {
-    bookingmessage: string;
-    bookingstats: "idle" | "loading" | "succeeded" | "failed";
-    requeststats: "idle" | "loading" | "succeeded" | "failed";
+export interface requestState {
     requestmessage: string;
+    requeststats: "idle" | "loading" | "succeeded" | "failed";
     requests: Request[];
     cancelmessage: string;
     cancelstats: "idle" | "loading" | "succeeded" | "failed";
-    bookingnote: any | null;
+    requestnote: any | null;
     notifymessage: string;
     notifystats: "idle" | "loading" | "succeeded" | "failed";
     acceptmessage: string;

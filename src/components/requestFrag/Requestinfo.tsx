@@ -3,15 +3,15 @@
 import React, { useState } from "react";
 import Link from "next/link";
 
-interface BookingInfoProps {
-  setbookclick: (value: boolean) => void;
+interface requestInfoProps {
+  setrequestclick: (value: boolean) => void;
   amount: number | string;
   setsuccess: (value: boolean) => void;
   type?: string;
 }
 
-export const Requestinfo: React.FC<BookingInfoProps> = ({
-  setbookclick,
+export const Requestinfo: React.FC<requestInfoProps> = ({
+  setrequestclick,
   amount,
   setsuccess,
   type,
@@ -71,7 +71,7 @@ export const Requestinfo: React.FC<BookingInfoProps> = ({
           }`}
           onClick={() => {
             setsuccess(true);
-            setbookclick(false);
+            setrequestclick(false);
           }}
         >
           Continue
@@ -79,7 +79,7 @@ export const Requestinfo: React.FC<BookingInfoProps> = ({
 
         <button
           className="w-1/2 p-2 mt-3 ml-1 mr-1 text-sm bg-red-500 rounded-lg shadow-2xl"
-          onClick={() => setbookclick(false)}
+          onClick={() => setrequestclick(false)}
         >
           Cancel
         </button>

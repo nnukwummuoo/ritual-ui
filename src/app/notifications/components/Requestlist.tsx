@@ -7,7 +7,7 @@ import person from "../../../../icons/person.svg";
 //   Cancelrequest,
 //   deleterequest,
 //   resetstat,
-// } from "../../../../app/features/booking/booking";
+// } from "../../../../app/features/request/request";
 // import { useSelector, useDispatch } from "react-redux";
 
 interface Request {
@@ -34,7 +34,7 @@ export function Requestlist({
   let [color, setColor] = useState("#d49115");
   let [image, setimage] = useState(person);
   // const token = useSelector((state) => state.register.refreshtoken);
-  // const cancelstats = useSelector((state) => state.booking.cancelstats);
+  // const cancelstats = useSelector((state) => state.request.cancelstats);
   // const userid = useSelector((state) => state.register.userID);
   // const dispatch = useDispatch();
   // const photo = useSelector((state) => state.comprofile.profilephoto);

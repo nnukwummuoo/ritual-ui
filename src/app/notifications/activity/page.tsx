@@ -14,7 +14,7 @@ import { RootState, AppDispatch } from "@/store/store";
 import { useAuth } from "@/lib/context/auth-context";
 
 interface Request {
-  bookingId: string;
+  requestId: string;
   type: 'fan' | 'creator';
   status: "request" | "expired" | "completed" | "accepted" | "declined" | "cancelled";
   otherUser?: {
@@ -94,7 +94,7 @@ export default function Activity() {
           // Transform the data to match our Request interface
           const transformedRequests: Request[] = data.requests.map((req: any) => {
             return {
-              bookingId: req.bookingId,
+              requestId: req.requestId,
               type: req.type, // Already determined by backend
               status: normalizeStatus(req.status),
               otherUser: req.otherUser,
@@ -126,10 +126,10 @@ export default function Activity() {
   // Mark activity notifications as seen when component mounts
   useEffect(() => {
     if (userid && token && notifications && notifications.length > 0) {
-      // Only mark activity-related notifications as seen (booking, request, fan meet related)
+      // Only mark activity-related notifications as seen (request, request, fan meet related)
       const activityNotifications = notifications.filter(notification => {
         const message = notification.message.toLowerCase();
-        return (message.includes('booking') || 
+        return (message.includes('request') || 
                 message.includes('request') ||
                 message.includes('fan meet') ||
                 message.includes('accepted') ||
@@ -146,9 +146,9 @@ export default function Activity() {
     }
   }, [dispatch, userid, token, notifications]);
 
-  const handleStatusChange = (bookingId: string, newStatus: string) => {
+  const handleStatusChange = (requestId: string, newStatus: string) => {
     setRequests(prev => prev.map(req => 
-      req.bookingId === bookingId ? { ...req, status: newStatus as Request['status'] } : req
+      req.requestId === requestId ? { ...req, status: newStatus as Request['status'] } : req
     ));
   };
 
@@ -193,7 +193,7 @@ export default function Activity() {
       </div>
       
       {requests.map((request: Request) => (
-        <div key={request.bookingId} className="relative">
+        <div key={request.requestId} className="relative">
           <RequestCard
             type={request.type}
             img={request.otherUser?.photolink || "/picture-1.jfif"}
@@ -201,7 +201,7 @@ export default function Activity() {
             name={request.otherUser?.name || "Unknown User"}
             titles={request.otherUser?.isCreator ? ["Creator"] : ["Fan"]}
             exp={request.timeRemaining || "Expired"}
-            bookingId={request.bookingId}
+            requestId={request.requestId}
             price={request.price}
             details={request.date && request.time && request.venue ? {
               date: request.date,

@@ -686,7 +686,7 @@ export default function Creatorbyid () {
               userid={rating.fanId}
               rating={rating.rating}
               hostType={rating.hostType}
-              bookingId={rating.bookingId}
+              requestId={rating.requestId}
             />
           );
         });
@@ -1547,7 +1547,7 @@ export default function Creatorbyid () {
             >
               <div onClick={(e) => e.stopPropagation()}>
                 <Requestinfo
-                    setbookclick={setrequestclick}
+                    setrequestclick={setrequestclick}
                   amount={creator.price}
                   setsuccess={setsuccess}
                   type={creator.hosttype}

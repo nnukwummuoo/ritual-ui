@@ -1997,7 +1997,7 @@ const PostModal = () => {
                     <div className="space-y-4">
                       {/* Fan-to-Creator Ratings */}
                       {ratings.map((review) => (
-                        <div key={`fan-to-creator-${review._id || review.bookingId}`} className="bg-gray-900 rounded-lg p-4 flex flex-col">
+                        <div key={`fan-to-creator-${review._id || review.requestId}`} className="bg-gray-900 rounded-lg p-4 flex flex-col">
                         <div className="flex items-center mb-3">
                           <div className="relative w-10 h-10 rounded-full overflow-hidden mr-3 bg-gradient-to-r from-blue-500 to-purple-600 p-0.5">
                             <div className="w-full h-full rounded-full overflow-hidden bg-black">
@@ -2057,7 +2057,7 @@ const PostModal = () => {
 
                       {/* Creator-to-Fan Ratings */}
                       {fanRatings.map((rating) => (
-                        <div key={`creator-to-fan-${rating._id || rating.bookingId}`} className="bg-gray-900 rounded-lg p-4 flex flex-col">
+                        <div key={`creator-to-fan-${rating._id || rating.requestId}`} className="bg-gray-900 rounded-lg p-4 flex flex-col">
                           <div className="flex items-center mb-3">
                             <div className="relative w-10 h-10 rounded-full overflow-hidden mr-3 bg-gradient-to-r from-green-500 to-teal-600 p-0.5">
                               <div className="w-full h-full rounded-full overflow-hidden bg-black">

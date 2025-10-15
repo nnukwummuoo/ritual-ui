@@ -5,7 +5,7 @@ import React, { useState, useEffect } from "react";
 // import {
 //   acceptedr_req,
 //   resetstat,
-// } from "../../../app/features/booking/booking";
+// } from "../../../app/features/request/request";
 import PacmanLoader from "react-spinners/RingLoader";
 import { Acceptedlist } from "./Acceptedlist";
 // import { useAuth } from "../../../hooks/useAuth";
@@ -53,15 +53,15 @@ const user = {
   creator_portfolio: false
 }
 export const Acceptedview = () => {
-  // const Accepted = useSelector((state) => state.booking.acceptedList);
+  // const Accepted = useSelector((state) => state.request.acceptedList);
   const [loading, setloading] = useState(false);
   const [success, setsuccess] = useState(false);
   let [color, setColor] = useState("#c2d0e1");
 
   // const userid = useSelector((state) => state.register.userID);
   // const token = useSelector((state) => state.register.refreshtoken);
-  // const acceptedReqstat = useSelector((state) => state.booking.acceptedReqstat);
-  // const acceptedReqMes = useSelector((state) => state.booking.acceptedReqMes);
+  // const acceptedReqstat = useSelector((state) => state.request.acceptedReqstat);
+  // const acceptedReqMes = useSelector((state) => state.request.acceptedReqMes);
   // const dispatch = useDispatch();
 
   // useEffect(() => {

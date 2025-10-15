@@ -181,7 +181,7 @@ interface CardProps {
     name: string;
     img: string;
     status: "request" | "expired" | "completed" | "accepted" | "declined" | "cancelled";
-    bookingId?: string;
+    requestId?: string;
     price?: number;
     details?: FanMeetDetails;
     userid?: string;
@@ -190,10 +190,10 @@ interface CardProps {
     hosttype?: string;
     isVip?: boolean;
     vipEndDate?: string | null;
-    onStatusChange?: (bookingId: string, newStatus: string) => void;
+    onStatusChange?: (requestId: string, newStatus: string) => void;
 }
 
-export default function RequestCard({exp, img, name, titles=["fan"], status, type="fan", bookingId, price, details, userid, creator_portfolio_id, targetUserId, hosttype, isVip=false, vipEndDate=null, onStatusChange}: CardProps) {
+export default function RequestCard({exp, img, name, titles=["fan"], status, type="fan", requestId, price, details, userid, creator_portfolio_id, targetUserId, hosttype, isVip=false, vipEndDate=null, onStatusChange}: CardProps) {
   const [loading, setLoading] = useState(false);
   const [currentStatus, setCurrentStatus] = useState(status);
   const [showDetails, setShowDetails] = useState(false);
@@ -250,16 +250,16 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
       }
     }
 
-    if (!bookingId || !userId) {
+    if (!requestId || !userId) {
       return;
     }
 
-    // For fans: check if they have rated this booking (fan-to-creator)
+    // For fans: check if they have rated this request (fan-to-creator)
     if (type === "fan" && currentStatus === "completed") {
       try {
         // Force localhost for development
         const apiUrl = process.env.NODE_ENV === "development" ? "http://localhost:3100" : URL;
-        const response = await fetch(`${apiUrl}/review/check/${bookingId}/${userId}/fan-to-creator`);
+        const response = await fetch(`${apiUrl}/review/check/${requestId}/${userId}/fan-to-creator`);
         const data = await response.json();
         
         if (data.ok && data.hasRated) {
@@ -272,12 +272,12 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
       }
     }
 
-    // For creators: check if this booking has been rated by the fan (fan-to-creator)
+    // For creators: check if this request has been rated by the fan (fan-to-creator)
     if (type === "creator" && currentStatus === "completed") {
       try {
         // Force localhost for development
         const apiUrl = process.env.NODE_ENV === "development" ? "http://localhost:3100" : URL;
-        const response = await fetch(`${apiUrl}/review/check/${bookingId}/${userid}/fan-to-creator`); // Use fan's userid
+        const response = await fetch(`${apiUrl}/review/check/${requestId}/${userid}/fan-to-creator`); // Use fan's userid
         const data = await response.json();
         
         if (data.ok && data.hasRated) {
@@ -301,7 +301,7 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
     if (type === "creator" && currentStatus === "completed") {
       try {
         const apiUrl = process.env.NODE_ENV === "development" ? "http://localhost:3100" : URL;
-        const fanRatingResponse = await fetch(`${apiUrl}/review/check/${bookingId}/${userId}/creator-to-fan`);
+        const fanRatingResponse = await fetch(`${apiUrl}/review/check/${requestId}/${userId}/creator-to-fan`);
         const fanRatingData = await fanRatingResponse.json();
         
         if (fanRatingData.ok && fanRatingData.hasRated) {
@@ -325,7 +325,7 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
     if (type === "fan" && currentStatus === "completed") {
       try {
         const apiUrl = process.env.NODE_ENV === "development" ? "http://localhost:3100" : URL;
-        const fanRatingResponse = await fetch(`${apiUrl}/review/check/${bookingId}/${creator_portfolio_id}/creator-to-fan`);
+        const fanRatingResponse = await fetch(`${apiUrl}/review/check/${requestId}/${creator_portfolio_id}/creator-to-fan`);
         const fanRatingData = await fanRatingResponse.json();
         
         if (fanRatingData.ok && fanRatingData.hasRated) {
@@ -344,7 +344,7 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
         setFanRatingData(null);
       }
     }
-  }, [bookingId, currentUserId, type, currentStatus, userid, name, creator_portfolio_id]);
+  }, [requestId, currentUserId, type, currentStatus, userid, name, creator_portfolio_id]);
 
   // Check for existing rating when component loads or dependencies change
   useEffect(() => {
@@ -354,18 +354,18 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
   // Socket integration for real-time updates
   useEffect(() => {
     const socket = getSocket();
-    if (!socket || !bookingId) return;
+    if (!socket || !requestId) return;
 
     // Listen for fan meet request status updates
     const handleFanRequestStatusUpdate = (data: { 
-      bookingId: string; 
+      requestId: string; 
       status: string; 
       userid: string; 
       creator_portfolio_id: string;
       message?: string;
     }) => {
       // Check if this update is for this specific request
-      if (data.bookingId === bookingId) {
+      if (data.requestId === requestId) {
         
         // Update local status
         setCurrentStatus(data.status as "request" | "expired" | "completed" | "accepted" | "declined" | "cancelled");
@@ -373,7 +373,7 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
         // Don't auto-show rating modal - let user click stars manually
         
         // Notify parent component
-        onStatusChange?.(data.bookingId, data.status);
+        onStatusChange?.(data.requestId, data.status);
         
         // Show toast notification
         if (data.message) {
@@ -403,7 +403,7 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
     // Listen for fan meet request updates
     socket.on('fan_request_status_update', handleFanRequestStatusUpdate);
     
-    // Listen for general booking updates (fallback)
+    // Listen for general request updates (fallback)
     socket.on('request_status_update', handleFanRequestStatusUpdate);
 
     // Cleanup listeners on unmount
@@ -411,7 +411,7 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
         socket.off('fan_request_status_update', handleFanRequestStatusUpdate);
       socket.off('request_status_update', handleFanRequestStatusUpdate);
     };
-  }, [bookingId, onStatusChange, hosttype]);
+  }, [requestId, onStatusChange, hosttype]);
 
   // Update local status when prop changes
   useEffect(() => {
@@ -430,7 +430,7 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
 
   // API call functions
   const handleAccept = async () => {
-    if (!bookingId || !details) return;
+    if (!requestId || !details) return;
     setLoading(true);
     try {
       const response = await fetch(`${URL}/acceptrequest`, {
@@ -448,7 +448,7 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
       
       if (response.ok) {
         setCurrentStatus('accepted');
-        onStatusChange?.(bookingId, 'accepted');
+        onStatusChange?.(requestId, 'accepted');
         // Don't show toast here - the socket notification will handle it
       } else {
         const serviceType = hosttype || "Fan request";
@@ -463,7 +463,7 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
   };
 
   const handleDecline = async () => {
-    if (!bookingId || !details) return;
+    if (!requestId || !details) return;
     setLoading(true);
     try {
       const requestBody = {
@@ -483,7 +483,7 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
       
       if (response.ok) {
         setCurrentStatus('declined');
-        onStatusChange?.(bookingId, 'declined');
+        onStatusChange?.(requestId, 'declined');
         // Don't show toast here - the socket notification will handle it
       } else {
         const errorData = await response.json();
@@ -499,14 +499,14 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
   };
 
     const handleCancel = async () => {
-      if (!bookingId || !details || !userid || !creator_portfolio_id) {
+      if (!requestId || !details || !userid || !creator_portfolio_id) {
         toast.error('Missing required data for cancel request');
         return;
       }
       setLoading(true);
       try {
         const requestBody = {
-          id: bookingId,
+          id: requestId,
           userid: userid,
           creator_portfolio_id: creator_portfolio_id
         };
@@ -521,7 +521,7 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
         
         if (response.ok) {
           setCurrentStatus('cancelled');
-          onStatusChange?.(bookingId, 'cancelled');
+          onStatusChange?.(requestId, 'cancelled');
           // Don't show toast here - the socket notification will handle it
         } else {
           const errorData = await response.json();
@@ -537,7 +537,7 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
     };
 
   const handleComplete = async () => {
-    if (!bookingId) return;
+    if (!requestId) return;
     
     // If it's a Fan Call, start video call instead of completing
     if (hosttype === "Fan call") {
@@ -547,7 +547,7 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
       return;
     }
     
-    // For Fan Meet/Fan Date, complete the booking
+    // For Fan Meet/Fan Date, complete the request
     setLoading(true);
     try {
       const response = await fetch(`${URL}/completerequests`, {
@@ -556,7 +556,7 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          bookingId,
+          requestId,
           userid: userid,
           creator_portfolio_id: creator_portfolio_id
         })
@@ -564,7 +564,7 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
       
       if (response.ok) {
         setCurrentStatus('completed');
-        onStatusChange?.(bookingId, 'completed');
+        onStatusChange?.(requestId, 'completed');
         
         // Don't auto-show rating modal - let user click stars manually
         // Don't show toast here - the socket notification will handle it
@@ -600,16 +600,16 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
     
 
     console.log('🔍 [handleRatingSubmit] Fan rating creator - checking IDs:', {
-      bookingId,
+      requestId,
       creator_portfolio_id,
       userId,
       currentUserId,
       userid
     });
 
-    if (!bookingId || !creator_portfolio_id || !userId) {
+    if (!requestId || !creator_portfolio_id || !userId) {
       console.error('❌ [handleRatingSubmit] Missing required information:', {
-        bookingId: !!bookingId,
+        requestId: !!requestId,
         creator_portfolio_id: !!creator_portfolio_id,
         userId: !!userId
       });
@@ -620,7 +620,7 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
     setRatingLoading(true);
     try {
       const requestBody = {
-        bookingId,
+        requestId,
         creatorId: creator_portfolio_id,
         fanId: userId, // Use current logged-in user ID
         rating,
@@ -663,7 +663,7 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
     console.log('🔍 [handleFanRatingSubmit] Frontend starting fan rating submission:', {
       rating,
       feedback: feedback.substring(0, 50) + '...',
-      bookingId,
+      requestId,
       currentUserId,
       userid,
       hosttype,
@@ -692,12 +692,12 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
       currentUserId,
       userId,
       userid,
-      bookingId: !!bookingId
+      requestId: !!requestId
     });
     
-    if (!bookingId || !userId || !userid) {
+    if (!requestId || !userId || !userid) {
       console.error('❌ [handleFanRatingSubmit] Missing required information:', {
-        bookingId: !!bookingId,
+        requestId: !!requestId,
         userId: !!userId,
         userid: !!userid
       });
@@ -708,9 +708,9 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
     setFanRatingLoading(true);
     try {
       const requestBody = {
-        bookingId,
+        requestId,
         creatorId: userId, // Current user is the creator (when type === "creator")
-        fanId: userid, // Fan who made the booking
+        fanId: userid, // Fan who made the request
         rating,
         feedback,
         hostType: hosttype || "Fan Request",

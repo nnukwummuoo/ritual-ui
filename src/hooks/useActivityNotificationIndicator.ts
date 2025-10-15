@@ -19,10 +19,10 @@ export const useActivityNotificationIndicator = () => {
       };
     }
 
-    // Filter only activity-related notifications (booking, request, fan meet related)
+    // Filter only activity-related notifications (request, request, fan meet related)
     const activityNotifications = notifications.filter(notification => {
       const message = notification.message.toLowerCase();
-      return message.includes('booking') || 
+      return message.includes('request') || 
              message.includes('request') ||
              message.includes('fan meet') ||
              message.includes('accepted') ||
