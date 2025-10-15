@@ -34,11 +34,15 @@ const WithdrawalRequests = () => {
   // Color array for containers
   const colors = ['purple', 'orange', 'pink', 'yellow', 'black'];
   
-  // Get color for a specific index
-  const getColorForIndex = (index: number) => colors[index % colors.length];
+  // Get color for a specific withdrawal ID (consistent across filters)
+  const getColorForWithdrawal = (withdrawalId: string) => {
+    // Use the withdrawal ID to generate a consistent color
+    const hash = withdrawalId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    return colors[hash % colors.length];
+  };
 
   // Filter withdrawals based on search term and selected color
-  const filteredWithdrawals = withdrawals.filter((req, index) => {
+  const filteredWithdrawals = withdrawals.filter((req) => {
     const userFullName = (req as any).userId ? `${(req as any).userId.firstname || ''} ${(req as any).userId.lastname || ''}`.trim() : '';
     const userNickname = (req as any).userId?.nickname || '';
     const credentialsFullName = req.credentials?.fullName || '';
@@ -48,7 +52,8 @@ const WithdrawalRequests = () => {
       userNickname.toLowerCase().includes(searchTerm.toLowerCase()) ||
       credentialsFullName.toLowerCase().includes(searchTerm.toLowerCase());
     
-    const matchesColor = !selectedColor || getColorForIndex(index) === selectedColor;
+    const withdrawalColor = getColorForWithdrawal(req._id);
+    const matchesColor = !selectedColor || withdrawalColor === selectedColor;
     
     return matchesSearch && matchesColor;
   });
@@ -164,8 +169,8 @@ const WithdrawalRequests = () => {
                 onClick={() => setSelectedColor(color)}
                 className={`px-3 py-1 rounded-full text-xs font-medium transition-colors whitespace-nowrap ${
                   selectedColor === color
-                    ? `bg-${color}-600 text-white`
-                    : `bg-${color}-500 text-white hover:bg-${color}-600`
+                    ? color === 'black' ? 'bg-black text-white' : `bg-${color}-600 text-white`
+                    : color === 'black' ? 'bg-black text-white hover:bg-gray-800' : `bg-${color}-500 text-white hover:bg-${color}-600`
                 }`}
               >
                 {color.charAt(0).toUpperCase() + color.slice(1)}
@@ -179,15 +184,15 @@ const WithdrawalRequests = () => {
         <p className="text-center text-gray-300">Loading...</p>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredWithdrawals?.map((req, index) => {
-            const containerColor = getColorForIndex(index);
+          {filteredWithdrawals?.map((req) => {
+            const containerColor = getColorForWithdrawal(req._id);
             return (
               <div
                 key={req._id}
                 className="bg-gray-800 rounded-xl shadow-lg p-5 hover:shadow-emerald-400 transition relative"
               >
                 {/* Colored Circle */}
-                <div className={`absolute bottom-4 right-4 w-4 h-4 rounded-full bg-${containerColor}-500`}></div>
+                <div className={`absolute bottom-4 right-4 w-4 h-4 rounded-full ${containerColor === 'black' ? 'bg-black' : `bg-${containerColor}-500`}`}></div>
                 
                 <div className="flex justify-between items-center mb-3">
                   <div>
