@@ -9,6 +9,7 @@ import {
     IoGridOutline,
     IoHomeOutline,
     IoChatbubbleOutline,
+    IoAnalyticsOutline,
 } from "react-icons/io5";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "@/store/store";
@@ -25,6 +26,7 @@ import WithdrawalRequests from "./withdrawal/page";
 import Users from "./users/page";
 import Reports from "./reports/page";
 import AdminSupportChat from "./support-chat/page";
+import VipAnalysisPage from "./vip-analysis/page";
 import PushNotificationToggle from "@/components/PushNotificationToggle";
 
 const AdminPage = () => {
@@ -124,6 +126,11 @@ const AdminPage = () => {
       name: "Reports",
       icon: <IoDocumentTextOutline size={22} />,
       component: <Reports />,
+    },
+    {
+      name: "VIP Analysis",
+      icon: <IoAnalyticsOutline size={22} />,
+      component: <VipAnalysisPage />,
     },
     {
       name: "Support Chat",
