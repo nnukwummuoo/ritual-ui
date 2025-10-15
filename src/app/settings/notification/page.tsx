@@ -2,7 +2,7 @@ import React from "react";
 import { FaAngleLeft, FaAngleRight } from "react-icons/fa";
 import { FiUser } from "react-icons/fi";
 import { MdAlternateEmail } from "react-icons/md";
-import { MdLaptopChromebook } from "react-icons/md";
+import { MdLaptopChromerequest } from "react-icons/md";
 import { IoMdNotificationsOutline } from "react-icons/io";
 import { useRouter } from "next/navigation";
 import NavigateBack from "../_components/NavigateBtn";

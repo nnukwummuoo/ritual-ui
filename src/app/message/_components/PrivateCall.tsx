@@ -10,7 +10,7 @@ import { useRouter } from "next/navigation";
 // import {
 //   set_reject_call,
 //   add_call_data,
-// } from "../../app/features/booking/booking";
+// } from "../../app/features/request/request";
 // import { set_calling } from "../../app/features/message/messageSlice";
 
 // let callMin = null;
@@ -40,7 +40,7 @@ export const PrivateCallPage = () => {
   // const fan_call_data = useSelector((state) => state.message.fan_call_data);
   // const spd_call = useSelector((state) => state.message.spd_call);
   // const login = useSelector((state) => state.register.logedin);
-  // const rejectCall = useSelector((state) => state.booking.rejectCall);
+  // const rejectCall = useSelector((state) => state.request.rejectCall);
   // const dispatch = useDispatch();
 
   // const userid = useSelector((state) => state.register.userID);
@@ -55,7 +55,7 @@ export const PrivateCallPage = () => {
   const startCall = useRef(null);
   const [showButtons, setShowButtons] = useState<boolean>(false);
 
-  // const callInfo = useSelector((state) => state.booking.privatecallData);
+  // const callInfo = useSelector((state) => state.request.privatecallData);
 
 
   // const toggleButtonsVisibility = () => {

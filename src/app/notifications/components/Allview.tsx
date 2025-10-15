@@ -93,7 +93,7 @@ export const Allview = () => {
         let status: "approved" | "rejected" | "pending" = "pending";
         if (message.includes("approve")) status = "approved";
         else if (message.includes("reject")) status = "rejected";
-        else if (message.includes("follow") || message.includes("unfollow") || message.includes("like") || message.includes("comment") || message.includes("message") || message.includes("booking") || message.includes("request") || message.includes("missed") || message.includes("accept") || message.includes("decline") || message.includes("cancel") || message.includes("complete")) {
+        else if (message.includes("follow") || message.includes("unfollow") || message.includes("like") || message.includes("comment") || message.includes("message") || message.includes("request") || message.includes("request") || message.includes("missed") || message.includes("accept") || message.includes("decline") || message.includes("cancel") || message.includes("complete")) {
           status = "approved"; // These are informational notifications, not pending actions
         }
 
@@ -109,7 +109,7 @@ export const Allview = () => {
           title = "Comment Notification";
         } else if (message.includes("message")) {
           title = "Message Notification";
-        } else if (message.includes("booking") || message.includes("request")) {
+        } else if (message.includes("request") || message.includes("request")) {
           title = "Request Notification";
         } else if (message.includes("missed") && message.includes("call")) {
           title = "Missed Fan Call";
@@ -200,8 +200,8 @@ export const Allview = () => {
                 </div>
               )}
 
-              {/* Booking notifications show activity button */}
-              {title === "Booking Notification" && (
+              {/* request notifications show activity button */}
+              {title === "request Notification" && (
                 <div className="pt-2">
                   <Link href="/notifications/activity">
                     <button

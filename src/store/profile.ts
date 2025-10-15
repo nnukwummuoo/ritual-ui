@@ -1046,7 +1046,7 @@ const profile = createSlice({
         // ✅ Mark only activity notifications as seen locally
         state.notifications = state.notifications.map((n) => {
           const message = n.message.toLowerCase();
-          const isActivityNotification = message.includes('booking') || 
+          const isActivityNotification = message.includes('request') || 
                                        message.includes('request') ||
                                        message.includes('fan meet') ||
                                        message.includes('accepted') ||

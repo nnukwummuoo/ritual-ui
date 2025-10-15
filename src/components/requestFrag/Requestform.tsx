@@ -6,7 +6,7 @@ import {addMonths} from "date-fns/addMonths";
 import {format} from "date-fns/format";
 import RotateLoader from "react-spinners/RotateLoader";
 import { useSelector, useDispatch } from "react-redux";
-import { bookAcreator, bookmdel, resetstat } from "@/store/requests";
+import { requestAcreator, requestmdel, resetstat } from "@/store/requests";
 import { RootState, AppDispatch } from "@/store/store"; // adjust path based on your store setup
 import { toast } from "material-react-toastify";
 import { useUserId } from "@/lib/hooks/useUserId";
@@ -39,31 +39,31 @@ export const Requestform: React.FC<RequestFormProps> = ({
 
   const userid = useUserId();
   const token = useSelector((state: any) => state.register.refreshtoken);
-  const bookingstats = useSelector((state: RootState) => state.booking.bookingstats);
-  const bookingmessage = useSelector((state: RootState) => state.booking.bookingmessage);
+  const requeststats = useSelector((state: RootState) => state.request.requeststats);
+  const requestmessage = useSelector((state: RootState) => state.request.requestmessage);
 
   const dispatch = useDispatch<AppDispatch>();
 
   useEffect(() => {
-    if (bookingstats === "succeeded") {
+    if (requeststats === "succeeded") {
       setsuccess(false);
       setrequested(true);
       setLoading(false);
       // dispatch(resetstat());
     }
 
-    if (bookingstats === "failed") {
+    if (requeststats === "failed") {
       setsuccess(false);
       setLoading(false);
       // dispatch(resetstat());
       toast.error(
-        typeof bookingmessage === "string"
-          ? bookingmessage
+        typeof requestmessage === "string"
+          ? requestmessage
           : "Please check internet connection",
         { autoClose: 2000 }
       );
     }
-  }, [bookingstats, bookingmessage, dispatch, setrequested, setsuccess, toast]);
+  }, [requeststats, requestmessage, dispatch, setrequested, setsuccess, toast]);
 
   // Set max date to 3 months from today
   const maxDate = format(addMonths(new Date(), 3), "yyyy-MM-dd");
@@ -84,12 +84,12 @@ export const Requestform: React.FC<RequestFormProps> = ({
       return;
     }
 
-    if (bookingstats !== "loading") {
+    if (requeststats !== "loading") {
       setLoading(true);
       const tst=toast.loading("Your request is being processed")
       try {
-        console.log('Sending booking request with date:', date);
-        const res = await bookAcreator({
+        console.log('Sending request request with date:', date);
+        const res = await requestAcreator({
           place,
           time,
           date,

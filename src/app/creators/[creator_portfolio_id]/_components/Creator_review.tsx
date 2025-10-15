@@ -20,7 +20,7 @@ interface CreatorReviewProps {
   posttime: string;
   rating?: number;
   hostType?: string;
-  bookingId?: string;
+  requestId?: string;
 }
 
 export const CreatorReview: React.FC<CreatorReviewProps> = ({
@@ -32,7 +32,7 @@ export const CreatorReview: React.FC<CreatorReviewProps> = ({
   posttime,
   rating,
   hostType,
-  bookingId,
+  requestId,
 }) => {
   const date1 = new Date(parseInt(posttime));
   const date = format(date1, "MM/dd/yyyy 'at' h:mm a");
