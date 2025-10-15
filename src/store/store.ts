@@ -2,7 +2,7 @@ import { configureStore } from '@reduxjs/toolkit';
 import followingReducer from './followingSlice';
 import goldstatReducer from './goldstatSlice';
 import creatorSlice from './creatorSlice';
-import bookingSlice from './booking';
+import bookingSlice from './requests';
 import registerReducer from './registerSlice';
 import profileReducer from './profile';
 import viewingProfileReducer from './viewingProfile';

@@ -4,6 +4,12 @@ export interface WithdrawalRequest {
   status: "pending" | "paid";
   requestedAt?: string;
   createdAt?: string;
+  userId?: {
+    _id: string;
+    firstname?: string;
+    lastname?: string;
+    nickname?: string;
+  };
   credentials?: {
     method?: string;
     fullName?: string;

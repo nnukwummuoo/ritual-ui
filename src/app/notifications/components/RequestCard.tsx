@@ -9,7 +9,7 @@ import { IoCalendarOutline, IoLocationOutline, IoTimeOutline, IoWarningOutline, 
 import VIPBadge from "@/components/VIPBadge";
 import { getSocket } from '@/lib/socket';
 import { useRouter } from 'next/navigation';
-import { useVideoCall } from '@/contexts/VideoCallContext';
+import { useVideoCall } from '@/contexts/FanCallContext';
 import RatingModal from '@/components/RatingModal';
 import FanRatingModal from '@/components/FanRatingModal';
 import { useSelector } from "react-redux";
@@ -357,7 +357,7 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
     if (!socket || !bookingId) return;
 
     // Listen for fan meet request status updates
-    const handleFanMeetStatusUpdate = (data: { 
+    const handleFanRequestStatusUpdate = (data: { 
       bookingId: string; 
       status: string; 
       userid: string; 
@@ -381,7 +381,7 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
         } else {
           // Default messages based on status and host type
           const getStatusMessage = (status: string, hostType?: string) => {
-            const serviceType = hostType || "Fan meet";
+            const serviceType = hostType || "Fan request";
             const statusMessages = {
               'accepted': `🎉 Your ${serviceType} request has been accepted!`,
               'declined': `❌ Your ${serviceType} request was declined`,
@@ -401,15 +401,15 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
     };
 
     // Listen for fan meet request updates
-    socket.on('fan_meet_status_update', handleFanMeetStatusUpdate);
+    socket.on('fan_request_status_update', handleFanRequestStatusUpdate);
     
     // Listen for general booking updates (fallback)
-    socket.on('booking_status_update', handleFanMeetStatusUpdate);
+    socket.on('request_status_update', handleFanRequestStatusUpdate);
 
     // Cleanup listeners on unmount
     return () => {
-      socket.off('fan_meet_status_update', handleFanMeetStatusUpdate);
-      socket.off('booking_status_update', handleFanMeetStatusUpdate);
+        socket.off('fan_request_status_update', handleFanRequestStatusUpdate);
+      socket.off('request_status_update', handleFanRequestStatusUpdate);
     };
   }, [bookingId, onStatusChange, hosttype]);
 
@@ -433,7 +433,7 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
     if (!bookingId || !details) return;
     setLoading(true);
     try {
-      const response = await fetch(`${URL}/acceptbook`, {
+      const response = await fetch(`${URL}/acceptrequest`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -451,11 +451,11 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
         onStatusChange?.(bookingId, 'accepted');
         // Don't show toast here - the socket notification will handle it
       } else {
-        const serviceType = hosttype || "Fan meet";
+        const serviceType = hosttype || "Fan request";
         toast.error(`Failed to accept ${serviceType.toLowerCase()} request`);
       }
     } catch {
-      const serviceType = hosttype || "Fan meet";
+      const serviceType = hosttype || "Fan request";
       toast.error(`Error accepting ${serviceType.toLowerCase()} request`);
     } finally {
       setLoading(false);
@@ -473,7 +473,7 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
         time: details.time
       };
       
-      const response = await fetch(`${URL}/declinebook`, {
+      const response = await fetch(`${URL}/declinerequest`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -487,11 +487,11 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
         // Don't show toast here - the socket notification will handle it
       } else {
         const errorData = await response.json();
-        const serviceType = hosttype || "Fan meet";
+        const serviceType = hosttype || "Fan request";
         toast.error(errorData.message || `Failed to decline ${serviceType.toLowerCase()} request`);
       }
     } catch {
-      const serviceType = hosttype || "Fan meet";
+      const serviceType = hosttype || "Fan request";
       toast.error(`Error declining ${serviceType.toLowerCase()} request`);
     } finally {
       setLoading(false);
@@ -525,11 +525,11 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
           // Don't show toast here - the socket notification will handle it
         } else {
           const errorData = await response.json();
-          const serviceType = hosttype || "Fan meet";
+          const serviceType = hosttype || "Fan request";
           toast.error(errorData.message || `Failed to cancel ${serviceType.toLowerCase()} request`);
         }
       } catch {
-        const serviceType = hosttype || "Fan meet";
+        const serviceType = hosttype || "Fan request";
         toast.error(`Error cancelling ${serviceType.toLowerCase()} request`);
       } finally {
         setLoading(false);
@@ -550,7 +550,7 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
     // For Fan Meet/Fan Date, complete the booking
     setLoading(true);
     try {
-      const response = await fetch(`${URL}/completebook`, {
+      const response = await fetch(`${URL}/completerequests`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -569,11 +569,11 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
         // Don't auto-show rating modal - let user click stars manually
         // Don't show toast here - the socket notification will handle it
       } else {
-        const serviceType = hosttype || "Fan meet";
+        const serviceType = hosttype || "Fan request";
         toast.error(`Failed to complete ${serviceType.toLowerCase()}`);
       }
     } catch {
-      const serviceType = hosttype || "Fan meet";
+          const serviceType = hosttype || "Fan request";
       toast.error(`Error completing ${serviceType.toLowerCase()}`);
     } finally {
       setLoading(false);
@@ -625,7 +625,7 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
         fanId: userId, // Use current logged-in user ID
         rating,
         feedback,
-        hostType: hosttype || "Fan Meet",
+        hostType: hosttype || "Fan Request",
         ratingType: "fan-to-creator"
       };
 
@@ -713,7 +713,7 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
         fanId: userid, // Fan who made the booking
         rating,
         feedback,
-        hostType: hosttype || "Fan Meet",
+        hostType: hosttype || "Fan Request",
         ratingType: "creator-to-fan"
       };
 
@@ -803,10 +803,10 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
       </div>
 
       <h3 className={`text-3xl md:text-4xl ${cardTextVariance}`}>{
-        type === "creator" ? (getCreatorContent(hosttype || "Fan Meet", submittedRating > 0)[currentStatus]?.head || "Unknown Status") : (getFanContent(price || 0, hosttype || "Fan Meet", submittedRating > 0)[currentStatus]?.head || "Unknown Status")
+          type === "creator" ? (getCreatorContent(hosttype || "Fan Request", submittedRating > 0)[currentStatus]?.head || "Unknown Status") : (getFanContent(price || 0, hosttype || "Fan Request", submittedRating > 0)[currentStatus]?.head || "Unknown Status")
       }</h3>
 
-      <p className="text-sm md:text-base">{ type === "creator" ? (getCreatorContent(hosttype || "Fan Meet", submittedRating > 0)[currentStatus]?.body || "Status information not available") : (getFanContent(price || 0, hosttype || "Fan Meet", submittedRating > 0)[currentStatus]?.body || "Status information not available") }</p>
+      <p className="text-sm md:text-base">{ type === "creator" ? (getCreatorContent(hosttype || "Fan Request", submittedRating > 0)[currentStatus]?.body || "Status information not available") : (getFanContent(price || 0, hosttype || "Fan Request", submittedRating > 0)[currentStatus]?.body || "Status information not available") }</p>
 
       {/* Rating Stars - Show for fans when completed */}
       {type === "fan" && currentStatus === "completed" && (
@@ -1012,7 +1012,7 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
               <div className="mb-6">
                 <h3 className="text-sm font-semibold text-gray-800 mb-2">Feedback:</h3>
                 <p className="text-gray-700 bg-gray-50 p-3 rounded-lg text-sm">
-                  "{ratingData.feedback}"
+                  &ldquo;{ratingData.feedback}&rdquo;
                 </p>
               </div>
             )}
@@ -1056,7 +1056,7 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
               <div className="mb-6">
                 <h3 className="text-sm font-semibold text-gray-800 mb-2">Feedback:</h3>
                 <p className="text-gray-700 bg-gray-50 p-3 rounded-lg text-sm">
-                  "{fanRatingData.feedback}"
+                  &ldquo;{fanRatingData.feedback}&rdquo;
                 </p>
               </div>
             )}

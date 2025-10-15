@@ -27,8 +27,8 @@ export interface ChatInfo {
     giftstats: string;
     giftmessage: string;
     chatinfo: ChatInfo;
-    video_call_message: string;
-    video_call_data: any;
+    fan_call_message: string;
+    fan_call_data: any;
     calling: boolean;
     spd_call: any;
     offer: any;

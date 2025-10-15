@@ -33,7 +33,7 @@ export const bookmdel = createAsyncThunk("booking/bookcreator", async (data:any)
     //console.log('after info')
 
     //console.log('ontop get profile')
-    let response = await axios.put(`${URL}/bookhost`, data);
+    let response = await axios.put(`${URL}/requesthost`, data);
     //console.log('under get profile')
 
     return response.data;
@@ -48,7 +48,7 @@ export const bookmdel = createAsyncThunk("booking/bookcreator", async (data:any)
 
 export const bookAcreator =  async (data:any) => {
   try {
-    let response = await axios.put(`${URL}/bookhost`, data);
+    let response = await axios.put(`${URL}/requesthost`, data);
     return response.data;
   } catch (err : any) {
     // console.log('erro get profile')
@@ -126,7 +126,7 @@ export const accepthost = createAsyncThunk(
       //console.log('after info')
 
       console.log("ontop accept book");
-      let response = await axios.post(`${URL}/acceptbook`, data);
+      let response = await axios.post(`${URL}/acceptrequest`, data);
 
       console.log("under accept book " + response);
 
@@ -148,7 +148,7 @@ export const declinehost = createAsyncThunk(
       //console.log('after info')
 
       console.log("ontop accept book");
-      let response = await axios.put(`${URL}/declinebook`, data);
+      let response = await axios.put(`${URL}/declinerequest`, data);
 
       console.log("under accept book " + response);
 

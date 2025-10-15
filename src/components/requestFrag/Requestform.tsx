@@ -6,7 +6,7 @@ import {addMonths} from "date-fns/addMonths";
 import {format} from "date-fns/format";
 import RotateLoader from "react-spinners/RotateLoader";
 import { useSelector, useDispatch } from "react-redux";
-import { bookAcreator, bookmdel, resetstat } from "@/store/booking";
+import { bookAcreator, bookmdel, resetstat } from "@/store/requests";
 import { RootState, AppDispatch } from "@/store/store"; // adjust path based on your store setup
 import { toast } from "material-react-toastify";
 import { useUserId } from "@/lib/hooks/useUserId";

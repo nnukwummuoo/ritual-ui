@@ -1,6 +1,6 @@
 import React from 'react'
 
-export const Bookingsuccess = ({setrequested}: {setrequested : any}) => {
+export const Requestsuccess = ({setrequested}: {setrequested : any}) => {
   return (
     <div className='w-48 h-fit bg-gray-800 mx-auto p-5 rounded-lg z-50' style={{width:'95%',maxWidth:500}} >
 

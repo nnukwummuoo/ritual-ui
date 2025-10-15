@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
@@ -9,10 +10,10 @@ import editIcon from "@/icons/edit.svg";
 import deleteicon from "@/icons/deleteicon.svg";
 import PacmanLoader1 from "react-spinners/ClockLoader";
 import { toast, ToastContainer } from "material-react-toastify";
-import { Bookinginfo } from "@/components/bookingFrag/Bookinginfo";
-import { Bookingsuccess } from "@/components/bookingFrag/Bookingsuccess";
-import { Requestform } from "@/components/bookingFrag/Requestform";
-import { RequestDetailsForm } from "@/components/bookingFrag/RequestDetailsForm";
+import { Requestinfo } from "@/components/requestFrag/Requestinfo";
+import { Requestsuccess } from "@/components/requestFrag/Requestsuccess";
+import { Requestform } from "@/components/requestFrag/Requestform";
+import { RequestDetailsForm } from "@/components/requestFrag/RequestDetailsForm";
 import closeIcon from "@/icons/closeIcon.svg";
 import { getViews } from "@/store/creatorSlice";
 import { getCreatorRatings } from "@/store/profile";
@@ -228,7 +229,7 @@ export default function Creatorbyid () {
     Creator[1],
     userid,
   ]);
-  const [bookingclick, setbookingclick] = useState(false);
+  const [requestclick, setrequestclick] = useState(false);
   const [success, setsuccess] = useState(false);
   const [requested, setrequested] = useState(false);
   const [showRequestDetails, setShowRequestDetails] = useState(false);
@@ -755,7 +756,7 @@ export default function Creatorbyid () {
     }
     
     try {
-      const response = await fetch(`${URL}/bookhost`, {
+      const response = await fetch(`${URL}/requesthost`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -773,7 +774,7 @@ export default function Creatorbyid () {
 
       if (response.ok) {
         setShowRequestDetails(false);
-        setbookingclick(false);
+        setrequestclick(false);
         const serviceType = creator.hosttype || "Fan meet";
         toast.success(`${serviceType} request sent successfully!`);
         // Optionally navigate to notifications
@@ -1539,14 +1540,14 @@ export default function Creatorbyid () {
               </div>
             </div>
           )}
-          {bookingclick && (
+          {requestclick && (
             <div
               className="fixed inset-0 z-50 flex items-start justify-center bg-black bg-opacity-50 pt-52"
-              onClick={() => setbookingclick(false)}
+              onClick={() => setrequestclick(false)}
             >
               <div onClick={(e) => e.stopPropagation()}>
-                <Bookinginfo
-                  setbookclick={setbookingclick}
+                <Requestinfo
+                    setbookclick={setrequestclick}
                   amount={creator.price}
                   setsuccess={setsuccess}
                   type={creator.hosttype}
@@ -1580,7 +1581,7 @@ export default function Creatorbyid () {
               onClick={() => setrequested(false)}
             >
               <div onClick={(e) => e.stopPropagation()}>
-                <Bookingsuccess setrequested={setrequested} />
+                <Requestsuccess setrequested={setrequested} />
               </div>
             </div>
           )}

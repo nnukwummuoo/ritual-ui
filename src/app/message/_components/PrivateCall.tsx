@@ -37,7 +37,7 @@ const Servers = {
 export const PrivateCallPage = () => {
   const pc = new RTCPeerConnection(Servers);
 
-  // const video_call_data = useSelector((state) => state.message.video_call_data);
+  // const fan_call_data = useSelector((state) => state.message.fan_call_data);
   // const spd_call = useSelector((state) => state.message.spd_call);
   // const login = useSelector((state) => state.register.logedin);
   // const rejectCall = useSelector((state) => state.booking.rejectCall);
@@ -525,8 +525,8 @@ export const PrivateCallPage = () => {
   //   //   }
   //   // };
 
-  //   // console.log("offcan "+video_call_data.sdp_c_offer)
-  //   //  console.log("ice candidate "+video_call_data.offer_can)
+  //   // console.log("offcan "+fan_call_data.sdp_c_offer)
+  //   //  console.log("ice candidate "+fan_call_data.offer_can)
 
   //   socket.on(`pvc_${userid}_calloffer`, async (data) => {
   //     if (data.offer) {

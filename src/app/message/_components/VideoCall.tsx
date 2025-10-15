@@ -38,10 +38,10 @@ export const VideoCallPage = () => {
   const [connecting, setConnecting] = useState<boolean>(true);
   const mainVideoRef = useRef(null);
   const thumbnailVideoRef = useRef(null);
-  // const video_call_message = useSelector(
-  //   (state) => state.message.video_call_message
+  // const fan_call_message = useSelector(
+  //   (state) => state.message.fan_call_message
   // );
-  // const video_call_data = useSelector((state) => state.message.video_call_data);
+  // const fan_call_data = useSelector((state) => state.message.fan_call_data);
   // const spd_call = useSelector((state) => state.message.spd_call);
   // const login = useSelector((state) => state.register.logedin);
   // const rejectAnswer = useSelector((state) => state.message.rejectAnswer);
@@ -134,14 +134,14 @@ export const VideoCallPage = () => {
   // }, []);
 
   // useEffect(() => {
-  //   if (video_call_data) {
-  //      if(video_call_data.answer_message === "reject"){
+  //   if (fan_call_data) {
+  //      if(fan_call_data.answer_message === "reject"){
 
   //       }
   //     let status = call.split(",");
 
   //   }
-  // }, [video_call_data, video_call_message]);
+  // }, [fan_call_data, fan_call_message]);
 
   // useEffect(() => {
   //   if (rejectAnswer) {
@@ -400,11 +400,11 @@ export const VideoCallPage = () => {
   // };
 
   // const answerCall = async (Localstream, Remotestream) => {
-  //   data.answer_id = video_call_data.answer_id;
-  //   data.caller_id = video_call_data.caller_id;
-  //   data.my_id = video_call_data.answer_id;
-  //   data.fromid = video_call_data.fromid;
-  //   data.toid = video_call_data.toid;
+  //   data.answer_id = fan_call_data.answer_id;
+  //   data.caller_id = fan_call_data.caller_id;
+  //   data.my_id = fan_call_data.answer_id;
+  //   data.fromid = fan_call_data.fromid;
+  //   data.toid = fan_call_data.toid;
   //   data.name = "";
   //   data.message = "";
   //   data.offer_can = "";
@@ -488,8 +488,8 @@ export const VideoCallPage = () => {
   //   //   }
   //   // };
 
-  //   // console.log("offcan "+video_call_data.sdp_c_offer)
-  //   //  console.log("ice candidate "+video_call_data.offer_can)
+  //   // console.log("offcan "+fan_call_data.sdp_c_offer)
+  //   //  console.log("ice candidate "+fan_call_data.offer_can)
 
   //   socket.on(`v_id_${userid}_calloffer`, async (data) => {
   //     if (data.offer) {

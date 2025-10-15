@@ -112,7 +112,7 @@ export default function GlobalSocketConnection() {
       };
 
       // Listen for missed call notifications
-      socket.on('video_call_missed', handleMissedCall);
+      socket.on('fan_call_missed', handleMissedCall);
 
     // Cleanup on unmount or when user logs out
     return () => {
@@ -120,7 +120,7 @@ export default function GlobalSocketConnection() {
         leaveUserRoom(userid);
         socket.emit("offline", userid);
         // Remove missed call listener
-        socket.off('video_call_missed', handleMissedCall);
+        socket.off('fan_call_missed', handleMissedCall);
       }
       // Clear heartbeat interval
       clearInterval(heartbeatInterval);
