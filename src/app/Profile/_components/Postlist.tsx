@@ -49,34 +49,33 @@ import { postListConstants } from "../_constants/postListConstants";
 // import { useAuth } from "../../../hooks/useAuth";
 // import { updateFollowers } from "../../../app/features/creator/creatorSlice";
 
-export const Postlist = React.memo(
-  ({
-    userphoto,
-    username,
-    datetime,
-    likes,
-    comments,
-    postphoto,
-    content,
-    posttype,
-    postlog,
-    postuserid,
-    likelist,
-    nickname,
-    isfollow,
-    currentPlayingIndex,
-    setCurrentPlayingIndex,
-    isMuted,
-    setIsMuted,
-    setShowAction,
-    index,
-    showAction,
-    timeoutId,
-    setPosts,
-    isProfilePage = false,
-    creator_portfolio_id,
-    followers,
-  }: postListConstants) => {
+const PostlistComponent = ({
+  userphoto,
+  username,
+  datetime,
+  likes,
+  comments,
+  postphoto,
+  content,
+  posttype,
+  postlog,
+  postuserid,
+  likelist,
+  nickname,
+  isfollow,
+  currentPlayingIndex,
+  setCurrentPlayingIndex,
+  isMuted,
+  setIsMuted,
+  setShowAction,
+  index,
+  showAction,
+  timeoutId,
+  setPosts,
+  isProfilePage = false,
+  creator_portfolio_id,
+  followers,
+}: postListConstants) => {
     const [following, set_following] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     // const dispatch = useDispatch();
@@ -1127,5 +1126,8 @@ export const Postlist = React.memo(
         </li>
       </>
     );
-  }
-);
+  };
+
+PostlistComponent.displayName = 'Postlist';
+
+export const Postlist = React.memo(PostlistComponent);

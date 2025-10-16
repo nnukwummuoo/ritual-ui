@@ -1473,9 +1473,9 @@ export default function Creatorbyid () {
                       <strong>What happens after 30 minutes is outside the platform&apos;s responsibility.</strong>
                     </p>
                   </div>
-                  <div className="flex items-center justify-center gap-2">
+                  <div className="flex mt-4 justify-center gap-2">
                     <IoCheckmarkCircleOutline className="text-green-500 text-lg" />
-                    <p className="text-white text-sm text-center">
+                    <p className="text-white text-xs text-center">
                       By sending a request, you agree to follow these rules.
                     </p>
                   </div>
