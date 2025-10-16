@@ -1603,7 +1603,7 @@ export const Chat = () => {
                 className="relative cursor-pointer hover:opacity-80 transition-opacity"
                 onClick={() => {
                   if (finalCreatorPortfolioId) {
-                    router.push(`/creators/${finalCreatorPortfolioId}`);
+                    router.push(`/Profile/${finalCreatorPortfolioId}`);
                   }
                 }}
               >
@@ -1638,7 +1638,7 @@ export const Chat = () => {
                 className="cursor-pointer hover:opacity-80 transition-opacity"
                 onClick={() => {
                   if (finalCreatorPortfolioId) {
-                    router.push(`/creators/${finalCreatorPortfolioId}`);
+                    router.push(`/Profile/${finalCreatorPortfolioId}`);
                   }
                 }}
               >
