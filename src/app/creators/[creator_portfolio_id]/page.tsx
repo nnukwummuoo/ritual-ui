@@ -18,6 +18,7 @@ import closeIcon from "@/icons/closeIcon.svg";
 import { getViews } from "@/store/creatorSlice";
 import { getCreatorRatings } from "@/store/profile";
 import { CreatorReview } from "./_components/Creator_review";
+import { IoCheckmarkCircleOutline } from 'react-icons/io5';
 
 import { useSelector, useDispatch } from "react-redux";
 import {
@@ -1472,9 +1473,12 @@ export default function Creatorbyid () {
                       <strong>What happens after 30 minutes is outside the platform&apos;s responsibility.</strong>
                     </p>
                   </div>
-                  <p className="text-white text-sm text-center">
+                  <div className="flex items-center justify-center gap-2">
+                    <IoCheckmarkCircleOutline className="text-green-500 text-lg" />
+                    <p className="text-white text-sm text-center">
                       By sending a request, you agree to follow these rules.
                     </p>
+                  </div>
                 </div>
               </div>
             )}

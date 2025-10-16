@@ -556,7 +556,7 @@ const HistoryPage = () => {
                 <p className="text-sm text-gray-300"><strong>Email:</strong> {paymentAccountDetails.email}</p>
                 <p className="text-sm text-gray-300"><strong>Country:</strong> {paymentAccountDetails.country}</p>
                 <p className="text-sm text-gray-300"><strong>Crypto:</strong> {paymentAccountDetails.cryptoType}</p>
-                <p className="text-sm text-gray-300"><strong>Wallet:</strong> {paymentAccountDetails.walletAddress}</p>
+                <p className="text-sm text-gray-300 break-all"><strong>Wallet:</strong> {paymentAccountDetails.walletAddress}</p>
               </div>
             )}
             

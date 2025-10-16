@@ -29,6 +29,7 @@ export interface CreatorCardProps {
   vipEndDate?: string;
   views?: number;
   isOnline?: boolean;
+  isFollowing?: boolean;
 }
 
 interface CountryData {
@@ -54,6 +55,7 @@ export const CreatorCard = ({
   vipEndDate,
   views = 0,
   isOnline = false,
+  isFollowing = false,
 }: CreatorCardProps) => {
   const router = useRouter();
   // const [hostImg, setHostImg] = useState<string>("/icons/mmekoDummy.png");

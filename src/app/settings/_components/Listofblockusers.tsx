@@ -1,5 +1,6 @@
 import React, {useState, useEffect} from 'react'
 import type { StaticImageData } from 'next/image';
+import Image from 'next/image';
 import PacmanLoader from "react-spinners/RotateLoader";
 import person from "../../../icons/icons8-profile_Icon.png"
 import onlineIcon from "../../../icons/onlineIcon.svg"
@@ -188,11 +189,27 @@ const [countryData, setCountryData] = useState({
         <div className="flex items-center space-x-3">
           {/* Profile Picture */}
           <div className="relative">
-            <img
-              alt="Profile"
-              src={image}
-              className="w-12 h-12 rounded-full object-cover border-2 border-gray-600"
-            />
+            {image && image !== (typeof person === 'string' ? person : (person as StaticImageData).src) ? (
+              <Image
+                alt="Profile"
+                src={image}
+                width={48}
+                height={48}
+                className="w-12 h-12 rounded-full object-cover border-2 border-gray-600"
+              />
+            ) : (
+              <div className="w-12 h-12 rounded-full bg-gray-700 flex items-center justify-center border-2 border-gray-600">
+                <span className="text-white font-bold text-lg">
+                  {(() => {
+                    // Remove @ symbol and get the second word, then take first letter
+                    const cleanName = name.replace('@', '');
+                    const words = cleanName.split(' ');
+                    const secondWord = words[1] || words[0]; // Use second word or first if only one word
+                    return secondWord.charAt(0).toUpperCase();
+                  })()}
+                </span>
+              </div>
+            )}
             {/* Online Status */}
             <div className="absolute -bottom-1 -right-1">
               <div className={`w-4 h-4 rounded-full border-2 border-gray-800 ${
@@ -205,12 +222,8 @@ const [countryData, setCountryData] = useState({
           <div className="flex-1">
             <h3 className="text-white font-semibold text-lg">{name}</h3>
             <div className="flex items-center space-x-2 mt-1">
-              <img
-                src={countryData.flag}
-                alt={`${countryData.abbreviation} flag`}
-                className="w-4 h-4 rounded-full"
-              />
-              <span className="text-gray-400 text-sm">{countryData.fifa}</span>
+             
+              
               <span className="text-gray-500 text-sm">•</span>
               <span className="text-gray-400 text-sm">
                 {online ? "Online" : "Offline"}

@@ -1319,7 +1319,7 @@ function DetailsModal({
         {/* Call Expiration Notice - Only show for fan calls */}
         {hosttype?.toLowerCase() === "fan call" && (
           <div className="flex items-start gap-3 mb-4">
-            <IoTimeOutline className="text-blue-500 text-xl mt-1" />
+            <IoCheckmarkCircleOutline className="text-green-500 text-xl mt-1" />
             <div>
               <h3 className="font-semibold text-gray-800">Call Expiration</h3>
               <p className="text-gray-600 text-sm mt-1">
@@ -1329,15 +1329,12 @@ function DetailsModal({
           </div>
         )}
 
-        {/* Agreement - Show for creators with appropriate message */}
-        {type === "creator" && (
+        {/* Agreement - Show for creators with appropriate message (excluding fan calls) */}
+        {type === "creator" && hosttype?.toLowerCase() !== "fan call" && (
           <div className="flex items-start gap-3 mb-6">
             <IoCheckmarkCircleOutline className="text-green-500 text-xl mt-1" />
             <p className="text-gray-800 font-semibold text-sm">
-              {hosttype?.toLowerCase() === "fan call" 
-                ? "By accepting this request, you agree to start the call within 48 hours."
-                : "By accepting this request, you agree to follow these safety rules."
-              }
+              By accepting this request, you agree to follow these safety rules.
             </p>
           </div>
         )}
