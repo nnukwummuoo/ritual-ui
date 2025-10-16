@@ -2028,9 +2028,8 @@ const PostModal = () => {
                           </div>
                           <div className="flex-1">
                             <div className="flex items-center gap-2">
-                              <p className="text-white font-medium">{review.fanName}</p>
                               {review.fanNickname && (
-                                <p className="text-gray-400 text-sm">@{review.fanNickname}</p>
+                                <p className="text-gray-400 text-sm">{review.fanNickname}</p>
                               )}
                                 <span className="text-xs bg-blue-600 text-white px-2 py-1 rounded">Fan</span>
                             </div>

@@ -628,7 +628,7 @@ export default function PostsCard() {
                   }}
                 >
                   <p className="font-medium">{p?.user?.firstname} { p?.user?.lastname}</p>
-                  <span className="text-gray-400 text-sm">{handleStr ? `@${handleStr}` : ""}</span>
+                  <span className="text-gray-400 text-sm">{handleStr ? `{handleStr}` : ""}</span>
                 </div>
               </div>
 {/*               

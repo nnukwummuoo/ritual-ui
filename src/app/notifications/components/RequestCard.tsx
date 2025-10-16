@@ -1339,6 +1339,16 @@ function DetailsModal({
           </div>
         )}
 
+        {/* Agreement - Show for fans when viewing Fan Date and Fan Meet details */}
+        {type === "fan" && hosttype?.toLowerCase() !== "fan call" && (
+          <div className="flex items-start gap-3 mb-6">
+            <IoCheckmarkCircleOutline className="text-green-500 text-xl mt-1" />
+            <p className="text-gray-800 font-semibold text-sm">
+              By sending this request, you agree to follow these safety rules.
+            </p>
+          </div>
+        )}
+
         <button 
           onClick={onClose}
           className="w-full bg-blue-500 text-white py-3 px-4 rounded-lg hover:bg-blue-600 transition-colors font-semibold"

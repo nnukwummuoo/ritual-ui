@@ -39,12 +39,14 @@ export default function VideoCallBilling({
   const [currentEarnings, setCurrentEarnings] = useState(creatorEarnings);
   const [callSpecificEarnings, setCallSpecificEarnings] = useState(0); // Earnings from this specific call
   const [lastBilledMinute, setLastBilledMinute] = useState(0);
+  const [isBillingInProgress, setIsBillingInProgress] = useState(false);
   
   // Use refs to avoid infinite re-renders
   const currentBalanceRef = useRef(userBalance);
   const callRateRef = useRef(callRate);
   const callDurationRef = useRef(0);
   const lastBilledMinuteRef = useRef(0);
+  const isBillingInProgressRef = useRef(false);
 
   // Determine billing logic based on who initiated the call
   const isCaller = callData?.callerId === currentUserId;
@@ -52,16 +54,7 @@ export default function VideoCallBilling({
   const shouldBeBilled = isCaller; // Only the caller (initiator) pays - regardless of user type
   const shouldEarn = isAnswerer && isCreator; // Only creators earn when they answer calls (from any caller)
   
-  // Log billing logic for debugging
-  console.log('💰 [Billing] Logic:', {
-    currentUserId,
-    callerId: callData?.callerId,
-    isCaller,
-    isAnswerer,
-    isCreator,
-    shouldBeBilled,
-    shouldEarn
-  });
+  
 
   // Update balance when props change
   useEffect(() => {
@@ -85,6 +78,10 @@ export default function VideoCallBilling({
   useEffect(() => {
     lastBilledMinuteRef.current = lastBilledMinute;
   }, [lastBilledMinute]);
+  
+  useEffect(() => {
+    isBillingInProgressRef.current = isBillingInProgress;
+  }, [isBillingInProgress]);
   
   const callStartTimeRef = useRef<number>(0);
   const durationIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -124,28 +121,42 @@ export default function VideoCallBilling({
     if (!shouldBeBilled) {
       return;
     }
+    
+    // Clear any existing billing interval first
+    if (billingIntervalRef.current) {
+      clearInterval(billingIntervalRef.current);
+      billingIntervalRef.current = null;
+    }
+    
     setLastBilledMinute(0);
     lastBilledMinuteRef.current = 0;
     
     const interval = setInterval(() => {
       const currentMinute = Math.floor(callDurationRef.current / 60);
       
-      if (currentMinute > lastBilledMinuteRef.current) {
-        // Billing for minute (caller only)
+      // Only bill if we haven't billed this minute yet, it's a new minute, and no billing is in progress
+      if (currentMinute > lastBilledMinuteRef.current && currentMinute > 0 && !isBillingInProgressRef.current) {
+        console.log(`💰 [Billing] Billing for minute ${currentMinute}, last billed: ${lastBilledMinuteRef.current}`);
         
         // Check if caller has enough balance
         if (currentBalanceRef.current < callRateRef.current) {
+          console.log(`❌ [Billing] Insufficient funds: ${currentBalanceRef.current} < ${callRateRef.current}`);
           // Insufficient funds - ending call
           onInsufficientFunds();
           return;
         }
         
+        // Set billing in progress to prevent duplicate events
+        setIsBillingInProgress(true);
+        isBillingInProgressRef.current = true;
+        
+        // Update the last billed minute BEFORE sending the event to prevent race conditions
         setLastBilledMinute(currentMinute);
         lastBilledMinuteRef.current = currentMinute;
         
         // Emit billing event to backend (backend will handle balance deduction)
         if (socket && callId && callerId) {
-      
+          console.log(`📤 [Billing] Sending billing event for minute ${currentMinute}`);
           socket.emit('fan_call_billing', {
             callId: callId,
             callerId: callerId,
@@ -153,12 +164,21 @@ export default function VideoCallBilling({
             amount: callRateRef.current,
             minute: currentMinute
           });
+          
+          // Set a timeout to reset billing in progress flag if no response within 10 seconds
+          setTimeout(() => {
+            if (isBillingInProgressRef.current) {
+              console.log(`⚠️ [Billing] Timeout waiting for billing response for minute ${currentMinute}`);
+              setIsBillingInProgress(false);
+              isBillingInProgressRef.current = false;
+            }
+          }, 10000);
         }
       }
     }, 1000); // Check every second
     
     billingIntervalRef.current = interval;
-  }, [shouldBeBilled, socket, callId, callerId, currentUserId, onInsufficientFunds, isCaller]);
+  }, [shouldBeBilled, socket, callId, callerId, currentUserId, onInsufficientFunds]);
 
   // Stop billing system
   const stopBilling = useCallback(() => {
@@ -167,6 +187,9 @@ export default function VideoCallBilling({
       clearInterval(billingIntervalRef.current);
       billingIntervalRef.current = null;
     }
+    // Reset billing state
+    setIsBillingInProgress(false);
+    isBillingInProgressRef.current = false;
   }, []);
 
   // Handle balance updates from backend
@@ -175,6 +198,9 @@ export default function VideoCallBilling({
       const newBalance = parseInt(data.balance) || 0;
       setCurrentBalance(newBalance);
       currentBalanceRef.current = newBalance;
+      // Reset billing in progress flag after successful deduction
+      setIsBillingInProgress(false);
+      isBillingInProgressRef.current = false;
     } else if (data.type === 'earn') {
       setCurrentEarnings(data.earnings);
       // Add to call-specific earnings
@@ -188,6 +214,9 @@ export default function VideoCallBilling({
   const handleInsufficientFunds = useCallback((data: any) => {
     // Only handle insufficient funds for the caller (whoever is paying)
     if (shouldBeBilled) {
+      // Reset billing in progress flag
+      setIsBillingInProgress(false);
+      isBillingInProgressRef.current = false;
       onInsufficientFunds();
     }
   }, [onInsufficientFunds, shouldBeBilled]);
