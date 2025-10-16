@@ -5,4 +5,6 @@ export interface User {
   canmessage: boolean;
   creator_portfolio_id: string;
   following: boolean;
+  isVip?: boolean;
+  vipEndDate?: string | null;
 }

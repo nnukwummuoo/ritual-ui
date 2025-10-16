@@ -5,7 +5,7 @@ interface VIPBadgeProps {
   size?: 'sm' | 'md' | 'lg' | 'xl' | 'xxl';
   className?: string;
   isVip?: boolean;
-  vipEndDate?: string;
+  vipEndDate?: string | null;
 }
 
 const VIPBadge: React.FC<VIPBadgeProps> = ({ 

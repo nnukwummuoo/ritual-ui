@@ -34,11 +34,12 @@ const WithdrawalRequests = () => {
   // Color array for containers
   const colors = ['purple', 'orange', 'pink', 'yellow', 'black'];
   
-  // Get color for a specific withdrawal ID (consistent across filters)
+  // Get color for a specific withdrawal based on its index in the sorted list
   const getColorForWithdrawal = (withdrawalId: string) => {
-    // Use the withdrawal ID to generate a consistent color
-    const hash = withdrawalId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-    return colors[hash % colors.length];
+    // Find the index of this withdrawal in the original sorted list
+    const index = withdrawals.findIndex(w => w._id === withdrawalId);
+    // Return -1 if not found, otherwise use the index for sequential coloring
+    return index >= 0 ? colors[index % colors.length] : colors[0];
   };
 
   // Filter withdrawals based on search term and selected color

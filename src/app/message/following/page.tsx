@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import React, { useState, useEffect } from "react";
@@ -164,7 +165,7 @@ const FollowingMessagesPage: React.FC = () => {
             >
               <FaAngleLeft className="w-6 h-6 text-white" />
             </button>
-            <h1 className="text-2xl font-bold text-white">Message Following</h1>
+            <h1 className="text-2xl font-bold text-white">Following</h1>
           </div>
           <FiSearch
             color="white"
@@ -288,7 +289,7 @@ const FollowingMessagesPage: React.FC = () => {
                       {/* VIP Badge */}
                       <VIPBadge 
                         size="xl" 
-                        className="absolute -top-2 -right-2" 
+                        className="absolute -top-4 -right-4" 
                         isVip={user.isVip || false} 
                         vipEndDate={user.vipEndDate} 
                       />

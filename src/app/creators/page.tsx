@@ -53,7 +53,7 @@ export default function CreatorPage() {
 
   const buttonData = [
     { label: "All", value: "All" },
-    { label: "Fan Call", value: "Fan Call" },
+    { label: "Fan call", value: "Fan Call" },
     { label: "Fan meet", value: "Fan meet" },
     { label: "Fan date", value: "Fan date" },
   ];
