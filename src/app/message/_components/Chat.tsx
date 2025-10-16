@@ -1599,7 +1599,14 @@ export const Chat = () => {
             
             <div className="flex items-center gap-3">
               {/* Profile Picture */}
-              <div className="relative">
+              <div 
+                className="relative cursor-pointer hover:opacity-80 transition-opacity"
+                onClick={() => {
+                  if (finalCreatorPortfolioId) {
+                    router.push(`/creators/${finalCreatorPortfolioId}`);
+                  }
+                }}
+              >
                 <div className="w-12 h-12 rounded-full border-2 border-blue-600/50 overflow-hidden">
                   {loading || (!chatusername && !chatfirstname) ? (
                     <div className="w-full h-full bg-gray-600 animate-pulse rounded-full"></div>
@@ -1627,7 +1634,14 @@ export const Chat = () => {
               </div>
               
               {/* User Name */}
-              <div>
+              <div 
+                className="cursor-pointer hover:opacity-80 transition-opacity"
+                onClick={() => {
+                  if (finalCreatorPortfolioId) {
+                    router.push(`/creators/${finalCreatorPortfolioId}`);
+                  }
+                }}
+              >
                 {loading || (!chatusername && !chatfirstname) ? (
                   <div className="h-5 bg-gray-600 animate-pulse rounded w-24"></div>
                 ) : (

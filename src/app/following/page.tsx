@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import React, { useState, useEffect } from "react";
@@ -137,8 +138,8 @@ const FollowingPage: React.FC = () => {
   
   // Use useMemo to prevent unnecessary re-renders and filter out current user
   const allUsers = React.useMemo(() => {
-    return (getAllUsers_data as User[])?.filter(user => 
-      String(user._id) !== String(currentUserid)
+    return (getAllUsers_data as any[])?.filter(user => 
+      String(user._id || user.id) !== String(currentUserid)
     ) || [];
   }, [getAllUsers_data, currentUserid]);
   
@@ -192,9 +193,9 @@ const FollowingPage: React.FC = () => {
                 name={user.name}
                 creator_portfolio_id={user.creator_portfolio_id}
                 userId={user.id}
-                isVip={user.isVip || false}
-                vipStartDate={user.vipStartDate}
-                vipEndDate={user.vipEndDate}
+                isVip={(user as any).isVip || false}
+                vipStartDate={(user as any).vipStartDate}
+                vipEndDate={(user as any).vipEndDate}
               />
             </div>
           ))}
@@ -230,9 +231,9 @@ const FollowingPage: React.FC = () => {
                   name={user.name}
                   creator_portfolio_id={user.creator_portfolio_id}
                   userId={user.id}
-                  isVip={user.isVip || false}
-                  vipStartDate={user.vipStartDate}
-                  vipEndDate={user.vipEndDate}
+                  isVip={(user as any).isVip || false}
+                  vipStartDate={(user as any).vipStartDate}
+                  vipEndDate={(user as any).vipEndDate}
                 />
               </div>
             );
@@ -272,9 +273,7 @@ const FollowingPage: React.FC = () => {
 
     return (
       <div className="">
-        <h1 className="text-lg font-bold text-white px-2 text-left mt-4">
-          {formatNumber(discoverableUsers.length)}  Verified Members Ready to Connect
-        </h1>
+     
         <div className="flex flex-col items-start px-2">
           {!loading && discoverableUsers.length === 0 && (
             <p className="text-gray-400 px-2 py-4">No users to discover right now.</p>

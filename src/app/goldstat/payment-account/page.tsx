@@ -353,7 +353,7 @@ export default function PaymentAccountPage() {
                     type="text"
                     name="walletAddress"
                     required
-                    placeholder="Wallet Address BEP20"
+                    placeholder="Wallet Address USDT (BEP20)"
                     value={formData.walletAddress || ''}
                     className={`border rounded-md text-white bg-gray-700 px-3 py-2 text-sm focus:outline-none focus:ring-2 ${
                       walletError 

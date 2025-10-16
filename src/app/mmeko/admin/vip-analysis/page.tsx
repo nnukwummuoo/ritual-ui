@@ -137,7 +137,7 @@ const VipAnalysisPage = () => {
             <option value={12}>Last 12 months</option>
           </select>
           <div className="text-sm text-gray-400">
-            VIP Earnings: $4.00 per user per month (100 gold × $0.04)
+            VIP Earnings: $10.99 per user per month (100 gold × $0.1099)
           </div>
         </div>
       </div>
