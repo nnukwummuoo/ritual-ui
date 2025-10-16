@@ -1326,7 +1326,7 @@ export default function Creatorbyid () {
             </div>
             {/* Profile Information */}
             <div className="bg-gray-800 rounded-2xl p-6 shadow-2xl">
-              <h2 className="text-2xl font-bold text-white mb-6 text-center">Profile Information</h2>
+              <h2 className="text-2xl font-bold text-white mb-6 text-center">Portfolio Information</h2>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Basic Info */}
