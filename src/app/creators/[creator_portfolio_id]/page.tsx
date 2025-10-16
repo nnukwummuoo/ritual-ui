@@ -1452,27 +1452,32 @@ export default function Creatorbyid () {
               </div>
             </div>
 
-            {/* Safety Rules Section */}
-            <div className="bg-gray-800 rounded-2xl p-6 shadow-2xl">
-              <h2 className="text-2xl font-bold text-white mb-4 text-center">Safety Rules (Important!)</h2>
-              <div className="bg-gray-700 rounded-lg p-4">
-                <ul className="text-gray-300 space-y-3">
-                  <li className="flex items-start">
-                    <span className="text-red-400 mr-3 mt-1">•</span>
-                    <span>All meets are limited to 30 minutes.</span>
-                  </li>
-                  <li className="flex items-start">
-                    <span className="text-red-400 mr-3 mt-1">•</span>
-                    <span>Meets must happen in a public place only.</span>
-                  </li>
-                </ul>
-                <div className="mt-4 p-3 bg-yellow-900/20 border border-yellow-600/30 rounded-lg">
-                  <p className="text-yellow-300 text-sm text-center">
-                    <strong>What happens after 30 minutes is outside the platform&apos;s responsibility.</strong>
-                  </p>
+            {/* Safety Rules Section - Only show for non-call requests */}
+            {creator.hosttype !== "Fan call" && creator.hosttype !== "Fan Call" && (
+              <div className="bg-gray-800 rounded-2xl p-6 shadow-2xl">
+                <h2 className="text-2xl font-bold text-white mb-4 text-center">Safety Rules (Important!)</h2>
+                <div className="bg-gray-700 rounded-lg p-4">
+                  <ul className="text-gray-300 space-y-3">
+                    <li className="flex items-start">
+                      <span className="text-red-400 mr-3 mt-1">•</span>
+                      <span>All {creator.hosttype?.toLowerCase() || 'meets'} are limited to 30 minutes.</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-red-400 mr-3 mt-1">•</span>
+                      <span>{creator.hosttype?.toLowerCase() || 'Meets'} must happen in a public place only.</span>
+                    </li>
+                  </ul>
+                  <div className="mt-4 p-3 bg-yellow-900/20 border border-yellow-600/30 rounded-lg">
+                    <p className="text-yellow-300 text-sm text-center">
+                      <strong>What happens after 30 minutes is outside the platform&apos;s responsibility.</strong>
+                    </p>
+                  </div>
+                  <p className="text-white text-sm text-center">
+                      By sending a request, you agree to follow these rules.
+                    </p>
                 </div>
               </div>
-            </div>
+            )}
 
             {/* Reviews Section */}
             <div className="bg-gray-800 rounded-2xl p-6 shadow-2xl">

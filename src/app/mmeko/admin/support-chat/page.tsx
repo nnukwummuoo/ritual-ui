@@ -494,7 +494,7 @@ const AdminSupportChat = () => {
                     {selectedChat.userid.isVip && (
                       <VIPBadge 
                         size="lg" 
-                        className="absolute -top-1 -right-1 z-50" 
+                        className="absolute -top-2 -right-2 z-50" 
                         isVip={selectedChat.userid.isVip} 
                         vipEndDate={selectedChat.userid.vipEndDate} 
                       />
@@ -534,6 +534,13 @@ const AdminSupportChat = () => {
                       title="Mark as Closed"
                     >
                       <IoCheckmarkCircleOutline className="w-4 h-4 text-green-400" />
+                    </button>
+                    <button
+                      onClick={() => setSelectedChat(null)}
+                      className="p-2 rounded-lg transition-colors hover:bg-gray-700"
+                      title="Close Chat"
+                    >
+                      <IoCloseCircleOutline className="w-4 h-4 text-red-400" />
                     </button>
                   </div>
                 </div>

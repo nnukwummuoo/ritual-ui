@@ -201,7 +201,7 @@ export const Allview = () => {
               )}
 
               {/* request notifications show activity button */}
-              {title === "request Notification" && (
+              {title === "Request Notification" && (
                 <div className="pt-2">
                   <Link href="/notifications/activity">
                     <button

@@ -542,7 +542,8 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
     // If it's a Fan Call, start video call instead of completing
     if (hosttype === "Fan call") {
       if (creator_portfolio_id && name) {
-        startVideoCall(creator_portfolio_id, name, price || 1);
+       
+        startVideoCall(creator_portfolio_id, name, price || 1, isVip, vipEndDate);
       }
       return;
     }
@@ -688,19 +689,10 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
       }
     }
     
-    console.log('🔍 [handleFanRatingSubmit] Final userId values:', {
-      currentUserId,
-      userId,
-      userid,
-      requestId: !!requestId
-    });
+;
     
     if (!requestId || !userId || !userid) {
-      console.error('❌ [handleFanRatingSubmit] Missing required information:', {
-        requestId: !!requestId,
-        userId: !!userId,
-        userid: !!userid
-      });
+     
       toast.error("Missing required information for rating");
       return;
     }
@@ -716,8 +708,6 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
         hostType: hosttype || "Fan Request",
         ratingType: "creator-to-fan"
       };
-
-      console.log('📤 [handleFanRatingSubmit] Sending request to backend:', requestBody);
 
       // Force localhost for development
       const apiUrl = process.env.NODE_ENV === "development" ? "http://localhost:3100" : URL;
@@ -1326,12 +1316,28 @@ function DetailsModal({
           </div>
         )}
 
-        {/* Agreement - Only show for creators */}
-        {type === "creator" && hosttype !== "Fan call" && hosttype !== "Fan Call" && (
+        {/* Call Expiration Notice - Only show for fan calls */}
+        {hosttype?.toLowerCase() === "fan call" && (
+          <div className="flex items-start gap-3 mb-4">
+            <IoTimeOutline className="text-blue-500 text-xl mt-1" />
+            <div>
+              <h3 className="font-semibold text-gray-800">Call Expiration</h3>
+              <p className="text-gray-600 text-sm mt-1">
+                Call must start within 48 hours after acceptance or it will automatically expire.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Agreement - Show for creators with appropriate message */}
+        {type === "creator" && (
           <div className="flex items-start gap-3 mb-6">
             <IoCheckmarkCircleOutline className="text-green-500 text-xl mt-1" />
             <p className="text-gray-800 font-semibold text-sm">
-              By accepting this request, you agree to follow these rules.
+              {hosttype?.toLowerCase() === "fan call" 
+                ? "By accepting this request, you agree to start the call within 48 hours."
+                : "By accepting this request, you agree to follow these safety rules."
+              }
             </p>
           </div>
         )}

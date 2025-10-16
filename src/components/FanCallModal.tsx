@@ -367,10 +367,11 @@ export default function FanCallModal({
       <div className="relative">
         <div className="w-32 h-32 rounded-full overflow-hidden bg-gray-700 mx-auto mb-4">
           {profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined" ? (
-            <img
+            <Image
               alt="Profile picture"
               src={profileImage}
-              className="object-cover w-full h-full"
+              fill
+              className="object-cover"
               onError={(e) => {
                 const target = e.currentTarget as HTMLImageElement;
                 target.style.display = 'none';
@@ -386,15 +387,50 @@ export default function FanCallModal({
           </div>
         </div>
         
-        {/* VIP Badge for creators */}
-        {isCreator && (userInfo?.answererIsVip || userInfo?.callerIsVip || userInfo?.isVip) && (
-          <VIPBadge 
-            size="xl" 
-            className="absolute -top-2 -right-2" 
-            isVip={userInfo.answererIsVip || userInfo.callerIsVip || userInfo.isVip} 
-            vipEndDate={userInfo.answererVipEndDate || userInfo.callerVipEndDate || userInfo.vipEndDate} 
-          />
-        )}
+        {/* VIP Badge for both caller and answerer */}
+        {(() => {
+          // Debug logging for VIP status
+          console.log('🔍 [VIP Debug] Frontend VIP Status Check:', {
+            isIncoming: callData?.isIncoming,
+            userInfo: userInfo,
+            callData: callData,
+            callerIsVip: userInfo?.callerIsVip,
+            answererIsVip: userInfo?.answererIsVip,
+            isVip: userInfo?.isVip,
+            callerVipEndDate: userInfo?.callerVipEndDate,
+            answererVipEndDate: userInfo?.answererVipEndDate,
+            vipEndDate: userInfo?.vipEndDate,
+            // Also check callData props
+            callDataCallerIsVip: callData?.callerIsVip,
+            callDataAnswererIsVip: callData?.answererIsVip
+          });
+          
+          // Determine VIP status based on who we're showing
+          // For incoming calls: show caller's VIP status (the person calling you)
+          // For outgoing calls: show answerer's VIP status (the person you're calling)
+          const isVip = callData?.isIncoming 
+            ? (userInfo?.callerIsVip || callData?.callerIsVip || userInfo?.isVip)  // For incoming calls, show caller's VIP status
+            : (userInfo?.answererIsVip || callData?.answererIsVip || userInfo?.isVip); // For outgoing calls, show answerer's VIP status
+          
+          const vipEndDate = callData?.isIncoming 
+            ? (userInfo?.callerVipEndDate || callData?.callerVipEndDate || userInfo?.vipEndDate)
+            : (userInfo?.answererVipEndDate || callData?.answererVipEndDate || userInfo?.vipEndDate);
+          
+          console.log('🔍 [VIP Debug] Frontend Calculated VIP Status:', {
+            isVip,
+            vipEndDate,
+            willShowBadge: !!isVip
+          });
+          
+          return isVip ? (
+            <VIPBadge 
+              size="xxl" 
+              className="absolute -top-5 -right-5" 
+              isVip={isVip} 
+              vipEndDate={vipEndDate} 
+            />
+          ) : null;
+        })()}
       </div>
     );
   };
@@ -533,6 +569,12 @@ export default function FanCallModal({
     const handleCallAccepted = (data: any) => {
       // Call accepted
       console.log('📞 [VideoCall] Call accepted:', { data, currentUserId, callerId: data.callerId });
+      console.log('🔍 [VIP Debug] Call accepted data:', {
+        callerIsVip: data.callerIsVip,
+        callerVipEndDate: data.callerVipEndDate,
+        answererIsVip: data.answererIsVip,
+        answererVipEndDate: data.answererVipEndDate
+      });
       setCallStatus('connected');
       
       // Only the original caller should create the peer connection and offer
@@ -706,6 +748,16 @@ export default function FanCallModal({
   }, [callStatus, usersCanSeeEachOther, showControlsTemporarily]);
 
   if (!isOpen || !callData) return null;
+
+  // Debug logging for initial call data
+  console.log('🔍 [VIP Debug] Initial call data:', {
+    callData,
+    isIncoming: callData?.isIncoming,
+    callerIsVip: callData?.callerIsVip,
+    answererIsVip: callData?.answererIsVip,
+    callerVipEndDate: callData?.callerVipEndDate,
+    answererVipEndDate: callData?.answererVipEndDate
+  });
 
   return (
     <div className="fixed inset-0 z-[9999] bg-black bg-opacity-90 flex items-center justify-center">

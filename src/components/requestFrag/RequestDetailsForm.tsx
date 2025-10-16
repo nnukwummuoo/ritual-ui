@@ -162,10 +162,10 @@ export const RequestDetailsForm: React.FC<RequestDetailsFormProps> = ({
       <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl">
         {/* Header with lion image */}
         <div className="text-center mb-6">
-          <div className="relative w-32 h-32 mx-auto mb-4">
+          <div className="relative w-48 h-16 mx-auto mb-4">
             <Image
-              src="/lion-badge.png"
-              alt="Lion Badge"
+              src="/calen.png"
+              alt="Calendar"
               fill
               className="object-contain"
             />
@@ -175,7 +175,7 @@ export const RequestDetailsForm: React.FC<RequestDetailsFormProps> = ({
             Request {creatorType} with {creatorName}
           </p>
           <p className="text-yellow-400 font-semibold mt-2">
-            💰 {price}  Gold will be deducted from your balance per minute during the call
+            💰 {price} Gold will be deducted from your balance {creatorType === "Fan call" ? "per minute during the call" : "into a pending state"}
           </p>
         </div>
 
