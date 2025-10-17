@@ -413,17 +413,23 @@ export default function PostsCard() {
 
     try {
       if (currentlyFollowing) {
-        await dispatch(unfollowThunk({ 
-          userid: Array.isArray(postAuthorId) ? postAuthorId.join(',') : postAuthorId,
-          followerid: loggedInUserId, 
-          token 
-        })).unwrap();
+      await dispatch(unfollowThunk({ 
+        userid: Array.isArray(postAuthorId) ? postAuthorId.join(',') : postAuthorId,
+        followerid: loggedInUserId, 
+        token 
+      })).unwrap();
+      
+      // Show success toast
+      toast.success("Unfollowed successfully!");
       } else {
         await dispatch(followThunk({
           userid: Array.isArray(postAuthorId) ? postAuthorId.join(',') : postAuthorId,
           followerid: loggedInUserId,
           token
         })).unwrap();
+        
+        // Show success toast
+        toast.success("Followed successfully!");
       }
       
       dispatch(getfollow({ userid: loggedInUserId, token }));

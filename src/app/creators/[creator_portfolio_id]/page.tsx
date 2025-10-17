@@ -16,7 +16,7 @@ import { Requestform } from "@/components/requestFrag/Requestform";
 import { RequestDetailsForm } from "@/components/requestFrag/RequestDetailsForm";
 import closeIcon from "@/icons/closeIcon.svg";
 import { getViews } from "@/store/creatorSlice";
-import { getCreatorRatings } from "@/store/profile";
+import { getAllCreatorRatings } from "@/store/profile";
 import { CreatorReview } from "./_components/Creator_review";
 import { IoCheckmarkCircleOutline } from 'react-icons/io5';
 
@@ -98,6 +98,7 @@ interface RootState {
         userid: string;
         hostid: string;
         name: string;
+        nickname?: string;
         age: string;
         location: string;
         price: string;
@@ -359,17 +360,23 @@ export default function Creatorbyid () {
       );
     }
 
-    // Fetch ratings using the new 5-star rating system
+    // Fetch ALL ratings using the new 5-star rating system (both fan-to-creator and creator-to-creator)
     if (ratings_stats !== "loading") {
-      console.log('🔍 [CreatorPortfolio] Fetching ratings for creator:', { creatorId: Creator[0], token: token ? 'present' : 'missing' });
+      console.log('🔍 [CreatorPortfolio] Fetching ALL ratings for creator:', { 
+        creatorId: Creator[0], 
+        token: token ? 'present' : 'missing',
+        tokenLength: token?.length || 0,
+        reduxToken: reduxToken ? 'present' : 'missing',
+        sessionToken: session?.token ? 'present' : 'missing'
+      });
       dispatch(
-        getCreatorRatings({
+        getAllCreatorRatings({
           creatorId: Creator[0],
           token,
         })
       );
     }
-  }, [userid, Creator[0]]);
+  }, [userid, Creator[0], token]);
 
   useEffect(() => {
     if (creatorbyidstatus === "succeeded") {
@@ -680,14 +687,19 @@ export default function Creatorbyid () {
             <CreatorReview
               key={index}
               content={rating.feedback}
-              name={rating.fanName}
-              photolink={rating.fanPhoto}
+              name={rating.fanName || rating.creatorName || "Unknown"}
+              photolink={rating.fanPhoto || rating.creatorPhoto || ""}
               posttime={rating.createdAt}
               id={rating._id}
-              userid={rating.fanId}
+              userid={rating.fanId || rating.creatorId || ""}
               rating={rating.rating}
               hostType={rating.hostType}
               requestId={rating.requestId}
+              ratingType={rating.ratingType}
+              fanName={rating.fanName}
+              fanPhoto={rating.fanPhoto}
+              creatorName={rating.creatorName}
+              creatorPhoto={rating.creatorPhoto}
             />
           );
         });
@@ -1110,7 +1122,7 @@ export default function Creatorbyid () {
                 <div className="flex-1">
                   <CreatorByIdNav
                     views={views}
-                    creatorName={(creator?.name||" ").split(" ")[0]}
+                    creatorName={creator?.nickname || (creator?.name||" ").split(" ")[0]}
                     followingUser={creator.followingUser}
                     id={creator.userid}
                     creator_portfolio_id={creator.hostid}
@@ -1183,9 +1195,9 @@ export default function Creatorbyid () {
               {/* Main Content */}
               <div className="text-center">
                 <h1 className="text-xl font-bold text-white mb-2">
-                  {getStatus(String(creator?.hosttype))} {creator.name.split(" ")[0]}
+                  {getStatus(String(creator?.hosttype))} {creator.nickname || creator.name.split(" ")[0]}
                 </h1>
-                <p className="text-gray-300 text-1xl">{creator.name} </p>
+                <p className="text-gray-300 text-1xl">{creator.nickname}</p>
               </div>
             </div>
 
@@ -1334,7 +1346,7 @@ export default function Creatorbyid () {
                 <div className="space-y-4">
                   <div className="flex justify-between items-center p-3 bg-gray-700 rounded-lg">
                     <span className="text-gray-300 font-medium">👤 Name</span>
-                    <span className="text-white font-semibold">{creator.name}</span>
+                    <span className="text-white font-semibold">{creator.nickname || creator.name}</span>
                   </div>
                   
                   <div className="flex justify-between items-center p-3 bg-gray-700 rounded-lg">
@@ -1599,7 +1611,7 @@ export default function Creatorbyid () {
             <RequestDetailsForm
               onDone={handleRequestDetailsSubmit}
               onCancel={() => setShowRequestDetails(false)}
-              creatorName={creator.name}
+              creatorName={creator.nickname || creator.name}
               creatorType={creator.hosttype}
               price={parseFloat(creator.price) || 0}
             />

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 // Service Worker for Push Notifications
 const CACHE_NAME = 'mmeko-push-v4';
 const VAPID_PUBLIC_KEY = 'BFOop0dhgbA4z797vPVoKUvMf_aTocG5baoucv2r14ZOv2xXwIc3QYPWcRtxHUPBIm9wiHUjlLM30wTVVLi_GDk';
@@ -40,7 +41,7 @@ self.addEventListener('push', (event) => {
     title: 'MmeKo',
     body: 'You have a new notification',
     icon: '/icons/m-logo.png',
-    badge: '/icons/icons8-profile_Icon1.png',
+    badge: '/bell.jpg',
     tag: 'mmeko-notification',
     requireInteraction: true,
     actions: [
@@ -70,9 +71,8 @@ self.addEventListener('push', (event) => {
         notificationData.body = pushData.message;
       }
       
-      if (pushData.icon) {
-        notificationData.icon = pushData.icon;
-      }
+      // FORCE DEFAULT ICONS - Ignore backend icon and always use defaults
+      // notificationData.icon = pushData.icon; // Commented out to force default
       
       if (pushData.title) {
         notificationData.title = pushData.title;

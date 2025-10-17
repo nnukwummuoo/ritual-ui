@@ -19,6 +19,7 @@ interface FanCallModalProps {
     callerPhoto?: string;
     callerIsVip?: boolean;
     callerVipEndDate?: string | null;
+    callerIsCreator?: boolean;
     isIncoming: boolean;
     callId?: string;
     answererId?: string;
@@ -26,6 +27,7 @@ interface FanCallModalProps {
     answererPhoto?: string;
     answererIsVip?: boolean;
     answererVipEndDate?: string | null;
+    answererIsCreator?: boolean;
   } | null;
   currentUserId: string;
   currentUserName: string;
@@ -859,7 +861,9 @@ export default function FanCallModal({
                       : (callData?.answererName || 'User')
                     }
                   </p>
-                  <p className="text-sm text-blue-400">Creator</p>
+                  <p className="text-sm text-blue-400">
+                    {callData?.isIncoming ? 'Fan' : 'Creator'}
+                  </p>
                 </div>
                 
                 {/* Call again button - only show for outgoing calls */}
@@ -884,7 +888,9 @@ export default function FanCallModal({
                           : (callData?.answererName || 'User')
                         }
                       </p>
-                      <p className="text-sm text-blue-400">Creator</p>
+                      <p className="text-sm text-blue-400">
+                        {callData?.isIncoming ? 'Fan' : 'Creator'}
+                      </p>
                       <p className="text-sm text-gray-400">
                         {callData?.isIncoming ? 'Incoming call...' : 'Calling...'}
                       </p>

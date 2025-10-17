@@ -7,6 +7,7 @@ import { follow, unfollow, getfollow } from "@/store/profile";
 import { checkVipStatus } from "@/store/vip";
 import { getSocket } from "@/lib/socket";
 import VIPBadge from "@/components/VIPBadge";
+import { toast } from "material-react-toastify";
 
 interface FollowerCardProps {
   image: string;
@@ -190,6 +191,9 @@ const FollowerCard: React.FC<FollowerCardProps> = ({ image, name, creator_portfo
           if (element) {
             element.setAttribute('data-following', 'false');
           }
+          
+          // Show success toast
+          toast.success("Unfollowed successfully!");
         } catch (error: unknown) {
           // If the error is "not following this user", update the UI state
           const errorMessage = error instanceof Error ? error.message : String(error);
@@ -216,6 +220,9 @@ const FollowerCard: React.FC<FollowerCardProps> = ({ image, name, creator_portfo
           if (element) {
             element.setAttribute('data-following', 'true');
           }
+          
+          // Show success toast
+          toast.success("Followed successfully!");
         } catch (error: unknown) {
           // Handle empty error objects or objects without message property
           let errorMessage = "";

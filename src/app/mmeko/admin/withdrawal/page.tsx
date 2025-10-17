@@ -201,7 +201,7 @@ const WithdrawalRequests = () => {
                       {(req as any).userId ? `${(req as any).userId.firstname || ''} ${(req as any).userId.lastname || ''}`.trim() || req.credentials?.fullName || "User" : req.credentials?.fullName || "User"}
                     </h2>
                     {(req as any).userId?.nickname && (
-                      <p className="text-sm text-gray-400">@{(req as any).userId.nickname}</p>
+                      <p className="text-sm text-gray-400">{(req as any).userId.nickname}</p>
                     )}
                   </div>
                   <span
