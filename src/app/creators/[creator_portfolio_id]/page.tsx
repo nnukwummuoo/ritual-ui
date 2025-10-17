@@ -813,7 +813,7 @@ export default function Creatorbyid () {
   const psPrice = creator?.price?.replace(/(GOLD)(per)/, "$1 $2");
   const fmtPSPrice = psPrice?.includes("per minute")
     ? psPrice
-    : `${psPrice} Gold/per minute`;
+    : `${psPrice} Gold/min`;
   // Don't render if creator data is not available or still loading
   if (loading || creatorbyidstatus === "loading" || !creator || Object.keys(creator).length === 0) {
     return (
