@@ -658,7 +658,41 @@ export const markActivityNotificationsSeen = createAsyncThunk<
   }
 });
 
-// Fetch ratings for a creator
+// Fetch ALL ratings for a creator (both fan-to-creator and creator-to-creator)
+export const getAllCreatorRatings = createAsyncThunk<
+  { ratings: any[]; totalRatings: number; averageRating: number; ratingCounts: any },
+  { creatorId: string; token: string }
+>("profile/getAllCreatorRatings", async (data) => {
+  try {
+    console.log('🔍 [getAllCreatorRatings] API call:', { 
+      creatorId: data.creatorId, 
+      token: data.token ? 'present' : 'missing',
+      tokenLength: data.token?.length || 0
+    });
+    
+    const headers = data.token
+      ? {
+          Authorization: `Bearer ${data.token}`,
+          "Content-Type": "application/json",
+        }
+      : {
+          "Content-Type": "application/json",
+        };
+    // Force localhost for development
+    const apiUrl = process.env.NODE_ENV === "development" ? "http://localhost:3100" : URL;
+    const url = `${apiUrl}/review/creator/${data.creatorId}/all`;
+    console.log('🔍 [getAllCreatorRatings] Making request to:', url);
+    
+    const response = await axios.get(url, { headers });
+    console.log('✅ [getAllCreatorRatings] Response:', response.data);
+    return response.data;
+  } catch (err) {
+    console.error('❌ [getAllCreatorRatings] Error:', err);
+    throw getErrorMessageWithNetworkFallback(err);
+  }
+});
+
+// Fetch ratings for a creator (original - only fan-to-creator)
 export const getCreatorRatings = createAsyncThunk<
   { ratings: any[]; totalRatings: number; averageRating: number; ratingCounts: any },
   { creatorId: string; token: string }
@@ -678,6 +712,30 @@ export const getCreatorRatings = createAsyncThunk<
     return response.data;
   } catch (err) {
     console.error('❌ [getCreatorRatings] Error:', err);
+    throw getErrorMessageWithNetworkFallback(err);
+  }
+});
+
+// Fetch ALL ratings for a user (for user profile page)
+export const getAllUserRatings = createAsyncThunk<
+  { ratings: any[]; totalRatings: number; averageRating: number; ratingCounts: any },
+  { userId: string; token: string }
+>("profile/getAllUserRatings", async (data) => {
+  try {
+    const headers = data.token
+      ? {
+          Authorization: `Bearer ${data.token}`,
+          "Content-Type": "application/json",
+        }
+      : {
+          "Content-Type": "application/json",
+        };
+    // Force localhost for development
+    const apiUrl = process.env.NODE_ENV === "development" ? "http://localhost:3100" : URL;
+    const response = await axios.get(`${apiUrl}/review/user/${data.userId}/all`, { headers });
+    return response.data;
+  } catch (err) {
+    console.error('❌ [getAllUserRatings] Error:', err);
     throw getErrorMessageWithNetworkFallback(err);
   }
 });
@@ -1066,6 +1124,21 @@ const profile = createSlice({
             state.notifications_message =
               action.error?.message ?? "Failed to mark activity notifications as seen";
         })
+        .addCase(getAllCreatorRatings.pending, (state) => {
+            state.ratings_stats = "loading";
+        })
+        .addCase(getAllCreatorRatings.fulfilled, (state, action) => {
+            state.ratings_stats = "succeeded";
+            state.ratings = action.payload.ratings || [];
+            state.totalRatings = action.payload.totalRatings || 0;
+            state.averageRating = action.payload.averageRating || 0;
+            state.ratingCounts = action.payload.ratingCounts || {};
+        })
+        .addCase(getAllCreatorRatings.rejected, (state, action) => {
+            state.ratings_stats = "failed";
+            state.ratings_message =
+              action.error?.message ?? "Failed to fetch ratings";
+        })
         .addCase(getCreatorRatings.pending, (state) => {
             state.ratings_stats = "loading";
         })
@@ -1077,6 +1150,21 @@ const profile = createSlice({
             state.ratingCounts = action.payload.ratingCounts || {};
         })
         .addCase(getCreatorRatings.rejected, (state, action) => {
+            state.ratings_stats = "failed";
+            state.ratings_message =
+              action.error?.message ?? "Failed to fetch ratings";
+        })
+        .addCase(getAllUserRatings.pending, (state) => {
+            state.ratings_stats = "loading";
+        })
+        .addCase(getAllUserRatings.fulfilled, (state, action) => {
+            state.ratings_stats = "succeeded";
+            state.ratings = action.payload.ratings || [];
+            state.totalRatings = action.payload.totalRatings || 0;
+            state.averageRating = action.payload.averageRating || 0;
+            state.ratingCounts = action.payload.ratingCounts || {};
+        })
+        .addCase(getAllUserRatings.rejected, (state, action) => {
             state.ratings_stats = "failed";
             state.ratings_message =
               action.error?.message ?? "Failed to fetch ratings";

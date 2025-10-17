@@ -179,6 +179,7 @@ interface CardProps {
     type: "fan" | "creator";
     titles?: string[];
     name: string;
+    nickname?: string; // Add nickname prop
     img: string;
     status: "request" | "expired" | "completed" | "accepted" | "declined" | "cancelled";
     requestId?: string;
@@ -193,7 +194,7 @@ interface CardProps {
     onStatusChange?: (requestId: string, newStatus: string) => void;
 }
 
-export default function RequestCard({exp, img, name, titles=["fan"], status, type="fan", requestId, price, details, userid, creator_portfolio_id, targetUserId, hosttype, isVip=false, vipEndDate=null, onStatusChange}: CardProps) {
+export default function RequestCard({exp, img, name, nickname, titles=["fan"], status, type="fan", requestId, price, details, userid, creator_portfolio_id, targetUserId, hosttype, isVip=false, vipEndDate=null, onStatusChange}: CardProps) {
   const [loading, setLoading] = useState(false);
   const [currentStatus, setCurrentStatus] = useState(status);
   const [showDetails, setShowDetails] = useState(false);
@@ -285,7 +286,7 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
           setRatingData({
             rating: data.rating,
             feedback: data.feedback,
-            fanName: name // Use the fan's name from props
+            fanName: nickname || name // Use the fan's nickname or name from props
           });
         } else {
           setSubmittedRating(0);
@@ -333,7 +334,7 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
           setFanRatingData({
             rating: fanRatingData.rating,
             feedback: fanRatingData.feedback,
-            creatorName: name
+            creatorName: nickname || name
           });
         } else {
           setSubmittedFanRating(0);
@@ -541,9 +542,9 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
     
     // If it's a Fan Call, start video call instead of completing
     if (hosttype === "Fan call") {
-      if (creator_portfolio_id && name) {
+      if (creator_portfolio_id && (nickname || name)) {
        
-        startVideoCall(creator_portfolio_id, name, price || 1, isVip, vipEndDate);
+        startVideoCall(creator_portfolio_id, nickname || name, price || 1, isVip, vipEndDate);
       }
       return;
     }
@@ -774,14 +775,14 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
               <Image src={img} width={100} alt="picture" height={100} className='absolute top-0 left-0 size-full object-cover' />
             ) : (
               <div className="w-full h-full flex items-center justify-center bg-gray-600 text-white font-bold text-xl">
-                {name.split(' ').map(n => n.charAt(0)).join('').toUpperCase().slice(0, 2)}
+                {(nickname || name).split(' ').map(n => n.charAt(0)).join('').toUpperCase().slice(0, 2)}
               </div>
             )}
             
           </div>
           <div className='text-sm'>
             <div className='flex items-center gap-2'>
-              <p className='font-bold cursor-pointer hover:text-blue-400 transition-colors' onClick={handleProfileClick}>{name}</p>
+              <p className='font-bold cursor-pointer hover:text-blue-400 transition-colors' onClick={handleProfileClick}>{nickname || name}</p>
             </div>
             <div className='flex gap-1'>{titles?.map((title, i)=> i === titles.length -1 ? <p key={title}>{title}</p> : <p key={title}>{title} &#x2022; </p>)}</div>
           </div>
@@ -841,7 +842,7 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
       {/* Rating Stars - Show for creators when completed and rated */}
       {type === "creator" && currentStatus === "completed" && submittedRating > 0 && (
         <div className="flex flex-col items-center gap-2 py-3">
-          <p className="text-sm text-gray-400 mb-2">Rating from {name}:</p>
+          <p className="text-sm text-gray-400 mb-2">Rating from {nickname || name}:</p>
           <div className="flex justify-center gap-2">
             {[1, 2, 3, 4, 5].map((star) => {
               const isFilled = star <= submittedRating;
@@ -915,7 +916,7 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
       {/* Fan Rating Stars - Show for fans when completed (to view creator's rating of them) */}
       {type === "fan" && currentStatus === "completed" && submittedFanRating > 0 && (
         <div className="flex flex-col items-center gap-2 py-3 border-t border-gray-600 pt-3">
-          <p className="text-sm text-gray-400 mb-2">Rating from {name}:</p>
+          <p className="text-sm text-gray-400 mb-2">Rating from {nickname || name}:</p>
           <div className="flex justify-center gap-2">
             {[1, 2, 3, 4, 5].map((star) => {
               const isFilled = star <= submittedFanRating;
@@ -953,7 +954,7 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
           setSelectedRating(0);
         }}
         onSubmit={handleRatingSubmit}
-        creatorName={name}
+        creatorName={nickname || name}
         hostType={hosttype}
         loading={ratingLoading}
         preSelectedRating={selectedRating}
@@ -967,7 +968,7 @@ export default function RequestCard({exp, img, name, titles=["fan"], status, typ
           setSelectedFanRating(0);
         }}
         onSubmit={handleFanRatingSubmit}
-        fanName={name}
+        fanName={nickname || name}
         hostType={hosttype}
         loading={fanRatingLoading}
         preSelectedRating={selectedFanRating}

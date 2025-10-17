@@ -19,6 +19,7 @@ interface Request {
   status: "request" | "expired" | "completed" | "accepted" | "declined" | "cancelled";
   otherUser?: {
     name: string;
+    nickname?: string; // Add nickname field
     photolink: string;
     isCreator: boolean;
     isVip?: boolean;
@@ -199,6 +200,7 @@ export default function Activity() {
             img={request.otherUser?.photolink || "/picture-1.jfif"}
             status={request.status}
             name={request.otherUser?.name || "Unknown User"}
+            nickname={request.otherUser?.nickname} // Add nickname prop
             titles={request.otherUser?.isCreator ? ["Creator"] : ["Fan"]}
             exp={request.timeRemaining || "Expired"}
             requestId={request.requestId}

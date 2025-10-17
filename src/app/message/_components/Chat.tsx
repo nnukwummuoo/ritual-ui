@@ -1679,7 +1679,7 @@ export const Chat = () => {
       </div>
 
       {/* Messages Area - Clean Design */}
-      <div ref={msgListref} className="flex-1 overflow-y-auto p-3 sm:p-4 bg-transparent pb-20" style={{ 
+      <div ref={msgListref} className="flex-1 overflow-y-auto p-3 sm:p-4 bg-transparent pb-24 sm:pb-20" style={{ 
         WebkitOverflowScrolling: 'touch',
         overscrollBehavior: 'contain',
         scrollBehavior: 'smooth'
@@ -1707,7 +1707,7 @@ export const Chat = () => {
             </div>
           </div>
         ) : (
-          <div className="space-y-4 w-full max-w-4xl mx-auto pb-4">
+          <div className="space-y-4 w-full max-w-4xl mx-auto pb-6">
             {messagelist()}
           </div>
         )}
@@ -1770,7 +1770,7 @@ export const Chat = () => {
       )}
 
       {/* Input Bar - Mobile Optimized */}
-      <div className="flex items-center gap-2 sm:gap-3 p-3 sm:p-4 bg-gray-800 border-t border-blue-700/30 sticky bottom-0 z-50 flex-shrink-0 pb-safe shadow-lg">
+      <div className="flex items-center gap-2 sm:gap-3 p-3 sm:p-4 bg-gray-800 border-t border-blue-700/30 sticky bottom-0 z-50 flex-shrink-0 pb-safe shadow-lg min-h-[80px]">
         <input
           type="file"
           ref={fileInputRef}

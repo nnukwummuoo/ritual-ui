@@ -8,7 +8,7 @@ import Tabs from "./Tabs";
 import DropdownMenu from "./DropDonMenu";
 import { useParams, useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
-import { getprofile, getfollow, getAllUsers, follow, unfollow, getCreatorRatings, getFanRatings } from "@/store/profile";
+import { getprofile, getfollow, getAllUsers, follow, unfollow, getAllUserRatings, getFanRatings } from "@/store/profile";
 import { getViewingProfile, getViewingFollow, getAllUsersForViewing, clearViewingProfile } from "@/store/viewingProfile";
 import { checkVipStatus } from "@/store/vip";
 import type { AppDispatch, RootState } from "@/store/store";
@@ -656,7 +656,7 @@ export const Profile = () => {
           // Check if we've already fetched for this creator to prevent duplicate calls
           if (!fetchedCreatorsRef.current.has(creatorId)) {
             fetchedCreatorsRef.current.add(creatorId);
-            dispatch(getCreatorRatings({ creatorId, token }));
+            dispatch(getAllUserRatings({ userId: creatorId, token }));
           }
         }
     }
@@ -706,6 +706,9 @@ export const Profile = () => {
           
           // Update local state
           setisFollowing(false);
+          
+          // Show success toast
+          toast.success("Unfollowed successfully!");
         } catch (error: unknown) {
           // If the error is "not following this user", update the UI state
           const errorMessage = error instanceof Error ? error.message : String(error);
@@ -726,6 +729,9 @@ export const Profile = () => {
           
           // Update local state
           setisFollowing(true);
+          
+          // Show success toast
+          toast.success("Followed successfully!");
         } catch (error: unknown) {
           // Handle empty error objects or objects without message property
           let errorMessage = "";
@@ -1995,11 +2001,38 @@ const PostModal = () => {
                     </div>
                   ) : (
                     <div className="space-y-4">
+                      {/* Debug logs for VIP status */}
+                      {console.log('🔍 [Reviews Debug] Fan-to-Creator ratings:', ratings.map(r => ({
+                        id: r._id || r.requestId,
+                        fanName: r.fanName,
+                        fanIsVip: r.fanIsVip,
+                        fanVipEndDate: r.fanVipEndDate,
+                        creatorIsVip: r.creatorIsVip,
+                        creatorVipEndDate: r.creatorVipEndDate
+                      })))}
+                      {console.log('🔍 [Reviews Debug] Creator-to-Fan ratings:', fanRatings.map(r => ({
+                        id: r._id || r.requestId,
+                        creatorName: r.creatorName,
+                        creatorIsVip: r.creatorIsVip,
+                        creatorVipEndDate: r.creatorVipEndDate,
+                        fanIsVip: r.fanIsVip,
+                        fanVipEndDate: r.fanVipEndDate
+                      })))}
+                      
                       {/* Fan-to-Creator Ratings */}
                       {ratings.map((review) => (
-                        <div key={`fan-to-creator-${review._id || review.requestId}`} className="bg-gray-900 rounded-lg p-4 flex flex-col">
+                        <div key={`fan-to-creator-${review._id || review.requestId}`} className="bg-gray-900 rounded-lg p-4 flex flex-col relative">
+                          {/* VIP Badge for fan reviewer - on main container */}
+                          {review.fanIsVip && (
+                            <VIPBadge 
+                              size="lg" 
+                              className="absolute top-2 left-9 z-[100]"
+                              isVip={review.fanIsVip} 
+                              vipEndDate={review.fanVipEndDate} 
+                            />
+                          )}
                         <div className="flex items-center mb-3">
-                          <div className="relative w-10 h-10 rounded-full overflow-hidden mr-3 bg-gradient-to-r from-blue-500 to-purple-600 p-0.5">
+                          <div className="relative w-10 h-10 rounded-full overflow-hidden mr-3 bg-gradient-to-r from-blue-500 to-purple-600 p-0.5 z-10">
                             <div className="w-full h-full rounded-full overflow-hidden bg-black">
                               {(() => {
                                 const profileImage = review.fanPhoto;
@@ -2044,7 +2077,7 @@ const PostModal = () => {
                                   <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                                 </svg>
                               ))}
-                              <span className="text-gray-400 text-sm ml-2">
+                              <span className="text-gray-400 text-xs flex items-center gap-1 ml-2">
                                 {review.hostType} • {new Date(review.createdAt).toLocaleDateString()}
                               </span>
                             </div>
@@ -2056,9 +2089,18 @@ const PostModal = () => {
 
                       {/* Creator-to-Fan Ratings */}
                       {fanRatings.map((rating) => (
-                        <div key={`creator-to-fan-${rating._id || rating.requestId}`} className="bg-gray-900 rounded-lg p-4 flex flex-col">
+                        <div key={`creator-to-fan-${rating._id || rating.requestId}`} className="bg-gray-900 rounded-lg p-4 flex flex-col relative">
+                          {/* VIP Badge for creator reviewer - on main container */}
+                          {rating.creatorIsVip && (
+                            <VIPBadge 
+                              size="lg" 
+                              className="absolute top-2 left-9 z-[100]" 
+                              isVip={rating.creatorIsVip} 
+                              vipEndDate={rating.creatorVipEndDate} 
+                            />
+                          )}
                           <div className="flex items-center mb-3">
-                            <div className="relative w-10 h-10 rounded-full overflow-hidden mr-3 bg-gradient-to-r from-green-500 to-teal-600 p-0.5">
+                            <div className="relative w-10 h-10 rounded-full overflow-hidden mr-3 bg-gradient-to-r from-green-500 to-teal-600 p-0.5 z-10">
                               <div className="w-full h-full rounded-full overflow-hidden bg-black">
                                 {(() => {
                                   const profileImage = rating.creatorPhoto;
@@ -2103,7 +2145,7 @@ const PostModal = () => {
                                     <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                                   </svg>
                                 ))}
-                                <span className="text-gray-400 text-sm ml-2">
+                                <span className="text-gray-400 text-xs flex items-center gap-1 ml-2">
                                   {rating.hostType} • {new Date(rating.createdAt).toLocaleDateString()}
                                 </span>
                               </div>
