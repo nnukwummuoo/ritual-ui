@@ -81,6 +81,7 @@ if (checking) {
   );
 }
 
+
   // Notification logic remains unchanged
   useEffect(() => {
     const ping = () => {
