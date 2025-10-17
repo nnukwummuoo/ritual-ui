@@ -408,6 +408,20 @@ export const Chat = () => {
     }
   };
 
+  // Add viewport meta tag for mobile optimization
+  React.useEffect(() => {
+    // Ensure viewport meta tag is set for mobile
+    const viewport = document.querySelector('meta[name="viewport"]');
+    if (viewport) {
+      viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover');
+    } else {
+      const meta = document.createElement('meta');
+      meta.name = 'viewport';
+      meta.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover';
+      document.head.appendChild(meta);
+    }
+  }, []);
+
   // Check if VIP celebration should be shown (database-based)
   const checkVipCelebrationStatus = React.useCallback(async (userId: string, viewerId: string) => {
     if (!userId || !viewerId) return false;
@@ -779,12 +793,17 @@ export const Chat = () => {
   // Auto-scroll to bottom when messages change
   useEffect(() => {
     if (message.length > 0) {
-      // Use enhanced mobile scrolling
+      // Use enhanced mobile scrolling with better timing
       requestAnimationFrame(() => {
         setTimeout(() => {
           scrollToBottomMobile();
-        }, 100);
+        }, 150);
       });
+      
+      // Additional scroll for mobile browsers that need extra time
+      setTimeout(() => {
+        scrollToBottomMobile();
+      }, 300);
     }
   }, [message]);
 
@@ -1564,10 +1583,19 @@ export const Chat = () => {
 
 
   return (
-    <div className="h-full w-full flex flex-col" style={{ 
+    <div className="h-screen w-full flex flex-col fixed inset-0" style={{ 
       WebkitOverflowScrolling: 'touch',
       overscrollBehavior: 'contain',
-      touchAction: 'pan-y'
+      touchAction: 'pan-y',
+      height: '100vh',
+      height: '100dvh', // Dynamic viewport height for mobile
+      maxHeight: '100vh',
+      maxHeight: '100dvh',
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0
     }}>
       {/* VIP Celebration Animation */}
       {showVipCelebration && (
@@ -1679,10 +1707,12 @@ export const Chat = () => {
       </div>
 
       {/* Messages Area - Clean Design */}
-      <div ref={msgListref} className="flex-1 overflow-y-auto p-3 sm:p-4 bg-transparent pb-24 sm:pb-20" style={{ 
+      <div ref={msgListref} className="flex-1 overflow-y-auto p-3 sm:p-4 bg-transparent" style={{ 
         WebkitOverflowScrolling: 'touch',
         overscrollBehavior: 'contain',
-        scrollBehavior: 'smooth'
+        scrollBehavior: 'smooth',
+        paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+        minHeight: 0 // Important for flex child to shrink properly
       }}>
         {loading ? (
           <div className="space-y-4 w-full max-w-4xl mx-auto">
@@ -1707,7 +1737,9 @@ export const Chat = () => {
             </div>
           </div>
         ) : (
-          <div className="space-y-4 w-full max-w-4xl mx-auto pb-6">
+          <div className="space-y-4 w-full max-w-4xl mx-auto" style={{
+            paddingBottom: 'calc(6rem + env(safe-area-inset-bottom, 0px))'
+          }}>
             {messagelist()}
           </div>
         )}
@@ -1770,7 +1802,10 @@ export const Chat = () => {
       )}
 
       {/* Input Bar - Mobile Optimized */}
-      <div className="flex items-center gap-2 sm:gap-3 p-3 sm:p-4 bg-gray-800 border-t border-blue-700/30 sticky bottom-0 z-50 flex-shrink-0 pb-safe shadow-lg min-h-[80px]">
+      <div className="flex items-center gap-2 sm:gap-3 p-3 sm:p-4 bg-gray-800 border-t border-blue-700/30 sticky bottom-0 z-50 flex-shrink-0 shadow-lg" style={{
+        paddingBottom: 'calc(1rem + env(safe-area-inset-bottom, 0px))',
+        minHeight: 'calc(80px + env(safe-area-inset-bottom, 0px))'
+      }}>
         <input
           type="file"
           ref={fileInputRef}

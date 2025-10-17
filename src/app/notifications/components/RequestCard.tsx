@@ -166,6 +166,62 @@ const getDetailsTitle = (hostType: string) => {
 };
 const statusArr = ["request", "expired", "completed", "accepted", "declined", "cancelled"] 
 
+// Helper function to generate initials from first name and last name
+const generateInitials = (firstName?: string, lastName?: string, fallbackName?: string) => {
+  // Debug logging to see what values we're getting
+  console.log('🔍 [generateInitials] Input values:', {
+    firstName,
+    lastName,
+    fallbackName,
+    firstNameType: typeof firstName,
+    lastNameType: typeof lastName,
+    fallbackNameType: typeof fallbackName
+  });
+
+  // Clean and validate inputs (handle empty strings, null, undefined)
+  const cleanFirstName = firstName?.trim();
+  const cleanLastName = lastName?.trim();
+  const cleanFallbackName = fallbackName?.trim();
+
+  // If we have first name and last name, use them
+  if (cleanFirstName && cleanLastName) {
+    const initials = `${cleanFirstName.charAt(0).toUpperCase()}${cleanLastName.charAt(0).toUpperCase()}`;
+    console.log('✅ [generateInitials] Using first+last name:', initials);
+    return initials;
+  }
+  
+  // If we only have first name, use it
+  if (cleanFirstName) {
+    const initial = cleanFirstName.charAt(0).toUpperCase();
+    console.log('✅ [generateInitials] Using first name only:', initial);
+    return initial;
+  }
+  
+  // If we only have last name, use it
+  if (cleanLastName) {
+    const initial = cleanLastName.charAt(0).toUpperCase();
+    console.log('✅ [generateInitials] Using last name only:', initial);
+    return initial;
+  }
+  
+  // Fallback to the original logic using name/nickname
+  if (cleanFallbackName) {
+    const names = cleanFallbackName.split(' ').filter(name => name.trim().length > 0);
+    if (names.length >= 2) {
+      const initials = `${names[0].charAt(0).toUpperCase()}${names[names.length - 1].charAt(0).toUpperCase()}`;
+      console.log('✅ [generateInitials] Using fallback name (multiple words):', initials);
+      return initials;
+    } else if (names.length === 1) {
+      const initial = names[0].charAt(0).toUpperCase();
+      console.log('✅ [generateInitials] Using fallback name (single word):', initial);
+      return initial;
+    }
+  }
+  
+  console.log('❌ [generateInitials] No valid name found, returning ?');
+  return '?';
+};
+
 interface FanMeetDetails {
   date: string;
   time: string;
@@ -180,6 +236,8 @@ interface CardProps {
     titles?: string[];
     name: string;
     nickname?: string; // Add nickname prop
+    firstName?: string; // Add first name prop
+    lastName?: string; // Add last name prop
     img: string;
     status: "request" | "expired" | "completed" | "accepted" | "declined" | "cancelled";
     requestId?: string;
@@ -194,9 +252,19 @@ interface CardProps {
     onStatusChange?: (requestId: string, newStatus: string) => void;
 }
 
-export default function RequestCard({exp, img, name, nickname, titles=["fan"], status, type="fan", requestId, price, details, userid, creator_portfolio_id, targetUserId, hosttype, isVip=false, vipEndDate=null, onStatusChange}: CardProps) {
+export default function RequestCard({exp, img, name, nickname, firstName, lastName, titles=["fan"], status, type="fan", requestId, price, details, userid, creator_portfolio_id, targetUserId, hosttype, isVip=false, vipEndDate=null, onStatusChange}: CardProps) {
   const [loading, setLoading] = useState(false);
   const [currentStatus, setCurrentStatus] = useState(status);
+  
+  // Debug logging to see what props we're receiving
+  console.log('🔍 [RequestCard] Props received:', {
+    name,
+    nickname,
+    firstName,
+    lastName,
+    type,
+    requestId
+  });
   const [showDetails, setShowDetails] = useState(false);
   const [showRatingModal, setShowRatingModal] = useState(false);
   const [ratingLoading, setRatingLoading] = useState(false);
@@ -286,7 +354,7 @@ export default function RequestCard({exp, img, name, nickname, titles=["fan"], s
           setRatingData({
             rating: data.rating,
             feedback: data.feedback,
-            fanName: nickname || name // Use the fan's nickname or name from props
+            fanName: firstName && lastName ? `${firstName} ${lastName}` : (nickname || name) // Use the fan's first/last name or fallback
           });
         } else {
           setSubmittedRating(0);
@@ -334,7 +402,7 @@ export default function RequestCard({exp, img, name, nickname, titles=["fan"], s
           setFanRatingData({
             rating: fanRatingData.rating,
             feedback: fanRatingData.feedback,
-            creatorName: nickname || name
+            creatorName: firstName && lastName ? `${firstName} ${lastName}` : (nickname || name)
           });
         } else {
           setSubmittedFanRating(0);
@@ -345,7 +413,7 @@ export default function RequestCard({exp, img, name, nickname, titles=["fan"], s
         setFanRatingData(null);
       }
     }
-  }, [requestId, currentUserId, type, currentStatus, userid, name, creator_portfolio_id]);
+  }, [requestId, currentUserId, type, currentStatus, userid, name, creator_portfolio_id, firstName, lastName, nickname]);
 
   // Check for existing rating when component loads or dependencies change
   useEffect(() => {
@@ -775,14 +843,16 @@ export default function RequestCard({exp, img, name, nickname, titles=["fan"], s
               <Image src={img} width={100} alt="picture" height={100} className='absolute top-0 left-0 size-full object-cover' />
             ) : (
               <div className="w-full h-full flex items-center justify-center bg-gray-600 text-white font-bold text-xl">
-                {(nickname || name).split(' ').map(n => n.charAt(0)).join('').toUpperCase().slice(0, 2)}
+                {generateInitials(firstName, lastName, nickname || name)}
               </div>
             )}
             
           </div>
           <div className='text-sm'>
             <div className='flex items-center gap-2'>
-              <p className='font-bold cursor-pointer hover:text-blue-400 transition-colors' onClick={handleProfileClick}>{nickname || name}</p>
+              <p className='font-bold cursor-pointer hover:text-blue-400 transition-colors' onClick={handleProfileClick}>
+                {nickname || name}
+              </p>
             </div>
             <div className='flex gap-1'>{titles?.map((title, i)=> i === titles.length -1 ? <p key={title}>{title}</p> : <p key={title}>{title} &#x2022; </p>)}</div>
           </div>
@@ -842,7 +912,7 @@ export default function RequestCard({exp, img, name, nickname, titles=["fan"], s
       {/* Rating Stars - Show for creators when completed and rated */}
       {type === "creator" && currentStatus === "completed" && submittedRating > 0 && (
         <div className="flex flex-col items-center gap-2 py-3">
-          <p className="text-sm text-gray-400 mb-2">Rating from {nickname || name}:</p>
+          <p className="text-sm text-gray-400 mb-2">Rating from {firstName && lastName ? `${firstName} ${lastName}` : (nickname || name)}:</p>
           <div className="flex justify-center gap-2">
             {[1, 2, 3, 4, 5].map((star) => {
               const isFilled = star <= submittedRating;
@@ -916,7 +986,7 @@ export default function RequestCard({exp, img, name, nickname, titles=["fan"], s
       {/* Fan Rating Stars - Show for fans when completed (to view creator's rating of them) */}
       {type === "fan" && currentStatus === "completed" && submittedFanRating > 0 && (
         <div className="flex flex-col items-center gap-2 py-3 border-t border-gray-600 pt-3">
-          <p className="text-sm text-gray-400 mb-2">Rating from {nickname || name}:</p>
+          <p className="text-sm text-gray-400 mb-2">Rating from {firstName && lastName ? `${firstName} ${lastName}` : (nickname || name)}:</p>
           <div className="flex justify-center gap-2">
             {[1, 2, 3, 4, 5].map((star) => {
               const isFilled = star <= submittedFanRating;
@@ -954,7 +1024,7 @@ export default function RequestCard({exp, img, name, nickname, titles=["fan"], s
           setSelectedRating(0);
         }}
         onSubmit={handleRatingSubmit}
-        creatorName={nickname || name}
+        creatorName={firstName && lastName ? `${firstName} ${lastName}` : (nickname || name)}
         hostType={hosttype}
         loading={ratingLoading}
         preSelectedRating={selectedRating}
@@ -968,7 +1038,7 @@ export default function RequestCard({exp, img, name, nickname, titles=["fan"], s
           setSelectedFanRating(0);
         }}
         onSubmit={handleFanRatingSubmit}
-        fanName={nickname || name}
+        fanName={firstName && lastName ? `${firstName} ${lastName}` : (nickname || name)}
         hostType={hosttype}
         loading={fanRatingLoading}
         preSelectedRating={selectedFanRating}
