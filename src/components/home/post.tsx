@@ -413,17 +413,23 @@ export default function PostsCard() {
 
     try {
       if (currentlyFollowing) {
-        await dispatch(unfollowThunk({ 
-          userid: Array.isArray(postAuthorId) ? postAuthorId.join(',') : postAuthorId,
-          followerid: loggedInUserId, 
-          token 
-        })).unwrap();
+      await dispatch(unfollowThunk({ 
+        userid: Array.isArray(postAuthorId) ? postAuthorId.join(',') : postAuthorId,
+        followerid: loggedInUserId, 
+        token 
+      })).unwrap();
+      
+      // Show success toast
+      toast.success("Unfollowed successfully!");
       } else {
         await dispatch(followThunk({
           userid: Array.isArray(postAuthorId) ? postAuthorId.join(',') : postAuthorId,
           followerid: loggedInUserId,
           token
         })).unwrap();
+        
+        // Show success toast
+        toast.success("Followed successfully!");
       }
       
       dispatch(getfollow({ userid: loggedInUserId, token }));
@@ -628,7 +634,7 @@ export default function PostsCard() {
                   }}
                 >
                   <p className="font-medium">{p?.user?.firstname} { p?.user?.lastname}</p>
-                  <span className="text-gray-400 text-sm">{handleStr ? `@${handleStr}` : ""}</span>
+                  <span className="text-gray-400 text-sm">{handleStr ? `${handleStr}` : ""}</span>
                 </div>
               </div>
 {/*               

@@ -9,6 +9,7 @@ import {
     IoGridOutline,
     IoHomeOutline,
     IoChatbubbleOutline,
+    IoAnalyticsOutline,
 } from "react-icons/io5";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "@/store/store";
@@ -25,6 +26,7 @@ import WithdrawalRequests from "./withdrawal/page";
 import Users from "./users/page";
 import Reports from "./reports/page";
 import AdminSupportChat from "./support-chat/page";
+import VipAnalysisPage from "./vip-analysis/page";
 import PushNotificationToggle from "@/components/PushNotificationToggle";
 
 const AdminPage = () => {
@@ -35,6 +37,7 @@ const AdminPage = () => {
   const [activeView, setActiveView] = useState("Reports");
 
   const token = useAuthToken();
+  const userID = useSelector((s: RootState) => s.register.userID);
   const notifyme = useSelector((s: RootState) => s.admin.notifyme);
   const notifycount = useSelector((s: RootState) => s.admin.notifycount);
   const docCount = useSelector(
@@ -51,7 +54,7 @@ const AdminPage = () => {
   // Notification logic remains unchanged
   useEffect(() => {
     const ping = () => {
-      if (token) dispatch(adminnotify({ token } as any)); // eslint-disable-line @typescript-eslint/no-explicit-any
+      if (token && userID) dispatch(adminnotify({ userid: userID } as any)); // eslint-disable-line @typescript-eslint/no-explicit-any
     };
     ping();
     const timer = setInterval(ping, 60000);
@@ -63,7 +66,7 @@ const AdminPage = () => {
       clearInterval(timer);
       document.removeEventListener("visibilitychange", onVis);
     };
-  }, [dispatch, token]);
+  }, [dispatch, token, userID]);
 
   // Fetch documents on mount to get the count
   useEffect(() => {
@@ -123,6 +126,11 @@ const AdminPage = () => {
       name: "Reports",
       icon: <IoDocumentTextOutline size={22} />,
       component: <Reports />,
+    },
+    {
+      name: "VIP Analysis",
+      icon: <IoAnalyticsOutline size={22} />,
+      component: <VipAnalysisPage />,
     },
     {
       name: "Support Chat",

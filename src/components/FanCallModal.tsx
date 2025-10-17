@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
@@ -6,10 +7,10 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Image from 'next/image';
 import { IoCall, IoCallSharp, IoVideocam, IoVideocamOff, IoMic, IoMicOff, IoClose } from 'react-icons/io5';
 import { getSocket } from '@/lib/socket';
-import VideoCallBilling from './VideoCallBilling';
+import VideoCallBilling from './FanCallBilling';
 import VIPBadge from './VIPBadge';
 
-interface VideoCallModalProps {
+interface FanCallModalProps {
   isOpen: boolean;
   onClose: () => void;
   callData: {
@@ -18,6 +19,7 @@ interface VideoCallModalProps {
     callerPhoto?: string;
     callerIsVip?: boolean;
     callerVipEndDate?: string | null;
+    callerIsCreator?: boolean;
     isIncoming: boolean;
     callId?: string;
     answererId?: string;
@@ -25,16 +27,17 @@ interface VideoCallModalProps {
     answererPhoto?: string;
     answererIsVip?: boolean;
     answererVipEndDate?: string | null;
+    answererIsCreator?: boolean;
   } | null;
   currentUserId: string;
   currentUserName: string;
-  userBalance?: number; // Fan's gold balance
-  creatorEarnings?: number; // Creator's earnings
+  userBalance?: number; // Current user's gold balance (used when they initiate calls)
+  creatorEarnings?: number; // Creator's earnings (only shown when creator answers calls)
   isCreator?: boolean; // Whether current user is a creator
   callRate?: number; // Gold per minute rate
 }
 
-export default function VideoCallModal({ 
+export default function FanCallModal({ 
   isOpen, 
   onClose, 
   callData, 
@@ -44,7 +47,7 @@ export default function VideoCallModal({
   creatorEarnings = 0, 
   isCreator = false, 
   callRate = 1 
-}: VideoCallModalProps) {
+}: FanCallModalProps) {
   const [callStatus, setCallStatus] = useState<'ringing' | 'connecting' | 'connected' | 'ended'>('ringing');
   const [isVideoEnabled, setIsVideoEnabled] = useState(true);
   const [isAudioEnabled, setIsAudioEnabled] = useState(true);
@@ -92,7 +95,13 @@ export default function VideoCallModal({
           setCallTimeout(true);
           // Emit timeout event to terminate the call for both users
           if (socket) {
-            socket.emit('video_call_timeout', { callId: callData?.callId });
+            socket.emit('fan_call_timeout', { 
+              callId: callData?.callId,
+              callerId: callData?.callerId,
+              callerName: callData?.callerName,
+              answererId: callData?.answererId,
+              answererName: callData?.answererName
+            });
           }
         }
       }, 30000); // 30 seconds
@@ -234,7 +243,7 @@ export default function VideoCallModal({
     // Handle ICE candidates
     pc.onicecandidate = (event) => {
       if (event.candidate && socket && callData?.callId) {
-        socket.emit('video_call_ice_candidate', {
+        socket.emit('fan_call_ice_candidate', {
           callId: callData.callId,
           candidate: event.candidate
         });
@@ -290,7 +299,7 @@ export default function VideoCallModal({
       }
     }
 
-    socket.emit('video_call_accept', {
+    socket.emit('fan_call_accept', {
       callId: callData.callId,
       callerId: callData.callerId,
       answererId: currentUserId,
@@ -304,7 +313,7 @@ export default function VideoCallModal({
   const handleDeclineCall = () => {
     if (!callData || !socket) return;
     
-    socket.emit('video_call_decline', {
+    socket.emit('fan_call_decline', {
       callId: callData.callId,
       callerId: callData.callerId,
       answererId: currentUserId
@@ -317,7 +326,7 @@ export default function VideoCallModal({
   const handleEndCall = () => {
     if (!socket) return;
     
-    socket.emit('video_call_end', {
+    socket.emit('fan_call_end', {
       callId: callData?.callId,
       callerId: callData?.callerId,
       userId: currentUserId
@@ -335,7 +344,7 @@ export default function VideoCallModal({
     setCallStartTime(Date.now());
     
     // Emit call again event
-    socket?.emit('video_call_start', {
+    socket?.emit('fan_call_start', {
       answererId: callData.callerId,
       answererName: callData.callerName,
       callerId: currentUserId,
@@ -360,10 +369,11 @@ export default function VideoCallModal({
       <div className="relative">
         <div className="w-32 h-32 rounded-full overflow-hidden bg-gray-700 mx-auto mb-4">
           {profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined" ? (
-            <img
+            <Image
               alt="Profile picture"
               src={profileImage}
-              className="object-cover w-full h-full"
+              fill
+              className="object-cover"
               onError={(e) => {
                 const target = e.currentTarget as HTMLImageElement;
                 target.style.display = 'none';
@@ -379,23 +389,59 @@ export default function VideoCallModal({
           </div>
         </div>
         
-        {/* VIP Badge for creators */}
-        {isCreator && (userInfo?.answererIsVip || userInfo?.callerIsVip || userInfo?.isVip) && (
-          <VIPBadge 
-            size="xl" 
-            className="absolute -top-2 -right-2" 
-            isVip={userInfo.answererIsVip || userInfo.callerIsVip || userInfo.isVip} 
-            vipEndDate={userInfo.answererVipEndDate || userInfo.callerVipEndDate || userInfo.vipEndDate} 
-          />
-        )}
+        {/* VIP Badge for both caller and answerer */}
+        {(() => {
+          // Debug logging for VIP status
+          console.log('🔍 [VIP Debug] Frontend VIP Status Check:', {
+            isIncoming: callData?.isIncoming,
+            userInfo: userInfo,
+            callData: callData,
+            callerIsVip: userInfo?.callerIsVip,
+            answererIsVip: userInfo?.answererIsVip,
+            isVip: userInfo?.isVip,
+            callerVipEndDate: userInfo?.callerVipEndDate,
+            answererVipEndDate: userInfo?.answererVipEndDate,
+            vipEndDate: userInfo?.vipEndDate,
+            // Also check callData props
+            callDataCallerIsVip: callData?.callerIsVip,
+            callDataAnswererIsVip: callData?.answererIsVip
+          });
+          
+          // Determine VIP status based on who we're showing
+          // For incoming calls: show caller's VIP status (the person calling you)
+          // For outgoing calls: show answerer's VIP status (the person you're calling)
+          const isVip = callData?.isIncoming 
+            ? (userInfo?.callerIsVip || callData?.callerIsVip || userInfo?.isVip)  // For incoming calls, show caller's VIP status
+            : (userInfo?.answererIsVip || callData?.answererIsVip || userInfo?.isVip); // For outgoing calls, show answerer's VIP status
+          
+          const vipEndDate = callData?.isIncoming 
+            ? (userInfo?.callerVipEndDate || callData?.callerVipEndDate || userInfo?.vipEndDate)
+            : (userInfo?.answererVipEndDate || callData?.answererVipEndDate || userInfo?.vipEndDate);
+          
+          console.log('🔍 [VIP Debug] Frontend Calculated VIP Status:', {
+            isVip,
+            vipEndDate,
+            willShowBadge: !!isVip
+          });
+          
+          return isVip ? (
+            <VIPBadge 
+              size="xxl" 
+              className="absolute -top-5 -right-5" 
+              isVip={isVip} 
+              vipEndDate={vipEndDate} 
+            />
+          ) : null;
+        })()}
       </div>
     );
   };
 
-  // Handle insufficient funds (only for fans)
+  // Handle insufficient funds (for whoever is paying for the call)
   const handleInsufficientFunds = () => {
-    // Only show insufficient funds alert for fans, not creators
-    if (!isCreator) {
+    // Show insufficient funds alert for whoever initiated the call (the one paying)
+    const isCaller = callData?.callerId === currentUserId;
+    if (isCaller) {
       alert('Insufficient funds to continue call');
       handleEndCall();
     }
@@ -525,6 +571,12 @@ export default function VideoCallModal({
     const handleCallAccepted = (data: any) => {
       // Call accepted
       console.log('📞 [VideoCall] Call accepted:', { data, currentUserId, callerId: data.callerId });
+      console.log('🔍 [VIP Debug] Call accepted data:', {
+        callerIsVip: data.callerIsVip,
+        callerVipEndDate: data.callerVipEndDate,
+        answererIsVip: data.answererIsVip,
+        answererVipEndDate: data.answererVipEndDate
+      });
       setCallStatus('connected');
       
       // Only the original caller should create the peer connection and offer
@@ -547,7 +599,7 @@ export default function VideoCallModal({
           return pc.setLocalDescription(offer);
         }).then(() => {
           console.log('📞 [VideoCall] Sending offer to remote peer');
-          socket.emit('video_call_offer', {
+          socket.emit('fan_call_offer', {
             callId: callData?.callId,
             offer: pc.localDescription
           });
@@ -590,7 +642,7 @@ export default function VideoCallModal({
           await pc.setLocalDescription(answer);
           
           console.log('📞 [VideoCall] Sending answer to remote peer');
-          socket.emit('video_call_answer', {
+          socket.emit('fan_call_answer', {
             callId: callData?.callId || data.callId,
             answer: answer
           });
@@ -658,20 +710,28 @@ export default function VideoCallModal({
       }
     };
 
-    socket.on('video_call_accepted', handleCallAccepted);
-    socket.on('video_call_offer', handleOffer);
-    socket.on('video_call_answer', handleAnswer);
-    socket.on('video_call_ice_candidate', handleIceCandidate);
-    socket.on('video_call_ended', handleCallEnded);
-    socket.on('video_call_timeout', handleCallTimeout);
+    const handleMissedCall = (data: any) => {
+      console.log('📞 [VideoCall] Missed call notification received:', data);
+      // This will be handled by the socket listener in the parent component
+      // to create notifications and push notifications
+    };
+
+    socket.on('fan_call_accepted', handleCallAccepted);
+    socket.on('fan_call_offer', handleOffer);
+    socket.on('fan_call_answer', handleAnswer);
+    socket.on('fan_call_ice_candidate', handleIceCandidate);
+    socket.on('fan_call_ended', handleCallEnded);
+    socket.on('fan_call_timeout', handleCallTimeout);
+    socket.on('fan_call_missed', handleMissedCall);
 
     return () => {
-      socket.off('video_call_accepted', handleCallAccepted);
-      socket.off('video_call_offer', handleOffer);
-      socket.off('video_call_answer', handleAnswer);
-      socket.off('video_call_ice_candidate', handleIceCandidate);
-      socket.off('video_call_ended', handleCallEnded);
-      socket.off('video_call_timeout', handleCallTimeout);
+      socket.off('fan_call_accepted', handleCallAccepted);
+      socket.off('fan_call_offer', handleOffer);
+      socket.off('fan_call_answer', handleAnswer);
+      socket.off('fan_call_ice_candidate', handleIceCandidate);
+      socket.off('fan_call_ended', handleCallEnded);
+      socket.off('fan_call_timeout', handleCallTimeout);
+      socket.off('fan_call_missed', handleMissedCall);
     };
   }, [socket, isOpen, currentUserId, callData, peerConnection, localStream, createPeerConnection, handleCleanup, onClose]);
 
@@ -691,38 +751,23 @@ export default function VideoCallModal({
 
   if (!isOpen || !callData) return null;
 
+  // Debug logging for initial call data
+  console.log('🔍 [VIP Debug] Initial call data:', {
+    callData,
+    isIncoming: callData?.isIncoming,
+    callerIsVip: callData?.callerIsVip,
+    answererIsVip: callData?.answererIsVip,
+    callerVipEndDate: callData?.callerVipEndDate,
+    answererVipEndDate: callData?.answererVipEndDate
+  });
+
   return (
-    <div className="fixed inset-0 z-50 bg-black bg-opacity-90 flex items-center justify-center">
+    <div className="fixed inset-0 z-[9999] bg-black bg-opacity-90 flex items-center justify-center">
       <div className="w-full h-full flex flex-col">
-        {/* Insecure Context Warning */}
-        {showInsecureWarning && (
-          <div className="bg-yellow-600 text-white p-4 text-center">
-            <div className="flex items-center justify-center gap-2">
-              <span>⚠️</span>
-              <span className="font-semibold">Camera/Microphone Access Limited</span>
-            </div>
-            <p className="text-sm mt-1">
-              {(() => {
-                const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-                if (isMobile) {
-                  return "Mobile browsers require HTTPS for camera access. Use localhost:3000 on your computer or set up HTTPS.";
-                } else {
-                  return "Video calls require HTTPS or localhost. Please access via localhost:3000 for full functionality.";
-                }
-              })()}
-            </p>
-            <button 
-              onClick={() => setShowInsecureWarning(false)}
-              className="mt-2 px-3 py-1 bg-yellow-700 rounded text-sm hover:bg-yellow-800"
-            >
-              Dismiss
-            </button>
-          </div>
-        )}
         
         {/* Media Error Modal */}
         {mediaError && (
-          <div className="fixed inset-0 z-60 bg-black bg-opacity-90 flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[10000] bg-black bg-opacity-90 flex items-center justify-center p-4">
             <div className="bg-white rounded-lg max-w-md w-full p-6">
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
@@ -770,6 +815,7 @@ export default function VideoCallModal({
             callRate={callRate}
             isConnected={true}
             onInsufficientFunds={handleInsufficientFunds}
+            callData={callData}
           />
         )}
 
@@ -815,9 +861,9 @@ export default function VideoCallModal({
                       : (callData?.answererName || 'User')
                     }
                   </p>
-                  {isCreator && (
-                    <p className="text-sm text-blue-400">Creator</p>
-                  )}
+                  <p className="text-sm text-blue-400">
+                    {callData?.isIncoming ? 'Fan' : 'Creator'}
+                  </p>
                 </div>
                 
                 {/* Call again button - only show for outgoing calls */}
@@ -842,9 +888,9 @@ export default function VideoCallModal({
                           : (callData?.answererName || 'User')
                         }
                       </p>
-                      {isCreator && (
-                        <p className="text-sm text-blue-400">Creator</p>
-                      )}
+                      <p className="text-sm text-blue-400">
+                        {callData?.isIncoming ? 'Fan' : 'Creator'}
+                      </p>
                       <p className="text-sm text-gray-400">
                         {callData?.isIncoming ? 'Incoming call...' : 'Calling...'}
                       </p>

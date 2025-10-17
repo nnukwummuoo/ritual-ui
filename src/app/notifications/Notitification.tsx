@@ -10,9 +10,9 @@ import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Allview } from "./components/Allview";
 import { useNotificationIndicator } from "@/hooks/useNotificationIndicator";
+import { useActivityNotificationIndicator } from "@/hooks/useActivityNotificationIndicator";
 
-const style =
-  " hover:bg-gradient-to-r hover:from-blue-400 hover:to-purple-500 hover:bg-clip-text hover:text-transparent";
+const style = " hover:bg-gradient-to-r hover:from-blue-400 hover:to-purple-500 hover:bg-clip-text hover:text-transparent";
 
 export const Creatornotify = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
@@ -23,7 +23,8 @@ export const Creatornotify = ({ children }: { children: React.ReactNode }) => {
   const divFocusRef = useRef<HTMLDivElement>(null);
   
   // Get notification indicator data
-  const { hasUnread, unreadCount } = useNotificationIndicator();
+  const { hasUnread, unreadCount, allUnreadCount } = useNotificationIndicator();
+  const { hasUnread: hasActivityUnread, unreadCount: activityUnreadCount } = useActivityNotificationIndicator();
 
   useEffect(() => {
     divFocusRef.current && divFocusRef.current.focus();
@@ -44,8 +45,8 @@ export const Creatornotify = ({ children }: { children: React.ReactNode }) => {
             <h4 className="text-lg font-bold text-white">Notifications</h4>
           </div>
           <div className="flex gap-2 mb-8">
-            <HeadBtn label="All" route="/notifications?id=randomid" showIndicator={hasUnread} count={unreadCount} />
-            <HeadBtn label="Activity" route="/notifications/activity" />
+            <HeadBtn label="All" route="/notifications?id=randomid" showIndicator={allUnreadCount > 0} count={allUnreadCount} />
+            <HeadBtn label="Activity" route="/notifications/activity" showIndicator={hasActivityUnread} count={activityUnreadCount} />
           </div>
         </header>
         <div

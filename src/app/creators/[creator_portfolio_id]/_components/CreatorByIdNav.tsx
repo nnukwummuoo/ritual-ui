@@ -19,17 +19,18 @@ import { updateFollowers } from "@/store/creatorSlice";
 import { useAuth } from '@/lib/context/auth-context';
 import { useUserId } from "@/lib/hooks/useUserId";
 import { getSocket } from "@/lib/socket";
+import { toast } from "material-react-toastify";
 
 type Props = {
   creatorName: string;
   views: number;
   followingUser: boolean;
   id: string | undefined;
-  creator_portfoliio_Id: string | undefined;
+  creator_portfolio_id: string | undefined;
   checkuser: boolean;
 };
 
-const CreatorByIdNav = ({ creatorName, views, followingUser, id,creator_portfoliio_Id,checkuser }: Props) => {
+const CreatorByIdNav = ({ creatorName, views, followingUser, id, creator_portfolio_id: creatorPortfolioId, checkuser }: Props) => {
   const dispatch = useDispatch<any>();
   const router = useRouter();
   const { postuserid, creator_portfolio_id } = useParams<{ postuserid?: string; creator_portfolio_id?: string }>();
@@ -197,6 +198,9 @@ const CreatorByIdNav = ({ creatorName, views, followingUser, id,creator_portfoli
           
           // Update local state
           setIsFollowing(false);
+          
+          // Show success toast
+          toast.success("Unfollowed successfully!");
         } catch (error: unknown) {
           // If the error is "not following this user", update the UI state
           const errorMessage = error instanceof Error ? error.message : String(error);
@@ -216,6 +220,9 @@ const CreatorByIdNav = ({ creatorName, views, followingUser, id,creator_portfoli
 
           // Update local state
           setIsFollowing(true);
+          
+          // Show success toast
+          toast.success("Followed successfully!");
         } catch (error: unknown) {
           // Handle empty error objects or objects without message property
           let errorMessage = "";

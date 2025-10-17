@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
@@ -9,13 +10,15 @@ import editIcon from "@/icons/edit.svg";
 import deleteicon from "@/icons/deleteicon.svg";
 import PacmanLoader1 from "react-spinners/ClockLoader";
 import { toast, ToastContainer } from "material-react-toastify";
-import { Bookinginfo } from "@/components/bookingFrag/Bookinginfo";
-import { Bookingsuccess } from "@/components/bookingFrag/Bookingsuccess";
-import { Requestform } from "@/components/bookingFrag/Requestform";
-import { RequestDetailsForm } from "@/components/bookingFrag/RequestDetailsForm";
+import { Requestinfo } from "@/components/requestFrag/Requestinfo";
+import { Requestsuccess } from "@/components/requestFrag/Requestsuccess";
+import { Requestform } from "@/components/requestFrag/Requestform";
+import { RequestDetailsForm } from "@/components/requestFrag/RequestDetailsForm";
 import closeIcon from "@/icons/closeIcon.svg";
-import { getreview, getViews } from "@/store/creatorSlice";
+import { getViews } from "@/store/creatorSlice";
+import { getAllCreatorRatings } from "@/store/profile";
 import { CreatorReview } from "./_components/Creator_review";
+import { IoCheckmarkCircleOutline } from 'react-icons/io5';
 
 import { useSelector, useDispatch } from "react-redux";
 import {
@@ -32,9 +35,9 @@ import "react-loading-skeleton/dist/skeleton.css";
 import CreatorByIdNav from "./_components/CreatorByIdNav";
 import { formatCreatorPrices } from "./_utils/formatCreatorPrices";
 
-//import addcrush({inputs  : creator_portfoliio_Id and userid})
+//import addcrush({inputs  : creator_portfolio_id and userid})
 //userid : the current user ID that wish to add the creator to its crush list
-//creator_portfoliio_Id : the creator ID that this user wishes to add to its crush list
+//creator_portfolio_id : the creator ID that this user wishes to add to its crush list
 
 //method stats and api message for redux selectors
 // addcrush_stats and addcrush_message
@@ -95,6 +98,7 @@ interface RootState {
         userid: string;
         hostid: string;
         name: string;
+        nickname?: string;
         age: string;
         location: string;
         price: string;
@@ -193,6 +197,13 @@ export default function Creatorbyid () {
   const reviewList = useSelector(
     (state: RootState) => state.creator.reviewList || []
   );
+  
+  // Get ratings from profile store (new 5-star rating system)
+  const ratings = useSelector((s: RootState) => (s.profile as any).ratings || []);
+  const ratings_stats = useSelector((s: RootState) => (s.profile as any).ratings_stats || 'idle');
+  const totalRatings = useSelector((s: RootState) => (s.profile as any).totalRatings || 0);
+  const averageRating = useSelector((s: RootState) => (s.profile as any).averageRating || 0);
+  const ratingCounts = useSelector((s: RootState) => (s.profile as any).ratingCounts || {});
   const addcrush_stats = useSelector(
     (state: RootState) => state.creator.addcrush_stats
   );
@@ -216,11 +227,11 @@ export default function Creatorbyid () {
   const [oldlink, setoldlink] = useState<string[]>([]);
   const [documentlink] = useState<string[]>([]);
   const [docCount] = useState(0);
-  const [creator_portfoliio_Id] = useState<[string?, string?]>([
+  const [creator_portfolio_id] = useState<[string?, string?]>([
     Creator[1],
     userid,
   ]);
-  const [bookingclick, setbookingclick] = useState(false);
+  const [requestclick, setrequestclick] = useState(false);
   const [success, setsuccess] = useState(false);
   const [requested, setrequested] = useState(false);
   const [showRequestDetails, setShowRequestDetails] = useState(false);
@@ -244,6 +255,26 @@ export default function Creatorbyid () {
   // ✅ Replace navigate
   const navigate = (path: string) => {
     router.push(path);
+  };
+
+  // Helper function to get current user ID with localStorage fallback
+  const getCurrentUserId = () => {
+    let currentUserId = userid;
+    
+    // If userid is not available, try to get it from localStorage as fallback
+    if (!currentUserId) {
+      try {
+        const stored = localStorage.getItem("login");
+        if (stored) {
+          const data = JSON.parse(stored);
+          currentUserId = data?.userID || data?.userid || data?.id || "";
+        }
+      } catch (error) {
+        console.error('Error getting userid from localStorage:', error);
+      }
+    }
+    
+    return currentUserId;
   };
 
   // Check VIP celebration status (database-based)
@@ -275,19 +306,21 @@ export default function Creatorbyid () {
   // Check VIP celebration status when VIP status is confirmed
   useEffect(() => {
     const checkCelebration = async () => {
+      const currentUserId = getCurrentUserId();
+
       // Only proceed if VIP status is confirmed from creator data
-      if (vipStatusFromCreator?.isVip === true && creatorbyidstatus === "succeeded" && Creator[0] && userid && !celebrationChecked) {
+      if (vipStatusFromCreator?.isVip === true && creatorbyidstatus === "succeeded" && Creator[0] && currentUserId && !celebrationChecked) {
         setCelebrationChecked(true);
         
         try {
-          const shouldShow = await checkVipCelebrationStatus(Creator[0], userid);
+          const shouldShow = await checkVipCelebrationStatus(Creator[0], currentUserId);
           
           if (shouldShow) {
             setShowVipCelebration(true);
             setVipCelebrationShown(true);
             
             // Mark as viewed in database
-            await markVipCelebrationAsViewed(Creator[0], userid);
+            await markVipCelebrationAsViewed(Creator[0], currentUserId);
             
             // Hide the celebration after 5 seconds
             setTimeout(() => {
@@ -311,8 +344,9 @@ export default function Creatorbyid () {
   }, [Creator[0]]);
 
   useEffect(() => {
+    const currentUserId = getCurrentUserId();
 
-    if (!userid || !Creator[0]) {
+    if (!currentUserId || !Creator[0]) {
       return;
     }
 
@@ -321,20 +355,28 @@ export default function Creatorbyid () {
         getmycreatorbyid({
           hostid: Creator[0],
           token,
-          userid,
+          userid: currentUserId,
         })
       );
     }
 
-    if (getreviewstats !== "loading") {
+    // Fetch ALL ratings using the new 5-star rating system (both fan-to-creator and creator-to-creator)
+    if (ratings_stats !== "loading") {
+      console.log('🔍 [CreatorPortfolio] Fetching ALL ratings for creator:', { 
+        creatorId: Creator[0], 
+        token: token ? 'present' : 'missing',
+        tokenLength: token?.length || 0,
+        reduxToken: reduxToken ? 'present' : 'missing',
+        sessionToken: session?.token ? 'present' : 'missing'
+      });
       dispatch(
-        getreview({
-          creator_portfoliio_Id: Creator[0],
+        getAllCreatorRatings({
+          creatorId: Creator[0],
           token,
         })
       );
     }
-  }, [userid, Creator[0]]);
+  }, [userid, Creator[0], token]);
 
   useEffect(() => {
     if (creatorbyidstatus === "succeeded") {
@@ -374,13 +416,15 @@ export default function Creatorbyid () {
 
   useEffect(() => {
     const fetchViews = async () => {
-      if (!Creator[0] || !userid) {
+      const currentUserId = getCurrentUserId();
+
+      if (!Creator[0] || !currentUserId) {
         return;
       }
       
       const data = {
         creator_portfolio_id: Creator[0],
-        userId: userid,
+        userId: currentUserId,
       };
       
       const response = await dispatch(getViews(data));
@@ -473,8 +517,10 @@ export default function Creatorbyid () {
   }, [creatordeletestatus]);
 
   const checkuser = () => {
-    if (userid) {
-      if (creator.userid === userid) {
+    const currentUserId = getCurrentUserId();
+
+    if (currentUserId) {
+      if (creator.userid === currentUserId) {
         return true;
       } else {
         return false;
@@ -605,7 +651,9 @@ export default function Creatorbyid () {
   };
 
   const Cantchat = () => {
-    if (creator.userid === userid) {
+    const currentUserId = getCurrentUserId();
+
+    if (creator.userid === currentUserId) {
       return false;
     } else {
       return true;
@@ -614,7 +662,7 @@ export default function Creatorbyid () {
 
   const Check_review = () => {
     setreview_click(true);
-    if (getreviewstats === "loading") {
+    if (ratings_stats === "loading") {
       setLoading1(true);
     } else {
       setLoading1(false);
@@ -631,17 +679,27 @@ export default function Creatorbyid () {
 
   const show_review = () => {
     if (loading1 === false) {
-      if (reviewList.length > 0) {
-        return reviewList.map((value: { content: string; name: string; photolink: string; posttime: string; id: string; userid: string }, index: number) => {
+      console.log('🔍 [CreatorPortfolio] Showing reviews:', { ratings: ratings.length, totalRatings, averageRating });
+      
+      if (ratings.length > 0) {
+        return ratings.map((rating: any, index: number) => {
           return (
             <CreatorReview
               key={index}
-              content={value.content}
-              name={value.name}
-              photolink={value.photolink}
-              posttime={value.posttime}
-              id={value.id}
-              userid={value.userid}
+              content={rating.feedback}
+              name={rating.fanName || rating.creatorName || "Unknown"}
+              photolink={rating.fanPhoto || rating.creatorPhoto || ""}
+              posttime={rating.createdAt}
+              id={rating._id}
+              userid={rating.fanId || rating.creatorId || ""}
+              rating={rating.rating}
+              hostType={rating.hostType}
+              requestId={rating.requestId}
+              ratingType={rating.ratingType}
+              fanName={rating.fanName}
+              fanPhoto={rating.fanPhoto}
+              creatorName={rating.creatorName}
+              creatorPhoto={rating.creatorPhoto}
             />
           );
         });
@@ -656,22 +714,37 @@ export default function Creatorbyid () {
   };
 
   const addTocrush = () => {
+    const currentUserId = getCurrentUserId();
+
+    console.log('🔍 [addTocrush] Debug:', { 
+      addcrush_stats, 
+      removeCrush, 
+      userid: currentUserId, 
+      token: token ? 'present' : 'missing', 
+      creator_hostid: creator.hostid,
+      creator_userid: creator.userid
+    });
+    
     if (addcrush_stats !== "loading" && removeCrush === false) {
       set_dcb(true);
       set_crush_text("adding to crush list...");
-      dispatch(addcrush({ userid, token, creator_portfoliio_Id: creator.hostid }));
+      console.log('🔍 [addTocrush] Dispatching addcrush:', { userid: currentUserId, token, creator_portfolio_id: creator.hostid });
+      dispatch(addcrush({ userid: currentUserId, token, creator_portfolio_id: creator.hostid }));
     }
 
     if (remove_crush_stats !== "loading" && removeCrush === true) {
       set_dcb(true);
       set_crush_text("removing crush from list...");
-      dispatch(remove_Crush({ userid, token, creator_portfoliio_Id: creator.hostid }));
+      console.log('🔍 [addTocrush] Dispatching remove_Crush:', { userid: currentUserId, token, creator_portfolio_id: creator.hostid });
+      dispatch(remove_Crush({ userid: currentUserId, token, creator_portfolio_id: creator.hostid }));
     }
   };
 
   const handleRequestDetailsSubmit = async (details: { date: string; time: string; venue: string }) => {
+    const currentUserId = getCurrentUserId();
+
     console.log('Sending request with:', {
-      userid,
+      userid: currentUserId,
       creator_portfolio_id: creator.hostid,
       creatorUserid: creator.userid,
       type: creator.hosttype,
@@ -681,11 +754,12 @@ export default function Creatorbyid () {
       price: parseFloat(creator.price) || 0
     });
     
-    // Check if user has enough gold balance
+    // Check if user has enough gold balance (skip for Fan call requests)
     const userBalance = parseFloat(profile.balance) || 0;
     const requiredAmount = parseFloat(creator.price) || 0;
     
-    if (userBalance < requiredAmount) {
+    // Only check balance for Fan meet and Fan date, not for Fan call
+    if (creator.hosttype !== "Fan call" && creator.hosttype !== "Fan Call" && userBalance < requiredAmount) {
       toast.error(`Insufficient gold! You need ${requiredAmount} gold but only have ${userBalance} gold.`);
       // Redirect to buy-gold page
       setTimeout(() => {
@@ -695,13 +769,13 @@ export default function Creatorbyid () {
     }
     
     try {
-      const response = await fetch(`${URL}/bookhost`, {
+      const response = await fetch(`${URL}/requesthost`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          userid,
+          userid: currentUserId,
           creator_portfolio_id: creator.hostid, // Use hostid for creator lookup in creatordb
           type: creator.hosttype,
           date: details.date,
@@ -713,7 +787,7 @@ export default function Creatorbyid () {
 
       if (response.ok) {
         setShowRequestDetails(false);
-        setbookingclick(false);
+        setrequestclick(false);
         const serviceType = creator.hosttype || "Fan meet";
         toast.success(`${serviceType} request sent successfully!`);
         // Optionally navigate to notifications
@@ -751,7 +825,7 @@ export default function Creatorbyid () {
   const psPrice = creator?.price?.replace(/(GOLD)(per)/, "$1 $2");
   const fmtPSPrice = psPrice?.includes("per minute")
     ? psPrice
-    : `${psPrice} Gold/per minute`;
+    : `${psPrice} Gold/min`;
   // Don't render if creator data is not available or still loading
   if (loading || creatorbyidstatus === "loading" || !creator || Object.keys(creator).length === 0) {
     return (
@@ -1048,10 +1122,10 @@ export default function Creatorbyid () {
                 <div className="flex-1">
                   <CreatorByIdNav
                     views={views}
-                    creatorName={(creator?.name||" ").split(" ")[0]}
+                    creatorName={creator?.nickname || (creator?.name||" ").split(" ")[0]}
                     followingUser={creator.followingUser}
                     id={creator.userid}
-                    creator_portfoliio_Id={creator.hostid}
+                    creator_portfolio_id={creator.hostid}
                     checkuser={checkuser()}
                   />
                 </div>
@@ -1121,9 +1195,9 @@ export default function Creatorbyid () {
               {/* Main Content */}
               <div className="text-center">
                 <h1 className="text-xl font-bold text-white mb-2">
-                  {getStatus(String(creator?.hosttype))} {creator.name.split(" ")[0]}
+                  {getStatus(String(creator?.hosttype))} {creator.nickname || creator.name.split(" ")[0]}
                 </h1>
-                <p className="text-gray-300 text-1xl">{creator.name} </p>
+                <p className="text-gray-300 text-1xl">{creator.nickname}</p>
               </div>
             </div>
 
@@ -1265,14 +1339,14 @@ export default function Creatorbyid () {
             </div>
             {/* Profile Information */}
             <div className="bg-gray-800 rounded-2xl p-6 shadow-2xl">
-              <h2 className="text-2xl font-bold text-white mb-6 text-center">Profile Information</h2>
+              <h2 className="text-2xl font-bold text-white mb-6 text-center">Portfolio Details</h2>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Basic Info */}
                 <div className="space-y-4">
                   <div className="flex justify-between items-center p-3 bg-gray-700 rounded-lg">
                     <span className="text-gray-300 font-medium">👤 Name</span>
-                    <span className="text-white font-semibold">{creator.name}</span>
+                    <span className="text-white font-semibold">{creator.nickname || creator.name}</span>
                   </div>
                   
                   <div className="flex justify-between items-center p-3 bg-gray-700 rounded-lg">
@@ -1391,27 +1465,35 @@ export default function Creatorbyid () {
               </div>
             </div>
 
-            {/* Safety Rules Section */}
-            <div className="bg-gray-800 rounded-2xl p-6 shadow-2xl">
-              <h2 className="text-2xl font-bold text-white mb-4 text-center">Safety Rules (Important!)</h2>
-              <div className="bg-gray-700 rounded-lg p-4">
-                <ul className="text-gray-300 space-y-3">
-                  <li className="flex items-start">
-                    <span className="text-red-400 mr-3 mt-1">•</span>
-                    <span>All meets are limited to 30 minutes.</span>
-                  </li>
-                  <li className="flex items-start">
-                    <span className="text-red-400 mr-3 mt-1">•</span>
-                    <span>Meets must happen in a public place only.</span>
-                  </li>
-                </ul>
-                <div className="mt-4 p-3 bg-yellow-900/20 border border-yellow-600/30 rounded-lg">
-                  <p className="text-yellow-300 text-sm text-center">
-                    <strong>What happens after 30 minutes is outside the platform&apos;s responsibility.</strong>
-                  </p>
+            {/* Safety Rules Section - Only show for non-call requests */}
+            {creator.hosttype !== "Fan call" && creator.hosttype !== "Fan Call" && (
+              <div className="bg-gray-800 rounded-2xl p-6 shadow-2xl">
+                <h2 className="text-2xl font-bold text-white mb-4 text-center">Safety Rules (Important!)</h2>
+                <div className="bg-gray-700 rounded-lg p-4">
+                  <ul className="text-gray-300 space-y-3">
+                    <li className="flex items-start">
+                      <span className="text-red-400 mr-3 mt-1">•</span>
+                      <span>All {creator.hosttype?.toLowerCase() || 'meets'} are limited to 30 minutes.</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-red-400 mr-3 mt-1">•</span>
+                      <span>{creator.hosttype?.toLowerCase() || 'Meets'} must happen in a public place only.</span>
+                    </li>
+                  </ul>
+                  <div className="mt-4 p-3 bg-yellow-900/20 border border-yellow-600/30 rounded-lg">
+                    <p className="text-yellow-300 text-sm text-center">
+                      <strong>What happens after 30 minutes is outside the platform&apos;s responsibility.</strong>
+                    </p>
+                  </div>
+                  <div className="flex mt-4 justify-center gap-2">
+                    <IoCheckmarkCircleOutline className="text-green-500 text-lg" />
+                    <p className="text-white text-xs text-center">
+                      By sending a request, you agree to follow these rules.
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
 
             {/* Reviews Section */}
             <div className="bg-gray-800 rounded-2xl p-6 shadow-2xl">
@@ -1431,7 +1513,7 @@ export default function Creatorbyid () {
                   <span>⭐</span>
                   <span>View Reviews</span>
                   <span className="bg-white text-blue-600 px-2 py-1 rounded-full text-sm font-bold">
-                    {reviewList.length}
+                    {totalRatings}
                   </span>
                 </div>
               </button>
@@ -1439,14 +1521,14 @@ export default function Creatorbyid () {
 
           {review_click && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
-              <div className="bg-gray-800 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[80vh] overflow-hidden">
-                <div className="flex justify-between items-center p-6 border-b border-gray-700">
-                  <h2 className="text-2xl font-bold text-white">Reviews</h2>
+              <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[80vh] overflow-hidden">
+                <div className="flex justify-between items-center p-6 border-b border-gray-200">
+                  <h2 className="text-2xl font-bold text-black">Reviews</h2>
                   <button
                     onClick={(e) => {
                       setreview_click(false);
                     }}
-                    className="p-2 bg-gray-700 hover:bg-gray-600 rounded-full transition-colors duration-200"
+                    className="p-2 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors duration-200"
                   >
                     <Image
                       alt="closeIcon"
@@ -1466,7 +1548,7 @@ export default function Creatorbyid () {
                         aria-label="Loading Spinner"
                         data-testid="loader"
                       />
-                      <p className="text-gray-300 mt-4">Loading reviews...</p>
+                      <p className="text-black mt-4">Loading reviews...</p>
                     </div>
                   )}
 
@@ -1479,14 +1561,14 @@ export default function Creatorbyid () {
               </div>
             </div>
           )}
-          {bookingclick && (
+          {requestclick && (
             <div
               className="fixed inset-0 z-50 flex items-start justify-center bg-black bg-opacity-50 pt-52"
-              onClick={() => setbookingclick(false)}
+              onClick={() => setrequestclick(false)}
             >
               <div onClick={(e) => e.stopPropagation()}>
-                <Bookinginfo
-                  setbookclick={setbookingclick}
+                <Requestinfo
+                    setrequestclick={setrequestclick}
                   amount={creator.price}
                   setsuccess={setsuccess}
                   type={creator.hosttype}
@@ -1520,7 +1602,7 @@ export default function Creatorbyid () {
               onClick={() => setrequested(false)}
             >
               <div onClick={(e) => e.stopPropagation()}>
-                <Bookingsuccess setrequested={setrequested} />
+                <Requestsuccess setrequested={setrequested} />
               </div>
             </div>
           )}
@@ -1529,7 +1611,7 @@ export default function Creatorbyid () {
             <RequestDetailsForm
               onDone={handleRequestDetailsSubmit}
               onCancel={() => setShowRequestDetails(false)}
-              creatorName={creator.name}
+              creatorName={creator.nickname || creator.name}
               creatorType={creator.hosttype}
               price={parseFloat(creator.price) || 0}
             />

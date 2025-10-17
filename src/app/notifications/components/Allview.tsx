@@ -3,18 +3,30 @@
 
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { getNotifications } from "@/store/profile";
+import { getNotifications, markNotificationsSeen } from "@/store/profile";
 import { RootState, AppDispatch } from "@/store/store";
 import { useAuth } from "@/lib/context/auth-context";
 import PacmanLoader from "react-spinners/RingLoader";
-import { CheckCircle, XCircle, Clock } from "lucide-react";
+import { CheckCircle, XCircle, Clock, Star, Phone, Heart, Handshake, MessageCircle } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { useNotificationIndicator } from "@/hooks/useNotificationIndicator";
 
 export const Allview = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { session } = useAuth();
   const token = session?.token;
+  
+  // Get user ID from localStorage
+  const [userID, setUserID] = useState<string>('');
+  
+  useEffect(() => {
+    const userData = localStorage.getItem('user');
+    if (userData) {
+      const parsedUser = JSON.parse(userData);
+      setUserID(parsedUser.userID || '');
+    }
+  }, []);
 
   const { notifications, notifications_stats } = useSelector(
     (state: RootState) => state.profile
@@ -31,6 +43,16 @@ export const Allview = () => {
       dispatch(getNotifications({ userid: userId, token }));
     }
   }, [dispatch, userId, token]);
+
+  // Mark notifications as seen when component mounts (user is viewing notifications)
+  useEffect(() => {
+    if (userId && token && notifications && notifications.length > 0) {
+      const hasUnreadNotifications = notifications.some(notification => !notification.seen);
+      if (hasUnreadNotifications) {
+        dispatch(markNotificationsSeen({ userid: userId, token }));
+      }
+    }
+  }, [dispatch, userId, token, notifications]);
 
   useEffect(() => {
     setLoading(notifications_stats === "loading");
@@ -83,7 +105,7 @@ export const Allview = () => {
         let status: "approved" | "rejected" | "pending" = "pending";
         if (message.includes("approve")) status = "approved";
         else if (message.includes("reject")) status = "rejected";
-        else if (message.includes("follow") || message.includes("unfollow") || message.includes("like") || message.includes("comment") || message.includes("message") || message.includes("booking") || message.includes("request")) {
+        else if (message.includes("follow") || message.includes("unfollow") || message.includes("like") || message.includes("comment") || message.includes("message") || message.includes("request") || message.includes("request") || message.includes("missed") || message.includes("accept") || message.includes("decline") || message.includes("cancel") || message.includes("complete") || message.includes("rating") || message.includes("star")) {
           status = "approved"; // These are informational notifications, not pending actions
         }
 
@@ -99,8 +121,24 @@ export const Allview = () => {
           title = "Comment Notification";
         } else if (message.includes("message")) {
           title = "Message Notification";
-        } else if (message.includes("booking") || message.includes("request")) {
-          title = "Booking Notification";
+        }
+        // } else if (message.includes("request") || message.includes("request")) {
+        //   title = "Request Notification";
+        // }
+         else if (message.includes("missed") && message.includes("call")) {
+          title = "Missed Fan Call";
+        } else if (message.includes("fan meet")) {
+          title = "Fan Meet Request";
+         }
+        //  else if (message.includes("accept") || message.includes("decline") || message.includes("cancel") || message.includes("complete")) {
+        //   title = "Activity Update";
+        // }
+        else if (message.includes("fan date")) {
+          title = "Fan Date Request";
+        }else if (message.includes("fan call") || message.includes("Fan Call")) {
+          title = "Fan Call Request";
+        } else if (message.includes("rating") || message.includes("star")) {
+          title = "Rating Notification";
         }
 
         return (
@@ -120,18 +158,58 @@ export const Allview = () => {
             <div className="flex flex-col items-start space-y-3">
               {/* Header + Icon */}
               <div className="flex items-center space-x-2">
-                {status === "approved" && (
-                  <div className="bg-green-500/10 p-1.5 rounded-full">
+                {title === "Rating Notification" && (
+                  <div className="bg-yellow-500/10 p-1 rounded-full">
+                    <Star className="text-yellow-500 w-5 h-5 fill-current" />
+                  </div>
+                )}
+                {title === "Missed Fan Call" && (
+                  <div className="bg-red-500/10 p-1 rounded-full">
+                    <Phone className="text-red-500 w-5 h-5" />
+                  </div>
+                )}
+                {title === "Fan Date Request" && (
+                  <div className="bg-pink-500/10 p-1 rounded-full">
+                    <Heart className="text-pink-500 w-5 h-5 fill-current" />
+                  </div>
+                )}
+                {title === "Fan Meet Request" && (
+                  <div className="bg-green-500/10 p-1 rounded-full">
+                    <Handshake className="text-green-500 w-5 h-5" />
+                  </div>
+                )}
+                {title === "Fan Call Request" && (
+                  <div className="bg-blue-500/10 p-1 rounded-full">
+                    <Phone className="text-blue-500 w-5 h-5" />
+                  </div>
+                )}
+                {title === "Like Notification" && (
+                  <div className="bg-red-500/10 p-1 rounded-full">
+                    <Heart className="text-red-500 w-5 h-5 fill-current" />
+                  </div>
+                )}
+                {title === "Message Notification" && (
+                  <div className="bg-blue-500/10 p-1 rounded-full">
+                    <MessageCircle className="text-blue-500 w-5 h-5" />
+                  </div>
+                )}
+                {(title === "Follow Notification" || title === "Unfollow Notification") && (
+                  <div className="bg-blue-500/10 p-1 rounded-full">
+                    <Image src="/icons/following.png" alt="Users" width={28} height={28} />
+                  </div>
+                )}
+                {title !== "Rating Notification" && title !== "Missed Fan Call" && title !== "Fan Date Request" && title !== "Fan Meet Request" && title !== "Fan Call Request" && title !== "Like Notification" && title !== "Message Notification" && title !== "Follow Notification" && title !== "Unfollow Notification" && status === "approved" && (
+                  <div className="bg-green-500/10 p-1 rounded-full">
                     <CheckCircle className="text-green-500 w-5 h-5" />
                   </div>
                 )}
-                {status === "rejected" && (
-                  <div className="bg-red-500/10 p-1.5 rounded-full">
+                {title !== "Rating Notification" && title !== "Missed Fan Call" && title !== "Fan Date Request" && title !== "Fan Meet Request" && title !== "Fan Call Request" && title !== "Like Notification" && title !== "Message Notification" && title !== "Follow Notification" && title !== "Unfollow Notification" && status === "rejected" && (
+                  <div className="bg-red-500/10 p-1 rounded-full">
                     <XCircle className="text-red-500 w-5 h-5" />
                   </div>
                 )}
-                {status === "pending" && (
-                  <div className="bg-yellow-500/10 p-1.5 rounded-full">
+                {title !== "Rating Notification" && title !== "Missed Fan Call" && title !== "Fan Date Request" && title !== "Fan Meet Request" && title !== "Fan Call Request" && title !== "Like Notification" && title !== "Message Notification" && title !== "Follow Notification" && title !== "Unfollow Notification" && status === "pending" && (
+                  <div className="bg-yellow-500/10 p-1 rounded-full">
                     <Clock className="text-yellow-500 w-5 h-5" />
                   </div>
                 )}
@@ -184,8 +262,47 @@ export const Allview = () => {
                 </div>
               )}
 
-              {/* Booking notifications show activity button */}
-              {title === "Booking Notification" && (
+              {/* request notifications show activity button */}
+              {title === "Request Notification" && (
+                <div className="pt-2">
+                  <Link href="/notifications/activity">
+                    <button
+                      className="px-4 py-2 border border-slate-700 hover:border-slate-500 
+                                rounded-lg text-sm text-slate-200 transition">
+                      View Activity
+                    </button>
+                  </Link>
+                </div>
+              )}
+
+              {/* Fan Date Request notifications show activity button */}
+              {title === "Fan Date Request" && (
+                <div className="pt-2">
+                  <Link href="/notifications/activity">
+                    <button
+                      className="px-4 py-2 border border-slate-700 hover:border-slate-500 
+                                rounded-lg text-sm text-slate-200 transition">
+                      View Activity
+                    </button>
+                  </Link>
+                </div>
+              )}
+
+              {/* Fan Meet Request notifications show activity button */}
+              {title === "Fan Meet Request" && (
+                <div className="pt-2">
+                  <Link href="/notifications/activity">
+                    <button
+                      className="px-4 py-2 border border-slate-700 hover:border-slate-500 
+                                rounded-lg text-sm text-slate-200 transition">
+                      View Activity
+                    </button>
+                  </Link>
+                </div>
+              )}
+
+              {/* Fan Call Request notifications show activity button */}
+              {title === "Fan Call Request" && (
                 <div className="pt-2">
                   <Link href="/notifications/activity">
                     <button
@@ -205,6 +322,45 @@ export const Allview = () => {
                       className="px-4 py-2 border border-slate-700 hover:border-slate-500 
                                 rounded-lg text-sm text-slate-200 transition">
                       View Messages
+                    </button>
+                  </Link>
+                </div>
+              )}
+
+              {/* Missed call notifications show activity button */}
+              {title === "Missed Fan Call" && (
+                <div className="pt-2">
+                  <Link href="/notifications/activity">
+                    <button
+                      className="px-4 py-2 border border-slate-700 hover:border-slate-500 
+                                rounded-lg text-sm text-slate-200 transition">
+                      View Activity
+                    </button>
+                  </Link>
+                </div>
+              )}
+
+              {/* Activity update notifications show activity button */}
+              {title === "Activity Update" && (
+                <div className="pt-2">
+                  <Link href="/notifications/activity">
+                    <button
+                      className="px-4 py-2 border border-slate-700 hover:border-slate-500 
+                                rounded-lg text-sm text-slate-200 transition">
+                      View Activity
+                    </button>
+                  </Link>
+                </div>
+              )}
+
+              {/* Rating notifications show activity button */}
+              {title === "Rating Notification" && (
+                <div className="pt-2">
+                  <Link href="/notifications/activity">
+                    <button
+                      className="px-4 py-2 border border-slate-700 hover:border-slate-500 
+                                rounded-lg text-sm text-slate-200 transition">
+                      View Activity
                     </button>
                   </Link>
                 </div>

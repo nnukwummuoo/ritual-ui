@@ -644,7 +644,7 @@ export default function CreateCreatorPortfolio () {
                 Interested In
               </label>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
-                {["MEN", "WOMEN", "COUPLE", "TRANS"].map((value) => (
+                {["Men", "Women", "Couples", "Trans"].map((value) => (
                   <label
                     key={value}
                     className="flex items-center px-3 py-2 space-x-2 text-white transition rounded-lg cursor-pointer bg-slate-700 hover:bg-slate-600"

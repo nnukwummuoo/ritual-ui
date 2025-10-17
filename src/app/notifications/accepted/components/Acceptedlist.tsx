@@ -12,7 +12,7 @@ let comtext = "Mark as Complete";
 //   resetstat,
 //   deleteCreator,
 //   Cancelrequest,
-// } from "../../../../app/features/booking/booking";
+// } from "../../../../app/features/request/request";
 // import {
 //   review,
 //   changecreatorstatus,
@@ -23,7 +23,7 @@ let comtext = "Mark as Complete";
 //   getall_request,
 //   acceptedr_req,
 //   add_call_data,
-// } from "../../../../app/features/booking/booking";
+// } from "../../../../app/features/request/request";
 // import {aCancelReq_frag } from "../componets/CancelReq_frag";
 
 interface AcceptedProps {
@@ -55,14 +55,14 @@ export const Acceptedlist = ({
   let [image, setimage] = useState(dodo);
   // let [revcontent, setrevcontent] = useState("");
   // const userid = useSelector((state) => state.register.userID);
-  // const cancelstats = useSelector((state) => state.booking.cancelstats);
-  // const cancelmessage = useSelector((state) => state.booking.cancelmessage);
+  // const cancelstats = useSelector((state) => state.request.cancelstats);
+  // const cancelmessage = useSelector((state) => state.request.cancelmessage);
   // const balance = useSelector((state) => state.profile.balance);
   // const Mycreator = useSelector((state) => state.profile.creator_portfolio_id);
   // const profilename = useSelector((state) => state.profile.firstname);
   // let [approvebutton, setapprovebutton] = useState(false);
-  // const paystats = useSelector((state) => state.booking.paystats);
-  // const paymessage = useSelector((state) => state.booking.paymessage);
+  // const paystats = useSelector((state) => state.request.paystats);
+  // const paymessage = useSelector((state) => state.request.paymessage);
   // const token = useSelector((state) => state.register.refreshtoken);
   // const reviewstats = useSelector((state) => state.creator.reviewstats);
   // const reviewmessage = useSelector((state) => state.creator.reviewmessage);

@@ -43,6 +43,36 @@ export const Chat = () => {
 
   const params = useParams<{ creator_portfolio_id: string }>();
   const creator_portfolio_id = params?.creator_portfolio_id;
+  
+  // Fallback: Extract user ID from URL pathname if params fail
+  const [fallbackUserId, setFallbackUserId] = React.useState<string>("");
+  
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const pathname = window.location.pathname;
+      const pathSegments = pathname.split('/');
+      const messageIndex = pathSegments.indexOf('message');
+      
+      if (messageIndex !== -1 && pathSegments[messageIndex + 1]) {
+        const extractedUserId = pathSegments[messageIndex + 1];
+        setFallbackUserId(extractedUserId);
+      }
+    }
+  }, []);
+  
+  // Use fallback if params are not available
+  const finalCreatorPortfolioId = creator_portfolio_id || fallbackUserId;
+  
+  // Debug logging for production issues
+  React.useEffect(() => {
+    console.log('Chat component params:', { 
+      params, 
+      creator_portfolio_id, 
+      fallbackUserId,
+      finalCreatorPortfolioId,
+      url: typeof window !== 'undefined' ? window.location.href : 'SSR'
+    });
+  }, [params, creator_portfolio_id, fallbackUserId, finalCreatorPortfolioId]);
 
   const router = useRouter();
 
@@ -53,10 +83,12 @@ export const Chat = () => {
   
   const loggedInUserId = reduxUserId || localUserid;
 
+
   const [chatphotolink, setchatphotolink] = useState("");
   const [chatusername, setchatusername] = useState("");
   const [chatfirstname, setfirstname] = useState("");
   const [chatlastname, setlastname] = useState("");
+  
 
   const [Chatphoto, set_Chatphoto] = useState("/icons/icons8-profile_user.png");
   const [ChatphotoError, setChatphotoError] = useState(false);
@@ -302,6 +334,7 @@ export const Chat = () => {
 
   const [text, settext] = useState("");
   const [loading, setLoading] = useState(true);
+  
   const [isTyping, setIsTyping] = useState(false);
   const [otherUserTyping, setOtherUserTyping] = useState(false);
   const [typingTimeout, setTypingTimeout] = useState<NodeJS.Timeout | null>(null);
@@ -344,19 +377,19 @@ export const Chat = () => {
 
   // VIP celebration states
   const [showVipCelebration, setShowVipCelebration] = useState(false);
-  const [vipCelebrationShown, setVipCelebrationShown] = useState(false);
+  const [, setVipCelebrationShown] = useState(false);
   const [celebrationChecked, setCelebrationChecked] = useState(false);
 
-  // Function to scroll to bottom of messages
-  const scrollToBottom = () => {
-    if (msgListref.current) {
-      // Use smooth scrolling for better mobile experience
-      msgListref.current.scrollTo({
-        top: msgListref.current.scrollHeight,
-        behavior: 'smooth'
-      });
-    }
-  };
+  // Function to scroll to bottom of messages (currently unused but kept for future use)
+  // const scrollToBottom = () => {
+  //   if (msgListref.current) {
+  //     // Use smooth scrolling for better mobile experience
+  //     msgListref.current.scrollTo({
+  //       top: msgListref.current.scrollHeight,
+  //       behavior: 'smooth'
+  //     });
+  //   }
+  // };
 
   // Enhanced scroll to bottom for mobile
   const scrollToBottomMobile = () => {
@@ -450,29 +483,28 @@ export const Chat = () => {
 
   // Direct API call to fetch messages (skip Redux)
   const fetchMessagesDirectly = React.useCallback(async () => {
-    if (!creator_portfolio_id || !loggedInUserId) {
+    if (!finalCreatorPortfolioId || !loggedInUserId) {
       return;
     }
 
     setLoading(true);
 
     try {
-      const targetUserId = decodeURIComponent(creator_portfolio_id);
+      const targetUserId = decodeURIComponent(finalCreatorPortfolioId);
       
       // Validate the decoded user ID
       if (!targetUserId || targetUserId === 'undefined' || targetUserId === 'null' || targetUserId.length < 10) {
-        console.error("❌ [CHAT] Invalid targetUserId after decode:", targetUserId);
         toast.error("Invalid user ID. Please try again.");
         setLoading(false);
         return;
       }
+      
       const token = (() => {
         try {
           const raw = localStorage.getItem("login");
           if (raw) {
             const data = JSON.parse(raw);
-            const token = data?.refreshtoken || data?.accesstoken;
-      return token;
+            return data?.refreshtoken || data?.accesstoken;
           }
         } catch (error) {
           console.error("[Chat] Error retrieving token from localStorage:", error);
@@ -485,14 +517,12 @@ export const Chat = () => {
         clientid: loggedInUserId
       };
 
-
       const response = await axios.put(`${API_URL}/getcurrentchat`, requestData, {
         headers: {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${token}`
         },
       });
-
 
       if (response.data.chats && Array.isArray(response.data.chats)) {
         setmessage(response.data.chats);
@@ -508,7 +538,12 @@ export const Chat = () => {
 
       setLoading(false);
     } catch (error: any) {
-      console.error("❌ [CHAT] Error fetching messages:", error);
+      console.error("❌ [CHAT] Error fetching messages:", {
+        error: error.message,
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data
+      });
       
       setLoading(false);
       
@@ -520,7 +555,7 @@ export const Chat = () => {
         toast.error(`Failed to load messages: ${error.response?.data?.message || error.message}`);
       }
     }
-  }, [creator_portfolio_id, loggedInUserId]);
+  }, [finalCreatorPortfolioId, loggedInUserId]);
 
   // Chat info is now handled by viewingProfile only (no Redux chatinfo)
 
@@ -545,15 +580,19 @@ export const Chat = () => {
 
   // Fetch target user profile details when creator_portfolio_id changes or route changes
   useEffect(() => {
-    if (!creator_portfolio_id || !loggedInUserId) {
+    if (!finalCreatorPortfolioId) {
       return;
     }
 
-    const targetUserId = decodeURIComponent(creator_portfolio_id);
+    // If we don't have loggedInUserId yet, wait a bit for it to load from localStorage
+    if (!loggedInUserId) {
+      return;
+    }
+
+    const targetUserId = decodeURIComponent(finalCreatorPortfolioId);
     
     // Validate the decoded user ID
     if (!targetUserId || targetUserId === 'undefined' || targetUserId === 'null' || targetUserId.length < 10) {
-      console.error("❌ [CHAT] Invalid targetUserId for profile fetch:", targetUserId);
       return;
     }
     
@@ -593,13 +632,13 @@ export const Chat = () => {
       // @ts-expect-error - Redux dispatch type issue
       dispatch(getViewingProfile({ userid: targetUserId, token }));
     }
-  }, [creator_portfolio_id, loggedInUserId, dispatch, routeChangeKey]);
+  }, [finalCreatorPortfolioId, loggedInUserId, dispatch, routeChangeKey]);
 
   // Update chat info from viewing profile when it loads
   useEffect(() => {
-    if (viewingProfile.status === "succeeded" && viewingProfile.userId && creator_portfolio_id) {
-      // CRITICAL: Only update if the viewingProfile.userId matches the current creator_portfolio_id
-      const currentTargetUserId = decodeURIComponent(creator_portfolio_id);
+    if (viewingProfile.status === "succeeded" && viewingProfile.userId && finalCreatorPortfolioId) {
+      // CRITICAL: Only update if the viewingProfile.userId matches the current finalCreatorPortfolioId
+      const currentTargetUserId = decodeURIComponent(finalCreatorPortfolioId);
       
       if (viewingProfile.userId === currentTargetUserId) {
         setfirstname(viewingProfile.firstname || "");
@@ -619,24 +658,18 @@ export const Chat = () => {
           dispatch(checkVipStatus(viewingProfile.userId) as any);
         }
       }
-    } else if (viewingProfile.status === "failed" && creator_portfolio_id) {
-      // Handle profile loading failure with better fallback
-      const targetUserId = decodeURIComponent(creator_portfolio_id);
-      const fallbackName = `User ${targetUserId.slice(-6)}`;
-      
-      setfirstname(fallbackName);
-      setchatusername(fallbackName);
-      set_Chatphoto("/icons/icons8-profile_user.png");
-      setChatphotoError(false);
+    } else if (viewingProfile.status === "failed" && finalCreatorPortfolioId) {
+      // Don't set fallback values - let it stay blank until real data loads
+      // Keep loading true so it shows loading state instead of blank
     }
-  }, [viewingProfile, creator_portfolio_id, dispatch]);
+  }, [viewingProfile, finalCreatorPortfolioId, dispatch]);
 
   // Check VIP celebration status when VIP status is confirmed
   useEffect(() => {
     const checkCelebration = async () => {
-      if (vipStatus?.isVip && viewingProfile.status === "succeeded" && viewingProfile.userId && loggedInUserId && !celebrationChecked && creator_portfolio_id) {
+      if (vipStatus?.isVip && viewingProfile.status === "succeeded" && viewingProfile.userId && loggedInUserId && !celebrationChecked && finalCreatorPortfolioId) {
         // CRITICAL: Only check celebration if the VIP user matches the current chat user
-        const currentTargetUserId = decodeURIComponent(creator_portfolio_id);
+        const currentTargetUserId = decodeURIComponent(finalCreatorPortfolioId);
         
         if (viewingProfile.userId === currentTargetUserId) {
           setCelebrationChecked(true);
@@ -664,14 +697,14 @@ export const Chat = () => {
     };
 
     checkCelebration();
-  }, [vipStatus, viewingProfile.status, viewingProfile.userId, loggedInUserId, celebrationChecked, creator_portfolio_id, checkVipCelebrationStatus, markVipCelebrationAsViewed]);
+  }, [vipStatus, viewingProfile.status, viewingProfile.userId, loggedInUserId, celebrationChecked, finalCreatorPortfolioId, checkVipCelebrationStatus, markVipCelebrationAsViewed]);
 
   // Reset VIP celebration tracking when switching users
   useEffect(() => {
     setVipCelebrationShown(false);
     setShowVipCelebration(false);
     setCelebrationChecked(false);
-  }, [creator_portfolio_id]);
+  }, [finalCreatorPortfolioId]);
 
   // Reset all chat state when switching users (additional safety)
   useEffect(() => {
@@ -688,13 +721,13 @@ export const Chat = () => {
       setVipCelebrationShown(false);
       setCelebrationChecked(false);
     };
-  }, [creator_portfolio_id]);
+  }, [finalCreatorPortfolioId]);
 
   // Force update chat info when creator_portfolio_id changes to ensure profile is always shown
   useEffect(() => {
-    if (creator_portfolio_id && viewingProfile.status === "succeeded" && viewingProfile.userId) {
-      // CRITICAL: Only update if the viewingProfile.userId matches the current creator_portfolio_id
-      const currentTargetUserId = decodeURIComponent(creator_portfolio_id);
+    if (finalCreatorPortfolioId && viewingProfile.status === "succeeded" && viewingProfile.userId) {
+      // CRITICAL: Only update if the viewingProfile.userId matches the current finalCreatorPortfolioId
+      const currentTargetUserId = decodeURIComponent(finalCreatorPortfolioId);
       
       if (viewingProfile.userId === currentTargetUserId) {
         setChatphotoError(false); // Reset error state for new profile
@@ -706,57 +739,32 @@ export const Chat = () => {
         }
       }
     }
-  }, [creator_portfolio_id, viewingProfile]);
+  }, [finalCreatorPortfolioId, viewingProfile]);
 
   // Fallback to ensure loading is set to false after a reasonable time
   useEffect(() => {
     const fallbackTimeout = setTimeout(() => {
+      // Only set loading to false if we have real user data
+      if (chatusername || chatfirstname) {
       setLoading(false);
-      
-      // If profile still hasn't loaded, set fallback values
-      if (!chatusername && creator_portfolio_id) {
-        const targetUserId = decodeURIComponent(creator_portfolio_id);
-        const fallbackName = `User ${targetUserId.slice(-6)}`;
-        
-        setchatusername(fallbackName);
-        setfirstname(fallbackName);
-        set_Chatphoto("/icons/icons8-profile_user.png");
-        setChatphotoError(false);
       }
-    }, 5000); // 5 second fallback - reduced from 10 seconds
+      // If no real data, keep loading state active
+    }, 8000); // Increased to 8 seconds to give profile fetch more time
 
     return () => clearTimeout(fallbackTimeout);
-  }, [creator_portfolio_id, chatusername]);
+  }, [finalCreatorPortfolioId, chatusername, chatfirstname]);
 
   // Enhanced fallback to ensure chat info is set even if there are timing issues
-  useEffect(() => {
-    if (creator_portfolio_id && (!chatusername || !chatfirstname)) {
-      const targetUserId = decodeURIComponent(creator_portfolio_id);
-      
-      // Validate the decoded user ID before setting fallback
-      if (targetUserId && targetUserId !== 'undefined' && targetUserId !== 'null' && targetUserId.length >= 10) {
-        // Try to get a better fallback name from the user ID
-        const fallbackName = `User ${targetUserId.slice(-6)}`; // Show last 6 chars for better identification
-        
-        // Only set fallback if we don't have any name yet
-        if (!chatusername) {
-          setchatusername(fallbackName);
-        }
-        if (!chatfirstname) {
-          setfirstname(fallbackName);
-        }
-        
-        // Set default profile picture
-        set_Chatphoto("/icons/icons8-profile_user.png");
-        setChatphotoError(false);
-      }
-    }
-  }, [creator_portfolio_id, chatusername, chatfirstname]);
+  // REMOVED: This was causing race conditions with real profile data
 
   // Additional useEffect to handle navigation from MessageList (skip Redux)
   useEffect(() => {
     // Only proceed if we have both creator_portfolio_id and loggedInUserId
-    if (!creator_portfolio_id || !loggedInUserId) {
+    if (!finalCreatorPortfolioId) {
+      return;
+    }
+
+    if (!loggedInUserId) {
       return;
     }
 
@@ -766,7 +774,7 @@ export const Chat = () => {
 
     // Use direct API call instead of Redux
     fetchMessagesDirectly();
-  }, [creator_portfolio_id, loggedInUserId, fetchMessagesDirectly]);
+  }, [finalCreatorPortfolioId, loggedInUserId, fetchMessagesDirectly]);
 
   // Auto-scroll to bottom when messages change
   useEffect(() => {
@@ -934,7 +942,7 @@ export const Chat = () => {
   // Direct API call when component loads (skip Redux)
   useEffect(() => {
 
-    if (!creator_portfolio_id) {
+    if (!finalCreatorPortfolioId) {
       return;
     }
 
@@ -944,7 +952,7 @@ export const Chat = () => {
     
     // Always fetch messages when component loads
     fetchMessagesDirectly();
-  }, [creator_portfolio_id, loggedInUserId, reduxUserId, localUserid, fetchMessagesDirectly]);
+  }, [finalCreatorPortfolioId, loggedInUserId, reduxUserId, localUserid, fetchMessagesDirectly]);
 
 
   // Socket connection and real-time message handling
@@ -983,11 +991,11 @@ export const Chat = () => {
       name: string; 
       photolink: string; 
     }) => {
-      if (!creator_portfolio_id) {
+      if (!finalCreatorPortfolioId) {
         return;
       }
 
-      const decodedCreator_portfolio_id = decodeURIComponent(creator_portfolio_id);
+      const decodedCreator_portfolio_id = decodeURIComponent(finalCreatorPortfolioId);
       
       // Since we now pass only the target user ID, we don't need to split by comma
       const targetUserId = decodedCreator_portfolio_id;
@@ -1064,13 +1072,13 @@ export const Chat = () => {
 
     // Typing event listeners
     const handleTypingStart = (data: { fromUserId: string, toUserId: string }) => {
-      if (creator_portfolio_id && data.fromUserId === creator_portfolio_id && data.toUserId === loggedInUserId) {
+      if (finalCreatorPortfolioId && data.fromUserId === finalCreatorPortfolioId && data.toUserId === loggedInUserId) {
         setOtherUserTyping(true);
       }
     };
 
     const handleTypingStop = (data: { fromUserId: string, toUserId: string }) => {
-      if (creator_portfolio_id && data.fromUserId === creator_portfolio_id && data.toUserId === loggedInUserId) {
+      if (finalCreatorPortfolioId && data.fromUserId === finalCreatorPortfolioId && data.toUserId === loggedInUserId) {
         setOtherUserTyping(false);
       }
     };
@@ -1089,7 +1097,7 @@ export const Chat = () => {
       socket.off('typing_stop', handleTypingStop);
     };
 
-  }, [loggedInUserId, creator_portfolio_id]);
+  }, [loggedInUserId, finalCreatorPortfolioId]);
 
 
   // useEffect(() => {
@@ -1311,12 +1319,12 @@ export const Chat = () => {
       return;
     }
 
-    if (!creator_portfolio_id) {
+    if (!finalCreatorPortfolioId) {
       toast.error("Invalid chat session. Please try again.");
       return;
     }
 
-    const decodedCreator_portfolio_id = decodeURIComponent(creator_portfolio_id);
+    const decodedCreator_portfolio_id = decodeURIComponent(finalCreatorPortfolioId);
     
     // Since we now pass only the target user ID, we don't need to split by comma
     const targetUserId = decodedCreator_portfolio_id;
@@ -1504,7 +1512,26 @@ export const Chat = () => {
   }, [dispatch]);
 
   // Early return if we don't have valid user data
-  if (!creator_portfolio_id || !loggedInUserId) {
+  // Only return early if we're sure we don't have the data (not just loading)
+  if (!finalCreatorPortfolioId) {
+    return (
+      <div className="h-full w-full flex flex-col items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-400 text-lg mb-2">Invalid Chat</p>
+          <p className="text-gray-400 text-sm">No user ID provided. Please try again.</p>
+          <button 
+            onClick={() => router.back()}
+            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          >
+            Go Back
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // If we don't have loggedInUserId yet, show loading but don't block the component
+  if (!loggedInUserId) {
     return (
       <div className="h-full w-full flex flex-col items-center justify-center">
         <div className="text-center">
@@ -1516,7 +1543,8 @@ export const Chat = () => {
   }
 
   // Validate the decoded user ID
-  const decodedUserId = decodeURIComponent(creator_portfolio_id);
+  const decodedUserId = decodeURIComponent(finalCreatorPortfolioId);
+
   if (!decodedUserId || decodedUserId === 'undefined' || decodedUserId === 'null' || decodedUserId.length < 10) {
     return (
       <div className="h-full w-full flex flex-col items-center justify-center">
@@ -1533,6 +1561,7 @@ export const Chat = () => {
       </div>
     );
   }
+
 
   return (
     <div className="h-full w-full flex flex-col" style={{ 
@@ -1570,7 +1599,14 @@ export const Chat = () => {
             
             <div className="flex items-center gap-3">
               {/* Profile Picture */}
-              <div className="relative">
+              <div 
+                className="relative cursor-pointer hover:opacity-80 transition-opacity"
+                onClick={() => {
+                  if (finalCreatorPortfolioId) {
+                    router.push(`/Profile/${finalCreatorPortfolioId}`);
+                  }
+                }}
+              >
                 <div className="w-12 h-12 rounded-full border-2 border-blue-600/50 overflow-hidden">
                   {loading || (!chatusername && !chatfirstname) ? (
                     <div className="w-full h-full bg-gray-600 animate-pulse rounded-full"></div>
@@ -1598,12 +1634,19 @@ export const Chat = () => {
               </div>
               
               {/* User Name */}
-              <div>
+              <div 
+                className="cursor-pointer hover:opacity-80 transition-opacity"
+                onClick={() => {
+                  if (finalCreatorPortfolioId) {
+                    router.push(`/Profile/${finalCreatorPortfolioId}`);
+                  }
+                }}
+              >
                 {loading || (!chatusername && !chatfirstname) ? (
                   <div className="h-5 bg-gray-600 animate-pulse rounded w-24"></div>
                 ) : (
                   <p className="font-bold text-white text-lg">
-                    {chatfirstname && chatlastname ? `${chatfirstname} ${chatlastname}`.trim() : chatusername || "User"}
+                    {chatfirstname && chatlastname ? `${chatfirstname} ${chatlastname}`.trim() : chatusername}
                   </p>
                 )}
                 <div className="flex items-center gap-2">
@@ -1616,7 +1659,7 @@ export const Chat = () => {
                       </div>
                       <span className="text-xs text-blue-300">Typing...</span>
                     </div>
-                  ) : (creator_portfolio_id && isUserOnline(creator_portfolio_id)) ? (
+                  ) : (finalCreatorPortfolioId && isUserOnline(finalCreatorPortfolioId)) ? (
                     <div className="flex items-center gap-1">
                       <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                       <span className="text-xs text-green-400">Online</span>
@@ -1636,7 +1679,7 @@ export const Chat = () => {
       </div>
 
       {/* Messages Area - Clean Design */}
-      <div ref={msgListref} className="flex-1 overflow-y-auto p-3 sm:p-4 bg-transparent pb-20" style={{ 
+      <div ref={msgListref} className="flex-1 overflow-y-auto p-3 sm:p-4 bg-transparent pb-24 sm:pb-20" style={{ 
         WebkitOverflowScrolling: 'touch',
         overscrollBehavior: 'contain',
         scrollBehavior: 'smooth'
@@ -1664,7 +1707,7 @@ export const Chat = () => {
             </div>
           </div>
         ) : (
-          <div className="space-y-4 w-full max-w-4xl mx-auto pb-4">
+          <div className="space-y-4 w-full max-w-4xl mx-auto pb-6">
             {messagelist()}
           </div>
         )}
@@ -1727,7 +1770,7 @@ export const Chat = () => {
       )}
 
       {/* Input Bar - Mobile Optimized */}
-      <div className="flex items-center gap-2 sm:gap-3 p-3 sm:p-4 bg-gray-800 border-t border-blue-700/30 sticky bottom-0 z-50 flex-shrink-0 pb-safe shadow-lg">
+      <div className="flex items-center gap-2 sm:gap-3 p-3 sm:p-4 bg-gray-800 border-t border-blue-700/30 sticky bottom-0 z-50 flex-shrink-0 pb-safe shadow-lg min-h-[80px]">
         <input
           type="file"
           ref={fileInputRef}
@@ -1753,10 +1796,10 @@ export const Chat = () => {
               settext(e.target.value);
               
               // Handle typing indicators
-              if (e.target.value.trim() && loggedInUserId && creator_portfolio_id && creator_portfolio_id.length >= 10) {
+              if (e.target.value.trim() && loggedInUserId && finalCreatorPortfolioId && finalCreatorPortfolioId.length >= 10) {
                 if (!isTyping) {
                   setIsTyping(true);
-                  startTyping(loggedInUserId, creator_portfolio_id);
+                  startTyping(loggedInUserId, finalCreatorPortfolioId);
                 }
                 
                 // Clear existing timeout
@@ -1767,13 +1810,13 @@ export const Chat = () => {
                 // Set new timeout to stop typing after 2 seconds of inactivity
                 const timeout = setTimeout(() => {
                   setIsTyping(false);
-                  stopTyping(loggedInUserId, creator_portfolio_id);
+                  stopTyping(loggedInUserId, finalCreatorPortfolioId);
                 }, 2000);
                 
                 setTypingTimeout(timeout);
-              } else if (!e.target.value.trim() && isTyping && creator_portfolio_id) {
+              } else if (!e.target.value.trim() && isTyping && finalCreatorPortfolioId) {
                 setIsTyping(false);
-                stopTyping(loggedInUserId, creator_portfolio_id);
+                stopTyping(loggedInUserId, finalCreatorPortfolioId);
                 if (typingTimeout) {
                   clearTimeout(typingTimeout);
                   setTypingTimeout(null);

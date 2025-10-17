@@ -27,6 +27,9 @@ export interface CreatorCardProps {
   hostid: string;
   isVip?: boolean;
   vipEndDate?: string;
+  views?: number;
+  isOnline?: boolean;
+  isFollowing?: boolean;
 }
 
 interface CountryData {
@@ -49,7 +52,10 @@ export const CreatorCard = ({
   createdAt,
   hostid,
   isVip = false,
-  vipEndDate
+  vipEndDate,
+  views = 0,
+  isOnline = false,
+  isFollowing = false,
 }: CreatorCardProps) => {
   const router = useRouter();
   // const [hostImg, setHostImg] = useState<string>("/icons/mmekoDummy.png");

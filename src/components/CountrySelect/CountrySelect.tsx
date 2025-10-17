@@ -33,7 +33,7 @@ const CountrySelect: React.FC<Props> = ({ onSelectCountry }) => {
           cursor: "pointer",
           background: "transparent",
           borderRadius: "4px",
-          color: "gray",
+          color: selectedCountry ? "white" : "gray",
         }}
         onClick={() => setShowDropdown(!showDropdown)}
       >

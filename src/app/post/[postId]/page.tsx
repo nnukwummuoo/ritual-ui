@@ -171,7 +171,7 @@ function PostSingle() {
                       </div>
                       <div>
                         <p className="font-medium">{thePost?.user?.firstname} { thePost?.user?.lastname}</p>
-                        <span className="text-gray-400 text-sm">{handleStr ? `@${handleStr}` : ""}</span>
+                        <span className="text-gray-400 text-sm">{handleStr ? `${handleStr}` : ""}</span>
                       </div>
                     </div>
                     {/* Timestamp */}

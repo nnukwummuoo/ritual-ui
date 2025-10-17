@@ -8,23 +8,30 @@ export const useNotificationIndicator = () => {
   );
 
   const notificationData = useMemo(() => {
+    console.log("[useNotificationIndicator] Notifications:", notifications?.length || 0, "Stats:", notifications_stats);
+    
     if (!notifications || notifications.length === 0) {
       return {
         hasUnread: false,
         unreadCount: 0,
         totalCount: 0,
-        isLoading: notifications_stats === 'loading'
+        isLoading: notifications_stats === 'loading',
+        allUnreadCount: 0
       };
     }
 
     const unreadNotifications = notifications.filter(notification => !notification.seen);
     
-    return {
+    const result = {
       hasUnread: unreadNotifications.length > 0,
       unreadCount: unreadNotifications.length,
       totalCount: notifications.length,
-      isLoading: notifications_stats === 'loading'
+      isLoading: notifications_stats === 'loading',
+      allUnreadCount: unreadNotifications.length
     };
+    
+    console.log("[useNotificationIndicator] Result:", result);
+    return result;
   }, [notifications, notifications_stats]);
 
   return notificationData;

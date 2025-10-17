@@ -18,8 +18,8 @@ const initialState: MessageState = {
   giftstats: "idle",
   giftmessage: "",
   chatinfo:{},
-  video_call_message:"",
-  video_call_data:null,
+  fan_call_message:"",
+  fan_call_data:null,
   calling:false,
   spd_call:null,
   offer:null,
@@ -271,10 +271,10 @@ const message = createSlice({
       state.recentmsg = []
     },
     set_videocall_message(state, action) {
-      state.video_call_message = action.payload
+      state.fan_call_message = action.payload
     },
     set_videocall_data(state, action) {
-      state.video_call_data = action.payload
+      state.fan_call_data = action.payload
     },
     set_calling(state, action) {
       state.calling = action.payload

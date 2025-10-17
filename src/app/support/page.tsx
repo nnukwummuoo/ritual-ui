@@ -3,22 +3,45 @@
 import React, { useState } from "react";
 import { FaAngleLeft, FaQuestionCircle, FaEnvelope, FaPhone, FaClock } from "react-icons/fa";
 import { useRouter } from "next/navigation";
+import { useSelector } from "react-redux";
+import { SupportForm } from "../../components/support/SupportForm";
+
+// Types
+interface RootState {
+  register: {
+    userID: string;
+    logedin: boolean;
+    refreshtoken: string;
+  };
+}
 
 const SupportPage: React.FC = () => {
   const router = useRouter();
-  const [selectedCategory, setSelectedCategory] = useState<string>("");
-  const [message, setMessage] = useState<string>("");
-  const [email, setEmail] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
-  const categories = [
-    { id: "account", label: "Account Issues", icon: "👤" },
-    { id: "payment", label: "Payment & Billing", icon: "💳" },
-    { id: "technical", label: "Technical Support", icon: "🔧" },
-    { id: "feature", label: "Feature Request", icon: "💡" },
-    { id: "bug", label: "Bug Report", icon: "🐛" },
-    { id: "other", label: "Other", icon: "❓" },
-  ];
+  // Get user ID from Redux
+  const reduxUserid = useSelector((state: RootState) => state.register.userID);
+
+  // Helper function to get current user ID with localStorage fallback
+  const getCurrentUserId = () => {
+    let currentUserId = reduxUserid;
+    
+    // If userid is not available from Redux, try to get it from localStorage as fallback
+    if (!currentUserId) {
+      try {
+        const stored = localStorage.getItem("login");
+        if (stored) {
+          const data = JSON.parse(stored);
+          currentUserId = data?.userID || data?.userid || data?.id || "";
+        }
+      } catch (error) {
+        console.error('Error getting userid from localStorage:', error);
+      }
+    }
+    
+    return currentUserId;
+  };
+
 
   const faqs = [
     {
@@ -128,11 +151,116 @@ const SupportPage: React.FC = () => {
       ]
     },
     {
+      section: "❓ FAQ – Fan Meet / Fan Date Expiration",
+      questions: [
+        {
+          question: "What happens if the meet or date doesn't happen within 7 days?",
+          answer: "🕒 If 7 days pass and the fan didn't marks it as complete, the system automatically refunds the fan's transport fare (unless a creator complaint was filed)."
+        },
+        {
+          question: "What if the creator didn't show up?",
+          answer: "🚫 The fan will automatically receive a refund after 7 days if the meet/date was not completed and no creator complaint was made."
+        },
+        {
+          question: "What if the fan didn't show up?",
+          answer: "❌ If the creator reports that the fan didn't show, the platform will investigate before the payment will be released to the creator."
+        },
+        {
+          question: "Why 7 days?",
+          answer: "📅 Seven days gives both sides enough time to reschedule once while keeping requests active and organized."
+        }
+      ]
+    },
+    {
+      section: "❓ FAQ – Fan Call Expiration",
+      questions: [
+        {
+          question: "What happens if my Fan Call request isn't answered or started?",
+          answer: "🕒 If your Fan Call doesn't start within 48 hours after acceptance, it expires automatically.\nNo money is deducted, and you can always send a new request later."
+        },
+        {
+          question: "Will I lose any gold or balance if it expires?",
+          answer: "💰 No. Fan Call payments are only deducted during the live call, not before."
+        },
+        {
+          question: "Why is there a 48-hour limit?",
+          answer: "⏳ This helps fans and creators stay active and ensures requests don't pile up or get forgotten."
+        }
+      ]
+    },
+    {
+      section: "❓ FAQ: Attendance & No-Show Policy",
+      questions: [
+        {
+          question: "What if a fan doesn't show up for a Fan Meet or Fan Date?",
+          answer: "🚫 If a fan fails to show up at the agreed time and location, the transport fare is automatically sent to the creator to cover her time and travel.\nNo refund will be issued to the fan once the creator has already arrived or waited at the meeting spot."
+        },
+        {
+          question: "What if a creator doesn't show up for a Fan Meet or Fan Date?",
+          answer: "⚠ If a creator fails to appear or cancels last-minute, the fan will receive a full refund of the transport fare.\nRepeated no-shows by creators may result in account suspension or removal from the Fan Meet/Fan Date program."
+        },
+        {
+          question: "How do both sides stay protected?",
+          answer: "🛡 The platform tracks confirmations, time logs, and attendance reports to ensure fairness.\nWe recommend both sides take a quick photo or check-in proof at the public venue for verification if needed."
+        }
+      ]
+    },
+    {
       section: "💬 Contact Support",
       questions: [
         {
           question: "For disputes, bugs, or urgent help:",
           answer: "📩 Open a Support Ticket inside the app.\n🕒 Response Time: within 24 hours."
+        }
+      ]
+    },
+    {
+      section: "💰 FAQ – Gold & Payments",
+      questions: [
+        {
+          question: "What is Gold?",
+          answer: "⭐ Gold is the in-app currency used for all paid features such as Fan Call, Fan Meet, and Fan Experience.\n1 Gold = $0.04 USD."
+        },
+        {
+          question: "How do I buy Gold?",
+          answer: "🪙 You can buy Gold using USDT (BEP20 - Binance Smart Chain).\nYour Gold balance will appear instantly after payment is confirmed."
+        },
+        {
+          question: "Is Gold refundable?",
+          answer: "🚫 No. All Gold purchases are non-refundable, as they are converted digital credits used within the platform."
+        },
+        {
+          question: "Can I transfer Gold to another user?",
+          answer: "🔒 No. For security reasons, Gold is non-transferable and linked only to your account."
+        },
+        {
+          question: "What happens if I don't use my Gold?",
+          answer: "💎 Your Gold never expires. You can use it anytime for calls, meets, or dates."
+        },
+        {
+          question: "Why is there a small gas fee during payment?",
+          answer: "⚙ Gas fees are blockchain network fees, not platform charges.\nWe only collect the exact amount your wallet sends."
+        },
+        {
+          question: "What if my payment fails but funds are deducted?",
+          answer: "📨 Contact Support immediately with your transaction hash (TXID).\nWe'll verify and credit your account manually."
+        },
+        {
+          question: "How do creators earn from Gold?",
+          answer: "👑 When fans spend Gold on Fan Calls, Meets, or Dates, the full value goes directly to the creator's earnings dashboard.\nCreators can withdraw anytime in USDT (BEP20) to their connected wallet."
+        }
+      ]
+    },
+    {
+      section: "💬 FAQ – Withdrawal Fees",
+      questions: [
+        {
+          question: "Why is there a $1 deduction on my withdrawal?",
+          answer: "🪙 This is a fixed network transaction fee that covers blockchain gas costs and keeps payouts fast.\nSince gas fees change depending on Binance Smart Chain activity, we apply a standard $1 processing fee for stability."
+        },
+        {
+          question: "Does the platform profit from this fee?",
+          answer: "⚙ No. The fee only covers blockchain and processing expenses — not a platform charge."
         }
       ]
     },
@@ -147,26 +275,18 @@ const SupportPage: React.FC = () => {
     }
   ];
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selectedCategory || !message || !email) return;
-
+  const handleFormSubmit = async (data: { category: string; email: string; message: string }) => {
     setIsSubmitting(true);
     
     // Format the complete message with all details
     const fullMessage = `📧 Support Request Details:
-Category: ${selectedCategory}
-Email: ${email}
-Message: ${message}
+Category: ${data.category}
+Email: ${data.email}
+Message: ${data.message}
 Timestamp: ${new Date().toLocaleString()}`;
 
     // Store the message in localStorage to show in support chat
     localStorage.setItem("supportMessage", fullMessage);
-    
-    // Reset form
-    setSelectedCategory("");
-    setEmail("");
-    setMessage("");
     
     // Redirect to support chat page
     window.location.href = "/message/supportchat";
@@ -223,7 +343,14 @@ Timestamp: ${new Date().toLocaleString()}`;
               </h2>
               <div className="space-y-3">
                 <button
-                  onClick={() => router.push("/profile")}
+                  onClick={() => {
+                    const currentUserId = getCurrentUserId();
+                    if (currentUserId) {
+                      router.push(`/profile/${currentUserId}`);
+                    } else {
+                      router.push("/profile");
+                    }
+                  }}
                   className="w-full text-left p-3 bg-gray-700 rounded-lg hover:bg-gray-600 transition-colors"
                 >
                   View My Profile
@@ -235,7 +362,7 @@ Timestamp: ${new Date().toLocaleString()}`;
                   Account Settings
                 </button>
                 <button
-                  onClick={() => router.push("/messages/supportchat")}
+                  onClick={() => router.push("/message/supportchat")}
                   className="w-full text-left p-3 bg-gray-700 rounded-lg hover:bg-gray-600 transition-colors"
                 >
                   Mmeko support
@@ -267,59 +394,10 @@ Timestamp: ${new Date().toLocaleString()}`;
             </div>
 
             {/* Support Form */}
-            <div className="bg-gray-800 rounded-xl p-6">
-              <h2 className="text-2xl font-semibold mb-6">Send us a Message</h2>
-              <p className="text-gray-300 mb-6">Your message will be sent to our support team and you'll be redirected to the support chat page to continue the conversation.</p>
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div>
-                  <label className="block text-sm font-medium mb-2">Category</label>
-                  <select
-                    value={selectedCategory}
-                    onChange={(e) => setSelectedCategory(e.target.value)}
-                    className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    required
-                  >
-                    <option value="">Select a category</option>
-                    {categories.map((category) => (
-                      <option key={category.id} value={category.id}>
-                        {category.icon} {category.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-2">Email Address</label>
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="your.email@example.com"
-                    required
-                  />
-            </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-2">Message</label>
-                  <textarea
-                    value={message}
-                    onChange={(e) => setMessage(e.target.value)}
-                    className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 h-32 resize-none"
-                    placeholder="Describe your issue or question in detail..."
-                    required
-                  />
-                </div>
-
-            <button
-                  type="submit"
-                  disabled={isSubmitting || !selectedCategory || !message || !email}
-                  className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 px-6 rounded-lg font-semibold hover:from-blue-600 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                >
-                  {isSubmitting ? "Sending..." : "Send Message"}
-            </button> 
-              </form>
-            </div>
+            <SupportForm 
+              onSubmit={handleFormSubmit}
+              isSubmitting={isSubmitting}
+            />
           </div>
         </div>
       </div>

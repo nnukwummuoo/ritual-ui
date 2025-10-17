@@ -69,6 +69,18 @@ const HistoryPage = () => {
   const [paymentAccountDetails, setPaymentAccountDetails] = useState<any>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [pendingWithdrawals, setPendingWithdrawals] = useState<any[]>([]);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const [showToast, setShowToast] = useState(false);
+
+  // Toast notification function
+  const showToastNotification = (message: string) => {
+    setToastMessage(message);
+    setShowToast(true);
+    setTimeout(() => {
+      setShowToast(false);
+    }, 4000);
+  };
 
   // Check if user has payment account
   const checkPaymentAccount = async () => {
@@ -189,18 +201,18 @@ const HistoryPage = () => {
       const result = await withdrawResponse.json();
       
       if (withdrawResponse.ok) {
-        alert(`Withdrawal request for $${withdrawAmount} submitted successfully!`);
         setShowConfirmModal(false);
+        setShowSuccessModal(true);
         setWithdrawAmount('');
         setWithdrawError('');
         // Refresh pending withdrawals by reloading the page data
         window.location.reload();
       } else {
-        alert(result.message || 'Failed to submit withdrawal request');
+        showToastNotification(result.message || 'Failed to submit withdrawal request');
       }
     } catch (error) {
       console.error('Error submitting withdrawal:', error);
-      alert('Error submitting withdrawal request');
+      showToastNotification('Error submitting withdrawal request');
     }
   };
 
@@ -353,6 +365,21 @@ const HistoryPage = () => {
 
   return (
     <div className="w-full max-w-md sm:max-w-lg lg:ml-36 min-h-screen py-8 px-6 text-white">
+      <style jsx>{`
+        @keyframes slide-in {
+          from {
+            transform: translateX(100%);
+            opacity: 0;
+          }
+          to {
+            transform: translateX(0);
+            opacity: 1;
+          }
+        }
+        .animate-slide-in {
+          animation: slide-in 0.3s ease-out;
+        }
+      `}</style>
       {loading && (
         <div className="flex flex-col items-center mt-16">
           <PacmanLoader color="#fff" size={35} />
@@ -529,7 +556,7 @@ const HistoryPage = () => {
                 <p className="text-sm text-gray-300"><strong>Email:</strong> {paymentAccountDetails.email}</p>
                 <p className="text-sm text-gray-300"><strong>Country:</strong> {paymentAccountDetails.country}</p>
                 <p className="text-sm text-gray-300"><strong>Crypto:</strong> {paymentAccountDetails.cryptoType}</p>
-                <p className="text-sm text-gray-300"><strong>Wallet:</strong> {paymentAccountDetails.walletAddress}</p>
+                <p className="text-sm text-gray-300 break-all"><strong>Wallet:</strong> {paymentAccountDetails.walletAddress}</p>
               </div>
             )}
             
@@ -617,6 +644,51 @@ const HistoryPage = () => {
               onClick={() => setShowPopup(false)}
             >
               Got it
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Success Modal */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-gray-800 p-8 rounded-lg shadow-lg text-center w-96">
+            <div className="flex justify-center mb-6">
+              <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center">
+                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+            </div>
+            <h2 className="text-2xl font-bold mb-4 text-white">Withdrawal Submitted!</h2>
+            <p className="text-gray-300 mb-6">
+              Withdrawal submitted successfully. Processing typically completes within 72 hours
+            </p>
+            <button
+              className="bg-gradient-to-r from-green-600 to-green-500 hover:from-green-500 hover:to-green-400 transition-all text-white font-bold px-6 py-3 rounded-lg"
+              onClick={() => setShowSuccessModal(false)}
+            >
+              Got it
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Toast Notification */}
+      {showToast && (
+        <div className="fixed top-4 right-4 z-50 animate-slide-in">
+          <div className="bg-red-600 text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-3">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>{toastMessage}</span>
+            <button
+              onClick={() => setShowToast(false)}
+              className="ml-2 text-white hover:text-gray-200"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
             </button>
           </div>
         </div>

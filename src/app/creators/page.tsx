@@ -36,7 +36,7 @@ export default function CreatorPage() {
     null
   );
 
-  const [Bookclick, setbookclick] = useState(false);
+  const [requestclick, setrequestclick] = useState(false);
   const [showOptions, setShowOptions] = useState(false);
   const [showCountries, setShowCountries] = useState(false);
   const [countries, setCountries] = useState<any[]>([]);
@@ -53,7 +53,7 @@ export default function CreatorPage() {
 
   const buttonData = [
     { label: "All", value: "All" },
-    { label: "Fan Call", value: "Fan Call" },
+    { label: "Fan call", value: "Fan Call" },
     { label: "Fan meet", value: "Fan meet" },
     { label: "Fan date", value: "Fan date" },
   ];
@@ -248,6 +248,11 @@ const mapToCard = (m: any): CreatorCardProps => {
     // VIP status comes directly from backend
     isVip: m.isVip || false,
     vipEndDate: m.vipEndDate || null,
+    // View count and online status for sorting - now provided by backend
+    views: m.views || m.viewCount || m.view_count || m.totalViews || m.total_views || m.portfolioViews || m.portfolio_views || 0,
+    isOnline: m.isOnline || m.online || m.is_online || m.onlineStatus || m.online_status || m.status === 'online' || false,
+    // Following status for ranking - now provided by backend
+    isFollowing: m.isFollowing || m.following || m.followingUser || m.is_following || m.following_status || m.followedBy || m.followed_by || false,
   };
 
 
@@ -303,7 +308,6 @@ const renderCreators = () => {
       photolink: card.photolink || "/images/default-placeholder.png", // fallback image
     };
     
-  ;
     
     return finalCard;
   });
@@ -316,16 +320,45 @@ const renderCreators = () => {
     return creator.hosttype === categoryButton;
   });
 
-  // Sort creators: VIP first, then by latest creation date
+  // Sort creators with priority: Online > Views > Following > New
   const sortedList = filteredList.sort((a, b) => {
-    // VIP creators come first
-    if (a.isVip && !b.isVip) return -1;
-    if (!a.isVip && b.isVip) return 1;
+    const viewsA = a.views || 0;
+    const viewsB = b.views || 0;
+    const isOnlineA = a.isOnline || false;
+    const isOnlineB = b.isOnline || false;
+    const isFollowingA = a.isFollowing || false;
+    const isFollowingB = b.isFollowing || false;
     
-    // If both are VIP or both are not VIP, sort by creation date (latest first)
-    const dateA = new Date(a.createdAt).getTime();
-    const dateB = new Date(b.createdAt).getTime();
-    return dateB - dateA; // Latest first
+    // First priority: Online status
+    // If one is online and the other is offline, online comes first
+    if (isOnlineA && !isOnlineB) {
+      return -1;
+    }
+    if (!isOnlineA && isOnlineB) {
+      return 1;
+    }
+    
+    // If both have same online status, sort by views (highest first)
+    if (isOnlineA === isOnlineB) {
+      if (viewsA !== viewsB) {
+        return viewsB - viewsA;
+      }
+      
+      // If views are equal, check following status
+      if (isFollowingA && !isFollowingB) {
+        return -1;
+      }
+      if (!isFollowingA && isFollowingB) {
+        return 1;
+      }
+      
+      // If following status is also equal, sort by creation date (newest first)
+      const dateA = new Date(a.createdAt).getTime();
+      const dateB = new Date(b.createdAt).getTime();
+      return dateB - dateA;
+    }
+    
+    return 0;
   });
 
   if (!list.length) {
@@ -351,7 +384,7 @@ const renderCreators = () => {
           <CreatorCard {...value} />
           {/* VIP Badge - positioned at page level on top of verified creators */}
           {value.isVip && (
-            <div className="absolute -top-4 left-20 ">
+            <div className="absolute -top-1 left-20 ">
               <VIPBadge size="xxl" isVip={value.isVip} vipEndDate={value.vipEndDate} />
             </div>
           )}

@@ -1,17 +1,15 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { URL } from "@/api/config";
 import axios from "axios";
-import { BookingState } from "@/types/booking";
+import { requestState } from "@/types/requesting";
 
-const initialState: BookingState = {
-  bookingmessage: "",
-  bookingstats: "idle",
-  requeststats: "idle",
+const initialState: requestState = {
   requestmessage: "",
+  requeststats: "idle",
   requests: [],
   cancelmessage: "",
   cancelstats: "idle",
-  bookingnote: null,
+  requestnote: null,
   notifymessage: "",
   notifystats: "idle",
   acceptmessage: "",
@@ -28,12 +26,12 @@ const initialState: BookingState = {
   rejectedCall: null,
 };
 
-export const bookmdel = createAsyncThunk("booking/bookcreator", async (data:any) => {
+export const requestmdel = createAsyncThunk("request/requestcreator", async (data:any) => {
   try {
     //console.log('after info')
 
     //console.log('ontop get profile')
-    let response = await axios.put(`${URL}/bookhost`, data);
+    const response = await axios.put(`${URL}/requesthost`, data);
     //console.log('under get profile')
 
     return response.data;
@@ -46,9 +44,9 @@ export const bookmdel = createAsyncThunk("booking/bookcreator", async (data:any)
   }
 });
 
-export const bookAcreator =  async (data:any) => {
+export const requestAcreator =  async (data:any) => {
   try {
-    let response = await axios.put(`${URL}/bookhost`, data);
+    const response = await axios.put(`${URL}/requesthost`, data);
     return response.data;
   } catch (err : any) {
     // console.log('erro get profile')
@@ -60,10 +58,10 @@ export const bookAcreator =  async (data:any) => {
 }
 
 export const getmyrequest = createAsyncThunk(
-  "booking/getmyrequest",
+  "request/getmyrequest",
   async (data) => {
     try {
-      let response = await axios.put(`${URL}/pendingrequest`, data);
+      const response = await axios.put(`${URL}/pendingrequest`, data);
       return response.data;
     } catch (err : any) {
       // console.log('erro get profile')
@@ -76,13 +74,13 @@ export const getmyrequest = createAsyncThunk(
 );
 
 export const Cancelrequest = createAsyncThunk(
-  "booking/Cancelrequest",
+  "request/Cancelrequest",
   async (data) => {
     try {
       //console.log('after info')
 
       //console.log('ontop get profile')
-      let response = await axios.put(`${URL}/cancelrequest`, data);
+      const response = await axios.put(`${URL}/cancelrequest`, data);
 
       //console.log('under get profile')
 
@@ -98,13 +96,13 @@ export const Cancelrequest = createAsyncThunk(
 );
 
 export const notifycreator = createAsyncThunk(
-  "booking/notifycreator",
+  "request/notifycreator",
   async (data) => {
     try {
       //console.log('after info')
 
       //console.log('ontop get profile')
-      let response = await axios.put(`${URL}/notifycreator`, data);
+      const response = await axios.put(`${URL}/notifycreator`, data);
 
       //console.log('under get profile')
 
@@ -120,15 +118,15 @@ export const notifycreator = createAsyncThunk(
 );
 
 export const accepthost = createAsyncThunk(
-  "booking/accepthost",
+  "request/accepthost",
   async (data) => {
     try {
       //console.log('after info')
 
-      console.log("ontop accept book");
-      let response = await axios.post(`${URL}/acceptbook`, data);
+      console.log("ontop accept request");
+      const response = await axios.post(`${URL}/acceptrequest`, data);
 
-      console.log("under accept book " + response);
+      console.log("under accept request " + response);
 
       return response.data;
     } catch (err : any) {
@@ -142,15 +140,15 @@ export const accepthost = createAsyncThunk(
 );
 
 export const declinehost = createAsyncThunk(
-  "booking/declinehost",
+  "request/declinehost",
   async (data) => {
     try {
       //console.log('after info')
 
-      console.log("ontop accept book");
-      let response = await axios.put(`${URL}/declinebook`, data);
+      console.log("ontop accept request");
+      const response = await axios.put(`${URL}/declinerequest`, data);
 
-      console.log("under accept book " + response);
+      console.log("under accept request " + response);
 
       return response.data;
     } catch (err : any) {
@@ -164,13 +162,13 @@ export const declinehost = createAsyncThunk(
 );
 
 export const acceptedr_req = createAsyncThunk(
-  "booking/acceptedr_req",
+  "request/acceptedr_req",
   async (data) => {
     try {
       //console.log('after info')
 
-      console.log("ontop accept book");
-      let response = await axios.put(`${URL}/getrequeststats`, data);
+      console.log("ontop accept request");
+      const response = await axios.put(`${URL}/getrequeststats`, data);
 
       console.log(response.data);
 
@@ -186,15 +184,15 @@ export const acceptedr_req = createAsyncThunk(
 );
 
 export const completepayment = createAsyncThunk(
-  "booking/completepayment",
+  "request/completepayment",
   async (data) => {
     try {
       //console.log('after info')
 
-      console.log("ontop accept book");
-      let response = await axios.put(`${URL}/paycreator`, data);
+      console.log("ontop accept request");
+      const response = await axios.put(`${URL}/paycreator`, data);
 
-      console.log("under accept book " + response);
+      console.log("under accept request " + response);
 
       return response.data;
     } catch (err : any) {
@@ -208,15 +206,15 @@ export const completepayment = createAsyncThunk(
 );
 
 export const getall_request = createAsyncThunk(
-  "booking/getall_request",
+  "request/getall_request",
   async (data) => {
     try {
       //console.log('after info')
 
-      console.log("ontop accept book");
-      let response = await axios.post(`${URL}/allrequest`, data);
+      console.log("ontop accept request");
+      const response = await axios.post(`${URL}/allrequest`, data);
 
-      console.log("under all request book " + response.data);
+      console.log("under all request request " + response.data);
 
       return response.data;
     } catch (err : any) {
@@ -229,12 +227,11 @@ export const getall_request = createAsyncThunk(
   }
 );
 
-const booking = createSlice({
-  name: "booking",
+const request = createSlice({
+  name: "request",
   initialState,
   reducers: {
     resetstat(state, action: any) {
-      state.bookingstats = "idle";
       state.requeststats = "idle";
       state.cancelstats = "idle";
       state.notifystats = "idle";
@@ -313,20 +310,20 @@ const booking = createSlice({
   },
   extraReducers(builder) {
     builder
-      .addCase(bookmdel.pending, (state, action) => {
-        state.bookingstats = "loading";
+      .addCase(requestmdel.pending, (state, action) => {
+        state.requeststats = "loading";
       })
-      .addCase(bookmdel.fulfilled, (state, action) => {
-        state.bookingstats = "succeeded";
-        state.bookingmessage = action.payload.message;
+      .addCase(requestmdel.fulfilled, (state, action) => {
+        state.requeststats = "succeeded";
+        state.requestmessage = action.payload.message;
       })
-      .addCase(bookmdel.rejected, (state, action) => {
-        state.bookingstats = "failed";
+      .addCase(requestmdel.rejected, (state, action) => {
+        state.requeststats = "failed";
 
         if (!action.error) {
-          state.bookingmessage = "Check internet connection";
+          state.requestmessage = "Check internet connection";
         } else {
-          state.bookingmessage = action.error.message as string;
+          state.requestmessage = action.error.message as string;
         }
       })
       .addCase(getmyrequest.pending, (state, action) => {
@@ -368,7 +365,7 @@ const booking = createSlice({
       .addCase(notifycreator.fulfilled, (state, action) => {
         state.notifystats = "succeeded";
         state.notifymessage = action.payload.message;
-        state.bookingnote = action.payload.data;
+        state.requestnote = action.payload.data;
       })
       .addCase(notifycreator.rejected, (state, action) => {
         state.notifystats = "failed";
@@ -454,7 +451,7 @@ const booking = createSlice({
   },
 });
 
-export default booking.reducer;
+export default request.reducer;
 export const {
   resetstat,
   deleterequest,
@@ -462,4 +459,4 @@ export const {
   removemsg,
   add_call_data,
   set_reject_call,
-} = booking.actions;
+} = request.actions;

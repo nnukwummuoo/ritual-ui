@@ -12,9 +12,6 @@ interface FollowData {
   following: Array<any>;
 }
 
-interface UsersData {
-  users: Array<any>;
-}
 
 interface CollectionData {
   allcontent: Array<any>;
@@ -127,6 +124,19 @@ const initialState = {
   notifications_stats: "idle",
   notifications_message: "",
   mark_notifications_stats: "idle",
+  ratings: [] as any[],
+  ratings_stats: "idle",
+  ratings_message: "",
+  totalRatings: 0,
+  averageRating: 0,
+  ratingCounts: {},
+  // Fan ratings (ratings received by fans from creators)
+  fanRatings: [] as any[],
+  fanRatings_stats: "idle",
+  fanRatings_message: "",
+  totalFanRatings: 0,
+  averageFanRating: 0,
+  fanRatingCounts: {},
   delete_notification_stats: "idle",
 };
 
@@ -603,7 +613,6 @@ export const getNotifications = createAsyncThunk<
     : { "Content-Type": "application/json" };
 
   const response = await axios.get(`${URL}/notifications/${data.userid}`, { headers });
-  console.log(response.data)
   // ✅ normalize structure
   return { notifications: response.data.notifications || [] };
 });
@@ -625,6 +634,133 @@ export const markNotificationsSeen = createAsyncThunk<
     return response.data;
   } catch (err) {
     console.error("[markNotificationsSeen] error", err);
+    throw getErrorMessageWithNetworkFallback(err);
+  }
+});
+
+export const markActivityNotificationsSeen = createAsyncThunk<
+  { message: string },
+  { userid: string; token: string }
+>("profile/markActivityNotificationsSeen", async (data) => {
+  try {
+    const headers = data.token
+      ? {
+          Authorization: `Bearer ${data.token}`,
+          "Content-Type": "application/json",
+        }
+      : {
+          "Content-Type": "application/json",
+        };
+    const response = await axios.put(`${URL}/notifications/mark-activity-seen/${data.userid}`, {}, { headers });
+    return response.data;
+  } catch (err) {
+    console.error("[markActivityNotificationsSeen] error", err);
+    throw getErrorMessageWithNetworkFallback(err);
+  }
+});
+
+// Fetch ALL ratings for a creator (both fan-to-creator and creator-to-creator)
+export const getAllCreatorRatings = createAsyncThunk<
+  { ratings: any[]; totalRatings: number; averageRating: number; ratingCounts: any },
+  { creatorId: string; token: string }
+>("profile/getAllCreatorRatings", async (data) => {
+  try {
+    console.log('🔍 [getAllCreatorRatings] API call:', { 
+      creatorId: data.creatorId, 
+      token: data.token ? 'present' : 'missing',
+      tokenLength: data.token?.length || 0
+    });
+    
+    const headers = data.token
+      ? {
+          Authorization: `Bearer ${data.token}`,
+          "Content-Type": "application/json",
+        }
+      : {
+          "Content-Type": "application/json",
+        };
+    // Force localhost for development
+    const apiUrl = process.env.NODE_ENV === "development" ? "http://localhost:3100" : URL;
+    const url = `${apiUrl}/review/creator/${data.creatorId}/all`;
+    console.log('🔍 [getAllCreatorRatings] Making request to:', url);
+    
+    const response = await axios.get(url, { headers });
+    console.log('✅ [getAllCreatorRatings] Response:', response.data);
+    return response.data;
+  } catch (err) {
+    console.error('❌ [getAllCreatorRatings] Error:', err);
+    throw getErrorMessageWithNetworkFallback(err);
+  }
+});
+
+// Fetch ratings for a creator (original - only fan-to-creator)
+export const getCreatorRatings = createAsyncThunk<
+  { ratings: any[]; totalRatings: number; averageRating: number; ratingCounts: any },
+  { creatorId: string; token: string }
+>("profile/getCreatorRatings", async (data) => {
+  try {
+    const headers = data.token
+      ? {
+          Authorization: `Bearer ${data.token}`,
+          "Content-Type": "application/json",
+        }
+      : {
+          "Content-Type": "application/json",
+        };
+    // Force localhost for development
+    const apiUrl = process.env.NODE_ENV === "development" ? "http://localhost:3100" : URL;
+    const response = await axios.get(`${apiUrl}/review/user/${data.creatorId}/fan-to-creator`, { headers });
+    return response.data;
+  } catch (err) {
+    console.error('❌ [getCreatorRatings] Error:', err);
+    throw getErrorMessageWithNetworkFallback(err);
+  }
+});
+
+// Fetch ALL ratings for a user (for user profile page)
+export const getAllUserRatings = createAsyncThunk<
+  { ratings: any[]; totalRatings: number; averageRating: number; ratingCounts: any },
+  { userId: string; token: string }
+>("profile/getAllUserRatings", async (data) => {
+  try {
+    const headers = data.token
+      ? {
+          Authorization: `Bearer ${data.token}`,
+          "Content-Type": "application/json",
+        }
+      : {
+          "Content-Type": "application/json",
+        };
+    // Force localhost for development
+    const apiUrl = process.env.NODE_ENV === "development" ? "http://localhost:3100" : URL;
+    const response = await axios.get(`${apiUrl}/review/user/${data.userId}/all`, { headers });
+    return response.data;
+  } catch (err) {
+    console.error('❌ [getAllUserRatings] Error:', err);
+    throw getErrorMessageWithNetworkFallback(err);
+  }
+});
+
+// Fetch ratings for a fan
+export const getFanRatings = createAsyncThunk<
+  { ratings: any[]; totalRatings: number; averageRating: number; ratingCounts: any },
+  { fanId: string; token: string }
+>("profile/getFanRatings", async (data) => {
+  try {
+    const headers = data.token
+      ? {
+          Authorization: `Bearer ${data.token}`,
+          "Content-Type": "application/json",
+        }
+      : {
+          "Content-Type": "application/json",
+        };
+    // Force localhost for development
+    const apiUrl = process.env.NODE_ENV === "development" ? "http://localhost:3100" : URL;
+    const response = await axios.get(`${apiUrl}/review/user/${data.fanId}/creator-to-fan`, { headers });
+    return response.data;
+  } catch (err) {
+    console.error('❌ [getFanRatings] Error:', err);
     throw getErrorMessageWithNetworkFallback(err);
   }
 });
@@ -977,6 +1113,94 @@ const profile = createSlice({
         state.notifications_message =
           action.error?.message ?? "Failed to mark notifications as seen";
       })
+      .addCase(markActivityNotificationsSeen.pending, (state) => {
+        state.mark_notifications_stats = "loading";
+      })
+      .addCase(markActivityNotificationsSeen.fulfilled, (state) => {
+        state.mark_notifications_stats = "succeeded";
+        // ✅ Mark only activity notifications as seen locally
+        state.notifications = state.notifications.map((n) => {
+          const message = n.message.toLowerCase();
+          const isActivityNotification = message.includes('request') || 
+                                       message.includes('request') ||
+                                       message.includes('fan meet') ||
+                                       message.includes('accepted') ||
+                                       message.includes('declined') ||
+                                       message.includes('cancelled') ||
+                                       message.includes('expired') ||
+                                       message.includes('completed');
+          
+          if (isActivityNotification) {
+            return { ...n, seen: true };
+          }
+          return n;
+        });
+      })
+        .addCase(markActivityNotificationsSeen.rejected, (state, action) => {
+            state.mark_notifications_stats = "failed";
+            state.notifications_message =
+              action.error?.message ?? "Failed to mark activity notifications as seen";
+        })
+        .addCase(getAllCreatorRatings.pending, (state) => {
+            state.ratings_stats = "loading";
+        })
+        .addCase(getAllCreatorRatings.fulfilled, (state, action) => {
+            state.ratings_stats = "succeeded";
+            state.ratings = action.payload.ratings || [];
+            state.totalRatings = action.payload.totalRatings || 0;
+            state.averageRating = action.payload.averageRating || 0;
+            state.ratingCounts = action.payload.ratingCounts || {};
+        })
+        .addCase(getAllCreatorRatings.rejected, (state, action) => {
+            state.ratings_stats = "failed";
+            state.ratings_message =
+              action.error?.message ?? "Failed to fetch ratings";
+        })
+        .addCase(getCreatorRatings.pending, (state) => {
+            state.ratings_stats = "loading";
+        })
+        .addCase(getCreatorRatings.fulfilled, (state, action) => {
+            state.ratings_stats = "succeeded";
+            state.ratings = action.payload.ratings || [];
+            state.totalRatings = action.payload.totalRatings || 0;
+            state.averageRating = action.payload.averageRating || 0;
+            state.ratingCounts = action.payload.ratingCounts || {};
+        })
+        .addCase(getCreatorRatings.rejected, (state, action) => {
+            state.ratings_stats = "failed";
+            state.ratings_message =
+              action.error?.message ?? "Failed to fetch ratings";
+        })
+        .addCase(getAllUserRatings.pending, (state) => {
+            state.ratings_stats = "loading";
+        })
+        .addCase(getAllUserRatings.fulfilled, (state, action) => {
+            state.ratings_stats = "succeeded";
+            state.ratings = action.payload.ratings || [];
+            state.totalRatings = action.payload.totalRatings || 0;
+            state.averageRating = action.payload.averageRating || 0;
+            state.ratingCounts = action.payload.ratingCounts || {};
+        })
+        .addCase(getAllUserRatings.rejected, (state, action) => {
+            state.ratings_stats = "failed";
+            state.ratings_message =
+              action.error?.message ?? "Failed to fetch ratings";
+        })
+        .addCase(getFanRatings.pending, (state) => {
+            state.fanRatings_stats = "loading";
+        })
+        .addCase(getFanRatings.fulfilled, (state, action) => {
+            state.fanRatings_stats = "succeeded";
+            state.fanRatings = action.payload.ratings || [];
+            state.totalFanRatings = action.payload.totalRatings || 0;
+            state.averageFanRating = action.payload.averageRating || 0;
+            state.fanRatingCounts = action.payload.ratingCounts || {};
+        })
+        .addCase(getFanRatings.rejected, (state, action) => {
+            state.fanRatings_stats = "failed";
+            state.fanRatings_message =
+              action.error?.message ?? "Failed to fetch fan ratings";
+        })
 
       .addCase(deleteNotification.pending, (state) => {
         state.delete_notification_stats = "loading";

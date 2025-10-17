@@ -26,8 +26,38 @@ const WithdrawalRequests = () => {
   const [withdrawals, setWithdrawals] = useState<WithdrawalRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<WithdrawalRequest | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedColor, setSelectedColor] = useState<string | null>(null);
 
   const token = useAuthToken();
+
+  // Color array for containers
+  const colors = ['purple', 'orange', 'pink', 'yellow', 'black'];
+  
+  // Get color for a specific withdrawal based on its index in the sorted list
+  const getColorForWithdrawal = (withdrawalId: string) => {
+    // Find the index of this withdrawal in the original sorted list
+    const index = withdrawals.findIndex(w => w._id === withdrawalId);
+    // Return -1 if not found, otherwise use the index for sequential coloring
+    return index >= 0 ? colors[index % colors.length] : colors[0];
+  };
+
+  // Filter withdrawals based on search term and selected color
+  const filteredWithdrawals = withdrawals.filter((req) => {
+    const userFullName = (req as any).userId ? `${(req as any).userId.firstname || ''} ${(req as any).userId.lastname || ''}`.trim() : '';
+    const userNickname = (req as any).userId?.nickname || '';
+    const credentialsFullName = req.credentials?.fullName || '';
+    
+    const matchesSearch = !searchTerm || 
+      userFullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      userNickname.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      credentialsFullName.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const withdrawalColor = getColorForWithdrawal(req._id);
+    const matchesColor = !selectedColor || withdrawalColor === selectedColor;
+    
+    return matchesSearch && matchesColor;
+  });
 
   const markAsPaid = async (id: any) => {
     const result = await Swal.fire({
@@ -89,6 +119,15 @@ const WithdrawalRequests = () => {
 
   return (
     <div className="min-h-screen bg-gray-900 text-white p-6">
+      <style jsx>{`
+        .scrollbar-hide {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+        }
+      `}</style>
       <ToastContainer position="top-center" />
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-emerald-400">
@@ -96,29 +135,85 @@ const WithdrawalRequests = () => {
         </h1>
       </div>
 
+      {/* Search and Filter Controls */}
+      <div className="mb-6 space-y-4">
+        {/* Search Input */}
+        <div className="flex items-center gap-4">
+          <div className="flex-1">
+            <input
+              type="text"
+              placeholder="Search by name or username..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full px-4 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            />
+          </div>
+        </div>
+
+        {/* Color Filter */}
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-gray-300 whitespace-nowrap">Filter by color:</span>
+          <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
+            <button
+              onClick={() => setSelectedColor(null)}
+              className={`px-3 py-1 rounded-full text-xs font-medium transition-colors whitespace-nowrap ${
+                selectedColor === null
+                  ? 'bg-gray-600 text-white'
+                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+              }`}
+            >
+              All
+            </button>
+            {colors.map((color) => (
+              <button
+                key={color}
+                onClick={() => setSelectedColor(color)}
+                className={`px-3 py-1 rounded-full text-xs font-medium transition-colors whitespace-nowrap ${
+                  selectedColor === color
+                    ? color === 'black' ? 'bg-black text-white' : `bg-${color}-600 text-white`
+                    : color === 'black' ? 'bg-black text-white hover:bg-gray-800' : `bg-${color}-500 text-white hover:bg-${color}-600`
+                }`}
+              >
+                {color.charAt(0).toUpperCase() + color.slice(1)}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
       {loading ? (
         <p className="text-center text-gray-300">Loading...</p>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {withdrawals?.map((req) => (
-            <div
-              key={req._id}
-              className="bg-gray-800 rounded-xl shadow-lg p-5 hover:shadow-emerald-400 transition"
-            >
-              <div className="flex justify-between items-center mb-3">
-                <h2 className="text-lg font-semibold">
-                  {req.credentials?.fullName || "User"}
-                </h2>
-                <span
-                  className={`text-sm px-3 py-1 rounded-full ${
-                    req.status === "pending"
-                      ? "bg-yellow-500"
-                      : "bg-green-600"
-                  }`}
-                >
-                  {req.status}
-                </span>
-              </div>
+          {filteredWithdrawals?.map((req) => {
+            const containerColor = getColorForWithdrawal(req._id);
+            return (
+              <div
+                key={req._id}
+                className="bg-gray-800 rounded-xl shadow-lg p-5 hover:shadow-emerald-400 transition relative"
+              >
+                {/* Colored Circle */}
+                <div className={`absolute bottom-4 right-4 w-4 h-4 rounded-full ${containerColor === 'black' ? 'bg-black' : `bg-${containerColor}-500`}`}></div>
+                
+                <div className="flex justify-between items-center mb-3">
+                  <div>
+                    <h2 className="text-lg font-semibold">
+                      {(req as any).userId ? `${(req as any).userId.firstname || ''} ${(req as any).userId.lastname || ''}`.trim() || req.credentials?.fullName || "User" : req.credentials?.fullName || "User"}
+                    </h2>
+                    {(req as any).userId?.nickname && (
+                      <p className="text-sm text-gray-400">{(req as any).userId.nickname}</p>
+                    )}
+                  </div>
+                  <span
+                    className={`text-sm px-3 py-1 rounded-full ${
+                      req.status === "pending"
+                        ? "bg-yellow-500"
+                        : "bg-green-600"
+                    }`}
+                  >
+                    {req.status}
+                  </span>
+                </div>
 
               <div className="text-sm mb-2 flex items-center gap-2">
                 <IoWallet className="text-emerald-400" />
@@ -157,8 +252,9 @@ const WithdrawalRequests = () => {
                   Paid
                 </div>
               )}
-            </div>
-          ))}
+              </div>
+            );
+          })}
         </div>
       )}
 
@@ -175,7 +271,11 @@ const WithdrawalRequests = () => {
         {selected?.credentials ? (
           <div className="text-sm text-gray-700 space-y-2">
             <p><strong>Method:</strong> {selected.credentials.method}</p>
-            <p><strong>Full Name:</strong> {selected.credentials.fullName}</p>
+            <p><strong>User Name:</strong> {(selected as any).userId ? `${(selected as any).userId.firstname || ''} ${(selected as any).userId.lastname || ''}`.trim() || selected.credentials.fullName : selected.credentials.fullName}</p>
+            {(selected as any).userId?.nickname && (
+              <p><strong>Nickname:</strong> @{(selected as any).userId.nickname}</p>
+            )}
+            <p><strong>Payment Name:</strong> {selected.credentials.fullName}</p>
             <p><strong>Email:</strong> {selected.credentials.email}</p>
             <p><strong>Phone:</strong> {selected.credentials.phone}</p>
             <p><strong>Country:</strong> {selected.credentials.country}</p>

@@ -10,6 +10,7 @@ import AnyaEyeIcon from "./icons/AnyaEyeIcon";
 import { useSelector, useDispatch } from "react-redux";
 import type { RootState, AppDispatch } from "@/store/store";
 import { getmsgnitify, getmessagenotication } from "@/store/messageSlice";
+import { getNotifications } from "@/store/profile";
 import { getSocket } from "@/lib/socket";
 import { useNotificationIndicator } from "@/hooks/useNotificationIndicator";
 import { NotificationIndicator } from "@/components/NotificationIndicator";
@@ -30,6 +31,7 @@ export default function BottomNavBar() {
   const userid = useSelector((state: RootState) => state.register.userID);
   const token = useSelector((state: RootState) => state.register.refreshtoken);
   const msgnotifystatus = useSelector((state: RootState) => state.message.msgnotifystatus);
+  const notifications_stats = useSelector((state: RootState) => state.profile.notifications_stats);
   
   // Get message data from Redux store
   const recentmsg = useSelector((state: RootState) => state.message.recentmsg);
@@ -85,6 +87,20 @@ export default function BottomNavBar() {
     if (finalUserid && finalToken) {
       dispatch(getmsgnitify({ userid: finalUserid, token: finalToken }));
       dispatch(getmessagenotication({ userid: finalUserid, token: finalToken }));
+    }
+  }, [finalUserid, finalToken, dispatch]);
+
+  // Fetch notifications when component mounts
+  useEffect(() => {
+    if (finalUserid && finalToken && notifications_stats === "idle") {
+      dispatch(getNotifications({ userid: finalUserid, token: finalToken }));
+    }
+  }, [finalUserid, finalToken, notifications_stats, dispatch]);
+
+  // Also fetch notifications when userid changes (e.g., after login)
+  useEffect(() => {
+    if (finalUserid && finalToken) {
+      dispatch(getNotifications({ userid: finalUserid, token: finalToken }));
     }
   }, [finalUserid, finalToken, dispatch]);
 

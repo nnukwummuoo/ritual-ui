@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
@@ -6,14 +7,19 @@ import RequestCard from '../components/RequestCard';
 import { useUserId } from '@/lib/hooks/useUserId';
 import {URL} from "@/api/config";
 import VIPBadge from "@/components/VIPBadge";
-import { useNotificationIndicator } from "@/hooks/useNotificationIndicator";
+import { useActivityNotificationIndicator } from "@/hooks/useActivityNotificationIndicator";
+import { useDispatch, useSelector } from "react-redux";
+import { markActivityNotificationsSeen } from "@/store/profile";
+import { RootState, AppDispatch } from "@/store/store";
+import { useAuth } from "@/lib/context/auth-context";
 
 interface Request {
-  bookingId: string;
+  requestId: string;
   type: 'fan' | 'creator';
   status: "request" | "expired" | "completed" | "accepted" | "declined" | "cancelled";
   otherUser?: {
     name: string;
+    nickname?: string; // Add nickname field
     photolink: string;
     isCreator: boolean;
     isVip?: boolean;
@@ -35,9 +41,15 @@ export default function Activity() {
   const [requests, setRequests] = useState<Request[]>([]);
   const [loading, setLoading] = useState(true);
   const userid = useUserId();
+  const dispatch = useDispatch<AppDispatch>();
+  const { session } = useAuth();
+  const token = session?.token;
   
-  // Get notification indicator data
-  const { hasUnread, unreadCount, totalCount } = useNotificationIndicator();
+  // Get notification data from Redux store
+  const { notifications } = useSelector((state: RootState) => state.profile);
+  
+  // Get activity notification indicator data
+  const { hasUnread, unreadCount, totalCount } = useActivityNotificationIndicator();
 
   useEffect(() => {
     // Helper function to normalize status values
@@ -62,7 +74,7 @@ export default function Activity() {
       
       try {
         // Use the dedicated fan meet requests endpoint
-        const response = await fetch(`${URL}/getallfanmeetrequests`, {
+        const response = await fetch(`${URL}/getallfanrequests`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -83,7 +95,7 @@ export default function Activity() {
           // Transform the data to match our Request interface
           const transformedRequests: Request[] = data.requests.map((req: any) => {
             return {
-              bookingId: req.bookingId,
+              requestId: req.requestId,
               type: req.type, // Already determined by backend
               status: normalizeStatus(req.status),
               otherUser: req.otherUser,
@@ -112,9 +124,32 @@ export default function Activity() {
     fetchRequests();
   }, [userid]);
 
-  const handleStatusChange = (bookingId: string, newStatus: string) => {
+  // Mark activity notifications as seen when component mounts
+  useEffect(() => {
+    if (userid && token && notifications && notifications.length > 0) {
+      // Only mark activity-related notifications as seen (request, request, fan meet related)
+      const activityNotifications = notifications.filter(notification => {
+        const message = notification.message.toLowerCase();
+        return (message.includes('request') || 
+                message.includes('request') ||
+                message.includes('fan meet') ||
+                message.includes('accepted') ||
+                message.includes('declined') ||
+                message.includes('cancelled') ||
+                message.includes('expired') ||
+                message.includes('completed')) && !notification.seen;
+      });
+      
+      if (activityNotifications.length > 0) {
+        // Mark only activity notifications as seen
+        dispatch(markActivityNotificationsSeen({ userid: userid, token }));
+      }
+    }
+  }, [dispatch, userid, token, notifications]);
+
+  const handleStatusChange = (requestId: string, newStatus: string) => {
     setRequests(prev => prev.map(req => 
-      req.bookingId === bookingId ? { ...req, status: newStatus as Request['status'] } : req
+      req.requestId === requestId ? { ...req, status: newStatus as Request['status'] } : req
     ));
   };
 
@@ -129,7 +164,7 @@ export default function Activity() {
   if (requests.length === 0) {
     return (
       <div className='flex flex-col gap-8 max-w-[26rem] mx-auto'>
-        <div className="text-center text-white">No fan meet requests yet</div>
+        <div className="text-center text-white">No fan requests yet</div>
         <div className="text-center text-gray-400 text-sm">
           Fan meet requests will appear here when you send or receive them
         </div>
@@ -139,33 +174,36 @@ export default function Activity() {
 
   return (
     <div className='flex flex-col gap-8 max-w-[26rem] mx-auto'>
-      {/* Activity Header with Notification Indicators */}
-      <div className="bg-[#0B0F1A]/70 backdrop-blur-xl border border-slate-800 rounded-2xl p-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-white">Activity</h2>
-          <div className="flex items-center gap-2">
-            {hasUnread && (
-              <div className="bg-red-500 text-white text-xs px-2 py-1 rounded-full font-bold">
-                {unreadCount} new
-              </div>
-            )}
-            <span className="text-slate-400 text-sm">
-              {totalCount} notifications
-            </span>
+      {/* Activity Header */}
+      <div className="w-full max-w-md mb-4">
+        <div className="bg-[#0B0F1A]/70 backdrop-blur-xl border border-slate-800 rounded-2xl p-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-white">Activity</h2>
+            <div className="flex items-center gap-2">
+              {hasUnread && (
+                <div className="bg-red-500 text-white text-xs px-2 py-1 rounded-full font-bold">
+                  {unreadCount} new
+                </div>
+              )}
+              <span className="text-slate-400 text-sm">
+                {requests.length} total
+              </span>
+            </div>
           </div>
         </div>
       </div>
       
       {requests.map((request: Request) => (
-        <div key={request.bookingId} className="relative">
+        <div key={request.requestId} className="relative">
           <RequestCard
             type={request.type}
             img={request.otherUser?.photolink || "/picture-1.jfif"}
             status={request.status}
             name={request.otherUser?.name || "Unknown User"}
+            nickname={request.otherUser?.nickname} // Add nickname prop
             titles={request.otherUser?.isCreator ? ["Creator"] : ["Fan"]}
             exp={request.timeRemaining || "Expired"}
-            bookingId={request.bookingId}
+            requestId={request.requestId}
             price={request.price}
             details={request.date && request.time && request.venue ? {
               date: request.date,

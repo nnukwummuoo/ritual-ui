@@ -25,7 +25,7 @@ import femaleIcon from "../icons/woman.png";
 import features from "../icons/features.svg";
 import transIcon from "../icons/transIcon.svg";
 import CoupleIcon from "../icons/usersIcon.svg";
-import { MdOutlineCollectionsBookmark } from "react-icons/md";
+import { MdOutlineCollectionsrequestmark } from "react-icons/md";
 import { IoIosTimer } from "react-icons/io";
 import Image from "next/image";
 import { useRouter, usePathname } from "next/navigation";
@@ -256,7 +256,7 @@ export const CreatorSideMenu: React.FC<CreatorSideMenuProps> = ({
                 className="flex mt-3"
                 onClick={(e) => router.push("/collections")}
               >
-               <MdOutlineCollectionsBookmark className="w-6 h-6"/>
+               <MdOutlineCollectionsrequestmark className="w-6 h-6"/>
                 <p className="mt-1 ml-1">My Collections</p>
               </button>
             </div>

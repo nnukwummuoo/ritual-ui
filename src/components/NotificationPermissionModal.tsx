@@ -51,11 +51,11 @@ export const NotificationPermissionModal: React.FC<NotificationPermissionModalPr
           <div className="space-y-2">
             <div className="flex items-center gap-3">
               <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-              <span className="text-gray-300">New messages from creators</span>
+              <span className="text-gray-300">New messages from creators/fans</span>
             </div>
             <div className="flex items-center gap-3">
               <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-              <span className="text-gray-300">Support chat responses</span>
+              <span className="text-gray-300">Chat Support</span>
             </div>
             <div className="flex items-center gap-3">
               <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
@@ -63,7 +63,7 @@ export const NotificationPermissionModal: React.FC<NotificationPermissionModalPr
             </div>
             <div className="flex items-center gap-3">
               <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-              <span className="text-gray-300">Fan meet requests</span>
+              <span className="text-gray-300">Fan requests</span>
             </div>
           </div>
 

@@ -28,7 +28,7 @@ export const BottomNav = () => {
   // const login = useSelector((state) => state.register.logedin);
   // const msgnitocations = useSelector((state) => state.message.msgnitocations);
   // const lastmessage = useSelector((state) => state.message.lastmessage);
-  // const bookingnote = useSelector((state) => state.booking.bookingnote);
+  // const requestnote = useSelector((state) => state.request.requestnote);
   // let pushnote = useSelector((state) => state.profile.pushnote);
   // let lastmessagenote = useSelector((state) => state.profile.lastmessagenote);
   // let lastnote = useSelector((state) => state.profile.lastnote);
@@ -36,7 +36,7 @@ export const BottomNav = () => {
   // const navigate = useNavigate();
     // const notificationCount = notCount();
   // const user = useAuth();
-  // const Allrequest = useSelector((state) => state.booking.Allrequest);
+  // const Allrequest = useSelector((state) => state.request.Allrequest);
   // const req = [...Allrequest];
   // const notificationsCount = user?.creator_portfolio
   //   ? req.filter((item) => item.status === "accepted" || item?.admindb === true)
@@ -103,14 +103,14 @@ export const BottomNav = () => {
   //       }
   //     });
   //   }
-  // }, [pushnote, bookingnote, msgnitocations]);
+  // }, [pushnote, requestnote, msgnitocations]);
 
   // const notCount = () => {
-  //   //   if ( viewed || !bookingnote) return 0;
-  //   // const total = bookingnote.creator.length + bookingnote.notify.length;
+  //   //   if ( viewed || !requestnote) return 0;
+  //   // const total = requestnote.creator.length + requestnote.notify.length;
   //   // return total > 99 ? "99+" : total;
-  //   if (bookingnote) {
-  //     return bookingnote.creator.length + bookingnote.notify.length;
+  //   if (requestnote) {
+  //     return requestnote.creator.length + requestnote.notify.length;
   //   } else {
   //     return 0;
   //   }
