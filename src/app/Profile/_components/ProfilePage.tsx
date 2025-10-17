@@ -2001,23 +2001,7 @@ const PostModal = () => {
                     </div>
                   ) : (
                     <div className="space-y-4">
-                      {/* Debug logs for VIP status */}
-                      {console.log('🔍 [Reviews Debug] Fan-to-Creator ratings:', ratings.map(r => ({
-                        id: r._id || r.requestId,
-                        fanName: r.fanName,
-                        fanIsVip: r.fanIsVip,
-                        fanVipEndDate: r.fanVipEndDate,
-                        creatorIsVip: r.creatorIsVip,
-                        creatorVipEndDate: r.creatorVipEndDate
-                      })))}
-                      {console.log('🔍 [Reviews Debug] Creator-to-Fan ratings:', fanRatings.map(r => ({
-                        id: r._id || r.requestId,
-                        creatorName: r.creatorName,
-                        creatorIsVip: r.creatorIsVip,
-                        creatorVipEndDate: r.creatorVipEndDate,
-                        fanIsVip: r.fanIsVip,
-                        fanVipEndDate: r.fanVipEndDate
-                      })))}
+                      
                       
                       {/* Fan-to-Creator Ratings */}
                       {ratings.map((review) => (
@@ -2026,7 +2010,7 @@ const PostModal = () => {
                           {review.fanIsVip && (
                             <VIPBadge 
                               size="lg" 
-                              className="absolute top-2 left-9 z-[100]"
+                              className="absolute top-3 left-9 z-[100]"
                               isVip={review.fanIsVip} 
                               vipEndDate={review.fanVipEndDate} 
                             />
