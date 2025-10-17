@@ -195,7 +195,7 @@ export const Allview = () => {
                 )}
                 {(title === "Follow Notification" || title === "Unfollow Notification") && (
                   <div className="bg-blue-500/10 p-1 rounded-full">
-                    <Image src="/icons/icons8-users.png" alt="Users" width={28} height={28} />
+                    <Image src="/icons/following.png" alt="Users" width={28} height={28} />
                   </div>
                 )}
                 {title !== "Rating Notification" && title !== "Missed Fan Call" && title !== "Fan Date Request" && title !== "Fan Meet Request" && title !== "Fan Call Request" && title !== "Like Notification" && title !== "Message Notification" && title !== "Follow Notification" && title !== "Unfollow Notification" && status === "approved" && (
