@@ -1122,7 +1122,7 @@ export default function Creatorbyid () {
                 <div className="flex-1">
                   <CreatorByIdNav
                     views={views}
-                    creatorName={creator?.nickname || (creator?.name||" ").split(" ")[0]}
+                    creatorName={ (creator?.name||" ").split(" ")[0]}
                     followingUser={creator.followingUser}
                     id={creator.userid}
                     creator_portfolio_id={creator.hostid}
@@ -1195,7 +1195,7 @@ export default function Creatorbyid () {
               {/* Main Content */}
               <div className="text-center">
                 <h1 className="text-xl font-bold text-white mb-2">
-                  {getStatus(String(creator?.hosttype))} {creator.nickname || creator.name.split(" ")[0]}
+                  {getStatus(String(creator?.hosttype))} {creator.name.split(" ")[0]}
                 </h1>
                 <p className="text-gray-300 text-1xl">{creator.nickname}</p>
               </div>
@@ -1346,7 +1346,7 @@ export default function Creatorbyid () {
                 <div className="space-y-4">
                   <div className="flex justify-between items-center p-3 bg-gray-700 rounded-lg">
                     <span className="text-gray-300 font-medium">👤 Name</span>
-                    <span className="text-white font-semibold">{creator.nickname || creator.name}</span>
+                    <span className="text-white font-semibold">{creator.name}</span>
                   </div>
                   
                   <div className="flex justify-between items-center p-3 bg-gray-700 rounded-lg">
@@ -1611,7 +1611,7 @@ export default function Creatorbyid () {
             <RequestDetailsForm
               onDone={handleRequestDetailsSubmit}
               onCancel={() => setShowRequestDetails(false)}
-              creatorName={creator.nickname || creator.name}
+              creatorName={creator.name}
               creatorType={creator.hosttype}
               price={parseFloat(creator.price) || 0}
             />
