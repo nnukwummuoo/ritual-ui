@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import React from "react";
@@ -6,25 +7,22 @@ import type { AppDispatch, RootState } from "@/store/store";
 import { useParams } from "next/navigation";
 import { URL as API_BASE } from "@/api/config";
 import { useUserId } from "@/lib/hooks/useUserId";
-import { fetchsinglepost, getallpost, hydrateFromCache } from "@/store/post";
-import { getprofile, follow as followThunk, unfollow as unfollowThunk } from "@/store/profile";
+import { fetchsinglepost } from "@/store/post";
+import { follow as followThunk, unfollow as unfollowThunk } from "@/store/profile";
 import { postlike } from "@/store/like";
 import { getpostcomment, postcomment } from "@/store/comment";
 const PROD_BASE = "https://mmekoapi.onrender.com"; // fallback when local proxy is down
-import PostSkeleton from "../../../components/PostSkeleton";
 import { toast } from "material-react-toastify";
 import PostActions from "../../../components/home/PostActions";
 
 function PostSingle() {
     const dispatch = useDispatch<AppDispatch>();
-    const status = useSelector((s: RootState) => s.post.poststatus);
     const loggedInUserId = useSelector((s: RootState) => s.register.userID);
     const authToken = useSelector((s: RootState) => s.register.refreshtoken || s.register.accesstoken);
     const {  nickname } = useSelector((s: RootState) => s.profile);
     const [thePost, setThePost] = React.useState<any>({});
     const p=thePost;
     const userid = useUserId();
-    const own = userid === thePost?.user?._id;
     const { postId } = useParams();
     const [ui, setUi] = React.useState<Record<string | number, {
     liked?: boolean;
@@ -67,24 +65,7 @@ function PostSingle() {
     const pathUrlFallback = asString ? `${PROD_BASE}/api/image/view/${encodeURIComponent(asString)}` : "";
     const src = isUrl ? asString : queryUrlPrimary;
 
-    // Derive display name and handle from multiple possible fields
-    const combinedName = [thePost?.user?.firstname, thePost?.user?.lastname].filter(Boolean).join(" ");
-    let displayName =
-        thePost?.user?.username ||
-        thePost?.user?.name ||
-        thePost?.user?.nickname ||
-        combinedName ||
-        thePost?.user?.fullname ||
-        thePost?.user?.fullName ||
-        thePost?.user?.author ||
-        thePost?.user?.username ||
-        thePost?.user?.name ||
-        thePost?.profile?.username ||
-        thePost?.postedBy?.username ||
-        thePost?.postedBy?.name ||
-        "User";
-    
-    const postAuthorId = thePost?.userid || thePost?.userId || thePost?.ownerid || thePost?.ownerId || thePost?.authorId || thePost?.createdBy;
+    // Derive handle from multiple possible fields
     const handleStr =
         thePost?.handle ||
         thePost?.user?.handle ||
@@ -153,21 +134,46 @@ function PostSingle() {
                     toast.dismiss(tst)
                 }
             })()
-        }, [])
+        }, [postId])
     return <>
         <div  className="mx-auto max-w-[30rem] w-full bg-gray-800 rounded-md p-3 mb-5">
                     {/* Header */}
                     <div className="flex items-center gap-3">
-                      <div className="size-10 rounded-full overflow-hidden bg-gray-700" >
-                          <img
-                          alt="background img"
-                          src={"/icons/profile.png"}
-                          className="object-cover w-full h-full"
-                          // onError={(e) => {
-                          //   e.target.onerror = null;
-                          //   e.target.src = DummyCoverImage;
-                          // }}
-                        />
+                      <div className="size-10 rounded-full overflow-hidden bg-gray-700">
+                        {(() => {
+                          const profileImage = thePost?.user?.photolink || 
+                            thePost?.user?.photoLink || 
+                            thePost?.user?.profileImage || 
+                            thePost?.user?.avatar || 
+                            thePost?.user?.image;
+                          
+                          const userName = `${thePost?.user?.firstname || ""} ${thePost?.user?.lastname || ""}`.trim();
+                          const initials = userName.split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2) || "?";
+                          
+                          if (profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined") {
+                            return (
+                              <img
+                                alt="Profile picture"
+                                src={profileImage}
+                                className="object-cover w-full h-full"
+                                onError={(e) => {
+                                  const target = e.currentTarget as HTMLImageElement;
+                                  target.style.display = 'none';
+                                  const nextElement = target.nextElementSibling as HTMLElement;
+                                  if (nextElement) {
+                                    nextElement.style.setProperty('display', 'flex');
+                                  }
+                                }}
+                              />
+                            );
+                          }
+                          
+                          return (
+                            <div className="w-full h-full flex items-center justify-center text-white text-sm font-semibold bg-gray-600">
+                              {initials}
+                            </div>
+                          );
+                        })()}
                       </div>
                       <div>
                         <p className="font-medium">{thePost?.user?.firstname} { thePost?.user?.lastname}</p>
@@ -323,10 +329,6 @@ function PostSingle() {
                             });
                         }
                       }}
-                      onMore={() => {
-                        // TODO: open overflow menu
-                        console.debug("more clicked", p?.id || p?.postid);
-                      }}
                     />
                     {uiOpen && (
                       <div className="mt-2 border-t border-gray-700 pt-2">
@@ -336,9 +338,45 @@ function PostSingle() {
                           <div className="space-y-2">
                             {uiComments && uiComments.length > 0 ? (
                               uiComments.map((c: any, i: number) => (
-                                <div key={i} className="text-sm text-gray-200">
-                                  <span className="text-gray-400 mr-2">@{c?.username || c?.author || c?.user?.username || 'user'}</span>
-                                  <span>{c?.comment || c?.content || String(c)}</span>
+                                <div key={i} className="text-sm text-gray-200 flex items-start gap-2">
+                                  <div className="relative flex-shrink-0 w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center text-xs">
+                                    {(() => {
+                                      const profileImage = c?.commentuserphoto || c?.photo || c?.photolink || c?.photoLink || c?.profileImage || c?.avatar || c?.image;
+                                      
+                                      if (profileImage && profileImage.trim() && profileImage !== 'null' && profileImage !== 'undefined') {
+                                        return (
+                                          <img
+                                            alt="Profile picture"
+                                            src={profileImage}
+                                            className="object-cover w-full h-full rounded-full"
+                                            onError={(e) => {
+                                              const target = e.currentTarget as HTMLImageElement;
+                                              target.style.display = 'none';
+                                              const nextElement = target.nextElementSibling as HTMLElement;
+                                              if (nextElement) {
+                                                nextElement.style.setProperty('display', 'flex');
+                                              }
+                                            }}
+                                          />
+                                        );
+                                      }
+                                      
+                                      return null;
+                                    })()}
+                                    <span style={{display: 'flex'}}>
+                                      {(c?.commentusername || c?.username || 'U').charAt(0).toUpperCase()}
+                                    </span>
+                                  </div>
+                                  <div className="flex-1">
+                                    <div className="flex items-center justify-between">
+                                      <span className="font-medium text-gray-300">
+                                        {c?.commentusername || c?.username || 'User'}
+                                      </span>
+                                    </div>
+                                    <div className="text-gray-200 mt-1">
+                                      {c?.comment || c?.content || String(c)}
+                                    </div>
+                                  </div>
                                 </div>
                               ))
                             ) : (

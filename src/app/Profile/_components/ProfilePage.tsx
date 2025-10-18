@@ -1190,37 +1190,61 @@ const PostModal = () => {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75 p-4">
       <div className="bg-gray-900 rounded-lg max-w-3xl w-full max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="p-4 border-b border-gray-800 flex justify-between items-center">
+        <div className="p-4 border-b border-gray-800 flex justify-between items-center relative">
+          {/* VIP Lion Badge - positioned on top of the entire modal header */}
+          {(() => {
+            // Check if the post author is VIP (not just if they're the viewing user)
+            const authorIsVip = selectedPost.user?.isVip && selectedPost.user?.vipEndDate && new Date(selectedPost.user.vipEndDate) > new Date();
+            return authorIsVip && (
+              <VIPBadge size="lg" className="absolute top-2 left-10 z-[9999]" isVip={selectedPost.user.isVip} vipEndDate={selectedPost.user.vipEndDate} />
+            );
+          })()}
+          
           <div className="flex items-center gap-3">
             <div className="relative w-10 h-10 rounded-full bg-gray-700 overflow-hidden">
               {(() => {
-                const profileImage = selectedPost.user?.photolink;
-                const userName = `${selectedPost.user?.firstname || ""} ${selectedPost.user?.lastname || ""}`.trim();
-                const initials = userName.split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2) || "?";
+                const profileImage = selectedPost.user?.photolink || 
+                  selectedPost.user?.photoLink || 
+                  selectedPost.user?.profileImage || 
+                  selectedPost.user?.avatar || 
+                  selectedPost.user?.image;
                 
                 if (profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined") {
                   return (
-                    <Image 
-                      src={profileImage} 
-                      alt="Profile" 
-                      width={40} 
-                      height={40} 
+                    <img
+                      alt="Profile picture"
+                      src={profileImage}
                       className="object-cover w-full h-full"
+                      onError={(e) => {
+                        const target = e.currentTarget as HTMLImageElement;
+                        target.style.display = 'none';
+                        const nextElement = target.nextElementSibling as HTMLElement;
+                        if (nextElement) {
+                          nextElement.style.setProperty('display', 'flex');
+                        }
+                      }}
                     />
                   );
                 }
                 
-                return (
-                  <div className="w-full h-full bg-gray-600 flex items-center justify-center text-white text-sm font-semibold">
-                    {initials}
-                  </div>
-                );
+                return null;
               })()}
-              
-              {/* VIP Lion Badge - show if the post author has VIP status */}
-              {selectedPost.user?.userid === viewingUserId && profileOwnerVipStatus && (
-                <VIPBadge size="sm" className="absolute -top-1 -right-1" isVip={profileOwnerVipStatus} vipEndDate={vipStatus?.vipEndDate} />
-              )}
+              <div className="w-full h-full flex items-center justify-center text-white text-sm font-semibold bg-gray-600">
+                {(() => {
+                  const firstName = selectedPost.user?.firstname || '';
+                  const lastName = selectedPost.user?.lastname || '';
+                  const userName = `${firstName} ${lastName}`.trim();
+                  
+                  if (userName) {
+                    const initials = userName.split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2);
+                    return initials || 'U';
+                  }
+                  
+                  // Fallback to username first two letters
+                  const username = selectedPost.user?.username || selectedPost.user?.nickname || 'User';
+                  return username.slice(0, 2).toUpperCase();
+                })()}
+              </div>
             </div>
             <div>
               <p className="font-medium">
@@ -1329,7 +1353,16 @@ const PostModal = () => {
             
             {/* Comments section */}
             {modalUi.open && (
-              <div className="mt-4 border-t border-gray-700 pt-4">
+              <div className="mt-4 border-t border-gray-700 pt-4 relative">
+                {/* VIP Lion Badge - positioned on top of the entire comments container */}
+                {(() => {
+                  // Find the first VIP commenter to show their badge on the container
+                  const vipCommenter = modalUi.comments.find((c: any) => c?.isVip && c?.vipEndDate && new Date(c.vipEndDate) > new Date());
+                  return vipCommenter && (
+                    <VIPBadge size="md" className="absolute top-2 left-5 z-[9999]" isVip={vipCommenter.isVip} vipEndDate={vipCommenter.vipEndDate} />
+                  );
+                })()}
+                
                 {modalUi.loadingComments ? (
                   <div className="flex justify-center py-4">
                     <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-orange-500"></div>
@@ -1343,47 +1376,60 @@ const PostModal = () => {
                           <div className="flex-shrink-0">
                             <div className="relative w-8 h-8 rounded-full bg-gray-700 overflow-hidden">
                               {(() => {
-                                const profileImage = comment.user?.photolink;
-                                const userName = comment.user?.username || comment.username || "User";
-                                const initials = userName.split(/\s+/).map((n: string) => n[0]).join('').toUpperCase().slice(0, 2) || "?";
+                                // Use the same logic as post.tsx for commenter profile pictures
+                                const profileImage = comment?.commentuserphoto || comment?.photo || comment?.photolink || comment?.photoLink || comment?.profileImage || comment?.avatar || comment?.image;
                                 
-                                if (profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined") {
+                                if (profileImage && profileImage.trim() && profileImage !== 'null' && profileImage !== 'undefined') {
                                   return (
-                                    <Image
+                                    <img
+                                      alt="Profile picture"
                                       src={profileImage}
-                                      alt="Commenter"
-                                      width={32}
-                                      height={32}
-                                      className="object-cover w-full h-full"
+                                      className="object-cover w-full h-full rounded-full"
+                                      onError={(e) => {
+                                        const target = e.currentTarget as HTMLImageElement;
+                                        target.style.display = 'none';
+                                        const nextElement = target.nextElementSibling as HTMLElement;
+                                        if (nextElement) {
+                                          nextElement.style.setProperty('display', 'flex');
+                                        }
+                                      }}
                                     />
                                   );
                                 }
                                 
-                                return (
-                                  <div className="w-full h-full bg-gray-600 flex items-center justify-center text-xs text-white font-semibold">
-                                    {initials}
-                                  </div>
-                                );
+                                return null;
                               })()}
+                              <span className="w-full h-full flex items-center justify-center text-xs text-white font-semibold bg-gray-600 rounded-full">
+                                {(() => {
+                                  const firstName = comment?.user?.firstname || comment?.firstname || '';
+                                  const lastName = comment?.user?.lastname || comment?.lastname || '';
+                                  const userName = `${firstName} ${lastName}`.trim();
+                                  
+                                  if (userName) {
+                                    const initials = userName.split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2);
+                                    return initials || 'U';
+                                  }
+                                  
+                                  // Fallback to username first two letters
+                                  const username = comment?.commentusername || comment?.username || 'User';
+                                  return username.slice(0, 2).toUpperCase();
+                                })()}
+                              </span>
                               
-                              {/* VIP Lion Badge - show if the commenter has VIP status */}
-                              {comment.user?.userid === viewingUserId && profileOwnerVipStatus && (
-                                <VIPBadge size="sm" className="absolute -top-1 -right-1" isVip={profileOwnerVipStatus} vipEndDate={vipStatus?.vipEndDate} />
-                              )}
                             </div>
                           </div>
                           <div className="flex-1">
-                            <div className="bg-gray-800 rounded-lg p-3">
-                              <p className="font-medium text-sm">
-                                {comment.user?.username || comment.username || 'User'}
-                              </p>
-                              <p className="text-gray-200 mt-1">
-                                {comment.comment || comment.content || String(comment)}
-                              </p>
+                            <div className="flex items-center justify-between">
+                              <span className="font-medium text-gray-300">
+                                {comment?.commentusername || comment?.username || 'User'}
+                              </span>
+                              <span className="text-xs text-gray-500">
+                                {comment.createdAt ? new Date(comment.createdAt).toLocaleDateString() : 'Just now'}
+                              </span>
                             </div>
-                            <p className="text-xs text-gray-500 mt-1">
-                              {comment.createdAt ? new Date(comment.createdAt).toLocaleDateString() : 'Just now'}
-                            </p>
+                            <div className="text-gray-200 mt-1">
+                              {comment?.content || comment?.comment || String(comment)}
+                            </div>
                           </div>
                         </div>
                       ))

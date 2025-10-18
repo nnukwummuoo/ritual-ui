@@ -40,20 +40,20 @@ self.addEventListener('push', (event) => {
   let notificationData = {
     title: 'MmeKo',
     body: 'You have a new notification',
-    icon: '/bell.jpg',
-    badge: '/bell.jpg',
+    icon: '/icons/m-logo.png',
+    badge: '/icons/m-logo.png',
     tag: 'mmeko-notification',
     requireInteraction: true,
     actions: [
       {
         action: 'open',
         title: 'Open App',
-        icon: '/bell.jpg'
+        icon: '/icons/m-logo.png'
       },
       {
         action: 'close',
         title: 'Close',
-        icon: '/bell.jpg'
+        icon: '/icons/m-logo.png'
       }
     ],
     data: {

@@ -239,7 +239,7 @@ interface CardProps {
 
 export default function RequestCard({exp, img, name, nickname, firstName, lastName, titles=["fan"], status, type="fan", requestId, price, details, userid, creator_portfolio_id, targetUserId, hosttype, isVip=false, vipEndDate=null, createdAt, onStatusChange}: CardProps) {
   const [loading, setLoading] = useState(false);
-  const [currentStatus, setCurrentStatus] = useState(status);
+  const [currentStatus, setCurrentStatus] = useState<"request" | "expired" | "completed" | "accepted" | "declined" | "cancelled">(status as "request" | "expired" | "completed" | "accepted" | "declined" | "cancelled");
   const [timeLeft, setTimeLeft] = useState<string>("");
   const [isExpired, setIsExpired] = useState(false);
   
@@ -293,6 +293,11 @@ export default function RequestCard({exp, img, name, nickname, firstName, lastNa
     } else if (currentStatus === "accepted") {
       // Accepted requests expire based on type
       expirationHours = isFanCall ? 48 : 168; // 48h for Fan call, 7 days (168h) for others
+    } else if (currentStatus === "expired") {
+      // Already expired, just show expired message
+      setTimeLeft("Expired");
+      setIsExpired(true);
+      return;
     } else {
       // For other statuses, don't show countdown
       return;
@@ -308,8 +313,8 @@ export default function RequestCard({exp, img, name, nickname, firstName, lastNa
       setTimeLeft("Expired");
       
       // Update the card status to expired
-      if (currentStatus !== "expired") {
-        setCurrentStatus("expired");
+      if ((currentStatus as string) !== "expired") {
+        setCurrentStatus("expired" as const);
         onStatusChange?.(requestId || "", "expired");
       }
       return;
@@ -712,9 +717,8 @@ export default function RequestCard({exp, img, name, nickname, firstName, lastNa
     
     // If it's a Fan Call, start video call instead of completing
     if (hosttype === "Fan call") {
-      if (creator_portfolio_id && (nickname || name)) {
-       
-        startVideoCall(creator_portfolio_id, nickname || name, price || 1, isVip, vipEndDate);
+      if (targetUserId && (nickname || name)) {
+        startVideoCall(targetUserId, nickname || name, price || 1, isVip, vipEndDate);
       }
       return;
     }
@@ -771,13 +775,6 @@ export default function RequestCard({exp, img, name, nickname, firstName, lastNa
     }
     
 
-    console.log('🔍 [handleRatingSubmit] Fan rating creator - checking IDs:', {
-      requestId,
-      creator_portfolio_id,
-      userId,
-      currentUserId,
-      userid
-    });
 
     if (!requestId || !creator_portfolio_id || !userId) {
       console.error('❌ [handleRatingSubmit] Missing required information:', {
@@ -832,15 +829,6 @@ export default function RequestCard({exp, img, name, nickname, firstName, lastNa
 
   // Handle fan rating submission (creator rating fan)
   const handleFanRatingSubmit = async (rating: number, feedback: string) => {
-    console.log('🔍 [handleFanRatingSubmit] Frontend starting fan rating submission:', {
-      rating,
-      feedback: feedback.substring(0, 50) + '...',
-      requestId,
-      currentUserId,
-      userid,
-      hosttype,
-      timestamp: new Date().toISOString()
-    });
 
     // Get user ID from Redux state or localStorage as fallback
     let userId = currentUserId;
@@ -852,7 +840,6 @@ export default function RequestCard({exp, img, name, nickname, firstName, lastNa
         if (loginData) {
           const parsedData = JSON.parse(loginData);
           userId = parsedData.userID || parsedData.userid || parsedData.id;
-          console.log('🔍 [handleFanRatingSubmit] Got userId from localStorage:', userId);
         }
       } catch (error) {
         console.error('❌ [handleFanRatingSubmit] Error parsing login data:', error);
@@ -1286,12 +1273,6 @@ export default function RequestCard({exp, img, name, nickname, firstName, lastNa
         onClick={() => {
           // Creator wants to message the fan
           if (userid) {
-            console.log('🔍 [RequestCard] Chat Now button clicked (single):', {
-              userid,
-              creator_portfolio_id,
-              currentUserId,
-              timestamp: new Date().toISOString()
-            });
             router.push(`/message/${userid}`);
           }
         }}
@@ -1472,10 +1453,6 @@ function DetailsModal({
                 {isExpired && (
                   <p className="text-xs text-red-500 mt-1">Request has expired</p>
                 )}
-                {/* Debug info - remove in production */}
-                <p className="text-xs text-gray-400 mt-1">
-                  Debug: {currentStatus} | {timeLeft ? 'Has timeLeft' : 'No timeLeft'} | {isExpired ? 'Expired' : 'Not expired'}
-                </p>
               </div>
             </div>
           </div>
