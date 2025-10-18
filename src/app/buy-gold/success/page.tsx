@@ -42,7 +42,7 @@ const Success: React.FC = () => {
     const verifyPayment = async () => {
       try {
         const res = await axios.get(`${URL}/payment/verify`, {
-          params: { userId, NP_id },
+          params: { userId },
           headers: { Authorization: `Bearer ${token}` },
         });
 

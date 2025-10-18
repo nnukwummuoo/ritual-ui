@@ -51,37 +51,6 @@ const AdminPage = () => {
   // State for support chat count
   const [supportChatCount, setSupportChatCount] = useState(0);
 
-  const [checking, setChecking] = useState(true);
-
-  useEffect(() => {
-  const verifyAdminAccess = async () => {
-    try {
-      const res = await axios.get(`${URL}/admin/check`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      if (res.data.success && res.data.isAdmin) {
-        setChecking(false); // user is admin, show dashboard
-      } else {
-        router.push("/"); // not admin
-      }
-    } catch (err) {
-      router.push("/"); // redirect on failure
-    }
-  };
-
-  if (token) verifyAdminAccess();
-}, [token, router]);
-
-if (checking) {
-  return (
-    <div className="flex items-center justify-center h-screen bg-[#111827] text-white">
-      Checking admin access...
-    </div>
-  );
-}
-
-
   // Notification logic remains unchanged
   useEffect(() => {
     const ping = () => {
