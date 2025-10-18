@@ -18,6 +18,8 @@ const publicRoutes = [
   '/post-image',
   "/comment",
   "/buy-gold",
+  "/buy-gold/success",
+  "/buy-gold/cancel",
   "/forget-password",
   "/verify-creators",
   "/message",

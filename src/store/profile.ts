@@ -118,6 +118,7 @@ const initialState = {
   search_users: [] as any[],
   testmsg: "",
   closedraw: false,
+  updateGoldBalance: "",
   checkApplicationStatus: "",
   notifications: [] as Notification[],
   notifications_stats: "idle",
@@ -785,6 +786,21 @@ export const deleteNotification = createAsyncThunk<
   }
 });
 
+export const updateGoldBalance  = createAsyncThunk(
+  "profile/updateGoldBalance",
+  async ({ userId, amount }: { userId: string; amount: number }, { rejectWithValue }) => {
+    try {
+      const res = await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/payment/update-balance`, {
+        userId,
+        amount,
+      });
+      return res.data; // expect updated user or balance info
+    } catch (err: any) {
+      return rejectWithValue(err.response?.data || err.message);
+    }
+  }
+);
+
 const profile = createSlice({
   name: "profile",
   initialState,
@@ -813,6 +829,7 @@ const profile = createSlice({
       state.notifications_stats = action.payload;
       state.mark_notifications_stats = action.payload;
       state.delete_notification_stats = action.payload;
+      state.updateGoldBalance = action.payload; 
     },
     setlastnote(state, action) {
       state.lastnote = action.payload;
@@ -1211,6 +1228,19 @@ const profile = createSlice({
     .addCase(checkApplicationStatus.rejected, (state, action) => {
       state.status = "failed";
       state.error = (action.payload as any)?.message ?? "Failed to check application status";
+    })
+    .addCase(updateGoldBalance.pending, (state) => {
+  state.updateGoldBalance = "loading";
+    })
+    .addCase(updateGoldBalance.fulfilled, (state, action) => {
+      state.updateGoldBalance = "succeeded";
+      if (action.payload?.balance) {
+        state.balance = action.payload.balance; // Update gold balance in Redux
+      }
+    })
+    .addCase(updateGoldBalance.rejected, (state, action) => {
+      state.updateGoldBalance = "failed";
+      state.error = (action.payload as any)?.message ?? "Failed to update gold balance";
     })
       .addCase(getsearch.pending, (state, action) => {
         state.searchstats = "loading";
