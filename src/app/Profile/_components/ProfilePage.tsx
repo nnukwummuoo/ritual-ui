@@ -2010,13 +2010,13 @@ const PostModal = () => {
                           {review.fanIsVip && (
                             <VIPBadge 
                               size="lg" 
-                              className="absolute top-3 left-9 z-[100]"
+                              className="absolute top-3 left-9 z-[1]"
                               isVip={review.fanIsVip} 
                               vipEndDate={review.fanVipEndDate} 
                             />
                           )}
                         <div className="flex items-center mb-3">
-                          <div className="relative w-10 h-10 rounded-full overflow-hidden mr-3 bg-gradient-to-r from-blue-500 to-purple-600 p-0.5 z-10">
+                          <div className="relative w-10 h-10 rounded-full overflow-hidden mr-3 bg-gradient-to-r from-blue-500 to-purple-600 p-0.5 ">
                             <div className="w-full h-full rounded-full overflow-hidden bg-black">
                               {(() => {
                                 const profileImage = review.fanPhoto;
@@ -2078,13 +2078,13 @@ const PostModal = () => {
                           {rating.creatorIsVip && (
                             <VIPBadge 
                               size="lg" 
-                              className="absolute top-2 left-9 z-[100]" 
+                              className="absolute top-2 left-9 z-[1]" 
                               isVip={rating.creatorIsVip} 
                               vipEndDate={rating.creatorVipEndDate} 
                             />
                           )}
                           <div className="flex items-center mb-3">
-                            <div className="relative w-10 h-10 rounded-full overflow-hidden mr-3 bg-gradient-to-r from-green-500 to-teal-600 p-0.5 z-10">
+                            <div className="relative w-10 h-10 rounded-full overflow-hidden mr-3 bg-gradient-to-r from-green-500 to-teal-600 p-0.5 ">
                               <div className="w-full h-full rounded-full overflow-hidden bg-black">
                                 {(() => {
                                   const profileImage = rating.creatorPhoto;

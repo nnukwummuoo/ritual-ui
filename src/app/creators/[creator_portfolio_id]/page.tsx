@@ -1427,7 +1427,7 @@ export default function Creatorbyid () {
                 <div className="flex flex-wrap gap-2">
                   {creator.interestedin?.split(" ").map((interest: string, index: number) => (
                     <span key={index} className="px-3 py-1 bg-purple-600 text-white rounded-full text-sm">
-                      {interest}
+                      {interest.charAt(0).toUpperCase() + interest.slice(1).toLowerCase()}
                     </span>
                   ))}
                 </div>

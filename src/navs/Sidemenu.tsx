@@ -234,7 +234,7 @@ const Sidemenu = () => {
           onClick={handleMenubar}
           className={`${
             open ? "show" : "hide"
-          } sm:block menu-width origin-top-right mr mt pt px-2 py-4 h-fit bg-gray-900 text-white fixed rounded-l-lg rounded-r-2xl z-[70]`}
+          } sm:block menu-width origin-top-right mr mt pt px-2 py-4 h-fit bg-gray-900 text-white fixed rounded-l-lg rounded-r-2xl z-[100]`}
         >
           <div className="absolute -top-3 right-0 w-fit cls-btn">
             <OpenMobileMenuBtn />
