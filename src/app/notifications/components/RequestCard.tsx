@@ -220,8 +220,6 @@ interface CardProps {
     titles?: string[];
     name: string;
     nickname?: string; // Add nickname prop
-    firstName?: string; // Add first name prop
-    lastName?: string; // Add last name prop
     img: string;
     status: "request" | "expired" | "completed" | "accepted" | "declined" | "cancelled";
     requestId?: string;
@@ -430,7 +428,7 @@ export default function RequestCard({exp, img, name, nickname, firstName, lastNa
           setRatingData({
             rating: data.rating,
             feedback: data.feedback,
-            fanName: firstName && lastName ? `${firstName} ${lastName}` : (nickname || name) // Use the fan's first/last name or fallback
+            fanName: nickname || name // Use the fan's nickname or name from props
           });
         } else {
           setSubmittedRating(0);
@@ -478,7 +476,7 @@ export default function RequestCard({exp, img, name, nickname, firstName, lastNa
           setFanRatingData({
             rating: fanRatingData.rating,
             feedback: fanRatingData.feedback,
-            creatorName: firstName && lastName ? `${firstName} ${lastName}` : (nickname || name)
+            creatorName: nickname || name
           });
         } else {
           setSubmittedFanRating(0);
@@ -489,7 +487,7 @@ export default function RequestCard({exp, img, name, nickname, firstName, lastNa
         setFanRatingData(null);
       }
     }
-  }, [requestId, currentUserId, type, currentStatus, userid, name, creator_portfolio_id, firstName, lastName, nickname]);
+  }, [requestId, currentUserId, type, currentStatus, userid, name, creator_portfolio_id]);
 
   // Check for existing rating when component loads or dependencies change
   useEffect(() => {
@@ -945,16 +943,14 @@ export default function RequestCard({exp, img, name, nickname, firstName, lastNa
               <Image src={img} width={100} alt="picture" height={100} className='absolute top-0 left-0 size-full object-cover' />
             ) : (
               <div className="w-full h-full flex items-center justify-center bg-gray-600 text-white font-bold text-xl">
-                {generateInitials(firstName, lastName, nickname || name)}
+                {(nickname || name).split(' ').map(n => n.charAt(0)).join('').toUpperCase().slice(0, 2)}
               </div>
             )}
             
           </div>
           <div className='text-sm'>
             <div className='flex items-center gap-2'>
-              <p className='font-bold cursor-pointer hover:text-blue-400 transition-colors' onClick={handleProfileClick}>
-                {nickname || name}
-              </p>
+              <p className='font-bold cursor-pointer hover:text-blue-400 transition-colors' onClick={handleProfileClick}>{nickname || name}</p>
             </div>
             <div className='flex gap-1'>{titles?.map((title, i)=> i === titles.length -1 ? <p key={title}>{title}</p> : <p key={title}>{title} &#x2022; </p>)}</div>
           </div>
@@ -1014,7 +1010,7 @@ export default function RequestCard({exp, img, name, nickname, firstName, lastNa
       {/* Rating Stars - Show for creators when completed and rated */}
       {type === "creator" && currentStatus === "completed" && submittedRating > 0 && (
         <div className="flex flex-col items-center gap-2 py-3">
-          <p className="text-sm text-gray-400 mb-2">Rating from {firstName && lastName ? `${firstName} ${lastName}` : (nickname || name)}:</p>
+          <p className="text-sm text-gray-400 mb-2">Rating from {nickname || name}:</p>
           <div className="flex justify-center gap-2">
             {[1, 2, 3, 4, 5].map((star) => {
               const isFilled = star <= submittedRating;
@@ -1088,7 +1084,7 @@ export default function RequestCard({exp, img, name, nickname, firstName, lastNa
       {/* Fan Rating Stars - Show for fans when completed (to view creator's rating of them) */}
       {type === "fan" && currentStatus === "completed" && submittedFanRating > 0 && (
         <div className="flex flex-col items-center gap-2 py-3 border-t border-gray-600 pt-3">
-          <p className="text-sm text-gray-400 mb-2">Rating from {firstName && lastName ? `${firstName} ${lastName}` : (nickname || name)}:</p>
+          <p className="text-sm text-gray-400 mb-2">Rating from {nickname || name}:</p>
           <div className="flex justify-center gap-2">
             {[1, 2, 3, 4, 5].map((star) => {
               const isFilled = star <= submittedFanRating;
@@ -1126,7 +1122,7 @@ export default function RequestCard({exp, img, name, nickname, firstName, lastNa
           setSelectedRating(0);
         }}
         onSubmit={handleRatingSubmit}
-        creatorName={firstName && lastName ? `${firstName} ${lastName}` : (nickname || name)}
+        creatorName={nickname || name}
         hostType={hosttype}
         loading={ratingLoading}
         preSelectedRating={selectedRating}
@@ -1140,7 +1136,7 @@ export default function RequestCard({exp, img, name, nickname, firstName, lastNa
           setSelectedFanRating(0);
         }}
         onSubmit={handleFanRatingSubmit}
-        fanName={firstName && lastName ? `${firstName} ${lastName}` : (nickname || name)}
+        fanName={nickname || name}
         hostType={hosttype}
         loading={fanRatingLoading}
         preSelectedRating={selectedFanRating}

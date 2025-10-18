@@ -20,8 +20,6 @@ interface Request {
   otherUser?: {
     name: string;
     nickname?: string; // Add nickname field
-    firstname?: string; // Add first name field
-    lastname?: string; // Add last name field
     photolink: string;
     isCreator: boolean;
     isVip?: boolean;
@@ -210,8 +208,6 @@ export default function Activity() {
             status={request.status}
             name={request.otherUser?.name || "Unknown User"}
             nickname={request.otherUser?.nickname} // Add nickname prop
-            firstName={request.otherUser?.firstname} // Add first name prop
-            lastName={request.otherUser?.lastname} // Add last name prop
             titles={request.otherUser?.isCreator ? ["Creator"] : ["Fan"]}
             exp={request.timeRemaining || "Expired"}
             requestId={request.requestId}
