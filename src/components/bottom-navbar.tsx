@@ -238,7 +238,7 @@ export default function BottomNavBar() {
   ];
   return (
     <MenuProvider>
-      <div className=" h-fit mr-8 mt-4 max-[600px]:m-0 fixed right-0 max-[600px]:bottom-6 max-[600px]:w-full">
+      <div className=" h-fit mr-8 mt-4 max-[600px]:m-0 fixed right-0 max-[600px]:bottom-6 max-[600px]:w-full z-50">
         <div className="w-[25rem] mx-auto max-[600px]:w-[90%] rounded-2xl px-4 pt-4 pb-2 bg-gray-900 flex justify-between max-[500px]:w-[93%] bottom-4">
           {routes.map((item, i) => (
             <Link key={i} href={item.route} className={`w-12 flex flex-col items-center group hover:scale-110 transition-all duration-500 relative`}>

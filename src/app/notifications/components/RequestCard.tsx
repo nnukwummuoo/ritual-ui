@@ -168,16 +168,6 @@ const statusArr = ["request", "expired", "completed", "accepted", "declined", "c
 
 // Helper function to generate initials from first name and last name
 const generateInitials = (firstName?: string, lastName?: string, fallbackName?: string) => {
-  // Debug logging to see what values we're getting
-  console.log('🔍 [generateInitials] Input values:', {
-    firstName,
-    lastName,
-    fallbackName,
-    firstNameType: typeof firstName,
-    lastNameType: typeof lastName,
-    fallbackNameType: typeof fallbackName
-  });
-
   // Clean and validate inputs (handle empty strings, null, undefined)
   const cleanFirstName = firstName?.trim();
   const cleanLastName = lastName?.trim();
@@ -186,21 +176,18 @@ const generateInitials = (firstName?: string, lastName?: string, fallbackName?: 
   // If we have first name and last name, use them
   if (cleanFirstName && cleanLastName) {
     const initials = `${cleanFirstName.charAt(0).toUpperCase()}${cleanLastName.charAt(0).toUpperCase()}`;
-    console.log('✅ [generateInitials] Using first+last name:', initials);
     return initials;
   }
   
   // If we only have first name, use it
   if (cleanFirstName) {
     const initial = cleanFirstName.charAt(0).toUpperCase();
-    console.log('✅ [generateInitials] Using first name only:', initial);
     return initial;
   }
   
   // If we only have last name, use it
   if (cleanLastName) {
     const initial = cleanLastName.charAt(0).toUpperCase();
-    console.log('✅ [generateInitials] Using last name only:', initial);
     return initial;
   }
   
@@ -209,16 +196,13 @@ const generateInitials = (firstName?: string, lastName?: string, fallbackName?: 
     const names = cleanFallbackName.split(' ').filter(name => name.trim().length > 0);
     if (names.length >= 2) {
       const initials = `${names[0].charAt(0).toUpperCase()}${names[names.length - 1].charAt(0).toUpperCase()}`;
-      console.log('✅ [generateInitials] Using fallback name (multiple words):', initials);
       return initials;
     } else if (names.length === 1) {
       const initial = names[0].charAt(0).toUpperCase();
-      console.log('✅ [generateInitials] Using fallback name (single word):', initial);
       return initial;
     }
   }
   
-  console.log('❌ [generateInitials] No valid name found, returning ?');
   return '?';
 };
 
@@ -249,23 +233,26 @@ interface CardProps {
     hosttype?: string;
     isVip?: boolean;
     vipEndDate?: string | null;
+    createdAt?: string; // Add creation timestamp for countdown
     onStatusChange?: (requestId: string, newStatus: string) => void;
 }
 
-export default function RequestCard({exp, img, name, nickname, firstName, lastName, titles=["fan"], status, type="fan", requestId, price, details, userid, creator_portfolio_id, targetUserId, hosttype, isVip=false, vipEndDate=null, onStatusChange}: CardProps) {
+export default function RequestCard({exp, img, name, nickname, firstName, lastName, titles=["fan"], status, type="fan", requestId, price, details, userid, creator_portfolio_id, targetUserId, hosttype, isVip=false, vipEndDate=null, createdAt, onStatusChange}: CardProps) {
   const [loading, setLoading] = useState(false);
   const [currentStatus, setCurrentStatus] = useState(status);
+  const [timeLeft, setTimeLeft] = useState<string>("");
+  const [isExpired, setIsExpired] = useState(false);
   
-  // Debug logging to see what props we're receiving
-  console.log('🔍 [RequestCard] Props received:', {
-    name,
-    nickname,
-    firstName,
-    lastName,
-    type,
-    requestId
-  });
   const [showDetails, setShowDetails] = useState(false);
+  
+  // Function to handle opening details modal
+  const handleShowDetails = () => {
+    setShowDetails(true);
+    // Manually trigger countdown calculation when modal opens
+    if (currentStatus === "accepted" || currentStatus === "request") {
+      calculateTimeLeft();
+    }
+  };
   const [showRatingModal, setShowRatingModal] = useState(false);
   const [ratingLoading, setRatingLoading] = useState(false);
   const [selectedRating, setSelectedRating] = useState(0);
@@ -286,6 +273,95 @@ export default function RequestCard({exp, img, name, nickname, firstName, lastNa
   
   // Get current user ID from Redux state
   const currentUserId = useSelector((state: RootState) => state.profile.userId);
+
+  // Countdown calculation function
+  const calculateTimeLeft = useCallback(() => {
+    if (!createdAt) {
+      return;
+    }
+
+
+    const now = new Date().getTime();
+    const createdTime = new Date(createdAt).getTime();
+    const isFanCall = hosttype?.toLowerCase() === "fan call";
+    
+    // Set expiration time based on request type and status
+    let expirationHours;
+    if (currentStatus === "request") {
+      // Pending requests expire after 24 hours
+      expirationHours = 24;
+    } else if (currentStatus === "accepted") {
+      // Accepted requests expire based on type
+      expirationHours = isFanCall ? 48 : 168; // 48h for Fan call, 7 days (168h) for others
+    } else {
+      // For other statuses, don't show countdown
+      return;
+    }
+    
+    const expirationTime = createdTime + (expirationHours * 60 * 60 * 1000);
+    const timeDiff = expirationTime - now;
+    
+ 
+    
+    if (timeDiff <= 0) {
+      setIsExpired(true);
+      setTimeLeft("Expired");
+      
+      // Update the card status to expired
+      if (currentStatus !== "expired") {
+        setCurrentStatus("expired");
+        onStatusChange?.(requestId || "", "expired");
+      }
+      return;
+    }
+    
+    const hours = Math.floor(timeDiff / (1000 * 60 * 60));
+    const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+    const days = Math.floor(hours / 24);
+    const remainingHours = hours % 24;
+    
+    let timeDisplay = "";
+    if (isFanCall || currentStatus === "request") {
+      timeDisplay = `${hours}h : ${minutes.toString().padStart(2, '0')}m`;
+    } else {
+      if (days > 0) {
+        timeDisplay = `${days} day${days !== 1 ? 's' : ''} left`;
+      } else {
+        timeDisplay = `${remainingHours}h : ${minutes.toString().padStart(2, '0')}m`;
+      }
+    }
+    
+    setTimeLeft(timeDisplay);
+  }, [createdAt, currentStatus, hosttype, requestId, onStatusChange]);
+
+  // Handle expiration
+  const handleExpiration = useCallback(async () => {
+    if (!isExpired || !requestId || currentStatus === "expired") return;
+    
+    try {
+      // Call API to expire the request and refund gold
+      const response = await fetch(`${URL}/expire-request`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          requestId,
+          userid,
+          creator_portfolio_id,
+          price
+        })
+      });
+      
+      if (response.ok) {
+        setCurrentStatus('expired');
+        onStatusChange?.(requestId, 'expired');
+        toast.info("Request has expired and gold has been refunded to your balance");
+      }
+    } catch (error) {
+      console.error("Error expiring request:", error);
+    }
+  }, [isExpired, requestId, currentStatus, userid, creator_portfolio_id, price, onStatusChange]);
   
   // Debug log for user ID sources
   useEffect(() => {
@@ -486,6 +562,32 @@ export default function RequestCard({exp, img, name, nickname, firstName, lastNa
   useEffect(() => {
     setCurrentStatus(status);
   }, [status]);
+
+  // Initial expiration check when component loads
+  useEffect(() => {
+    if (createdAt && (status === "request" || status === "accepted")) {
+      calculateTimeLeft();
+    }
+  }, [createdAt, status, calculateTimeLeft]);
+
+  // Countdown timer effect
+  useEffect(() => {
+    if (currentStatus === "accepted" || currentStatus === "request") {
+      calculateTimeLeft();
+      
+      // Update countdown every minute
+      const interval = setInterval(calculateTimeLeft, 60000);
+      
+      return () => clearInterval(interval);
+    }
+  }, [currentStatus, calculateTimeLeft]);
+
+  // Handle expiration effect
+  useEffect(() => {
+    if (isExpired) {
+      handleExpiration();
+    }
+  }, [isExpired, handleExpiration]);
 
   
   
@@ -1159,7 +1261,7 @@ export default function RequestCard({exp, img, name, nickname, firstName, lastNa
           />
         </div>
         <div className="flex-1">
-          <button className={fanActionClass} onClick={() => setShowDetails(true)}>View details</button>
+          <button className={fanActionClass} onClick={handleShowDetails}>View details</button>
         </div>
       </div>
     ) : type === "fan" && currentStatus === "accepted" ? (
@@ -1174,7 +1276,7 @@ export default function RequestCard({exp, img, name, nickname, firstName, lastNa
           />
         </div>
         <div className="flex-1">
-          <button className={fanActionClass} onClick={() => setShowDetails(true)}>View details</button>
+          <button className={fanActionClass} onClick={handleShowDetails}>View details</button>
         </div>
       </div>
     ) : type === "creator" ? (
@@ -1225,7 +1327,7 @@ export default function RequestCard({exp, img, name, nickname, firstName, lastNa
                     <CreatorActionBtn type='decline' onClick={handleDecline} disabled={loading} />
                   </div>
                   <div className='flex-1 min-w-0'>
-                    <button className={fanActionClass} onClick={() => setShowDetails(true)}>View details</button>
+                    <button className={fanActionClass} onClick={handleShowDetails}>View details</button>
                   </div>
                 </>
               ) : (
@@ -1235,7 +1337,7 @@ export default function RequestCard({exp, img, name, nickname, firstName, lastNa
                     {type === "fan" && currentStatus === "request" && <FanActionBtn label='Cancel request' className={fanActionClass} onClick={handleCancel} disabled={loading} />}
                   </div>
                   <div className='flex-1 min-w-0'>
-                    <button className={fanActionClass} onClick={() => setShowDetails(true)}>View details</button>
+                    <button className={fanActionClass} onClick={handleShowDetails}>View details</button>
                   </div>
                 </>
               )}
@@ -1251,6 +1353,9 @@ export default function RequestCard({exp, img, name, nickname, firstName, lastNa
           onClose={() => setShowDetails(false)} 
           type={type}
           hosttype={hosttype}
+          timeLeft={timeLeft}
+          isExpired={isExpired}
+          currentStatus={currentStatus}
         />
       )}
     </div>
@@ -1287,13 +1392,26 @@ function DetailsModal({
   details, 
   onClose, 
   type,
-  hosttype
+  hosttype,
+  timeLeft,
+  isExpired,
+  currentStatus
 }: { 
   details?: FanMeetDetails; 
   onClose: () => void; 
   type: "fan" | "creator";
   hosttype?: string;
+  timeLeft?: string;
+  isExpired?: boolean;
+  currentStatus?: string;
 }) {
+  
+  // Fallback countdown calculation for modal
+  const getFallbackCountdown = () => {
+    // This is a fallback - in real implementation, createdAt should be passed to modal
+    // For now, we'll show a placeholder
+    return "Countdown not available";
+  };
   if (!details) {
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -1340,6 +1458,28 @@ function DetailsModal({
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
         <h2 className="text-xl font-bold text-gray-800 mb-6">{getDetailsTitle(hosttype || "Fan Meet")}</h2>
+        
+        {/* Expiration Countdown - Only show for accepted requests */}
+        {currentStatus === "accepted" && (
+          <div className="mb-6 p-4 bg-gradient-to-r from-orange-50 to-red-50 border border-orange-200 rounded-lg">
+            <div className="flex items-center justify-center gap-2">
+              <IoTimeOutline className="text-orange-500 text-xl" />
+              <div className="text-center">
+                <p className="text-sm text-gray-600 mb-1">Expires in:</p>
+                <p className={`text-2xl font-bold ${isExpired ? 'text-red-600' : 'text-orange-600'}`}>
+                  {timeLeft || getFallbackCountdown()}
+                </p>
+                {isExpired && (
+                  <p className="text-xs text-red-500 mt-1">Request has expired</p>
+                )}
+                {/* Debug info - remove in production */}
+                <p className="text-xs text-gray-400 mt-1">
+                  Debug: {currentStatus} | {timeLeft ? 'Has timeLeft' : 'No timeLeft'} | {isExpired ? 'Expired' : 'Not expired'}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
         
         {/* Date & Time */}
         <div className="flex items-start gap-3 mb-4">

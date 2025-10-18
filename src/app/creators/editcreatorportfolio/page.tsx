@@ -151,10 +151,12 @@ export default function Editcreator () {
     if (creator.interestedin && !interested.length) {
       const rawInterested = toArray(creator.interestedin);
       
-      // Convert to uppercase and remove duplicates
-      const upperCaseInterested = [...new Set(rawInterested.map(item => item.toUpperCase()))];
+      // Convert to proper case for display (capitalize first letter)
+      const properCaseInterested = [...new Set(rawInterested.map(item => 
+        item.charAt(0).toUpperCase() + item.slice(1).toLowerCase()
+      ))];
       
-      setInterested(upperCaseInterested);
+      setInterested(properCaseInterested);
     }
     if (creator.timeava && !times.length) {
       setTimes(toArray(creator.timeava));
@@ -289,7 +291,7 @@ export default function Editcreator () {
         bodytype,
         smoke,
         drink,
-        interestedin: interested.length > 0 ? interested : creator?.interestedin || [],
+        interestedin: interested.length > 0 ? interested.map((v) => String(v).toLowerCase()) : creator?.interestedin || [],
         height,
         weight,
         description,
