@@ -114,6 +114,13 @@ export default function Activity() {
             };
           });
           
+          // Sort by createdAt (most recent first) as a fallback
+          transformedRequests.sort((a, b) => {
+            const dateA = new Date(a.createdAt).getTime();
+            const dateB = new Date(b.createdAt).getTime();
+            return dateB - dateA; // Most recent first
+          });
+          
           setRequests(transformedRequests);
         }
       } catch (error) {
@@ -220,6 +227,7 @@ export default function Activity() {
             hosttype={request.hosttype}
             isVip={request.otherUser?.isVip || false}
             vipEndDate={request.otherUser?.vipEndDate}
+            createdAt={request.createdAt} // Add createdAt prop
             onStatusChange={handleStatusChange}
           />
           
