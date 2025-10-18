@@ -10,12 +10,16 @@ interface FanCallData {
   callId: string;
   callerId: string;
   callerName: string;
+  callerFirstName?: string;
+  callerLastName?: string;
   callerPhoto?: string;
   callerIsVip?: boolean;
   callerVipEndDate?: string | null;
   isIncoming: boolean;
   answererId?: string;
   answererName?: string;
+  answererFirstName?: string;
+  answererLastName?: string;
   answererPhoto?: string;
   answererIsVip?: boolean;
   answererVipEndDate?: string | null;
@@ -76,10 +80,8 @@ export const VideoCallProvider: React.FC<VideoCallProviderProps> = ({ children }
       const isCreator = data.profile?.creator || false; // Get creator status from database
       const callRate = price || 1; // Use price from request card, default to 1 if not provided
       
-      // Get caller's name and VIP status from database profile
-      const callerName = data.profile?.firstname && data.profile?.lastname 
-        ? `${data.profile.firstname} ${data.profile.lastname}` 
-        : data.profile?.firstname || data.profile?.username || 'Unknown User';
+      // Get caller's username and VIP status from database profile
+      const callerName = data.profile?.username || data.profile?.firstname || 'Unknown User';
       const callerIsVip = data.profile?.isVip || false;
       const callerVipEndDate = data.profile?.vipEndDate || null;
       
@@ -90,19 +92,17 @@ export const VideoCallProvider: React.FC<VideoCallProviderProps> = ({ children }
 
       // Use VIP data passed from RequestCard, or fetch if not provided
       let answererPhoto = '';
+      let answererFirstName = undefined;
+      let answererLastName = undefined;
       let answererVipStatus = answererIsVip || false;
       let answererVipEndDateValue = answererVipEndDate || null;
       
       // Only fetch photo if VIP data was provided (to avoid unnecessary API calls)
       if (answererIsVip !== undefined) {
-        console.log('🔍 [VIP Debug] startVideoCall - Using VIP data from RequestCard:', {
-          answererId,
-          answererIsVip: answererIsVip,
-          answererVipEndDate: answererVipEndDate
-        });
         
         // Still fetch photo if needed
         try {
+          
           const answererResponse = await fetch(`${URL}/getprofile`, {
             method: 'POST',
             headers: {
@@ -116,6 +116,11 @@ export const VideoCallProvider: React.FC<VideoCallProviderProps> = ({ children }
           if (answererResponse.ok) {
             const answererData = await answererResponse.json();
             answererPhoto = answererData.profile?.photolink || '';
+            answererFirstName = answererData.profile?.firstname;
+            answererLastName = answererData.profile?.lastname;
+            
+          } else {
+            console.error('Failed to fetch answerer profile:', answererResponse.status);
           }
         } catch (error) {
           console.error('Error fetching answerer photo:', error);
@@ -136,15 +141,13 @@ export const VideoCallProvider: React.FC<VideoCallProviderProps> = ({ children }
           if (answererResponse.ok) {
             const answererData = await answererResponse.json();
             answererPhoto = answererData.profile?.photolink || '';
+            answererFirstName = answererData.profile?.firstname;
+            answererLastName = answererData.profile?.lastname;
             answererVipStatus = answererData.profile?.isVip || false;
             answererVipEndDateValue = answererData.profile?.vipEndDate || null;
             
-            console.log('🔍 [VIP Debug] startVideoCall - Fetched answerer profile data:', {
-              answererId,
-              answererData: answererData.profile,
-              answererIsVip: answererVipStatus,
-              answererVipEndDate: answererVipEndDateValue
-            });
+          } else {
+            console.error('Failed to fetch answerer profile:', answererResponse.status);
           }
         } catch (error) {
           console.error('Error fetching answerer profile:', error);
@@ -156,9 +159,13 @@ export const VideoCallProvider: React.FC<VideoCallProviderProps> = ({ children }
       socket.emit('fan_call_start', {
         callerId: session._id,
         callerName: callerName,
+        callerFirstName: data.profile?.firstname,
+        callerLastName: data.profile?.lastname,
         callerPhoto: data.profile?.photolink || (session as { photolink?: string })?.photolink || '',
         answererId: answererId,
         answererName: answererName,
+        answererFirstName: answererFirstName,
+        answererLastName: answererLastName,
         answererPhoto: answererPhoto,
         userBalance: userBalance,
         callRate: callRate
@@ -168,11 +175,15 @@ export const VideoCallProvider: React.FC<VideoCallProviderProps> = ({ children }
         callId: `temp_${Date.now()}`, // Temporary ID until we get the real one from server
         callerId: session._id,
         callerName: callerName,
+        callerFirstName: data.profile?.firstname,
+        callerLastName: data.profile?.lastname,
         callerPhoto: data.profile?.photolink || (session as { photolink?: string })?.photolink || '',
         callerIsVip: callerIsVip,
         callerVipEndDate: callerVipEndDate,
         answererId: answererId,
         answererName: answererName,
+        answererFirstName: answererFirstName,
+        answererLastName: answererLastName,
         answererPhoto: answererPhoto,
         answererIsVip: answererVipStatus,
         answererVipEndDate: answererVipEndDateValue,
@@ -182,6 +193,7 @@ export const VideoCallProvider: React.FC<VideoCallProviderProps> = ({ children }
         isIncoming: false
       };
       
+      
 
       setVideoCallData(callData);
       setIsVideoCallOpen(true);
@@ -190,9 +202,13 @@ export const VideoCallProvider: React.FC<VideoCallProviderProps> = ({ children }
       socket.emit('fan_call_start', {
         callerId: session._id,
         callerName: callerName,
+        callerFirstName: data.profile?.firstname,
+        callerLastName: data.profile?.lastname,
         callerPhoto: data.profile?.photolink || (session as { photolink?: string })?.photolink || '',
         answererId: answererId,
         answererName: answererName,
+        answererFirstName: answererFirstName,
+        answererLastName: answererLastName,
         answererPhoto: answererPhoto
       });
     } catch (error) {
@@ -215,6 +231,8 @@ export const VideoCallProvider: React.FC<VideoCallProviderProps> = ({ children }
       callId: string; 
       callerId: string; 
       callerName: string; 
+      callerFirstName?: string;
+      callerLastName?: string;
       callerPhoto?: string;
       callerIsVip?: boolean;
       callerVipEndDate?: string | null;
@@ -253,47 +271,59 @@ export const VideoCallProvider: React.FC<VideoCallProviderProps> = ({ children }
 
         // Use VIP data from backend instead of making separate API calls
         let callerPhoto = data.callerPhoto || '';
-        let callerIsVip = data.callerIsVip || false;
-        let callerVipEndDate = data.callerVipEndDate || null;
-        let answererIsVip = data.answererIsVip || false;
-        let answererVipEndDate = data.answererVipEndDate || null;
+        let callerFirstName = data.callerFirstName;
+        let callerLastName = data.callerLastName;
+        let callerUsername = data.callerName; // Store username from socket data
+        const callerIsVip = data.callerIsVip || false;
+        const callerVipEndDate = data.callerVipEndDate || null;
+        const answererIsVip = data.answererIsVip || false;
+        const answererVipEndDate = data.answererVipEndDate || null;
         
-        // Only fetch photo if not provided by backend
-        if (!callerPhoto) {
-          try {
-            const callerResponse = await fetch(`${URL}/getprofile`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                userid: data.callerId
-              })
-            });
+        // Always fetch caller profile data to get correct first name and last name
+        try {
+          const callerResponse = await fetch(`${URL}/getprofile`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              userid: data.callerId
+            })
+          });
 
-            if (callerResponse.ok) {
-              const callerData = await callerResponse.json();
-              callerPhoto = callerData.profile?.photolink || '';
-            }
-          } catch (error) {
-            console.error('Error fetching caller photo:', error);
+          if (callerResponse.ok) {
+            const callerData = await callerResponse.json();
+            callerPhoto = callerData.profile?.photolink || callerPhoto;
+            callerFirstName = callerData.profile?.firstname;
+            callerLastName = callerData.profile?.lastname;
+            callerUsername = callerData.profile?.username ? `@${callerData.profile.username}` : data.callerName; // Update username from profile data with @ symbol
+            
           }
+        } catch (error) {
+          console.error('Error fetching caller profile:', error);
         }
+
+        // callerUsername is already updated from the profile data above
 
         const callData: FanCallData = {
           callId: data.callId,
           callerId: data.callerId,
-          callerName: data.callerName,
+          callerName: callerUsername, // Use username from profile data
+          callerFirstName: callerFirstName,
+          callerLastName: callerLastName,
           callerPhoto: callerPhoto,
           callerIsVip: callerIsVip,
           callerVipEndDate: callerVipEndDate,
           answererId: session._id,
-          answererName: session.name || 'Creator',
+          answererName: profileData.profile?.username || session.name || 'Creator',
+          answererFirstName: profileData.profile?.firstname,
+          answererLastName: profileData.profile?.lastname,
           answererIsVip: answererIsVip,
           answererVipEndDate: answererVipEndDate,
           isCreator: isCreator, // Use creator status from database
           isIncoming: true
         };
+        
 
         setVideoCallData(callData);
         setIsVideoCallOpen(true);
@@ -304,7 +334,11 @@ export const VideoCallProvider: React.FC<VideoCallProviderProps> = ({ children }
           callId: data.callId,
           callerId: data.callerId,
           callerName: data.callerName,
+          callerFirstName: data.callerFirstName,
+          callerLastName: data.callerLastName,
           callerPhoto: data.callerPhoto,
+          answererId: session._id,
+          answererName: session.name || 'Creator',
           isCreator: session.isCreator || false, // Fallback to session
           isIncoming: true
         };
@@ -325,24 +359,9 @@ export const VideoCallProvider: React.FC<VideoCallProviderProps> = ({ children }
       answererVipEndDate?: string | null;
     }) => {
       console.log('📞 [VideoCall] Call accepted, updating call ID:', data.callId);
-      console.log('🔍 [VIP Debug] Call accepted data in context:', {
-        callerIsVip: data.callerIsVip,
-        callerVipEndDate: data.callerVipEndDate,
-        answererIsVip: data.answererIsVip,
-        answererVipEndDate: data.answererVipEndDate
-      });
       
       // Update call data with real call ID and VIP data if we have a temporary one
       if (videoCallData?.callId.startsWith('temp_')) {
-        console.log('🔍 [VIP Debug] handleCallAccepted - Updating call data with VIP info:', {
-          oldData: videoCallData,
-          newVipData: {
-            callerIsVip: data.callerIsVip,
-            callerVipEndDate: data.callerVipEndDate,
-            answererIsVip: data.answererIsVip,
-            answererVipEndDate: data.answererVipEndDate
-          }
-        });
         
         setVideoCallData(prev => prev ? { 
           ...prev, 
@@ -390,7 +409,7 @@ export const VideoCallProvider: React.FC<VideoCallProviderProps> = ({ children }
       socket.off('fan_call_error', handleCallError);
       socket.off('fan_call_timeout', handleCallTimeout);
     };
-  }, [socket, session?._id, session?.isCreator, videoCallData?.callId]);
+  }, [socket, session?._id, session?.isCreator, session?.name, videoCallData?.callId]);
 
   const contextValue: VideoCallContextType = {
     isVideoCallOpen,

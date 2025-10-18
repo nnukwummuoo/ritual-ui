@@ -16,6 +16,8 @@ interface FanCallModalProps {
   callData: {
     callerId: string;
     callerName: string;
+    callerFirstName?: string;
+    callerLastName?: string;
     callerPhoto?: string;
     callerIsVip?: boolean;
     callerVipEndDate?: string | null;
@@ -24,6 +26,8 @@ interface FanCallModalProps {
     callId?: string;
     answererId?: string;
     answererName?: string;
+    answererFirstName?: string;
+    answererLastName?: string;
     answererPhoto?: string;
     answererIsVip?: boolean;
     answererVipEndDate?: string | null;
@@ -352,6 +356,55 @@ export default function FanCallModal({
     });
   };
 
+  // Helper function to generate initials from first name and last name (same as RequestCard)
+  const generateInitials = (firstName?: string, lastName?: string, fallbackName?: string) => {
+    
+    // Clean and validate inputs (handle empty strings, null, undefined)
+    const cleanFirstName = firstName?.trim();
+    const cleanLastName = lastName?.trim();
+    const cleanFallbackName = fallbackName?.trim();
+
+
+    // If we have first name and last name, use them
+    if (cleanFirstName && cleanLastName) {
+      // If first name and last name are the same, show both initials (e.g., "FF" for "folashade folashade")
+      if (cleanFirstName.toLowerCase() === cleanLastName.toLowerCase()) {
+        const initials = `${cleanFirstName.charAt(0).toUpperCase()}${cleanLastName.charAt(0).toUpperCase()}`;
+        return initials;
+      }
+      const initials = `${cleanFirstName.charAt(0).toUpperCase()}${cleanLastName.charAt(0).toUpperCase()}`;
+      return initials;
+    }
+    
+    // If we only have first name, use it
+    if (cleanFirstName) {
+      const initial = cleanFirstName.charAt(0).toUpperCase();
+      return initial;
+    }
+    
+    // If we only have last name, use it
+    if (cleanLastName) {
+      const initial = cleanLastName.charAt(0).toUpperCase();
+      return initial;
+    }
+    
+    // Fallback to the original logic using name/nickname
+    if (cleanFallbackName) {
+      // Remove special characters like @ from the beginning of names
+      const cleanName = cleanFallbackName.replace(/^[@#]+/, '').trim();
+      const names = cleanName.split(' ').filter(name => name.trim().length > 0);
+      if (names.length >= 2) {
+        const initials = `${names[0].charAt(0).toUpperCase()}${names[names.length - 1].charAt(0).toUpperCase()}`;
+        return initials;
+      } else if (names.length === 1) {
+        const initial = names[0].charAt(0).toUpperCase();
+        return initial;
+      }
+    }
+    
+    return '?';
+  };
+
   // Helper function to render user profile picture or initials (from post card logic)
   const renderUserProfile = (userInfo: any, isCreator: boolean = false) => {
     // For incoming calls, show caller info. For outgoing calls, show answerer info
@@ -359,11 +412,25 @@ export default function FanCallModal({
       ? (userInfo?.callerPhoto || userInfo?.photo || userInfo?.photolink || userInfo?.photoLink || userInfo?.profileImage || userInfo?.avatar || userInfo?.image)
       : (userInfo?.answererPhoto || userInfo?.photo || userInfo?.photolink || userInfo?.photoLink || userInfo?.profileImage || userInfo?.avatar || userInfo?.image);
     
+    // Always show username for display (not full name)
     const userName = callData?.isIncoming 
-      ? (userInfo?.callerName || userInfo?.name || userInfo?.firstname || userInfo?.username || 'User')
-      : (userInfo?.answererName || userInfo?.name || userInfo?.firstname || userInfo?.username || 'User');
+      ? (userInfo?.callerName || userInfo?.username || 'User')
+      : (userInfo?.answererName || userInfo?.username || 'User');
     
-    const initials = userName.split(/\s+/).map((n: string) => n[0]).join('').toUpperCase().slice(0, 2) || "?";
+    // Get first name and last name from callData for initials fallback
+    const firstName = callData?.isIncoming 
+      ? (callData?.callerFirstName || userInfo?.callerFirstName)
+      : (callData?.answererFirstName || userInfo?.answererFirstName);
+    
+    const lastName = callData?.isIncoming 
+      ? (callData?.callerLastName || userInfo?.callerLastName)
+      : (callData?.answererLastName || userInfo?.answererLastName);
+    
+    // Debug logging for initials generation
+    
+    // Use first name and last name for initials, fallback to username if no first/last name
+    const initials = generateInitials(firstName, lastName, userName);
+    
     
     return (
       <div className="relative">
@@ -391,21 +458,6 @@ export default function FanCallModal({
         
         {/* VIP Badge for both caller and answerer */}
         {(() => {
-          // Debug logging for VIP status
-          console.log('🔍 [VIP Debug] Frontend VIP Status Check:', {
-            isIncoming: callData?.isIncoming,
-            userInfo: userInfo,
-            callData: callData,
-            callerIsVip: userInfo?.callerIsVip,
-            answererIsVip: userInfo?.answererIsVip,
-            isVip: userInfo?.isVip,
-            callerVipEndDate: userInfo?.callerVipEndDate,
-            answererVipEndDate: userInfo?.answererVipEndDate,
-            vipEndDate: userInfo?.vipEndDate,
-            // Also check callData props
-            callDataCallerIsVip: callData?.callerIsVip,
-            callDataAnswererIsVip: callData?.answererIsVip
-          });
           
           // Determine VIP status based on who we're showing
           // For incoming calls: show caller's VIP status (the person calling you)
@@ -418,11 +470,6 @@ export default function FanCallModal({
             ? (userInfo?.callerVipEndDate || callData?.callerVipEndDate || userInfo?.vipEndDate)
             : (userInfo?.answererVipEndDate || callData?.answererVipEndDate || userInfo?.vipEndDate);
           
-          console.log('🔍 [VIP Debug] Frontend Calculated VIP Status:', {
-            isVip,
-            vipEndDate,
-            willShowBadge: !!isVip
-          });
           
           return isVip ? (
             <VIPBadge 
@@ -571,12 +618,6 @@ export default function FanCallModal({
     const handleCallAccepted = (data: any) => {
       // Call accepted
       console.log('📞 [VideoCall] Call accepted:', { data, currentUserId, callerId: data.callerId });
-      console.log('🔍 [VIP Debug] Call accepted data:', {
-        callerIsVip: data.callerIsVip,
-        callerVipEndDate: data.callerVipEndDate,
-        answererIsVip: data.answererIsVip,
-        answererVipEndDate: data.answererVipEndDate
-      });
       setCallStatus('connected');
       
       // Only the original caller should create the peer connection and offer
@@ -752,14 +793,6 @@ export default function FanCallModal({
   if (!isOpen || !callData) return null;
 
   // Debug logging for initial call data
-  console.log('🔍 [VIP Debug] Initial call data:', {
-    callData,
-    isIncoming: callData?.isIncoming,
-    callerIsVip: callData?.callerIsVip,
-    answererIsVip: callData?.answererIsVip,
-    callerVipEndDate: callData?.callerVipEndDate,
-    answererVipEndDate: callData?.answererVipEndDate
-  });
 
   return (
     <div className="fixed inset-0 z-[9999] bg-black bg-opacity-90 flex items-center justify-center">

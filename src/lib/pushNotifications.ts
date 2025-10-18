@@ -203,8 +203,8 @@ class PushNotificationService {
 
       await this.registration.showNotification(data.title || 'MmeKo', {
         body: data.message,
-        icon: data.icon || '/bell.jpg',
-        badge: '/bell.jpg',
+        icon: data.icon || '/icons/m-logo.png',
+        badge: '/icons/m-logo.png',
         tag: `mmeko-${data.type || 'notification'}`,
         requireInteraction: true,
         data: {
