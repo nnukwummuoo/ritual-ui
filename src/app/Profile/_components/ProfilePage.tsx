@@ -1024,21 +1024,52 @@ const PostModal = () => {
     sending: false
   });
 
+  // State for post author data
+  const [postAuthorData, setPostAuthorData] = React.useState<any>(null);
+
   // Update state when selectedPost changes
   React.useEffect(() => {
     if (selectedPost) {
       setModalUi({
-    liked: selectedPost.likedBy?.includes(loggedInUserId) || false,
-    likeCount: selectedPost.likeCount || selectedPost.likes?.length || 0,
-    comments: selectedPost.comments || [],
+        liked: selectedPost.likedBy?.includes(loggedInUserId) || false,
+        likeCount: selectedPost.likeCount || selectedPost.likes?.length || 0,
+        comments: selectedPost.comments || [],
         commentCount: selectedPost.commentCount || selectedPost.comments?.length || 0,
-    open: false,
-    input: "",
-    loadingComments: false,
-    sending: false
-  });
+        open: false,
+        input: "",
+        loadingComments: false,
+        sending: false
+      });
+
+      // If post doesn't have user data, fetch it separately
+      if (!selectedPost.user && selectedPost.userid) {
+        fetchPostAuthorData(selectedPost.userid);
+      } else {
+        setPostAuthorData(selectedPost.user);
+      }
     }
   }, [selectedPost, loggedInUserId]);
+
+  // Function to fetch post author data
+  const fetchPostAuthorData = async (userId: string) => {
+    try {
+      const response = await axios.post(`${API_URL}/getprofilebyID`, 
+        { userid: userId }, 
+        { 
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
+        }
+      );
+      
+      if (response.data && response.data.profile) {
+        setPostAuthorData(response.data.profile);
+      }
+    } catch (error) {
+      console.error('Error fetching post author data:', error);
+    }
+  };
 
   if (!selectedPost) return null;
 
@@ -1192,10 +1223,12 @@ const PostModal = () => {
         {/* Header */}
         <div className="p-4 border-b border-gray-800 flex justify-between items-center">
           <div className="flex items-center gap-3">
-            <div className="relative w-10 h-10 rounded-full bg-gray-700 overflow-hidden">
+            <div className="relative w-12 h-12 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 p-0.5">
+              <div className="w-full h-full rounded-full overflow-hidden bg-gray-700">
               {(() => {
-                const profileImage = selectedPost.user?.photolink;
-                const userName = `${selectedPost.user?.firstname || ""} ${selectedPost.user?.lastname || ""}`.trim();
+                const userData = postAuthorData || selectedPost.user;
+                const profileImage = userData?.photolink;
+                const userName = `${userData?.firstname || ""} ${userData?.lastname || ""}`.trim();
                 const initials = userName.split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2) || "?";
                 
                 if (profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined") {
@@ -1203,31 +1236,47 @@ const PostModal = () => {
                     <Image 
                       src={profileImage} 
                       alt="Profile" 
-                      width={40} 
-                      height={40} 
+                        width={48} 
+                        height={48} 
                       className="object-cover w-full h-full"
                     />
                   );
                 }
                 
                 return (
-                  <div className="w-full h-full bg-gray-600 flex items-center justify-center text-white text-sm font-semibold">
+                    <div className="w-full h-full bg-gray-600 flex items-center justify-center text-white text-lg font-semibold">
                     {initials}
                   </div>
                 );
               })()}
+              </div>
               
               {/* VIP Lion Badge - show if the post author has VIP status */}
-              {selectedPost.user?.userid === viewingUserId && profileOwnerVipStatus && (
-                <VIPBadge size="sm" className="absolute -top-1 -right-1" isVip={profileOwnerVipStatus} vipEndDate={vipStatus?.vipEndDate} />
-              )}
+              {(() => {
+                const userData = postAuthorData || selectedPost.user;
+                const isVipActive = userData?.isVip && userData?.vipEndDate && new Date(userData.vipEndDate) > new Date();
+                return isVipActive && (
+                  <VIPBadge size="lg" className="absolute -top-2 -right-2" isVip={userData.isVip} vipEndDate={userData.vipEndDate} />
+                );
+              })()}
             </div>
             <div>
-              <p className="font-medium">
-                {selectedPost.user?.firstname} {selectedPost.user?.lastname}
+              <div className="flex items-center gap-2">
+                <p className="font-semibold text-lg">
+                {(postAuthorData || selectedPost.user)?.firstname || 'No firstname'} {(postAuthorData || selectedPost.user)?.lastname || 'No lastname'}
               </p>
-              <p className="text-xs text-gray-400">
-                {selectedPost.user?.nickname || selectedPost.user?.username}
+                {(() => {
+                  const userData = postAuthorData || selectedPost.user;
+                  const isVipActive = userData?.isVip && userData?.vipEndDate && new Date(userData.vipEndDate) > new Date();
+                  return isVipActive && (
+                    <span className="text-xs bg-gradient-to-r from-yellow-400 to-orange-500 text-black px-2 py-1 rounded-full font-medium">
+                      VIP
+                    </span>
+                  );
+                })()}
+              </div>
+              <p className="text-sm text-blue-400 font-medium">
+                {(postAuthorData || selectedPost.user)?.nickname || (postAuthorData || selectedPost.user)?.username || 'No username'}
               </p>
             </div>
           </div>
@@ -1341,10 +1390,11 @@ const PostModal = () => {
                       modalUi.comments.map((comment: any, index: number) => (
                         <div key={index} className="flex gap-3">
                           <div className="flex-shrink-0">
-                            <div className="relative w-8 h-8 rounded-full bg-gray-700 overflow-hidden">
+                            <div className="relative w-10 h-10 rounded-full bg-gradient-to-r from-green-500 to-teal-600 p-0.5">
+                              <div className="w-full h-full rounded-full overflow-hidden bg-gray-700">
                               {(() => {
-                                const profileImage = comment.user?.photolink;
-                                const userName = comment.user?.username || comment.username || "User";
+                                const profileImage = comment.commentuserphoto || comment.user?.photolink;
+                                const userName = comment.commentusername || comment.user?.username || comment.username || "User";
                                 const initials = userName.split(/\s+/).map((n: string) => n[0]).join('').toUpperCase().slice(0, 2) || "?";
                                 
                                 if (profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined") {
@@ -1352,36 +1402,50 @@ const PostModal = () => {
                                     <Image
                                       src={profileImage}
                                       alt="Commenter"
-                                      width={32}
-                                      height={32}
+                                      width={40}
+                                      height={40}
                                       className="object-cover w-full h-full"
                                     />
                                   );
                                 }
                                 
                                 return (
-                                  <div className="w-full h-full bg-gray-600 flex items-center justify-center text-xs text-white font-semibold">
+                                  <div className="w-full h-full bg-gray-600 flex items-center justify-center text-sm text-white font-semibold">
                                     {initials}
                                   </div>
                                 );
                               })()}
+                              </div>
                               
                               {/* VIP Lion Badge - show if the commenter has VIP status */}
-                              {comment.user?.userid === viewingUserId && profileOwnerVipStatus && (
-                                <VIPBadge size="sm" className="absolute -top-1 -right-1" isVip={profileOwnerVipStatus} vipEndDate={vipStatus?.vipEndDate} />
-                              )}
+                              {(() => {
+                                const isVipActive = comment.isVip && comment.vipEndDate && new Date(comment.vipEndDate) > new Date();
+                                return isVipActive && (
+                                  <VIPBadge size="md" className="absolute -top-1 -right-1" isVip={comment.isVip} vipEndDate={comment.vipEndDate} />
+                                );
+                              })()}
                             </div>
                           </div>
                           <div className="flex-1">
                             <div className="bg-gray-800 rounded-lg p-3">
-                              <p className="font-medium text-sm">
-                                {comment.user?.username || comment.username || 'User'}
-                              </p>
-                              <p className="text-gray-200 mt-1">
+                              <div className="flex items-center gap-2 mb-2">
+                                <p className="font-semibold text-sm text-white">
+                                  {comment.commentusername || comment.user?.username || comment.username || 'User'}
+                                </p>
+                                {/* {(() => {
+                                  const isVipActive = comment.isVip && comment.vipEndDate && new Date(comment.vipEndDate) > new Date();
+                                  return isVipActive && (
+                                    <span className="text-xs bg-gradient-to-r from-yellow-400 to-orange-500 text-black px-2 py-0.5 rounded-full font-medium">
+                                      VIP
+                                    </span>
+                                  );
+                                })()} */}
+                              </div>
+                              <p className="text-gray-200 text-sm leading-relaxed">
                                 {comment.comment || comment.content || String(comment)}
                               </p>
                             </div>
-                            <p className="text-xs text-gray-500 mt-1">
+                            <p className="text-xs text-gray-500 mt-1 ml-1">
                               {comment.createdAt ? new Date(comment.createdAt).toLocaleDateString() : 'Just now'}
                             </p>
                           </div>
@@ -1392,7 +1456,34 @@ const PostModal = () => {
                     )}
                     
                     {/* Comment input */}
-                    <div className="flex items-center gap-2 pt-2">
+                    <div className="flex items-center gap-3 pt-2">
+                      <div className="relative w-8 h-8 rounded-full bg-gradient-to-r from-purple-500 to-pink-600 p-0.5 flex-shrink-0">
+                        <div className="w-full h-full rounded-full overflow-hidden bg-gray-700">
+                          {(() => {
+                            const profileImage = photolink || avatarSrc;
+                            const userName = `${firstname || ""} ${lastname || ""}`.trim();
+                            const initials = userName.split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2) || "?";
+                            
+                            if (profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined") {
+                              return (
+                                <Image
+                                  src={profileImage}
+                                  alt="Your profile"
+                                  width={32}
+                                  height={32}
+                                  className="object-cover w-full h-full"
+                                />
+                              );
+                            }
+                            
+                            return (
+                              <div className="w-full h-full bg-gray-600 flex items-center justify-center text-xs text-white font-semibold">
+                                {initials}
+                              </div>
+                            );
+                          })()}
+                        </div>
+                      </div>
                       <input
                         value={modalUi.input}
                         onChange={(e) => setModalUi(prev => ({
@@ -1806,6 +1897,8 @@ const PostModal = () => {
         key={post._id}
         className="relative aspect-square group cursor-pointer rounded-sm overflow-hidden bg-black"
         onClick={() => { 
+          console.log('🔍 [Debug] Selected post data:', post);
+          console.log('🔍 [Debug] Post user data:', post.user);
           setSelectedPost(post); 
           setShowPostModal(true); 
         }}

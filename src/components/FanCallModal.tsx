@@ -16,6 +16,9 @@ interface FanCallModalProps {
   callData: {
     callerId: string;
     callerName: string;
+    callerFirstName?: string;
+    callerLastName?: string;
+    callerUsername?: string;
     callerPhoto?: string;
     callerIsVip?: boolean;
     callerVipEndDate?: string | null;
@@ -24,6 +27,9 @@ interface FanCallModalProps {
     callId?: string;
     answererId?: string;
     answererName?: string;
+    answererFirstName?: string;
+    answererLastName?: string;
+    answererUsername?: string;
     answererPhoto?: string;
     answererIsVip?: boolean;
     answererVipEndDate?: string | null;
@@ -352,18 +358,52 @@ export default function FanCallModal({
     });
   };
 
+  // Helper function to get display name (prioritizes username over full name)
+  const getDisplayName = (userInfo: any) => {
+    return callData?.isIncoming 
+      ? (callData?.callerUsername || userInfo?.callerUsername || userInfo?.username || callData?.callerName || userInfo?.callerName || userInfo?.name || userInfo?.firstname || 'User')
+      : (callData?.answererUsername || userInfo?.answererUsername || userInfo?.username || callData?.answererName || userInfo?.answererName || userInfo?.name || userInfo?.firstname || 'User');
+  };
+
   // Helper function to render user profile picture or initials (from post card logic)
   const renderUserProfile = (userInfo: any, isCreator: boolean = false) => {
     // For incoming calls, show caller info. For outgoing calls, show answerer info
     const profileImage = callData?.isIncoming 
-      ? (userInfo?.callerPhoto || userInfo?.photo || userInfo?.photolink || userInfo?.photoLink || userInfo?.profileImage || userInfo?.avatar || userInfo?.image)
-      : (userInfo?.answererPhoto || userInfo?.photo || userInfo?.photolink || userInfo?.photoLink || userInfo?.profileImage || userInfo?.avatar || userInfo?.image);
+      ? (callData?.callerPhoto || userInfo?.callerPhoto || userInfo?.photo || userInfo?.photolink || userInfo?.photoLink || userInfo?.profileImage || userInfo?.avatar || userInfo?.image)
+      : (callData?.answererPhoto || userInfo?.answererPhoto || userInfo?.photo || userInfo?.photolink || userInfo?.photoLink || userInfo?.profileImage || userInfo?.avatar || userInfo?.image);
     
     const userName = callData?.isIncoming 
-      ? (userInfo?.callerName || userInfo?.name || userInfo?.firstname || userInfo?.username || 'User')
-      : (userInfo?.answererName || userInfo?.name || userInfo?.firstname || userInfo?.username || 'User');
+      ? (callData?.callerUsername || userInfo?.callerUsername || userInfo?.username || callData?.callerName || userInfo?.callerName || userInfo?.name || userInfo?.firstname || 'User')
+      : (callData?.answererUsername || userInfo?.answererUsername || userInfo?.username || callData?.answererName || userInfo?.answererName || userInfo?.name || userInfo?.firstname || 'User');
     
-    const initials = userName.split(/\s+/).map((n: string) => n[0]).join('').toUpperCase().slice(0, 2) || "?";
+    // Use firstname and lastname for initials fallback instead of username
+    const firstName = callData?.isIncoming 
+      ? (callData?.callerFirstName || userInfo?.callerFirstName || userInfo?.firstname || '')
+      : (callData?.answererFirstName || userInfo?.answererFirstName || userInfo?.firstname || '');
+    
+    const lastName = callData?.isIncoming 
+      ? (callData?.callerLastName || userInfo?.callerLastName || userInfo?.lastname || '')
+      : (callData?.answererLastName || userInfo?.answererLastName || userInfo?.lastname || '');
+    
+    
+    // Create initials from firstname and lastname, fallback to username if not available
+    let initials = "?";
+    if (firstName && lastName) {
+      initials = (firstName[0] + lastName[0]).toUpperCase();
+    } else if (firstName) {
+      initials = firstName[0].toUpperCase();
+    } else if (lastName) {
+      initials = lastName[0].toUpperCase();
+    } else {
+      // Fallback to username initials - clean the username first
+      const cleanUserName = userName.replace(/^@/, '').trim(); // Remove @ prefix if present
+      if (cleanUserName) {
+        initials = cleanUserName.split(/\s+/).map((n: string) => n[0]).join('').toUpperCase().slice(0, 2) || "?";
+      } else {
+        initials = "?";
+      }
+    }
+    
     
     return (
       <div className="relative">
@@ -391,21 +431,6 @@ export default function FanCallModal({
         
         {/* VIP Badge for both caller and answerer */}
         {(() => {
-          // Debug logging for VIP status
-          console.log('🔍 [VIP Debug] Frontend VIP Status Check:', {
-            isIncoming: callData?.isIncoming,
-            userInfo: userInfo,
-            callData: callData,
-            callerIsVip: userInfo?.callerIsVip,
-            answererIsVip: userInfo?.answererIsVip,
-            isVip: userInfo?.isVip,
-            callerVipEndDate: userInfo?.callerVipEndDate,
-            answererVipEndDate: userInfo?.answererVipEndDate,
-            vipEndDate: userInfo?.vipEndDate,
-            // Also check callData props
-            callDataCallerIsVip: callData?.callerIsVip,
-            callDataAnswererIsVip: callData?.answererIsVip
-          });
           
           // Determine VIP status based on who we're showing
           // For incoming calls: show caller's VIP status (the person calling you)
@@ -418,11 +443,6 @@ export default function FanCallModal({
             ? (userInfo?.callerVipEndDate || callData?.callerVipEndDate || userInfo?.vipEndDate)
             : (userInfo?.answererVipEndDate || callData?.answererVipEndDate || userInfo?.vipEndDate);
           
-          console.log('🔍 [VIP Debug] Frontend Calculated VIP Status:', {
-            isVip,
-            vipEndDate,
-            willShowBadge: !!isVip
-          });
           
           return isVip ? (
             <VIPBadge 
@@ -570,13 +590,6 @@ export default function FanCallModal({
 
     const handleCallAccepted = (data: any) => {
       // Call accepted
-      console.log('📞 [VideoCall] Call accepted:', { data, currentUserId, callerId: data.callerId });
-      console.log('🔍 [VIP Debug] Call accepted data:', {
-        callerIsVip: data.callerIsVip,
-        callerVipEndDate: data.callerVipEndDate,
-        answererIsVip: data.answererIsVip,
-        answererVipEndDate: data.answererVipEndDate
-      });
       setCallStatus('connected');
       
       // Only the original caller should create the peer connection and offer
@@ -751,15 +764,6 @@ export default function FanCallModal({
 
   if (!isOpen || !callData) return null;
 
-  // Debug logging for initial call data
-  console.log('🔍 [VIP Debug] Initial call data:', {
-    callData,
-    isIncoming: callData?.isIncoming,
-    callerIsVip: callData?.callerIsVip,
-    answererIsVip: callData?.answererIsVip,
-    callerVipEndDate: callData?.callerVipEndDate,
-    answererVipEndDate: callData?.answererVipEndDate
-  });
 
   return (
     <div className="fixed inset-0 z-[9999] bg-black bg-opacity-90 flex items-center justify-center">
@@ -856,10 +860,7 @@ export default function FanCallModal({
                 
                 <div className="space-y-3">
                   <p className="text-lg font-medium">
-                    {callData?.isIncoming 
-                      ? (callData?.callerName || 'User')
-                      : (callData?.answererName || 'User')
-                    }
+                    {getDisplayName(callData)}
                   </p>
                   <p className="text-sm text-blue-400">
                     {callData?.isIncoming ? 'Fan' : 'Creator'}
@@ -883,10 +884,7 @@ export default function FanCallModal({
                     
                     <div className="space-y-3">
                       <p className="text-lg font-medium">
-                        {callData?.isIncoming 
-                          ? (callData?.callerName || 'User')
-                          : (callData?.answererName || 'User')
-                        }
+                        {getDisplayName(callData)}
                       </p>
                       <p className="text-sm text-blue-400">
                         {callData?.isIncoming ? 'Fan' : 'Creator'}

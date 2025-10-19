@@ -714,7 +714,7 @@ export default function RequestCard({exp, img, name, nickname, firstName, lastNa
     if (hosttype === "Fan call") {
       if (creator_portfolio_id && (nickname || name)) {
        
-        startVideoCall(creator_portfolio_id, nickname || name, price || 1, isVip, vipEndDate);
+        startVideoCall(creator_portfolio_id, nickname || name, price || 1, isVip, vipEndDate, firstName, lastName);
       }
       return;
     }
@@ -1472,10 +1472,7 @@ function DetailsModal({
                 {isExpired && (
                   <p className="text-xs text-red-500 mt-1">Request has expired</p>
                 )}
-                {/* Debug info - remove in production */}
-                <p className="text-xs text-gray-400 mt-1">
-                  Debug: {currentStatus} | {timeLeft ? 'Has timeLeft' : 'No timeLeft'} | {isExpired ? 'Expired' : 'Not expired'}
-                </p>
+               
               </div>
             </div>
           </div>
