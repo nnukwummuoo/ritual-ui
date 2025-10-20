@@ -208,8 +208,13 @@ const mapToCard = (m: any): CreatorCardProps => {
     return null;
   };
 
-  // Try multiple fields in order
+  // Try multiple fields in order - prioritize new backend structure
   const rawPhoto =
+    // New backend structure: creatorfiles array
+    (Array.isArray(m.creatorfiles) && m.creatorfiles.length > 0 
+      ? pickValidPhoto(m.creatorfiles[0]?.creatorfilelink)
+      : null) ||
+    // Legacy fields for backward compatibility
     pickValidPhoto(m.photolink) ||
     pickValidPhoto(m.photo) ||
     pickValidPhoto(m.image) ||
@@ -231,6 +236,16 @@ const mapToCard = (m: any): CreatorCardProps => {
   } else if (typeof amountVal === "number") {
     amountNum = amountVal;
   }
+
+  // Debug logging to see what data we're getting
+  console.log('[CreatorsPage][mapToCard] Processing creator:', {
+    name: m.name,
+    creatorfiles: m.creatorfiles,
+    photolink: m.photolink,
+    rawPhoto,
+    finalPhoto: photo,
+    isStorj: photo?.startsWith('https://gateway.storjshare.io/')
+  });
 
   const cardData = {
     photolink: photo,

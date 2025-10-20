@@ -10,6 +10,7 @@ import Image from "next/image";
 // import transIcon from "/icons/transIcon.svg";
 import { getCountryData } from "@/api/getCountries";
 import VIPBadge from "@/components/VIPBadge";
+import { URL as API_BASE } from "@/api/config";
 
 // Props interface
 export interface CreatorCardProps {
@@ -109,20 +110,73 @@ export const CreatorCard = ({
     router.push(`/creators/${hostid}`);
   };
 
+  // Handle Storj URLs with backend proxy
+  const getImageSrc = () => {
+    if (!photolink) return "/icons/mmekoDummy.png";
+    
+    const isStorj = photolink.startsWith('https://gateway.storjshare.io/');
+    if (isStorj) {
+      // Extract bucket name from the original URL
+      const urlParts = photolink.split('/');
+      const bucketIndex = urlParts.findIndex(part => part === 'gateway.storjshare.io') + 1;
+      const bucket = urlParts[bucketIndex] || 'post'; // Default to 'post' for legacy images
+      const key = urlParts[urlParts.length - 1];
+      
+      if (key) {
+        const proxyUrl = `${API_BASE}/api/image/view?publicId=${encodeURIComponent(key)}&bucket=${bucket}`;
+        console.log('[CreatorCard] Using Storj proxy:', { original: photolink, bucket, key, proxyUrl });
+        return proxyUrl;
+      }
+    }
+    console.log('[CreatorCard] Using direct URL:', photolink);
+    return photolink;
+  };
+
+  // State to track if direct URL failed and we should try proxy
+  const [imageError, setImageError] = useState(false);
+  const [currentSrc, setCurrentSrc] = useState(getImageSrc());
+
+  // Handle image error - try proxy if direct URL failed
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    const target = e.target as HTMLImageElement;
+    const src = target.src;
+    
+    console.error('[CreatorCard] Image failed to load:', { src });
+    
+    // If it's a Storj URL and we haven't tried the proxy yet
+    if (src.startsWith('https://gateway.storjshare.io/') && !imageError) {
+      const urlParts = src.split('/');
+      const bucketIndex = urlParts.findIndex(part => part === 'gateway.storjshare.io') + 1;
+      const bucket = urlParts[bucketIndex] || 'post';
+      const key = urlParts[urlParts.length - 1];
+      
+      if (key) {
+        const proxyUrl = `${API_BASE}/api/image/view?publicId=${encodeURIComponent(key)}&bucket=${bucket}`;
+        console.log('[CreatorCard] Direct URL failed, trying proxy:', { bucket, key, proxyUrl });
+        setImageError(true);
+        setCurrentSrc(proxyUrl);
+        return;
+      }
+    }
+    
+    // Final fallback to dummy image
+    setCurrentSrc("/icons/mmekoDummy.png");
+  };
+
   return (
     <div className="relative overflow-hidden" onClick={handleClick}>
       {/* Host Image */}
       <div>
         <img
           alt="creator"
-          src={photolink as any}
+          src={currentSrc}
           width={400}
           height={300}
           className="object-cover w-full rounded h-80"
-          onError={(e) => {
-            const target = e.target as HTMLImageElement;
-            target.src = "/icons/mmekoDummy.png";
+          onLoad={() => {
+            console.log('[CreatorCard] Image loaded successfully:', currentSrc);
           }}
+          onError={handleImageError}
         />
       </div>
 

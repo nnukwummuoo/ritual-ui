@@ -19,15 +19,15 @@ import { useSelector, useDispatch } from "react-redux";
 import type { RootState, AppDispatch } from "@/store/store";
 import { getprofile } from "@/store/profile";
 
-// Appwrite imports
-import { Client, Storage } from "appwrite";
+// Storj imports (via backend API)
+import { uploadToStorj } from "@/lib/storj";
 
 let times: any[] = [];
 let hours: any[] = [];
 let Interested: any[] = [];
 let MIN = "";
 
-// 🔥 Convert remote Appwrite URL → File object
+// 🔥 Convert remote URL → File object
 async function urlToFile(url: string, filename: string) {
   const res = await fetch(url);
   const blob = await res.blob();
@@ -125,73 +125,19 @@ export default function CreateCreatorPortfolio() {
     }
   }, [profile, reduxUserId, userid, dispatch, name]);
 
-// Initialize Appwrite client & storage
-const client = new Client()
-  .setEndpoint(process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT || "https://cloud.appwrite.io/v1")
-  .setProject(process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID || "");
-
-const storage = new Storage(client);
-
-// Upload a file to Appwrite and return its public URL
-const uploadToAppwrite = async (file: File): Promise<string> => {
+// Initialize Storj upload function
+// Upload a file to Storj via backend API and return its public URL
+const uploadToStorjBackend = async (file: File): Promise<string> => {
   try {
-    // Use the existing 'post' bucket (or environment-specific bucket)
-    const bucketId = process.env.NODE_ENV === 'production' ? 'post' : 'post';
-
-    console.log("🔍 [Appwrite] Uploading to bucket:", bucketId);
-    console.log("🔍 [Appwrite] Endpoint:", process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT);
-    console.log("🔍 [Appwrite] Project ID:", process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID);
-    console.log("🔍 [Appwrite] Environment:", process.env.NODE_ENV);
-    console.log("🔍 [Appwrite] File details:", { name: file.name, size: file.size, type: file.type });
-    console.log("🔍 [Appwrite] All env vars:", {
-      NODE_ENV: process.env.NODE_ENV,
-      NEXT_PUBLIC_APPWRITE_ENDPOINT: process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT,
-      NEXT_PUBLIC_APPWRITE_PROJECT_ID: process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID
-    });
+    console.log("🔍 [Storj] Uploading file:", { name: file.name, size: file.size, type: file.type });
     
-    const uniqueId = `${Date.now()}_${file.name}`;
-    const res = await storage.createFile(
-      bucketId,
-      uniqueId,
-      file
-    );
-
-    console.log("🔍 [Appwrite] Upload response:", res);
-
-    // Construct public URL (works for public buckets)
-    const endpoint = process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT || "https://cloud.appwrite.io/v1";
-    const projectId = process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID || "";
-    const publicUrl = `${endpoint}/storage/buckets/${res.bucketId}/files/${res.$id}/view?project=${projectId}`;
-    console.log("✅ [Appwrite] Upload successful:", publicUrl);
-    console.log("🔍 [Appwrite] URL components:", { endpoint, projectId, bucketId: res.bucketId, fileId: res.$id });
-    
-    // Test if the URL is accessible
-    try {
-      const testResponse = await fetch(publicUrl, { method: 'HEAD' });
-      console.log("🔍 [Appwrite] URL accessibility test:", testResponse.status, testResponse.ok ? "✅ Accessible" : "❌ Not accessible");
-    } catch (testError) {
-      console.warn("⚠️ [Appwrite] URL accessibility test failed:", testError);
-    }
+    const publicUrl = await uploadToStorj(file, 'creator');
+    console.log("✅ [Storj] Upload successful:", publicUrl);
     
     return publicUrl;
     
   } catch (err: any) {
-    console.error("❌ [Appwrite] Upload failed:", err);
-    console.error("❌ [Appwrite] Error code:", err.code);
-    console.error("❌ [Appwrite] Error message:", err.message);
-    console.error("❌ [Appwrite] Error type:", err.type);
-    
-    // Provide helpful error message
-    if (err.code === 404) {
-      throw new Error(`Storage bucket 'post' not found. Please create a bucket in Appwrite console with ID 'post' and make it public.`);
-    } else if (err.code === 400) {
-      throw new Error(`Invalid bucket ID. Bucket ID must contain only a-z, A-Z, 0-9, and underscore, max 36 characters.`);
-    } else if (err.code === 401) {
-      throw new Error(`Authentication failed. Please check your Appwrite credentials.`);
-    } else if (err.code === 403) {
-      throw new Error(`Access denied. Please check bucket permissions and make sure it's public.`);
-    }
-    
+    console.error("❌ [Storj] Upload failed:", err);
     throw new Error(`Upload failed: ${err.message || 'Unknown error'}`);
   }
 };
@@ -790,7 +736,7 @@ if (!isCreatorVerified) {
                     setimglist((prev) => [...prev, ...previewUrls]);
                     setphotolink((prev) => [...prev, ...selected]);
                     
-                    // Don't upload to Appwrite here - let backend handle all uploads
+                    // Don't upload to Storj here - let backend handle all uploads
                   }}
                 />
               </div>

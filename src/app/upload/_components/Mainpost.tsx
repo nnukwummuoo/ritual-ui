@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
 import React, { useState, useEffect } from "react";
 import { toast } from "material-react-toastify";
@@ -127,6 +129,7 @@ export const Mainpost = () => {
     }
     try {
       setLoading(true);
+      setUploading(true);
       const currentUsername = (() => {
         try {
           return (
@@ -168,14 +171,26 @@ export const Mainpost = () => {
           const pub = payload?.publicId || payload?.public_id || payload?.data?.publicId || payload?.data?.public_id;
           const url = payload?.url || payload?.secure_url || payload?.data?.url || payload?.data?.secure_url;
           toast.success('Post created', { autoClose: 600 });
+          
+          // Reset form and close modal
+          setShowImageModal(false);
+          setImageFile(undefined);
+          setImagePreview("");
+          setUploadedPublicId("");
+          setUploadedUrl("");
+          setpostcontent("");
+          setUploading(false);
+          setLoading(false);
+          
           // Refresh feed to ensure persistence immediately 
           try {
-            toast.success('Post created', { autoClose: 800 });
             await dispatch(getallpost({} as any)).unwrap();
           } catch (err) {
             toast.error("Something Went Wrong");
             console.error(err);
           }
+          
+          // Redirect to home
           setTimeout(() => router.push('/'), 100);
         })
         .catch((e: any) => {
@@ -229,14 +244,9 @@ export const Mainpost = () => {
       const msg = e?.message || 'Failed to create post';
       toast.error(msg);
     } finally {
+      // Only reset loading states on error, success is handled in .then()
       setUploading(false);
       setLoading(false);
-      setShowImageModal(false);
-      setImageFile(undefined);
-      setImagePreview("");
-      setUploadedPublicId("");
-      setUploadedUrl("");
-      setpostcontent("");
     }
   };
   
@@ -249,6 +259,7 @@ export const Mainpost = () => {
     try {
       setVideoUploading(true);
       setLoading(true);
+      setUploading(true);
 
       const currentUsername = (() => {
         try {
@@ -293,18 +304,23 @@ export const Mainpost = () => {
           const url = payload?.url || payload?.secure_url || payload?.data?.url || payload?.data?.secure_url;
           toast.success('Post created', { autoClose: 600 });
 
+          // Reset form and close modal
+          setShowVideoModal(false);
+          setVideoFile(undefined);
+          setVideoPreview("");
+          setVideoCaption("");
+          setVideoUploading(false);
+          setUploading(false);
+          setLoading(false);
+
           try {
             await dispatch(getallpost({} as any)).unwrap();
           } catch (err) {
             toast.error("Something Went Wrong");
             console.error(err);
           }
-          setVideoUploading(false);
-          setLoading(false);
-          setShowVideoModal(false);
-          setVideoFile(undefined);
-          setVideoPreview("");
-          setVideoCaption("");
+          
+          // Redirect to home
           setTimeout(() => router.push('/'), 100);
         })
         .catch((e: any) => {
@@ -313,12 +329,16 @@ export const Mainpost = () => {
         toast.error(msg); 
         setVideoUploading(false);
         setLoading(false);
+        setUploading(false);
       });
-        } catch (e: any) {
-          const msg = e?.message || 'Failed to create post';
-          toast.error(msg);
-        }
-      };
+    } catch (e: any) {
+      const msg = e?.message || 'Failed to create post';
+      toast.error(msg);
+      setVideoUploading(false);
+      setLoading(false);
+      setUploading(false);
+    }
+  };
 
           // fallback demo post if preview exists
           // if (videoPreview) {
@@ -386,6 +406,7 @@ export const Mainpost = () => {
                   return;
                 }
                 setLoading(true);
+                setUploading(true);
                 const currentUsername = (() => {
                   try {
                     return (
@@ -427,14 +448,21 @@ export const Mainpost = () => {
                     const pub = payload?.publicId || payload?.public_id || payload?.data?.publicId || payload?.data?.public_id;
                     const url = payload?.url || payload?.secure_url || payload?.data?.url || payload?.data?.secure_url;
                     toast.success('Post created', { autoClose: 600 });
+                    
+                    // Reset form
+                    setpostcontent("");
+                    setUploading(false);
+                    setLoading(false);
+                    
                     // Refresh feed to ensure persistence immediately 
                     try {
-                      toast.success('Post created', { autoClose: 800 });
                       await dispatch(getallpost({} as any)).unwrap();
                     } catch (err) {
                       toast.error("Something Went Wrong");
                       console.error(err);
                     }
+                    
+                    // Redirect to home
                     setTimeout(() => router.push('/'), 100);
                   })
                   .catch((e: any) => {
@@ -488,6 +516,7 @@ export const Mainpost = () => {
                 const msg = typeof e === 'string' ? e : (e?.message || 'Failed to create post');
                 toast.error(msg);
               } finally {
+                // Only reset loading states on error, success is handled in .then()
                 setUploading(false);
                 setLoading(false);
               }
@@ -526,6 +555,7 @@ export const Mainpost = () => {
                   setShowImageModal(false);
                   setImageFile(undefined);
                   setImagePreview("");
+                  setUploading(false);
                 }}
                 className="text-gray-300 hover:text-white"
                 aria-label="Back"
@@ -538,6 +568,7 @@ export const Mainpost = () => {
                   setShowImageModal(false);
                   setImageFile(undefined);
                   setImagePreview("");
+                  setUploading(false);
                 }}
                 className="text-gray-300 hover:text-white"
                 aria-label="Close"
@@ -627,6 +658,8 @@ export const Mainpost = () => {
                   setVideoFile(undefined);
                   setVideoPreview("");
                   setVideoCaption("");
+                  setVideoUploading(false);
+                  setUploading(false);
                 }}
                 className="text-gray-300 hover:text-white"
                 aria-label="Back"
@@ -640,6 +673,8 @@ export const Mainpost = () => {
                   setVideoFile(undefined);
                   setVideoPreview("");
                   setVideoCaption("");
+                  setVideoUploading(false);
+                  setUploading(false);
                 }}
                 className="text-gray-300 hover:text-white"
                 aria-label="Close"
@@ -744,7 +779,11 @@ export const Mainpost = () => {
             </div>
             <div className="flex items-center justify-end gap-3 p-4 border-t border-gray-700">
               <button
-                onClick={() => setShowBanWarning(false)}
+                onClick={() => {
+                  setShowBanWarning(false);
+                  setUploading(false);
+                  setVideoUploading(false);
+                }}
                 className="px-4 py-2 text-gray-300 hover:text-white transition"
               >
                 Cancel
@@ -772,7 +811,11 @@ export const Mainpost = () => {
             </div>
             <div className="flex items-center justify-end gap-3 p-4 border-t border-gray-700">
               <button
-                onClick={() => setShowSizeWarning(false)}
+                onClick={() => {
+                  setShowSizeWarning(false);
+                  setUploading(false);
+                  setVideoUploading(false);
+                }}
                 className="px-4 py-2 text-gray-300 hover:text-white transition"
               >
                 OK

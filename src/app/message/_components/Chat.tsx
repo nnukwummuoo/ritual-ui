@@ -22,6 +22,7 @@ import Image from "next/image";
 import { X, Paperclip, Send, File, Download } from "lucide-react";
 import VIPBadge from "@/components/VIPBadge";
 import { checkVipCelebration, markVipCelebrationViewed } from "@/api/vipCelebration";
+import { getImageSource } from "@/lib/imageUtils";
 
 
 export const Chat = () => {
@@ -179,20 +180,21 @@ export const Chat = () => {
     const isDocument = fileType === 'document';
     
     
-    // Handle URLs like post.tsx does - use API endpoints for Appwrite files
+    // Handle URLs like post.tsx does - use API endpoints for Storj files
     const isHttpUrl = fileUrl.startsWith('http');
     const isBlobUrl = fileUrl.startsWith('blob:');
     const isDataUrl = fileUrl.startsWith('data:');
     const isUrl = isHttpUrl || isBlobUrl || isDataUrl;
     
-    // For Appwrite files, use the API endpoint like post.tsx
+    // Use bucket detection for Storj URLs
+    const imageSource = getImageSource(fileUrl, 'message');
+    const fullUrl = imageSource.src;
+    
+    // Keep fallback URLs for error handling
     const queryUrlPrimary = fileUrl ? `${API_URL}/api/image/view?publicId=${encodeURIComponent(fileUrl)}` : "";
     const pathUrlPrimary = fileUrl ? `${API_URL}/api/image/view/${encodeURIComponent(fileUrl)}` : "";
     const queryUrlFallback = fileUrl ? `https://mmekoapi.onrender.com/api/image/view?publicId=${encodeURIComponent(fileUrl)}` : "";
     const pathUrlFallback = fileUrl ? `https://mmekoapi.onrender.com/api/image/view/${encodeURIComponent(fileUrl)}` : "";
-    
-    // Use direct URL if it's already a full URL, otherwise use API endpoint
-    const fullUrl = isUrl ? fileUrl : queryUrlPrimary;
     
     
     const handleLoad = () => {
@@ -1304,7 +1306,7 @@ export const Chat = () => {
     setPreviewFiles(prev => prev.filter((_, i) => i !== index));
   };
 
-  // Upload files to backend
+  // Upload files to backend (now using Storj)
   const uploadFiles = async (files: File[]): Promise<string[]> => {
     const formData = new FormData();
     files.forEach((file) => {
@@ -1640,7 +1642,7 @@ export const Chat = () => {
                     <div className="w-full h-full bg-gray-600 animate-pulse rounded-full"></div>
                   ) : Chatphoto && Chatphoto !== "/icons/icons8-profile_user.png" && !ChatphotoError ? (
                     <Image
-                      src={Chatphoto}
+                      src={getImageSource(Chatphoto, 'profile').src}
                       alt="profile"
                       width={48}
                       height={48}

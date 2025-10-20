@@ -664,11 +664,6 @@ export const getAllCreatorRatings = createAsyncThunk<
   { creatorId: string; token: string }
 >("profile/getAllCreatorRatings", async (data) => {
   try {
-    console.log('🔍 [getAllCreatorRatings] API call:', { 
-      creatorId: data.creatorId, 
-      token: data.token ? 'present' : 'missing',
-      tokenLength: data.token?.length || 0
-    });
     
     const headers = data.token
       ? {
@@ -681,13 +676,10 @@ export const getAllCreatorRatings = createAsyncThunk<
     // Force localhost for development
     const apiUrl = process.env.NODE_ENV === "development" ? "http://localhost:3100" : URL;
     const url = `${apiUrl}/review/creator/${data.creatorId}/all`;
-    console.log('🔍 [getAllCreatorRatings] Making request to:', url);
     
     const response = await axios.get(url, { headers });
-    console.log('✅ [getAllCreatorRatings] Response:', response.data);
     return response.data;
   } catch (err) {
-    console.error('❌ [getAllCreatorRatings] Error:', err);
     throw getErrorMessageWithNetworkFallback(err);
   }
 });

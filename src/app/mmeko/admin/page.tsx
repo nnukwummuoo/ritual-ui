@@ -10,6 +10,7 @@ import {
     IoHomeOutline,
     IoChatbubbleOutline,
     IoAnalyticsOutline,
+    IoServerOutline,
 } from "react-icons/io5";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "@/store/store";
@@ -27,6 +28,7 @@ import Users from "./users/page";
 import Reports from "./reports/page";
 import AdminSupportChat from "./support-chat/page";
 import VipAnalysisPage from "./vip-analysis/page";
+import BackupManagement from "./backup/page";
 import PushNotificationToggle from "@/components/PushNotificationToggle";
 
 const AdminPage = () => {
@@ -151,6 +153,11 @@ const AdminPage = () => {
       name: "Users",
       icon: <IoPeopleOutline size={22} />,
       component: <Users />,
+    },
+    {
+      name: "Backup Management",
+      icon: <IoServerOutline size={22} />,
+      component: <BackupManagement />,
     },
   ];
 

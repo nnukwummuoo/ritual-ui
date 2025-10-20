@@ -4,6 +4,7 @@
 
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
+import { URL as API_BASE } from "@/api/config";
 import { useRouter, useParams } from "next/navigation";
 import optionicon from "@/icons/editcommenticon.svg";
 import editIcon from "@/icons/edit.svg";
@@ -362,13 +363,6 @@ export default function Creatorbyid () {
 
     // Fetch ALL ratings using the new 5-star rating system (both fan-to-creator and creator-to-creator)
     if (ratings_stats !== "loading") {
-      console.log('🔍 [CreatorPortfolio] Fetching ALL ratings for creator:', { 
-        creatorId: Creator[0], 
-        token: token ? 'present' : 'missing',
-        tokenLength: token?.length || 0,
-        reduxToken: reduxToken ? 'present' : 'missing',
-        sessionToken: session?.token ? 'present' : 'missing'
-      });
       dispatch(
         getAllCreatorRatings({
           creatorId: Creator[0],
@@ -384,12 +378,23 @@ export default function Creatorbyid () {
       setshowcreator(true);
       checkcrush();
 
-      const linksimg =
-        typeof creator.photolink === "string" && creator.photolink.trim()
-          ? creator.photolink.split(",").filter((url: string) => url.trim())
-          : Array.isArray(creator.photolink) && creator.photolink.length > 0
-          ? creator.photolink.filter((url: string) => url.trim())
-          : [];
+      // Prefer new shape from backend: creator.creatorfiles[].creatorfilelink
+      // Fallback to legacy creator.photolink (string or string[])
+      const linksimg = Array.isArray((creator as any).creatorfiles) && (creator as any).creatorfiles.length > 0
+        ? (creator as any).creatorfiles
+            .map((f: any) => f?.creatorfilelink)
+            .filter((url: string) => typeof url === 'string' && url.trim())
+        : (typeof creator.photolink === "string" && creator.photolink.trim())
+            ? creator.photolink.split(",").filter((url: string) => url.trim())
+            : (Array.isArray(creator.photolink) && creator.photolink.length > 0)
+              ? (creator.photolink as string[]).filter((url: string) => typeof url === 'string' && url.trim())
+              : [];
+
+      try {
+        console.log('[CreatorPortfolio][images] derived linksimg:', linksimg);
+        console.log('[CreatorPortfolio][images] from creatorfiles:', Array.isArray((creator as any).creatorfiles) ? (creator as any).creatorfiles : 'no creatorfiles');
+        console.log('[CreatorPortfolio][images] legacy photolink:', creator.photolink);
+      } catch {}
 
       setphotocount(linksimg.length);
 
@@ -565,6 +570,7 @@ export default function Creatorbyid () {
   };
 
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [imgError, setImgError] = useState(false);
 
   const checkimg = () => {
     if (loading === false) {
@@ -572,14 +578,52 @@ export default function Creatorbyid () {
         return (
           <div className="pt-2 pb-4 md:pt-60">
             <div className="relative w-full h-[300px] overflow-hidden rounded-md">
-              <Image
-                height={300}
-                width={400}
-                alt="host pics"
-                src={imglist[currentImageIndex]}
-                className="object-cover w-full h-full cursor-pointer hover:opacity-90 transition-opacity duration-200"
-                onClick={() => openModal(imglist[currentImageIndex])}
-              />
+              {(() => {
+                const original = String(imglist[currentImageIndex] || '').trim();
+                const isStorj = original.startsWith('https://gateway.storjshare.io/');
+                const key = (() => {
+                  try { const parts = original.split('/'); return parts[parts.length - 1]; } catch { return ''; }
+                })();
+                // For Storj gateway (403 on direct), always proxy through backend
+                const src = isStorj && key
+                  ? (() => {
+                      // Extract bucket name from the original URL
+                      const urlParts = original.split('/');
+                      const bucketIndex = urlParts.findIndex(part => part === 'gateway.storjshare.io') + 1;
+                      const bucket = urlParts[bucketIndex] || 'post'; // Default to 'post' for legacy images
+                      return `${API_BASE}/api/image/view?publicId=${encodeURIComponent(key)}&bucket=${bucket}`;
+                    })()
+                  : original;
+                // Render image (use <img> to avoid optimizer issues)
+                if (imgError || isStorj) {
+                  return (
+                    <img
+                      height={300}
+                      width={400}
+                      alt="host pics"
+                      src={src}
+                      className="object-cover w-full h-full cursor-pointer hover:opacity-90 transition-opacity duration-200"
+                      onClick={() => openModal(src)}
+                      onLoad={() => { try { console.log('[CreatorPortfolio][img] onLoad src:', src); } catch {} }}
+                      onError={() => { try { console.warn('[CreatorPortfolio][img] onError src:', src); } catch {}; setImgError(true); }}
+                    />
+                  );
+                }
+                return (
+                  <Image
+                    height={300}
+                    width={400}
+                    alt="host pics"
+                    src={src}
+                    className="object-cover w-full h-full cursor-pointer hover:opacity-90 transition-opacity duration-200"
+                    onClick={() => openModal(src)}
+                    unoptimized
+                    onLoadingComplete={() => { try { console.log('[CreatorPortfolio][next-image] loaded src:', src); } catch {} }}
+                    onError={() => { try { console.warn('[CreatorPortfolio][next-image] onError src:', src); } catch {}; setImgError(true); }}
+                    priority
+                  />
+                );
+              })()}
               
               {/* Navigation arrows */}
               {imglist.length > 1 && (

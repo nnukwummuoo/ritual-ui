@@ -16,6 +16,10 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
+        hostname: "gateway.storjshare.io",
+      },
+      {
+        protocol: "https",
         hostname: "flagcdn.com",
       },
       {
@@ -24,6 +28,8 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  // Note: avoid setting a strict CSP here, it breaks Next.js dev overlay and inline styles/scripts.
+  // If you need CSP, add it at your reverse proxy and allow Next dev requirements.
   async rewrites() {
     return [
       {

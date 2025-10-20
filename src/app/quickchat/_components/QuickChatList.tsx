@@ -5,6 +5,7 @@ import { URL as API_URL } from "@/api/config";
 import axios from "axios";
 import Image from "next/image";
 import { MessageCircle, Clock } from "lucide-react";
+import { getImageSource } from "@/lib/imageUtils";
 
 interface QuickChatItem {
   fromid: string;
@@ -235,7 +236,7 @@ export const QuickChatList = ({ userid, isLoggedIn }: { userid: string; isLogged
                          message.photolink !== undefined &&
                          message.photolink.length > 0 ? (
                     <Image
-                      src={message.photolink}
+                      src={getImageSource(message.photolink, 'profile').src}
                       alt={message.name}
                       width={48}
                       height={48}
