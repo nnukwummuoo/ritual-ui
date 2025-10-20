@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import backend from "@/api/backendApi";
 
@@ -64,11 +65,17 @@ export async function getMyCreator(params: { userid: string; token?: string }) {
   const data = res.data;
 
   if (data.ok && data.host) {
-    // Ensure a fallback image exists
-    data.host = data.host.map((creator: any) => ({
-      ...creator,
-      displayImage: (creator.photolink && creator.photolink[0]) || "/default-image.png",
-    }));
+    // Ensure a fallback image exists - prioritize creatorfiles over photolink
+    data.host = data.host.map((creator: any) => {
+      const firstImage = (creator.creatorfiles && creator.creatorfiles.length > 0) 
+        ? creator.creatorfiles[0]?.creatorfilelink 
+        : (creator.photolink && creator.photolink[0]);
+      
+      return {
+        ...creator,
+        displayImage: firstImage || "/default-image.png",
+      };
+    });
   }
 
   return data;
@@ -81,25 +88,12 @@ export async function editCreatorMultipart(params: {
   data: Record<string, any>; // must include userId and creator_portfolio_id
   files?: Array<File | Blob>;
 }) {
-  console.log("📡 [editCreatorMultipart] Starting edit API call");
-  console.log("📡 [editCreatorMultipart] Parameters:", {
-    userId: params.data.userId,
-    creator_portfolio_id: params.data.creator_portfolio_id,
-    token: params.token ? "present" : "missing",
-    filesCount: params.files?.length || 0
-  });
 
   const { token, data, files = [] } = params;
 
   if (!data.userId) throw new Error("Missing userId in data for editCreatorMultipart");
   if (!token) throw new Error("Missing token for editCreatorMultipart");
 
-  console.log("📡 [editCreatorMultipart] Files details:", {
-    count: files.length,
-    fileNames: files.map(f => f.name),
-    fileSizes: files.map(f => f.size),
-    fileTypes: files.map(f => f.type)
-  });
 
   const api = backend(token);
   const form = new FormData();
@@ -120,33 +114,13 @@ export async function editCreatorMultipart(params: {
     }
   });
 
-  console.log("📡 [editCreatorMultipart] FormData entries:", Array.from(form.entries()).map(([key, value]) => ({ 
-    key, 
-    type: typeof value, 
-    isFile: value instanceof File,
-    value: value instanceof File ? `File: ${value.name}` : String(value).substring(0, 100)
-  })));
 
-  console.log("📡 [editCreatorMultipart] Sending data:", {
-    userId: data.userId,
-    creator_portfolio_id: data.creator_portfolio_id,
-    existingImages: data.existingImages,
-    imagesToDelete: data.imagesToDelete,
-    newFilesCount: files.length
-  });
 
-  console.log("📡 [editCreatorMultipart] Making API request to /editcreator");
 
   const res = await api.post("/editcreator", form, {
     headers: { "Content-Type": "multipart/form-data" },
   });
   
-  console.log("📡 [editCreatorMultipart] API response:", {
-    status: res.status,
-    statusText: res.statusText,
-    data: res.data
-  });
   
-  console.log("✅ [editCreatorMultipart] Edit API call successful");
   return res.data;
 }

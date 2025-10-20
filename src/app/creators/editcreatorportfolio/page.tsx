@@ -318,11 +318,6 @@ export default function Editcreator () {
       // Only send new images if there are any
       const filesToUpload = newImages.length > 0 ? newImages : [];
       
-      console.log("🔄 [EditCreatorPortfolio] Calling editCreatorMultipart with:", {
-        token: token ? "present" : "missing",
-        dataKeys: Object.keys(data),
-        filesToUploadCount: filesToUpload.length
-      });
       
       await editCreatorMultipart({ 
         token, 
@@ -330,7 +325,6 @@ export default function Editcreator () {
         files: filesToUpload
       });
       
-      console.log("✅ [EditCreatorPortfolio] editCreatorMultipart completed successfully");
       toast.success("Portfolio updated successfully");
       router.push(`/creators/${creator_portfolio_id}`);
     } catch (err:any) {
@@ -786,27 +780,50 @@ export default function Editcreator () {
                 <div className="mt-4">
                   <h3 className="text-sm font-medium text-slate-300 mb-2">Current Photos</h3>
                   <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
-                    {existingImages.map((imageUrl, index) => (
-                      <div key={`existing-${index}`} className="relative group">
-                        <Image
-                          width={100}
-                          height={100}
-                          alt={`existing-${index}`}
-                          src={imageUrl}
-                          className="object-cover w-full border rounded-lg h-36 border-slate-600"
-                        />
-                        <button
-                          onClick={() => removeExistingImage(index)}
-                          className="absolute p-1 text-xs text-white transition bg-red-500 rounded-full opacity-0 top-2 right-2 group-hover:opacity-100"
-                          title="Remove"
-                        >
-                          ✕
-                        </button>
-                        <div className="absolute px-2 py-1 text-xs text-white bg-blue-500 rounded bottom-2 left-2">
-                          Current
+                    {existingImages.map((imageUrl, index) => {
+                      // Handle Storj URLs with backend proxy (same logic as creator portfolio page)
+                      const isStorj = imageUrl.startsWith('https://gateway.storjshare.io/');
+                      const key = isStorj ? imageUrl.split('/').pop() : '';
+                      const computedSrc = isStorj
+                        ? (() => {
+                            // Extract bucket name from the original URL
+                            const urlParts = imageUrl.split('/');
+                            const bucketIndex = urlParts.findIndex(part => part === 'gateway.storjshare.io') + 1;
+                            const bucket = urlParts[bucketIndex] || 'post'; // Default to 'post' for legacy images
+                            return `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3100'}/api/image/view?publicId=${key}&bucket=${bucket}`;
+                          })()
+                        : imageUrl;
+                      
+                      console.log('[EditPortfolio][existing] original URL:', imageUrl);
+                      console.log('[EditPortfolio][existing] using proxy?:', isStorj);
+                      console.log('[EditPortfolio][existing] computed src:', computedSrc);
+                      
+                      return (
+                        <div key={`existing-${index}`} className="relative group">
+                          <Image
+                            width={100}
+                            height={100}
+                            alt={`existing-${index}`}
+                            src={computedSrc}
+                            className="object-cover w-full border rounded-lg h-36 border-slate-600"
+                            unoptimized
+                            onError={(e) => {
+                              console.error('[EditPortfolio][existing] Image load error:', e.currentTarget.src);
+                            }}
+                          />
+                          <button
+                            onClick={() => removeExistingImage(index)}
+                            className="absolute p-1 text-xs text-white transition bg-red-500 rounded-full opacity-0 top-2 right-2 group-hover:opacity-100"
+                            title="Remove"
+                          >
+                            ✕
+                          </button>
+                          <div className="absolute px-2 py-1 text-xs text-white bg-blue-500 rounded bottom-2 left-2">
+                            Current
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               )}

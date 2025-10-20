@@ -14,6 +14,7 @@ const PROD_BASE = "https://mmekoapi.onrender.com"; // fallback when local proxy 
 import PostSkeleton from "../../../components/PostSkeleton";
 import { toast } from "material-react-toastify";
 import PostActions from "../../../components/home/PostActions";
+import { getImageSource } from "@/lib/imageUtils";
 
 function PostSingle() {
     const dispatch = useDispatch<AppDispatch>();
@@ -61,11 +62,16 @@ function PostSingle() {
     const isBlobUrl = typeof asString === "string" && /^blob:/i.test(asString);
     const isDataUrl = typeof asString === "string" && /^data:/i.test(asString);
     const isUrl = isHttpUrl || isBlobUrl || isDataUrl;
+    
+    // Use bucket detection for Storj URLs
+    const imageSource = getImageSource(asString, 'post');
+    const src = imageSource.src;
+    
+    // Keep fallback URLs for error handling
     const queryUrlPrimary = asString ? `${API_BASE}/api/image/view?publicId=${encodeURIComponent(asString)}` : "";
     const pathUrlPrimary = asString ? `${API_BASE}/api/image/view/${encodeURIComponent(asString)}` : "";
     const queryUrlFallback = asString ? `${PROD_BASE}/api/image/view?publicId=${encodeURIComponent(asString)}` : "";
     const pathUrlFallback = asString ? `${PROD_BASE}/api/image/view/${encodeURIComponent(asString)}` : "";
-    const src = isUrl ? asString : queryUrlPrimary;
 
     // Derive display name and handle from multiple possible fields
     const combinedName = [thePost?.user?.firstname, thePost?.user?.lastname].filter(Boolean).join(" ");

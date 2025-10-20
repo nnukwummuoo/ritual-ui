@@ -11,6 +11,7 @@ import { getprofile, follow as followThunk, unfollow as unfollowThunk } from "@/
 const PROD_BASE = "https://mmekoapi.onrender.com"; // fallback when local proxy is down
 import { toast } from "material-react-toastify";
 import {useRouter} from "next/navigation"
+import { getImageSource } from "@/lib/imageUtils";
 
 function PostSingle() {
         const router = useRouter()
@@ -55,12 +56,14 @@ function PostSingle() {
         p?.postfilelink||
         "";
     const asString = typeof mediaRef === "string" ? mediaRef : (mediaRef?.publicId || mediaRef?.public_id || mediaRef?.url || "");
-    const isHttpUrl = typeof asString === "string" && /^https?:\/\//i.test(asString);;
+    const isHttpUrl = typeof asString === "string" && /^https?:\/\//i.test(asString);
     const isBlobUrl = typeof asString === "string" && /^blob:/i.test(asString);
     const isDataUrl = typeof asString === "string" && /^data:/i.test(asString);
     const isUrl = isHttpUrl || isBlobUrl || isDataUrl;
-    const queryUrlPrimary = asString ? `${API_BASE}/api/image/view?publicId=${encodeURIComponent(asString)}` : "";
-    const src = isUrl ? asString : queryUrlPrimary;
+    
+    // Use bucket detection for Storj URLs
+    const imageSource = getImageSource(asString, 'post');
+    const src = imageSource.src;
     return <>
         <div className="container mx-auto p-4">
             <div className="bg-[#efefef20] p-6 rounded-lg shadow-md">

@@ -27,6 +27,7 @@ import { postlike } from "@/store/like";
 import { getpostcomment, postcomment } from "@/store/comment";
 import VIPBadge from "@/components/VIPBadge";
 import { checkVipCelebration, markVipCelebrationViewed } from "@/api/vipCelebration";
+import { getImageSource } from "@/lib/imageUtils";
 // Add the same constants from PostsCard
 const PROD_BASE = "https://mmekoapi.onrender.com"; // fallback when local proxy is down
 
@@ -859,11 +860,16 @@ export const Profile = () => {
     const isBlobUrl = typeof asString === "string" && /^blob:/i.test(asString);
     const isDataUrl = typeof asString === "string" && /^data:/i.test(asString);
     const isUrl = isHttpUrl || isBlobUrl || isDataUrl;
+    
+    // Use bucket detection for Storj URLs
+    const imageSource = getImageSource(asString, 'post');
+    const src = imageSource.src;
+    
+    // Keep fallback URLs for error handling
     const queryUrlPrimary = asString ? `${API_URL}/api/image/view?publicId=${encodeURIComponent(asString)}` : "";
     const pathUrlPrimary = asString ? `${API_URL}/api/image/view/${encodeURIComponent(asString)}` : "";
     const queryUrlFallback = asString ? `${API_URL}/api/image/view?publicId=${encodeURIComponent(asString)}` : "";
     const pathUrlFallback = asString ? `${API_URL}/api/image/view/${encodeURIComponent(asString)}` : "";
-    const src = isUrl ? asString : queryUrlPrimary;
 
     return {
       src,

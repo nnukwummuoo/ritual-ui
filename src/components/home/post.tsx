@@ -16,6 +16,7 @@ import PostActions from "./PostActions";
 import { toast } from "material-react-toastify";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { getImageSource } from "@/lib/imageUtils";
 
 // Utility function to format relative time
 const formatRelativeTime = (timestamp: string | number | Date): string => {
@@ -468,6 +469,7 @@ export default function PostsCard() {
         }
 
         const mediaRef =
+          p?.postfilelink ||
           p?.postphoto ||
           p?.postvideo ||
           p?.postlink ||
@@ -479,22 +481,26 @@ export default function PostsCard() {
           p?.image ||
           p?.video ||
           p?.thumblink ||
+          p?.postfilepublicid ||
           p?.publicId ||
           p?.public_id ||
           p?.imageId ||
-          p?.postfilepublicid ||
-          p?.postfilelink||
           "";
         const asString = typeof mediaRef === "string" ? mediaRef : (mediaRef?.publicId || mediaRef?.public_id || mediaRef?.url || "");
         const isHttpUrl = typeof asString === "string" && /^https?:\/\//i.test(asString);
         const isBlobUrl = typeof asString === "string" && /^blob:/i.test(asString);
         const isDataUrl = typeof asString === "string" && /^data:/i.test(asString);
         const isUrl = isHttpUrl || isBlobUrl || isDataUrl;
+        
+        // Use bucket detection for Storj URLs
+        const imageSource = getImageSource(asString, 'post');
+        const src = imageSource.src;
+        
+        // Keep fallback URLs for error handling
         const queryUrlPrimary = asString ? `${API_BASE}/api/image/view?publicId=${encodeURIComponent(asString)}` : "";
         const pathUrlPrimary = asString ? `${API_BASE}/api/image/view/${encodeURIComponent(asString)}` : "";
         const queryUrlFallback = asString ? `${PROD_BASE}/api/image/view?publicId=${encodeURIComponent(asString)}` : "";
         const pathUrlFallback = asString ? `${PROD_BASE}/api/image/view/${encodeURIComponent(asString)}` : "";
-        const src = isUrl ? asString : queryUrlPrimary;
 
         const combinedName = [p?.user?.firstname, p?.user?.lastname].filter(Boolean).join(" ");
         let displayName =

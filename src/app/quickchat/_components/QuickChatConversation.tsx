@@ -9,6 +9,7 @@ import { URL as API_URL } from "@/api/config";
 import axios from "axios";
 import Image from "next/image";
 import { Send, ArrowLeft, Paperclip, X, File, Download } from "lucide-react";
+import { getImageSource } from "@/lib/imageUtils";
 
 export const QuickChatConversation = () => {
   const { userid } = useParams<{ userid: string }>();
@@ -236,7 +237,7 @@ export const QuickChatConversation = () => {
     setPreviewFiles(prev => prev.filter((_, i) => i !== index));
   };
 
-  // Upload files to backend
+  // Upload files to backend (now using Storj)
   const uploadFiles = async (files: File[]) => {
     if (files.length === 0) return [];
 
@@ -626,9 +627,10 @@ export const QuickChatConversation = () => {
                       chatInfo.photolink !== null &&
                       chatInfo.photolink !== undefined &&
                       chatInfo.photolink.length > 0) {
+                    const imageSource = getImageSource(chatInfo.photolink, 'profile');
                     return (
                       <Image
-                        src={chatInfo.photolink}
+                        src={imageSource.src}
                         alt="profile"
                         width={48}
                         height={48}

@@ -2,6 +2,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import React from 'react'
 import VIPBadge from './VIPBadge'
+import { getImageSource } from '@/lib/imageUtils'
 
 export default function Profile({name, firstname, lastname, src, url,gold_balance, pending_balance, isVip, vipEndDate, onClick}: 
     {name: string, firstname?: string, lastname?: string, src: string, url: string,gold_balance:number|string, pending_balance?: number|string, isVip?: boolean, vipEndDate?: string, onClick?: () => void}) {
@@ -22,10 +23,11 @@ export default function Profile({name, firstname, lastname, src, url,gold_balanc
             const initials = userName.split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2) || "?";
             
             if (profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined") {
+              const imageSource = getImageSource(profileImage, 'profile');
               return (
                 <Image
                   alt={displayName}
-                  src={profileImage}
+                  src={imageSource.src}
                   width={48}
                   height={48}
                   className="w-12 h-12 object-cover bg-slate-900 rounded-full"
