@@ -11,6 +11,7 @@ import { MessageCircle } from "lucide-react";
 import { getSocket, joinUserRoom, leaveUserRoom, onUserOnline, onUserOffline, removeTypingListeners } from "@/lib/socket";
 import { useOnlineStatus } from "@/contexts/OnlineStatusContext";
 import VIPBadge from "@/components/VIPBadge";
+import { getImageSource } from "@/lib/imageUtils";
 
 interface MessageItem {
   fromid: string;
@@ -420,7 +421,7 @@ export const MessageList = () => {
                userProfilePicture !== undefined &&
                userProfilePicture.length > 0 ? (
                 <Image
-                  src={userProfilePicture}
+                  src={getImageSource(userProfilePicture, 'profile').src}
                   alt={message.name}
                   width={48}
                   height={48}
