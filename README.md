@@ -13,6 +13,10 @@ A comprehensive platform connecting creators with fans through various interacti
 7. [Gold System](#gold-system)
 8. [VIP System](#vip-system)
 9. [Admin Panel](#admin-panel)
+10. [Login System](#login-system)
+11. [Registration System](#registration-system)
+12. [Become a Creator](#became-a-creator)
+13. [Profile Slice](#profile-slice)
 
 ---
 
@@ -1282,6 +1286,588 @@ Comprehensive admin panel for platform management and user oversight.
 - **File uploads**: Image and document handling
 - **Payment integration**: Gold and real money transactions
 
+
+---
+
+🧭 Authentication & Profile Management Documentation
+
+This document describes how Login, Registration, and Profile Management are implemented across the system using Next.js, React, Redux, and API routes.
+
+
+---
+
+🔐 LOGIN MODULE
+
+Overview
+
+User login is handled through a combination of React components, Redux state management, and API routes that connect the frontend to the backend authentication system.
+
+
+---
+
+UI / UX
+
+The login interface is provided by the LoginView component and rendered on the /login page (page.tsx).
+
+Users must enter their @username and password.
+
+Users must also agree to the Terms and Conditions before proceeding.
+
+Local state handles form inputs, while Redux manages authentication state.
+
+
+
+---
+
+Frontend Flow
+
+1. Form Submission
+
+The handleLogin function prevents default form behavior, collects form data, and performs validation.
+
+Calls the isRegistered function to verify credentials.
+
+
+
+2. On Success
+
+Stores user data (e.g., nickname, userID, tokens) in localStorage.
+
+Updates the Redux store with setUser and setIsLoggedIn.
+
+Creates a session via /api/session (cookie-based).
+
+Redirects the user to the homepage.
+
+
+
+3. On Failure
+
+Displays descriptive error messages (e.g., “Invalid credentials”, “Missing fields”).
+
+
+
+
+
+---
+
+Backend Logic
+
+API route: /api/login/route.ts
+
+Acts as a proxy, forwarding requests to either the development or production backend URL.
+
+Handles request and response transformation, including passing cookies and authentication tokens.
+
+
+
+---
+
+API Specification
+
+Endpoint
+
+POST /login
+
+Request Body
+
+{
+  "nickname": "@username",
+  "password": "yourpassword"
+}
+
+Validation
+
+All fields are required.
+
+nickname must start with @.
+
+Verifies that the user exists and password matches.
+
+
+Response
+
+✅ Success: Returns user data and authentication tokens.
+
+❌ Failure: Returns descriptive error messages.
+
+
+
+---
+
+Security Notes
+
+Tokens should be stored securely by the client.
+
+Sessions can be managed using cookies where applicable.
+
+
+
+---
+
+🪪 REGISTRATION MODULE
+
+Overview
+
+User registration is a multi-step guided process that collects and validates personal information before account creation.
+
+
+---
+
+UI / UX
+
+Implemented in RegisterComponent.tsx.
+
+Includes multiple steps:
+
+Personal Details
+
+Gender
+
+Username
+
+Password
+
+Terms Agreement
+
+
+Each step includes validation (name format, password confirmation, username pattern, etc.).
+
+The form prevents users from proceeding without valid data at each step.
+
+
+
+---
+
+Frontend Flow
+
+1. User completes the registration form step-by-step.
+
+
+2. Each step is validated before moving forward.
+
+
+3. Final submission aggregates all data and sends it to the registration API.
+
+
+4. Displays error messages for duplicate usernames, weak passwords, or missing information.
+
+
+5. Optional: Email or phone verification can be required for activation.
+
+
+
+
+---
+
+Backend Logic
+
+API route: /api/register/route.ts
+
+Uses:
+
+POST ${URL}/register
+
+Redux async actions (in registerSlice.ts) manage registration state and loading status.
+
+
+
+---
+
+API Specification
+
+Endpoint
+
+POST /register
+
+Request Body
+
+{
+  "firstname": "John",
+  "lastname": "Doe",
+  "gender": "male",
+  "nickname": "@username",
+  "password": "yourpassword",
+  "age": "18",
+  "country": "Country",
+  "dob": "YYYY-MM-DD",
+  "secretPhrase": ["word1", "word2", "word3"]
+}
+
+Validation
+
+All fields are required except optional ones.
+
+nickname must be unique.
+
+Password strength and confirmation are checked.
+
+Username pattern must match:
+
+@[a-z0-9_]{3,15}
+
+
+Response
+
+✅ Success: Returns success message and optionally authentication tokens.
+
+❌ Failure: Returns validation or duplication error messages.
+
+
+
+---
+
+Notes
+
+Client-side validation is handled via regex and required fields.
+
+No Zod validation used in current implementation.
+
+After successful registration, users can immediately log in.
+
+
+
+---
+
+👤 PROFILE SLICE
+
+Overview
+
+Profile management in Redux centralizes user data and related states like VIP status, notifications, and creator verification.
+
+
+---
+
+State Structure
+
+Defined in profile.ts:
+
+{
+  userId: string,
+  token: string,
+  name: string,
+  email: string,
+  nickname: string,
+  country: string,
+  balance: number,
+  isCreator: boolean,
+  photo: string,
+  bio: string,
+  vipStatus: string,
+  notifications: [],
+  loading: boolean
+}
+
+
+---
+
+Reducers & Thunks
+
+getProfile → Fetches the user’s profile from the backend.
+
+updateProfile → Updates user information.
+
+setProfile → Manually sets profile data.
+
+clearProfile → Resets profile on logout.
+
+
+
+---
+
+Data Management
+
+Profile data is fetched upon login and stored in Redux.
+
+The store reflects creator status, VIP membership, and current balance in real time.
+
+Profile photos and bios are handled through multipart form uploads.
+
+
+
+---
+
+References
+
+Login Components: /components/LoginView.tsx
+
+Register Components: /components/RegisterComponent.tsx
+
+Redux Files: /redux/slices/authSlice.ts, /redux/slices/registerSlice.ts, /redux/slices/profileSlice.ts
+
+API Routes: /api/login/route.ts, /api/register/route.ts, /api/session/route.ts
+
+
+---
+
+🌟 CREATOR ONBOARDING MODULE
+
+Overview
+
+The Creator Onboarding System enables users to apply, get verified, and manage their creator portfolio on the platform.
+It ensures a structured and secure process for identity verification, approval, and content eligibility.
+
+
+---
+
+User Flow
+
+1. Access the Creator Application
+
+Users who are not yet creators will see a “Become a Creator” button or icon on their dashboard.
+
+Clicking it opens the Creator Application Form.
+
+
+
+2. Submit Application
+
+The form collects required personal details:
+
+Full Name
+
+Date of Birth
+
+Email
+
+Location
+
+Government-issued ID Card
+
+Selfie Photo (with a handwritten note verifying authenticity)
+
+
+The form validates all fields before allowing submission.
+
+
+
+3. Backend Submission
+
+Once submitted, the form data and uploaded files are sent via the createCreatorMultipart API route.
+This endpoint handles both file uploads (multipart) and JSON data together.
+
+
+
+4. Pending Review
+
+After submission, users are redirected to the homepage.
+
+Their application status is now pending, awaiting admin approval.
+
+During this stage, the “Become a Creator” icon remains visible but inactive.
+
+
+
+5. Admin Approval Process
+
+Admins review applications in the Creator Applications Dashboard.
+
+Upon approval:
+
+The user’s database field creatorVerified is switched to true.
+
+A success notification is automatically sent to the user.
+
+
+
+
+6. Creator Access Activation
+
+Once approved:
+
+The “Become a Creator” icon changes automatically to “Create Portfolio.”
+
+The user can now access the Portfolio Creation page and set up their public profile.
+
+
+
+
+7. Portfolio Creation
+
+The Create Portfolio page allows the new creator to:
+
+Upload a profile photo
+
+Write a short bio
+
+Set pricing and availability (depending on features enabled)
+
+Link their social profiles (optional)
+
+
+Upon successful creation, the icon updates to “My Portfolio.”
+
+
+
+8. Portfolio Management
+
+From My Portfolio, creators can:
+
+View and edit their public portfolio
+
+Update media or information
+
+Manage visibility
+
+
+If the creator deletes their portfolio:
+
+The icon automatically switches back to “Create Portfolio.”
+
+If they recreate it later, it switches again to “My Portfolio.”
+
+
+
+
+
+
+---
+
+Backend Logic
+
+Route Used: /api/creator/createCreatorMultipart
+
+Purpose: Handles both text data and file uploads in one request.
+
+Admin Review: Processed via the admin dashboard for manual approval.
+
+Database Behavior:
+
+creatorVerified: false → pending state
+
+creatorVerified: true → verified creator
+
+portfolioExists: true/false → toggles the UI icon behavior
+
+
+
+
+---
+
+Database Fields
+
+Field Name                	Type                    	Description
+
+userId	                   String              	ID of the user applying
+
+fullName	                 String	             Creator’s legal full name
+
+dob	                        Date	                   Date of birth
+
+email                    	 String	                   Contact email
+
+location                 	 String	                 Country or region
+
+idCardUrl	                 String	               Uploaded ID photo path
+
+verificationPhotoUrl    	 String	              Uploaded selfie with note
+
+creatorVerified	           Boolean	                 Approval status
+
+portfolioExists	           Boolean	           Whether the creator has a portfolio
+
+applicationDate	            Date	                 Submission timestamp
+
+reviewedBy	               String	              Admin who approved/rejected
+
+
+
+---
+
+Frontend Logic
+
+Step	   Component / Handler	                                   Description
+
+1	       CreatorApplication.tsx	                        Displays the form and handles validation
+
+2	       createCreatorMultipart()	                      Sends multipart form data to API
+
+3	       useSelector(profile.creatorVerified)	          Dynamically updates UI state
+
+4	       NotificationHandler	                          Sends in-app alert when approved
+
+5	       Icon Switcher Logic	                          Controls icon between “Become Creator,” “Create Portfolio,” and “My Portfolio”
+
+
+
+---
+
+UI Behavior Summary
+
+User State	                                     Icon Shown	                                         Action
+
+Not applied                                   “Become a Creator”	                              Opens application form
+
+Pending	                                      “Application Pending”                         	Disabled, waiting for admin
+
+Verified (no portfolio)	                      “Create Portfolio”	                            Opens portfolio creation page
+
+Verified (with portfolio)	                    “My Portfolio”	                                     Opens portfolio page
+
+Portfolio deleted	                            “Create Portfolio”	                                   Reverts icon
+
+
+
+---
+
+Notifications
+
+Trigger                                   	               Message
+
+Application submitted	               “Your Creator Application has been submitted and is pending review.”
+Application approved	                “Congratulations! Your Creator Application has been approved.”
+Application rejected	                “Your Creator Application was not approved. Please review and try again.”
+Portfolio created	                    “Your creator portfolio has been successfully created.”
+Portfolio deleted	                    “Your creator portfolio has been removed.”
+
+
+
+---
+
+Security & Validation
+
+ID and selfie photos are securely stored and accessible only to admins.
+
+All form inputs are validated client-side before submission.
+
+The backend enforces MIME type checks and size limits for uploads.
+
+Only verified users can access creator-related routes or create portfolios.
+
+
+
+---
+
+References
+
+Frontend Components
+
+CreatorApplication.tsx
+
+PortfolioManager.tsx
+
+
+Redux Slice
+
+creatorSlice.ts
+
+
+Backend Routes
+
+/api/creator/createCreatorMultipart
+
+/api/admin/approveCreator
+
+
+Database Models
+
+CreatorApplication
+
+User
+
+
+
+
 ---
 
 ## Getting Started
@@ -1310,7 +1896,10 @@ npm run dev
 ```env
 MONGODB_URI=your_mongodb_connection_string
 JWT_SECRET=your_jwt_secret
-API_URL=your_api_url
+NEXT_PUBLIC_URL=your_api_url
+NEXT_PUBLIC_API=your_api
+NEXT_PUBLIC_SECRET=
+
 ```
 
 ---
