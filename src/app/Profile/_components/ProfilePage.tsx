@@ -12,6 +12,7 @@ import { getprofile, getfollow, getAllUsers, follow, unfollow, getAllUserRatings
 import { getViewingProfile, getViewingFollow, getAllUsersForViewing, clearViewingProfile } from "@/store/viewingProfile";
 import { checkVipStatus } from "@/store/vip";
 import type { AppDispatch, RootState } from "@/store/store";
+import { getImageSource } from "@/lib/imageUtils";
 import { updateEdit } from "@/store/comprofile";
 import { getSocket } from "@/lib/socket";
 import { BiPencil } from "react-icons/bi";
@@ -27,7 +28,7 @@ import { postlike } from "@/store/like";
 import { getpostcomment, postcomment } from "@/store/comment";
 import VIPBadge from "@/components/VIPBadge";
 import { checkVipCelebration, markVipCelebrationViewed } from "@/api/vipCelebration";
-import { getImageSource } from "@/lib/imageUtils";
+
 // Add the same constants from PostsCard
 const PROD_BASE = "https://mmekoapi.onrender.com"; // fallback when local proxy is down
 
@@ -1238,9 +1239,10 @@ const PostModal = () => {
                 const initials = userName.split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2) || "?";
                 
                 if (profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined") {
+                  const imageSource = getImageSource(profileImage, 'profile');
                   return (
                     <Image 
-                      src={profileImage} 
+                      src={imageSource.src} 
                       alt="Profile" 
                         width={48} 
                         height={48} 
@@ -1471,9 +1473,10 @@ const PostModal = () => {
                             const initials = userName.split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2) || "?";
                             
                             if (profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined") {
+                              const imageSource = getImageSource(profileImage, 'profile');
                               return (
                                 <Image
-                                  src={profileImage}
+                                  src={imageSource.src}
                                   alt="Your profile"
                                   width={32}
                                   height={32}
@@ -1561,10 +1564,11 @@ const PostModal = () => {
                         />
                       );
                     } else {
+                      const imageSource = getImageSource(profileImage, 'profile');
                       return (
                         <Image
                           alt="Profile Picture"
-                          src={profileImage}
+                          src={imageSource.src}
                           width={400}
                           height={400}
                           className="object-contain rounded-lg"
@@ -1693,10 +1697,11 @@ const PostModal = () => {
                             const initials = userName.split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2) || "?";
                             
                             if (profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined") {
+                              const imageSource = getImageSource(profileImage, 'profile');
                               return (
                                 <Image
                                   alt="profile picture"
-                                  src={profileImage}
+                                  src={imageSource.src}
                                   width={128}
                                   height={128}
                                   className="object-cover w-full h-full rounded-full"

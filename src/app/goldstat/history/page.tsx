@@ -479,7 +479,17 @@ const HistoryPage = () => {
                   <div>
                     <p className="text-sm font-medium">${request.amount}</p>
                     <p className="text-xs text-gray-400">
-                      {new Date(request.createdAt).toLocaleDateString()}
+                      {(() => {
+                        try {
+                          // Check both createdAt and requestedAt fields
+                          const dateField = request.createdAt || request.requestedAt;
+                          if (!dateField) return 'Date not available';
+                          const date = new Date(dateField);
+                          return isNaN(date.getTime()) ? 'Invalid date' : date.toLocaleDateString();
+                        } catch (error) {
+                          return 'Date not available';
+                        }
+                      })()}
                     </p>
                   </div>
                   <div className="text-right">
@@ -487,7 +497,18 @@ const HistoryPage = () => {
                       Pending
                     </span>
                     <p className="text-xs text-gray-400 mt-1">
-                      {request.credentials?.cryptoType || 'Crypto'}
+                      {(() => {
+                        const cryptoType = request.credentials?.cryptoType;
+                        if (!cryptoType) return 'Crypto';
+                        
+                        // Convert USDT_BEP20 to USDT (BEP20)
+                        if (cryptoType.includes('_')) {
+                          const [currency, network] = cryptoType.split('_');
+                          return `${currency} (${network})`;
+                        }
+                        
+                        return cryptoType;
+                      })()}
                     </p>
                   </div>
                 </div>
@@ -555,7 +576,18 @@ const HistoryPage = () => {
                 <p className="text-sm text-gray-300"><strong>Name:</strong> {paymentAccountDetails.fullName}</p>
                 <p className="text-sm text-gray-300"><strong>Email:</strong> {paymentAccountDetails.email}</p>
                 <p className="text-sm text-gray-300"><strong>Country:</strong> {paymentAccountDetails.country}</p>
-                <p className="text-sm text-gray-300"><strong>Crypto:</strong> {paymentAccountDetails.cryptoType}</p>
+                <p className="text-sm text-gray-300"><strong>Crypto:</strong> {(() => {
+                  const cryptoType = paymentAccountDetails.cryptoType;
+                  if (!cryptoType) return 'Crypto';
+                  
+                  // Convert USDT_BEP20 to USDT (BEP20)
+                  if (cryptoType.includes('_')) {
+                    const [currency, network] = cryptoType.split('_');
+                    return `${currency} (${network})`;
+                  }
+                  
+                  return cryptoType;
+                })()}</p>
                 <p className="text-sm text-gray-300 break-all"><strong>Wallet:</strong> {paymentAccountDetails.walletAddress}</p>
               </div>
             )}

@@ -18,6 +18,7 @@ import {
 } from 'react-icons/io5';
 import Image from 'next/image';
 import { getSocket } from '@/lib/socket';
+import { getImageSource } from '@/lib/imageUtils';
 import VIPBadge from '@/components/VIPBadge';
 
 interface SupportChat {
@@ -404,7 +405,7 @@ const AdminSupportChat = () => {
                     <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-700">
                       {chat.userid.photolink ? (
                         <Image
-                          src={chat.userid.photolink}
+                          src={getImageSource(chat.userid.photolink, 'profile').src}
                           alt={chat.userid.firstname}
                           width={40}
                           height={40}
@@ -477,7 +478,7 @@ const AdminSupportChat = () => {
                     <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-700">
                       {selectedChat.userid.photolink ? (
                         <Image
-                          src={selectedChat.userid.photolink}
+                          src={getImageSource(selectedChat.userid.photolink, 'profile').src}
                           alt={selectedChat.userid.firstname}
                           width={40}
                           height={40}

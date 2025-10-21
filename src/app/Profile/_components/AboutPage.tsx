@@ -8,6 +8,7 @@ import type { AppDispatch, RootState } from "@/store/store";
 import Image from "next/image";
 import Skeleton, { SkeletonTheme } from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
+import { getImageSource } from "@/lib/imageUtils";
 
 const AboutPage = () => {
   const params = useParams();
@@ -177,9 +178,10 @@ const AboutPage = () => {
                   const initials = userName.split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2) || "?";
                   
                   if (profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined") {
+                    const imageSource = getImageSource(profileImage, 'profile');
                     return (
                       <Image
-                        src={profileImage}
+                        src={imageSource.src}
                         alt="Profile picture"
                         width={120}
                         height={120}

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { URL } from "../api/config"
 // import { downloadImage, deleteImage, saveImage } from "../../../api/sendImage";
@@ -269,83 +270,78 @@ export const updateEdit = createAsyncThunk<any, UpdateEditPayload>("comprofile/u
     });
 
     try {
-        // Handle image upload by converting to data URL if needed
-        let imageDataUrl = "";
-        
+        // Validate image file if provided
         if (data.updatePhoto && data.updatePhoto instanceof File) {
-            console.log("Processing image upload by converting to data URL...");
+            console.log("Validating image file...");
             
-            // Validate the image file
             const validation = validateImageFile(data.updatePhoto, 5); // 5MB max
             if (!validation.valid) {
                 throw new Error(validation.error || "Invalid image file");
             }
             
-            // Convert image to data URL
-            try {
-                const reader = new FileReader();
-                const dataUrl = await new Promise<string>((resolve, reject) => {
-                    reader.onload = () => resolve(reader.result as string);
-                    reader.onerror = reject;
-                    reader.readAsDataURL(data.updatePhoto);
-                });
-                
-                imageDataUrl = dataUrl;
-                console.log("Image converted to data URL successfully");
-            } catch (dataUrlError) {
-                console.error("Failed to convert image to data URL:", dataUrlError);
-                throw new Error("Failed to process image. Please try again.");
-            }
+            console.log("Image file validation passed");
         }
         
-        // Always use the simple editprofile endpoint (no authentication, no file upload)
-        console.log("Using simple editprofile endpoint for all updates...");
+        // Use editprofilemore endpoint for proper file upload handling with profile bucket
+        console.log("Using editprofilemore endpoint for profile updates with proper bucket handling...");
         
-        const updateData = {
+        // Create FormData for file upload
+        const formData = new FormData();
+        formData.append('data', JSON.stringify({
             userid: data.userid,
             firstname: data.firstname,
             lastname: data.lastname,
-            nickname: data.nickname,
             bio: data.bio,
-            state: data.state || data.country,
             country: data.state || data.country,
+            deletePhotolink: data.deletePhotolink,
+            deletePhotoID: data.deletePhotoID
+        }));
 
-            // Include image data URL if available
-            ...(imageDataUrl && {
-                photolink: imageDataUrl,
-                photoID: `temp_${Date.now()}`
-            })
-        };
+        // Add file if provided
+        if (data.updatePhoto && data.updatePhoto instanceof File) {
+            formData.append('updatePhoto', data.updatePhoto);
+        }
 
-        console.log("Sending update data:", {
-            ...updateData,
-            photolink: imageDataUrl ? "data URL provided" : "no image",
-            photolinkLength: imageDataUrl?.length,
-            photolinkPreview: imageDataUrl?.substring(0, 50) + '...'
+        console.log("Sending profile update with FormData:", {
+            userid: data.userid,
+            hasFile: !!(data.updatePhoto && data.updatePhoto instanceof File),
+            fileName: data.updatePhoto instanceof File ? data.updatePhoto.name : 'no file'
         });
         
-        const response = await axios.post(`${URL}/editprofile`, updateData, {
+        console.log("Making request to editmoreprofile with:", {
+            url: `${URL}/editmoreprofile`,
+            formDataKeys: Array.from(formData.keys()),
+            note: "No authentication required - middleware removed to match other profile controllers"
+        });
+        
+        const response = await axios.post(`${URL}/editmoreprofile`, formData, {
             headers: {
-                "Content-Type": "application/json"
+                "Content-Type": "multipart/form-data"
             }
         });
 
         console.log("Profile update succeeded:", {
             status: response.status,
-            hasData: !!response.data
+            hasData: !!response.data,
+            responseData: response.data
         });
 
         return response.data;
 
     } catch (err) {
         console.error("updateEdit error:", err);
+        
         if (axios.isAxiosError(err)) {
-            console.error("updateEdit axios error:", {
+            const errorDetails = {
                 status: err.response?.status,
                 statusText: err.response?.statusText,
                 errorMessage: err.message,
-                responseData: err.response?.data
-            });
+                responseData: err.response?.data,
+                url: err.config?.url,
+                method: err.config?.method
+            };
+            
+            console.error("updateEdit axios error:", errorDetails);
             
             // Provide specific error messages based on status code
             if (err.response?.status === 401) {
@@ -354,9 +350,19 @@ export const updateEdit = createAsyncThunk<any, UpdateEditPayload>("comprofile/u
                 throw new Error("You don't have permission to update this profile.");
             } else if (err.response?.status === 400) {
                 throw new Error("Invalid profile data. Please check your information and try again.");
+            } else if (err.response?.status === 404) {
+                throw new Error("Profile update endpoint not found. Please try again later.");
+            } else if (err.response?.status === 500) {
+                throw new Error("Server error occurred while updating profile. Please try again.");
             }
         }
-        throw err;
+        
+        // Handle non-axios errors
+        if (err instanceof Error) {
+            throw new Error(`Profile update failed: ${err.message}`);
+        }
+        
+        throw new Error("An unexpected error occurred while updating your profile.");
     }
 })
 
@@ -456,8 +462,19 @@ const comprofile = createSlice({
             }
             )
             .addCase(updateEdit.fulfilled, (state, action) => {
-
                 state.updateEdit_stats = 'succeeded'
+                
+                // Update the profile data with the new information
+                if (action.payload && action.payload.profile) {
+                    console.log("Updating profile data in Redux:", action.payload.profile);
+                    state.editData = {
+                        ...state.editData,
+                        ...action.payload.profile
+                    };
+                    console.log("Updated editData with new photolink:", action.payload.profile.photolink);
+                } else {
+                    console.log("No profile data in response:", action.payload);
+                }
             }
 
             )
@@ -478,3 +495,4 @@ export const { comprofilechangeStatus, resetprofilebyid } = comprofile.actions;
 // Local root type for this slice to avoid implicit any on selectors
 type ComProfileRootState = { comprofile: ComProfileState };
 export const Compfstatus = (state: ComProfileRootState) => state.comprofile.status;
+
