@@ -112,6 +112,13 @@ export const Chat = () => {
     }
   };
 
+  // File modal state
+  const [selectedFileModal, setSelectedFileModal] = useState<{
+    fileUrl: string;
+    fileName?: string;
+    type: string;
+  } | null>(null);
+
   // File preview component with skeleton loading (same as QuickChatConversation)
   const FilePreview = ({ fileUrl, fileName }: { fileUrl: string; fileName?: string }) => {
     const [isLoading, setIsLoading] = useState(true);
@@ -210,13 +217,13 @@ export const Chat = () => {
         )}
         
         {isImage && (
-          <div className="relative">
+          <div className="relative cursor-pointer" onClick={() => setSelectedFileModal({ fileUrl, fileName, type: 'image' })}>
             <Image
               src={fullUrl}
               alt="Shared image"
               width={200}
               height={200}
-              className="rounded-lg object-cover max-w-full h-auto"
+              className="rounded-lg object-cover max-w-full h-auto hover:opacity-90 transition-opacity"
               onLoad={handleLoad}
               onError={(e) => {
                 const img = e.currentTarget as HTMLImageElement & { dataset: any };
@@ -243,11 +250,11 @@ export const Chat = () => {
         )}
         
         {isVideo && (
-          <div className="relative">
+          <div className="relative cursor-pointer" onClick={() => setSelectedFileModal({ fileUrl, fileName, type: 'video' })}>
             <video
               src={fullUrl}
               controls
-              className="rounded-lg max-w-full h-auto"
+              className="rounded-lg max-w-full h-auto hover:opacity-90 transition-opacity"
               style={{ maxHeight: '200px' }}
               onLoadedData={handleLoad}
               onError={(e) => {
@@ -1966,6 +1973,89 @@ export const Chat = () => {
           )}
         </button>
       </div>
+
+      {/* File Modal */}
+      {selectedFileModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-90" onClick={() => setSelectedFileModal(null)}>
+          <div className="relative max-w-4xl max-h-4xl w-full h-full flex items-center justify-center p-4">
+            {/* Close Button */}
+            <button
+              onClick={() => setSelectedFileModal(null)}
+              className="absolute top-4 right-4 z-10 w-10 h-10 bg-black bg-opacity-50 text-white rounded-full flex items-center justify-center hover:bg-opacity-70 transition-all"
+            >
+              <X className="w-6 h-6" />
+            </button>
+            
+            {/* File Content */}
+            <div className="relative w-full h-full flex items-center justify-center">
+              {selectedFileModal.type === 'image' && (
+                <Image
+                  src={getImageSource(selectedFileModal.fileUrl, 'message').src}
+                  alt={selectedFileModal.fileName || 'Shared image'}
+                  fill
+                  className="object-contain"
+                  onError={(e) => {
+                    const img = e.currentTarget as HTMLImageElement & { dataset: any };
+                    const pathUrlPrimary = selectedFileModal.fileUrl ? `${API_URL}/api/image/view/${encodeURIComponent(selectedFileModal.fileUrl)}` : "";
+                    const queryUrlFallback = selectedFileModal.fileUrl ? `https://mmekoapi.onrender.com/api/image/view?publicId=${encodeURIComponent(selectedFileModal.fileUrl)}` : "";
+                    const pathUrlFallback = selectedFileModal.fileUrl ? `https://mmekoapi.onrender.com/api/image/view/${encodeURIComponent(selectedFileModal.fileUrl)}` : "";
+                    
+                    if (!img.dataset.fallback1 && pathUrlPrimary) {
+                      img.dataset.fallback1 = "1";
+                      img.src = pathUrlPrimary;
+                      return;
+                    }
+                    if (!img.dataset.fallback2 && queryUrlFallback) {
+                      img.dataset.fallback2 = "1";
+                      img.src = queryUrlFallback;
+                      return;
+                    }
+                    if (!img.dataset.fallback3 && pathUrlFallback) {
+                      img.dataset.fallback3 = "1";
+                      img.src = pathUrlFallback;
+                      return;
+                    }
+                  }}
+                />
+              )}
+              
+              {selectedFileModal.type === 'video' && (
+                <video
+                  src={getImageSource(selectedFileModal.fileUrl, 'message').src}
+                  controls
+                  autoPlay
+                  className="max-w-full max-h-full"
+                  onError={(e) => {
+                    const video = e.currentTarget as HTMLVideoElement & { dataset: any };
+                    const pathUrlPrimary = selectedFileModal.fileUrl ? `${API_URL}/api/image/view/${encodeURIComponent(selectedFileModal.fileUrl)}` : "";
+                    const queryUrlFallback = selectedFileModal.fileUrl ? `https://mmekoapi.onrender.com/api/image/view?publicId=${encodeURIComponent(selectedFileModal.fileUrl)}` : "";
+                    const pathUrlFallback = selectedFileModal.fileUrl ? `https://mmekoapi.onrender.com/api/image/view/${encodeURIComponent(selectedFileModal.fileUrl)}` : "";
+                    
+                    if (!video.dataset.fallback1 && pathUrlPrimary) {
+                      video.dataset.fallback1 = "1";
+                      video.src = pathUrlPrimary;
+                      video.load();
+                      return;
+                    }
+                    if (!video.dataset.fallback2 && queryUrlFallback) {
+                      video.dataset.fallback2 = "1";
+                      video.src = queryUrlFallback;
+                      video.load();
+                      return;
+                    }
+                    if (!video.dataset.fallback3 && pathUrlFallback) {
+                      video.dataset.fallback3 = "1";
+                      video.src = pathUrlFallback;
+                      video.load();
+                      return;
+                    }
+                  }}
+                />
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

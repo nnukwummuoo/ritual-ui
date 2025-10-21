@@ -11,6 +11,7 @@ import {
     IoChatbubbleOutline,
     IoAnalyticsOutline,
     IoServerOutline,
+    IoCardOutline,
 } from "react-icons/io5";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "@/store/store";
@@ -29,6 +30,7 @@ import Reports from "./reports/page";
 import AdminSupportChat from "./support-chat/page";
 import VipAnalysisPage from "./vip-analysis/page";
 import BackupManagement from "./backup/page";
+import TransactionsPage from "./transactions/page";
 import PushNotificationToggle from "@/components/PushNotificationToggle";
 
 const AdminPage = () => {
@@ -148,6 +150,11 @@ const AdminPage = () => {
       name: "Withdrawal Requests",
       icon: <IoCashOutline size={22} />,
       component: <WithdrawalRequests />,
+    },
+    {
+      name: "Transactions",
+      icon: <IoCardOutline size={22} />,
+      component: <TransactionsPage />,
     },
     {
       name: "Users",

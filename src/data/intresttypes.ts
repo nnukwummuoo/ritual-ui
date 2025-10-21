@@ -75,6 +75,13 @@ interface golds {
 // ]
 export const golds = [
   {
+    amount: "$0.01",
+    bonus: "Test",
+    value: "250",
+    price: `${250}`,
+    tag: "Test Pack",
+  },
+  {
     amount: "$79.99",
     bonus: "37%",
     value: "1000",
