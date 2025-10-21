@@ -310,7 +310,18 @@ export default function PaymentAccountPage() {
                         <span className="text-green-400 font-medium">Account Connected</span>
                       </div>
                       <p className="text-sm text-gray-300">
-                        {account.cryptoType} • {account.walletAddress.slice(0, 6)}...{account.walletAddress.slice(-4)}
+                        {(() => {
+                          const cryptoType = account.cryptoType;
+                          if (!cryptoType) return 'Crypto';
+                          
+                          // Convert USDT_BEP20 to USDT (BEP20)
+                          if (cryptoType.includes('_')) {
+                            const [currency, network] = cryptoType.split('_');
+                            return `${currency} (${network})`;
+                          }
+                          
+                          return cryptoType;
+                        })()} • {account.walletAddress.slice(0, 6)}...{account.walletAddress.slice(-4)}
                       </p>
                       <button
                         onClick={handleDeleteAccount}

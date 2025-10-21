@@ -279,7 +279,18 @@ const WithdrawalRequests = () => {
             <p><strong>Email:</strong> {selected.credentials.email}</p>
             <p><strong>Phone:</strong> {selected.credentials.phone}</p>
             <p><strong>Country:</strong> {selected.credentials.country}</p>
-            <p><strong>Crypto Type:</strong> {(selected.credentials as any).cryptoType}</p>
+            <p><strong>Crypto Type:</strong> {(() => {
+              const cryptoType = (selected.credentials as any).cryptoType;
+              if (!cryptoType) return 'Crypto';
+              
+              // Convert USDT_BEP20 to USDT (BEP20)
+              if (cryptoType.includes('_')) {
+                const [currency, network] = cryptoType.split('_');
+                return `${currency} (${network})`;
+              }
+              
+              return cryptoType;
+            })()}</p>
             <p><strong>Wallet Address:</strong> {(selected.credentials as any).walletAddress}</p>
           </div>
         ) : (

@@ -593,10 +593,11 @@ export default function PostsCard() {
                       const initials = userName.split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2) || "?";
                       
                       if (profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined") {
+                        const imageSource = getImageSource(profileImage, 'profile');
                         return (
                           <img
                             alt="Profile picture"
-                            src={profileImage}
+                            src={imageSource.src}
                             className="object-cover w-full h-full"
                             onError={(e) => {
                               const target = e.currentTarget as HTMLImageElement;
@@ -865,10 +866,11 @@ export default function PostsCard() {
                               const profileImage = c?.commentuserphoto || c?.photo || c?.photolink || c?.photoLink || c?.profileImage || c?.avatar || c?.image;
                               
                               if (profileImage && profileImage.trim() && profileImage !== 'null' && profileImage !== 'undefined') {
+                                const imageSource = getImageSource(profileImage, 'profile');
                                 return (
                                   <img
                                     alt="Profile picture"
-                                    src={profileImage}
+                                    src={imageSource.src}
                                     className="object-cover w-full h-full rounded-full"
                                     onError={(e) => {
                                       const target = e.currentTarget as HTMLImageElement;

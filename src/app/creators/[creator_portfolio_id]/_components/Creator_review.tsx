@@ -12,6 +12,7 @@ import { deletereview, changecreatorstatus } from "@/store/creatorSlice";
 import { format } from "date-fns";
 import type { RootState, AppDispatch } from "@/store/store";
 import PacmanLoader from "react-spinners/RingLoader";
+import { getImageSource } from "@/lib/imageUtils";
 
 interface CreatorReviewProps {
   name: string;
@@ -147,10 +148,11 @@ export const CreatorReview: React.FC<CreatorReviewProps> = ({
               !imageError;
             
             if (hasValidImage) {
+              const imageSource = getImageSource(profileImage, 'profile');
               return (
                 <Image
                   alt="clientIcon"
-                  src={profileImage}
+                  src={imageSource.src}
                   className="w-full h-full object-cover"
                   width={20}
                   height={20}

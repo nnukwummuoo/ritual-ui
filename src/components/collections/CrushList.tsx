@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import type { CrushItem } from "@/types/collection";
+import { getImageSource } from "@/lib/imageUtils";
 
 const CrushList: React.FC<CrushItem> = ({
   photolink,
@@ -27,7 +28,7 @@ const CrushList: React.FC<CrushItem> = ({
     >
       <div className="flex items-center gap-2">
         <img
-          src={photolink}
+          src={getImageSource(photolink, 'profile').src}
           alt={name}
           className="w-14 h-14 rounded-full object-cover border-2 border-white"
         />

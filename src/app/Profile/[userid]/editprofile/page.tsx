@@ -822,6 +822,11 @@ const EditProfile: React.FC = () => {
           userid: routeUserId,
           hasToken: true 
         }) as unknown as AnyAction);
+        
+        // Force a page refresh to show updated profile image
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
       }, 2000);
     }
 

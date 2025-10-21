@@ -245,7 +245,18 @@ const PaymentAccountModal: React.FC<PaymentAccountModalProps> = ({ accesstoken, 
           ) : (
             <p className="text-sm text-gray-300">
               {account
-                ? `Crypto Account: ${account.cryptoType} (${account.walletAddress.slice(
+                ? `Crypto Account: ${(() => {
+                    const cryptoType = account.cryptoType;
+                    if (!cryptoType) return 'Crypto';
+                    
+                    // Convert USDT_BEP20 to USDT (BEP20)
+                    if (cryptoType.includes('_')) {
+                      const [currency, network] = cryptoType.split('_');
+                      return `${currency} (${network})`;
+                    }
+                    
+                    return cryptoType;
+                  })()} (${account.walletAddress.slice(
                     0,
                     6
                   )}...${account.walletAddress.slice(-4)})`

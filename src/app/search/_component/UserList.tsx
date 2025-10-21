@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import Image, { StaticImageData } from 'next/image';
 import { useRouter } from 'next/navigation';
 import Person from '@/icons/icons8-profile_Icon.png'; // Adjust path as needed
+import { getImageSource } from '@/lib/imageUtils';
 
 interface UserListProps {
   photolink: string;
@@ -43,7 +44,7 @@ export const UserList: React.FC<UserListProps> = ({
         {/* Fallback logic for broken URLs */}
         <Image
           alt="profile"
-          src={userPic || Person}
+          src={getImageSource(userPic || Person, 'profile').src}
           width={40}
           height={40}
           className="rounded-full object-cover w-10 h-10"
