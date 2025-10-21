@@ -961,8 +961,8 @@ export default function Editcreator () {
                   </div>
                   <h4 className="text-white font-semibold">Fan Meet (in person)</h4>
                 </div>
-                <p className="text-yellow-400 font-bold text-lg">$30 - $50</p>
-                <p className="text-gray-300 text-sm">(750 - 1,250 gold)</p>
+                <p className="text-yellow-400 font-bold text-lg">(750 - 1,250 gold)</p>
+                <p className="text-gray-300 text-sm">$30 - $50</p>
               </div>
 
               {/* Fan Date */}
@@ -973,8 +973,8 @@ export default function Editcreator () {
                   </div>
                   <h4 className="text-white font-semibold">Fan Date (in person)</h4>
                 </div>
-                <p className="text-yellow-400 font-bold text-lg">$50 - $100</p>
-                <p className="text-gray-300 text-sm">(1,250 - 2,500 gold)</p>
+                <p className="text-yellow-400 font-bold text-lg">(1,250 - 2,500 gold)</p>
+                <p className="text-gray-300 text-sm">$50 - $100</p>
               </div>
             </div>
 
