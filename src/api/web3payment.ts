@@ -14,6 +14,7 @@ export interface Web3PaymentResponse {
   currency: string;
   network: string;
   contractAddress: string;
+  expiresAt: string;
   instructions: string;
 }
 
@@ -23,11 +24,16 @@ export interface PaymentStatusResponse {
   amount: number;
   createdAt: string;
   updatedAt: string;
+  expiresAt?: string;
   txData?: {
     fromAddress?: string;
     toAddress?: string;
     confirmedAt?: string;
-    memo?: string;
+    txHash?: string;
+    blockNumber?: number;
+    gasUsed?: string;
+    timestamp?: number;
+    verifiedVia?: string;
     network?: string;
     contractAddress?: string;
     paymentMethod?: string;
@@ -120,20 +126,27 @@ export const cancelWeb3Payment = async (orderId: string): Promise<{ message: str
 };
 
 /**
- * Verify payment manually (for testing)
+ * Verify transaction hash and confirm payment
  */
-export const verifyWeb3Payment = async (orderId: string, fromAddress: string): Promise<{ message: string; status: string }> => {
-  const response = await fetch(`${API_URL}/web3/verify-payment`, {
+export const verifyTransactionHash = async (orderId: string, txHash: string): Promise<{
+  message: string;
+  status: string;
+  orderId: string;
+  amount: number;
+  txHash: string;
+  fromAddress: string;
+}> => {
+  const response = await fetch(`${API_URL}/web3/verify-tx`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ orderId, fromAddress }),
+    body: JSON.stringify({ orderId, txHash }),
   });
 
   if (!response.ok) {
     const error = await response.json();
-    throw new Error(error.message || 'Failed to verify payment');
+    throw new Error(error.message || 'Failed to verify transaction hash');
   }
 
   return response.json();

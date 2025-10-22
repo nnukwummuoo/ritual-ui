@@ -7,6 +7,7 @@ import Image from "next/image";
 import { useSelector } from "react-redux";
 import { toast } from "material-react-toastify";
 import { golds } from "@/data/intresttypes";
+import { getPaymentLink } from "@/api/payment";
 import { createWeb3Payment, checkWeb3PaymentStatus, cancelWeb3Payment, verifyTransactionHash } from "@/api/web3payment";
 import {RootState} from "@/store/store"
 import { Copy, Check } from "lucide-react";
@@ -24,7 +25,7 @@ const tagIcons: Record<string, React.ReactNode> = {
 const Topup: React.FC = () => {
   const [currencyValue, setCurrencyValue] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(false);
-  const [paymentMethod] = useState<'web3'>('web3');
+  const [paymentMethod, setPaymentMethod] = useState<'nowpayments' | 'web3'>('web3');
   const [web3Payment, setWeb3Payment] = useState<any>(null);
   const [checkingStatus, setCheckingStatus] = useState<boolean>(false);
   const [copiedWallet, setCopiedWallet] = useState<boolean>(false);
@@ -34,47 +35,6 @@ const Topup: React.FC = () => {
 
   const userId = useSelector((state: RootState) => state.profile.userId);
   const login = useSelector((state: RootState) => state.register.logedin);
-
-  // Load existing payment from localStorage on page load
-  useEffect(() => {
-    const loadExistingPayment = () => {
-      try {
-        const savedPayment = localStorage.getItem('web3_payment');
-        if (savedPayment) {
-          const payment = JSON.parse(savedPayment);
-          const now = new Date().getTime();
-          const expiryTime = new Date(payment.expiresAt).getTime();
-          
-          if (now < expiryTime) {
-            // Payment is still valid
-            setWeb3Payment(payment);
-            const remaining = Math.max(0, Math.floor((expiryTime - now) / 1000));
-            setTimeLeft(remaining);
-            console.log(`🔄 [FRONTEND] Restored existing payment: ${payment.orderId}, time left: ${remaining}s`);
-            toast.info(`Restored your active payment. Time remaining: ${Math.floor(remaining / 60)}:${(remaining % 60).toString().padStart(2, '0')}`, { autoClose: 4000 });
-          } else {
-            // Payment has expired, remove it
-            localStorage.removeItem('web3_payment');
-            console.log(`⏰ [FRONTEND] Existing payment expired, removed from localStorage`);
-          }
-        }
-      } catch (error) {
-        console.error('Error loading existing payment:', error);
-        localStorage.removeItem('web3_payment');
-      }
-    };
-
-    loadExistingPayment();
-  }, []);
-
-  // Save payment to localStorage whenever it changes
-  useEffect(() => {
-    if (web3Payment) {
-      localStorage.setItem('web3_payment', JSON.stringify(web3Payment));
-    } else {
-      localStorage.removeItem('web3_payment');
-    }
-  }, [web3Payment]);
 
   // Countdown timer effect
   useEffect(() => {
@@ -92,7 +52,6 @@ const Topup: React.FC = () => {
           // Payment expired
           setWeb3Payment(null);
           setTxHash("");
-          localStorage.removeItem('web3_payment');
           toast.error("Payment expired. Please create a new payment.", { autoClose: 5000 });
         }
       }, 1000);
@@ -112,10 +71,6 @@ const Topup: React.FC = () => {
       toast.error("Please select a gold pack", { autoClose: 2000 });
       return;
     }
-    if (web3Payment) {
-      toast.error("You already have an active payment. Please complete or cancel it first.", { autoClose: 3000 });
-      return;
-    }
     try {
       setLoading(true);
       const selectedGold = golds.find((gold) => Number(gold.value) === currencyValue);
@@ -129,22 +84,38 @@ const Topup: React.FC = () => {
         return;
       }
 
-      // Web3 Payment (only option)
-      const res = await createWeb3Payment({
-        amount,
-        userId,
-        order_description: `Gold Pack Purchase: ${currencyValue} Gold`
-      });
-      
-      setWeb3Payment(res);
-      
-      // Initialize countdown timer
-      const now = new Date().getTime();
-      const expiryTime = new Date(res.expiresAt).getTime();
-      const remaining = Math.max(0, Math.floor((expiryTime - now) / 1000));
-      setTimeLeft(remaining);
-      
-      toast.success("Web3 payment created! Send USDT and paste your transaction hash.", { autoClose: 5000 });
+      if (paymentMethod === 'web3') {
+        // Web3 Payment
+        const res = await createWeb3Payment({
+          amount,
+          userId,
+          order_description: `Gold Pack Purchase: ${currencyValue} Gold`
+        });
+        
+        setWeb3Payment(res);
+        
+        // Initialize countdown timer
+        const now = new Date().getTime();
+        const expiryTime = new Date(res.expiresAt).getTime();
+        const remaining = Math.max(0, Math.floor((expiryTime - now) / 1000));
+        setTimeLeft(remaining);
+        
+        toast.success("Web3 payment created! Send USDT and paste your transaction hash.", { autoClose: 5000 });
+      } else {
+        // NOWPayments (existing)
+        const res = await getPaymentLink(
+          amount,
+          userId,
+          "usdtbsc",
+          `Gold Pack Purchase: ${currencyValue} Gold`
+        );
+        console.log(res);
+        if (res?.checkoutUrl) {
+          window.open(res.checkoutUrl, "_blank");
+        } else {
+          toast.error(res.message || "Failed to create payment", { autoClose: 2000 });
+        }
+      }
     } catch (error) {
       console.error("Payment error details:", error);
       toast.error("An error occurred during payment", { autoClose: 2000 });
@@ -193,7 +164,6 @@ const Topup: React.FC = () => {
         setCurrencyValue(0);
         setTxHash("");
         setTimeLeft(0);
-        localStorage.removeItem('web3_payment');
       } else {
         console.log(`ℹ️ [FRONTEND] Payment status: ${status.status} - showing info to user`);
         toast.info(`Payment status: ${status.status}`, { autoClose: 3000 });
@@ -223,7 +193,6 @@ const Topup: React.FC = () => {
       setCurrencyValue(0);
       setTxHash("");
       setTimeLeft(0);
-      localStorage.removeItem('web3_payment');
     } catch (error) {
       console.error("Cancel error:", error);
       toast.error("Failed to cancel transaction", { autoClose: 2000 });
@@ -272,7 +241,6 @@ const Topup: React.FC = () => {
         setTxHash("");
         setCurrencyValue(0);
         setTimeLeft(0);
-        localStorage.removeItem('web3_payment');
       } else {
         toast.info(`Payment status: ${result.status}`, { autoClose: 3000 });
       }
@@ -372,8 +340,33 @@ const Topup: React.FC = () => {
           </table>
         </div>
 
-        {/* Payment Form */}
+        {/* Payment Method Selector */}
         <div className="flex flex-col items-center gap-4 w-full">
+          <div className="w-full">
+            <label className="block text-sm font-medium text-gray-300 mb-2">Payment Method</label>
+            <div className="flex gap-2">
+              <button
+                className={`flex-1 py-2 px-4 rounded-lg font-medium transition-all ${
+                  paymentMethod === 'web3'
+                    ? 'bg-[#FFD682] text-[#15182a]'
+                    : 'bg-[#23243c] text-gray-300 hover:bg-[#2a2d4a]'
+                }`}
+                onClick={() => setPaymentMethod('web3')}
+              >
+                Web3 (USDT)
+              </button>
+              <button
+                className={`flex-1 py-2 px-4 rounded-lg font-medium transition-all ${
+                  paymentMethod === 'nowpayments'
+                    ? 'bg-[#FFD682] text-[#15182a]'
+                    : 'bg-[#23243c] text-gray-300 hover:bg-[#2a2d4a]'
+                }`}
+                onClick={() => setPaymentMethod('nowpayments')}
+              >
+                NOWPayments
+              </button>
+            </div>
+          </div>
 
           <select
             required
@@ -401,24 +394,10 @@ const Topup: React.FC = () => {
               onClick={pay}
               disabled={loading}
             >
-              {loading ? "Processing..." : "Create Payment"}
+              {loading ? "Processing..." : paymentMethod === 'web3' ? "Create Web3 Payment" : "Continue To Payment Page"}
             </button>
           ) : (
             <div className="w-full bg-[#23243c] rounded-lg p-6 border border-[#323544]">
-              {/* 30-Minute Payment Window Notice */}
-              <div className="w-full bg-gradient-to-r from-yellow-900/30 to-orange-900/30 rounded-lg p-4 border border-yellow-800/50 mb-6">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center">
-                    <span className="text-yellow-900 text-lg font-bold">⚡</span>
-                  </div>
-                  <div>
-                    <h3 className="text-yellow-400 font-bold text-lg">30-Minute Payment Window</h3>
-                    <p className="text-yellow-200 text-sm">Once it closes, it&apos;s gone for good.</p>
-                    <p className="text-yellow-100 text-sm font-medium">Complete your payment before time runs out.</p>
-                  </div>
-                </div>
-              </div>
-
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 bg-green-400 rounded-full"></div>
@@ -523,7 +502,10 @@ const Topup: React.FC = () => {
                       Cancelling...
                     </>
                   ) : (
-                    "Cancel"
+                    <>
+                      <Copy className="w-4 h-4" />
+                      Cancel
+                    </>
                   )}
                 </button>
               </div>
