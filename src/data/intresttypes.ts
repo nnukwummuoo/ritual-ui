@@ -75,7 +75,7 @@ interface golds {
 // ]
 export const golds = [
   {
-    amount: "$0.01",
+    amount: "$1.00",
     bonus: "Test",
     value: "250",
     price: `${250}`,

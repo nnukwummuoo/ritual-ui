@@ -50,20 +50,33 @@ export const postcomment = createAsyncThunk("comment/postcomment",async (data: a
 export const getpostcomment = createAsyncThunk("comment/getpostcomment",async (data: any)=>{
    
     try{
-
- 
-        //console.log('after info')
+        console.log('💬 [REDUX] GETPOSTCOMMENT ACTION TRIGGERED');
+        console.log('💬 [REDUX] Comment data:', data);
+        console.log('💬 [REDUX] API URL:', `${URL}/getpostcomment`);
+        console.log('💬 [REDUX] Request method: PUT');
         
-        console.log('getting comment')
         let response = await axios.put(`${URL}/getpostcomment`, data)
-       // console.log('under get profile')
+        console.log('💬 [REDUX] Comment response received:', response);
+        console.log('💬 [REDUX] Response status:', response.status);
+        console.log('💬 [REDUX] Response data:', response.data);
        
         return response.data
         
     }catch(err){
-       // console.log('erro get profile')
+        console.error('💬 [REDUX] Comment fetch error:', err);
         if (axios.isAxiosError(err)) {
-          throw (err.response?.data as any)?.message ?? "Network error";
+            console.error('💬 [REDUX] Axios error details:', {
+                message: err.message,
+                status: err.response?.status,
+                statusText: err.response?.statusText,
+                data: err.response?.data,
+                config: {
+                    url: err.config?.url,
+                    method: err.config?.method,
+                    data: err.config?.data
+                }
+            });
+            throw (err.response?.data as any)?.message ?? "Network error";
         }
         throw "Unexpected error";
     }
@@ -167,12 +180,13 @@ const comment = createSlice({
 
         )
         .addCase(getpostcomment.pending,(state,action)=>{
+            console.log('💬 [REDUX] Comment fetch pending...');
             state.allcommentstatus = 'loading'
             
         }
         )
         .addCase(getpostcomment.fulfilled,(state,action)=>{
-
+            console.log('💬 [REDUX] Comment fetch fulfilled:', action.payload);
             state.allcommentstatus = 'succeeded'
             state.allcomment = action.payload.comment;
            
@@ -182,7 +196,7 @@ const comment = createSlice({
 
         )
         .addCase(getpostcomment.rejected,(state,action)=>{
-           
+            console.error('💬 [REDUX] Comment fetch rejected:', action.error);
             state.allcommentstatus = 'failed'
            
             if(!action.error){

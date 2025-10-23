@@ -66,6 +66,31 @@ const SupportPage: React.FC = () => {
       ]
     },
     {
+      section: "✨ How to Become a Creator",
+      questions: [
+        {
+          question: "Step 1: Apply",
+          answer: "🪪 Fill out the Creator Application Form with your details:\n\n• Full name, date of birth, email, and location\n• A photo of you holding a handwritten note\n• A clear photo of your valid ID\n\nOnce submitted, your application will be reviewed by our team."
+        },
+        {
+          question: "Step 2: Get Approved",
+          answer: "✅ Our team checks every application to make sure all creators are real and verified.\nOnce approved, you'll receive a success notification and your \"Become a Creator\" button will automatically change to \"Create Portfolio.\""
+        },
+        {
+          question: "Step 3: Create Your Portfolio",
+          answer: "🎨 Your portfolio is what fans will see on your public profile.\nAfter creating it, your button changes to \"My Portfolio.\"\nIf you delete it, it switches back to \"Create Portfolio.\""
+        },
+        {
+          question: "Step 4: Start Earning",
+          answer: "💡 Once your portfolio is live, you can start receiving Fan Meets, Fan Dates, and Fan Calls — and earn Gold that you can withdraw in USDT (BEP20)."
+        },
+        {
+          question: "Important Note",
+          answer: "🔒 Verification is done to keep the platform safe, fair, and authentic for both creators and fans.\nIncomplete or unclear applications may be rejected, so double-check your details before submitting."
+        }
+      ]
+    },
+    {
       section: "🤝 Fan Meet & Fan Date",
       questions: [
         {

@@ -3,65 +3,79 @@
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "@/store/store";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { URL as API_BASE } from "@/api/config";
-import { useUserId } from "@/lib/hooks/useUserId";
-import { fetchsinglepost, getallpost, hydrateFromCache } from "@/store/post";
-import { getprofile, follow as followThunk, unfollow as unfollowThunk } from "@/store/profile";
+import { fetchsinglepost } from "@/store/post";
 import { postlike } from "@/store/like";
 import { getpostcomment, postcomment } from "@/store/comment";
 const PROD_BASE = "https://mmekoapi.onrender.com"; // fallback when local proxy is down
-import PostSkeleton from "../../../components/PostSkeleton";
 import { toast } from "material-react-toastify";
 import PostActions from "../../../components/home/PostActions";
 import { getImageSource } from "@/lib/imageUtils";
+import Image from "next/image";
+import { X } from "lucide-react";
+import VIPBadge from "@/components/VIPBadge";
+import axios from "axios";
+import ExpandableText from "@/components/ExpandableText";
+import { generateInitials } from "@/utils/generateInitials";
 
 function PostSingle() {
     const dispatch = useDispatch<AppDispatch>();
-    const status = useSelector((s: RootState) => s.post.poststatus);
+    const router = useRouter();
+    const { postId } = useParams();
+    
+    // Get auth data
     const loggedInUserId = useSelector((s: RootState) => s.register.userID);
     const authToken = useSelector((s: RootState) => s.register.refreshtoken || s.register.accesstoken);
-    const {  nickname } = useSelector((s: RootState) => s.profile);
+    const { nickname, firstname, lastname, photolink } = useSelector((s: RootState) => s.profile);
+    
+    // State for the post
     const [thePost, setThePost] = React.useState<any>({});
-    const p=thePost;
-    const userid = useUserId();
-    const own = userid === thePost?.user?._id;
-    const { postId } = useParams();
-    const [ui, setUi] = React.useState<Record<string | number, {
-    liked?: boolean;
-    likeCount?: number;
-    comments?: any[];
-    open?: boolean;
-    input?: string;
-    loadingComments?: boolean;
-    sending?: boolean;
-    starred?: boolean;
-  }>>({});
+    const [postAuthorData, setPostAuthorData] = React.useState<any>(null);
+    
+    // State for post interactions (exactly like profile modal)
+    const [modalUi, setModalUi] = React.useState({
+        liked: false,
+        likeCount: 0,
+        comments: [] as any[],
+        commentCount: 0,
+        open: false,
+        input: "",
+        loadingComments: false,
+        sending: false
+    });
 
+    // Function to get media source with fallbacks (same as in profile page)
+    const getMediaSource = (post: any) => {
+        // Infer post type: prefer explicit fields if present
+        let postType: string = post?.posttype || post?.type || "text";
+        if (!postType) {
+            if (post?.postphoto || post?.image) postType = "image";
+            else if (post?.postvideo || post?.video) postType = "video";
+        }
+
+        // Resolve media reference (cover more backend key variants) - same as profile page
     const mediaRef =
-        thePost?.postphoto ||
-        thePost?.postvideo ||
-        thePost?.postlink ||
-        thePost?.postFile ||
-        thePost?.file ||
-        thePost?.proxy_view ||
-        thePost?.file_link ||
-        thePost?.media ||
-        thePost?.image ||
-        thePost?.video ||
-        thePost?.thumblink ||
+            post?.postphoto ||
+            post?.postvideo ||
+            post?.postlink ||
+            post?.postFile ||
+            post?.file ||
+            post?.proxy_view ||
+            post?.file_link ||
+            post?.media ||
+            post?.image ||
+            post?.video ||
+            post?.thumblink ||
         // support top-level identifiers
-        thePost?.publicId ||
-        thePost?.public_id ||
-        thePost?.imageId ||
-        thePost?.postfilepublicid ||
-        thePost?.postfilelink||
-        "";
+            post?.publicId ||
+            post?.public_id ||
+            post?.imageId ||
+            post?.postfilepublicid ||
+            post?.postfilelink ||
+            "";
+        
     const asString = typeof mediaRef === "string" ? mediaRef : (mediaRef?.publicId || mediaRef?.public_id || mediaRef?.url || "");
-    const isHttpUrl = typeof asString === "string" && /^https?:\/\//i.test(asString);
-    const isBlobUrl = typeof asString === "string" && /^blob:/i.test(asString);
-    const isDataUrl = typeof asString === "string" && /^data:/i.test(asString);
-    const isUrl = isHttpUrl || isBlobUrl || isDataUrl;
     
     // Use bucket detection for Storj URLs
     const imageSource = getImageSource(asString, 'post');
@@ -73,172 +87,384 @@ function PostSingle() {
     const queryUrlFallback = asString ? `${PROD_BASE}/api/image/view?publicId=${encodeURIComponent(asString)}` : "";
     const pathUrlFallback = asString ? `${PROD_BASE}/api/image/view/${encodeURIComponent(asString)}` : "";
 
-    // Derive display name and handle from multiple possible fields
-    const combinedName = [thePost?.user?.firstname, thePost?.user?.lastname].filter(Boolean).join(" ");
-    let displayName =
-        thePost?.user?.username ||
-        thePost?.user?.name ||
-        thePost?.user?.nickname ||
-        combinedName ||
-        thePost?.user?.fullname ||
-        thePost?.user?.fullName ||
-        thePost?.user?.author ||
-        thePost?.user?.username ||
-        thePost?.user?.name ||
-        thePost?.profile?.username ||
-        thePost?.postedBy?.username ||
-        thePost?.postedBy?.name ||
-        "User";
-    
-    const postAuthorId = thePost?.userid || thePost?.userId || thePost?.ownerid || thePost?.ownerId || thePost?.authorId || thePost?.createdBy;
-    const handleStr =
-        thePost?.handle ||
-        thePost?.user?.handle ||
-        thePost?.nickname ||
-        thePost?.user?.nickname ||
-        thePost?.username ||
-        thePost?.postedBy?.username ||
-        null;
+        return {
+            src,
+            postType,
+            asString,
+            queryUrlPrimary,
+            pathUrlPrimary,
+            queryUrlFallback,
+            pathUrlFallback
+        };
+    };
 
-    // Basic reactions/metrics derivation
-    const likesArr: any[] = Array.isArray(p?.likes)
-          ? p?.likes
-          : Array.isArray(p?.like)
-          ? p?.like
-          : Array.isArray(p?.reactions)
-          ? p?.reactions
-          : [];
-        const commentsArr: any[] = Array.isArray(p?.comments)
-          ? p?.comments
-          : Array.isArray(p?.comment)
-          ? p?.comment
-          : [];
-        const likeCount = Array.isArray(likesArr)
-          ? likesArr.length
-          : Number(p?.likeCount || p?.likesCount || p?.likes || 0) || 0;
-        const commentCount = Array.isArray(commentsArr)
-          ? commentsArr.length
-          : Number(p?.commentCount || p?.commentsCount || p?.comments || 0) || 0;
+    // Function to fetch post author data (same as profile page)
+    const fetchPostAuthorData = React.useCallback(async (userId: string) => {
+        try {
+            const response = await axios.post(`${API_BASE}/getprofilebyID`, 
+                { userid: userId }, 
+                { 
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                }
+            );
+            
+            if (response.data && response.data.profile) {
+                setPostAuthorData(response.data.profile);
+            }
+        } catch (error) {
+            console.error('Error fetching post author data:', error);
+        }
+    }, [authToken]);
 
-        const idStr = (v: any) => (v == null ? undefined : String(v));
-        const selfIdStr = idStr(loggedInUserId) || idStr(userid);
-        const arrHasSelf = (arr: any[]) =>
-          !!selfIdStr &&
-          Array.isArray(arr) &&
-          arr.some((x) => {
-            const val = x?.userid || x?.userId || x?.ownerId || x?.id || x;
-            return idStr(val) === selfIdStr;
-          });
-        const liked = arrHasSelf(likesArr);
-        const starred = !!(p?.starred || p?.faved || p?.favorited);
+    // Handle like for post (same as profile modal)
+    const handleModalLike = async () => {
+        const uid = String(loggedInUserId || "");
+        
+        if (!postId || !authToken) {
+            toast.error("Please login to like posts");
+            return;
+        }
+        
+        const currentLiked = modalUi.liked;
+        const currentCount = modalUi.likeCount;
+        
+        // Optimistic update
+        setModalUi(prev => ({
+            ...prev,
+            liked: !currentLiked,
+            likeCount: Math.max(0, currentCount + (!currentLiked ? 1 : -1)),
+        }));
 
-        // Merge with local optimistic state
-        const pid = p?.postid || p?.id || p?._id ;
-        const uiState = ui[pid] || {};
-        const uiLiked = uiState.liked ?? liked;
-        const uiLikeCount = uiState.likeCount ?? likeCount;
-        const uiStarred = uiState.starred ?? starred;
-        const uiOpen = !!uiState.open;
-        const uiComments = uiState.comments ?? [];
-        const uiInput = uiState.input ?? "";
-        const uiLoading = !!uiState.loadingComments;
-        const uiSending = !!uiState.sending;
-        const hasUiComments = Object.prototype.hasOwnProperty.call(uiState, 'comments');
-        const displayCommentCount = hasUiComments ? uiComments.length : commentCount;
+        try {
+            await dispatch(postlike({
+                userid: uid,
+                postid: String(postId),
+                token: authToken
+            } as any)).unwrap();
+        } catch (error) {
+            console.error('Like error:', error);
+            // Revert on error
+            setModalUi(prev => ({
+                ...prev,
+                liked: currentLiked,
+                likeCount: currentCount,
+            }));
+            toast.error("Failed to update like. Please try again.");
+        }
+    };
 
-    React.useLayoutEffect(()=>{
-        // setThePost((JSON.parse(localStorage.getItem('feedPosts') || "[]") || []).find((p: any) => p._id === postId) || {});
-            (async () => {
-                const tst = toast("Loading", { autoClose: false });
+    // Handle comment toggle (same as profile modal)
+    const handleModalCommentToggle = () => {
+        setModalUi(prev => ({
+            ...prev,
+            open: !prev.open
+        }));
+
+        // If comments are already loaded, don't fetch again
+        if (!modalUi.open && modalUi.comments.length > 0) {
+            return;
+        }
+
+        // Only fetch if comments are not already loaded
+        if (!modalUi.open && modalUi.comments.length === 0) {
+            setModalUi(prev => ({ ...prev, loadingComments: true }));
+            dispatch(getpostcomment({ postid: String(postId) } as any))
+                .unwrap()
+                .then((res: any) => {
+                    const arr = (res && (res.comment || res.comments)) || [];
+                    setModalUi(prev => ({
+                        ...prev,
+                        comments: arr,
+                        commentCount: arr.length,
+                        loadingComments: false
+                    }));
+                })
+                .catch(() => {
+                    setModalUi(prev => ({
+                        ...prev,
+                        loadingComments: false
+                    }));
+                });
+        }
+    };
+
+    // Handle comment submission (same as profile modal)
+    const handleModalCommentSubmit = () => {
+        const text = modalUi.input.trim();
+        if (!text || !postId) return;
+
+        const tempComment = {
+            content: text,
+            comment: text,
+            username: nickname || 'you',
+            commentusername: nickname || 'you',
+            commentuserphoto: photolink || '',
+            userid: String(loggedInUserId || ''),
+            createdAt: new Date().toISOString(),
+            commenttime: Date.now(),
+            temp: true,
+            initials: generateInitials(firstname, lastname, nickname)
+        };
+
+        // Optimistic update
+        setModalUi(prev => ({
+            ...prev,
+            input: "",
+            sending: true,
+            comments: [...prev.comments, tempComment],
+            commentCount: prev.comments.length + 1,
+        }));
+
+        const uid = String(loggedInUserId || "");
+        
+        if (uid && authToken) {
+            dispatch(postcomment({
+                userid: uid,
+                postid: String(postId),
+                content: text,
+                token: authToken
+            } as any))
+                .unwrap()
+                .then(() => {
+                    // Refresh comments after successful post
+                    dispatch(getpostcomment({ postid: String(postId) } as any))
+                        .unwrap()
+                        .then((commentRes: any) => {
+                            const serverComments = (commentRes && (commentRes.comment || commentRes.comments)) || [];
+                            setModalUi(prev => ({
+                                ...prev,
+                                sending: false,
+                                comments: serverComments,
+                                commentCount: serverComments.length,
+                            }));
+                        })
+                        .catch(() => {
+                            setModalUi(prev => ({
+                                ...prev,
+                                sending: false,
+                            }));
+                        });
+                })
+                .catch(() => {
+                    setModalUi(prev => ({
+                        ...prev,
+                        sending: false,
+                    }));
+                    toast.error("Failed to post comment");
+                });
+        } else {
+            setModalUi(prev => ({
+                ...prev,
+                sending: false,
+            }));
+        }
+    };
+
+    // Fetch the post data
+    React.useLayoutEffect(() => {
+        const fetchPost = async () => {
                 try {
-                    const res=await fetchsinglepost(String(postId));
+                const res = await fetchsinglepost(String(postId));
                     setThePost(res);
+                
+                // Fetch likes and comments separately (same as main post component)
+                try {
+                    // Get likes for this post
+                    const likeResponse = await fetch(`${API_BASE}/like?postid=${res._id || res.postid || res.id}`);
+                    const likeData = likeResponse.ok ? await likeResponse.json() : { likeCount: 0, likedBy: [] };
+                    
+                    // Get comments for this post
+                    const commentResponse = await fetch(`${API_BASE}/getpostcomment`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ postid: res._id || res.postid || res.id })
+                    });
+                    const commentData = commentResponse.ok ? await commentResponse.json() : { comment: [] };
+                    const comments = commentData.comment || commentData.comments || [];
+                    
+                    // Update modal UI with fetched like/comment data
+                    setModalUi({
+                        liked: likeData.likedBy?.includes(loggedInUserId) || false,
+                        likeCount: likeData.likeCount || 0,
+                        comments: comments,
+                        commentCount: comments.length,
+                        open: false,
+                        input: "",
+                        loadingComments: false,
+                        sending: false
+                    });
+                } catch (likeCommentError) {
+                    console.error('Error fetching likes/comments:', likeCommentError);
+                    // Fallback to basic post data
+                    setModalUi({
+                        liked: res.likedBy?.includes(loggedInUserId) || res.likes?.some((like: any) => like.userid === loggedInUserId) || false,
+                        likeCount: res.likeCount || res.likes?.length || 0,
+                        comments: res.comments || [],
+                        commentCount: res.commentCount || res.comments?.length || 0,
+                        open: false,
+                        input: "",
+                        loadingComments: false,
+                        sending: false
+                    });
+                }
+
+                // If post doesn't have user data, fetch it separately
+                if (!res.user && res.userid) {
+                    fetchPostAuthorData(res.userid);
+                } else {
+                    setPostAuthorData(res.user);
+                }
                 } catch (err) {
                     console.error(err);
-                }finally{
-                    toast.dismiss(tst)
-                }
-            })()
-        }, [])
-    return <>
-        <div  className="mx-auto max-w-[30rem] w-full bg-gray-800 rounded-md p-3 mb-5">
+                toast.error("Failed to load post");
+            }
+        };
+        
+        fetchPost();
+    }, [postId, loggedInUserId, authToken, fetchPostAuthorData]);
+
+    if (!thePost || Object.keys(thePost).length === 0) {
+        return (
+            <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-orange-500"></div>
+            </div>
+        );
+    }
+
+    const { src, postType, pathUrlPrimary, queryUrlFallback, pathUrlFallback } = getMediaSource(thePost);
+    
+    // Use the primary URL if src is just a public ID
+    const imageSrc = src && !src.startsWith('http') ? pathUrlPrimary || queryUrlFallback || pathUrlFallback : src;
+
+    return (
+        <div className="min-h-screen bg-gray-900">
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75 p-4">
+                <div className="bg-gray-900 rounded-lg max-w-3xl w-full max-h-[90vh] overflow-hidden flex flex-col">
                     {/* Header */}
+                    <div className="p-4 border-b border-gray-800 flex justify-between items-center">
                     <div className="flex items-center gap-3">
-                      <div className="size-10 rounded-full overflow-hidden bg-gray-700" >
-                          <img
-                          alt="background img"
-                          src={"/icons/profile.png"}
+                            <div className="relative w-12 h-12 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 p-0.5">
+                                <div className="w-full h-full rounded-full overflow-hidden bg-gray-700">
+                                    {(() => {
+                                        const userData = postAuthorData || thePost.user;
+                                        const profileImage = userData?.photolink;
+                                        const userName = `${userData?.firstname || ""} ${userData?.lastname || ""}`.trim();
+                                        const initials = userName.split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2) || "?";
+                                        
+                                        if (profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined") {
+                                            const imageSource = getImageSource(profileImage, 'profile');
+                                            return (
+                                                <Image 
+                                                    src={imageSource.src} 
+                                                    alt="Profile" 
+                                                    width={48} 
+                                                    height={48} 
                           className="object-cover w-full h-full"
-                          // onError={(e) => {
-                          //   e.target.onerror = null;
-                          //   e.target.src = DummyCoverImage;
-                          // }}
-                        />
+                                                />
+                                            );
+                                        }
+                                        
+                                        return (
+                                            <div className="w-full h-full bg-gray-600 flex items-center justify-center text-white text-lg font-semibold">
+                                                {initials}
+                                            </div>
+                                        );
+                                    })()}
+                                </div>
+                                
+                                {/* VIP Lion Badge - show if the post author has VIP status */}
+                                {(() => {
+                                    const userData = postAuthorData || thePost.user;
+                                    const isVipActive = userData?.isVip && userData?.vipEndDate && new Date(userData.vipEndDate) > new Date();
+                                    return isVipActive && (
+                                        <VIPBadge size="lg" className="absolute -top-2 -right-2" isVip={userData.isVip} vipEndDate={userData.vipEndDate} />
+                                    );
+                                })()}
                       </div>
                       <div>
-                        <p className="font-medium">{thePost?.user?.firstname} { thePost?.user?.lastname}</p>
-                        <span className="text-gray-400 text-sm">{handleStr ? `${handleStr}` : ""}</span>
+                                <div className="flex items-center gap-2">
+                                    <p className="font-semibold text-lg">
+                                        {(postAuthorData || thePost.user)?.firstname || ''} {(postAuthorData || thePost.user)?.lastname || ''}
+                                    </p>
+                                    {/* {(() => {
+                                        const userData = postAuthorData || thePost.user;
+                                        const isVipActive = userData?.isVip && userData?.vipEndDate && new Date(userData.vipEndDate) > new Date();
+                                        return isVipActive && (
+                                            <span className="text-xs bg-gradient-to-r from-yellow-400 to-orange-500 text-black px-2 py-1 rounded-full font-medium">
+                                                VIP
+                                            </span>
+                                        );
+                                    })()} */}
+                                </div>
+                                <p className="text-sm text-blue-400 font-medium">
+                                    {(postAuthorData || thePost.user)?.nickname || (postAuthorData || thePost.user)?.username || 'No username'}
+                                </p>
+                            </div>
                       </div>
+                        <button 
+                            onClick={() => router.back()}
+                            className="text-gray-400 hover:text-white transition-colors"
+                        >
+                            <X className="w-6 h-6" />
+                        </button>
                     </div>
-                    {/* Timestamp */}
-                    {p?.createdAt && (
-                      <p className="my-3 text-gray-400 text-sm">{new Date(p.createdAt).toLocaleString()}</p>
-                    )}
+                    
                     {/* Content */}
-                    {p?.content && (
-                      <p className="my-2 whitespace-pre-wrap">{p.content}</p>
-                    )}
-                    {/* Media */}
-                    {thePost?.posttype == "image" && src && (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={src}
-                        alt={p?.content || "post image"}
-                        className="w-full max-h-[480px] object-contain rounded"
+                    <div className="flex-1 overflow-auto">
+                        {/* Media display with proper fallbacks */}
+                        {postType === "image" && imageSrc && (
+                            <div className="relative bg-black flex items-center justify-center min-h-[400px]">
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img
+                                    src={imageSrc}
+                                    alt={thePost?.content || "post image"}
+                                    className="max-w-full max-h-[70vh] object-contain"
                         onError={(e) => {
                           const img = e.currentTarget as HTMLImageElement & { dataset: any };
-                          // First fallback: switch to path URL on same base
+                                        
                           if (!img.dataset.fallback1 && pathUrlPrimary) {
                             img.dataset.fallback1 = "1";
                             img.src = pathUrlPrimary;
                             return;
                           }
-                          // Second fallback: try query on PROD base
                           if (!img.dataset.fallback2 && queryUrlFallback) {
                             img.dataset.fallback2 = "1";
                             img.src = queryUrlFallback;
                             return;
                           }
-                          // Final fallback: try path on PROD base
                           if (!img.dataset.fallback3 && pathUrlFallback) {
                             img.dataset.fallback3 = "1";
                             img.src = pathUrlFallback;
                           }
                         }}
                       />
+                            </div>
                     )}
-                    {thePost?.posttype == "video" && src && (
+                        
+                        {postType === "video" && imageSrc && (
+                            <div className="relative bg-black flex items-center justify-center min-h-[400px]">
                       <video
-                        src={src}
+                                    src={imageSrc}
                         controls
-                        className="w-full max-h-[480px] rounded"
+                                    className="max-w-full max-h-[70vh]"
                         onError={(e) => {
                           const video = e.currentTarget as HTMLVideoElement & { dataset: any };
-                          // First fallback: switch to path URL on same base
+                                        
                           if (!video.dataset.fallback1 && pathUrlPrimary) {
                             video.dataset.fallback1 = "1";
                             video.src = pathUrlPrimary;
                             video.load();
                             return;
                           }
-                          // Second fallback: try query on PROD base
                           if (!video.dataset.fallback2 && queryUrlFallback) {
                             video.dataset.fallback2 = "1";
                             video.src = queryUrlFallback;
                             video.load();
                             return;
                           }
-                          // Final fallback: try path on PROD base
                           if (!video.dataset.fallback3 && pathUrlFallback) {
                             video.dataset.fallback3 = "1";
                             video.src = pathUrlFallback;
@@ -246,182 +472,170 @@ function PostSingle() {
                           }
                         }}
                       />
-                    )}
-                    {/* Actions */}
+                            </div>
+                        )}
+                        
+                        {/* Post content and actions */}
+                        <div className="p-4">
+                            {/* Post content */}
+                            <ExpandableText 
+                              text={thePost.content}
+                              maxLength={100}
+                              className="mb-4"
+                            />
+                            
+                            {/* Post date */}
+                            {thePost.createdAt && (
+                                <p className="text-sm text-gray-400 mb-4">
+                                    {new Date(thePost.createdAt).toLocaleString()}
+                                </p>
+                            )}
+                            
+                            {/* Post Actions - WITHOUT star button */}
                     <PostActions
                       className="mt-3 border-t border-gray-700 pt-2"
-                      starred={uiStarred}
-                      liked={uiLiked}
-                      likeCount={uiLikeCount}
-                      commentCount={displayCommentCount}
-                      post={p}
-                      onStar={() => {
-                        const localPid = p?.postid || p?.id || p?._id;
-                        if (!localPid) return;
-                        const authorId = p?.userid || p?.userId || p?.ownerid || p?.ownerId || p?.authorId || p?.createdBy;
-                        // Optimistic toggle
-                        setUi((prev) => {
-                          const curr = prev[localPid] || {};
-                          const nextStarred = !(curr.starred ?? starred);
-                          return { ...prev, [localPid]: { ...curr, starred: nextStarred } };
-                        });
-                        // Backend call (follow/unfollow) if possible
-                        const uid = String(loggedInUserId || userid || "");
-                        if (!uid || !authToken || !authorId || String(authorId) === String(uid)) return;
-                        const willFollow = !(ui[localPid]?.starred ?? starred);
-                        const payload: any = { userid: uid, targetid: String(authorId), token: authToken };
-                        if (willFollow) {
-                          dispatch(followThunk(payload) as any);
-                        } else {
-                          dispatch(unfollowThunk(payload) as any);
-                        }
-                      }}
-                      onLike={() => {
-                        const uid = String(loggedInUserId || userid || "");
-                        const localPid = p?.postid || p?.id || p?._id;
-                        if (!localPid) return;
-                        // Optimistic toggle
-                        setUi((prev) => {
-                          const curr = prev[localPid] || {};
-                          const nextLiked = !(curr.liked ?? liked);
-                          const baseCount = curr.likeCount ?? likeCount;
-                          return {
-                            ...prev,
-                            [localPid]: {
-                              ...curr,
-                              liked: nextLiked,
-                              likeCount: Math.max(0, baseCount + (nextLiked ? 1 : -1)),
-                            },
-                          };
-                        });
-                        if (!uid || !authToken) return;
-                        dispatch(postlike({ userid: uid, postid: localPid, token: authToken } as any));
-                      }}
-                      onComment={() => {
-                        const localPid = p?.postid || p?.id || p?._id;
-                        if (!localPid) return;
-                        setUi((prev) => ({
-                          ...prev,
-                          [localPid]: { ...(prev[localPid] || {}), open: !(prev[localPid]?.open) }
-                        }));
-                        // If opening and not loaded yet, fetch comments
-                        const curr = ui[localPid];
-                        const shouldFetch = !(curr && Array.isArray(curr.comments));
-                        if (shouldFetch) {
-                          setUi((prev) => ({
-                            ...prev,
-                            [localPid]: { ...(prev[localPid] || {}), loadingComments: true }
-                          }));
-                          (dispatch(getpostcomment({ postid: localPid } as any)) as any)
-                            .unwrap()
-                            .then((res: any) => {
-                              const arr = (res && (res.comment || res.comments)) || [];
-                              setUi((prev) => ({
-                                ...prev,
-                                [localPid]: { ...(prev[localPid] || {}), comments: arr, loadingComments: false }
-                              }));
-                            })
-                            .catch(() => {
-                              setUi((prev) => ({
-                                ...prev,
-                                [localPid]: { ...(prev[localPid] || {}), loadingComments: false }
-                              }));
-                            });
-                        }
-                      }}
-                      onMore={() => {
-                        // TODO: open overflow menu
-                        console.debug("more clicked", p?.id || p?.postid);
-                      }}
-                    />
-                    {uiOpen && (
-                      <div className="mt-2 border-t border-gray-700 pt-2">
-                        {uiLoading ? (
-                          <p className="text-sm text-gray-400">Loading comments…</p>
-                        ) : (
-                          <div className="space-y-2">
-                            {uiComments && uiComments.length > 0 ? (
-                              uiComments.map((c: any, i: number) => (
-                                <div key={i} className="text-sm text-gray-200">
-                                  <span className="text-gray-400 mr-2">@{c?.username || c?.author || c?.user?.username || 'user'}</span>
-                                  <span>{c?.comment || c?.content || String(c)}</span>
+                                liked={modalUi.liked}
+                                likeCount={modalUi.likeCount}
+                                commentCount={modalUi.commentCount}
+                                post={thePost}
+                                onLike={handleModalLike}
+                                onComment={handleModalCommentToggle}
+                                // Remove the star-related props entirely
+                            />
+                            
+                            {/* Comments section */}
+                            {modalUi.open && (
+                                <div className="mt-4 border-t border-gray-700 pt-4">
+                                    {modalUi.loadingComments ? (
+                                        <div className="flex justify-center py-4">
+                                            <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-orange-500"></div>
+                                        </div>
+                                    ) : (
+                                        <div className="space-y-3">
+                                            {/* Comments list */}
+                                            {modalUi.comments.length > 0 ? (
+                                                modalUi.comments.map((comment: any, index: number) => (
+                                                    <div key={index} className="flex gap-3">
+                                                        <div className="flex-shrink-0">
+                                                            <div className="relative w-10 h-10 rounded-full bg-gradient-to-r from-green-500 to-teal-600 p-0.5">
+                                                                <div className="w-full h-full rounded-full overflow-hidden bg-gray-700">
+                                                                    {(() => {
+                                                                        const profileImage = comment.commentuserphoto || comment.user?.photolink;
+                                                                        const userName = comment.commentusername || comment.user?.username || comment.username || "User";
+                                                                        const initials = comment.initials || userName.split(/\s+/).map((n: string) => n[0]).join('').toUpperCase().slice(0, 2) || "?";
+                                                                        
+                                                                        if (profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined") {
+                                                                            return (
+                                                                                <Image
+                                                                                    src={profileImage}
+                                                                                    alt="Commenter"
+                                                                                    width={40}
+                                                                                    height={40}
+                                                                                    className="object-cover w-full h-full rounded-full"
+                                                                                    onError={(e) => {
+                                                                                        const target = e.target as HTMLImageElement;
+                                                                                        target.style.display = 'none';
+                                                                                        const parent = target.parentElement;
+                                                                                        if (parent) {
+                                                                                            const fallbackDiv = document.createElement('div');
+                                                                                            fallbackDiv.className = 'w-full h-full rounded-full bg-gray-600 flex items-center justify-center text-sm text-white font-semibold';
+                                                                                            fallbackDiv.textContent = initials;
+                                                                                            parent.appendChild(fallbackDiv);
+                                                                                        }
+                                                                                    }}
+                                                                                />
+                                                                            );
+                                                                        }
+                                                                        
+                                                                        return (
+                                                                            <div className="w-full h-full rounded-full bg-gray-600 flex items-center justify-center text-sm text-white font-semibold">
+                                                                                {initials}
+                                                                            </div>
+                                                                        );
+                                                                    })()}
+                                                                </div>
+                                                                
+                                                                {/* VIP Lion Badge - show if the commenter has VIP status */}
+                                                                {(() => {
+                                                                    const isVipActive = comment.isVip && comment.vipEndDate && new Date(comment.vipEndDate) > new Date();
+                                                                    return isVipActive && (
+                                                                        <VIPBadge size="md" className="absolute -top-1 -right-1" isVip={comment.isVip} vipEndDate={comment.vipEndDate} />
+                                                                    );
+                                                                })()}
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex-1">
+                                                            <div className="bg-gray-800 rounded-lg p-3">
+                                                                <div className="flex items-center gap-2 mb-2">
+                                                                    <p className="font-semibold text-sm text-white">
+                                                                        {comment.commentusername || comment.user?.username || comment.username || 'User'}
+                                                                    </p>
+                                                                </div>
+                                                                <p className="text-gray-200 text-sm leading-relaxed">
+                                                                    {comment.comment || comment.content || String(comment)}
+                                                                </p>
+                                                            </div>
+                                                            <p className="text-xs text-gray-500 mt-1 ml-1">
+                                                                {comment.createdAt ? new Date(comment.createdAt).toLocaleDateString() : 'Just now'}
+                                                            </p>
+                                                        </div>
                                 </div>
                               ))
                             ) : (
-                              <p className="text-sm text-gray-500">No comments yet.</p>
-                            )}
-                            <div className="flex items-center gap-2 pt-1">
+                                                <p className="text-center text-gray-500 py-4">No comments yet.</p>
+                                            )}
+                                            
+                                            {/* Comment input */}
+                                            <div className="flex items-center gap-3 pt-2">
+                                                <div className="relative w-8 h-8 rounded-full bg-gradient-to-r from-purple-500 to-pink-600 p-0.5 flex-shrink-0">
+                                                    <div className="w-full h-full rounded-full overflow-hidden bg-gray-700">
+                                                        {(() => {
+                                                            const profileImage = photolink;
+                                                            const userName = `${firstname || ""} ${lastname || ""}`.trim();
+                                                            const initials = userName.split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2) || "?";
+                                                            
+                                                            if (profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined") {
+                                                                const imageSource = getImageSource(profileImage, 'profile');
+                                                                return (
+                                                                    <Image
+                                                                        src={imageSource.src}
+                                                                        alt="Your profile"
+                                                                        width={32}
+                                                                        height={32}
+                                                                        className="object-cover w-full h-full"
+                                                                    />
+                                                                );
+                                                            }
+                                                            
+                                                            return (
+                                                                <div className="w-full h-full bg-gray-600 flex items-center justify-center text-xs text-white font-semibold">
+                                                                    {initials}
+                                                                </div>
+                                                            );
+                                                        })()}
+                                                    </div>
+                                                </div>
                               <input
-                                value={uiInput}
-                                onChange={(e) => {
-                                  const v = e.target.value;
-                                  setUi((prev) => ({
+                                                    value={modalUi.input}
+                                                    onChange={(e) => setModalUi(prev => ({
                                     ...prev,
-                                    [pid]: { ...(prev[pid] || {}), input: v },
-                                  }));
-                                }}
-                                placeholder="Write a comment…"
-                                className="flex-1 bg-gray-900 border border-gray-700 rounded px-3 py-2 text-sm outline-none focus:border-gray-500"
+                                                        input: e.target.value
+                                                    }))}
+                                                    placeholder="Write a comment…"
+                                                    className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm outline-none focus:border-gray-500"
+                                                    onKeyPress={(e) => {
+                                                        if (e.key === 'Enter' && !e.shiftKey) {
+                                                            e.preventDefault();
+                                                            handleModalCommentSubmit();
+                                                        }
+                                                    }}
                               />
                               <button
-                                disabled={!uiInput?.trim() || uiSending}
-                                onClick={() => {
-                                  const text = (ui[pid]?.input || '').trim();
-                                  if (!text) return;
-                                  // Optimistically append
-                                  setUi((prev) => ({
-                                    ...prev,
-                                    [pid]: {
-                                      ...(prev[pid] || {}),
-                                      input: "",
-                                      sending: true,
-                                      comments: [
-                                        ...((prev[pid]?.comments as any[]) || []),
-                                        { content: text, comment: text, username: nickname || 'you', temp: true },
-                                      ],
-                                    },
-                                  }));
-                                  const uid = String(loggedInUserId || userid || "");
-                                  const localPid = p?.postid || p?.id || p?._id;
-                                  if (uid && localPid && authToken) {
-                                    (dispatch(postcomment({ userid: uid, postid: localPid, comment: text, token: authToken } as any)) as any)
-                                      .unwrap()
-                                      .then((res: any) => {
-                                        // Merge server list with optimistic list (keep optimistic if server lags)
-                                        const server = (res && (res.comment || res.comments)) as any[] | undefined;
-                                        setUi((prev) => {
-                                          const current = (prev[pid]?.comments as any[]) || [];
-                                          let merged = current;
-                                          if (Array.isArray(server)) {
-                                            // If server has fewer/equal items, keep optimistic items
-                                            merged = server.length >= current.length ? server : current;
-                                          }
-                                          return {
-                                            ...prev,
-                                            [pid]: {
-                                              ...(prev[pid] || {}),
-                                              sending: false,
-                                              comments: merged,
-                                            },
-                                          };
-                                        });
-                                      })
-                                      .catch(() => {
-                                        setUi((prev) => ({
-                                          ...prev,
-                                          [pid]: { ...(prev[pid] || {}), sending: false },
-                                        }));
-                                      });
-                                  } else {
-                                    setUi((prev) => ({
-                                      ...prev,
-                                      [pid]: { ...(prev[pid] || {}), sending: false },
-                                    }));
-                                  }
-                                }}
-                                className="px-3 py-2 text-sm bg-gray-700 hover:bg-gray-600 rounded disabled:opacity-50"
-                              >
-                                Send
+                                                    disabled={!modalUi.input.trim() || modalUi.sending}
+                                                    onClick={handleModalCommentSubmit}
+                                                    className="px-4 py-2 text-sm bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:from-blue-600 hover:to-purple-700 transition-colors"
+                                                >
+                                                    {modalUi.sending ? "..." : "Post"}
                               </button>
                             </div>
                           </div>
@@ -429,7 +643,11 @@ function PostSingle() {
                       </div>
                     )}
                   </div>
-    </>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
 }
 
 export default PostSingle

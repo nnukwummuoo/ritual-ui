@@ -8,8 +8,7 @@ export const useNotificationIndicator = () => {
   );
 
   const notificationData = useMemo(() => {
-    console.log("[useNotificationIndicator] Notifications:", notifications?.length || 0, "Stats:", notifications_stats);
-    
+   
     if (!notifications || notifications.length === 0) {
       return {
         hasUnread: false,
@@ -30,7 +29,6 @@ export const useNotificationIndicator = () => {
       allUnreadCount: unreadNotifications.length
     };
     
-    console.log("[useNotificationIndicator] Result:", result);
     return result;
   }, [notifications, notifications_stats]);
 

@@ -84,7 +84,7 @@ export default function GlobalSocketConnection() {
     // Set up heartbeat to keep user online
     const heartbeatInterval = setInterval(() => {
       if (socket && socket.connected) {
-        console.log('💓 [GlobalSocket] Sending heartbeat for user:', userid);
+
         socket.emit("heartbeat", userid);
       }
     }, 15000); // Send heartbeat every 15 seconds

@@ -13,6 +13,7 @@ import { getViewingProfile, getViewingFollow, getAllUsersForViewing, clearViewin
 import { checkVipStatus } from "@/store/vip";
 import type { AppDispatch, RootState } from "@/store/store";
 import { getImageSource } from "@/lib/imageUtils";
+import { generateInitials } from "@/utils/generateInitials";
 import { updateEdit } from "@/store/comprofile";
 import { getSocket } from "@/lib/socket";
 import { BiPencil } from "react-icons/bi";
@@ -1167,7 +1168,13 @@ const PostModal = () => {
       content: text,
       comment: text,
       username: nickname || 'you',
-      temp: true
+      commentusername: nickname || 'you',
+      commentuserphoto: photolink || '',
+      userid: String(loggedInUserId || localUserid || ''),
+      createdAt: new Date().toISOString(),
+      commenttime: Date.now(),
+      temp: true,
+      initials: generateInitials(firstname, lastname, nickname)
     };
 
     // Optimistic update
@@ -1403,7 +1410,7 @@ const PostModal = () => {
                               {(() => {
                                 const profileImage = comment.commentuserphoto || comment.user?.photolink;
                                 const userName = comment.commentusername || comment.user?.username || comment.username || "User";
-                                const initials = userName.split(/\s+/).map((n: string) => n[0]).join('').toUpperCase().slice(0, 2) || "?";
+                                const initials = comment.initials || userName.split(/\s+/).map((n: string) => n[0]).join('').toUpperCase().slice(0, 2) || "?";
                                 
                                 if (profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined") {
                                   return (
@@ -1412,13 +1419,24 @@ const PostModal = () => {
                                       alt="Commenter"
                                       width={40}
                                       height={40}
-                                      className="object-cover w-full h-full"
+                                      className="object-cover w-full h-full rounded-full"
+                                      onError={(e) => {
+                                        const target = e.target as HTMLImageElement;
+                                        target.style.display = 'none';
+                                        const parent = target.parentElement;
+                                        if (parent) {
+                                          const fallbackDiv = document.createElement('div');
+                                          fallbackDiv.className = 'w-full h-full rounded-full bg-gray-600 flex items-center justify-center text-sm text-white font-semibold';
+                                          fallbackDiv.textContent = initials;
+                                          parent.appendChild(fallbackDiv);
+                                        }
+                                      }}
                                     />
                                   );
                                 }
                                 
                                 return (
-                                  <div className="w-full h-full bg-gray-600 flex items-center justify-center text-sm text-white font-semibold">
+                                  <div className="w-full h-full rounded-full bg-gray-600 flex items-center justify-center text-sm text-white font-semibold">
                                     {initials}
                                   </div>
                                 );

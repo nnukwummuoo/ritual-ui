@@ -1193,7 +1193,7 @@ const EditProfile: React.FC = () => {
                 <div className="flex flex-col mb-4">
                   <label className="mb-1 text-sm text-slate-300">Username</label>
                   <div className="relative">
-                    <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 text-sm">@</span>
+                    {/* <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 text-sm">@</span> */}
                     <input
                       type="text"
                       className={`rounded-lg bg-slate-600 text-slate-100 p-2 pl-8 pr-10 placeholder:text-slate-500 placeholder:font-normal placeholder:text-sm w-full transition-colors ${

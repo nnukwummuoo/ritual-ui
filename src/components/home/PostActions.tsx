@@ -349,7 +349,19 @@ export default function PostActions({
           liked ? 'text-white' : 'text-gray-400 hover:text-gray-200'
         }`}
         onClick={() => {
-          if (onLike) onLike();
+          console.log('🔥 LIKE BUTTON CLICKED in PostActions');
+          console.log('📊 PostActions props:', {
+            liked,
+            likeCount,
+            hasOnLike: !!onLike,
+            postId: post?.postid || post?.id || post?._id
+          });
+          if (onLike) {
+            console.log('✅ Calling onLike function...');
+            onLike();
+          } else {
+            console.error('❌ onLike function is not provided!');
+          }
         }}
         disabled={isLiking}
         aria-label={liked ? "Unlike post" : "Like post"}

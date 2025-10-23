@@ -1292,11 +1292,11 @@ export default function Creatorbyid () {
               onClick={(e) => e.stopPropagation()}
             >
               <div className="bg-gray-800 p-6 rounded-lg text-white w-11/12 max-w-md">
-                <h2 className="text-lg font-bold mb-4">Warning</h2>
+                <h2 className="text-lg font-bold mb-4">⚠ Warning</h2>
                 <p className="mb-4">
-                  Deleting this page will erase all your views permanently. This
-                  will lower your visibility if you create a new portfolio page. Are
-                  you absolutely sure?
+                  Deleting your portfolio will permanently remove all your views, and you may lose pending fan requests and unclaimed gold. Your visibility will also drop if you create a new portfolio.
+                  <br /><br />
+                  Are you certain you want to proceed?
                 </p>
                 <div className="flex justify-end gap-4">
                   <button

@@ -8,8 +8,7 @@ export const useActivityNotificationIndicator = () => {
   );
 
   const notificationData = useMemo(() => {
-    console.log("[useActivityNotificationIndicator] Notifications:", notifications?.length || 0, "Stats:", notifications_stats);
-    
+  
     if (!notifications || notifications.length === 0) {
       return {
         hasUnread: false,
@@ -41,7 +40,6 @@ export const useActivityNotificationIndicator = () => {
       isLoading: notifications_stats === 'loading'
     };
     
-    console.log("[useActivityNotificationIndicator] Result:", result);
     return result;
   }, [notifications, notifications_stats]);
 

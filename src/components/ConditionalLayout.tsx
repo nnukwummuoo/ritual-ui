@@ -25,6 +25,9 @@ export default function ConditionalLayout({ children, isAuthenticated }: Conditi
   
   // Check if it's an admin route
   const isAdminRoute = pathname.includes('/mmeko/');
+  
+  // Check if it's an auth route (login, register, etc.)
+  const isAuthRoute = pathname.includes('/auth/');
 
   // Show notification permission modal for authenticated users who haven't granted permission
   useEffect(() => {
@@ -52,9 +55,9 @@ export default function ConditionalLayout({ children, isAuthenticated }: Conditi
     localStorage.setItem('notification-modal-seen', 'true');
   };
   
-  // If it's a QuickChat [userid] route or admin route, render without main layout
-  if (isQuickChatRoute || isAdminRoute) {
-    return <>{children}</>;
+  // If it's a QuickChat [userid] route, admin route, or auth route, render without main layout
+  if (isQuickChatRoute || isAdminRoute || isAuthRoute) {
+    return <div className="pb-0">{children}</div>;
   }
   
   // Otherwise, render with main layout

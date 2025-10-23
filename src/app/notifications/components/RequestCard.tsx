@@ -942,7 +942,25 @@ export default function RequestCard({exp, img, name, nickname, firstName, lastNa
             onClick={handleProfileClick}
           >
             {img && img !== '/picture-1.jfif' && img !== '/default-image.png' ? (
-              <Image src={img} width={100} alt="picture" height={100} className='absolute top-0 left-0 size-full object-cover' />
+              <Image 
+                src={img} 
+                width={100} 
+                alt="picture" 
+                height={100} 
+                className='absolute top-0 left-0 size-full object-cover'
+                onError={(e) => {
+                  // If image fails to load, show initials instead
+                  const target = e.target as HTMLImageElement;
+                  target.style.display = 'none';
+                  const parent = target.parentElement;
+                  if (parent) {
+                    const fallbackDiv = document.createElement('div');
+                    fallbackDiv.className = 'w-full h-full flex items-center justify-center bg-gray-600 text-white font-bold text-xl';
+                    fallbackDiv.textContent = generateInitials(firstName, lastName, nickname || name);
+                    parent.appendChild(fallbackDiv);
+                  }
+                }}
+              />
             ) : (
               <div className="w-full h-full flex items-center justify-center bg-gray-600 text-white font-bold text-xl">
                 {generateInitials(firstName, lastName, nickname || name)}

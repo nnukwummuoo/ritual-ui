@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import React, { useEffect, useLayoutEffect } from "react";
@@ -17,6 +18,11 @@ import { toast } from "material-react-toastify";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { getImageSource } from "@/lib/imageUtils";
+import CreatorCards from "./CreatorCards";
+import FirstPost from "./FirstPost";
+import RemainingPosts from "./RemainingPosts";
+import { generateInitials } from "@/utils/generateInitials";
+
 
 // Utility function to format relative time
 const formatRelativeTime = (timestamp: string | number | Date): string => {
@@ -154,6 +160,7 @@ export default function PostsCard() {
   const [selfName, setSelfName] = React.useState<string | undefined>(undefined);
   const [postResolve, setPostResolve] = React.useState<any[]>(posts);
   const [timeUpdate, setTimeUpdate] = React.useState(0); // Used to trigger re-renders for time updates
+  const [hasAttemptedFetch, setHasAttemptedFetch] = React.useState(false); // Track if we've tried to fetch posts
   
   // Get current user's following list from Redux (same as Profile component)
   const followingList = useSelector((state: RootState) => {
@@ -226,25 +233,10 @@ export default function PostsCard() {
     }
   }, [loggedInUserId, dispatch]);
 
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem('feedUi');
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (parsed && typeof parsed === 'object') setUi(parsed);
-      }
-    } catch {}
-  }, []);
+  // Remove localStorage UI state loading - start fresh each time
 
   useEffect(() => {
-    try {
-      const cached = localStorage.getItem('feedPosts');
-      if (cached) {
-        const parsed = JSON.parse(cached);
-        if (Array.isArray(parsed)) dispatch(hydrateFromCache(parsed));
-      }
-    } catch {}
-    
+    // Load user data from localStorage for authentication
     try {
       const raw = localStorage.getItem('login');
       if (raw) {
@@ -263,23 +255,73 @@ export default function PostsCard() {
       }
     } catch {}
     
-    // Use fetchposts() instead of getallpost() to ensure userid is passed for blocking filter
+    // Fetch fresh posts from backend
     fetchFeed();
   }, [dispatch]);
 
-  useEffect(() => {
-    try {
-      if (Array.isArray(posts)) {
-        localStorage.setItem('feedPosts', JSON.stringify(posts));
-      }
-    } catch {}
-  }, [posts]);
+  // Remove localStorage posts caching - always fetch fresh from backend
 
   const fetchFeed = async () => { 
     try {
+      setHasAttemptedFetch(true);
+      
+      // Fetch all posts from backend
       const resPosts = await fetchposts();
       if (resPosts?.post && Array.isArray(resPosts.post)) {
-        // Fetch likes and comments for each post
+        // First, show posts immediately with basic data
+        const basicPosts = resPosts.post.map((post: any) => ({
+          ...post,
+          likeCount: post.likeCount || 0,
+          likedBy: post.likedBy || [],
+          comments: post.comments || [],
+          commentCount: post.commentCount || post.comments?.length || 0
+        }));
+        
+        // Update UI state for basic posts with proper like/follow status
+        setUi(prev => {
+          const newState = { ...prev };
+          basicPosts.forEach((post: any) => {
+            const postId = post?.postid || post?.id || post?._id;
+            const postAuthorId = post?.userid || post?.userId || post?.ownerid || post?.ownerId || post?.authorId || post?.createdBy;
+            
+            if (postId) {
+              // Get existing state to preserve follow status
+              const existingState = prev[postId] || {};
+              
+              // Only update follow status if we have a valid followingList
+              let updatedIsFollowing = existingState.isFollowing;
+              if (followingList.length > 0) {
+                const isFollowingPostAuthor = followingList.includes(
+                  Array.isArray(postAuthorId) ? postAuthorId.join(',') : String(postAuthorId)
+                );
+                updatedIsFollowing = isFollowingPostAuthor;
+              }
+              
+              // Check if current user has liked this post
+              const likedByArr = Array.isArray(post.likedBy) ? post.likedBy : [];
+              const currentUserId = String(loggedInUserId || selfId || "");
+              const hasLiked = currentUserId && likedByArr.includes(currentUserId);
+              
+              newState[postId] = {
+                ...prev[postId],
+                likeCount: post.likeCount || 0,
+                liked: hasLiked, // Set based on actual like status
+                isFollowing: updatedIsFollowing, // Preserve existing or set based on follow status
+                commentCount: post.commentCount || 0,
+                comments: post.comments || []
+              };
+            }
+          });
+          return newState;
+        });
+        
+        setPostResolve(basicPosts);
+        dispatch(hydrateFromCache(basicPosts));
+        
+        // Then fetch likes and comments in the background (non-blocking)
+        setTimeout(async () => {
+          try {
+            // Fetch detailed data for all posts
         const postsWithLikesAndComments = await Promise.all(resPosts.post.map(async (post: any) => {
           try {
             // Get likes for this post
@@ -315,6 +357,7 @@ export default function PostsCard() {
           }
         }));
         
+            // Update UI state with full data and preserve existing like/follow status
         setUi(prev => {
           const newState = { ...prev };
           postsWithLikesAndComments.forEach((post: any) => {
@@ -322,15 +365,26 @@ export default function PostsCard() {
             const postAuthorId = post?.userid || post?.userId || post?.ownerid || post?.ownerId || post?.authorId || post?.createdBy;
             
             if (postId) {
-              const isFollowingPostAuthor = followingList.includes(
-                Array.isArray(postAuthorId) ? postAuthorId.join(',') : String(postAuthorId)
-              );
+              // Get existing state to preserve like/follow status
+              const existingState = prev[postId] || {};
+              
+              // Only update like status if we have valid like data
+              let updatedLiked = existingState.liked;
+              let updatedLikeCount = existingState.likeCount;
+              
+              if (post.likedBy && Array.isArray(post.likedBy)) {
+                const likedByArr = post.likedBy;
+                const currentUserId = String(loggedInUserId || selfId || "");
+                updatedLiked = currentUserId && likedByArr.includes(currentUserId);
+                updatedLikeCount = post.likeCount || 0;
+              }
               
               newState[postId] = {
-                ...prev[postId],
-                likeCount: post.likeCount || 0,
-                liked: post.likedBy?.includes(loggedInUserId || selfId),
-                isFollowing: isFollowingPostAuthor,
+                ...existingState, // Preserve all existing state
+                likeCount: updatedLikeCount,
+                liked: updatedLiked,
+                // Preserve existing follow status - don't override it
+                isFollowing: existingState.isFollowing,
                 commentCount: post.commentCount || 0,
                 comments: post.comments || []
               };
@@ -339,39 +393,51 @@ export default function PostsCard() {
           return newState;
         });
         
+        // Update posts with detailed data
         setPostResolve(postsWithLikesAndComments);
-        localStorage.setItem('feedPosts', JSON.stringify(postsWithLikesAndComments));
-        
-        // Also update Redux store with filtered posts
         dispatch(hydrateFromCache(postsWithLikesAndComments));
+          } catch (error) {
+            console.error('Error fetching detailed post data:', error);
+          }
+        }, 100); // Small delay to let UI render first
       }
     } catch(error) {
-      console.error(error);
+      console.error('Error fetching posts:', error);
     }
   };
 
   useLayoutEffect(() => {
-    (async () => {
-      const cachedPosts = JSON.parse(localStorage.getItem('feedPosts') || "[]") || [];
-      setPostResolve(cachedPosts);
-      
-      if (Array.isArray(cachedPosts)) {
+    // Initialize UI state for existing posts with proper like/follow status
+    if (Array.isArray(posts) && posts.length > 0) {
         setUi(prev => {
           const newState = { ...prev };
-          cachedPosts.forEach((post: any) => {
+        posts.forEach((post: any) => {
             const postId = post?.postid || post?.id || post?._id;
             const postAuthorId = post?.userid || post?.userId || post?.ownerid || post?.ownerId || post?.authorId || post?.createdBy;
             
             if (postId) {
-              const isFollowingPostAuthor = followingList.includes(
-                Array.isArray(postAuthorId) ? postAuthorId.join(',') : String(postAuthorId)
-              );
+              // Get existing state to preserve follow status
+              const existingState = prev[postId] || {};
+              
+              // Only update follow status if we have a valid followingList
+              let updatedIsFollowing = existingState.isFollowing;
+              if (followingList.length > 0) {
+                const isFollowingPostAuthor = followingList.includes(
+                  Array.isArray(postAuthorId) ? postAuthorId.join(',') : String(postAuthorId)
+                );
+                updatedIsFollowing = isFollowingPostAuthor;
+              }
+            
+            // Check if current user has liked this post
+            const likedByArr = Array.isArray(post.likedBy) ? post.likedBy : [];
+            const currentUserId = String(loggedInUserId || selfId || "");
+            const hasLiked = currentUserId && likedByArr.includes(currentUserId);
               
               newState[postId] = {
                 ...prev[postId],
                 likeCount: post.likeCount || 0,
-                liked: post.likedBy?.includes(loggedInUserId || selfId),
-                isFollowing: isFollowingPostAuthor,
+              liked: hasLiked, // Set based on actual like status
+              isFollowing: updatedIsFollowing, // Preserve existing or set based on follow status
                 commentCount: post.commentCount || 0,
                 comments: post.comments || []
               };
@@ -380,20 +446,18 @@ export default function PostsCard() {
           return newState;
         });
       }
-    })();
     
+    // Fetch fresh posts from backend
     fetchFeed();
     window.addEventListener('refreshfeed', fetchFeed);
+    
     return () => {
       window.removeEventListener('refreshfeed', fetchFeed);
     };
   }, [followingList, loggedInUserId, selfId]);
 
-  useEffect(() => {
-    try {
-      localStorage.setItem('feedUi', JSON.stringify(ui));
-    } catch {}
-  }, [ui]);
+  // Remove localStorage UI state saving - no caching needed
+
 
   const handleFollow = async (postAuthorId: string, postId: string) => {
     if (!loggedInUserId || !postAuthorId || !token) {
@@ -449,583 +513,56 @@ export default function PostsCard() {
     }
   };
 
-  if (status === "loading" && (!postResolve?.length )) {
+  // Always show skeleton until posts are ready
+  if (status === "loading" || !postResolve?.length || !hasAttemptedFetch) {
     return <PostSkeleton />;
   }
 
-  if (!postResolve?.length) {
-    return (
-      <div className="text-center text-gray-400 py-6">No posts yet.</div>
-    );
-  }
+  // Get the first post and remaining posts
+  const firstPost = postResolve[0];
+  const remainingPosts = postResolve.slice(1);
 
   return (
     <div className="flex flex-col gap-6">
-      {postResolve.map((p: any, idx: number) => {
-        let postType: string = p?.posttype || p?.type || "text";
-        if (!postType) {
-          if (p?.postphoto || p?.image) postType = "image";
-          else if (p?.postvideo || p?.video) postType = "video";
-        }
+      {/* First Post */}
+      {firstPost && (
+        <FirstPost
+          post={firstPost}
+          ui={ui}
+          setUi={setUi}
+          dispatch={dispatch}
+          loggedInUserId={loggedInUserId}
+          selfId={selfId}
+          token={token}
+          followingList={followingList}
+          vipStatus={vipStatus}
+          firstname={firstname}
+          lastname={lastname}
+          nickname={nickname}
+          photolink={photolink}
+        />
+      )}
 
-        const mediaRef =
-          p?.postfilelink ||
-          p?.postphoto ||
-          p?.postvideo ||
-          p?.postlink ||
-          p?.postFile ||
-          p?.file ||
-          p?.proxy_view ||
-          p?.file_link ||
-          p?.media ||
-          p?.image ||
-          p?.video ||
-          p?.thumblink ||
-          p?.postfilepublicid ||
-          p?.publicId ||
-          p?.public_id ||
-          p?.imageId ||
-          "";
-        const asString = typeof mediaRef === "string" ? mediaRef : (mediaRef?.publicId || mediaRef?.public_id || mediaRef?.url || "");
-        const isHttpUrl = typeof asString === "string" && /^https?:\/\//i.test(asString);
-        const isBlobUrl = typeof asString === "string" && /^blob:/i.test(asString);
-        const isDataUrl = typeof asString === "string" && /^data:/i.test(asString);
-        const isUrl = isHttpUrl || isBlobUrl || isDataUrl;
-        
-        // Use bucket detection for Storj URLs
-        const imageSource = getImageSource(asString, 'post');
-        const src = imageSource.src;
-        
-        // Keep fallback URLs for error handling
-        const queryUrlPrimary = asString ? `${API_BASE}/api/image/view?publicId=${encodeURIComponent(asString)}` : "";
-        const pathUrlPrimary = asString ? `${API_BASE}/api/image/view/${encodeURIComponent(asString)}` : "";
-        const queryUrlFallback = asString ? `${PROD_BASE}/api/image/view?publicId=${encodeURIComponent(asString)}` : "";
-        const pathUrlFallback = asString ? `${PROD_BASE}/api/image/view/${encodeURIComponent(asString)}` : "";
+      {/* Creator Cards */}
+      <CreatorCards />
 
-        const combinedName = [p?.user?.firstname, p?.user?.lastname].filter(Boolean).join(" ");
-        let displayName =
-          p?.user?.username ||
-          p?.user?.name ||
-          p?.user?.nickname ||
-          combinedName ||
-          p?.user?.fullname ||
-          p?.user?.fullName ||
-          p?.user?.author ||
-          p?.user?.username ||
-          p?.user?.name ||
-          p?.profile?.username ||
-          p?.postedBy?.username ||
-          p?.postedBy?.name ||
-          "User";
-      
-        const postAuthorId = p?.userid || p?.userId || p?.ownerid || p?.ownerId || p?.authorId || p?.createdBy;
-        const isSelf = (
-          (loggedInUserId && postAuthorId && String(postAuthorId) === String(loggedInUserId)) ||
-          (selfId && postAuthorId && String(postAuthorId) === String(selfId))
-        );
-        if (isSelf && (!displayName || displayName === "User")) {
-          const selfCombined = [firstname, lastname].filter(Boolean).join(" ");
-          displayName = nickname || selfCombined || selfNick || selfName || displayName;
-        }
-        const handleStr =
-          p?.handle ||
-          p?.user?.handle ||
-          p?.nickname ||
-          p?.user?.nickname ||
-          p?.username ||
-          p?.postedBy?.username ||
-          null;
+      {/* Remaining Posts */}
+      <RemainingPosts
+        posts={remainingPosts}
+        ui={ui}
+        setUi={setUi}
+        dispatch={dispatch}
+        loggedInUserId={loggedInUserId}
+        selfId={selfId}
+        token={token}
+        followingList={followingList}
+        vipStatus={vipStatus}
+        firstname={firstname}
+        lastname={lastname}
+        nickname={nickname}
+        photolink={photolink}
+      />
 
-        const likeCount = Number(p?.likeCount || 0);
-        const likedByArr = Array.isArray(p?.likedBy) ? p.likedBy : [];
-        const commentsArr: any[] = Array.isArray(p?.comments)
-          ? p?.comments
-          : Array.isArray(p?.comment)
-          ? p?.comment
-          : [];
-        const commentCount = Array.isArray(commentsArr)
-          ? commentsArr.length
-          : Number(p?.commentCount || p?.commentsCount || p?.comments || 0) || 0;
-
-        const idStr = (v: any) => (v == null ? undefined : String(v));
-        const selfIdStr = idStr(loggedInUserId) || idStr(selfId);
-        const liked = !!(selfIdStr && likedByArr.includes(selfIdStr));
-        // const starred = !!(p?.starred || p?.faved || p?.favorited);
-
-        const pid = p?.postid || p?.id || p?._id || idx;
-        const uiState = ui[pid] || {};
-        const uiLiked = uiState.liked ?? liked;
-        const uiLikeCount = uiState.likeCount ?? likeCount;
-       // const uiStarred = uiState.starred ?? starred;
-        const uiOpen = !!uiState.open;
-        const uiComments = uiState.comments ?? [];
-        const uiInput = uiState.input ?? "";
-        const uiLoading = !!uiState.loadingComments;
-        const uiSending = !!uiState.sending;
-        const hasUiComments = Object.prototype.hasOwnProperty.call(uiState, 'comments');
-        const uiCommentCount = uiState.commentCount;
-        const displayCommentCount = hasUiComments ? (uiCommentCount ?? uiComments.length) : commentCount;
-        const uiIsFollowing = uiState.isFollowing ?? false;
-
-        return (
-          <div key={`${p?.postid || p?.id || idx}`} className="mx-auto max-w-[30rem] w-full bg-gray-800 rounded-md p-3">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-3">
-                <div className="relative">
-                  <div 
-                    className="size-10 rounded-full overflow-hidden bg-gray-700 cursor-pointer hover:opacity-80 transition-opacity" 
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      router.push(`/Profile/${postAuthorId}`);
-                    }}
-                  >
-                    {(() => {
-                      const profileImage = isSelf ? photolink : 
-                        p?.user?.photolink || 
-                        p?.user?.photoLink || 
-                        p?.user?.profileImage || 
-                        p?.user?.avatar || 
-                        p?.user?.image;
-                      
-                      const userName = isSelf ? `${firstname} ${lastname}`.trim() : 
-                        `${p?.user?.firstname || ""} ${p?.user?.lastname || ""}`.trim();
-                      
-                      const initials = userName.split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2) || "?";
-                      
-                      if (profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined") {
-                        const imageSource = getImageSource(profileImage, 'profile');
-                        return (
-                          <img
-                            alt="Profile picture"
-                            src={imageSource.src}
-                            className="object-cover w-full h-full"
-                            onError={(e) => {
-                              const target = e.currentTarget as HTMLImageElement;
-                              target.style.display = 'none';
-                              const nextElement = target.nextElementSibling as HTMLElement;
-                              if (nextElement) {
-                                nextElement.style.setProperty('display', 'flex');
-                              }
-                            }}
-                          />
-                        );
-                      }
-                      
-                      return (
-                        <div className="w-full h-full flex items-center justify-center text-white text-sm font-semibold bg-gray-600">
-                          {initials}
-                        </div>
-                      );
-                    })()}
-                  </div>
-                  
-       {/* VIP Lion Badge - show if the post author is VIP */}
-       {(() => {
-         // Check if current user is VIP
-         if (isSelf && vipStatus?.isVip) {
-           return <VIPBadge size="xl" className="absolute -top-5 -right-5" isVip={vipStatus.isVip} vipEndDate={vipStatus.vipEndDate} />;
-         }
-
-         // Check if post author is VIP
-         if (!isSelf && p?.user?.isVip) {
-           return <VIPBadge size="xl" className="absolute -top-5 -right-5" isVip={p.user.isVip} vipEndDate={p.user.vipEndDate} />;
-         }
-
-         return null;
-       })()}
-                </div>
-                <div 
-                  className="flex-1 cursor-pointer" 
-                  onClick={() => {
-                    router.push(`/post/${p?._id}`)
-                  }}
-                >
-                  <p className="font-medium">{p?.user?.firstname} { p?.user?.lastname}</p>
-                  <span className="text-gray-400 text-sm">{handleStr ? `${handleStr}` : ""}</span>
-                </div>
-              </div>
-{/*               
-              {!isSelf && postAuthorId && (
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleFollow(postAuthorId, pid);
-                  }}
-                  className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${
-                    uiIsFollowing 
-                      ? "bg-gradient-to-r from-blue-700 to-purple-800 text-white" 
-                      : "bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:scale-105"
-                  }`}
-                >
-                  {uiIsFollowing ? "Following" : "Follow"}
-                </button>
-              )} */}
-            </div>
-
-            {p?.createdAt && (
-              <p className="my-3 text-gray-400 text-sm  cursor-pointer" onClick={()=>{
-                router.push(`/post/${p?._id}`)
-              }}>
-                {(() => {
-                  // Try to format the timestamp
-                  const formatted = formatRelativeTime(p.createdAt);
-                  
-                  // If formatting failed, show a fallback
-                  if (formatted === 'Invalid time' || formatted === 'Unknown time') {
-                    return 'recently';
-                  }
-                  
-                  return formatted;
-                })()}
-              </p>
-            )}
-            
-            {p?.content && (
-              <p className="my-2 whitespace-pre-wrap cursor-pointer" onClick={()=>{
-                router.push(`/post/${p?._id}`)
-              }}>{p.content}</p>
-            )}
-            
-            {postType == "image" && src && (
-              <div className="w-full max-h-[480px] relative rounded overflow-hidden">
-                <Image
-                  src={src}
-                  alt={p?.content || "post image"}
-                  width={800}
-                  height={480}
-                  className="w-full h-auto object-contain"
-                  onError={(e) => {
-                    const img = e.currentTarget as HTMLImageElement & { dataset: any };
-                    if (!img.dataset.fallback1 && pathUrlPrimary) {
-                      img.dataset.fallback1 = "1";
-                      img.src = pathUrlPrimary;
-                      return;
-                    }
-                    if (!img.dataset.fallback2 && queryUrlFallback) {
-                      img.dataset.fallback2 = "1";
-                      img.src = queryUrlFallback;
-                      return;
-                    }
-                    if (!img.dataset.fallback3 && pathUrlFallback) {
-                      img.dataset.fallback3 = "1";
-                      img.src = pathUrlFallback;
-                    }
-                  }}
-                />
-              </div>
-            )}
-            
-            {postType == "video" && src && (
-              <video
-                src={src}
-                controls
-                className="w-full max-h-[480px] rounded"
-                onError={(e) => {
-                  const video = e.currentTarget as HTMLVideoElement & { dataset: any };
-                  if (!video.dataset.fallback1 && pathUrlPrimary) {
-                    video.dataset.fallback1 = "1";
-                    video.src = pathUrlPrimary;
-                    video.load();
-                    return;
-                  }
-                  if (!video.dataset.fallback2 && queryUrlFallback) {
-                    video.dataset.fallback2 = "1";
-                    video.src = queryUrlFallback;
-                    video.load();
-                    return;
-                  }
-                  if (!video.dataset.fallback3 && pathUrlFallback) {
-                    video.dataset.fallback3 = "1";
-                    video.src = pathUrlFallback;
-                    video.load();
-                  }
-                }}
-              />
-            )}
-            
-            <PostActions
-              className="mt-3 border-t border-gray-700 pt-2"
-              starred={uiIsFollowing}
-              liked={uiLiked}
-              likeCount={uiLikeCount}
-              commentCount={displayCommentCount}
-              post={p}
-              onStar={() => handleFollow(postAuthorId, pid)}
-              onLike={async () => {
-                const uid = String(loggedInUserId || selfId || "");
-                const localPid = p?.postid || p?.id || p?._id;
-                
-                if (!localPid || !token) {
-                  toast.error("Please login to like posts");
-                  return;
-                }
-                
-                const curr = ui[localPid] || {};
-                const nextLiked = !(curr.liked ?? liked);
-                const currentCount = curr.likeCount ?? likeCount;
-                
-                setUi((prev) => ({
-                  ...prev,
-                  [localPid]: {
-                    ...curr,
-                    liked: nextLiked,
-                    likeCount: Math.max(0, currentCount + (nextLiked ? 1 : -1)),
-                  },
-                }));
-
-                try {
-                  await dispatch(postlike({
-                    userid: uid,
-                    postid: localPid,
-                    token: token
-                  } as any)).unwrap();
-                } catch {
-                  setUi((prev) => ({
-                    ...prev,
-                    [localPid]: {
-                      ...prev[localPid],
-                      liked: !nextLiked,
-                      likeCount: currentCount,
-                    },
-                  }));
-                  toast.error("Failed to update like. Please try again.");
-                }
-              }}
-              onComment={() => {
-                const localPid = p?.postid || p?.id || p?._id;
-                if (!localPid) return;
-                setUi((prev) => ({
-                  ...prev,
-                  [localPid]: { ...(prev[localPid] || {}), open: !(prev[localPid]?.open) }
-                }));
-                const curr = ui[localPid];
-                
-                // If comments are already loaded, don't fetch again
-                if (curr && Array.isArray(curr.comments) && curr.comments.length > 0) {
-                  return;
-                }
-                
-                // Only fetch if comments are not already loaded
-                const shouldFetch = !(curr && Array.isArray(curr.comments));
-                if (shouldFetch) {
-                  setUi((prev) => ({
-                    ...prev,
-                    [localPid]: { ...(prev[localPid] || {}), loadingComments: true }
-                  }));
-                  (dispatch(getpostcomment({ postid: localPid } as any)) as any)
-                    .unwrap()
-                    .then((res: any) => {
-                      const arr = (res && (res.comment || res.comments)) || [];
-                      setUi((prev) => ({
-                        ...prev,
-                        [localPid]: { 
-                          ...(prev[localPid] || {}), 
-                          comments: arr, 
-                          loadingComments: false,
-                          commentCount: arr.length 
-                        }
-                      }));
-                    })
-                    .catch(() => {
-                      setUi((prev) => ({
-                        ...prev,
-                        [localPid]: { ...(prev[localPid] || {}), loadingComments: false }
-                      }));
-                    });
-                }
-              }}
-            />
-            
-            {uiOpen && (
-              <div className="mt-2 border-t border-gray-700 pt-2">
-                {uiLoading ? (
-                  <p className="text-sm text-gray-400">Loading comments…</p>
-                ) : (
-                  <div className="space-y-2">
-                    {uiComments && uiComments.length > 0 ? (
-                      // Sort comments: VIP users first, then by timestamp
-                      uiComments
-                        .sort((a: any, b: any) => {
-                          // Priority 1: VIP users first
-                          const aIsVip = a?.isVip && a?.vipEndDate && new Date(a.vipEndDate) > new Date();
-                          const bIsVip = b?.isVip && b?.vipEndDate && new Date(b.vipEndDate) > new Date();
-                          
-                          if (aIsVip && !bIsVip) return -1;
-                          if (bIsVip && !aIsVip) return 1;
-                          
-                          // Priority 2: Sort by timestamp (most recent first)
-                          const aTime = a?.commenttime || a?.date || a?.createdAt || 0;
-                          const bTime = b?.commenttime || b?.date || b?.createdAt || 0;
-                          return bTime - aTime;
-                        })
-                        .map((c: any, i: number) => (
-                        <div key={i} className="text-sm text-gray-200 flex items-start gap-2">
-                          <div className="relative flex-shrink-0 w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center text-xs">
-                            {(() => {
-                              // Use the same logic as post author profile picture
-                              const profileImage = c?.commentuserphoto || c?.photo || c?.photolink || c?.photoLink || c?.profileImage || c?.avatar || c?.image;
-                              
-                              if (profileImage && profileImage.trim() && profileImage !== 'null' && profileImage !== 'undefined') {
-                                const imageSource = getImageSource(profileImage, 'profile');
-                                return (
-                                  <img
-                                    alt="Profile picture"
-                                    src={imageSource.src}
-                                    className="object-cover w-full h-full rounded-full"
-                                    onError={(e) => {
-                                      const target = e.currentTarget as HTMLImageElement;
-                                      target.style.display = 'none';
-                                      const nextElement = target.nextElementSibling as HTMLElement;
-                                      if (nextElement) {
-                                        nextElement.style.setProperty('display', 'flex');
-                                      }
-                                    }}
-                                  />
-                                );
-                              }
-                              
-                              return null;
-                            })()}
-                            <span style={{display: 'flex'}}>
-                              {(c?.commentusername || c?.username || 'U').charAt(0).toUpperCase()}
-                            </span>
-                            
-                            {/* VIP Badge for commenter */}
-                            {(() => {
-                              const isVipActive = c?.isVip && c?.vipEndDate && new Date(c.vipEndDate) > new Date();
-                              return isVipActive && (
-                                <VIPBadge size="lg" className="absolute -top-2 -right-2" isVip={c.isVip} vipEndDate={c.vipEndDate} />
-                              );
-                            })()}
-                          </div>
-                          <div className="flex-1">
-                            <div className="flex items-center justify-between">
-                              <span className="font-medium text-gray-300">
-                                {c?.commentusername || c?.username || 'User'}
-                              </span>
-                              <span className="text-xs text-gray-500">
-                                {(() => {
-                                  // Try multiple possible timestamp fields, prioritizing commenttime from backend
-                                  const timestamp = c?.commenttime || 
-                                                  c?.date || 
-                                                  c?.createdAt || 
-                                                  c?.created_at || 
-                                                  c?.timestamp || 
-                                                  c?.time || 
-                                                  c?.postedAt || 
-                                                  c?.posted_at;
-                                  
-                                  
-                                  if (!timestamp) {
-                                    return 'Unknown time';
-                                  }
-                                  
-                                  // Try to format the timestamp
-                                  const formatted = formatRelativeTime(timestamp);
-                                  
-                                  // If formatting failed, show a fallback
-                                  if (formatted === 'Invalid time' || formatted === 'Unknown time') {
-                                    return 'recently';
-                                  }
-                                  
-                                  return formatted;
-                                })()}
-                              </span>
-                            </div>
-                            <div className="text-gray-200 mt-1">
-                              {c?.content || c?.comment || String(c)}
-                            </div>
-                            
-                          </div>
-                        </div>
-                      ))
-                    ) : (
-                      <p className="text-sm text-gray-500">No comments yet.</p>
-                    )}
-                    <div className="flex items-center gap-2 pt-1">
-                      <input
-                        value={uiInput}
-                        onChange={(e) => {
-                          const v = e.target.value;
-                          setUi((prev) => ({
-                            ...prev,
-                            [pid]: { ...(prev[pid] || {}), input: v },
-                          }));
-                        }}
-                        placeholder="Write a comment…"
-                        className="flex-1 bg-gray-900 border border-gray-700 rounded px-3 py-2 text-sm outline-none focus:border-gray-500"
-                      />
-                      <button
-                        disabled={!uiInput?.trim() || uiSending}
-                        onClick={() => {
-                          const text = (ui[pid]?.input || '').trim();
-                          if (!text) return;
-                          setUi((prev) => ({
-                            ...prev,
-                            [pid]: {
-                              ...(prev[pid] || {}),
-                              input: "",
-                              sending: true,
-                              comments: [
-                                ...((prev[pid]?.comments as any[]) || []),
-                                { content: text, comment: text, username: nickname || selfNick || 'you', temp: true },
-                              ],
-                              commentCount: ((prev[pid]?.comments as any[]) || []).length + 1,
-                            },
-                          }));
-                          const uid = String(loggedInUserId || selfId || "");
-                          const localPid = p?.postid || p?.id || p?._id;
-                          if (uid && localPid && token) {
-                            (dispatch(postcomment({ userid: uid, postid: localPid, content: text, token: token } as any)) as any)
-                              .unwrap()
-                              .then((_res: any) => {
-                                // Refresh comments after successful post
-                                dispatch(getpostcomment({ postid: localPid } as any))
-                                  .unwrap()
-                                  .then((commentRes: any) => {
-                                    const serverComments = (commentRes && (commentRes.comment || commentRes.comments)) || [];
-                                    setUi((prev) => ({
-                                    ...prev,
-                                    [pid]: {
-                                      ...(prev[pid] || {}),
-                                      sending: false,
-                                        comments: serverComments,
-                                        commentCount: serverComments.length,
-                                      },
-                                    }));
-                                  })
-                                  .catch(() => {
-                                    setUi((prev) => ({
-                                      ...prev,
-                                      [pid]: { ...(prev[pid] || {}), sending: false },
-                                    }));
-                                });
-                              })
-                              .catch(() => {
-                                setUi((prev) => ({
-                                  ...prev,
-                                  [pid]: { ...(prev[pid] || {}), sending: false },
-                                }));
-                              });
-                          } else {
-                            setUi((prev) => ({
-                              ...prev,
-                              [pid]: { ...(prev[pid] || {}), sending: false },
-                            }));
-                          }
-                        }}
-                        className="px-3 py-2 text-sm bg-gray-700 hover:bg-gray-600 rounded disabled:opacity-50"
-                      >
-                        Send
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        );
-      })}
     </div>
   );
 }
