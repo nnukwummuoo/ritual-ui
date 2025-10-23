@@ -84,14 +84,139 @@ const TermCondition = () => {
           </p>
 
 
-
-
-        
-
         <p className="mb-6">
          Creators always have the right to accept or decline any request.
 
         </p>
+
+        <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">4. Attendance & Refund Policy</h3>
+
+
+        
+           <p className="mb-6">
+         1. Fan No-Show
+
+          </p>
+
+          
+           <p className="mb-6">
+         If a fan fails to appear at the agreed meeting time and location,
+          and the creator has already arrived or waited at the designated spot,
+           the fan forfeits any refund entitlement. The transport fare will automatically
+            be credited to the creator as compensation for time and travel.
+
+          </p>
+
+          
+           <p className="mb-6">
+         2.Creator No-Show
+
+          </p>
+
+          
+           <p className="mb-6">
+         If a creator fails to appear for a scheduled Fan Meet or Fan Date, 
+         or cancels without valid notice, the fan will receive a full refund of
+          the transport fare. Repeated no-shows or misuse by creators may result
+           in temporary suspension or permanent removal from the Fan Meet/Fan Date program.
+
+          </p>
+
+          
+           <p className="mb-6">
+         3. Auto-Refund System
+
+          </p>
+
+          
+           <p className="mb-6">
+         If the fan didn't mark the meet or date as “Completed” within 7 days after the scheduled event,
+        and no complaint or dispute has been filed by the creator, the fan will automatically receive a full refund of the transport fare.
+         This ensures fairness and protects both parties in cases where no meeting occurred.
+
+
+
+          </p>
+
+          
+           <p className="mb-6">
+         4. Dispute Handling
+
+          </p>
+
+          
+           <p className="mb-6">
+        If either the fan or creator submits a dispute within 5 days of the scheduled time,
+         the refund process will be temporarily paused until the platform verifies attendance 
+         records and resolves the matter.
+
+          </p>
+
+          
+           <p className="mb-6">
+         5. Proof of Attendance
+
+          </p>
+
+          
+           <p className="mb-6">
+         Both parties are encouraged to take a quick check-in photo or show location proof 
+         at the meeting spot for faster dispute resolution in case of claims.
+
+          </p>
+
+           <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">4.  Fan Meet & Fan Date Expiry</h3>
+
+          
+           <p className="mb-6">
+         1.  Fan Meet / Fan Date Expiration Policy
+
+          </p>
+
+              <p className="mb-6">
+         If a meeting does not happen and the fan didn't mark it as complete within 7 days, the system
+          will automatically refund the fan in full — provided no complaint was filed by the creator.
+
+          </p>
+
+
+            <p className="mb-6">
+         After the 7 days, if there’s no confirmation or complaint, 
+         the request will expire automatically and the pending transport fare is released back to the fan.
+
+
+          </p>
+
+             <p className="mb-6">
+         This ensures fairness, protects both parties, and keeps the platform free of unresolved requests.
+
+
+          </p>
+
+          <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">4. Fan Call Expiry</h3>
+
+              <p className="mb-6">
+         1.  Fan Call Expiration Policy
+
+         </p>
+
+
+            <p className="mb-6">
+         Once a creator accepts your Fan Call request, you have 48 hours to start the call.
+         If the call does not begin within this period, the request will automatically expire.
+       </p>
+
+
+              <p className="mb-6">
+         No charges are made until a call officially starts, so you will not be billed for expired or missed calls.
+
+         </p>
+
+                <p className="mb-6">
+         This ensures a smooth experience and keeps the platform free from inactive requests.
+         </p>
+
+          
 
          <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">4. Fan Meet & Fan Date Policy</h3>
 
@@ -370,6 +495,65 @@ const TermCondition = () => {
           suspension or removal and forfeiture of earnings.
 
         </p>
+
+
+        <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">11. Virtual Currency (“Gold”) Policy</h3>
+
+           <p className="mb-6">
+         1. Definition:
+
+          </p>
+
+             <p className="mb-6">
+         “Gold” refers to virtual tokens used within the Platform to access features,
+         support creators, and unlock premium interactions.
+
+
+          </p>
+
+             <p className="mb-6">
+         2. Purchase Finality:
+          </p>
+
+             <p className="mb-6">
+        All purchases of Gold are final and non-refundable. Once payment is processed, no refund,
+         exchange, or reversal will be issued — even if your account is later suspended or terminated.
+          </p>
+
+             <p className="mb-6">
+         3. Usage:
+
+          </p>
+
+             <p className="mb-6">
+        Gold has no real-world monetary value and may not be transferred, exchanged, or converted outside the Platform.
+
+
+
+          </p>
+
+             <p className="mb-6">
+         4. Technical Issues:
+
+          </p>
+
+             <p className="mb-6">
+         In the rare case of system errors that prevent delivery of purchased Gold, 
+         please contact Support within 24 hours for verification and correction.
+
+          </p>
+
+             <p className="mb-6">
+         5. Fraud or Abuse:
+
+          </p>
+
+             <p className="mb-6">
+       The Platform reserves the right to review and revoke Gold obtained through unauthorized or fraudulent means.
+
+
+          </p>
+
 
 
         <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">11. Content Ownership</h3>

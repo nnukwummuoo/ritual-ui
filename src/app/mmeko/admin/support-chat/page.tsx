@@ -92,8 +92,8 @@ const AdminSupportChat = () => {
         toast.error('Failed to load support chats');
       }
     } catch (error) {
-      console.error('Error loading support chats:', error);
-      toast.error('Error loading support chats');
+      console.error('Error loading chat support :', error);
+      toast.error('Error loading chat support ');
     } finally {
       setLoading(false);
     }
