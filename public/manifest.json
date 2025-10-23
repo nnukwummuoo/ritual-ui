@@ -1,7 +1,7 @@
 {
-  "name": "MmeKo - Social Platform",
-  "short_name": "MmeKo",
-  "description": "Connect, create, and share on MmeKo - your ultimate social platform",
+  "name": "Mmeko",
+  "short_name": "Mmeko",
+  "description": "",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#000000",
