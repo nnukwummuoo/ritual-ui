@@ -12,7 +12,7 @@ const PrivacyPolicy = () => {
       <Head heading="🔒 Privacy Policy" />
       <section>
         <div className="">
-          <h2 className="mb-6 text-gray-500">Effective Date: 17th June 2025</h2>
+          <h2 className="mb-6 text-gray-500">Effective Date: 23th October 2025</h2>
           <p className="mb-3">
             Mmeko respects your privacy. This policy outlines how we collect, use, and protect your personal information.
 

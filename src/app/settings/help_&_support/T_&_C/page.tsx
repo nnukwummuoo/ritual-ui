@@ -8,7 +8,7 @@ const TermCondition = () => {
      
     <div className="flex flex-col w-full px-4 text-gray-400 md:px-0">
         <Head heading="✅ Terms and Conditions" />
-        <p className="mb-6 text-gray-500">Effective Date: 10th October 2025
+        <p className="mb-6 text-gray-500">Effective Date: 23th October 2025
 </p>
         
         <section className="mb-6">
@@ -165,7 +165,7 @@ const TermCondition = () => {
 
           </p>
 
-           <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">4.  Fan Meet & Fan Date Expiry</h3>
+           <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">5.  Fan Meet & Fan Date Expiry</h3>
 
           
            <p className="mb-6">
@@ -193,7 +193,7 @@ const TermCondition = () => {
 
           </p>
 
-          <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">4. Fan Call Expiry</h3>
+          <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">6. Fan Call Expiry</h3>
 
               <p className="mb-6">
          1.  Fan Call Expiration Policy
@@ -218,7 +218,7 @@ const TermCondition = () => {
 
           
 
-         <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">4. Fan Meet & Fan Date Policy</h3>
+         <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">7. Fan Meet & Fan Date Policy</h3>
 
            <p className="mb-6">
          1. Duration of Meetings
@@ -267,7 +267,7 @@ const TermCondition = () => {
 
 
 
-        <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">5. Payment System</h3>
+        <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">8. Payment System</h3>
 
          <p className="mb-6">
          1. Fan Meet / Fan Date
@@ -306,7 +306,7 @@ const TermCondition = () => {
          Payment is transferred directly to the Creator’s account in real time.
           </p>
 
-        <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">6. Safety & Conduct</h3>
+        <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">9. Safety & Conduct</h3>
 
         <p className="mb-6">
          Creators must keep interactions respectful, safe, and legal.
@@ -329,7 +329,7 @@ const TermCondition = () => {
          The platform is not responsible for off-platform activities once a meet or date occurs.
         </p>
 
-        <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">7. Platform Rights</h3>
+        <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">10. Platform Rights</h3>
 
         <p className="mb-6">
          We may suspend or remove accounts that violate rules.
@@ -341,7 +341,7 @@ const TermCondition = () => {
 
           </p>
 
-          <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">8. No Employment Relationship</h3>
+          <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">11. No Employment Relationship</h3>
 
           <p className="mb-6">
          You are an independent contractor, not an employee.
@@ -353,7 +353,7 @@ const TermCondition = () => {
 
           </p>
 
-          <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">9. Liability</h3>
+          <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">12. Liability</h3>
 
           <p className="mb-6">
           The platform provides a safe fan connection and payment system, but does not guarantee fan behavior.
@@ -368,7 +368,7 @@ const TermCondition = () => {
           </p>
 
 
-         <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">10. Gold System & Earnings</h3>
+         <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">13. Gold System & Earnings</h3>
         <p className="mb-6">
           Earnings on the platform are based on a virtual currency called Gold. All values, rates, and payouts are subject to the Gold Conversion Policy outlined below.”
 
@@ -497,7 +497,7 @@ const TermCondition = () => {
         </p>
 
 
-        <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">11. Virtual Currency (“Gold”) Policy</h3>
+        <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">14. Virtual Currency (“Gold”) Policy</h3>
 
            <p className="mb-6">
          1. Definition:
@@ -556,7 +556,7 @@ const TermCondition = () => {
 
 
 
-        <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">11. Content Ownership</h3>
+        <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">15. Content Ownership</h3>
         <p className="mb-6">
           Creators retain ownership of their content but grant us a non-exclusive license to display and promote it on the platform.
           You may not upload copyrighted or stolen content.
@@ -564,21 +564,21 @@ const TermCondition = () => {
 
         </p>
 
-        <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">12. Fees and Revenue</h3>
+        <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">16. Fees and Revenue</h3>
        <p className="mb-6">
         The platform is free to use.
         Creators keep 100% of their revenue.
         </p>
         
     
-        <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">13. Termination</h3>
+        <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">17. Termination</h3>
         <p className="mb-6">
           We reserve the right to suspend or terminate any account that violates our terms.
           Users can terminate their account anytime via account settings.
 
         </p>
 
-        <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">14. Dispute Resolution</h3>
+        <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">18. Dispute Resolution</h3>
         <p className="mb-6">
           In case of disputes between fans and creators, users are encouraged to contact support within 24 hours with clear evidence (screenshots, photos, videos).
           We will act as a neutral third-party, but do not guarantee resolution outcomes.
