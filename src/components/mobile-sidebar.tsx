@@ -4,23 +4,39 @@ import Image from "next/image";
 import anyaLogo from '@/icons/logo.png';
 import MmekoLogo from '@/icons/Mmeko_mobile_logo.png';
 import Link from "next/link";
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import {
   FaCamera,
   FaCog,
-  FaComments,
-  FaCompass,
   FaHeart,
   FaQuestionCircle,
   FaUpload,
   FaUsersCog,
-  FaVideo,
-  FaStar,
   FaTimes,
   FaBars,
 } from "react-icons/fa";
 
 export default function MobileSidebar() {
+  const sidebarRef = useRef<HTMLElement>(null);
+  const { isOpen, toggle } = useAuth();
+
+  // Handle click outside to close sidebar
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (isOpen && sidebarRef.current && !sidebarRef.current.contains(event.target as Node)) {
+        toggle();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isOpen, toggle]);
+
   const sideBarItems = [
     {
       route: "/",
@@ -32,31 +48,27 @@ export default function MobileSidebar() {
       name: "Creators",
       icon: <FaCamera size={25} />,
     },
-    {
-      route: "/search",
-      name: "Explorer",
-      icon: <FaCompass size={25} />,
-    },
+    // {
+    //   route: "/search",
+    //   name: "Explorer",
+    //   icon: <FaCompass size={25} />,
+    // },
     {
       route: "/upload",
       name: "Upload",
       icon: <FaUpload size={25} />,
     },
-    {
-      route: "/",
-      name: "Live",
-      icon: <FaVideo size={25} />,
-    },
+    // {
+    //   route: "/",
+    //   name: "Live",
+    //   icon: <FaVideo size={25} />,
+    // },
     {
       route: "/settings",
       name: "Settings",
       icon: <FaCog size={25} />,
     },
-    {
-      route: "/feedback",
-      name: "Feedback",
-      icon: <FaComments size={25} />,
-    },
+   
     {
       route: "/support",
       name: "Support",
@@ -68,11 +80,20 @@ export default function MobileSidebar() {
       icon: <FaUsersCog size={25} />,
     },
   ];
-  const { isOpen, toggle } = useAuth();
+  
   return (
-    <section
-      className={`sidebar bg-gray-900 ${isOpen ? "sidebar-open" : "sidebar-closed"}`}
-    >
+    <>
+      {/* Backdrop overlay for mobile */}
+      {isOpen && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-[999] md:hidden"
+          onClick={toggle}
+        />
+      )}
+      <section
+        ref={sidebarRef}
+        className={`sidebar bg-gray-900 ${isOpen ? "sidebar-open" : "sidebar-closed"}`}
+      >
       <Link href="/" style={{ width: "100%", display: "flex", justifyContent: "center" }}>
         <Image src={anyaLogo} alt="logo" className="brand-logo w-20" />
         <Image src={MmekoLogo} alt="logo" className="sidebar-logo" />
@@ -99,5 +120,6 @@ export default function MobileSidebar() {
         ))}
       </ul>
     </section>
+    </>
   );
 }

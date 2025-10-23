@@ -279,25 +279,65 @@ const registerSlice = createSlice({
         state.logstats = "loading";
       })
       .addCase(loginuser.fulfilled, (state, action) => {
-        // Always persist login data for client-side consumers (e.g., Sidemenu profile link)
+        // Always persist all user data for client-side consumers
         try {
-          localStorage.setItem(
-            "login",
-            JSON.stringify({
-              email: state.email,
-              password: state.password,
-              refreshtoken: action.payload.token,
-              accesstoken: action.payload.accessToken,
-              userID: action.payload.userId,
-              creator_portfolio_id: action.payload.creator_portfolio_id,
-              creator_portfolio: action.payload.creator_portfolio,
-              // Include VIP status
-              isVip: action.payload.isVip || false,
-              vipStartDate: action.payload.vipStartDate || null,
-              vipEndDate: action.payload.vipEndDate || null,
-            })
-          );
-        } catch {}
+          const userDataToStore = {
+            // Authentication data
+            email: state.email,
+            password: state.password,
+            nickname: action.payload.user?.nickname,
+            userID: action.payload.userId,
+            refreshtoken: action.payload.token,
+            accesstoken: action.payload.accessToken,
+            
+            // Personal information
+            firstname: action.payload.user?.firstname,
+            lastname: action.payload.user?.lastname,
+            bio: action.payload.user?.bio,
+            photolink: action.payload.user?.photolink,
+            photoID: action.payload.user?.photoID,
+            gender: action.payload.user?.gender,
+            age: action.payload.user?.age,
+            country: action.payload.user?.country,
+            dob: action.payload.user?.dob,
+            
+            // Financial information
+            balance: action.payload.user?.balance,
+            withdrawbalance: action.payload.user?.withdrawbalance,
+            coinBalance: action.payload.user?.coinBalance,
+            earnings: action.payload.user?.earnings,
+            pending: action.payload.user?.pending,
+            
+            // Creator information
+            creator_verified: action.payload.user?.creator_verified,
+            creator_portfolio: action.payload.user?.creator_portfolio,
+            creator_portfolio_id: action.payload.user?.creator_portfolio_id,
+            Creator_Application_status: action.payload.user?.Creator_Application_status,
+            
+            // Social information
+            followers: action.payload.user?.followers,
+            following: action.payload.user?.following,
+            
+            // VIP information
+            isVip: action.payload.isVip || false,
+            vipStartDate: action.payload.vipStartDate || null,
+            vipEndDate: action.payload.vipEndDate || null,
+            vipAutoRenewal: action.payload.user?.vipAutoRenewal,
+            vipCelebrationViewed: action.payload.user?.vipCelebrationViewed,
+            
+            // Account information
+            active: action.payload.user?.active,
+            admin: action.payload.user?.admin,
+            passcode: action.payload.user?.passcode,
+            createdAt: action.payload.user?.createdAt,
+            updatedAt: action.payload.user?.updatedAt
+          };
+          
+          localStorage.setItem("login", JSON.stringify(userDataToStore));
+          console.log("✅ [Redux] All user data saved to localStorage:", userDataToStore);
+        } catch (error) {
+          console.error("[Redux] Failed to save localStorage:", error);
+        }
 
         state.logstats = "succeeded";
         state.message = action.payload.message;

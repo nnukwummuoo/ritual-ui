@@ -12,6 +12,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { markActivityNotificationsSeen } from "@/store/profile";
 import { RootState, AppDispatch } from "@/store/store";
 import { useAuth } from "@/lib/context/auth-context";
+import { getImageSource } from "@/lib/imageUtils";
 
 interface Request {
   requestId: string;
@@ -206,7 +207,10 @@ export default function Activity() {
         <div key={request.requestId} className="relative">
           <RequestCard
             type={request.type}
-            img={request.otherUser?.photolink || "/picture-1.jfif"}
+            img={(() => {
+              const imageSource = getImageSource(request.otherUser?.photolink || '', 'profile');
+              return imageSource.src || request.otherUser?.photolink || "/picture-1.jfif";
+            })()}
             status={request.status}
             name={request.otherUser?.name || "Unknown User"}
             nickname={request.otherUser?.nickname} // Add nickname prop

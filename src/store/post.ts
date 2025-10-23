@@ -148,7 +148,10 @@ export const fetchposts = async () => {
       console.error("Error getting user ID from localStorage:", error);
     }
 
-    let response = await axios.post(`${URL}/getallpost`, { userid });
+    // console.log(`📄 [POSTS] Fetching all posts`);
+    let response = await axios.post(`${URL}/getallpost`, { 
+      userid
+    });
     const posts = response.data.post || [];
 
     // For each post, get its likes

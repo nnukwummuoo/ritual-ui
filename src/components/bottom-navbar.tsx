@@ -6,7 +6,6 @@ import Navapp from "@/navs/NavApp";
 import MenuProvider from "@/lib/context/MenuContext";
 import OpenMobileMenuBtn from "./OpenMobileMenuBtn";
 import { usePathname } from "next/navigation";
-import AnyaEyeIcon from "./icons/AnyaEyeIcon";
 import { useSelector, useDispatch } from "react-redux";
 import type { RootState, AppDispatch } from "@/store/store";
 import { getmsgnitify, getmessagenotication } from "@/store/messageSlice";
@@ -22,6 +21,7 @@ interface BottomNavBarItemProps {
   name?: string;
   showUnreadIndicator?: boolean;
   unreadCount?: number;
+  alwaysColored?: boolean;
 }
 export default function BottomNavBar() {
   const pathname = usePathname();
@@ -220,9 +220,10 @@ export default function BottomNavBar() {
       unreadCount: unreadNotificationCount
     },
     {
-      icon: <AnyaEyeIcon active={pathname === "/search"} />,
+      imgUrl: "/Anya.png",
       route: "/anya",
       name: "",
+      alwaysColored: true,
     },
     {
       imgUrl: "/icons/icons8-message.png",
@@ -248,7 +249,7 @@ export default function BottomNavBar() {
                 <div className="relative">
                   <Image
                     src={item.imgUrl || ""}
-                    className={`size-8 grayscale ${pathname === item.route ? "grayscale-0" : ""}`}
+                    className={`size-8 ${item.alwaysColored ? "grayscale-0" : `grayscale ${pathname === item.route ? "grayscale-0" : ""}`}`}
                     alt={item.name || "icon"}
                     width={100}
                     height={100}

@@ -11,6 +11,7 @@ export default function ShouldRenderPopUp() {
     setHasMounted(true);
   }, []);
 
+
   if (!hasMounted) return null;
   if (popup === "open") return <PopUp />;
   return null;

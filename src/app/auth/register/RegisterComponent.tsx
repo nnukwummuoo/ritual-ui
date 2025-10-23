@@ -16,6 +16,9 @@ import { toast } from "material-react-toastify";
 import { useDispatch } from "react-redux";
 import { registernewUser } from "@/store/registerSlice";
 import type { AppDispatch } from "@/store/store";
+import axios from "axios";
+import { URL as API_URL } from "@/api/config";
+import { FaHome } from "react-icons/fa";
 
 // Word list for generating a mnemonic phrase (unchanged)
 const wordList = [
@@ -80,6 +83,14 @@ export const Register = () => {
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   // State to track if current step is valid
   const [isStepValid, setIsStepValid] = useState<boolean>(false);
+  // State to track which steps are accessible (user must complete previous steps)
+  const [accessibleSteps, setAccessibleSteps] = useState<number[]>([1]);
+
+  // Username validation
+  const [usernameError, setUsernameError] = useState("");
+  const [isCheckingUsername, setIsCheckingUsername] = useState(false);
+  const [usernameValid, setUsernameValid] = useState(false);
+  const [usernameStatus, setUsernameStatus] = useState(""); // "valid", "invalid", "checking", ""
 
   const [formValues, setFormValues] = useState({
     firstname: "",
@@ -117,6 +128,19 @@ export const Register = () => {
         }
 
         setFormValues(prev => ({ ...prev, [name]: formattedValue }));
+        
+        // Reset username validation status when user starts typing
+        setUsernameStatus("");
+        setUsernameValid(false);
+        setUsernameError("");
+        
+        // Check uniqueness after a short delay
+        const cleanUsername = formattedValue.substring(1); // Remove @ prefix
+        if (cleanUsername.length >= 3) {
+          setTimeout(() => {
+            checkUsernameUniqueness(cleanUsername);
+          }, 500);
+        }
     } else {
         setFormValues(prev => ({ ...prev, [name]: value }));
     }
@@ -132,10 +156,61 @@ export const Register = () => {
   const generateNewPhrase = () => { setSecretPhrase(generateSecretPhrase()); setCopied(false); setSaved(false); };
   useEffect(() => { generateNewPhrase(); }, []);
 
-  // Validate step whenever formValues, country, or step changes
+  // Function to check username uniqueness
+  const checkUsernameUniqueness = async (username: string) => {
+    if (!username || username.length < 3) {
+      setUsernameError("");
+      setUsernameValid(false);
+      setUsernameStatus("");
+      return false;
+    }
+
+    // Validate username format: 3-15 characters, only letters, numbers, and underscores
+    const usernameRegex = /^[a-z0-9_]{3,15}$/;
+    if (!usernameRegex.test(username)) {
+      setUsernameError("Username must be 3-15 characters, lowercase letters, numbers, and underscores only");
+      setUsernameValid(false);
+      setUsernameStatus("invalid");
+      return false;
+    }
+
+    setIsCheckingUsername(true);
+    setUsernameError("");
+    setUsernameStatus("checking");
+    setUsernameValid(false);
+
+    try {
+      const response = await axios.post(`${API_URL}/checkusername`, {
+        username: `@${username}`, // Add @ prefix for database check
+        currentUserId: null // No current user during registration
+      });
+
+      if (response.data.available) {
+        setUsernameError("");
+        setUsernameValid(true);
+        setUsernameStatus("valid");
+        return true;
+      } else {
+        setUsernameError("Username is already taken");
+        setUsernameValid(false);
+        setUsernameStatus("invalid");
+        return false;
+      }
+    } catch (error) {
+      console.error("Error checking username:", error);
+      setUsernameError("Error checking username availability");
+      setUsernameValid(false);
+      setUsernameStatus("invalid");
+      return false;
+    } finally {
+      setIsCheckingUsername(false);
+    }
+  };
+
+  // Validate step whenever formValues, country, step, or username status changes
   useEffect(() => {
     setIsStepValid(validateStep(step));
-  }, [formValues, country, step]);
+  }, [formValues, country, step, usernameStatus]);
 
   const copyToClipboard = () => { navigator.clipboard.writeText(secretPhrase.join(" ")); setCopied(true); toast.success("Phrase copied!", { style: { backgroundColor: "#111" } }); setTimeout(() => setCopied(false), 2000); };
 
@@ -185,10 +260,10 @@ export const Register = () => {
 
     if (currentStep === 1) {
         if (!formValues.firstname) { newErrors.firstname = "First name is required."; isValid = false; }
-        else if (!/^[a-zA-Z]{1,10}$/.test(formValues.firstname)) { newErrors.firstname = "First name must be 1-10 letters."; isValid = false; }
+        else if (!/^[a-zA-Z]{1,9}$/.test(formValues.firstname)) { newErrors.firstname = "First name must be 1-9 letters."; isValid = false; }
 
         if (!formValues.lastname) { newErrors.lastname = "Last name is required."; isValid = false; }
-        else if (!/^[a-zA-Z]{1,10}$/.test(formValues.lastname)) { newErrors.lastname = "Last name must be 1-10 letters."; isValid = false; }
+        else if (!/^[a-zA-Z]{1,9}$/.test(formValues.lastname)) { newErrors.lastname = "Last name must be 1-9 letters."; isValid = false; }
 
         if (!formValues.dob) { newErrors.dob = "Date of birth is required."; isValid = false; }
         else if (calculateAge(formValues.dob) < 18) { newErrors.dob = "You must be at least 18 years old."; isValid = false; }
@@ -199,6 +274,9 @@ export const Register = () => {
         if (!country) { newErrors.country = "Please select your country."; isValid = false; }
         if (!formValues.nickname) { newErrors.nickname = "Username is required."; isValid = false; }
         else if (!/^@[a-z0-9_]{3,15}$/.test(formValues.nickname)) { newErrors.nickname = "Must be 3-15 characters (letters, numbers, or _)."; isValid = false; }
+        else if (usernameStatus === "invalid") { newErrors.nickname = usernameError || "Please choose a different username."; isValid = false; }
+        else if (usernameStatus === "" && formValues.nickname.length >= 3) { newErrors.nickname = "Please wait for username validation."; isValid = false; }
+        else if (usernameStatus === "checking") { newErrors.nickname = "Checking username availability..."; isValid = false; }
     }
 
     if (currentStep === 3) {
@@ -228,6 +306,22 @@ export const Register = () => {
     if (calculateAge(formValues.dob) < 18) { 
       toast.error("You must be at least 18 years old.", { style: { backgroundColor: "#111" } }); 
       return; 
+    }
+    
+    // Check username validation
+    if (formValues.nickname && formValues.nickname.length >= 3) {
+      if (usernameStatus === "invalid") {
+        toast.error("Please choose a different username.", { style: { backgroundColor: "#111" } });
+        return;
+      }
+      if (usernameStatus === "checking") {
+        toast.error("Please wait for username validation to complete.", { style: { backgroundColor: "#111" } });
+        return;
+      }
+      if (usernameStatus === "" || !usernameValid) {
+        toast.error("Please wait for username validation to complete.", { style: { backgroundColor: "#111" } });
+        return;
+      }
     }
 
     const payload = { ...formValues, age: calculateAge(formValues.dob).toString(), country, secretPhrase };
@@ -271,7 +365,12 @@ export const Register = () => {
   // Handle click for the "Next" button
   function handleNextClick() {
     if (validateStep(step) && step < 4) {
-      setStep(step + 1);
+      const nextStep = step + 1;
+      setStep(nextStep);
+      // Add the next step to accessible steps
+      if (!accessibleSteps.includes(nextStep)) {
+        setAccessibleSteps(prev => [...prev, nextStep]);
+      }
     }
   }
 
@@ -289,12 +388,12 @@ export const Register = () => {
         {
           name: "firstname",
           label: "First Name",
-          input: <Input id="firstname" type="text" name="firstname" placeholder=" " overide={true} classNames="" maxLength={10} pattern="[a-zA-Z]{1,10}" title="First name must be 1-10 letters only." required={true} value={formValues.firstname} onChange={handleInputChange} />,
+          input: <Input id="firstname" type="text" name="firstname" placeholder=" " overide={true} classNames="" maxLength={9} pattern="[a-zA-Z]{1,9}" title="First name must be 1-9 letters only." required={true} value={formValues.firstname} onChange={handleInputChange} />,
         },
         {
           name: "lastname",
           label: "Last Name",
-          input: <Input id="lastname" type="text" name="lastname" placeholder=" " overide={true} classNames="" maxLength={10} pattern="[a-zA-Z]{1,10}" title="Last name must be 1-10 letters only." required={true} value={formValues.lastname} onChange={handleInputChange} />,
+          input: <Input id="lastname" type="text" name="lastname" placeholder=" " overide={true} classNames="" maxLength={9} pattern="[a-zA-Z]{1,9}" title="Last name must be 1-9 letters only." required={true} value={formValues.lastname} onChange={handleInputChange} />,
         },
         {
           name: "dob",
@@ -324,7 +423,40 @@ export const Register = () => {
         {
           name: "nickname",
           label: "@User Name",
-          input: <Input id="nickname" required={true} type="text" name="nickname" placeholder=" " overide={true} classNames="" maxLength={16} pattern="@[a-z0-9_]{3,15}" title="Username: @ followed by 3-15 lowercase letters, numbers, or _" value={formValues.nickname} onChange={handleInputChange} />
+          input: (
+            <div className="relative">
+              <Input 
+                id="nickname" 
+                required={true} 
+                type="text" 
+                name="nickname" 
+                placeholder="@username" 
+                overide={false}
+                classNames={`${usernameStatus === "valid" ? 'border border-green-500' : usernameStatus === "invalid" ? 'border border-red-500' : usernameStatus === "checking" ? 'border border-yellow-500' : ''}`}
+                maxLength={16} 
+                pattern="@[a-z0-9_]{3,15}" 
+                title="Username: @ followed by 3-15 lowercase letters, numbers, or _" 
+                value={formValues.nickname} 
+                onChange={handleInputChange} 
+              />
+              {/* Status indicator */}
+              <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                {isCheckingUsername && (
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-yellow-500"></div>
+                )}
+                {usernameStatus === "valid" && !isCheckingUsername && (
+                  <svg className="h-4 w-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                  </svg>
+                )}
+                {usernameStatus === "invalid" && !isCheckingUsername && (
+                  <svg className="h-4 w-4 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                  </svg>
+                )}
+              </div>
+            </div>
+          )
         },
       ],
       step_3: [
@@ -344,6 +476,17 @@ export const Register = () => {
 
   return (
     <div className="body w-full h-auto overflow-scroll min-h-screen">
+      {/* Home Icon */}
+      <div className="absolute top-4 right-4 z-10">
+        <button
+          onClick={() => router.push('/')}
+          className="p-2 rounded-full hover:bg-gray-700 transition-colors"
+          title="Go to Home"
+        >
+          <FaHome className="text-2xl" style={{color: '#bec8fa'}} />
+        </button>
+      </div>
+      
       <div className="form-container-wrapper w-full mt-12 min-h-screen">
         <Image src={"/register.png"} alt="Register" width={500} height={300} className="min-h-full" />
 
@@ -352,10 +495,10 @@ export const Register = () => {
           <p>{stepDescriptions[step - 1]}</p>
           
           <div className="pagination">
-            <DotSlideBtn setStep={setStep} step={step} slide={1} />
-            <DotSlideBtn setStep={setStep} step={step} slide={2} />
-            <DotSlideBtn setStep={setStep} step={step} slide={3} />
-            <DotSlideBtn setStep={setStep} step={step} slide={4} />
+            <DotSlideBtn setStep={setStep} step={step} slide={1} disabled={!accessibleSteps.includes(1)} />
+            <DotSlideBtn setStep={setStep} step={step} slide={2} disabled={!accessibleSteps.includes(2)} />
+            <DotSlideBtn setStep={setStep} step={step} slide={3} disabled={!accessibleSteps.includes(3)} />
+            <DotSlideBtn setStep={setStep} step={step} slide={4} disabled={!accessibleSteps.includes(4)} />
           </div>
 
           <div className="form-input-wrapper">
@@ -376,8 +519,21 @@ export const Register = () => {
              {inputs[0].step_2.map((v, i)=>(
               <div className="floating-label-group" key={i}>
                 {v.input}
-                <label htmlFor={v.name}>{v.label}</label>
+                {v.name !== "nickname" && <label htmlFor={v.name}>{v.label}</label>}
                 <p className="error-text h-6">{errors[v.name] || ""}</p>
+                {/* Username specific messages */}
+                {v.name === "nickname" && (
+                  <>
+                    {usernameStatus === "valid" && (
+                      <div className="text-xs text-green-400 mt-1">
+                        ✓ Username is available
+                      </div>
+                    )}
+                    <div className="text-xs text-slate-500 mt-1">
+                      • Must be between 3-15 characters • Only letters, numbers, and underscores • Must be unique
+                    </div>
+                  </>
+                )}
               </div>
              ))}
               <div className="floating-label-group">
@@ -398,8 +554,8 @@ export const Register = () => {
               </div>
              ))}
               
-              <Agree id="terms" toThe={<Link href="/T_&_C" className='!text-blue-500'>the  Conditions.</Link>} agree={agreedTerms} setAgree={()=> setAgreedTerms(prev=> !prev)} />
-              < Agree id="privacy" toThe={<Link href={"/privacy-policy"} className='!text-blue-500'>Privacy and Policy</Link>} agree={agreedPrivacy} setAgree={()=> setAgreedPrivacy(prev=> !prev)} />
+              <Agree id="terms" toThe={<Link href="/T_&_C" className='!text-blue-500'>the Terms & Conditions.</Link>} agree={agreedTerms} setAgree={()=> setAgreedTerms(prev=> !prev)} />
+              < Agree id="privacy" toThe={<Link href={"/privacy-policy"} className='!text-blue-500'>Privacy Policy</Link>} agree={agreedPrivacy} setAgree={()=> setAgreedPrivacy(prev=> !prev)} />
               
               <NextSlide onClick={handleNextClick} setStep={setStep} disabled={!isStepValid} />
             </Step>
@@ -451,7 +607,7 @@ export const Register = () => {
 
            {/* Login link is now outside the steps, visible on all of them */}
            <p className="mt-4 text-center">
-                I already have an account <Link href="/" className="!text-blue-500">Login</Link>
+                I already have an account <Link href="/auth/login" className="!text-blue-500">Login</Link>
            </p>
 
         </form>

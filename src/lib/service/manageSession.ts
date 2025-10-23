@@ -5,19 +5,26 @@ import { jwtVerify, SignJWT } from "jose";
 import axios from "axios";
 import { URL } from "../../api/config";
 
-export type user = { nickname: string; password: string };
+export type user = { 
+  nickname: string; 
+  password: string; 
+  userId?: string;
+  _id?: string;
+  admin?: boolean;
+  accessToken?: string;
+  refreshtoken?: string;
+};
 export type payload = { user: user };
 
 const secret = process.env.ACCESS_TOKEN_SECRET || "NEXT_PUBLIC_SECERET";
 const key = new TextEncoder().encode(secret);
-let credentials: user | false;
-let timeout_id: ReturnType<typeof setTimeout>;
+// Removed unused variables
 
 export async function encryptData(payload: payload) {
   return await new SignJWT(payload)
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
-    .setExpirationTime("15m")
+    .setExpirationTime("30d")
     .sign(key);
 }
 
@@ -51,11 +58,12 @@ export async function isRegistered(payload: { nickname: string; password: string
       nickname: payload.nickname.toLowerCase().trim(),
       accessToken: data.accessToken,
       refreshtoken: data.token,
+      admin: data.isAdmin || data.user?.admin || false,
     };
     return { user };
   } catch (error: any) {
     console.error("Login API error:", error.message);
-    credentials = false;
+    // credentials = false; // Removed unused variable
     return { error: error?.response?.data?.message || "Login failed" };
   }
 }
@@ -75,4 +83,69 @@ export async function sessionMng(request: NextRequest): Promise<string | undefin
   // Expired -> refresh directly and return new token
   const refreshed = await encryptData({ user: decryptCookie.body });
   return refreshed;
+}
+
+export async function checkUserAdmin(request: NextRequest): Promise<boolean> {
+  try {
+    // Check for session cookie first (preferred)
+    let cookie = request.cookies.get("session")?.value;
+    
+    // If no session cookie, check for auth_token cookie
+    if (!cookie) {
+      cookie = request.cookies.get("auth_token")?.value;
+    }
+    
+    if (!cookie?.length) {
+      return false;
+    }
+    
+    const decryptCookie = await decryptData(cookie);
+    if (decryptCookie.status === "valid") {
+      const userData = decryptCookie.body;
+      
+      // First check if admin status is already in JWT
+      if (userData?.admin !== undefined) {
+        return userData.admin === true;
+      }
+      
+      // If not in JWT, try to get user ID and make API call
+      const userId = userData?.userId || userData?._id;
+      
+      if (!userId) {
+        return false;
+      }
+      
+      try {
+        // Make API call to check current admin status from database
+        const response = await axios.get(`${URL}/user/${userId}`, {
+          headers: {
+            'Authorization': `Bearer ${userData?.accessToken || cookie}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        if (response.data && response.data.ok) {
+          const user = response.data.user || response.data;
+          const isAdmin = user?.admin === true || 
+                 user?.isAdmin === true || 
+                 user?.is_admin === true ||
+                 user?.role === 'admin' ||
+                 user?.userRole === 'admin';
+          
+          return isAdmin;
+        }
+        
+        return false;
+      } catch (apiError) {
+        console.error("API error checking admin status:", apiError);
+        // Fallback to JWT data if API fails
+        return userData?.admin === true;
+      }
+    }
+    
+    return false;
+  } catch (error) {
+    console.error("Error checking admin status:", error);
+    return false;
+  }
 }

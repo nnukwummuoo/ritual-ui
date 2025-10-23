@@ -3,6 +3,7 @@ import { URL } from "@/api/config";
 import axios from "axios";
 import { MessageState } from "@/types/message";
 import { RootState } from "./store";
+import { getValidToken } from "@/utils/debugAuth";
 // import { saveImage, deleteImage, updateImage } from "../../../api/sendImage";
 
 const initialState: MessageState = {
@@ -101,19 +102,16 @@ export const getmsgnitify = createAsyncThunk(
   async (data: any, thunkAPI) => {
     try {
       const state = thunkAPI.getState() as RootState;
-      const token = state.register.refreshtoken || state.register.accesstoken || (() => {
-        try {
-          return JSON.parse(localStorage.getItem("login") || "{}").refreshtoken || 
-                 JSON.parse(localStorage.getItem("login") || "{}").accesstoken;
-        } catch {
-          return "";
-        }
-      })();
+      const token = getValidToken() || state.register.refreshtoken || state.register.accesstoken;
 
-      // Use the same pattern as getchat - include token in request body
+      if (!token) {
+        throw "No valid authentication token found";
+      }
+
+      // Ensure userid is included in the request data
       const requestData = {
-        ...data,
-        token: token || ""
+        userid: data.userid || data.userId || data.id, // Try different possible userid fields
+        token: token
       };
 
       let response = await axios.put(`${URL}/getmsgnotify`, requestData, {
@@ -124,7 +122,6 @@ export const getmsgnitify = createAsyncThunk(
 
       return response.data;
     } catch (err: any) {
-      
       if (axios.isAxiosError(err)) {
         const msg = (err.response?.data as any)?.message ?? "check internet connection";
         throw msg;
@@ -180,9 +177,9 @@ export const getmessagenotication = createAsyncThunk(
         }
       })();
 
-      // Use the same pattern as getchat - include token in request body
+      // Ensure userid is included in the request data
       const requestData = {
-        ...data,
+        userid: data.userid || data.userId || data.id, // Try different possible userid fields
         token: token || ""
       };
 
@@ -194,7 +191,6 @@ export const getmessagenotication = createAsyncThunk(
 
       return response.data;
     } catch (err : any) {
-      
       if (axios.isAxiosError(err)) {
         const msg = (err.response?.data as any)?.message ?? "check internet connection";
         throw msg;
