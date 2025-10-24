@@ -545,6 +545,13 @@ export const Profile = () => {
             postid: post._id || post.postid || post.id
           });
           
+          // Enrich comments with user information
+          if (commentResponse.data && commentResponse.data.comment && Array.isArray(commentResponse.data.comment)) {
+            const { enrichCommentsWithUserInfo } = await import('@/utils/enrichComments');
+            const enrichedComments = await enrichCommentsWithUserInfo(commentResponse.data.comment);
+            commentResponse.data.comment = enrichedComments;
+          }
+          
           const postData = { ...post };
           
           if (likeResponse.data.ok) {

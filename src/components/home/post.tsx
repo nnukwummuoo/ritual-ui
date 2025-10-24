@@ -22,6 +22,7 @@ import CreatorCards from "./CreatorCards";
 import FirstPost from "./FirstPost";
 import RemainingPosts from "./RemainingPosts";
 import { generateInitials } from "@/utils/generateInitials";
+import { enrichCommentsWithUserInfo } from "@/utils/enrichComments";
 
 
 // Utility function to format relative time
@@ -155,12 +156,16 @@ export default function PostsCard() {
   
   const { firstname, lastname, nickname, photolink } = useSelector((s: RootState) => s.profile);
   const vipStatus = useSelector((s: RootState) => s.vip.vipStatus);
-  const [selfId, setSelfId] = React.useState<string | undefined>(undefined);
+  const [selfId, setSelfId] = React.useState<string>("");
   const [selfNick, setSelfNick] = React.useState<string | undefined>(undefined);
   const [selfName, setSelfName] = React.useState<string | undefined>(undefined);
-  const [postResolve, setPostResolve] = React.useState<any[]>(posts);
+  const [postResolve, setPostResolve] = React.useState<any[]>([]);
   const [timeUpdate, setTimeUpdate] = React.useState(0); // Used to trigger re-renders for time updates
   const [hasAttemptedFetch, setHasAttemptedFetch] = React.useState(false); // Track if we've tried to fetch posts
+  const [currentPage, setCurrentPage] = React.useState(1);
+  const [hasMorePosts, setHasMorePosts] = React.useState(true);
+  const [loadingMore, setLoadingMore] = React.useState(false);
+  const [directPosts, setDirectPosts] = React.useState<any[]>([]); // Direct API response storage
   
   // Get current user's following list from Redux (same as Profile component)
   const followingList = useSelector((state: RootState) => {
@@ -173,6 +178,14 @@ export default function PostsCard() {
     if (left.length !== right.length) return false;
     return left.every((id, index) => id === right[index]);
   });
+
+  // Sync Redux posts with local state (fallback only)
+  React.useEffect(() => {
+    if (posts && posts.length > 0 && directPosts.length === 0) {
+      setDirectPosts(posts);
+      setPostResolve(posts);
+    }
+  }, [posts, directPosts.length, postResolve.length]);
 
   // Local per-post UI state for optimistic updates and comment UI
   const [ui, setUi] = React.useState<Record<string | number, {
@@ -251,7 +264,7 @@ export default function PostsCard() {
           if (lid && token) dispatch(getprofile({ userid: lid, token } as any));
         } catch {}
       } else {
-        setSelfId(undefined);
+        setSelfId("");
       }
     } catch {}
     
@@ -261,12 +274,15 @@ export default function PostsCard() {
 
   // Remove localStorage posts caching - always fetch fresh from backend
 
-  const fetchFeed = async () => { 
+  const fetchFeed = async (page = 1, append = false) => { 
     try {
       setHasAttemptedFetch(true);
+      if (append) {
+        setLoadingMore(true);
+      }
       
-      // Fetch all posts from backend
-      const resPosts = await fetchposts();
+      // Fetch posts from backend with pagination
+      const resPosts = await fetchposts(page);
       if (resPosts?.post && Array.isArray(resPosts.post)) {
         // First, show posts immediately with basic data
         const basicPosts = resPosts.post.map((post: any) => ({
@@ -276,11 +292,16 @@ export default function PostsCard() {
           comments: post.comments || [],
           commentCount: post.commentCount || post.comments?.length || 0
         }));
+
+        // Backend now handles comment enrichment, so use basic posts directly
+        const enrichedPosts = basicPosts;
+
+
         
-        // Update UI state for basic posts with proper like/follow status
+        // Update UI state for enriched posts with proper like/follow status
         setUi(prev => {
           const newState = { ...prev };
-          basicPosts.forEach((post: any) => {
+          enrichedPosts.forEach((post: any) => {
             const postId = post?.postid || post?.id || post?._id;
             const postAuthorId = post?.userid || post?.userId || post?.ownerid || post?.ownerId || post?.authorId || post?.createdBy;
             
@@ -307,7 +328,7 @@ export default function PostsCard() {
                 likeCount: post.likeCount || 0,
                 liked: hasLiked, // Set based on actual like status
                 isFollowing: updatedIsFollowing, // Preserve existing or set based on follow status
-                commentCount: post.commentCount || 0,
+                commentCount: post.commentCount || post.comments?.length || 0,
                 comments: post.comments || []
               };
             }
@@ -315,94 +336,43 @@ export default function PostsCard() {
           return newState;
         });
         
-        setPostResolve(basicPosts);
-        dispatch(hydrateFromCache(basicPosts));
+        // Handle pagination - Store data directly in directPosts
+        if (append && page > 1) {
+          // Append to existing posts
+          const combinedPosts = [...directPosts, ...enrichedPosts];
+          setDirectPosts(combinedPosts);
+          setPostResolve(combinedPosts);
+          dispatch(hydrateFromCache(combinedPosts));
+        } else {
+          // Replace posts for first page
+          setDirectPosts(enrichedPosts);
+          setPostResolve(enrichedPosts);
+          dispatch(hydrateFromCache(enrichedPosts));
+        }
         
-        // Then fetch likes and comments in the background (non-blocking)
-        setTimeout(async () => {
-          try {
-            // Fetch detailed data for all posts
-        const postsWithLikesAndComments = await Promise.all(resPosts.post.map(async (post: any) => {
-          try {
-            // Get likes for this post
-            const likeResponse = await fetch(`${API_BASE}/like?postid=${post._id || post.postid || post.id}`);
-            const likeData = likeResponse.ok ? await likeResponse.json() : { likeCount: 0, likedBy: [] };
-            
-            // Get comments for this post
-            const commentResponse = await fetch(`${API_BASE}/getpostcomment`, {
-              method: 'PUT',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ postid: post._id || post.postid || post.id })
-            });
-            const commentData = commentResponse.ok ? await commentResponse.json() : { comment: [] };
-            
-            const comments = commentData.comment || commentData.comments || [];
-            
-            return {
-              ...post,
-              likeCount: likeData.likeCount || 0,
-              likedBy: likeData.likedBy || [],
-              comments: comments,
-              commentCount: comments.length
-            };
-          } catch (err) {
-            console.log('Error fetching post data:', err);
-            return {
-              ...post,
-              likeCount: post.likeCount || 0,
-              likedBy: post.likedBy || [],
-              comments: post.comments || [],
-              commentCount: post.commentCount || post.comments?.length || 0
-            };
-          }
-        }));
+        // Update pagination state
+        setCurrentPage(page);
+        setHasMorePosts(resPosts.pagination?.hasNextPage || false);
         
-            // Update UI state with full data and preserve existing like/follow status
-        setUi(prev => {
-          const newState = { ...prev };
-          postsWithLikesAndComments.forEach((post: any) => {
-            const postId = post?.postid || post?.id || post?._id;
-            const postAuthorId = post?.userid || post?.userId || post?.ownerid || post?.ownerId || post?.authorId || post?.createdBy;
-            
-            if (postId) {
-              // Get existing state to preserve like/follow status
-              const existingState = prev[postId] || {};
-              
-              // Only update like status if we have valid like data
-              let updatedLiked = existingState.liked;
-              let updatedLikeCount = existingState.likeCount;
-              
-              if (post.likedBy && Array.isArray(post.likedBy)) {
-                const likedByArr = post.likedBy;
-                const currentUserId = String(loggedInUserId || selfId || "");
-                updatedLiked = currentUserId && likedByArr.includes(currentUserId);
-                updatedLikeCount = post.likeCount || 0;
-              }
-              
-              newState[postId] = {
-                ...existingState, // Preserve all existing state
-                likeCount: updatedLikeCount,
-                liked: updatedLiked,
-                // Preserve existing follow status - don't override it
-                isFollowing: existingState.isFollowing,
-                commentCount: post.commentCount || 0,
-                comments: post.comments || []
-              };
-            }
-          });
-          return newState;
-        });
+        // Backend already returns posts with likes and comments via aggregation
+        // No need for additional API calls - the data is already complete!
+        console.log('✅ [PERFORMANCE] Using backend data directly - no redundant API calls needed');
         
-        // Update posts with detailed data
-        setPostResolve(postsWithLikesAndComments);
-        dispatch(hydrateFromCache(postsWithLikesAndComments));
-          } catch (error) {
-            console.error('Error fetching detailed post data:', error);
-          }
-        }, 100); // Small delay to let UI render first
+        // Force a re-render by updating timeUpdate
+        setTimeUpdate(prev => prev + 1);
       }
     } catch(error) {
       console.error('Error fetching posts:', error);
+    } finally {
+      setLoadingMore(false);
+    }
+  };
+
+  // Load more posts function
+  const loadMorePosts = async () => {
+    if (hasMorePosts && !loadingMore) {
+      const nextPage = currentPage + 1;
+      await fetchFeed(nextPage, true);
     }
   };
 
@@ -449,10 +419,15 @@ export default function PostsCard() {
     
     // Fetch fresh posts from backend
     fetchFeed();
-    window.addEventListener('refreshfeed', fetchFeed);
+    
+    const handleRefreshFeed = () => {
+      fetchFeed();
+    };
+    
+    window.addEventListener('refreshfeed', handleRefreshFeed);
     
     return () => {
-      window.removeEventListener('refreshfeed', fetchFeed);
+      window.removeEventListener('refreshfeed', handleRefreshFeed);
     };
   }, [followingList, loggedInUserId, selfId]);
 
@@ -513,14 +488,18 @@ export default function PostsCard() {
     }
   };
 
+
   // Always show skeleton until posts are ready
-  if (status === "loading" || !postResolve?.length || !hasAttemptedFetch) {
+  const hasPosts = directPosts.length > 0 || posts.length > 0 || postResolve.length > 0;
+  if (status === "loading" || !hasPosts || !hasAttemptedFetch) {
     return <PostSkeleton />;
   }
 
   // Get the first post and remaining posts
-  const firstPost = postResolve[0];
-  const remainingPosts = postResolve.slice(1);
+  // Use directPosts as primary source, fallback to Redux, then local state
+  const displayPosts = directPosts.length > 0 ? directPosts : (posts.length > 0 ? posts : postResolve);
+  const firstPost = displayPosts[0];
+  const remainingPosts = displayPosts.slice(1);
 
   return (
     <div className="flex flex-col gap-6">
@@ -531,9 +510,9 @@ export default function PostsCard() {
           ui={ui}
           setUi={setUi}
           dispatch={dispatch}
-          loggedInUserId={loggedInUserId}
+          loggedInUserId={loggedInUserId || ""}
           selfId={selfId}
-          token={token}
+          token={token || ""}
           followingList={followingList}
           vipStatus={vipStatus}
           firstname={firstname}
@@ -552,9 +531,9 @@ export default function PostsCard() {
         ui={ui}
         setUi={setUi}
         dispatch={dispatch}
-        loggedInUserId={loggedInUserId}
+        loggedInUserId={loggedInUserId || ""}
         selfId={selfId}
-        token={token}
+        token={token || ""}
         followingList={followingList}
         vipStatus={vipStatus}
         firstname={firstname}
@@ -562,6 +541,26 @@ export default function PostsCard() {
         nickname={nickname}
         photolink={photolink}
       />
+
+      {/* Load More Button */}
+      {hasMorePosts && (
+        <div className="flex justify-center py-4">
+          <button
+            onClick={loadMorePosts}
+            disabled={loadingMore}
+            className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            {loadingMore ? 'Loading...' : 'Load More Posts'}
+          </button>
+        </div>
+      )}
+
+      {/* Pagination Info */}
+      {displayPosts.length > 0 && (
+        <div className="text-center text-gray-500 text-sm py-2">
+          Showing {displayPosts.length} posts • Page {currentPage}
+        </div>
+      )}
 
     </div>
   );
