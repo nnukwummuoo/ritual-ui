@@ -17,7 +17,7 @@ export const metadata: Metadata = {
     template: "Mmeko | %s",
     default: "Mmeko - Welcome",
   },
-  description: "Connect, create, and share on MmeKo - your ultimate social platform",
+  description: "",
   viewport: {
     width: "device-width",
     initialScale: 1,
@@ -29,7 +29,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "MmeKo",
+    title: "Mmeko",
   },
   icons: {
     icon: "/icons/icon.png",
@@ -39,8 +39,8 @@ export const metadata: Metadata = {
     "mobile-web-app-capable": "yes",
     "apple-mobile-web-app-capable": "yes",
     "apple-mobile-web-app-status-bar-style": "black-translucent",
-    "apple-mobile-web-app-title": "MmeKo",
-    "application-name": "MmeKo",
+    "apple-mobile-web-app-title": "Mmeko",
+    "application-name": "Mmeko",
     "msapplication-TileColor": "#00A86B",
     "msapplication-config": "/browserconfig.xml",
   },
@@ -63,9 +63,9 @@ export default async function RootLayout({
         <link rel="apple-touch-icon" href="/icons/icon.png" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        <meta name="apple-mobile-web-app-title" content="MmeKo" />
+        <meta name="apple-mobile-web-app-title" content="Mmeko" />
         <meta name="mobile-web-app-capable" content="yes" />
-        <meta name="application-name" content="MmeKo" />
+        <meta name="application-name" content="Mmeko" />
         <meta name="msapplication-TileColor" content="#00A86B" />
         <meta name="msapplication-TileImage" content="/icons/icon.png" />
       </head>
