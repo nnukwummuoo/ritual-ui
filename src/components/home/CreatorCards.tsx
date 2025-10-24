@@ -311,7 +311,7 @@ const CreatorCards: React.FC = () => {
     return (
       <div className="bg-gray-800 rounded-lg p-4 mb-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-white font-medium">Suggested for you</h3>
+          <h3 className="text-white font-medium">Top Creators</h3>
           <button className="text-blue-500 text-sm hover:underline">See all</button>
         </div>
         <div className="flex gap-3 overflow-x-auto">
