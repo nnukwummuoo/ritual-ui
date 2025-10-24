@@ -201,7 +201,7 @@ class PushNotificationService {
         return;
       }
 
-      await this.registration.showNotification(data.title || 'MmeKo', {
+      await this.registration.showNotification(data.title || 'Mmeko', {
         body: data.message,
         icon: data.icon || '/icons/m-logo.png',
         badge: '/icons/m-logo.png',
