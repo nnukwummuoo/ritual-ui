@@ -19,6 +19,7 @@ import {
 export default function MobileSidebar() {
   const sidebarRef = useRef<HTMLElement>(null);
   const { isOpen, toggle } = useAuth();
+  
 
   // Handle click outside to close sidebar
   useEffect(() => {
@@ -110,7 +111,10 @@ export default function MobileSidebar() {
             <Link
               className="flex items-center gap-4 text-white space-x-2"
               href={item.route}
-              onClick={toggle}
+              onClick={() => {
+                // Close sidebar immediately for better UX
+                toggle();
+              }}
             >
               {item.icon}
               <p className="text-lg">{item.name}</p>

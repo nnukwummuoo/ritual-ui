@@ -268,6 +268,7 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
           ? commentsArr.length
           : Number(p?.commentCount || p?.commentsCount || p?.comments || 0) || 0;
 
+
         const idStr = (v: any) => (v == null ? undefined : String(v));
         const selfIdStr = idStr(loggedInUserId) || idStr(selfId);
         const liked = !!(selfIdStr && likedByArr.includes(selfIdStr));
@@ -694,7 +695,9 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
                           const bTime = b?.commenttime || b?.date || b?.createdAt || 0;
                           return bTime - aTime;
                         })
-                        .map((c: any, i: number) => (
+                        .map((c: any, i: number) => {
+                          
+                          return (
                         <div key={i} className="text-sm text-gray-200 flex items-start gap-2 relative">
                           <div className="relative flex-shrink-0 w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center text-xs overflow-hidden">
                             {(() => {
@@ -742,13 +745,13 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
                               <span className="font-medium text-gray-300">
                                 {(() => {
                                   const combinedName = [c?.firstname, c?.lastname].filter(Boolean).join(" ");
-                                  return c?.nickname ||
+                                  return combinedName ||
                                     c?.commentusername ||
-                                    c?.username ||
-                                    c?.name ||
-                                    combinedName ||
                                     c?.fullname ||
                                     c?.fullName ||
+                                    c?.name ||
+                                    c?.nickname ||
+                                    c?.username ||
                                     c?.author ||
                                     'User';
                                 })()}
@@ -783,7 +786,8 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
                             </div>
                           </div>
                         </div>
-                      ))
+                      );
+                        })
                     ) : (
                       <p className="text-sm text-gray-500">No comments yet.</p>
                     )}
@@ -816,14 +820,16 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
                                 { 
                                   content: text, 
                                   comment: text, 
-                                  username: nickname || 'you',
-                                  commentusername: nickname || 'you',
+                                  username: [firstname, lastname].filter(Boolean).join(' ') || nickname || 'you',
+                                  commentusername: [firstname, lastname].filter(Boolean).join(' ') || nickname || 'you',
                                   commentuserphoto: photolink || '',
                                   userid: String(loggedInUserId || selfId || ''),
                                   createdAt: new Date().toISOString(),
                                   commenttime: Date.now(),
                                   temp: true,
-                                  initials: generateInitials(firstname, lastname, nickname)
+                                  initials: generateInitials(firstname, lastname, nickname),
+                                  firstname: firstname || '',
+                                  lastname: lastname || ''
                                 },
                               ],
                               commentCount: ((prev[pid]?.comments as any[]) || []).length + 1,

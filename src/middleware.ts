@@ -10,10 +10,19 @@ const publicRoutes = [
   '/auth/verify-email',
   '/api/session',
   '/post-image',
+  '/privacy-policy',
+  '/T_&_C',
+  '/guidelines',
+  '/whats-new',
+  '/change-log',
+  '/feedback',
+  '/support',
+  '/offline',
 ];
 
 // Routes that should redirect authenticated users away
 const prohibitedRoutes = [
+  '/auth/login',
   '/auth/register',
   '/auth/verify-email',
   '/api/session'
@@ -21,13 +30,12 @@ const prohibitedRoutes = [
 
 // Public route prefixes (routes that start with these are public)
 const publicRoutePrefixes = [
-  '/creators',
+  '/auth',      // All auth routes
 ];
 
 // Admin routes that require admin privileges
 const adminRoutes = [
-  '/mmeko/admin',
-  '/mmeko/admin/',
+  '/mmeko',  // All admin routes under /mmeko
 ];
 
 // Static files pattern
@@ -52,26 +60,21 @@ export async function middleware(request: NextRequest) {
     return res;
   }
 
-  // Check if route is public
+  // Check route types
   const isPublicRoute = publicRoutes.includes(pathname) || 
     publicRoutePrefixes.some(prefix => pathname.startsWith(prefix));
-  
-  // Check if route is prohibited for authenticated users
   const isProhibitedRoute = prohibitedRoutes.some(route => pathname === route);
-  
-  // Check if route is admin route
   const isAdminRoute = adminRoutes.some(route => pathname.startsWith(route));
   
   // Get authentication token
   const authToken = request.cookies.get("session")?.value || request.cookies.get("auth_token")?.value;
   
-  
   // Handle session refresh
   const refreshed = await sessionMng(request);
   
-  // If no auth token and not a public route, redirect to login
-  if (!authToken && !isPublicRoute) {
-    const res = NextResponse.redirect(new URL('/auth/login', request.url));
+  // Helper function to create response with session cookie
+  const createResponse = (url: string, redirect = true) => {
+    const res = redirect ? NextResponse.redirect(new URL(url, request.url)) : NextResponse.next();
     if (refreshed) {
       res.cookies.set('session', refreshed, {
         httpOnly: true,
@@ -82,71 +85,37 @@ export async function middleware(request: NextRequest) {
       });
     }
     return res;
-  }
-  
-  // If user has auth token and trying to access prohibited routes, redirect to home
-  if (authToken && isProhibitedRoute) {
-    const res = NextResponse.redirect(new URL('/', request.url));
-    if (refreshed) {
-      res.cookies.set('session', refreshed, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        path: '/',
-        sameSite: 'strict',
-        maxAge: 30 * 24 * 60 * 60, // 30 days in seconds
-      });
+  };
+
+  // Case 1: No authentication token
+  if (!authToken) {
+    // Allow public routes
+    if (isPublicRoute) {
+      return createResponse('', false);
     }
-    return res;
-  }
-  
-  // If accessing admin routes, check if user is admin
-  if (isAdminRoute && authToken) {
-    const isAdmin = await checkUserAdmin(request);
-    
-    if (!isAdmin) {
-      // User is authenticated but not admin, redirect to home
-      const res = NextResponse.redirect(new URL('/', request.url));
-      if (refreshed) {
-        res.cookies.set('session', refreshed, {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === 'production',
-          path: '/',
-          sameSite: 'strict',
-          maxAge: 30 * 24 * 60 * 60, // 30 days in seconds
-        });
-      }
-      return res;
-    }
-  }
-  
-  // If accessing admin routes without auth token, redirect to login
-  if (isAdminRoute && !authToken) {
-    const res = NextResponse.redirect(new URL('/auth/login', request.url));
-    if (refreshed) {
-      res.cookies.set('session', refreshed, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        path: '/',
-        sameSite: 'strict',
-        maxAge: 30 * 24 * 60 * 60, // 30 days in seconds
-      });
-    }
-    return res;
+    // Redirect to login for all other routes
+    return createResponse('/auth/login');
   }
 
-  // Allow request to proceed
-  const response = NextResponse.next();
-  if (refreshed) {
-    response.cookies.set('session', refreshed, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      path: '/',
-      sameSite: 'strict',
-      maxAge: 30 * 24 * 60 * 60, // 30 days in seconds
-    });
+  // Case 2: User is authenticated
+  // Redirect authenticated users away from prohibited routes (login, register, etc.)
+  if (isProhibitedRoute) {
+    return createResponse('/');
   }
-  response.headers.set('x-powered-by', 'MintMiddleware');
-  return response;
+
+  // Case 3: Admin route access
+  if (isAdminRoute) {
+    const isAdmin = await checkUserAdmin(request);
+    if (!isAdmin) {
+      // User is authenticated but not admin, redirect to home
+      return createResponse('/');
+    }
+    // Admin user accessing admin route - allow
+    return createResponse('', false);
+  }
+
+  // Case 4: Authenticated user accessing regular routes - allow
+  return createResponse('', false);
 }
 
 export const config = {

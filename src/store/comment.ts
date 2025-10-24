@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { URL } from "../api/config"
 import axios from "axios";
+import { enrichCommentsWithUserInfo } from "../utils/enrichComments";
 
 interface CommentState {
   message: string;
@@ -59,6 +60,15 @@ export const getpostcomment = createAsyncThunk("comment/getpostcomment",async (d
         console.log('💬 [REDUX] Comment response received:', response);
         console.log('💬 [REDUX] Response status:', response.status);
         console.log('💬 [REDUX] Response data:', response.data);
+       
+        // Enrich comments with user information
+        if (response.data && response.data.comment && Array.isArray(response.data.comment)) {
+          const enrichedComments = await enrichCommentsWithUserInfo(response.data.comment);
+          return {
+            ...response.data,
+            comment: enrichedComments
+          };
+        }
        
         return response.data
         

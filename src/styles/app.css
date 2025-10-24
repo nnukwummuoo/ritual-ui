@@ -157,14 +157,15 @@ input, textarea {
   }
   @media (width <= 850px){
     .sidebar {
-        display: none;
+        display: block;
         transition: transform 0.4s ease-in-out;
         position: fixed;
         top: 0;
         left: 0;
         right: 0;
-        /* z-index: 1000; */
+        z-index: 1000;
         width: 90%;
+        height: 100vh;
       }
       .sidebar-open {
         display: block;

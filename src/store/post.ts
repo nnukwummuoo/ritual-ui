@@ -134,7 +134,7 @@ export const getallpost = createAsyncThunk("post/getallpost", async (data: any) 
   }
 });
 
-export const fetchposts = async () => {
+export const fetchposts = async (page = 1) => {
   try {
     // Get user ID from localStorage for blocking filter
     let userid = "";
@@ -148,40 +148,22 @@ export const fetchposts = async () => {
       console.error("Error getting user ID from localStorage:", error);
     }
 
-    // console.log(`📄 [POSTS] Fetching all posts`);
+    console.log(`📄 [POSTS] Fetching posts - Page ${page}`);
     let response = await axios.post(`${URL}/getallpost`, { 
-      userid
+      userid,
+      page,
+      limit: 20
     });
+    
+    // Backend already returns posts with likes and comments via aggregation
+    // No need for additional API calls - use the data directly!
     const posts = response.data.post || [];
-
-    // For each post, get its likes
-    const postsWithLikes = await Promise.all(posts.map(async (post: any) => {
-      try {
-        // Get likes for this post
-        const likeResponse = await axios.get(`${URL}/like`, {
-          params: { postid: post._id || post.postid || post.id }
-        });
-        if (likeResponse.data.ok) {
-          return {
-            ...post,
-            likeCount: likeResponse.data.likeCount,
-            likedBy: likeResponse.data.likedBy
-          };
-        }
-        return post;
-      } catch (err) {
-        console.error(`Error fetching likes for post ${post._id}:`, err);
-        return {
-          ...post,
-          likeCount: post.likeCount || 0,
-          likedBy: post.likedBy || []
-        };
-      }
-    }));
+    
+    console.log(`✅ [PERFORMANCE] Received ${posts.length} posts with complete data from backend`);
 
     return {
       ...response.data,
-      post: postsWithLikes
+      post: posts
     };
   } catch (err: any) {
     throw err.response.data.message;
@@ -268,7 +250,9 @@ const post = createSlice({
         const arr = Array.isArray(action.payload) ? action.payload : [];
         state.allPost = arr as any[];
         if (state.allPost.length > 0) state.poststatus = "succeeded";
-      } catch {}
+      } catch (error) {
+        console.error('hydrateFromCache error:', error);
+      }
     }
   },
   extraReducers(builder) {
