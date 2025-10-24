@@ -173,7 +173,7 @@ const Crush: React.FC<{
                     <span className="text-gray-300 text-sm">
                       {status === "active" ? "🟢 Online" : "🔴 Offline"}
                     </span>
-                    <span className="text-purple-400 text-sm font-medium">View Profile →</span>
+                    <span className="text-purple-400 text-sm font-medium">View Portfolio →</span>
                   </div>
                 </div>
               </div>

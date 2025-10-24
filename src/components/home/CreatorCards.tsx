@@ -134,7 +134,7 @@ const CreatorCard: React.FC<CreatorCardProps> = ({
         onClick={handleCardClick}
         className="w-full py-2 px-3 rounded-lg text-sm font-medium transition-all duration-200 bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:scale-105"
       >
-        View Profile
+      Request
       </button>
     </div>
   );
@@ -338,7 +338,7 @@ const CreatorCards: React.FC = () => {
   return (
     <div className="bg-gray-800 rounded-lg p-4 mb-6">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-white font-medium">Suggested for you</h3>
+        <h3 className="text-white font-medium">Top Creators</h3>
         <button 
           className="text-blue-500 text-sm hover:underline"
           onClick={() => router.push('/creators')}
