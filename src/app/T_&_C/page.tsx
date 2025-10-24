@@ -8,12 +8,12 @@ const TermsAndConditions = () => {
      
     <div className="flex flex-col w-full px-4 text-gray-400 md:px-0">
         <Head heading="✅ Terms and Conditions" />
-        <p className="mb-6 text-gray-500">Effective Date: 10th October 2025
+        <p className="mb-6 text-gray-500">Effective Date: 23th October 2025
 </p>
         
         <section className="mb-6">
           <p className="mb-4">
-            Welcome to Mmeko (&quot;the Website&quot;). By accessing or using our platform,
+            Welcome to Mmeko ("the Website"). By accessing or using our platform,
              you agree to the following Terms and Conditions. If you do not agree with any part 
              of these terms, you must not use our services.
 
@@ -84,16 +84,141 @@ const TermsAndConditions = () => {
           </p>
 
 
-
-
-        
-
         <p className="mb-6">
          Creators always have the right to accept or decline any request.
 
         </p>
 
-         <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">4. Fan Meet & Fan Date Policy</h3>
+        <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">4. Attendance & Refund Policy</h3>
+
+
+        
+           <p className="mb-6">
+         1. Fan No-Show
+
+          </p>
+
+          
+           <p className="mb-6">
+         If a fan fails to appear at the agreed meeting time and location,
+          and the creator has already arrived or waited at the designated spot,
+           the fan forfeits any refund entitlement. The transport fare will automatically
+            be credited to the creator as compensation for time and travel.
+
+          </p>
+
+          
+           <p className="mb-6">
+         2.Creator No-Show
+
+          </p>
+
+          
+           <p className="mb-6">
+         If a creator fails to appear for a scheduled Fan Meet or Fan Date, 
+         or cancels without valid notice, the fan will receive a full refund of
+          the transport fare. Repeated no-shows or misuse by creators may result
+           in temporary suspension or permanent removal from the Fan Meet/Fan Date program.
+
+          </p>
+
+          
+           <p className="mb-6">
+         3. Auto-Refund System
+
+          </p>
+
+          
+           <p className="mb-6">
+         If the fan didn't mark the meet or date as “Completed” within 7 days after the scheduled event,
+        and no complaint or dispute has been filed by the creator, the fan will automatically receive a full refund of the transport fare.
+         This ensures fairness and protects both parties in cases where no meeting occurred.
+
+
+
+          </p>
+
+          
+           <p className="mb-6">
+         4. Dispute Handling
+
+          </p>
+
+          
+           <p className="mb-6">
+        If either the fan or creator submits a dispute within 5 days of the scheduled time,
+         the refund process will be temporarily paused until the platform verifies attendance 
+         records and resolves the matter.
+
+          </p>
+
+          
+           <p className="mb-6">
+         5. Proof of Attendance
+
+          </p>
+
+          
+           <p className="mb-6">
+         Both parties are encouraged to take a quick check-in photo or show location proof 
+         at the meeting spot for faster dispute resolution in case of claims.
+
+          </p>
+
+           <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">5.  Fan Meet & Fan Date Expiry</h3>
+
+          
+           <p className="mb-6">
+         1.  Fan Meet / Fan Date Expiration Policy
+
+          </p>
+
+              <p className="mb-6">
+         If a meeting does not happen and the fan didn't mark it as complete within 7 days, the system
+          will automatically refund the fan in full — provided no complaint was filed by the creator.
+
+          </p>
+
+
+            <p className="mb-6">
+         After the 7 days, if there’s no confirmation or complaint, 
+         the request will expire automatically and the pending transport fare is released back to the fan.
+
+
+          </p>
+
+             <p className="mb-6">
+         This ensures fairness, protects both parties, and keeps the platform free of unresolved requests.
+
+
+          </p>
+
+          <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">6. Fan Call Expiry</h3>
+
+              <p className="mb-6">
+         1.  Fan Call Expiration Policy
+
+         </p>
+
+
+            <p className="mb-6">
+         Once a creator accepts your Fan Call request, you have 48 hours to start the call.
+         If the call does not begin within this period, the request will automatically expire.
+       </p>
+
+
+              <p className="mb-6">
+         No charges are made until a call officially starts, so you will not be billed for expired or missed calls.
+
+         </p>
+
+                <p className="mb-6">
+         This ensures a smooth experience and keeps the platform free from inactive requests.
+         </p>
+
+          
+
+         <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">7. Fan Meet & Fan Date Policy</h3>
 
            <p className="mb-6">
          1. Duration of Meetings
@@ -142,7 +267,7 @@ const TermsAndConditions = () => {
 
 
 
-        <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">5. Payment System</h3>
+        <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">8. Payment System</h3>
 
          <p className="mb-6">
          1. Fan Meet / Fan Date
@@ -181,7 +306,7 @@ const TermsAndConditions = () => {
          Payment is transferred directly to the Creator’s account in real time.
           </p>
 
-        <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">6. Safety & Conduct</h3>
+        <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">9. Safety & Conduct</h3>
 
         <p className="mb-6">
          Creators must keep interactions respectful, safe, and legal.
@@ -204,7 +329,7 @@ const TermsAndConditions = () => {
          The platform is not responsible for off-platform activities once a meet or date occurs.
         </p>
 
-        <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">7. Platform Rights</h3>
+        <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">10. Platform Rights</h3>
 
         <p className="mb-6">
          We may suspend or remove accounts that violate rules.
@@ -216,7 +341,7 @@ const TermsAndConditions = () => {
 
           </p>
 
-          <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">8. No Employment Relationship</h3>
+          <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">11. No Employment Relationship</h3>
 
           <p className="mb-6">
          You are an independent contractor, not an employee.
@@ -228,7 +353,7 @@ const TermsAndConditions = () => {
 
           </p>
 
-          <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">9. Liability</h3>
+          <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">12. Liability</h3>
 
           <p className="mb-6">
           The platform provides a safe fan connection and payment system, but does not guarantee fan behavior.
@@ -243,7 +368,7 @@ const TermsAndConditions = () => {
           </p>
 
 
-         <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">10. Gold System & Earnings</h3>
+         <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">13. Gold System & Earnings</h3>
         <p className="mb-6">
           Earnings on the platform are based on a virtual currency called Gold. All values, rates, and payouts are subject to the Gold Conversion Policy outlined below.”
 
@@ -372,7 +497,66 @@ const TermsAndConditions = () => {
         </p>
 
 
-        <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">11. Content Ownership</h3>
+        <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">14. Virtual Currency (“Gold”) Policy</h3>
+
+           <p className="mb-6">
+         1. Definition:
+
+          </p>
+
+             <p className="mb-6">
+         “Gold” refers to virtual tokens used within the Platform to access features,
+         support creators, and unlock premium interactions.
+
+
+          </p>
+
+             <p className="mb-6">
+         2. Purchase Finality:
+          </p>
+
+             <p className="mb-6">
+        All purchases of Gold are final and non-refundable. Once payment is processed, no refund,
+         exchange, or reversal will be issued — even if your account is later suspended or terminated.
+          </p>
+
+             <p className="mb-6">
+         3. Usage:
+
+          </p>
+
+             <p className="mb-6">
+        Gold has no real-world monetary value and may not be transferred, exchanged, or converted outside the Platform.
+
+
+
+          </p>
+
+             <p className="mb-6">
+         4. Technical Issues:
+
+          </p>
+
+             <p className="mb-6">
+         In the rare case of system errors that prevent delivery of purchased Gold, 
+         please contact Support within 24 hours for verification and correction.
+
+          </p>
+
+             <p className="mb-6">
+         5. Fraud or Abuse:
+
+          </p>
+
+             <p className="mb-6">
+       The Platform reserves the right to review and revoke Gold obtained through unauthorized or fraudulent means.
+
+
+          </p>
+
+
+
+        <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">15. Content Ownership</h3>
         <p className="mb-6">
           Creators retain ownership of their content but grant us a non-exclusive license to display and promote it on the platform.
           You may not upload copyrighted or stolen content.
@@ -380,21 +564,21 @@ const TermsAndConditions = () => {
 
         </p>
 
-        <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">12. Fees and Revenue</h3>
+        <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">16. Fees and Revenue</h3>
        <p className="mb-6">
         The platform is free to use.
         Creators keep 100% of their revenue.
         </p>
         
     
-        <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">13. Termination</h3>
+        <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">17. Termination</h3>
         <p className="mb-6">
           We reserve the right to suspend or terminate any account that violates our terms.
           Users can terminate their account anytime via account settings.
 
         </p>
 
-        <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">14. Dispute Resolution</h3>
+        <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">18. Dispute Resolution</h3>
         <p className="mb-6">
           In case of disputes between fans and creators, users are encouraged to contact support within 24 hours with clear evidence (screenshots, photos, videos).
           We will act as a neutral third-party, but do not guarantee resolution outcomes.
