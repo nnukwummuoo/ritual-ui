@@ -73,6 +73,8 @@ export default async function RootLayout({
         {/* Force light mode only - prevent browser dark mode adaptation */}
         <meta name="color-scheme" content="light only" />
         <meta name="supported-color-schemes" content="light" />
+        <meta name="theme-color" content="#ffffff" />
+         <meta name="prefers-color-scheme" content="light" />
       </head>
       <body className={`${inter.className} antialiased bg-background`}>
         <Providers>
