@@ -410,9 +410,9 @@ export default function PaymentAccountPage() {
             <div className="bg-gray-800 rounded-lg p-6">
               <h2 className="text-xl font-semibold mb-4">🌍 Guidelines for Withdrawing Crypto to Fiat</h2>
               
-              {/* Filipina Models Section */}
+              {/* Filipina creators Section */}
               <div className="mb-6">
-                <h3 className="text-lg font-medium text-blue-400 mb-3">🇵🇭 For Filipina Models</h3>
+                <h3 className="text-lg font-medium text-blue-400 mb-3">🇵🇭 For Filipina Creators</h3>
                 <div className="space-y-3 text-sm">
                   <div>
                     <h4 className="font-medium text-gray-200 mb-1">1. Recommended Wallets:</h4>
@@ -440,9 +440,9 @@ export default function PaymentAccountPage() {
                 </div>
               </div>
 
-              {/* Nigerian Models Section */}
+              {/* Nigerian Creators Section */}
               <div className="mb-6">
-                <h3 className="text-lg font-medium text-green-400 mb-3">🇳🇬 For Nigerian Models</h3>
+                <h3 className="text-lg font-medium text-green-400 mb-3">🇳🇬 For Nigerian Creators</h3>
                 <div className="space-y-3 text-sm">
                   <div>
                     <h4 className="font-medium text-gray-200 mb-1">1. Recommended Wallets:</h4>
