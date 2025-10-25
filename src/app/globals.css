@@ -7,12 +7,16 @@
   --foreground: #171717;
   --primary: #ff8a23;
   --secondary: #0c0f27;
+  /* Force light mode - prevent browser dark mode adaptation */
+  color-scheme: light !important;
 }
 
+/* Override any dark mode preferences */
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #ffffff !important;
+    --foreground: #171717 !important;
+    color-scheme: light !important;
   }
 }
 html{
@@ -21,9 +25,11 @@ html{
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
+  color: var(--foreground) !important;
+  background: var(--background) !important;
   font-family: Arial, Helvetica, sans-serif;
+  /* Force light mode colors */
+  color-scheme: light !important;
 }
 
 /* Prevent body scrolling on message routes */
@@ -66,4 +72,112 @@ button{
 .cstm-height{
   height: calc(100vh - 140px);
   /* background: #000; */
+}
+
+/* Force icon colors to be preserved - override any forced colors */
+svg[class*="text-"] {
+  color: inherit !important;
+  fill: currentColor !important;
+  stroke: currentColor !important;
+}
+
+/* Override specific text color classes on SVG elements */
+svg.text-gray-900 { color: #111827 !important; fill: #111827 !important; }
+svg.text-gray-800 { color: #1f2937 !important; fill: #1f2937 !important; }
+svg.text-gray-700 { color: #374151 !important; fill: #374151 !important; }
+svg.text-gray-600 { color: #4b5563 !important; fill: #4b5563 !important; }
+svg.text-gray-500 { color: #6b7280 !important; fill: #6b7280 !important; }
+svg.text-gray-400 { color: #9ca3af !important; fill: #9ca3af !important; }
+svg.text-gray-300 { color: #d1d5db !important; fill: #d1d5db !important; }
+svg.text-gray-200 { color: #e5e7eb !important; fill: #e5e7eb !important; }
+svg.text-gray-100 { color: #f3f4f6 !important; fill: #f3f4f6 !important; }
+
+/* Specific color overrides for common icon colors */
+svg.text-blue-500 { color: #3b82f6 !important; fill: #3b82f6 !important; }
+svg.text-green-500 { color: #10b981 !important; fill: #10b981 !important; }
+svg.text-yellow-500 { color: #f59e0b !important; fill: #f59e0b !important; }
+svg.text-red-500 { color: #ef4444 !important; fill: #ef4444 !important; }
+svg.text-purple-500 { color: #8b5cf6 !important; fill: #8b5cf6 !important; }
+svg.text-pink-500 { color: #ec4899 !important; fill: #ec4899 !important; }
+svg.text-indigo-500 { color: #6366f1 !important; fill: #6366f1 !important; }
+svg.text-cyan-500 { color: #06b6d4 !important; fill: #06b6d4 !important; }
+svg.text-teal-500 { color: #14b8a6 !important; fill: #14b8a6 !important; }
+svg.text-orange-500 { color: #f97316 !important; fill: #f97316 !important; }
+
+/* Force specific background and text colors for unread indicators */
+.bg-white {
+  background-color: #ffffff !important;
+  background: #ffffff !important;
+}
+
+.text-black {
+  color: #000000 !important;
+}
+
+/* Override any forced colors on unread indicator elements */
+.min-w-\[18px\] {
+  background-color: #ffffff !important;
+  background: #ffffff !important;
+  color: #000000 !important;
+}
+
+/* More specific targeting for unread indicators */
+div.bg-white.text-black {
+  background-color: #ffffff !important;
+  background: #ffffff !important;
+  color: #000000 !important;
+}
+
+/* Target the specific unread indicator structure */
+.absolute.-top-1.-right-1 {
+  background-color: #ffffff !important;
+  background: #ffffff !important;
+  color: #000000 !important;
+}
+
+/* Force white background on any element with these classes */
+[class*="bg-white"][class*="text-black"] {
+  background-color: #ffffff !important;
+  background: #ffffff !important;
+  color: #000000 !important;
+}
+
+/* Target the exact unread indicator from bottom navbar */
+.absolute.-top-1.-right-1.min-w-\[18px\].h-\[18px\].bg-white.text-black {
+  background-color: #ffffff !important;
+  background: #ffffff !important;
+  color: #000000 !important;
+}
+
+/* Override any dark mode styles on notification badges */
+div[class*="absolute"][class*="bg-white"][class*="text-black"] {
+  background-color: #ffffff !important;
+  background: #ffffff !important;
+  color: #000000 !important;
+}
+
+/* More specific targeting - only for unread indicators, not VIP badges */
+div.bg-white.text-black.text-xs.rounded-full {
+  background-color: #ffffff !important;
+  background: #ffffff !important;
+  color: #000000 !important;
+}
+
+/* Target only notification badges, not VIP badges */
+div[class*="bg-white"][class*="text-black"][class*="text-xs"] {
+  background-color: #ffffff !important;
+  background: #ffffff !important;
+  color: #000000 !important;
+}
+
+/* Ensure VIP badges are not affected by white background overrides */
+div[class*="absolute"][class*="-top-1"][class*="-right-1"]:not([class*="text-xs"]) {
+  background-color: transparent !important;
+  background: transparent !important;
+}
+
+/* Specifically protect VIP badge containers */
+div[class*="w-"][class*="h-"][class*="rounded-full"]:not([class*="text-xs"]) {
+  background-color: transparent !important;
+  background: transparent !important;
 }

@@ -152,11 +152,12 @@ const FirstPost: React.FC<FirstPostProps> = ({
   const [selectedImage, setSelectedImage] = React.useState("");
   const router = useRouter();
 
-  // Video auto-play hook
+  // Video auto-play hook with post ID for global management
   const { videoRef, isPlaying, isVisible } = useVideoAutoPlay({
     autoPlay: true,
     muted: true,
-    loop: true
+    loop: true,
+    postId: post?._id || post?.postid || post?.id || 'first-post'
   });
 
   // Modal functions
@@ -351,9 +352,7 @@ const FirstPost: React.FC<FirstPostProps> = ({
           </div>
           <div 
             className="flex-1 cursor-pointer" 
-            onClick={() => {
-              router.push(`/post/${post?._id}`)
-            }}
+            
           >
             <p className="font-medium">{post?.user?.firstname} { post?.user?.lastname}</p>
             <span className="text-gray-400 text-sm">{handleStr ? `${handleStr}` : ""}</span>
@@ -362,9 +361,7 @@ const FirstPost: React.FC<FirstPostProps> = ({
       </div>
 
       {post?.createdAt && (
-        <p className="my-3 text-gray-400 text-sm cursor-pointer" onClick={()=>{
-          router.push(`/post/${post?._id}`)
-        }}>
+        <p className="my-3 text-gray-400 text-sm cursor-pointer" >
           {(() => {
             const formatted = formatRelativeTime(post.createdAt);
             if (formatted === 'Invalid time' || formatted === 'Unknown time') {
@@ -380,9 +377,7 @@ const FirstPost: React.FC<FirstPostProps> = ({
           text={post.content}
           maxLength={100}
           className="my-2"
-          onClick={() => {
-            router.push(`/post/${post?._id}`)
-          }}
+         
         />
       )}
       

@@ -25,6 +25,24 @@ export type PostActionsProps = {
 };
 const iconBase = "h-8 w-8 text-slate-400 hover:text-white cursor-pointer transition-colors duration-200";
 
+// Fix for concatenated post IDs - extract the first valid ID
+const extractPostId = (id: string | undefined): string => {
+  if (!id) return "";
+  
+  
+  // If the ID contains multiple IDs concatenated (like "68d934b10f183828b1fafaf268d934b11d185344db9e")
+  // Extract the first valid MongoDB ObjectId (24 characters)
+  if (id.length > 24) {
+    // Try to find the first valid ObjectId
+    const match = id.match(/^[a-f\d]{24}/);
+    if (match) {
+      return match[0];
+    }
+  }
+  
+  return id;
+};
+
 function StarIconComponent({ filled }: { filled?: boolean }) {
   return filled ? (
     <Image src="/icons/current-filled-start-icon.png" alt="star filled" width={28} height={28} className="w-8 h-8 object-cover" />
@@ -219,7 +237,7 @@ function DotsIcon({ post }: { post: any }) { // eslint-disable-line @typescript-
             await navigator.share({
               title: post?.user?.nickname+"'s post",
               text: post?.content?.slice(0, 100) + (post?.content?.length > 100 ? '...' : ''),
-              url: window.location.origin + `/post/${post._id}`
+              url: window.location.origin + `/post/${extractPostId(post._id)}`
             });
           } catch (error) {
             console.log("Share failed:", error);
@@ -227,7 +245,7 @@ function DotsIcon({ post }: { post: any }) { // eslint-disable-line @typescript-
           setHasPop(false);
         }}>Share</div>
         <div className="block w-full text-left px-4 py-2 hover:bg-gray-700 rounded" onClick={() => {
-          navigator.clipboard.writeText(window.location.origin + `/post/${post._id}`); 
+          navigator.clipboard.writeText(window.location.origin + `/post/${extractPostId(post._id)}`); 
           setHasPop(false);
           toast.success("Link copied to clipboard");
         }}>Copy Link</div>
@@ -249,13 +267,13 @@ function DotsIcon({ post }: { post: any }) { // eslint-disable-line @typescript-
         )}
         
       {own&&<>
-        <div className="block w-full text-left px-4 py-2 hover:bg-gray-700 rounded" onClick={() => { setHasPop(false); router.push(`/post/${post?._id}/edit`) }}>Edit Post</div>
+        <div className="block w-full text-left px-4 py-2 hover:bg-gray-700 rounded" onClick={() => { setHasPop(false); router.push(`/post/${extractPostId(post?._id)}/edit`) }}>Edit Post</div>
 
           <div className="block w-full text-left px-4 py-2 hover:bg-gray-700 rounded text-red-500" onClick={async () => {
             const tst=toast.loading("Deleting")
             try {
                setHasPop(false);
-            await deletesinglepost(post?._id);
+            await deletesinglepost(extractPostId(post?._id));
             router.push("/");
             } catch (err) {
               console.error(err);

@@ -237,15 +237,7 @@ const mapToCard = (m: any): CreatorCardProps => {
     amountNum = amountVal;
   }
 
-  // Debug logging to see what data we're getting
-  console.log('[CreatorsPage][mapToCard] Processing creator:', {
-    name: m.name,
-    creatorfiles: m.creatorfiles,
-    photolink: m.photolink,
-    rawPhoto,
-    finalPhoto: photo,
-    isStorj: photo?.startsWith('https://gateway.storjshare.io/')
-  });
+
 
   const cardData = {
     photolink: photo,
@@ -256,7 +248,7 @@ const mapToCard = (m: any): CreatorCardProps => {
     location: m.location || "",
     interest: m.interestedin || m.interests || [],
     amount: amountNum,
-    creator_portfolio_id: m._id || m.id || m.creator_portfolio_id || "",
+    creator_portfolio_id: m.hostid || m._id || m.id || m.creator_portfolio_id || "",
     userid: m.userid || m.hostid || m.ownerId || "",
     createdAt: m.createdAt || m.created_at || "",
     hostid: m.hostid,
