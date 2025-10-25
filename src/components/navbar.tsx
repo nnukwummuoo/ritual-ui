@@ -20,7 +20,7 @@ export default function Navbar({isAuthenticated}:{isAuthenticated: boolean}) {
           <button onClick={toggle} className="navBtn">
             {/* {isOpen ? <FaTimes size={25} /> : <FaBars size={25} />} */}
             <span className="bg-clip-text bg-gradient-to-r from-blue-500 to-purple-600 text-blue-500">
-              {isOpen ? <FaTimes size={25} className="text-blue-500" /> : <FaBars size={25} />}
+              {isOpen ? <FaTimes size={25} className="text-blue-500" /> : <FaBars size={25}  />}
             </span>
           </button>
           <Image src={anyaLogo} alt="logo" className="logo" />

@@ -43,6 +43,8 @@ export const metadata: Metadata = {
     "application-name": "Mmeko",
     "msapplication-TileColor": "#00A86B",
     "msapplication-config": "/browserconfig.xml",
+    "color-scheme": "light only",
+    "supported-color-schemes": "light",
   },
 };
 
@@ -68,6 +70,9 @@ export default async function RootLayout({
         <meta name="application-name" content="Mmeko" />
         <meta name="msapplication-TileColor" content="#00A86B" />
         <meta name="msapplication-TileImage" content="/icons/icon.png" />
+        {/* Force light mode only - prevent browser dark mode adaptation */}
+        <meta name="color-scheme" content="light only" />
+        <meta name="supported-color-schemes" content="light" />
       </head>
       <body className={`${inter.className} antialiased bg-background`}>
         <Providers>

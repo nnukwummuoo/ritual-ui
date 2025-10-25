@@ -555,12 +555,7 @@ export default function PostsCard() {
         </div>
       )}
 
-      {/* Pagination Info */}
-      {displayPosts.length > 0 && (
-        <div className="text-center text-gray-500 text-sm py-2">
-          Showing {displayPosts.length} posts • Page {currentPage}
-        </div>
-      )}
+    
 
     </div>
   );

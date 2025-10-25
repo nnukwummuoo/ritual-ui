@@ -249,10 +249,10 @@ export default function BottomNavBar() {
                 <div className="relative">
                   <Image
                     src={item.imgUrl || ""}
-                    className={`size-8 ${item.alwaysColored ? "grayscale-0" : `grayscale ${pathname === item.route ? "grayscale-0" : ""}`}`}
+                    className={`${item.alwaysColored ? "size-10" : "size-8"} ${item.alwaysColored ? "grayscale-0" : `grayscale ${pathname === item.route ? "grayscale-0" : ""}`}`}
                     alt={item.name || "icon"}
-                    width={100}
-                    height={100}
+                    width={item.alwaysColored ? 100 : 24}
+                    height={item.alwaysColored ? 100 : 24}
                   />
                   {/* Unread indicator - only show when there are unread messages */}
                   {item.showUnreadIndicator && (

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import "./Navs.css";
 import { useRouter } from "next/navigation";
 import MenuIconImg from "@/components/MenuIcon-img";
@@ -25,6 +25,7 @@ const Sidemenu = () => {
   const router = useRouter();
   const { open, toggleMenu: handleMenubar } = useMenuContext();
   const dispatch = useDispatch<AppDispatch>();
+  const menuRef = useRef<HTMLDivElement>(null);
 
   // ALWAYS use current user profile from Redux (NEVER viewing profile)
   // This ensures side menu is NEVER affected by viewing other users' profiles
@@ -64,6 +65,23 @@ const Sidemenu = () => {
   }, [reduxUserId]);
 
   // VIP status is now loaded from login data in register state
+  
+  // Click outside to close menu functionality
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (open && menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        handleMenubar();
+      }
+    };
+
+    if (open) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [open, handleMenubar]);
   
   // 🔒 CRITICAL: Ensure current user profile is always loaded
   // This prevents the side menu from showing "User" fallback
@@ -231,6 +249,7 @@ const Sidemenu = () => {
     <div className="fixed z-[110]">
       <div className="p-2">
         <nav
+          ref={menuRef}
           onClick={handleMenubar}
           className={`${
             open ? "show" : "hide"

@@ -40,6 +40,7 @@ export const SupportChat = () => {
   const [isTyping, setIsTyping] = useState(false);
   const [otherUserTyping, setOtherUserTyping] = useState(false);
   const [isOtherUserOnline, setIsOtherUserOnline] = useState(true);
+  const [isSending, setIsSending] = useState(false);
   
   // Support chat specific state
   const [showCategorySelection, setShowCategorySelection] = useState(false);
@@ -221,6 +222,9 @@ export const SupportChat = () => {
       return;
     }
     
+    // Set loading state
+    setIsSending(true);
+    
     try {
       let response;
       
@@ -265,7 +269,13 @@ export const SupportChat = () => {
         setPreviewFiles([]);
         setIsFirstMessage(false);
         setSelectedCategory(''); // Clear selected category after first message
-        toast.success('Message sent successfully!');
+        
+        // Show different success message for report categories
+        if (['Report a Fan', 'Report a Creator'].includes(selectedCategory)) {
+          toast.success('Report submitted successfully! Our team will review it shortly.');
+        } else {
+          toast.success('Message sent successfully!');
+        }
       } else {
         toast.error('Failed to send message');
       }
@@ -274,6 +284,9 @@ export const SupportChat = () => {
       toast.error('Error sending message');
       // Clear input even on error to prevent stuck text
       setText("");
+    } finally {
+      // Clear loading state
+      setIsSending(false);
     }
   };
 
@@ -365,6 +378,11 @@ export const SupportChat = () => {
                       : 'bg-gray-800/50 text-white rounded-bl-md border border-gray-700/30'
                   }`}>
                     <p className="text-sm">{message.content}</p>
+                    {message.isReport && (
+                      <div className="mt-2 px-2 py-1 bg-red-500/20 border border-red-500/30 rounded text-xs text-red-300">
+                        🚨 Report submitted - Under review
+                      </div>
+                    )}
                     <p className="text-xs opacity-70 mt-1">
                       {new Date(message.date).toLocaleTimeString()}
                     </p>
@@ -434,10 +452,12 @@ export const SupportChat = () => {
 
         <button
           onClick={() => send_chat(text)} 
-          disabled={(!text.trim() && selectedFiles.length === 0) || uploading}
+          disabled={(!text.trim() && selectedFiles.length === 0) || uploading || isSending}
           className="flex-shrink-0 p-3 bg-gray-800 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-full transition-colors"
         >
-          {uploading ? (
+          {isSending ? (
+            <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white"></div>
+          ) : uploading ? (
             <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white"></div>
           ) : (
             <Send className="w-5 h-5" />

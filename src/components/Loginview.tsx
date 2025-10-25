@@ -295,7 +295,7 @@ export const Loginview = () => {
 
           <p className="text-blue-500 text-sm text-center hover:text-blue-400">
             <Link 
-              href="/forget-password"
+              href="/auth/forget-password"
               className="text-blue-500 font-bold hover:underline">
               Forgot Password?
             </Link>

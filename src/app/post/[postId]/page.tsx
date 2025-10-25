@@ -24,6 +24,26 @@ function PostSingle() {
     const router = useRouter();
     const { postId } = useParams();
     
+    // Fix for concatenated post IDs - extract the first valid ID
+    const extractPostId = (id: string | string[] | undefined): string => {
+        if (!id) return "";
+        const idStr = Array.isArray(id) ? id[0] : String(id);
+        
+        // If the ID contains multiple IDs concatenated (like "68d934b10f183828b1fafaf268d934b11d185344db9e")
+        // Extract the first valid MongoDB ObjectId (24 characters)
+        if (idStr.length > 24) {
+            // Try to find the first valid ObjectId
+            const match = idStr.match(/^[a-f\d]{24}/);
+            if (match) {
+                return match[0];
+            }
+        }
+        
+        return idStr;
+    };
+    
+    const cleanPostId = extractPostId(postId);
+    
     // Get auth data
     const loggedInUserId = useSelector((s: RootState) => s.register.userID);
     const authToken = useSelector((s: RootState) => s.register.refreshtoken || s.register.accesstoken);
@@ -47,15 +67,21 @@ function PostSingle() {
 
     // Function to get media source with fallbacks (same as in profile page)
     const getMediaSource = (post: any) => {
+        // Only process images when we have actual post data
+        const hasPostData = post && Object.keys(post).length > 0 && post._id;
+        
+        
         // Infer post type: prefer explicit fields if present
-        let postType: string = post?.posttype || post?.type || "text";
-        if (!postType) {
+        let postType: string = hasPostData ? (post?.posttype || post?.type || "text") : "text";
+        if (!postType && hasPostData) {
             if (post?.postphoto || post?.image) postType = "image";
             else if (post?.postvideo || post?.video) postType = "video";
         }
 
         // Resolve media reference (cover more backend key variants) - same as profile page
-    const mediaRef =
+        // Prioritize full URLs over public IDs for better image display
+    const mediaRef = hasPostData ? (
+            post?.postfilelink ||  // Use full URL first
             post?.postphoto ||
             post?.postvideo ||
             post?.postlink ||
@@ -71,15 +97,23 @@ function PostSingle() {
             post?.publicId ||
             post?.public_id ||
             post?.imageId ||
-            post?.postfilepublicid ||
-            post?.postfilelink ||
-            "";
+            post?.postfilepublicid ||  // Use public ID as fallback
+            ""
+        ) : "";
         
     const asString = typeof mediaRef === "string" ? mediaRef : (mediaRef?.publicId || mediaRef?.public_id || mediaRef?.url || "");
     
-    // Use bucket detection for Storj URLs
-    const imageSource = getImageSource(asString, 'post');
-    const src = imageSource.src;
+    
+    // Use bucket detection for Storj URLs (only when we have data)
+    // For direct URLs (like Appwrite), use them as-is. For Storj URLs, process through proxy
+    const imageSource = hasPostData ? getImageSource(asString, 'post') : { src: '', isStorj: false, bucket: 'post', key: '', originalUrl: '' };
+    
+    // If it's a direct URL (not Storj), use it directly. Otherwise use the processed source
+    const src = hasPostData && asString && !imageSource.isStorj && (asString.startsWith('http://') || asString.startsWith('https://')) 
+        ? asString 
+        : imageSource.src;
+    
+    
     
     // Keep fallback URLs for error handling
     const queryUrlPrimary = asString ? `${API_BASE}/api/image/view?publicId=${encodeURIComponent(asString)}` : "";
@@ -267,7 +301,7 @@ function PostSingle() {
     React.useLayoutEffect(() => {
         const fetchPost = async () => {
                 try {
-                const res = await fetchsinglepost(String(postId));
+                const res = await fetchsinglepost(cleanPostId);
                     setThePost(res);
                 
                 // Fetch likes and comments separately (same as main post component)
@@ -324,7 +358,7 @@ function PostSingle() {
         };
         
         fetchPost();
-    }, [postId, loggedInUserId, authToken, fetchPostAuthorData]);
+    }, [cleanPostId, loggedInUserId, authToken, fetchPostAuthorData]);
 
     if (!thePost || Object.keys(thePost).length === 0) {
         return (

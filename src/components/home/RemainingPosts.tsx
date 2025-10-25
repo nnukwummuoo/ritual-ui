@@ -150,12 +150,54 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
 }) => {
   const router = useRouter();
   
-  // Video auto-play hook
-  const { videoRef, isPlaying, isVisible } = useVideoAutoPlay({
-    autoPlay: true,
-    muted: true,
-    loop: true
-  });
+  // Video component for individual posts
+  const VideoComponent = ({ post, src, pathUrlPrimary, queryUrlFallback, pathUrlFallback }: {
+    post: any;
+    src: string;
+    pathUrlPrimary?: string;
+    queryUrlFallback?: string;
+    pathUrlFallback?: string;
+  }) => {
+    const { videoRef } = useVideoAutoPlay({
+      autoPlay: true,
+      muted: true,
+      loop: true,
+      postId: post?._id || post?.postid || post?.id || `post-${Math.random()}`
+    });
+
+    return (
+      <video
+        ref={videoRef}
+        src={src}
+        controls
+        autoPlay
+        muted
+        loop
+        playsInline
+        className="w-full max-h-[480px] rounded"
+        onError={(e) => {
+          const video = e.currentTarget as HTMLVideoElement & { dataset: any };
+          if (!video.dataset.fallback1 && pathUrlPrimary) {
+            video.dataset.fallback1 = "1";
+            video.src = pathUrlPrimary;
+            video.load();
+            return;
+          }
+          if (!video.dataset.fallback2 && queryUrlFallback) {
+            video.dataset.fallback2 = "1";
+            video.src = queryUrlFallback;
+            video.load();
+            return;
+          }
+          if (!video.dataset.fallback3 && pathUrlFallback) {
+            video.dataset.fallback3 = "1";
+            video.src = pathUrlFallback;
+            video.load();
+          }
+        }}
+      />
+    );
+  };
   
   // Modal state for image viewing
   const [isModalOpen, setIsModalOpen] = React.useState(false);
@@ -356,9 +398,7 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
                 </div>
                 <div 
                   className="flex-1 cursor-pointer" 
-                  onClick={() => {
-                    router.push(`/post/${p?._id}`)
-                  }}
+               
                 >
                   <p className="font-medium">{p?.user?.firstname} { p?.user?.lastname}</p>
                   <span className="text-gray-400 text-sm">{handleStr ? `${handleStr}` : ""}</span>
@@ -367,9 +407,7 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
             </div>
 
             {p?.createdAt && (
-              <p className="my-3 text-gray-400 text-sm cursor-pointer" onClick={()=>{
-                router.push(`/post/${p?._id}`)
-              }}>
+              <p className="my-3 text-gray-400 text-sm cursor-pointer" >
                 {(() => {
                   const formatted = formatRelativeTime(p.createdAt);
                   if (formatted === 'Invalid time' || formatted === 'Unknown time') {
@@ -385,9 +423,7 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
                 text={p.content}
                 maxLength={100}
                 className="my-2"
-                onClick={() => {
-                  router.push(`/post/${p?._id}`)
-                }}
+               
               />
             )}
             
@@ -422,35 +458,12 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
             )}
             
             {postType == "video" && src && (
-              <video
-                ref={videoRef}
+              <VideoComponent
+                post={p}
                 src={src}
-                controls
-                autoPlay
-                muted
-                loop
-                playsInline
-                className="w-full max-h-[480px] rounded"
-                onError={(e) => {
-                  const video = e.currentTarget as HTMLVideoElement & { dataset: any };
-                  if (!video.dataset.fallback1 && pathUrlPrimary) {
-                    video.dataset.fallback1 = "1";
-                    video.src = pathUrlPrimary;
-                    video.load();
-                    return;
-                  }
-                  if (!video.dataset.fallback2 && queryUrlFallback) {
-                    video.dataset.fallback2 = "1";
-                    video.src = queryUrlFallback;
-                    video.load();
-                    return;
-                  }
-                  if (!video.dataset.fallback3 && pathUrlFallback) {
-                    video.dataset.fallback3 = "1";
-                    video.src = pathUrlFallback;
-                    video.load();
-                  }
-                }}
+                pathUrlPrimary={pathUrlPrimary}
+                queryUrlFallback={queryUrlFallback}
+                pathUrlFallback={pathUrlFallback}
               />
             )}
             

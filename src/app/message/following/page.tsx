@@ -276,8 +276,15 @@ const FollowingMessagesPage: React.FC = () => {
                           className="w-12 h-12 rounded-full object-cover flex-shrink-0"
                           onError={(e) => {
                             const target = e.target as HTMLImageElement;
-                            target.onerror = null;
-                            target.src = "/icons/icons8-profile_Icon1.png";
+                            target.style.display = 'none';
+                            // Show initials instead of fallback image
+                            const parent = target.parentElement;
+                            if (parent) {
+                              const initialsDiv = document.createElement('div');
+                              initialsDiv.className = 'w-12 h-12 rounded-full bg-gray-700 flex items-center justify-center text-white text-sm font-semibold flex-shrink-0';
+                              initialsDiv.textContent = initials;
+                              parent.appendChild(initialsDiv);
+                            }
                           }}
                         />
                       ) : (

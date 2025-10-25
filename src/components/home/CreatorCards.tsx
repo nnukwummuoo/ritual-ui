@@ -252,7 +252,7 @@ const CreatorCards: React.FC = () => {
               location: m.location || "",
               interest: m.interestedin || m.interests || [],
               amount: amountNum,
-              creator_portfolio_id: m._id || m.id || m.creator_portfolio_id || "",
+              creator_portfolio_id: m.hostid || m._id || m.id || m.creator_portfolio_id || "",
               userid: m.userid || m.hostid || m.ownerId || "",
               createdAt: m.createdAt || m.created_at || "",
               hostid: m.hostid,
@@ -263,13 +263,17 @@ const CreatorCards: React.FC = () => {
               isFollowing: m.isFollowing || m.following || m.followingUser || m.is_following || m.following_status || m.followedBy || m.followed_by || false,
             };
 
-            // Debug logging
-            // console.log('[CreatorCards] Mapped creator:', {
-            //   name: mappedCreator.name,
-            //   creator_portfolio_id: mappedCreator.creator_portfolio_id,
-            //   hostid: mappedCreator.hostid,
-            //   userid: mappedCreator.userid
-            // });
+            // Debug logging for creator_portfolio_id issue
+            if (!mappedCreator.creator_portfolio_id) {
+              console.warn('[CreatorCards] Missing creator_portfolio_id for creator:', {
+                name: mappedCreator.name,
+                hostid: m.hostid,
+                _id: m._id,
+                id: m.id,
+                creator_portfolio_id: m.creator_portfolio_id,
+                rawData: m
+              });
+            }
 
             return mappedCreator;
           });
@@ -309,7 +313,7 @@ const CreatorCards: React.FC = () => {
   if (loading || !creators.length) {
     // console.log('[CreatorCards] Showing skeleton loader');
     return (
-      <div className="bg-gray-800 rounded-lg p-4 mb-6">
+      <div className="bg-gray-800 rounded-lg p-4 ">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-white font-medium">Top Creators</h3>
           <button className="text-blue-500 text-sm hover:underline">See all</button>
@@ -336,7 +340,7 @@ const CreatorCards: React.FC = () => {
   // console.log('[CreatorCards] Rendering creator cards:', creators.length);
 
   return (
-    <div className="bg-gray-800 rounded-lg p-4 mb-6">
+    <div className="bg-gray-800 rounded-lg p-4 ">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-white font-medium">Top Creators</h3>
         <button 
