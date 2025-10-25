@@ -220,7 +220,7 @@ export default function BottomNavBar() {
       unreadCount: unreadNotificationCount
     },
     {
-      imgUrl: "/Anya.png",
+      imgUrl: "/icons/Anya.ico",
       route: "/anya",
       name: "",
       alwaysColored: true,
