@@ -34,11 +34,13 @@ export default function ConditionalLayout({ children, isAuthenticated }: Conditi
           <div className="w-full max-[1000px]:max-w-[90%]  max-[800px]:max-w-[100%]">
             {children}
           </div>
-          <div className="w-full h-full max-[1000px]:w-0 mt-28 lg:block hidden">
-            <div className="sticky top-4">
-              <CreatorCards />
+          {pathname === '/' && (
+            <div className="w-full h-full max-[1000px]:w-0 mt-28 lg:block hidden">
+              <div className="sticky mr-2 top-4 w-[25rem] max-[600px]:w-[90%] mx-auto">
+                <CreatorCards />
+              </div>
             </div>
-          </div>
+          )}
         </div>
         {isAuthenticated && <BottomNavBar />}
         {!isAuthenticated && <ShouldRenderPopUp />}

@@ -23,7 +23,7 @@ export default function MenuIconImg({name, src, url, itc="items-center", rounded
             display: "block",
             verticalAlign: "middle"
         }}
-        className={`object-cover w-12 h-12 bg-slate-900 ${rounded}`}
+        className={`object-cover w-12 h-12  ${rounded}`}
         />
         <p className={`mt-1 text-center group-hover:text-gray-400 ${isActive ? 'text-gray-400' : ''}`}>{name}</p>
     </Link>
