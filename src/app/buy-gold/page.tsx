@@ -327,14 +327,14 @@ const Topup: React.FC = () => {
       <div className="flex flex-col items-center w-full max-w-md mx-auto">
         {/* Gold Shop Avatar */}
         <div>
-          <Image
+          {/* <Image
             src="icons/m-logo.png"
             alt="Gold Shop Logo"
             width={60}
             height={60}
             className="object-contain sm:w-[77px] sm:h-[77px]"
           />
-        </div>
+        </div> */}
         {/* Title */}
         <h1 className="mt-2 sm:mt-4 text-white text-2xl sm:text-3xl font-bold text-center">Gold Shop</h1>
         {/* Subtitle */}

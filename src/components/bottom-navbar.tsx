@@ -12,7 +12,6 @@ import { getmsgnitify, getmessagenotication } from "@/store/messageSlice";
 import { getNotifications } from "@/store/profile";
 import { getSocket } from "@/lib/socket";
 import { useNotificationIndicator } from "@/hooks/useNotificationIndicator";
-import { NotificationIndicator } from "@/components/NotificationIndicator";
 
 interface BottomNavBarItemProps {
   imgUrl?: string;
@@ -220,7 +219,7 @@ export default function BottomNavBar() {
       unreadCount: unreadNotificationCount
     },
     {
-      imgUrl: "/icons/Anya.ico",
+      imgUrl: "/Anya.png",
       route: "/anya",
       name: "",
       alwaysColored: true,
@@ -239,20 +238,20 @@ export default function BottomNavBar() {
   ];
   return (
     <MenuProvider>
-      <div className=" h-fit mr-8 mt-4 max-[600px]:m-0 fixed right-0 max-[600px]:bottom-1 max-[600px]:w-full z-50">
-        <div className="w-[25rem] mx-auto max-[600px]:w-[90%] rounded-2xl px-4 pt-4 pb-2 bg-gray-900 flex justify-between max-[500px]:w-[93%] bottom-4">
+      <div className=" h-fit  mr-6 mt-4 max-[600px]:m-0  fixed right-0 max-[600px]:bottom-1 max-[600px]:w-full z-50">
+        <div className="w-[25rem]  mx-auto max-[600px]:w-[90%] rounded-2xl px-4 pt-4 pb-2 bg-gray-900 flex justify-between max-[500px]:w-[93%] bottom-4">
           {routes.map((item, i) => (
-            <Link key={i} href={item.route} className={`w-12 flex flex-col items-center group hover:scale-110 transition-all duration-500 relative`}>
+            <Link key={i} href={item.route} className={`w-12 -ml-2 flex flex-col items-center group hover:scale-110 transition-all duration-500 relative`}>
               {item.icon ? (
                 <div className="">{item.icon}</div>
               ) : (
                 <div className="relative">
                   <Image
                     src={item.imgUrl || ""}
-                    className={`${item.alwaysColored ? "size-10" : "size-8"} ${item.alwaysColored ? "grayscale-0" : `grayscale ${pathname === item.route ? "grayscale-0" : ""}`}`}
+                    className={`size-8 ${item.alwaysColored ? "grayscale-0" : `grayscale ${pathname === item.route ? "grayscale-0" : ""}`}`}
                     alt={item.name || "icon"}
-                    width={item.alwaysColored ? 100 : 24}
-                    height={item.alwaysColored ? 100 : 24}
+                    width={24}
+                    height={24}
                   />
                   {/* Unread indicator - only show when there are unread messages */}
                   {item.showUnreadIndicator && (

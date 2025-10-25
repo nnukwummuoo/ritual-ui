@@ -80,6 +80,32 @@ export async function getMyCreator(params: { userid: string; token?: string }) {
 
   return data;
 }
+
+// -----------------------------
+// Get All Creators (for non-authenticated users)
+// -----------------------------
+export async function getAllCreators() {
+  const api = backend(); // No token needed for public endpoint
+  const res = await api.get("/creator/public");
+  const data = res.data;
+
+  if (data.ok && data.host) {
+    // Ensure a fallback image exists - prioritize creatorfiles over photolink
+    data.host = data.host.map((creator: any) => {
+      const firstImage = (creator.creatorfiles && creator.creatorfiles.length > 0) 
+        ? creator.creatorfiles[0]?.creatorfilelink 
+        : (creator.photolink && creator.photolink[0]);
+      
+      return {
+        ...creator,
+        displayImage: firstImage || "/default-image.png",
+      };
+    });
+  }
+
+  return data;
+}
+
 // -----------------------------
 // Edit Portfolio (multipart)
 // -----------------------------

@@ -17,6 +17,7 @@ const publicRoutes = [
   '/change-log',
   '/feedback',
   '/support',
+  "/creators",
   '/offline',
 ];
 

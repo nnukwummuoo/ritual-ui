@@ -24,28 +24,6 @@ export const metadata: Metadata = {
     maximumScale: 1,
     userScalable: false,
   },
-  manifest: "/manifest.json",
-  themeColor: "#00A86B",
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: "black-translucent",
-    title: "Mmeko",
-  },
-  icons: {
-    icon: "/icons/icon.png",
-    apple: "/icons/icon.png",
-  },
-  other: {
-    "mobile-web-app-capable": "yes",
-    "apple-mobile-web-app-capable": "yes",
-    "apple-mobile-web-app-status-bar-style": "black-translucent",
-    "apple-mobile-web-app-title": "Mmeko",
-    "application-name": "Mmeko",
-    "msapplication-TileColor": "#00A86B",
-    "msapplication-config": "/browserconfig.xml",
-    "color-scheme": "light only",
-    "supported-color-schemes": "light",
-  },
 };
 
 export default async function RootLayout({
@@ -59,21 +37,6 @@ export default async function RootLayout({
   
   return (
     <html lang="en" suppressHydrationWarning>
-      <head>
-        <link rel="manifest" href="/manifest.json" />
-        <meta name="theme-color" content="#00A86B" />
-        <link rel="apple-touch-icon" href="/icons/icon.png" />
-        <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        <meta name="apple-mobile-web-app-title" content="Mmeko" />
-        <meta name="mobile-web-app-capable" content="yes" />
-        <meta name="application-name" content="Mmeko" />
-        <meta name="msapplication-TileColor" content="#00A86B" />
-        <meta name="msapplication-TileImage" content="/icons/icon.png" />
-        {/* Force light mode only - prevent browser dark mode adaptation */}
-        <meta name="color-scheme" content="light only" />
-        <meta name="supported-color-schemes" content="light" />
-      </head>
       <body className={`${inter.className} antialiased bg-background`}>
         <Providers>
           <ConditionalLayout isAuthenticated={isAuthenticated}>

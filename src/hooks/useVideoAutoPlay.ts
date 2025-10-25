@@ -162,6 +162,7 @@ export const useVideoAutoPlay = (options: UseVideoAutoPlayOptions = {}) => {
     video.muted = !(hasUserInteracted && isVolumeOn); // Only unmute if user has interacted AND prefers sound
     video.loop = loop;
     video.playsInline = true;
+    video.preload = 'metadata'; // Preload metadata for faster autoplay
 
     // Enhanced Intersection Observer with better scroll detection
     const observer = new IntersectionObserver(
@@ -171,15 +172,22 @@ export const useVideoAutoPlay = (options: UseVideoAutoPlayOptions = {}) => {
           const intersectionRatio = entry.intersectionRatio;
           setIsVisible(isIntersecting);
 
-          if (isIntersecting && intersectionRatio >= 0.5 && autoPlay && !hasUserInteracted) {
+          if (isIntersecting && intersectionRatio >= 0.3 && autoPlay) {
             // Video is significantly in viewport and should auto-play
+            console.log('🎥 [AUTOPLAY] Video entering viewport, attempting to play:', {
+              postId,
+              intersectionRatio,
+              isIntersecting,
+              videoPaused: video.paused
+            });
             videoManager.playVideo(postId);
             video.play().then(() => {
+              console.log('✅ [AUTOPLAY] Video started playing successfully:', postId);
               setIsPlaying(true);
             }).catch((error) => {
               // Ignore AbortError - it's expected when play() is interrupted
               if (error.name !== 'AbortError') {
-                // Silent error handling
+                console.log('❌ [AUTOPLAY] Video play failed:', { postId, error: error.message });
               }
             });
           } else if (!isIntersecting || intersectionRatio < 0.3) {
@@ -193,7 +201,7 @@ export const useVideoAutoPlay = (options: UseVideoAutoPlayOptions = {}) => {
       },
       {
         threshold: [0, 0.1, 0.3, 0.5, 0.7, 1.0], // Multiple thresholds for better detection
-        rootMargin: '0px 0px -20% 0px' // Start playing when 20% from bottom
+        rootMargin: '0px 0px -10% 0px' // Start playing when 10% from bottom for more responsive autoplay
       }
     );
 
@@ -291,11 +299,22 @@ export const useVideoAutoPlay = (options: UseVideoAutoPlayOptions = {}) => {
       controls.addEventListener('click', (e) => e.stopPropagation());
     }
 
-    // Periodic check to ensure volume state is correct
+    // Periodic check to ensure volume state is correct and autoplay is working
     const volumeCheckInterval = setInterval(() => {
       const volumeState = videoManager.getVolumeState();
       if (volumeState.isVolumeOn && video.muted) {
         video.muted = false;
+      }
+      
+      // Fallback: If video is in viewport but not playing, try to play it
+      if (isVisible && video.paused && autoPlay) {
+        console.log('🔄 [AUTOPLAY FALLBACK] Video is visible but paused, attempting to play:', postId);
+        videoManager.playVideo(postId);
+        video.play().catch((error) => {
+          if (error.name !== 'AbortError') {
+            console.log('❌ [AUTOPLAY FALLBACK] Video play failed:', { postId, error: error.message });
+          }
+        });
       }
     }, 1000); // Check every second
 

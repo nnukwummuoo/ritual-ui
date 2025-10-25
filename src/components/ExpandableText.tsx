@@ -38,7 +38,7 @@ const ExpandableText: React.FC<ExpandableTextProps> = ({
   const isTruncated = shouldTruncate && !isExpanded;
   
   return (
-    <p className={`whitespace-pre-wrap cursor-pointer ${className}`} onClick={onClick}>
+    <p className={`whitespace-pre-wrap text-gray-400 cursor-pointer ${className}`} onClick={onClick}>
       {displayText}
       {isTruncated && (
         <span 
