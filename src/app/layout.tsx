@@ -37,6 +37,11 @@ export default async function RootLayout({
   
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+         <meta name="color-scheme" content="light only" />
+        <meta name="supported-color-schemes" content="light" />
+
+        </head>
       <body className={`${inter.className} antialiased bg-background`}>
         <Providers>
           <ConditionalLayout isAuthenticated={isAuthenticated}>
