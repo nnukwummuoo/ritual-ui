@@ -313,7 +313,7 @@ const CreatorCards: React.FC = () => {
   if (loading || !creators.length) {
     // console.log('[CreatorCards] Showing skeleton loader');
     return (
-      <div className="bg-gray-800 rounded-lg p-4 ">
+      <div>
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-white font-medium">Top Creators</h3>
           <button className="text-blue-500 text-sm hover:underline">See all</button>
@@ -340,7 +340,7 @@ const CreatorCards: React.FC = () => {
   // console.log('[CreatorCards] Rendering creator cards:', creators.length);
 
   return (
-    <div className="bg-gray-800 rounded-lg p-4 ">
+    <div>
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-white font-medium">Top Creators</h3>
         <button 

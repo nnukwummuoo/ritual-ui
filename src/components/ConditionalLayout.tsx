@@ -19,6 +19,9 @@ export default function ConditionalLayout({ children, isAuthenticated }: Conditi
   // Check if it's a QuickChat [userid] route
   const isQuickChatRoute = pathname.includes('/message/') && pathname.split('/').length > 2;
   
+  // Check if it's the home route
+  const isHomeRoute = pathname === '/';
+  
   // If it's a QuickChat [userid] route, render without main layout
   if (isQuickChatRoute) {
     return <>{children}</>;
@@ -34,11 +37,16 @@ export default function ConditionalLayout({ children, isAuthenticated }: Conditi
           <div className="w-full max-[1000px]:max-w-[90%]  max-[800px]:max-w-[100%]">
             {children}
           </div>
-          <div className="w-full h-full max-[1000px]:w-0 mt-28 lg:block hidden">
-            <div className="sticky top-4">
-              <CreatorCards />
+          {/* Show CreatorCards only on home route and make it same size as bottom navbar */}
+          {isHomeRoute && (
+            <div className="w-full  h-full max-[1000px]:w-0 mt-28 lg:block hidden">
+              <div className="sticky top-4 -mr-16">
+                <div className="w-[25rem] mx-auto max-[600px]:w-[90%] rounded-2xl px-4 pt-4 pb-2 bg-gray-900">
+                  <CreatorCards />
+                </div>
+              </div>
             </div>
-          </div>
+          )}
         </div>
         {isAuthenticated && <BottomNavBar />}
         {!isAuthenticated && <ShouldRenderPopUp />}
