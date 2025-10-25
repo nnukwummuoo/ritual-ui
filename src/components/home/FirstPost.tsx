@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import React from "react";
@@ -354,7 +355,7 @@ const FirstPost: React.FC<FirstPostProps> = ({
             className="flex-1 cursor-pointer" 
             
           >
-            <p className="font-medium">{post?.user?.firstname} { post?.user?.lastname}</p>
+            <p className="font-medium text-gray-400 ">{post?.user?.firstname} { post?.user?.lastname}</p>
             <span className="text-gray-400 text-sm">{handleStr ? `${handleStr}` : ""}</span>
           </div>
         </div>
@@ -890,13 +891,13 @@ const FirstPost: React.FC<FirstPostProps> = ({
         >
           <button
             onClick={closeModal}
-            className="absolute top-16 right-4 bg-white bg-opacity-20 hover:bg-opacity-30 text-white text-2xl font-bold w-10 h-10 rounded-full flex items-center justify-center hover:scale-110 transition-all duration-200 z-10"
+            className="absolute top-16 right-1/3 bg-black  hover:bg-opacity-30 text-white text-2xl font-bold w-10 h-10 rounded-full flex items-center justify-center hover:scale-110 transition-all duration-200 z-10"
             aria-label="Close modal"
           >
             ✕
           </button>
 
-          <div className="relative max-w-full max-h-full">
+          <div className="relative max-w-full max-h-full lg:max-w-[33.333%] lg:max-h-[80vh]">
             <Image
               src={selectedImage}
               alt="Fullscreen view"

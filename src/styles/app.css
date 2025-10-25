@@ -1,45 +1,11 @@
 
-/* Force Dark Mode Globally - Override Light Mode */
-* {
-  color: #ffffff !important;
-}
-
+/* Dark theme base styles */
 body {
-  background-color: #0e0f2a !important;
-  color: #ffffff !important;
+  background-color: #0e0f2a;
 }
 
 html {
-  background-color: #0e0f2a !important;
-  color: #ffffff !important;
-}
-
-/* Override any light mode classes */
-.bg-white {
-  background-color: #1f2937 !important;
-}
-
-.text-black {
-  color: #ffffff !important;
-}
-
-.text-gray-900 {
-  color: #ffffff !important;
-}
-
-.text-gray-800 {
-  color: #ffffff !important;
-}
-
-/* Force dark theme on all elements */
-p, h1, h2, h3, h4, h5, h6, span, div, a, button, input, textarea, label {
-  color: #ffffff !important;
-}
-
-input, textarea {
-  background-color: #1f2937 !important;
-  border-color: #374151 !important;
-  color: #ffffff !important;
+  background-color: #0e0f2a;
 }
 
 .sidebar {

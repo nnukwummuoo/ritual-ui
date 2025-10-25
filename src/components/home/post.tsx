@@ -522,8 +522,10 @@ export default function PostsCard() {
         />
       )}
 
-      {/* Creator Cards */}
-      <CreatorCards />
+      {/* Creator Cards - Hidden on large devices */}
+      <div className="lg:hidden">
+        <CreatorCards />
+      </div>
 
       {/* Remaining Posts */}
       <RemainingPosts

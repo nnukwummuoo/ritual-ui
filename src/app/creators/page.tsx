@@ -11,7 +11,7 @@ import { useAuth } from "@/lib/context/auth-context";
 import { countryList } from "@/components/CountrySelect/countryList";
 import { CreatorCard, CreatorCardProps } from "./_components/card";
 import CategoryButtonComponent from "./_components/CategoryButton";
-import { getMyCreator } from "@/api/creator";
+import { getMyCreator, getAllCreators } from "@/api/creator";
 import VIPBadge from "@/components/VIPBadge";
 
 export default function CreatorPage() {
@@ -138,26 +138,33 @@ export default function CreatorPage() {
 
   // VIP status is now included directly from backend, no need for separate API calls
 
-  // Fetch my created creators when session is available
+  // Fetch creators based on authentication status
   useEffect(() => {
     const run = async () => {
       try {
-        // session may be null initially; wait until present
-        if (!user?.session?._id) {
-          setLoading(false);
-          return;
-        }
         setLoading(true);
-        const res = await getMyCreator({ userid: user.session._id, token: user.session.token });
         
-        // Handle different response formats
-        const list = Array.isArray(res?.host) ? [...res.host] : 
-                    Array.isArray(res) ? [...res] : 
-                    Array.isArray(res?.data) ? [...res.data] : [];
-        
-        
-        
-        setMyCreators(list);
+        if (user?.session?._id) {
+          // User is authenticated - fetch their own creators
+          const res = await getMyCreator({ userid: user.session._id, token: user.session.token });
+          
+          // Handle different response formats
+          const list = Array.isArray(res?.host) ? [...res.host] : 
+                      Array.isArray(res) ? [...res] : 
+                      Array.isArray(res?.data) ? [...res.data] : [];
+          
+          setMyCreators(list);
+        } else {
+          // User is not authenticated - fetch all creators
+          const res = await getAllCreators();
+          
+          // Handle different response formats
+          const list = Array.isArray(res?.host) ? [...res.host] : 
+                      Array.isArray(res) ? [...res] : 
+                      Array.isArray(res?.data) ? [...res.data] : [];
+          
+          setMyCreators(list);
+        }
       } catch (e: any) {
         setMyCreators([]);
       } finally {
@@ -300,13 +307,7 @@ const renderCreators = () => {
     );
   }
 
-  if (!user?.session?._id) {
-    return (
-      <div className="mt-6 text-sm text-slate-400">
-        Please log in to view creators.
-      </div>
-    );
-  }
+  // Remove the authentication check since we now show creators for both authenticated and non-authenticated users
 
   const list: CreatorCardProps[] = myCreators.map((m) => {
     const card = mapToCard(m);
@@ -327,51 +328,58 @@ const renderCreators = () => {
     return creator.hosttype === categoryButton;
   });
 
-  // Sort creators with priority: Online > Views > Following > New
+  // Sort creators based on authentication status
   const sortedList = filteredList.sort((a, b) => {
-    const viewsA = a.views || 0;
-    const viewsB = b.views || 0;
-    const isOnlineA = a.isOnline || false;
-    const isOnlineB = b.isOnline || false;
-    const isFollowingA = a.isFollowing || false;
-    const isFollowingB = b.isFollowing || false;
-    
-    // First priority: Online status
-    // If one is online and the other is offline, online comes first
-    if (isOnlineA && !isOnlineB) {
-      return -1;
-    }
-    if (!isOnlineA && isOnlineB) {
-      return 1;
-    }
-    
-    // If both have same online status, sort by views (highest first)
-    if (isOnlineA === isOnlineB) {
-      if (viewsA !== viewsB) {
-        return viewsB - viewsA;
-      }
+    if (user?.session?._id) {
+      // Authenticated users: Online > Views > Following > New
+      const viewsA = a.views || 0;
+      const viewsB = b.views || 0;
+      const isOnlineA = a.isOnline || false;
+      const isOnlineB = b.isOnline || false;
+      const isFollowingA = a.isFollowing || false;
+      const isFollowingB = b.isFollowing || false;
       
-      // If views are equal, check following status
-      if (isFollowingA && !isFollowingB) {
+      // First priority: Online status
+      if (isOnlineA && !isOnlineB) {
         return -1;
       }
-      if (!isFollowingA && isFollowingB) {
+      if (!isOnlineA && isOnlineB) {
         return 1;
       }
       
-      // If following status is also equal, sort by creation date (newest first)
+      // If both have same online status, sort by views (highest first)
+      if (isOnlineA === isOnlineB) {
+        if (viewsA !== viewsB) {
+          return viewsB - viewsA;
+        }
+        
+        // If views are equal, check following status
+        if (isFollowingA && !isFollowingB) {
+          return -1;
+        }
+        if (!isFollowingA && isFollowingB) {
+          return 1;
+        }
+        
+        // If following status is also equal, sort by creation date (newest first)
+        const dateA = new Date(a.createdAt).getTime();
+        const dateB = new Date(b.createdAt).getTime();
+        return dateB - dateA;
+      }
+      
+      return 0;
+    } else {
+      // Non-authenticated users: Just sort by creation date (newest first)
       const dateA = new Date(a.createdAt).getTime();
       const dateB = new Date(b.createdAt).getTime();
       return dateB - dateA;
     }
-    
-    return 0;
   });
 
   if (!list.length) {
     return (
       <div className="mt-6 text-sm text-slate-400">
-        No portfolio yet.
+        {user?.session?._id ? "No portfolio yet." : "No creators found."}
       </div>
     );
   }

@@ -293,7 +293,7 @@ const Sidemenu = () => {
 
               <div className="cstm-flex gap-4 items-start w-full mt-4">
                 <button
-                  className="flex gap-2 items-center justify-center font-bold text-sm w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white py-3 rounded-lg transition-transform duration-300 hover:scale-105 shadow-md"
+                  className="flex gap-2 items-center text-black justify-center font-bold text-sm w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white py-3 rounded-lg transition-transform duration-300 hover:scale-105 shadow-md"
                   onClick={() => router.push("/buy-gold")}
                 >
                   <FaCoins /> <span>Get More Golds</span>
