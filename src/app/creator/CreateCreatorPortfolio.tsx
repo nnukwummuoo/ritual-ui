@@ -774,7 +774,7 @@ if (!isCreatorVerified) {
             <hr className="mb-3 bg-slate-300"></hr>
 
             <button
-              className="block w-full text-center truncate btn rounded-2xl"
+              className="block w-full h-10 font-semibold text-center text-white transition bg-yellow-600 btn rounded-2xl hover:bg-yellow-500"
               disabled={disablebut}
               onClick={() => {
                 checkuserInput();

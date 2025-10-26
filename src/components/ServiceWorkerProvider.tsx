@@ -6,8 +6,14 @@ import { serviceWorkerManager } from '@/utils/serviceWorkerManager';
 export default function ServiceWorkerProvider() {
   useEffect(() => {
     const initializeServiceWorkers = async () => {
-      // Register PWA service worker (for caching, offline support)
-      await serviceWorkerManager.registerPWA();
+      // Only register PWA service worker if push notifications are not supported
+      // This prevents conflicts between the two service workers
+      if (!('PushManager' in window) || !('Notification' in window)) {
+        console.log('Push notifications not supported, registering PWA service worker');
+        await serviceWorkerManager.registerPWA();
+      } else {
+        console.log('Push notifications supported, PWA service worker will be skipped');
+      }
       
       // Push notification service worker will be registered by PushNotificationProvider
       // when user is logged in and permissions are granted

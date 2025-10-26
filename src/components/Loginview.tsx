@@ -280,7 +280,10 @@ export const Loginview = () => {
             />
             <label htmlFor="terms" className="text-sm" style={{color: '#bec8fa'}}>
               I accept the{" "}
-              <span className="text-blue-500 underline cursor-pointer">
+              <span 
+                className="text-blue-500 underline cursor-pointer hover:text-blue-400"
+                onClick={() => router.push('/auth/T_&_C')}
+              >
                 Terms and Conditions
               </span>
             </label>

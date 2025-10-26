@@ -267,8 +267,8 @@ const AdminSupportChat = () => {
         return 1;
       }
 
-      // Priority 2: Status priority (open > pending > closed)
-      const statusPriority = { 'open': 3, 'pending': 2, 'closed': 1 };
+      // Priority 2: Status priority (pending > open > closed)
+      const statusPriority = { 'pending': 3, 'open': 2, 'closed': 1 };
       const aStatusPriority = statusPriority[a.status] || 0;
       const bStatusPriority = statusPriority[b.status] || 0;
       

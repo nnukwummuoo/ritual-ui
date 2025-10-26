@@ -82,32 +82,48 @@ class PushNotificationService {
         return false;
       }
 
+      console.log('🔔 [Push] Starting subscription process for user:', userid);
+      console.log('🔔 [Push] Service Worker registration:', this.registration);
+
       const permission = await this.requestPermission();
+      console.log('🔔 [Push] Permission status:', permission);
+      
       if (permission !== 'granted') {
+        console.error('🔔 [Push] Permission not granted:', permission);
         return false;
       }
 
-      // Convert VAPID key
+      // Convert VAPID key - ensure it's properly formatted
       const applicationServerKey = this.urlBase64ToUint8Array(VAPID_PUBLIC_KEY);
+      console.log('🔔 [Push] VAPID key converted, length:', applicationServerKey.length);
 
       // Subscribe to push notifications
+      console.log('🔔 [Push] Creating push subscription...');
       this.subscription = await this.registration.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: applicationServerKey,
       });
 
+      console.log('🔔 [Push] Subscription created:', this.subscription);
 
       // Send subscription to server
+      console.log('🔔 [Push] Sending subscription to server...');
       const success = await this.sendSubscriptionToServer(userid, this.subscription);
       
       if (success) {
+        console.log('🔔 [Push] Subscription successful!');
         return true;
       } else {
-        console.error('Failed to send subscription to server');
+        console.error('🔔 [Push] Failed to send subscription to server');
         return false;
       }
     } catch (error) {
-      console.error('Error subscribing to push notifications:', error);
+      console.error('🔔 [Push] Error subscribing to push notifications:', error);
+      console.error('🔔 [Push] Error details:', {
+        name: error instanceof Error ? error.name : 'Unknown',
+        message: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined
+      });
       return false;
     }
   }
@@ -132,26 +148,37 @@ class PushNotificationService {
   // Send subscription to server
   private async sendSubscriptionToServer(userid: string, subscription: PushSubscription): Promise<boolean> {
     try {
-      const response = await fetch(`${API_URL}/subpushid`, {
+      console.log('🔔 [Push] Sending subscription to /api/push/subscribe');
+      console.log('🔔 [Push] Subscription data:', {
+        userid,
+        endpoint: subscription.endpoint,
+        keys: subscription.getKey('p256dh') ? 'present' : 'missing'
+      });
+
+      const response = await fetch('/api/push/subscribe', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          userid: userid,
-          subinfo: subscription,
-        }),
+          userid,
+          subscription
+        })
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        return true;
-      } else {
-        console.error('Failed to send subscription to server:', response.status);
+      console.log('🔔 [Push] Server response status:', response.status);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('🔔 [Push] Server error response:', errorText);
         return false;
       }
+
+      const result = await response.json();
+      console.log('🔔 [Push] Server success response:', result);
+      return true;
     } catch (error) {
-      console.error('Error sending subscription to server:', error);
+      console.error('🔔 [Push] Error sending subscription to server:', error);
       return false;
     }
   }
@@ -159,7 +186,9 @@ class PushNotificationService {
   // Remove subscription from server
   private async removeSubscriptionFromServer(userid: string): Promise<void> {
     try {
-      await fetch(`${API_URL}/subpushid`, {
+      console.log('🔔 [Push] Removing subscription from /api/push/subscribe');
+      
+      const response = await fetch('/api/push/subscribe', {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -168,8 +197,15 @@ class PushNotificationService {
           userid: userid,
         }),
       });
+
+      console.log('🔔 [Push] Remove subscription response status:', response.status);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('🔔 [Push] Error removing subscription:', errorText);
+      }
     } catch (error) {
-      console.error('Error removing subscription from server:', error);
+      console.error('🔔 [Push] Error removing subscription from server:', error);
     }
   }
 
