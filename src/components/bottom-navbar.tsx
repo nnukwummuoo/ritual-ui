@@ -248,7 +248,7 @@ export default function BottomNavBar() {
                 <div className="relative">
                   <Image
                     src={item.imgUrl || ""}
-                    className={`size-8 ${item.alwaysColored ? "grayscale-0" : `grayscale ${pathname === item.route ? "grayscale-0" : ""}`}`}
+                    className={`size-10 ${item.alwaysColored ? "grayscale-0" : `grayscale ${pathname === item.route ? "grayscale-0" : ""}`}`}
                     alt={item.name || "icon"}
                     width={24}
                     height={24}

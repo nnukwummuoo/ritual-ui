@@ -158,44 +158,158 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
     queryUrlFallback?: string;
     pathUrlFallback?: string;
   }) => {
-    const { videoRef } = useVideoAutoPlay({
+    const { videoRef, isPlaying, togglePlay, toggleMute, isMuted } = useVideoAutoPlay({
       autoPlay: true,
       muted: true,
       loop: true,
       postId: post?._id || post?.postid || post?.id || `post-${Math.random()}`
     });
+    
+    // State and ref for auto-hiding video controls
+    const [showControls, setShowControls] = React.useState(false);
+    const controlsTimerRef = React.useRef<NodeJS.Timeout | null>(null);
+    
+    // Clear timeout when component unmounts
+    React.useEffect(() => {
+      // Show controls initially when the video loads
+      setShowControls(true);
+      
+      // Set timer to hide controls
+      const initialTimer = setTimeout(() => {
+        setShowControls(false);
+      }, 3000);
+      
+      return () => {
+        // Clean up all timeouts on unmount
+        if (initialTimer) clearTimeout(initialTimer);
+        if (controlsTimerRef.current) clearTimeout(controlsTimerRef.current);
+      };
+    }, []);
 
     return (
-      <video
-        ref={videoRef}
-        src={src}
-        controls
-        autoPlay
-        muted
-        loop
-        playsInline
-        className="w-full max-h-[480px] rounded"
-        onError={(e) => {
-          const video = e.currentTarget as HTMLVideoElement & { dataset: any };
-          if (!video.dataset.fallback1 && pathUrlPrimary) {
-            video.dataset.fallback1 = "1";
-            video.src = pathUrlPrimary;
-            video.load();
-            return;
-          }
-          if (!video.dataset.fallback2 && queryUrlFallback) {
-            video.dataset.fallback2 = "1";
-            video.src = queryUrlFallback;
-            video.load();
-            return;
-          }
-          if (!video.dataset.fallback3 && pathUrlFallback) {
-            video.dataset.fallback3 = "1";
-            video.src = pathUrlFallback;
-            video.load();
-          }
-        }}
-      />
+      <div className="relative w-full max-h-[480px] rounded overflow-hidden">
+        {/* Video with controls that auto-hide */}
+        <div 
+          className="relative w-full h-full" 
+          onMouseMove={() => {
+            // Show controls and reset the timer when mouse moves
+            setShowControls(true);
+            if (controlsTimerRef.current) {
+              clearTimeout(controlsTimerRef.current);
+            }
+            controlsTimerRef.current = setTimeout(() => {
+              setShowControls(false);
+            }, 3000);
+          }}
+          onClick={() => {
+            // Show controls and toggle play when clicking
+            setShowControls(true);
+            togglePlay();
+            if (controlsTimerRef.current) {
+              clearTimeout(controlsTimerRef.current);
+            }
+            controlsTimerRef.current = setTimeout(() => {
+              setShowControls(false);
+            }, 3000);
+          }}
+        >
+          <video
+            ref={videoRef}
+            src={src}
+            autoPlay
+            muted
+            loop
+            playsInline
+            className="w-full max-h-[480px] rounded cursor-pointer"
+            onError={(e) => {
+              const video = e.currentTarget as HTMLVideoElement & { dataset: any };
+              if (!video.dataset.fallback1 && pathUrlPrimary) {
+                video.dataset.fallback1 = "1";
+                video.src = pathUrlPrimary;
+                video.load();
+                return;
+              }
+              if (!video.dataset.fallback2 && queryUrlFallback) {
+                video.dataset.fallback2 = "1";
+                video.src = queryUrlFallback;
+                video.load();
+                return;
+              }
+              if (!video.dataset.fallback3 && pathUrlFallback) {
+                video.dataset.fallback3 = "1";
+                video.src = pathUrlFallback;
+                video.load();
+              }
+            }}
+          />
+          
+          {/* Volume Button - Shows only when showControls is true */}
+          {showControls && (
+            <div className="absolute bottom-3 right-3 z-10 transition-opacity duration-300 opacity-100">
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  console.log('📢 Volume button clicked in RemainingPosts');
+                  toggleMute();
+                  // Reset auto-hide timer when interacting with controls
+                  if (controlsTimerRef.current) {
+                    clearTimeout(controlsTimerRef.current);
+                  }
+                  controlsTimerRef.current = setTimeout(() => {
+                    setShowControls(false);
+                  }, 3000);
+                }} 
+                className="bg-black bg-opacity-70 rounded-full p-2.5 hover:bg-opacity-90 transition-all hover:scale-110"
+                aria-label={isMuted ? "Unmute video" : "Mute video"}
+              >
+                {isMuted ? (
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                    <line x1="23" y1="9" x2="17" y2="15"></line>
+                    <line x1="17" y1="9" x2="23" y2="15"></line>
+                  </svg>
+                ) : (
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                    <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                  </svg>
+                )}
+              </button>
+            </div>
+          )}
+          
+          {/* Center Play/Pause Button - Shows only when showControls is true */}
+          {showControls && (
+            <div className="absolute inset-0 flex items-center justify-center transition-opacity duration-300 opacity-100">
+              <div 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  togglePlay();
+                  // Reset auto-hide timer when interacting with controls
+                  if (controlsTimerRef.current) {
+                    clearTimeout(controlsTimerRef.current);
+                  }
+                  controlsTimerRef.current = setTimeout(() => {
+                    setShowControls(false);
+                  }, 3000);
+                }}
+                className="bg-black bg-opacity-70 rounded-full p-5 hover:bg-opacity-90 hover:scale-110 cursor-pointer transition-all"
+              >
+                {isPlaying ? (
+                  <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="6" y="4" width="4" height="16"></rect>
+                    <rect x="14" y="4" width="4" height="16"></rect>
+                  </svg>
+                ) : (
+                  <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                  </svg>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
     );
   };
   
@@ -400,7 +514,7 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
                   className="flex-1 cursor-pointer" 
                
                 >
-                  <p className="font-medium text-gray-400">{p?.user?.firstname} { p?.user?.lastname}</p>
+                  <p className="font-medium text-white">{p?.user?.firstname} { p?.user?.lastname}</p>
                   <span className="text-gray-400 text-sm">{handleStr ? `${handleStr}` : ""}</span>
                 </div>
               </div>

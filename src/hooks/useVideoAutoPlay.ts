@@ -8,19 +8,40 @@ interface UseVideoAutoPlayOptions {
   postId?: string;
 }
 
-// Global video manager for volume synchronization
+// Global video manager for volume synchronization and coordination across components
 class VideoManager {
   private static instance: VideoManager;
   private videos: Map<string, HTMLVideoElement> = new Map();
   private isVolumeOn: boolean = false; // Simple boolean: has user ever unmuted?
   private readonly STORAGE_KEY = 'video_volume_on';
+  activeVideoId: string | null = null; // Track currently active video - public for coordination
 
   static getInstance(): VideoManager {
     if (!VideoManager.instance) {
       VideoManager.instance = new VideoManager();
       VideoManager.instance.loadVolumePreference();
+      VideoManager.instance.setupGlobalEvents();
     }
     return VideoManager.instance;
+  }
+  
+  // Setup global events to coordinate videos across components
+  private setupGlobalEvents() {
+    // Listen for visibility change at document level
+    if (typeof document !== 'undefined') {
+      document.addEventListener('visibilitychange', () => {
+        const isTabActive = document.visibilityState === 'visible';
+        console.log('🌍 [GLOBAL VISIBILITY] Document visibility changed:', { 
+          isTabActive, 
+          activeVideoCount: this.videos.size 
+        });
+        
+        // Pause all videos when tab becomes inactive
+        if (!isTabActive) {
+          this.pauseAllVideos();
+        }
+      });
+    }
   }
 
   // Load volume preference from localStorage
@@ -31,8 +52,8 @@ class VideoManager {
         if (saved) {
           this.isVolumeOn = JSON.parse(saved) === true;
         }
-      } catch (error) {
-        // Silent error handling
+      } catch {
+        // Silent error handling - no error variable needed
       }
     }
   }
@@ -42,13 +63,14 @@ class VideoManager {
     if (typeof window !== 'undefined') {
       try {
         localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.isVolumeOn));
-      } catch (error) {
-        // Silent error handling
+      } catch {
+        // Silent error handling - no error variable needed
       }
     }
   }
 
   registerVideo(postId: string, video: HTMLVideoElement) {
+    console.log('📝 [VIDEO MANAGER] Registering video:', { postId, totalVideos: this.videos.size + 1 });
     this.videos.set(postId, video);
     
     // Apply saved volume settings
@@ -59,53 +81,116 @@ class VideoManager {
       // First time user, start with muted (default behavior)
       video.muted = true;
     }
+    
+    // Add video-specific event listeners for better coordination
+    video.addEventListener('play', () => {
+      if (this.activeVideoId !== postId) {
+        console.log('🎬 [VIDEO MANAGER] Video started playing, updating active video:', postId);
+        this.activeVideoId = postId;
+        
+        // Ensure all other videos are paused
+        this.pauseAllExcept(postId);
+      }
+    });
+    
+    video.addEventListener('pause', () => {
+      if (this.activeVideoId === postId) {
+        console.log('⏸️ [VIDEO MANAGER] Active video paused:', postId);
+        this.activeVideoId = null;
+      }
+    });
   }
 
   unregisterVideo(postId: string) {
+    console.log('🗑️ [VIDEO MANAGER] Unregistering video:', { postId, remainingVideos: this.videos.size - 1 });
+    
+    // Clear active video reference if needed
+    if (this.activeVideoId === postId) {
+      this.activeVideoId = null;
+    }
+    
+    // Remove video from Map
     this.videos.delete(postId);
   }
 
   setGlobalVolumeOn(isVolumeOn: boolean) {
     this.isVolumeOn = isVolumeOn;
+    console.log('🔊 [VIDEO MANAGER] Setting global volume:', { isVolumeOn, videoCount: this.videos.size });
     
     // Save preference when user changes volume state
     this.saveVolumePreference();
     
     // Apply to all registered videos
-    this.videos.forEach((video) => {
+    this.videos.forEach((video, videoId) => {
       try {
-        video.muted = !isVolumeOn;
+        const oldMutedState = video.muted;
+        const newMutedState = !isVolumeOn;
+        
+        // Only change if needed
+        if (oldMutedState !== newMutedState) {
+          console.log(`🔊 [VIDEO MANAGER] ${newMutedState ? 'Muting' : 'Unmuting'} video:`, videoId);
+          video.muted = newMutedState;
+        }
       } catch (error) {
-        // Silent error handling
+        console.error('❌ [VIDEO MANAGER] Error setting muted state:', error);
       }
     });
   }
 
   pauseAllVideos() {
-    this.videos.forEach((video) => {
+    console.log('⏹️ [VIDEO MANAGER] Pausing ALL videos:', { count: this.videos.size });
+    this.videos.forEach((video, id) => {
       if (!video.paused) {
-        video.pause();
+        console.log('⏸️ [VIDEO MANAGER] Pausing video:', id);
+        try {
+          video.pause();
+        } catch (error) {
+          console.error('❌ [VIDEO MANAGER] Error pausing video:', error);
+        }
+      }
+    });
+    
+    // Clear active video
+    this.activeVideoId = null;
+  }
+  
+  pauseAllExcept(excludeId: string) {
+    console.log('⏯️ [VIDEO MANAGER] Pausing all videos except:', excludeId);
+    this.videos.forEach((video, id) => {
+      if (id !== excludeId && !video.paused) {
+        console.log('⏸️ [VIDEO MANAGER] Pausing video:', id);
+        try {
+          video.pause();
+        } catch (error) {
+          console.error('❌ [VIDEO MANAGER] Error pausing video:', error);
+        }
       }
     });
   }
 
   playVideo(postId: string) {
-    // Pause all other videos first
-    this.videos.forEach((video, id) => {
-      if (id !== postId && !video.paused) {
-        video.pause();
-      }
-    });
+    console.log('▶️ [VIDEO MANAGER] Request to play video:', postId);
+    
+    // Update active video ID
+    if (this.activeVideoId !== postId) {
+      this.activeVideoId = postId;
+      
+      // Pause all other videos first
+      this.pauseAllExcept(postId);
+    }
     
     // Play the requested video with error handling
     const video = this.videos.get(postId);
     if (video && video.paused) {
+      console.log('▶️ [VIDEO MANAGER] Playing video:', postId);
       video.play().catch((error) => {
         // Ignore AbortError - it's expected when play() is interrupted
         if (error.name !== 'AbortError') {
-          console.log('Video play error:', error);
+          console.error('❌ [VIDEO MANAGER] Error playing video:', error);
         }
       });
+    } else if (!video) {
+      console.warn('⚠️ [VIDEO MANAGER] Attempted to play non-registered video:', postId);
     }
   }
 
@@ -125,8 +210,8 @@ class VideoManager {
     this.videos.forEach((video) => {
       try {
         video.muted = true;
-      } catch (error) {
-        // Silent error handling
+      } catch {
+        // Silent error handling - no error variable needed
       }
     });
   }
@@ -137,6 +222,8 @@ export const useVideoAutoPlay = (options: UseVideoAutoPlayOptions = {}) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const [hasUserInteracted, setHasUserInteracted] = useState(false);
+  // Track if user manually paused to prevent autoplay override
+  const [manuallyPaused, setManuallyPaused] = useState(false);
   const videoManager = VideoManager.getInstance();
 
   const {
@@ -159,10 +246,77 @@ export const useVideoAutoPlay = (options: UseVideoAutoPlayOptions = {}) => {
     const isVolumeOn = videoManager.getVolumeState().isVolumeOn;
 
     // Set video attributes for auto-play
-    video.muted = !(hasUserInteracted && isVolumeOn); // Only unmute if user has interacted AND prefers sound
+    const shouldBeMuted = !(hasUserInteracted && isVolumeOn); // Only unmute if user has interacted AND prefers sound
+    video.muted = shouldBeMuted;
     video.loop = loop;
     video.playsInline = true;
     video.preload = 'metadata'; // Preload metadata for faster autoplay
+    
+    // Log initial volume state
+    console.log('🎬 [VIDEO INIT] Setting initial volume state:', { 
+      postId,
+      hasUserInteracted,
+      isVolumeOn,
+      shouldBeMuted, 
+      actuallyMuted: video.muted 
+    });
+
+    // Track if tab/window is active
+    let isTabActive = document.visibilityState === 'visible';
+    
+    // These variables are no longer needed since we immediately stop background playback
+    // but we're keeping them as placeholders in case we need to implement more sophisticated logic later
+    
+    // Page visibility change detection - this catches tab changes and minimizing the browser
+    const handleVisibilityChange = () => {
+      const wasActive = isTabActive;
+      isTabActive = document.visibilityState === 'visible';
+      
+      console.log('👁️ [VISIBILITY] Tab visibility changed:', { 
+        postId, 
+        wasActive, 
+        isNowActive: isTabActive, 
+        videoPaused: video.paused 
+      });
+      
+      // If tab becomes inactive, immediately pause all videos
+      if (!isTabActive && !video.paused) {
+        console.log('⏸️ [VISIBILITY] Pausing video because tab inactive:', postId);
+        video.pause();
+        setIsPlaying(false);
+      }
+    };
+    
+    // Check if user is truly interacting with the page
+    let userIdleTimeout: ReturnType<typeof setTimeout> | null = null;
+    let lastUserActivity = Date.now();
+    const USER_IDLE_TIMEOUT = 30000; // 30 seconds without interaction = idle
+    
+    const resetIdleTimer = () => {
+      lastUserActivity = Date.now();
+      if (userIdleTimeout) clearTimeout(userIdleTimeout);
+      
+      userIdleTimeout = setTimeout(() => {
+        // If user hasn't interacted for a while and video is still playing, pause it
+        if (!video.paused && Date.now() - lastUserActivity > USER_IDLE_TIMEOUT) {
+          console.log('⏸️ [IDLE] Pausing video due to user inactivity:', postId);
+          video.pause();
+          setIsPlaying(false);
+        }
+      }, USER_IDLE_TIMEOUT);
+    };
+    
+    // Monitor user activity
+    const handleUserActivity = () => resetIdleTimer();
+    document.addEventListener('mousemove', handleUserActivity);
+    document.addEventListener('keydown', handleUserActivity);
+    document.addEventListener('scroll', handleUserActivity);
+    document.addEventListener('click', handleUserActivity);
+    
+    // Initial setup
+    resetIdleTimer();
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange);
 
     // Enhanced Intersection Observer with better scroll detection
     const observer = new IntersectionObserver(
@@ -170,29 +324,42 @@ export const useVideoAutoPlay = (options: UseVideoAutoPlayOptions = {}) => {
         entries.forEach((entry) => {
           const isIntersecting = entry.isIntersecting;
           const intersectionRatio = entry.intersectionRatio;
+          
+          // Update visibility state
           setIsVisible(isIntersecting);
+          
+          // No need to track visible time anymore
 
-          if (isIntersecting && intersectionRatio >= 0.3 && autoPlay) {
-            // Video is significantly in viewport and should auto-play
-            console.log('🎥 [AUTOPLAY] Video entering viewport, attempting to play:', {
+          // ONLY allow videos to play if they are FULLY visible (100%) and other conditions are met
+          if (isIntersecting && intersectionRatio >= 0.95 && autoPlay && isTabActive && !manuallyPaused) {
+            // Video is FULLY in viewport and should auto-play
+            console.log('🎥 [AUTOPLAY] Video fully in viewport, attempting to play:', {
               postId,
+              component: postId.includes('first') ? 'FirstPost' : 'RemainingPosts',
               intersectionRatio,
               isIntersecting,
-              videoPaused: video.paused
+              videoPaused: video.paused,
+              manuallyPaused
             });
-            videoManager.playVideo(postId);
-            video.play().then(() => {
-              console.log('✅ [AUTOPLAY] Video started playing successfully:', postId);
+            
+            // Only play if user hasn't manually paused
+            if (!manuallyPaused) {
+              // Use VideoManager to coordinate video playback globally
+              videoManager.playVideo(postId);
               setIsPlaying(true);
-            }).catch((error) => {
-              // Ignore AbortError - it's expected when play() is interrupted
-              if (error.name !== 'AbortError') {
-                console.log('❌ [AUTOPLAY] Video play failed:', { postId, error: error.message });
-              }
-            });
-          } else if (!isIntersecting || intersectionRatio < 0.3) {
-            // Video is out of viewport or barely visible, pause it
+            } else {
+              console.log('⏸️ [AUTOPLAY] Skipping autoplay because video was manually paused:', postId);
+            }
+          } else {
+            // Video is not FULLY in viewport - ALWAYS pause it immediately
             if (!video.paused) {
+              console.log('⏸️ [AUTOPLAY] Pausing video not fully in viewport:', {
+                postId,
+                component: postId.includes('first') ? 'FirstPost' : 'RemainingPosts',
+                intersectionRatio, 
+                isIntersecting,
+                isTabActive
+              });
               video.pause();
               setIsPlaying(false);
             }
@@ -200,8 +367,8 @@ export const useVideoAutoPlay = (options: UseVideoAutoPlayOptions = {}) => {
         });
       },
       {
-        threshold: [0, 0.1, 0.3, 0.5, 0.7, 1.0], // Multiple thresholds for better detection
-        rootMargin: '0px 0px -10% 0px' // Start playing when 10% from bottom for more responsive autoplay
+        threshold: [0, 0.1, 0.3, 0.5, 0.7, 0.9, 0.95, 0.99, 1.0], // More precise thresholds at high visibility
+        rootMargin: '0px' // No margin - video must be fully in viewport
       }
     );
 
@@ -299,24 +466,44 @@ export const useVideoAutoPlay = (options: UseVideoAutoPlayOptions = {}) => {
       controls.addEventListener('click', (e) => e.stopPropagation());
     }
 
-    // Periodic check to ensure volume state is correct and autoplay is working
+    // Aggressive periodic check to ENSURE videos NEVER play in background
     const volumeCheckInterval = setInterval(() => {
+      // Apply volume state if needed
       const volumeState = videoManager.getVolumeState();
       if (volumeState.isVolumeOn && video.muted) {
         video.muted = false;
       }
       
-      // Fallback: If video is in viewport but not playing, try to play it
-      if (isVisible && video.paused && autoPlay) {
-        console.log('🔄 [AUTOPLAY FALLBACK] Video is visible but paused, attempting to play:', postId);
-        videoManager.playVideo(postId);
-        video.play().catch((error) => {
-          if (error.name !== 'AbortError') {
-            console.log('❌ [AUTOPLAY FALLBACK] Video play failed:', { postId, error: error.message });
+      // ALWAYS check if video is playing when it shouldn't be
+      if (!video.paused) {
+        // A video should ONLY play if ALL these conditions are met:
+        // 1. It's 95%+ visible in viewport
+        // 2. The tab/browser is active
+        // 3. User hasn't manually paused it
+        // 4. It's the actively selected video in the VideoManager
+        const isActiveVideo = videoManager.activeVideoId === postId;
+        const shouldBePlaying = isVisible && isTabActive && !manuallyPaused && isActiveVideo;
+        
+        if (!shouldBePlaying) {
+          console.log('🛑 [AGGRESSIVE PREVENTION] Force stopping video:', {
+            postId,
+            component: postId.includes('first') ? 'FirstPost' : 'RemainingPosts',
+            isVisible,
+            isTabActive,
+            manuallyPaused,
+            isActiveVideo
+          });
+          
+          // Immediately pause the video
+          try {
+            video.pause();
+            setIsPlaying(false);
+          } catch (error) {
+            console.error('❌ Error pausing video in background:', error);
           }
-        });
+        }
       }
-    }, 1000); // Check every second
+    }, 100); // Check VERY aggressively (every 100ms)
 
     // Cleanup
     return () => {
@@ -327,13 +514,160 @@ export const useVideoAutoPlay = (options: UseVideoAutoPlayOptions = {}) => {
       video.removeEventListener('play', () => setIsPlaying(true));
       video.removeEventListener('pause', () => setIsPlaying(false));
       video.removeEventListener('volumechange', handleVolumeChange);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      
+      // Clean up user activity listeners
+      if (userIdleTimeout) clearTimeout(userIdleTimeout);
+      document.removeEventListener('mousemove', handleUserActivity);
+      document.removeEventListener('keydown', handleUserActivity);
+      document.removeEventListener('scroll', handleUserActivity);
+      document.removeEventListener('click', handleUserActivity);
     };
-  }, [autoPlay, muted, loop, isPlaying, hasUserInteracted, postId, videoManager]);
+  }, [autoPlay, muted, loop, isPlaying, hasUserInteracted, postId, videoManager, isVisible, manuallyPaused]);
+
+  // Custom video controls handlers
+  const togglePlay = () => {
+    if (!videoRef.current) return;
+    
+    if (videoRef.current.paused) {
+      // When user manually plays, ALWAYS reset the manually paused flag
+      setManuallyPaused(false);
+      
+      // Force pause all other videos first
+      videoManager.pauseAllVideos();
+      
+      // Try to play this video
+      try {
+        console.log('🎮 [MANUAL PLAY] User clicked play button:', postId);
+        
+        // Set playing state immediately for UI responsiveness
+        setIsPlaying(true);
+        
+        // Mark that user has interacted
+        localStorage.setItem('user_has_interacted', 'true');
+        setHasUserInteracted(true);
+        
+        // Tell the video manager which video should be playing
+        videoManager.playVideo(postId);
+        
+        // Actually play the video
+        videoRef.current.play()
+          .then(() => {
+            console.log('✅ [MANUAL PLAY] Video started playing successfully:', postId);
+          })
+          .catch((error) => {
+            if (error.name !== 'AbortError') {
+              console.error('❌ [MANUAL PLAY] Error playing video:', error);
+              // Revert to paused state on error
+              setIsPlaying(false);
+            }
+          });
+      } catch (err) {
+        console.error('❌ [MANUAL PLAY] Caught error playing video:', err);
+        setIsPlaying(false);
+      }
+    } else {
+      // If it's playing, pause it and mark as manually paused
+      try {
+        console.log('⏸️ [MANUAL PAUSE] User clicked pause button:', postId);
+        videoRef.current.pause();
+        setIsPlaying(false);
+        
+        // IMPORTANT: Set flag that user manually paused
+        setManuallyPaused(true);
+      } catch (err) {
+        console.error('❌ [MANUAL PAUSE] Error pausing video:', err);
+      }
+    }
+  };
+  
+  const toggleMute = () => {
+    if (!videoRef.current) return;
+    
+    // First, mark user interaction
+    localStorage.setItem('user_has_interacted', 'true');
+    setHasUserInteracted(true);
+    
+    try {
+      // Get current muted state
+      const currentMutedState = videoRef.current.muted;
+      const newMutedState = !currentMutedState;
+      
+      console.log('🔊 [MUTE TOGGLE] User clicked volume button:', {
+        postId,
+        currentMutedState,
+        newMutedState,
+      });
+      
+      // Apply new state directly to this video
+      videoRef.current.muted = newMutedState;
+      
+      // Force state update for React
+      setLocalIsMuted(newMutedState);
+      
+      // Update global volume state - this will apply to all other videos
+      videoManager.setGlobalVolumeOn(!newMutedState);
+      
+      // Additional debug to make sure the video is actually muted/unmuted
+      setTimeout(() => {
+        if (videoRef.current) {
+          console.log('🔍 [MUTE CHECK] After toggle, video.muted =', videoRef.current.muted);
+        }
+      }, 100);
+    } catch (error) {
+      console.error('❌ [MUTE TOGGLE] Error toggling mute state:', error);
+    }
+  };
+  
+  // Use state for mute tracking to ensure component updates
+  const [localIsMuted, setLocalIsMuted] = useState(true);
+  
+  // We no longer need this ref
+
+  // Update local muted state whenever the video's muted property changes
+  useEffect(() => {
+    // Function to update the muted state from the video element
+    const updateMutedState = () => {
+      if (videoRef.current) {
+        const videoMutedState = videoRef.current.muted;
+        console.log('🔄 [MUTE SYNC] Updating muted state from video element:', {
+          postId,
+          videoMutedState
+        });
+        setLocalIsMuted(videoMutedState);
+      }
+    };
+    
+    // Set initial state when the ref is available
+    updateMutedState();
+    
+    // Add listener for volume changes
+    const video = videoRef.current;
+    if (video) {
+      video.addEventListener('volumechange', updateMutedState);
+      
+      // Check muted state directly after a short delay
+      setTimeout(updateMutedState, 100);
+      
+      // Clean up the listener
+      return () => {
+        video.removeEventListener('volumechange', updateMutedState);
+      };
+    }
+  }, [postId]); // Include postId to fix React warning and ensure proper cleanup
+  
+  // We don't need this effect anymore since we included postId in the first useEffect
+  
+  const isMuted = localIsMuted;
 
   return {
     videoRef,
     isPlaying,
     isVisible,
-    hasUserInteracted
+    hasUserInteracted,
+    togglePlay,
+    toggleMute,
+    isMuted,
+    manuallyPaused
   };
 };
