@@ -200,7 +200,7 @@ export default function PostsCard() {
       setDirectPosts(posts);
       setPostResolve(posts);
     }
-  }, [posts, directPosts.length, postResolve.length]);
+  }, [posts, directPosts.length]);
 
   // Local per-post UI state for optimistic updates and comment UI
   const [ui, setUi] = React.useState<Record<string | number, {
@@ -329,10 +329,12 @@ export default function PostsCard() {
         // Handle pagination - Store data directly in directPosts
         if (append && page > 1) {
           // Append to existing posts
-          const combinedPosts = [...directPosts, ...enrichedPosts];
-          setDirectPosts(combinedPosts);
-          setPostResolve(combinedPosts);
-          dispatch(hydrateFromCache(combinedPosts));
+          setDirectPosts(prev => {
+            const combinedPosts = [...prev, ...enrichedPosts];
+            setPostResolve(combinedPosts);
+            dispatch(hydrateFromCache(combinedPosts));
+            return combinedPosts;
+          });
         } else {
           // Replace posts for first page
           setDirectPosts(enrichedPosts);
@@ -356,7 +358,7 @@ export default function PostsCard() {
     } finally {
       setLoadingMore(false);
     }
-  }, [dispatch, followingList, loggedInUserId, selfId, directPosts]);
+  }, [dispatch, followingList, loggedInUserId, selfId]);
 
   useEffect(() => {
     // Load user data from localStorage for authentication

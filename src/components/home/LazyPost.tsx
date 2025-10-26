@@ -16,9 +16,169 @@ import { toast } from "material-react-toastify";
 import Image from "next/image";
 import { getImageSource } from "@/lib/imageUtils";
 import LazyImage from "./LazyImage";
-import { useVideoAutoPlay } from "@/hooks/useVideoAutoPlay";
+import { useVideoAutoPlay } from "@/hooks/useVideoAutoPlayNew";
 import ExpandableText from "../ExpandableText";
 import { generateInitials } from "@/utils/generateInitials";
+
+// Video component for lazy-loaded videos - moved outside to prevent re-creation
+const VideoComponent = ({ post, src, pathUrlPrimary, queryUrlFallback, pathUrlFallback, showControls, setShowControls, controlsTimerRef, isVideoLoaded, setIsVideoLoaded }: {
+  post: any;
+  src: string;
+  pathUrlPrimary?: string;
+  queryUrlFallback?: string;
+  pathUrlFallback?: string;
+  showControls: boolean;
+  setShowControls: (show: boolean) => void;
+  controlsTimerRef: React.MutableRefObject<NodeJS.Timeout | null>;
+  isVideoLoaded: boolean;
+  setIsVideoLoaded: (loaded: boolean) => void;
+}) => {
+  const { videoRef, isPlaying, isVisible: videoVisible, autoPlayBlocked, togglePlay, toggleMute, isMuted } = useVideoAutoPlay({
+    autoPlay: true,
+    muted: true,
+    loop: true,
+    postId: post?._id || post?.postid || post?.id || 'lazy-post'
+  });
+  
+  return (
+    <div className="relative w-full max-h-[480px] rounded overflow-hidden">
+      {/* Video skeleton - show while video is loading */}
+      {!isVideoLoaded && (
+        <VideoSkeleton />
+      )}
+      
+      {/* Video with controls that auto-hide */}
+      <div 
+        className={`relative w-full h-full ${!isVideoLoaded ? 'opacity-0 absolute top-0 left-0' : 'opacity-100 transition-opacity duration-300'}`}
+        onMouseMove={() => {
+          // Show controls and reset the timer when mouse moves
+          setShowControls(true);
+          if (controlsTimerRef.current) {
+            clearTimeout(controlsTimerRef.current);
+          }
+          controlsTimerRef.current = setTimeout(() => {
+            setShowControls(false);
+          }, 3000);
+        }}
+        onClick={() => {
+          // Show controls and toggle play when clicking
+          setShowControls(true);
+          togglePlay();
+          if (controlsTimerRef.current) {
+            clearTimeout(controlsTimerRef.current);
+          }
+          controlsTimerRef.current = setTimeout(() => {
+            setShowControls(false);
+          }, 3000);
+        }}
+      >
+        <video
+          ref={videoRef}
+          src={src}
+          autoPlay
+          muted
+          loop
+          playsInline
+          className="w-full max-h-[480px] rounded cursor-pointer"
+          onLoadedData={() => {
+            setIsVideoLoaded(true);
+          }}
+          onError={(e) => {
+            const video = e.currentTarget as HTMLVideoElement & { dataset: any };
+            if (!video.dataset.fallback1 && pathUrlPrimary) {
+              video.dataset.fallback1 = "1";
+              video.src = pathUrlPrimary;
+              video.load();
+              return;
+            }
+            if (!video.dataset.fallback2 && queryUrlFallback) {
+              video.dataset.fallback2 = "1";
+              video.src = queryUrlFallback;
+              video.load();
+              return;
+            }
+            if (!video.dataset.fallback3 && pathUrlFallback) {
+              video.dataset.fallback3 = "1";
+              video.src = pathUrlFallback;
+              video.load();
+            }
+          }}
+        />
+        
+        {/* Volume Button - Shows only when showControls is true */}
+        {showControls && (
+          <div className="absolute bottom-3 right-3 z-10 transition-opacity duration-300 opacity-100">
+            <button 
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleMute();
+                // Reset auto-hide timer when interacting with controls
+                if (controlsTimerRef.current) {
+                  clearTimeout(controlsTimerRef.current);
+                }
+                controlsTimerRef.current = setTimeout(() => {
+                  setShowControls(false);
+                }, 3000);
+              }}
+              className="bg-black bg-opacity-50 rounded-full p-2 hover:bg-opacity-70 transition-all duration-200"
+            >
+              {isMuted ? (
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                  <line x1="23" y1="9" x2="17" y2="15"></line>
+                  <line x1="17" y1="9" x2="23" y2="15"></line>
+                </svg>
+              ) : (
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                  <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                </svg>
+              )}
+            </button>
+          </div>
+        )}
+        
+        {/* Center Play/Pause Button - Shows when showControls is true OR when auto-play is blocked */}
+        {(showControls || autoPlayBlocked) && (
+          <div className="absolute inset-0 flex items-center justify-center transition-opacity duration-300 opacity-100">
+            <div 
+              onClick={(e) => {
+                e.stopPropagation();
+                togglePlay();
+                // Reset auto-hide timer when interacting with controls
+                if (controlsTimerRef.current) {
+                  clearTimeout(controlsTimerRef.current);
+                }
+                controlsTimerRef.current = setTimeout(() => {
+                  setShowControls(false);
+                }, 3000);
+              }}
+              className={`bg-black bg-opacity-70 rounded-full p-5 hover:bg-opacity-90 hover:scale-110 cursor-pointer transition-all ${
+                autoPlayBlocked ? 'animate-pulse' : ''
+              }`}
+            >
+              {isPlaying ? (
+                <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="6" y="4" width="4" height="16"></rect>
+                  <rect x="14" y="4" width="4" height="16"></rect>
+                </svg>
+              ) : (
+                <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                </svg>
+              )}
+            </div>
+            {autoPlayBlocked && (
+              <div className="absolute bottom-16 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-75 text-white text-xs px-2 py-1 rounded">
+                Click to play
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
 
 // Utility function to format relative time
 const formatRelativeTime = (timestamp: string | number | Date): string => {
@@ -238,13 +398,6 @@ const LazyPost: React.FC<LazyPostProps> = ({
     };
   }, [isFirstPost]);
 
-  // Video auto-play hook with post ID for global management
-  const { videoRef, isPlaying, isVisible: videoVisible, togglePlay, toggleMute, isMuted } = useVideoAutoPlay({
-    autoPlay: true,
-    muted: true,
-    loop: true,
-    postId: post?._id || post?.postid || post?.id || 'lazy-post'
-  });
   
   // Reset video loading state when post changes
   const postId = post?.postid || post?.id || post?._id;
@@ -509,138 +662,20 @@ const LazyPost: React.FC<LazyPostProps> = ({
       )}
       
       {postType == "video" && src && hasLoaded && (
-        <div className="relative w-full max-h-[480px] rounded overflow-hidden">
-          {/* Video skeleton - show while video is loading */}
-          {!isVideoLoaded && (
-            <VideoSkeleton />
-          )}
-          
-          {/* Video with controls that auto-hide */}
-          <div 
-            className={`relative w-full h-full ${!isVideoLoaded ? 'opacity-0 absolute top-0 left-0' : 'opacity-100 transition-opacity duration-300'}`}
-            onMouseMove={() => {
-              // Show controls and reset the timer when mouse moves
-              setShowControls(true);
-              if (controlsTimerRef.current) {
-                clearTimeout(controlsTimerRef.current);
-              }
-              controlsTimerRef.current = setTimeout(() => {
-                setShowControls(false);
-              }, 3000);
-            }}
-            onClick={() => {
-              // Show controls and toggle play when clicking
-              setShowControls(true);
-              togglePlay();
-              if (controlsTimerRef.current) {
-                clearTimeout(controlsTimerRef.current);
-              }
-              controlsTimerRef.current = setTimeout(() => {
-                setShowControls(false);
-              }, 3000);
-            }}
-          >
-            <video
-              ref={videoRef}
-              src={src}
-              autoPlay
-              muted
-              loop
-              playsInline
-              className="w-full max-h-[480px] rounded cursor-pointer"
-              onLoadedData={() => {
-                setIsVideoLoaded(true);
-              }}
-              onError={(e) => {
-                const video = e.currentTarget as HTMLVideoElement & { dataset: any };
-                if (!video.dataset.fallback1 && pathUrlPrimary) {
-                  video.dataset.fallback1 = "1";
-                  video.src = pathUrlPrimary;
-                  video.load();
-                  return;
-                }
-                if (!video.dataset.fallback2 && queryUrlFallback) {
-                  video.dataset.fallback2 = "1";
-                  video.src = queryUrlFallback;
-                  video.load();
-                  return;
-                }
-                if (!video.dataset.fallback3 && pathUrlFallback) {
-                  video.dataset.fallback3 = "1";
-                  video.src = pathUrlFallback;
-                  video.load();
-                }
-              }}
-            />
-            
-            {/* Volume Button - Shows only when showControls is true */}
-            {showControls && (
-              <div className="absolute bottom-3 right-3 z-10 transition-opacity duration-300 opacity-100">
-                <button 
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    console.log('📢 Volume button clicked in LazyPost');
-                    toggleMute();
-                    // Reset auto-hide timer when interacting with controls
-                    if (controlsTimerRef.current) {
-                      clearTimeout(controlsTimerRef.current);
-                    }
-                    controlsTimerRef.current = setTimeout(() => {
-                      setShowControls(false);
-                    }, 3000);
-                  }} 
-                  className="bg-black bg-opacity-70 rounded-full p-2.5 hover:bg-opacity-90 transition-all hover:scale-110"
-                  aria-label={isMuted ? "Unmute video" : "Mute video"}
-                >
-                  {isMuted ? (
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-                      <line x1="23" y1="9" x2="17" y2="15"></line>
-                      <line x1="17" y1="9" x2="23" y2="15"></line>
-                    </svg>
-                  ) : (
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-                      <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
-                    </svg>
-                  )}
-                </button>
-              </div>
-            )}
-            
-            {/* Center Play/Pause Button - Shows only when showControls is true */}
-            {showControls && (
-              <div className="absolute inset-0 flex items-center justify-center transition-opacity duration-300 opacity-100">
-                <div 
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    togglePlay();
-                    // Reset auto-hide timer when interacting with controls
-                    if (controlsTimerRef.current) {
-                      clearTimeout(controlsTimerRef.current);
-                    }
-                    controlsTimerRef.current = setTimeout(() => {
-                      setShowControls(false);
-                    }, 3000);
-                  }}
-                  className="bg-black bg-opacity-70 rounded-full p-5 hover:bg-opacity-90 hover:scale-110 cursor-pointer transition-all"
-                >
-                  {isPlaying ? (
-                    <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                      <rect x="6" y="4" width="4" height="16"></rect>
-                      <rect x="14" y="4" width="4" height="16"></rect>
-                    </svg>
-                  ) : (
-                    <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                      <polygon points="5 3 19 12 5 21 5 3"></polygon>
-                    </svg>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
+        <VideoComponent 
+          post={post}
+          src={src}
+          pathUrlPrimary={pathUrlPrimary}
+          queryUrlFallback={queryUrlFallback}
+          pathUrlFallback={pathUrlFallback}
+          showControls={showControls}
+          setShowControls={setShowControls}
+          controlsTimerRef={controlsTimerRef}
+          isVideoLoaded={isVideoLoaded}
+          setIsVideoLoaded={setIsVideoLoaded}
+        />
       )}
+      
       
       <PostActions
         className="mt-3 border-t border-gray-700 pt-2"

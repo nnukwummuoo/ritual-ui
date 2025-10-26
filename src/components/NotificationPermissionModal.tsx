@@ -2,10 +2,11 @@
 
 import React, { useState, useEffect } from 'react';
 import { IoNotificationsOutline, IoClose } from 'react-icons/io5';
+import { usePushNotificationContext } from '@/contexts/PushNotificationContext';
 
 interface NotificationPermissionModalProps {
   onClose: () => void;
-  onEnable: () => void;
+  onEnable?: () => void;
 }
 
 export const NotificationPermissionModal: React.FC<NotificationPermissionModalProps> = ({ 
@@ -13,15 +14,65 @@ export const NotificationPermissionModal: React.FC<NotificationPermissionModalPr
   onEnable 
 }) => {
   const [isVisible, setIsVisible] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  
+  const {
+    isSupported,
+    isSubscribed,
+    permission,
+    subscribe,
+    showLocalNotification
+  } = usePushNotificationContext();
 
   useEffect(() => {
-    // Show modal after a short delay to let the page load
-    const timer = setTimeout(() => {
-      setIsVisible(true);
-    }, 2000);
+    // Only show modal if notifications are supported and user hasn't subscribed yet
+    if (isSupported && !isSubscribed && permission !== 'denied') {
+      const timer = setTimeout(() => {
+        setIsVisible(true);
+      }, 2000);
 
-    return () => clearTimeout(timer);
-  }, []);
+      return () => clearTimeout(timer);
+    }
+  }, [isSupported, isSubscribed, permission]);
+
+  const handleEnable = async () => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      // Subscribe to push notifications
+      const success = await subscribe();
+      
+      if (success) {
+        // Show a test notification to confirm it's working
+        await showLocalNotification('Welcome to Mmeko! You\'ll now receive notifications for messages, activities, and more.', {
+          title: 'Notifications Enabled! 🎉',
+          type: 'activity'
+        });
+        
+        // Call the optional onEnable callback
+        if (onEnable) {
+          onEnable();
+        }
+        
+        // Close the modal
+        onClose();
+      } else {
+        setError('Failed to enable notifications. Please try again.');
+      }
+    } catch (err) {
+      console.error('Error enabling notifications:', err);
+      setError('An error occurred while enabling notifications. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleClose = () => {
+    setError(null);
+    onClose();
+  };
 
   if (!isVisible) return null;
 
@@ -36,8 +87,9 @@ export const NotificationPermissionModal: React.FC<NotificationPermissionModalPr
             <h2 className="text-xl font-bold text-white">Enable Notifications</h2>
           </div>
           <button
-            onClick={onClose}
+            onClick={handleClose}
             className="p-2 hover:bg-gray-700 rounded-full transition-colors"
+            disabled={isLoading}
           >
             <IoClose className="w-5 h-5 text-gray-400" />
           </button>
@@ -70,20 +122,36 @@ export const NotificationPermissionModal: React.FC<NotificationPermissionModalPr
           <p className="text-sm text-gray-400">
             You can change this setting anytime in your profile settings.
           </p>
+
+          {/* Error message */}
+          {error && (
+            <div className="p-3 bg-red-900/20 border border-red-500/30 rounded-lg">
+              <p className="text-red-400 text-sm">{error}</p>
+            </div>
+          )}
         </div>
 
         <div className="flex gap-3 mt-6">
           <button
-            onClick={onClose}
-            className="flex-1 px-4 py-2 border border-gray-600 hover:border-gray-500 rounded-lg text-gray-300 transition-colors"
+            onClick={handleClose}
+            className="flex-1 px-4 py-2 border border-gray-600 hover:border-gray-500 rounded-lg text-gray-300 transition-colors disabled:opacity-50"
+            disabled={isLoading}
           >
             Maybe Later
           </button>
           <button
-            onClick={onEnable}
-            className="flex-1 px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold rounded-lg transition-all duration-200"
+            onClick={handleEnable}
+            disabled={isLoading}
+            className="flex-1 px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
-            Enable Notifications
+            {isLoading ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                Enabling...
+              </>
+            ) : (
+              'Enable Notifications'
+            )}
           </button>
         </div>
       </div>

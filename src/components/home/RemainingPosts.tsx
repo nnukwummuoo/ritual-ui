@@ -15,7 +15,7 @@ import PostActions from "./PostActions";
 import { toast } from "material-react-toastify";
 import Image from "next/image";
 import { getImageSource } from "@/lib/imageUtils";
-import { useVideoAutoPlay } from "@/hooks/useVideoAutoPlay";
+import { useVideoAutoPlay } from "@/hooks/useVideoAutoPlayNew";
 import ExpandableText from "../ExpandableText";
 import { generateInitials } from "@/utils/generateInitials";
 
@@ -174,7 +174,7 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
     queryUrlFallback?: string;
     pathUrlFallback?: string;
   }) => {
-    const { videoRef, isPlaying, togglePlay, toggleMute, isMuted } = useVideoAutoPlay({
+    const { videoRef, isPlaying, isVisible, autoPlayBlocked, togglePlay, toggleMute, isMuted } = useVideoAutoPlay({
       autoPlay: true,
       muted: true,
       loop: true,
@@ -274,7 +274,6 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
               <button 
                 onClick={(e) => {
                   e.stopPropagation();
-                  console.log('📢 Volume button clicked in RemainingPosts');
                   toggleMute();
                   // Reset auto-hide timer when interacting with controls
                   if (controlsTimerRef.current) {
@@ -303,8 +302,8 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
             </div>
           )}
           
-          {/* Center Play/Pause Button - Shows only when showControls is true */}
-          {showControls && (
+          {/* Center Play/Pause Button - Shows when showControls is true OR when auto-play is blocked */}
+          {(showControls || autoPlayBlocked) && (
             <div className="absolute inset-0 flex items-center justify-center transition-opacity duration-300 opacity-100">
               <div 
                 onClick={(e) => {
@@ -318,7 +317,9 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
                     setShowControls(false);
                   }, 3000);
                 }}
-                className="bg-black bg-opacity-70 rounded-full p-5 hover:bg-opacity-90 hover:scale-110 cursor-pointer transition-all"
+                className={`bg-black bg-opacity-70 rounded-full p-5 hover:bg-opacity-90 hover:scale-110 cursor-pointer transition-all ${
+                  autoPlayBlocked ? 'animate-pulse' : ''
+                }`}
               >
                 {isPlaying ? (
                   <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -331,6 +332,11 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
                   </svg>
                 )}
               </div>
+              {autoPlayBlocked && (
+                <div className="absolute bottom-16 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-75 text-white text-xs px-2 py-1 rounded">
+                  Click to play
+                </div>
+              )}
             </div>
           )}
         </div>
