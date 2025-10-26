@@ -15,7 +15,7 @@ import PostActions from "./PostActions";
 import { toast } from "material-react-toastify";
 import Image from "next/image";
 import { getImageSource } from "@/lib/imageUtils";
-import { useVideoAutoPlay } from "@/hooks/useVideoAutoPlay";
+import { useVideoAutoPlay } from "@/hooks/useVideoAutoPlayNew";
 import ExpandableText from "../ExpandableText";
 import { generateInitials } from "@/utils/generateInitials";
 
@@ -175,7 +175,7 @@ const FirstPost: React.FC<FirstPostProps> = ({
   const controlsTimerRef = React.useRef<NodeJS.Timeout | null>(null);
 
   // Video auto-play hook with post ID for global management
-  const { videoRef, isPlaying, isVisible, togglePlay, toggleMute, isMuted } = useVideoAutoPlay({
+  const { videoRef, isPlaying, isVisible, autoPlayBlocked, togglePlay, toggleMute, isMuted } = useVideoAutoPlay({
     autoPlay: true,
     muted: true,
     loop: true,
@@ -521,7 +521,6 @@ const FirstPost: React.FC<FirstPostProps> = ({
                 <button 
                   onClick={(e) => {
                     e.stopPropagation();
-                    console.log('📢 Volume button clicked in FirstPost');
                     toggleMute();
                     // Reset auto-hide timer when interacting with controls
                     if (controlsTimerRef.current) {

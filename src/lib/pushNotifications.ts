@@ -39,8 +39,8 @@ class PushNotificationService {
         return false;
       }
 
-      // Register service worker
-      this.registration = await navigator.serviceWorker.register('/sw.js', {
+      // Register push notification service worker
+      this.registration = await navigator.serviceWorker.register('/sw-push.js', {
         scope: '/'
       });
       

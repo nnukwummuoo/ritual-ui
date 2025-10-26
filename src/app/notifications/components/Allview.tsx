@@ -8,7 +8,7 @@ import { getNotifications, markNotificationsSeen } from "@/store/profile";
 import { RootState, AppDispatch } from "@/store/store";
 import { useAuth } from "@/lib/context/auth-context";
 import PacmanLoader from "react-spinners/RingLoader";
-import { CheckCircle, XCircle, Clock, Star, Phone, Heart, Handshake, MessageCircle } from "lucide-react";
+import { CheckCircle, XCircle, Clock, Star, Phone, Heart, Handshake, MessageCircle, Shield } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { useNotificationIndicator } from "@/hooks/useNotificationIndicator";
@@ -223,8 +223,10 @@ export const Allview = () => {
         }
 
         // determine title based on notification type
-        let title = "Application Status";
-        if (message.includes("follow")) {
+        let title = "Admin Notification"; // Default fallback
+        if (message.includes("application")) {
+          title = "Application Status";
+        } else if (message.includes("follow")) {
           title = "Follow Notification";
         } else if (message.includes("unfollow")) {
           title = "Unfollow Notification";
@@ -271,6 +273,11 @@ export const Allview = () => {
             <div className="flex flex-col items-start space-y-3">
               {/* Header + Icon */}
               <div className="flex items-center space-x-2">
+                {title === "Admin Notification" && (
+                  <div className="bg-purple-500/10 p-1 rounded-full">
+                    <Shield className="text-purple-500 w-5 h-5" />
+                  </div>
+                )}
                 {title === "Rating Notification" && (
                   <div className="bg-yellow-500/10 p-1 rounded-full">
                     <Star className="text-yellow-500 w-5 h-5 fill-current" />
@@ -311,17 +318,17 @@ export const Allview = () => {
                     <Image src="/icons/following.png" alt="Users" width={28} height={28} />
                   </div>
                 )}
-                {title !== "Rating Notification" && title !== "Missed Fan Call" && title !== "Fan Date Request" && title !== "Fan Meet Request" && title !== "Fan Call Request" && title !== "Like Notification" && title !== "Message Notification" && title !== "Follow Notification" && title !== "Unfollow Notification" && status === "approved" && (
+                {title !== "Admin Notification" && title !== "Rating Notification" && title !== "Missed Fan Call" && title !== "Fan Date Request" && title !== "Fan Meet Request" && title !== "Fan Call Request" && title !== "Like Notification" && title !== "Message Notification" && title !== "Follow Notification" && title !== "Unfollow Notification" && status === "approved" && (
                   <div className="bg-green-500/10 p-1 rounded-full">
                     <CheckCircle className="text-green-500 w-5 h-5" />
                   </div>
                 )}
-                {title !== "Rating Notification" && title !== "Missed Fan Call" && title !== "Fan Date Request" && title !== "Fan Meet Request" && title !== "Fan Call Request" && title !== "Like Notification" && title !== "Message Notification" && title !== "Follow Notification" && title !== "Unfollow Notification" && status === "rejected" && (
+                {title !== "Admin Notification" && title !== "Rating Notification" && title !== "Missed Fan Call" && title !== "Fan Date Request" && title !== "Fan Meet Request" && title !== "Fan Call Request" && title !== "Like Notification" && title !== "Message Notification" && title !== "Follow Notification" && title !== "Unfollow Notification" && status === "rejected" && (
                   <div className="bg-red-500/10 p-1 rounded-full">
                     <XCircle className="text-red-500 w-5 h-5" />
                   </div>
                 )}
-                {title !== "Rating Notification" && title !== "Missed Fan Call" && title !== "Fan Date Request" && title !== "Fan Meet Request" && title !== "Fan Call Request" && title !== "Like Notification" && title !== "Message Notification" && title !== "Follow Notification" && title !== "Unfollow Notification" && status === "pending" && (
+                {title !== "Admin Notification" && title !== "Rating Notification" && title !== "Missed Fan Call" && title !== "Fan Date Request" && title !== "Fan Meet Request" && title !== "Fan Call Request" && title !== "Like Notification" && title !== "Message Notification" && title !== "Follow Notification" && title !== "Unfollow Notification" && status === "pending" && (
                   <div className="bg-yellow-500/10 p-1 rounded-full">
                     <Clock className="text-yellow-500 w-5 h-5" />
                   </div>

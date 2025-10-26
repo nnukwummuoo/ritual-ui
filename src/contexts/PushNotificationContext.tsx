@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import type { RootState } from '@/store/store';
 import pushNotificationService from '@/lib/pushNotifications';
+import { serviceWorkerManager } from '@/utils/serviceWorkerManager';
 
 interface PushNotificationContextType {
   isSupported: boolean;
@@ -81,6 +82,13 @@ export const PushNotificationProvider: React.FC<PushNotificationProviderProps> =
       try {
         setIsLoading(true);
         setError(null);
+
+        // First register the push service worker
+        const pushSWRegistered = await serviceWorkerManager.registerPush();
+        if (!pushSWRegistered) {
+          setError('Failed to register push service worker');
+          return;
+        }
 
         // Check if push notifications are supported
         const supported = await pushNotificationService.initialize();

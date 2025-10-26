@@ -5,6 +5,9 @@ import Providers from "./providers";
 import { cookies } from "next/headers";
 import 'react-loading-skeleton/dist/skeleton.css';
 import ConditionalLayout from "@/components/ConditionalLayout";
+import ServiceWorkerProvider from "@/components/ServiceWorkerProvider";
+import { NotificationModalWrapper } from "@/components/NotificationModalWrapper";
+import { VideoProvider } from "@/contexts/VideoContext";
 
 const inter = Inter({
   weight: ["100", "300", "400", "500", "700"],
@@ -43,10 +46,14 @@ export default async function RootLayout({
 
         </head>
       <body className={`${inter.className} antialiased bg-background`}>
+        <ServiceWorkerProvider />
         <Providers>
-          <ConditionalLayout isAuthenticated={isAuthenticated}>
-            {children}
-          </ConditionalLayout>
+          <VideoProvider>
+            <ConditionalLayout isAuthenticated={isAuthenticated}>
+              {children}
+              {isAuthenticated && <NotificationModalWrapper />}
+            </ConditionalLayout>
+          </VideoProvider>
         </Providers>
       </body>
     </html>

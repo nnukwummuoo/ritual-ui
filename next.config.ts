@@ -55,6 +55,8 @@ const pwaConfig = withPWA({
   fallbacks: {
     document: '/offline',
   },
+  publicExcludes: ['!robots.txt', '!sitemap.xml'],
+  sw: 'sw-pwa.js', // Use dedicated PWA service worker
   runtimeCaching: [
     {
       urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
