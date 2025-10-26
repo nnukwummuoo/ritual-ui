@@ -221,7 +221,7 @@ export default function BottomNavBar() {
     {
       imgUrl: "/Anya.png",
       route: "/anya",
-      name: "",
+      name: "Anya",
       alwaysColored: true,
     },
     {
