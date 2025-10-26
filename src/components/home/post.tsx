@@ -21,8 +21,11 @@ import { getImageSource } from "@/lib/imageUtils";
 import CreatorCards from "./CreatorCards";
 import FirstPost from "./FirstPost";
 import RemainingPosts from "./RemainingPosts";
+import LazyPost from "./LazyPost";
+import VirtualizedPostList from "./VirtualizedPostList";
 import { generateInitials } from "@/utils/generateInitials";
 import { enrichCommentsWithUserInfo } from "@/utils/enrichComments";
+import { usePerformanceMonitor } from "@/hooks/usePerformanceMonitor";
 
 
 // Utility function to format relative time
@@ -166,6 +169,18 @@ export default function PostsCard() {
   const [hasMorePosts, setHasMorePosts] = React.useState(true);
   const [loadingMore, setLoadingMore] = React.useState(false);
   const [directPosts, setDirectPosts] = React.useState<any[]>([]); // Direct API response storage
+  const [useVirtualization, setUseVirtualization] = React.useState(false); // Disabled by default
+  
+  // Performance monitoring
+  const { 
+    metrics, 
+    isMonitoring, 
+    startRenderMeasure, 
+    endRenderMeasure, 
+    updatePostCount, 
+    updateLazyLoadCount, 
+    toggleMonitoring 
+  } = usePerformanceMonitor();
   
   // Get current user's following list from Redux (same as Profile component)
   const followingList = useSelector((state: RootState) => {
@@ -248,33 +263,8 @@ export default function PostsCard() {
 
   // Remove localStorage UI state loading - start fresh each time
 
-  useEffect(() => {
-    // Load user data from localStorage for authentication
-    try {
-      const raw = localStorage.getItem('login');
-      if (raw) {
-        const saved = JSON.parse(raw);
-        const lid = saved?.userID || saved?.userid || saved?.id || undefined;
-        setSelfId(lid);
-        setSelfNick(saved?.nickname || saved?.username || undefined);
-        const ln = [saved?.firstname, saved?.lastname].filter(Boolean).join(' ').trim();
-        setSelfName(ln || saved?.name || undefined);
-        try {
-          const token = saved?.refreshtoken || saved?.accesstoken;
-          if (lid && token) dispatch(getprofile({ userid: lid, token } as any));
-        } catch {}
-      } else {
-        setSelfId("");
-      }
-    } catch {}
-    
-    // Fetch fresh posts from backend
-    fetchFeed();
-  }, [dispatch]);
-
-  // Remove localStorage posts caching - always fetch fresh from backend
-
-  const fetchFeed = async (page = 1, append = false) => { 
+  // Define fetchFeed function first
+  const fetchFeed = React.useCallback(async (page = 1, append = false) => { 
     try {
       setHasAttemptedFetch(true);
       if (append) {
@@ -366,7 +356,31 @@ export default function PostsCard() {
     } finally {
       setLoadingMore(false);
     }
-  };
+  }, [dispatch, followingList, loggedInUserId, selfId, directPosts]);
+
+  useEffect(() => {
+    // Load user data from localStorage for authentication
+    try {
+      const raw = localStorage.getItem('login');
+      if (raw) {
+        const saved = JSON.parse(raw);
+        const lid = saved?.userID || saved?.userid || saved?.id || undefined;
+        setSelfId(lid);
+        setSelfNick(saved?.nickname || saved?.username || undefined);
+        const ln = [saved?.firstname, saved?.lastname].filter(Boolean).join(' ').trim();
+        setSelfName(ln || saved?.name || undefined);
+        try {
+          const token = saved?.refreshtoken || saved?.accesstoken;
+          if (lid && token) dispatch(getprofile({ userid: lid, token } as any));
+        } catch {}
+      } else {
+        setSelfId("");
+      }
+    } catch {}
+    
+    // Fetch fresh posts from backend
+    fetchFeed();
+  }, [dispatch, fetchFeed]);
 
   // Load more posts function
   const loadMorePosts = async () => {
@@ -381,7 +395,7 @@ export default function PostsCard() {
     if (Array.isArray(posts) && posts.length > 0) {
         setUi(prev => {
           const newState = { ...prev };
-        posts.forEach((post: any) => {
+        posts.forEach((post: any) => { 
             const postId = post?.postid || post?.id || post?._id;
             const postAuthorId = post?.userid || post?.userId || post?.ownerid || post?.ownerId || post?.authorId || post?.createdBy;
             
@@ -417,9 +431,6 @@ export default function PostsCard() {
         });
       }
     
-    // Fetch fresh posts from backend
-    fetchFeed();
-    
     const handleRefreshFeed = () => {
       fetchFeed();
     };
@@ -429,7 +440,7 @@ export default function PostsCard() {
     return () => {
       window.removeEventListener('refreshfeed', handleRefreshFeed);
     };
-  }, [followingList, loggedInUserId, selfId]);
+  }, [followingList, loggedInUserId, selfId, fetchFeed, posts]);
 
   // Remove localStorage UI state saving - no caching needed
 
@@ -489,22 +500,43 @@ export default function PostsCard() {
   };
 
 
-  // Always show skeleton until posts are ready
-  const hasPosts = directPosts.length > 0 || posts.length > 0 || postResolve.length > 0;
-  if (status === "loading" || !hasPosts || !hasAttemptedFetch) {
-    return <PostSkeleton />;
-  }
-
   // Get the first post and remaining posts
   // Use directPosts as primary source, fallback to Redux, then local state
   const displayPosts = directPosts.length > 0 ? directPosts : (posts.length > 0 ? posts : postResolve);
   const firstPost = displayPosts[0];
   const remainingPosts = displayPosts.slice(1);
 
+  // Determine if we should use virtualization (for large lists)
+  const shouldUseVirtualization = useVirtualization && displayPosts.length > 20;
+
+  // Update performance metrics only when monitoring is enabled
+  React.useEffect(() => {
+    if (isMonitoring) {
+      updatePostCount(displayPosts.length);
+    }
+  }, [displayPosts.length, isMonitoring, updatePostCount]);
+
+  // Measure render performance only when monitoring is enabled
+  React.useEffect(() => {
+    if (isMonitoring) {
+      startRenderMeasure();
+      return () => {
+        endRenderMeasure();
+      };
+    }
+  }, [displayPosts, isMonitoring, startRenderMeasure, endRenderMeasure]);
+
+  // Always show skeleton until posts are ready
+  const hasPosts = directPosts.length > 0 || posts.length > 0 || postResolve.length > 0;
+  if (status === "loading" || !hasPosts || !hasAttemptedFetch) {
+    return <PostSkeleton />;
+  }
+
   return (
     <div className="flex flex-col gap-6">
-      {/* First Post */}
-      {firstPost && (
+
+      {/* First Post - Always render normally for better UX */}
+      {firstPost && !shouldUseVirtualization && (
         <FirstPost
           post={firstPost}
           ui={ui}
@@ -527,25 +559,52 @@ export default function PostsCard() {
         <CreatorCards />
       </div>
 
-      {/* Remaining Posts */}
-      <RemainingPosts
-        posts={remainingPosts}
-        ui={ui}
-        setUi={setUi}
-        dispatch={dispatch}
-        loggedInUserId={loggedInUserId || ""}
-        selfId={selfId}
-        token={token || ""}
-        followingList={followingList}
-        vipStatus={vipStatus}
-        firstname={firstname}
-        lastname={lastname}
-        nickname={nickname}
-        photolink={photolink}
-      />
+      {/* Posts Rendering - Choose between virtualized and lazy loading */}
+      {shouldUseVirtualization ? (
+        <VirtualizedPostList
+          posts={remainingPosts}
+          ui={ui}
+          setUi={setUi}
+          dispatch={dispatch}
+          loggedInUserId={loggedInUserId || ""}
+          selfId={selfId}
+          token={token || ""}
+          followingList={followingList}
+          vipStatus={vipStatus}
+          firstname={firstname}
+          lastname={lastname}
+          nickname={nickname}
+          photolink={photolink}
+        />
+      ) : (
+        <>
+          {/* Lazy Loaded Posts - Only remaining posts, not including first post */}
+          <div className="flex flex-col gap-6">
+            {remainingPosts.map((post, index) => (
+              <LazyPost
+                key={post?.postid || post?.id || post?._id || index}
+                post={post}
+                ui={ui}
+                setUi={setUi}
+                dispatch={dispatch}
+                loggedInUserId={loggedInUserId || ""}
+                selfId={selfId}
+                token={token || ""}
+                followingList={followingList}
+                vipStatus={vipStatus}
+                firstname={firstname}
+                lastname={lastname}
+                nickname={nickname}
+                photolink={photolink}
+                isFirstPost={false}
+              />
+            ))}
+          </div>
+        </>
+      )}
 
-      {/* Load More Button */}
-      {hasMorePosts && (
+      {/* Load More Button - Only show when not using virtualization */}
+      {hasMorePosts && !shouldUseVirtualization && (
         <div className="flex justify-center py-4">
           <button
             onClick={loadMorePosts}
@@ -556,8 +615,6 @@ export default function PostsCard() {
           </button>
         </div>
       )}
-
-    
 
     </div>
   );

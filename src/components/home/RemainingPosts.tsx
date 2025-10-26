@@ -117,6 +117,22 @@ const formatRelativeTime = (timestamp: string | number | Date): string => {
   }
 };
 
+// Video skeleton component for loading state
+const VideoSkeleton = () => (
+  <div className="relative w-full max-h-[480px] rounded overflow-hidden bg-gray-700 animate-pulse">
+    <div className="w-full h-[480px] flex items-center justify-center">
+      {/* Play button skeleton */}
+      <div className="w-16 h-16 bg-gray-600 rounded-full flex items-center justify-center">
+        <div className="w-0 h-0 border-l-[12px] border-l-white border-y-[8px] border-y-transparent ml-1"></div>
+      </div>
+    </div>
+    {/* Video controls skeleton */}
+    <div className="absolute bottom-3 right-3">
+      <div className="w-10 h-10 bg-gray-600 rounded-full"></div>
+    </div>
+  </div>
+);
+
 interface RemainingPostsProps {
   posts: any[];
   ui: any;
@@ -167,6 +183,7 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
     
     // State and ref for auto-hiding video controls
     const [showControls, setShowControls] = React.useState(false);
+    const [isVideoLoaded, setIsVideoLoaded] = React.useState(false);
     const controlsTimerRef = React.useRef<NodeJS.Timeout | null>(null);
     
     // Clear timeout when component unmounts
@@ -188,9 +205,14 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
 
     return (
       <div className="relative w-full max-h-[480px] rounded overflow-hidden">
+        {/* Video skeleton - show while video is loading */}
+        {!isVideoLoaded && (
+          <VideoSkeleton />
+        )}
+        
         {/* Video with controls that auto-hide */}
         <div 
-          className="relative w-full h-full" 
+          className={`relative w-full h-full ${!isVideoLoaded ? 'opacity-0 absolute top-0 left-0' : 'opacity-100 transition-opacity duration-300'}`}
           onMouseMove={() => {
             // Show controls and reset the timer when mouse moves
             setShowControls(true);
@@ -221,6 +243,9 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
             loop
             playsInline
             className="w-full max-h-[480px] rounded cursor-pointer"
+            onLoadedData={() => {
+              setIsVideoLoaded(true);
+            }}
             onError={(e) => {
               const video = e.currentTarget as HTMLVideoElement & { dataset: any };
               if (!video.dataset.fallback1 && pathUrlPrimary) {

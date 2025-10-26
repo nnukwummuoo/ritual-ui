@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import React from "react";
+import React, { useRef, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/store/store";
@@ -15,6 +15,7 @@ import PostActions from "./PostActions";
 import { toast } from "material-react-toastify";
 import Image from "next/image";
 import { getImageSource } from "@/lib/imageUtils";
+import LazyImage from "./LazyImage";
 import { useVideoAutoPlay } from "@/hooks/useVideoAutoPlay";
 import ExpandableText from "../ExpandableText";
 import { generateInitials } from "@/utils/generateInitials";
@@ -117,6 +118,30 @@ const formatRelativeTime = (timestamp: string | number | Date): string => {
   }
 };
 
+// Skeleton component for loading state
+const PostSkeleton = () => (
+  <div className="mx-auto max-w-[30rem] w-full bg-gray-800 rounded-md p-3 animate-pulse">
+    <div className="flex items-center gap-3 mb-3">
+      <div className="w-10 h-10 bg-gray-700 rounded-full"></div>
+      <div className="flex-1">
+        <div className="h-4 bg-gray-700 rounded w-24 mb-1"></div>
+        <div className="h-3 bg-gray-700 rounded w-16"></div>
+      </div>
+    </div>
+    <div className="h-3 bg-gray-700 rounded w-20 mb-3"></div>
+    <div className="space-y-2 mb-3">
+      <div className="h-4 bg-gray-700 rounded w-full"></div>
+      <div className="h-4 bg-gray-700 rounded w-3/4"></div>
+    </div>
+    <div className="h-48 bg-gray-700 rounded mb-3"></div>
+    <div className="flex gap-4 pt-2 border-t border-gray-700">
+      <div className="h-6 bg-gray-700 rounded w-16"></div>
+      <div className="h-6 bg-gray-700 rounded w-20"></div>
+      <div className="h-6 bg-gray-700 rounded w-16"></div>
+    </div>
+  </div>
+);
+
 // Video skeleton component for loading state
 const VideoSkeleton = () => (
   <div className="relative w-full max-h-[480px] rounded overflow-hidden bg-gray-700 animate-pulse">
@@ -133,7 +158,7 @@ const VideoSkeleton = () => (
   </div>
 );
 
-interface FirstPostProps {
+interface LazyPostProps {
   post: any;
   ui: any;
   setUi: any;
@@ -147,9 +172,10 @@ interface FirstPostProps {
   lastname: string;
   nickname: string;
   photolink: string;
+  isFirstPost?: boolean;
 }
 
-const FirstPost: React.FC<FirstPostProps> = ({
+const LazyPost: React.FC<LazyPostProps> = ({
   post,
   ui,
   setUi,
@@ -162,42 +188,88 @@ const FirstPost: React.FC<FirstPostProps> = ({
   firstname,
   lastname,
   nickname,
-  photolink
+  photolink,
+  isFirstPost = false
 }) => {
-  // Modal state for image viewing
-  const [isModalOpen, setIsModalOpen] = React.useState(false);
-  const [selectedImage, setSelectedImage] = React.useState("");
+  const [isVisible, setIsVisible] = useState(false);
+  const [hasLoaded, setHasLoaded] = useState(false);
+  const [isInView, setIsInView] = useState(false);
+  const [isVideoLoaded, setIsVideoLoaded] = useState(false);
+  const postRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   
+  // Modal state for image viewing
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedImage, setSelectedImage] = useState("");
+  
   // State and ref for auto-hiding video controls
-  const [showControls, setShowControls] = React.useState(false);
-  const [isVideoLoaded, setIsVideoLoaded] = React.useState(false);
-  const controlsTimerRef = React.useRef<NodeJS.Timeout | null>(null);
+  const [showControls, setShowControls] = useState(false);
+  const controlsTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Intersection Observer for lazy loading
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setIsInView(true);
+            // Add a small delay to prevent too many posts loading at once
+            setTimeout(() => {
+              setIsVisible(true);
+              setHasLoaded(true);
+            }, isFirstPost ? 0 : 100); // First post loads immediately
+          }
+        });
+      },
+      {
+        rootMargin: '200px', // Start loading when post is 200px away from viewport
+        threshold: 0.1
+      }
+    );
+
+    if (postRef.current) {
+      observer.observe(postRef.current);
+    }
+
+    return () => {
+      if (postRef.current) {
+        observer.unobserve(postRef.current);
+      }
+    };
+  }, [isFirstPost]);
 
   // Video auto-play hook with post ID for global management
-  const { videoRef, isPlaying, isVisible, togglePlay, toggleMute, isMuted } = useVideoAutoPlay({
+  const { videoRef, isPlaying, isVisible: videoVisible, togglePlay, toggleMute, isMuted } = useVideoAutoPlay({
     autoPlay: true,
     muted: true,
     loop: true,
-    postId: post?._id || post?.postid || post?.id || 'first-post'
+    postId: post?._id || post?.postid || post?.id || 'lazy-post'
   });
   
+  // Reset video loading state when post changes
+  const postId = post?.postid || post?.id || post?._id;
+  useEffect(() => {
+    setIsVideoLoaded(false);
+  }, [postId]);
+
   // Clear timeout when component unmounts
-  React.useEffect(() => {
-    // Show controls initially when the video loads
-    setShowControls(true);
-    
-    // Set timer to hide controls
-    const initialTimer = setTimeout(() => {
-      setShowControls(false);
-    }, 3000);
-    
-    return () => {
-      // Clean up all timeouts on unmount
-      if (initialTimer) clearTimeout(initialTimer);
-      if (controlsTimerRef.current) clearTimeout(controlsTimerRef.current);
-    };
-  }, []);
+  useEffect(() => {
+    if (hasLoaded) {
+      // Show controls initially when the video loads
+      setShowControls(true);
+      
+      // Set timer to hide controls
+      const initialTimer = setTimeout(() => {
+        setShowControls(false);
+      }, 3000);
+      
+      return () => {
+        // Clean up all timeouts on unmount
+        if (initialTimer) clearTimeout(initialTimer);
+        if (controlsTimerRef.current) clearTimeout(controlsTimerRef.current);
+      };
+    }
+  }, [hasLoaded]);
 
   // Modal functions
   const openModal = (imageSrc: string) => {
@@ -219,6 +291,15 @@ const FirstPost: React.FC<FirstPostProps> = ({
   };
 
   if (!post) return null;
+
+  // Show skeleton while loading
+  if (!isVisible) {
+    return (
+      <div ref={postRef} className="w-full">
+        <PostSkeleton />
+      </div>
+    );
+  }
 
   let postType: string = post?.posttype || post?.type || "text";
   if (!postType) {
@@ -303,7 +384,6 @@ const FirstPost: React.FC<FirstPostProps> = ({
     ? commentsArr.length
     : Number(post?.commentCount || post?.commentsCount || post?.comments || 0) || 0;
 
-
   const idStr = (v: any) => (v == null ? undefined : String(v));
   const selfIdStr = idStr(loggedInUserId) || idStr(selfId);
   const liked = !!(selfIdStr && likedByArr.includes(selfIdStr));
@@ -323,7 +403,7 @@ const FirstPost: React.FC<FirstPostProps> = ({
   const uiIsFollowing = uiState.isFollowing ?? false;
 
   return (
-    <div className="mx-auto max-w-[30rem] w-full bg-gray-800 rounded-md p-3">
+    <div ref={postRef} className="mx-auto max-w-[30rem] w-full bg-gray-800 rounded-md p-3">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-3">
           <div className="relative">
@@ -350,18 +430,13 @@ const FirstPost: React.FC<FirstPostProps> = ({
                 if (profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined") {
                   const imageSource = getImageSource(profileImage, 'profile');
                   return (
-                    <img
-                      alt="Profile picture"
+                    <LazyImage
                       src={imageSource.src}
+                      alt="Profile picture"
+                      width={40}
+                      height={40}
                       className="object-cover w-full h-full"
-                      onError={(e) => {
-                        const target = e.currentTarget as HTMLImageElement;
-                        target.style.display = 'none';
-                        const nextElement = target.nextElementSibling as HTMLElement;
-                        if (nextElement) {
-                          nextElement.style.setProperty('display', 'flex');
-                        }
-                      }}
+                      priority={isFirstPost}
                     />
                   );
                 }
@@ -391,7 +466,6 @@ const FirstPost: React.FC<FirstPostProps> = ({
           </div>
           <div 
             className="flex-1 cursor-pointer" 
-            
           >
             <p className="font-medium text-white ">{post?.user?.firstname} { post?.user?.lastname}</p>
             <span className="text-gray-400 text-sm">{handleStr ? `${handleStr}` : ""}</span>
@@ -416,41 +490,25 @@ const FirstPost: React.FC<FirstPostProps> = ({
           text={post.content}
           maxLength={100}
           className="my-2"
-         
         />
       )}
       
       {postType == "image" && src && (
         <div className="w-full max-h-[480px] relative rounded overflow-hidden">
-          <Image
+          <LazyImage
             src={src}
             alt={post?.content || "post image"}
             width={800}
             height={480}
             className="w-full h-auto object-contain cursor-pointer hover:opacity-90 transition-opacity duration-200"
             onClick={() => openModal(src)}
-            onError={(e) => {
-              const img = e.currentTarget as HTMLImageElement & { dataset: any };
-              if (!img.dataset.fallback1 && pathUrlPrimary) {
-                img.dataset.fallback1 = "1";
-                img.src = pathUrlPrimary;
-                return;
-              }
-              if (!img.dataset.fallback2 && queryUrlFallback) {
-                img.dataset.fallback2 = "1";
-                img.src = queryUrlFallback;
-                return;
-              }
-              if (!img.dataset.fallback3 && pathUrlFallback) {
-                img.dataset.fallback3 = "1";
-                img.src = pathUrlFallback;
-              }
-            }}
+            fallbackUrls={[pathUrlPrimary, queryUrlFallback, pathUrlFallback].filter(Boolean)}
+            priority={isFirstPost}
           />
         </div>
       )}
       
-      {postType == "video" && src && (
+      {postType == "video" && src && hasLoaded && (
         <div className="relative w-full max-h-[480px] rounded overflow-hidden">
           {/* Video skeleton - show while video is loading */}
           {!isVideoLoaded && (
@@ -521,7 +579,7 @@ const FirstPost: React.FC<FirstPostProps> = ({
                 <button 
                   onClick={(e) => {
                     e.stopPropagation();
-                    console.log('📢 Volume button clicked in FirstPost');
+                    console.log('📢 Volume button clicked in LazyPost');
                     toggleMute();
                     // Reset auto-hide timer when interacting with controls
                     if (controlsTimerRef.current) {
@@ -645,7 +703,7 @@ const FirstPost: React.FC<FirstPostProps> = ({
           }
         }}
         onLike={async () => {
-          console.log('🔥 LIKE BUTTON CLICKED - FirstPost');
+          console.log('🔥 LIKE BUTTON CLICKED - LazyPost');
           console.log('📊 Current state:', {
             loggedInUserId,
             selfId,
@@ -729,105 +787,89 @@ const FirstPost: React.FC<FirstPostProps> = ({
             toast.error("Failed to update like. Please try again.");
           }
         }}
-    onComment={() => {
-      // console.log('💬 COMMENT BUTTON CLICKED - FirstPost');
-      const localPid = post?.postid || post?.id || post?._id;
-      // console.log('💬 Comment post ID:', localPid);
-      
-      if (!localPid) {
-        // console.error('❌ No post ID found for comments');
-        return;
-      }
-      
-      const currentUiState = ui[localPid] || {};
-      const isCurrentlyOpen = currentUiState.open;
-      
-      // console.log('💬 Current comment state:', {
-      //   isCurrentlyOpen,
-      //   hasComments: !!(currentUiState.comments && currentUiState.comments.length > 0),
-      //   commentCount: currentUiState.commentCount,
-      //   loadingComments: currentUiState.loadingComments
-      // });
-      
-      setUi((prev) => ({
-        ...prev,
-        [localPid]: { ...(prev[localPid] || {}), open: !isCurrentlyOpen }
-      }));
-      
-      const curr = ui[localPid];
-      
-      if (curr && Array.isArray(curr.comments) && curr.comments.length > 0) {
-        // console.log('💬 Comments already loaded, not fetching again');
-        return;
-      }
-      
-      const shouldFetch = !(curr && Array.isArray(curr.comments));
-      // console.log('💬 Should fetch comments:', shouldFetch);
-      
-      if (shouldFetch) {
-        // console.log('💬 Fetching comments for post:', localPid);
-        setUi((prev) => ({
-          ...prev,
-          [localPid]: { ...(prev[localPid] || {}), loadingComments: true }
-        }));
-            
-            (dispatch(getpostcomment({ postid: localPid } as any)) as any)
-              .unwrap()
-              .then((res: any) => {
-                // console.log('💬 Comments fetch response:', res);
-                const arr = (res && (res.comment || res.comments)) || [];
-                // console.log('💬 Processed comments array:', arr);
-                
-                setUi((prev) => {
-                  const currentState = prev[localPid] || {};
-                  return {
-                    ...prev,
-                    [localPid]: { 
-                      ...currentState, 
-                      comments: arr, 
-                      loadingComments: false,
-                      commentCount: arr.length,
-                      // Explicitly preserve like and follow state
-                      liked: currentState.liked,
-                      likeCount: currentState.likeCount,
-                      isFollowing: currentState.isFollowing
-                    }
-                  };
-                });
-              })
-              .catch((error) => {
-                console.error('💬 Comments fetch error:', error);
-                setUi((prev) => ({
-                  ...prev,
-                  [localPid]: { ...(prev[localPid] || {}), loadingComments: false }
-                }));
-              });
+        onComment={() => {
+          const localPid = post?.postid || post?.id || post?._id;
+          
+          if (!localPid) {
+            return;
           }
-        }}
-      />
-      
-      {uiOpen && (
-        <div className="mt-2 border-t border-gray-700 pt-2">
-          {uiLoading ? (
-            <p className="text-sm text-gray-400">Loading comments…</p>
-          ) : (
-            <div className="space-y-2">
-                    {uiComments && uiComments.length > 0 ? (
-                      [...uiComments]
-                        .sort((a: any, b: any) => {
-                          const aIsVip = a?.isVip && a?.vipEndDate && new Date(a.vipEndDate) > new Date();
-                          const bIsVip = b?.isVip && b?.vipEndDate && new Date(b.vipEndDate) > new Date();
-                          
-                          if (aIsVip && !bIsVip) return -1;
-                          if (bIsVip && !aIsVip) return 1;
-                          
-                          const aTime = a?.commenttime || a?.date || a?.createdAt || 0;
-                          const bTime = b?.commenttime || b?.date || b?.createdAt || 0;
-                          return bTime - aTime;
-                        })
-                        .map((c: any, i: number) => {
-                          
-                          return (
+          
+          const currentUiState = ui[localPid] || {};
+          const isCurrentlyOpen = currentUiState.open;
+          
+          setUi((prev) => ({
+            ...prev,
+            [localPid]: { ...(prev[localPid] || {}), open: !isCurrentlyOpen }
+          }));
+          
+          const curr = ui[localPid];
+          
+          if (curr && Array.isArray(curr.comments) && curr.comments.length > 0) {
+            return;
+          }
+          
+          const shouldFetch = !(curr && Array.isArray(curr.comments));
+          
+          if (shouldFetch) {
+            setUi((prev) => ({
+              ...prev,
+              [localPid]: { ...(prev[localPid] || {}), loadingComments: true }
+            }));
+                
+                (dispatch(getpostcomment({ postid: localPid } as any)) as any)
+                  .unwrap()
+                  .then((res: any) => {
+                    const arr = (res && (res.comment || res.comments)) || [];
+                    
+                    setUi((prev) => {
+                      const currentState = prev[localPid] || {};
+                      return {
+                        ...prev,
+                        [localPid]: { 
+                          ...currentState, 
+                          comments: arr, 
+                          loadingComments: false,
+                          commentCount: arr.length,
+                          // Explicitly preserve like and follow state
+                          liked: currentState.liked,
+                          likeCount: currentState.likeCount,
+                          isFollowing: currentState.isFollowing
+                        }
+                      };
+                    });
+                  })
+                  .catch((error) => {
+                    console.error('💬 Comments fetch error:', error);
+                    setUi((prev) => ({
+                      ...prev,
+                      [localPid]: { ...(prev[localPid] || {}), loadingComments: false }
+                    }));
+                  });
+              }
+            }}
+          />
+          
+          {uiOpen && (
+            <div className="mt-2 border-t border-gray-700 pt-2">
+              {uiLoading ? (
+                <p className="text-sm text-gray-400">Loading comments…</p>
+              ) : (
+                <div className="space-y-2">
+                  {uiComments && uiComments.length > 0 ? (
+                    [...uiComments]
+                      .sort((a: any, b: any) => {
+                        const aIsVip = a?.isVip && a?.vipEndDate && new Date(a.vipEndDate) > new Date();
+                        const bIsVip = b?.isVip && b?.vipEndDate && new Date(b.vipEndDate) > new Date();
+                        
+                        if (aIsVip && !bIsVip) return -1;
+                        if (bIsVip && !aIsVip) return 1;
+                        
+                        const aTime = a?.commenttime || a?.date || a?.createdAt || 0;
+                        const bTime = b?.commenttime || b?.date || b?.createdAt || 0;
+                        return bTime - aTime;
+                      })
+                      .map((c: any, i: number) => {
+                        return (
                   <div key={i} className="text-sm text-gray-200 flex items-start gap-2 relative">
                     <div className="relative flex-shrink-0 w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center text-xs overflow-hidden">
                       {(() => {
@@ -836,21 +878,12 @@ const FirstPost: React.FC<FirstPostProps> = ({
                         if (profileImage && profileImage.trim() && profileImage !== 'null' && profileImage !== 'undefined') {
                           const imageSource = getImageSource(profileImage, 'profile');
                           return (
-                            <img
-                              alt="Profile picture"
+                            <LazyImage
                               src={imageSource.src}
+                              alt="Profile picture"
+                              width={32}
+                              height={32}
                               className="object-cover w-full h-full rounded-full"
-                              onError={(e) => {
-                                const target = e.currentTarget as HTMLImageElement;
-                                target.style.display = 'none';
-                                const parent = target.parentElement;
-                                if (parent) {
-                                  const fallbackDiv = document.createElement('div');
-                                  fallbackDiv.className = 'w-full h-full rounded-full bg-gray-600 flex items-center justify-center text-xs text-white font-medium';
-                                  fallbackDiv.textContent = c?.initials || (c?.commentusername || c?.username || 'U').charAt(0).toUpperCase();
-                                  parent.appendChild(fallbackDiv);
-                                }
-                              }}
                             />
                           );
                         }
@@ -917,140 +950,139 @@ const FirstPost: React.FC<FirstPostProps> = ({
                     </div>
                   </div>
                 );
-                        })
-              ) : (
-                <p className="text-sm text-gray-500">No comments yet.</p>
-              )}
-              <div className="flex items-center gap-2 pt-1">
-                <input
-                  value={uiInput}
-                  onChange={(e) => {
-                    const v = e.target.value;
-                    setUi((prev) => ({
-                      ...prev,
-                      [pid]: { ...(prev[pid] || {}), input: v },
-                    }));
-                  }}
-                  placeholder="Write a comment…"
-                  className="flex-1 bg-gray-900 border border-gray-700 rounded px-3 py-2 text-sm outline-none focus:border-gray-500"
-                />
-                <button
-                  disabled={!uiInput?.trim() || uiSending}
-                  onClick={() => {
-                    const text = (ui[pid]?.input || '').trim();
-                    if (!text) return;
-                    setUi((prev) => ({
-                      ...prev,
-                      [pid]: {
-                        ...(prev[pid] || {}),
-                        input: "",
-                        sending: true,
-                        comments: [
-                          ...((prev[pid]?.comments as any[]) || []),
-                          { 
-                            content: text, 
-                            comment: text, 
-                            username: [firstname, lastname].filter(Boolean).join(' ') || nickname || 'you',
-                            commentusername: [firstname, lastname].filter(Boolean).join(' ') || nickname || 'you',
-                            commentuserphoto: photolink || '',
-                            userid: String(loggedInUserId || selfId || ''),
-                            createdAt: new Date().toISOString(),
-                            commenttime: Date.now(),
-                            temp: true,
-                            initials: generateInitials(firstname, lastname, nickname),
-                            firstname: firstname || '',
-                            lastname: lastname || ''
-                          },
-                        ],
-                        commentCount: ((prev[pid]?.comments as any[]) || []).length + 1,
-                      },
-                    }));
-                    const uid = String(loggedInUserId || selfId || "");
-                    const localPid = post?.postid || post?.id || post?._id;
-                    if (uid && localPid && token) {
-                      (dispatch(postcomment({ userid: uid, postid: localPid, content: text, token: token } as any)) as any)
-                        .unwrap()
-                        .then((_res: any) => {
-                          dispatch(getpostcomment({ postid: localPid } as any))
-                            .unwrap()
-                            .then((commentRes: any) => {
-                              const serverComments = (commentRes && (commentRes.comment || commentRes.comments)) || [];
-                                    setUi((prev) => {
-                                      const currentState = prev[pid] || {};
-                                      return {
-                                        ...prev,
-                                        [pid]: {
-                                          ...currentState,
-                                          sending: false,
-                                          comments: serverComments,
-                                          commentCount: serverComments.length,
-                                          // Explicitly preserve like and follow state
-                                          liked: currentState.liked,
-                                          likeCount: currentState.likeCount,
-                                          isFollowing: currentState.isFollowing
-                                        },
-                                      };
-                                    });
-                            })
-                            .catch(() => {
-                              setUi((prev) => ({
-                                ...prev,
-                                [pid]: { ...(prev[pid] || {}), sending: false },
-                              }));
-                            });
-                        })
-                        .catch(() => {
+                      })
+                    ) : (
+                      <p className="text-sm text-gray-500">No comments yet.</p>
+                    )}
+                    <div className="flex items-center gap-2 pt-1">
+                      <input
+                        value={uiInput}
+                        onChange={(e) => {
+                          const v = e.target.value;
                           setUi((prev) => ({
                             ...prev,
-                            [pid]: { ...(prev[pid] || {}), sending: false },
+                            [pid]: { ...(prev[pid] || {}), input: v },
                           }));
-                        });
-                    } else {
-                      setUi((prev) => ({
-                        ...prev,
-                        [pid]: { ...(prev[pid] || {}), sending: false },
-                      }));
-                    }
-                  }}
-                  className="px-3 py-2 text-sm bg-gray-700 hover:bg-gray-600 rounded disabled:opacity-50"
-                >
-                  Send
-                </button>
+                        }}
+                        placeholder="Write a comment…"
+                        className="flex-1 bg-gray-900 border border-gray-700 rounded px-3 py-2 text-sm outline-none focus:border-gray-500"
+                      />
+                      <button
+                        disabled={!uiInput?.trim() || uiSending}
+                        onClick={() => {
+                          const text = (ui[pid]?.input || '').trim();
+                          if (!text) return;
+                          setUi((prev) => ({
+                            ...prev,
+                            [pid]: {
+                              ...(prev[pid] || {}),
+                              input: "",
+                              sending: true,
+                              comments: [
+                                ...((prev[pid]?.comments as any[]) || []),
+                                { 
+                                  content: text, 
+                                  comment: text, 
+                                  username: [firstname, lastname].filter(Boolean).join(' ') || nickname || 'you',
+                                  commentusername: [firstname, lastname].filter(Boolean).join(' ') || nickname || 'you',
+                                  commentuserphoto: photolink || '',
+                                  userid: String(loggedInUserId || selfId || ''),
+                                  createdAt: new Date().toISOString(),
+                                  commenttime: Date.now(),
+                                  temp: true,
+                                  initials: generateInitials(firstname, lastname, nickname),
+                                  firstname: firstname || '',
+                                  lastname: lastname || ''
+                                },
+                              ],
+                              commentCount: ((prev[pid]?.comments as any[]) || []).length + 1,
+                            },
+                          }));
+                          const uid = String(loggedInUserId || selfId || "");
+                          const localPid = post?.postid || post?.id || post?._id;
+                          if (uid && localPid && token) {
+                            (dispatch(postcomment({ userid: uid, postid: localPid, content: text, token: token } as any)) as any)
+                              .unwrap()
+                              .then((_res: any) => {
+                                dispatch(getpostcomment({ postid: localPid } as any))
+                                  .unwrap()
+                                  .then((commentRes: any) => {
+                                    const serverComments = (commentRes && (commentRes.comment || commentRes.comments)) || [];
+                                          setUi((prev) => {
+                                            const currentState = prev[pid] || {};
+                                            return {
+                                              ...prev,
+                                              [pid]: {
+                                                ...currentState,
+                                                sending: false,
+                                                comments: serverComments,
+                                                commentCount: serverComments.length,
+                                                // Explicitly preserve like and follow state
+                                                liked: currentState.liked,
+                                                likeCount: currentState.likeCount,
+                                                isFollowing: currentState.isFollowing
+                                              },
+                                            };
+                                          });
+                                  })
+                                  .catch(() => {
+                                    setUi((prev) => ({
+                                      ...prev,
+                                      [pid]: { ...(prev[pid] || {}), sending: false },
+                                    }));
+                                  });
+                              })
+                              .catch(() => {
+                                setUi((prev) => ({
+                                  ...prev,
+                                  [pid]: { ...(prev[pid] || {}), sending: false },
+                                }));
+                              });
+                          } else {
+                            setUi((prev) => ({
+                              ...prev,
+                              [pid]: { ...(prev[pid] || {}), sending: false },
+                            }));
+                          }
+                        }}
+                        className="px-3 py-2 text-sm bg-gray-700 hover:bg-gray-600 rounded disabled:opacity-50"
+                      >
+                        Send
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
-            </div>
-          )}
-        </div>
-      )}
+            )}
 
-      {/* Image Modal */}
-      {isModalOpen && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50 p-4"
-          onClick={handleModalClick}
-        >
-          <button
-            onClick={closeModal}
-            className="absolute top-16 right-1/3 bg-black  hover:bg-opacity-30 text-white text-2xl font-bold w-10 h-10 rounded-full flex items-center justify-center hover:scale-110 transition-all duration-200 z-10"
-            aria-label="Close modal"
-          >
-            ✕
-          </button>
+            {/* Image Modal */}
+            {isModalOpen && (
+              <div
+                className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50 p-4"
+                onClick={handleModalClick}
+              >
+                <button
+                  onClick={closeModal}
+                  className="absolute top-16 right-1/3 bg-black  hover:bg-opacity-30 text-white text-2xl font-bold w-10 h-10 rounded-full flex items-center justify-center hover:scale-110 transition-all duration-200 z-10"
+                  aria-label="Close modal"
+                >
+                  ✕
+                </button>
 
-          <div className="relative max-w-full max-h-full lg:max-w-[33.333%] lg:max-h-[80vh]">
-            <Image
-              src={selectedImage}
-              alt="Fullscreen view"
-              width={1200}
-              height={800}
-              className="max-w-full max-h-full object-contain rounded-lg"
-              onClick={(e) => e.stopPropagation()}
-            />
+                <div className="relative max-w-full max-h-full lg:max-w-[33.333%] lg:max-h-[80vh]">
+                  <Image
+                    src={selectedImage}
+                    alt="Fullscreen view"
+                    width={1200}
+                    height={800}
+                    className="max-w-full max-h-full object-contain rounded-lg"
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                </div>
+              </div>
+            )}
           </div>
-        </div>
-      )}
-    </div>
-  );
-};
+        );
+      };
 
-export default FirstPost;
-
+      export default LazyPost;

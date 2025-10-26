@@ -193,7 +193,7 @@ const WithdrawalRequests = () => {
                 className="bg-gray-800 rounded-xl shadow-lg p-5 hover:shadow-emerald-400 transition relative"
               >
                 {/* Colored Circle */}
-                <div className={`absolute bottom-4 right-4 w-4 h-4 rounded-full ${containerColor === 'black' ? 'bg-black' : `bg-${containerColor}-500`}`}></div>
+                <div className={`absolute bottom-1 right-1 w-4 h-4 rounded-full ${containerColor === 'black' ? 'bg-black' : `bg-${containerColor}-500`}`}></div>
                 
                 <div className="flex justify-between items-center mb-3">
                   <div>
