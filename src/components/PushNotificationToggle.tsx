@@ -60,7 +60,7 @@ const PushNotificationToggle: React.FC<PushNotificationToggleProps> = ({
     }
     
     if (permission === 'denied') {
-      return 'Blocked';
+      return 'Blocked by Browser';
     }
     
     if (isLoading) {
@@ -71,7 +71,7 @@ const PushNotificationToggle: React.FC<PushNotificationToggleProps> = ({
       return 'Enabled';
     }
     
-    return 'Enable';
+    return 'Enable Notifications';
   };
 
   const getSizeClasses = () => {
@@ -132,10 +132,10 @@ const PushNotificationToggle: React.FC<PushNotificationToggleProps> = ({
           flex items-center gap-2 rounded-lg transition-colors
           ${getSizeClasses()}
           ${permission === 'denied' 
-            ? 'bg-red-100 text-red-600 cursor-not-allowed' 
+            ? 'bg-red-900/20 text-red-400 cursor-not-allowed border border-red-500/30' 
             : isSubscribed 
-              ? 'bg-green-100 hover:bg-green-200 text-green-700' 
-              : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+              ? 'bg-green-900/20 hover:bg-green-900/30 text-green-400 border border-green-500/30' 
+              : 'bg-gray-700 hover:bg-gray-600 text-gray-300 border border-gray-600'
           }
           ${isLoading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
         `}
@@ -152,11 +152,11 @@ const PushNotificationToggle: React.FC<PushNotificationToggleProps> = ({
       </button>
       
       {error && (
-        <p className="text-xs text-red-500 mt-1">{error}</p>
+        <p className="text-xs text-red-400 mt-1">{error}</p>
       )}
       
       {permission === 'denied' && (
-        <p className="text-xs text-red-500 mt-1">
+        <p className="text-xs text-red-400 mt-1">
           Please enable notifications in your browser settings
         </p>
       )}

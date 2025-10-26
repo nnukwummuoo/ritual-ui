@@ -254,30 +254,30 @@ function PostSingle() {
                 )}
                 
                 {/* Image Upload Section */}
-                <div className="mb-4">
+                {/* <div className="mb-4">
                     <h3 className="text-sm font-medium mb-2 text-gray-300">
                         {thePost?.posttype === "image" ? "Replace Image:" : "Add Image:"}
-                    </h3>
+                    </h3> */}
                     
                     {/* Hidden file input */}
-                    <input
+                    {/* <input
                         type="file"
                         ref={fileInputRef}
                         onChange={handleImageSelect}
                         accept="image/*"
                         className="hidden"
-                    />
+                    /> */}
                     
                     {/* Upload button */}
-                    <button
+                    {/* <button
                         onClick={() => fileInputRef.current?.click()}
                         className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition-colors"
                     >
                         {thePost?.posttype === "image" ? "Replace Image" : "Select Image"}
-                    </button>
+                    </button> */}
                     
                     {/* New image preview */}
-                    {imagePreview && (
+                    {/* {imagePreview && (
                         <div className="mt-4 relative">
                             <h4 className="text-sm font-medium mb-2 text-gray-300">New Image Preview:</h4>
                             <div className="relative inline-block">
@@ -298,7 +298,7 @@ function PostSingle() {
                             </div>
                         </div>
                     )}
-                </div>
+                </div> */}
                 
                 <div className="ms-auto mt-3"> 
                     <button className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600" onClick={async () => {

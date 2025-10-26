@@ -30,7 +30,7 @@ export const NotificationPermissionModal: React.FC<NotificationPermissionModalPr
     if (isSupported && !isSubscribed && permission !== 'denied') {
       const timer = setTimeout(() => {
         setIsVisible(true);
-      }, 2000);
+      }, 3000); // Increased delay to 3 seconds
 
       return () => clearTimeout(timer);
     }

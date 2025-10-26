@@ -29,11 +29,26 @@ export class ServiceWorkerManager {
     }
 
     try {
+      // First, unregister any existing service workers to prevent conflicts
+      const existingRegistrations = await navigator.serviceWorker.getRegistrations();
+      for (const registration of existingRegistrations) {
+        if (registration.scope === window.location.origin + '/' && 
+            registration.active?.scriptURL?.includes('sw-pwa.js')) {
+          console.log('Unregistering PWA service worker to prevent conflict');
+          await registration.unregister();
+        }
+      }
+
+      // Register the push service worker
       this.pushRegistration = await navigator.serviceWorker.register('/sw-push.js', {
         scope: '/'
       });
       
       console.log('Push SW registered:', this.pushRegistration);
+      
+      // Wait for the service worker to be ready
+      await navigator.serviceWorker.ready;
+      
       return true;
     } catch (error) {
       console.error('Push SW registration failed:', error);

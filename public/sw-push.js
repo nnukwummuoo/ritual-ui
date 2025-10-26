@@ -38,13 +38,14 @@ self.addEventListener('message', (event) => {
 // Push event - handle incoming push notifications
 self.addEventListener('push', (event) => {
   console.log('Push SW: Push event received', event);
+  console.log('Push SW: Event data:', event.data ? event.data.text() : 'No data');
   
   let notificationData = {
     title: 'MmeKo',
     body: 'You have a new notification',
     icon: '/icons/m-logo.png',
     badge: '/icons/m-logo.png',
-    tag: 'mmeko-notification',
+    tag: `mmeko-notification-${Date.now()}`, // Make each notification unique
     requireInteraction: true,
     actions: [
       {
@@ -103,6 +104,9 @@ self.addEventListener('push', (event) => {
       } else if (pushData.type === 'admin') {
         notificationData.tag = `mmeko-admin-${Date.now()}`;
         notificationData.data.url = '/mmeko/admin';
+      } else {
+        // For any other type or no type, ensure unique tag
+        notificationData.tag = `mmeko-general-${Date.now()}`;
       }
       
     } catch (error) {
@@ -117,7 +121,6 @@ self.addEventListener('push', (event) => {
     silent: false,
     vibrate: [200, 100, 200],
     timestamp: Date.now(),
-    renotify: true, // Force notification even with same tag
     noscreen: false, // Ensure notification shows on screen
     sticky: true // Keep notification visible
   };
@@ -125,11 +128,13 @@ self.addEventListener('push', (event) => {
   // Chrome-specific notification handling
   const isChrome = /Chrome/.test(navigator.userAgent) && !/Edge/.test(navigator.userAgent);
   
+  console.log('Push SW: Showing notification with tag:', notificationData.tag);
+  
   const promiseChain = self.registration.showNotification(
     notificationData.title,
     notificationOptions
   ).then(() => {
-    console.log('Push SW: Notification shown successfully');
+    console.log('Push SW: Notification shown successfully with tag:', notificationData.tag);
     
     // Additional check to ensure notification is actually visible
     return self.registration.getNotifications().then(notifications => {

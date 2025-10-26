@@ -120,11 +120,15 @@ export const useVideoAutoPlay = (options: UseVideoAutoPlayOptions = {}) => {
           
           setIsVisible(isIntersecting);
           
-          // Check if user has interacted globally
-          const globalInteraction = globalUserInteracted || hasUserInteracted;
-          
-          // Auto-play logic
-          const shouldPlay = isIntersecting && intersectionRatio >= 0.8 && autoPlay && isTabActive && !manuallyPaused && globalInteraction;
+          // Auto-play logic - only use global interaction to enable autoplay capability
+          // Each video should only autoplay when it's in viewport AND user has interacted globally
+          // But we don't want clicking one video to make ALL videos autoplay
+          const shouldPlay = isIntersecting && 
+                           intersectionRatio >= 0.8 && 
+                           autoPlay && 
+                           isTabActive && 
+                           !manuallyPaused && 
+                           globalUserInteracted; // Only use global state, not individual hasUserInteracted
           
           if (shouldPlay) {
             
@@ -167,7 +171,7 @@ export const useVideoAutoPlay = (options: UseVideoAutoPlayOptions = {}) => {
       document.removeEventListener('click', handleUserActivity);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [autoPlay, postId, globalUserInteracted, hasUserInteracted, manuallyPaused]); // Removed setUserInteracted from dependencies
+  }, [autoPlay, postId, globalUserInteracted, manuallyPaused]); // Removed hasUserInteracted since we only use globalUserInteracted
 
   // Manual play/pause controls
   const togglePlay = () => {
@@ -201,7 +205,7 @@ export const useVideoAutoPlay = (options: UseVideoAutoPlayOptions = {}) => {
     isPlaying,
     isVisible,
     autoPlayBlocked,
-    hasUserInteracted: hasUserInteracted || globalUserInteracted,
+    hasUserInteracted: globalUserInteracted, // Only use global state
     togglePlay,
     toggleMute,
     isMuted: isGlobalMuted,
