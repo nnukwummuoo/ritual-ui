@@ -259,7 +259,7 @@ const AdminPage = () => {
         )}
 
         {/* Content Section */}
-        <section className={`flex-1 ${activeView === "Support Chat" ? "h-full" : "flex items-center justify-center p-4 md:p-8 pt-4"}`}>
+        <section className={`flex-1 ${activeView === "Support Chat" ? "h-full" : "flex items-start justify-center p-4 md:p-8 pt-4"}`}>
           <div className="w-full h-full">{renderContent()}</div>
         </section>
       </main>
