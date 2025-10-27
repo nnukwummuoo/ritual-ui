@@ -5,6 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "@/store/store";
 import { getdocument, verifycreator, rejectdocument } from "@/store/creatorSlice";
 import PacmanLoader from "react-spinners/RingLoader";
+import { getImageSource, createImageFallbacks } from "@/lib/imageUtils";
 
 export default function AdminVerifyDocumentPage() {
   const dispatch = useDispatch<AppDispatch>();
@@ -105,12 +106,45 @@ export default function AdminVerifyDocumentPage() {
       <div className="bg-gray-700 p-4 rounded-lg mb-4">
         <h3 className="text-md font-medium mb-2">ID Photo</h3>
         {doc.idPhotofile?.idPhotofilelink ? (
-          <img
-            src={doc.idPhotofile.idPhotofilelink}
-            alt="ID Photo"
-            className="w-full h-64 object-cover rounded-lg bg-pink-200 cursor-pointer"
-            onClick={() => handleImageClick(doc.idPhotofile.idPhotofilelink)}
-          />
+          (() => {
+            const imageSource = getImageSource(doc.idPhotofile.idPhotofilelink, 'creator');
+            const imageFallbacks = createImageFallbacks(doc.idPhotofile.idPhotofilelink, 'creator');
+            const src = imageSource.src;
+            
+            return (
+              <img
+                src={src}
+                alt="ID Photo"
+                className="w-full h-64 object-cover rounded-lg bg-pink-200 cursor-pointer"
+                onClick={() => handleImageClick(doc.idPhotofile.idPhotofilelink)}
+                onError={(e) => {
+                  const img = e.currentTarget as HTMLImageElement & { dataset: any };
+                  
+                  // Try fallback URLs if available
+                  if (imageFallbacks.fallbacks.length > 0) {
+                    const currentSrc = img.src;
+                    const fallbackIndex = imageFallbacks.fallbacks.findIndex(fallback => fallback === currentSrc);
+                    const nextFallback = imageFallbacks.fallbacks[fallbackIndex + 1];
+                    
+                    if (nextFallback) {
+                      img.src = nextFallback;
+                      return;
+                    }
+                  }
+                  
+                  // If all fallbacks fail, try original URL if it's different
+                  if (imageSource.originalUrl && imageSource.originalUrl !== img.src) {
+                    img.src = imageSource.originalUrl;
+                    return;
+                  }
+                  
+                  // If all attempts fail, show placeholder
+                  img.src = '/icons/icon-512x512.png';
+                  img.alt = 'Image failed to load';
+                }}
+              />
+            );
+          })()
         ) : (
           <div className="w-full h-64 bg-pink-200 flex items-center justify-center rounded-lg">
             <p className="text-gray-500">No ID Photo Available</p>
@@ -122,12 +156,45 @@ export default function AdminVerifyDocumentPage() {
       <div className="bg-gray-700 p-4 rounded-lg">
         <h3 className="text-md font-medium mb-2">Selfie with ID</h3>
         {doc.holdingIdPhotofile?.holdingIdPhotofilelink ? (
-          <img
-            src={doc.holdingIdPhotofile.holdingIdPhotofilelink}
-            alt="Selfie with ID"
-            className="w-full h-64 object-cover rounded-lg bg-pink-200 cursor-pointer"
-            onClick={() => handleImageClick(doc.holdingIdPhotofile.holdingIdPhotofilelink)}
-          />
+          (() => {
+            const imageSource = getImageSource(doc.holdingIdPhotofile.holdingIdPhotofilelink, 'creator');
+            const imageFallbacks = createImageFallbacks(doc.holdingIdPhotofile.holdingIdPhotofilelink, 'creator');
+            const src = imageSource.src;
+            
+            return (
+              <img
+                src={src}
+                alt="Selfie with ID"
+                className="w-full h-64 object-cover rounded-lg bg-pink-200 cursor-pointer"
+                onClick={() => handleImageClick(doc.holdingIdPhotofile.holdingIdPhotofilelink)}
+                onError={(e) => {
+                  const img = e.currentTarget as HTMLImageElement & { dataset: any };
+                  
+                  // Try fallback URLs if available
+                  if (imageFallbacks.fallbacks.length > 0) {
+                    const currentSrc = img.src;
+                    const fallbackIndex = imageFallbacks.fallbacks.findIndex(fallback => fallback === currentSrc);
+                    const nextFallback = imageFallbacks.fallbacks[fallbackIndex + 1];
+                    
+                    if (nextFallback) {
+                      img.src = nextFallback;
+                      return;
+                    }
+                  }
+                  
+                  // If all fallbacks fail, try original URL if it's different
+                  if (imageSource.originalUrl && imageSource.originalUrl !== img.src) {
+                    img.src = imageSource.originalUrl;
+                    return;
+                  }
+                  
+                  // If all attempts fail, show placeholder
+                  img.src = '/icons/icon-512x512.png';
+                  img.alt = 'Image failed to load';
+                }}
+              />
+            );
+          })()
         ) : (
           <div className="w-full h-64 bg-pink-200 flex items-center justify-center rounded-lg">
             <p className="text-gray-500">No Selfie with ID Available</p>
@@ -167,11 +234,44 @@ export default function AdminVerifyDocumentPage() {
       {previewImage && (
         <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50">
           <div className="relative max-w-4xl w-full">
-            <img
-              src={previewImage}
-              alt="Full Screen Preview"
-              className="w-full h-auto max-h-screen object-contain"
-            />
+            {(() => {
+              const imageSource = getImageSource(previewImage, 'creator');
+              const imageFallbacks = createImageFallbacks(previewImage, 'creator');
+              const src = imageSource.src;
+              
+              return (
+                <img
+                  src={src}
+                  alt="Full Screen Preview"
+                  className="w-full h-auto max-h-screen object-contain"
+                  onError={(e) => {
+                    const img = e.currentTarget as HTMLImageElement & { dataset: any };
+                    
+                    // Try fallback URLs if available
+                    if (imageFallbacks.fallbacks.length > 0) {
+                      const currentSrc = img.src;
+                      const fallbackIndex = imageFallbacks.fallbacks.findIndex(fallback => fallback === currentSrc);
+                      const nextFallback = imageFallbacks.fallbacks[fallbackIndex + 1];
+                      
+                      if (nextFallback) {
+                        img.src = nextFallback;
+                        return;
+                      }
+                    }
+                    
+                    // If all fallbacks fail, try original URL if it's different
+                    if (imageSource.originalUrl && imageSource.originalUrl !== img.src) {
+                      img.src = imageSource.originalUrl;
+                      return;
+                    }
+                    
+                    // If all attempts fail, show placeholder
+                    img.src = '/icons/icon-512x512.png';
+                    img.alt = 'Image failed to load';
+                  }}
+                />
+              );
+            })()}
             <button
               onClick={handleClosePreview}
               className="absolute top-4 right-4 bg-gray-800 text-white p-2 rounded-full hover:bg-gray-700"

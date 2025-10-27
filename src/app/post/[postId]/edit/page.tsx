@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import React, { useRef } from "react"
@@ -8,6 +10,23 @@ import { toast } from "material-react-toastify";
 import {useRouter} from "next/navigation"
 import { getImageSource, createImageFallbacks } from "@/lib/imageUtils";
 import Image from "next/image";
+import { useVideoAutoPlay } from "@/hooks/useVideoAutoPlayNew";
+
+// Video skeleton component for loading state
+const VideoSkeleton = () => (
+  <div className="relative w-full h-[500px] rounded overflow-hidden bg-gray-700 animate-pulse">
+    <div className="w-full h-full flex items-center justify-center">
+      {/* Play button skeleton */}
+      <div className="w-16 h-16 bg-gray-600 rounded-full flex items-center justify-center">
+        <div className="w-0 h-0 border-l-[12px] border-l-white border-y-[8px] border-y-transparent ml-1"></div>
+      </div>
+    </div>
+    {/* Video controls skeleton */}
+    <div className="absolute bottom-3 right-3">
+      <div className="w-10 h-10 bg-gray-600 rounded-full"></div>
+    </div>
+  </div>
+);
 
 function PostSingle() {
         const router = useRouter()
@@ -36,7 +55,12 @@ function PostSingle() {
         }>({});
         const [newImage, setNewImage] = React.useState<File | null>(null);
         const [imagePreview, setImagePreview] = React.useState<string>("");
-        const fileInputRef = useRef<HTMLInputElement>(null);
+        // const fileInputRef = useRef<HTMLInputElement>(null);
+        
+        // Video control state
+        const [showControls, setShowControls] = React.useState(false);
+        const [isVideoLoaded, setIsVideoLoaded] = React.useState(false);
+        const controlsTimerRef = useRef<NodeJS.Timeout | null>(null);
         const p=thePost;
         const userid = useUserId();
     const { postId } = useParams();
@@ -61,6 +85,14 @@ function PostSingle() {
     
     const cleanPostId = extractPostId(postId);
     
+    // Video auto-play hook
+    const { videoRef, isPlaying, isVisible, autoPlayBlocked, togglePlay, toggleMute, isMuted } = useVideoAutoPlay({
+        autoPlay: true,
+        muted: true,
+        loop: true,
+        postId: cleanPostId || 'edit-post'
+    });
+    
     React.useLayoutEffect(()=>{
         (async () => {
             const tst = toast("Loading", { autoClose: false });
@@ -74,6 +106,23 @@ function PostSingle() {
             }
         })()
     }, [cleanPostId])
+    
+    // Clear timeout when component unmounts
+    React.useEffect(() => {
+        // Show controls initially when the video loads
+        setShowControls(true);
+        
+        // Set timer to hide controls
+        const initialTimer = setTimeout(() => {
+            setShowControls(false);
+        }, 3000);
+        
+        return () => {
+            // Clean up all timeouts on unmount
+            if (initialTimer) clearTimeout(initialTimer);
+            if (controlsTimerRef.current) clearTimeout(controlsTimerRef.current);
+        };
+    }, []);
     
     // Only process images when we have actual post data
     const hasPostData = p && Object.keys(p).length > 0 && p._id;
@@ -120,38 +169,38 @@ function PostSingle() {
     
     
     // Handle new image selection
-    const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (file) {
-            // Check file size (5MB limit)
-            if (file.size > 5 * 1024 * 1024) {
-                toast.error("File size must be less than 5MB");
-                return;
-            }
+    // const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    //     const file = e.target.files?.[0];
+    //     if (file) {
+    //         // Check file size (5MB limit)
+    //         if (file.size > 5 * 1024 * 1024) {
+    //             toast.error("File size must be less than 5MB");
+    //             return;
+    //         }
             
-            // Check file type
-            if (!file.type.startsWith('image/')) {
-                toast.error("Please select an image file");
-                return;
-            }
+    //         // Check file type
+    //         if (!file.type.startsWith('image/')) {
+    //             toast.error("Please select an image file");
+    //             return;
+    //         }
             
-            setNewImage(file);
-            const previewUrl = URL.createObjectURL(file);
-            setImagePreview(previewUrl);
-        }
-    };
+    //         setNewImage(file);
+    //         const previewUrl = URL.createObjectURL(file);
+    //         setImagePreview(previewUrl);
+    //     }
+    // };
     
     // Remove new image
-    const removeNewImage = () => {
-        if (imagePreview) {
-            URL.revokeObjectURL(imagePreview);
-        }
-        setNewImage(null);
-        setImagePreview("");
-        if (fileInputRef.current) {
-            fileInputRef.current.value = "";
-        }
-    };
+    // const removeNewImage = () => {
+    //     if (imagePreview) {
+    //         URL.revokeObjectURL(imagePreview);
+    //     }
+    //     setNewImage(null);
+    //     setImagePreview("");
+    //     if (fileInputRef.current) {
+    //         fileInputRef.current.value = "";
+    //     }
+    // };
     // Show loading state if we don't have post data yet
     if (!hasPostData) {
         return (
@@ -219,37 +268,136 @@ function PostSingle() {
                 {thePost?.posttype == "video" && asString && !imagePreview &&(
                     <div className="mb-4">
                         <h3 className="text-sm font-medium mb-2 text-gray-300">Current Video:</h3>
-                        <video
-                            src={src}
-                            controls
-                            className="w-full max-h-[480px] rounded"
-                            onError={(e) => {
-                                const video = e.target as HTMLVideoElement;
-                                // Try fallback URLs if proxy fails
-                                if (imageFallbacks.fallbacks.length > 0) {
-                                    const currentSrc = video.src;
-                                    const fallbackIndex = imageFallbacks.fallbacks.findIndex(fallback => fallback === currentSrc);
-                                    const nextFallback = imageFallbacks.fallbacks[fallbackIndex + 1];
-                                    if (nextFallback) {
-                                        video.src = nextFallback;
-                                    } else {
-                                        // If all fallbacks fail, show error message
-                                        video.style.display = 'none';
-                                        const errorDiv = document.createElement('div');
-                                        errorDiv.className = 'w-full h-48 bg-gray-800 flex items-center justify-center text-white rounded';
-                                        errorDiv.textContent = 'Video failed to load';
-                                        video.parentNode?.insertBefore(errorDiv, video);
+                        <div className="relative w-full h-[500px] rounded overflow-hidden">
+                            {/* Video skeleton - show while video is loading */}
+                            {!isVideoLoaded && (
+                                <VideoSkeleton />
+                            )}
+                            
+                            {/* Video with controls that auto-hide */}
+                            <div 
+                                className={`relative w-full h-full ${!isVideoLoaded ? 'opacity-0 absolute top-0 left-0' : 'opacity-100 transition-opacity duration-300'}`}
+                                onMouseMove={() => {
+                                    // Show controls and reset the timer when mouse moves
+                                    setShowControls(true);
+                                    if (controlsTimerRef.current) {
+                                        clearTimeout(controlsTimerRef.current);
                                     }
-                                } else {
-                                    // No fallbacks available, show error message
-                                    video.style.display = 'none';
-                                    const errorDiv = document.createElement('div');
-                                    errorDiv.className = 'w-full h-48 bg-gray-800 flex items-center justify-center text-white rounded';
-                                    errorDiv.textContent = 'Video failed to load';
-                                    video.parentNode?.insertBefore(errorDiv, video);
-                                }
-                            }}
-                        />
+                                    controlsTimerRef.current = setTimeout(() => {
+                                        setShowControls(false);
+                                    }, 3000);
+                                }}
+                                onClick={() => {
+                                    // Show controls and toggle play when clicking
+                                    setShowControls(true);
+                                    togglePlay();
+                                    if (controlsTimerRef.current) {
+                                        clearTimeout(controlsTimerRef.current);
+                                    }
+                                    controlsTimerRef.current = setTimeout(() => {
+                                        setShowControls(false);
+                                    }, 3000);
+                                }}
+                            >
+                                <video
+                                    ref={videoRef}
+                                    src={src}
+                                    autoPlay
+                                    muted
+                                    loop
+                                    playsInline
+                                    className="w-full h-[500px] object-cover rounded cursor-pointer"
+                                    onLoadedData={() => {
+                                        setIsVideoLoaded(true);
+                                    }}
+                                    onError={(e) => {
+                                        const video = e.currentTarget as HTMLVideoElement & { dataset: any };
+                                        if (!video.dataset.fallback1 && imageFallbacks.fallbacks.length > 0) {
+                                            video.dataset.fallback1 = "1";
+                                            video.src = imageFallbacks.fallbacks[0];
+                                            video.load();
+                                            return;
+                                        }
+                                        if (!video.dataset.fallback2 && imageFallbacks.fallbacks.length > 1) {
+                                            video.dataset.fallback2 = "1";
+                                            video.src = imageFallbacks.fallbacks[1];
+                                            video.load();
+                                            return;
+                                        }
+                                        if (!video.dataset.fallback3 && imageFallbacks.fallbacks.length > 2) {
+                                            video.dataset.fallback3 = "1";
+                                            video.src = imageFallbacks.fallbacks[2];
+                                            video.load();
+                                        }
+                                    }}
+                                />
+                                
+                                {/* Volume Button - Shows only when showControls is true */}
+                                {showControls && (
+                                    <div className="absolute bottom-3 right-3 z-10 transition-opacity duration-300 opacity-100">
+                                        <button 
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                toggleMute();
+                                                // Reset auto-hide timer when interacting with controls
+                                                if (controlsTimerRef.current) {
+                                                    clearTimeout(controlsTimerRef.current);
+                                                }
+                                                controlsTimerRef.current = setTimeout(() => {
+                                                    setShowControls(false);
+                                                }, 3000);
+                                            }} 
+                                            className="bg-black bg-opacity-70 rounded-full p-2.5 hover:bg-opacity-90 transition-all hover:scale-110"
+                                            aria-label={isMuted ? "Unmute video" : "Mute video"}
+                                        >
+                                            {isMuted ? (
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                                                    <line x1="23" y1="9" x2="17" y2="15"></line>
+                                                    <line x1="17" y1="9" x2="23" y2="15"></line>
+                                                </svg>
+                                            ) : (
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                                                    <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                                                </svg>
+                                            )}
+                                        </button>
+                                    </div>
+                                )}
+                                
+                                {/* Center Play/Pause Button - Shows only when showControls is true */}
+                                {showControls && (
+                                    <div className="absolute inset-0 flex items-center justify-center transition-opacity duration-300 opacity-100">
+                                        <div 
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                togglePlay();
+                                                // Reset auto-hide timer when interacting with controls
+                                                if (controlsTimerRef.current) {
+                                                    clearTimeout(controlsTimerRef.current);
+                                                }
+                                                controlsTimerRef.current = setTimeout(() => {
+                                                    setShowControls(false);
+                                                }, 3000);
+                                            }}
+                                            className="bg-black bg-opacity-70 rounded-full p-5 hover:bg-opacity-90 hover:scale-110 cursor-pointer transition-all"
+                                        >
+                                            {isPlaying ? (
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                                    <rect x="6" y="4" width="4" height="16"></rect>
+                                                    <rect x="14" y="4" width="4" height="16"></rect>
+                                                </svg>
+                                            ) : (
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                                                </svg>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
                     </div>
                 )}
                 
