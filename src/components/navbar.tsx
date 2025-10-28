@@ -9,8 +9,6 @@ import anyaLogo from '@/icons/icon-192.png';
 export default function Navbar({isAuthenticated}:{isAuthenticated: boolean}) {
   const { isOpen, toggle } = useAuth();
   const router = useRouter()
-
-  console.log(isOpen);
   
   
   return (

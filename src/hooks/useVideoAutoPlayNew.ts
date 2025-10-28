@@ -16,6 +16,7 @@ export const useVideoAutoPlay = (options: UseVideoAutoPlayOptions = {}) => {
   const [hasUserInteracted, setHasUserInteracted] = useState(false);
   const [manuallyPaused, setManuallyPaused] = useState(false);
   const [autoPlayBlocked, setAutoPlayBlocked] = useState(false);
+  const initializedRef = useRef(false);
   
   const {
     isGlobalMuted,
@@ -25,6 +26,7 @@ export const useVideoAutoPlay = (options: UseVideoAutoPlayOptions = {}) => {
     setUserInteracted,
     registerVideo,
     unregisterVideo,
+    pauseAllVideosExcept,
   } = useVideoContext();
 
   // Use refs to avoid dependency issues
@@ -49,10 +51,17 @@ export const useVideoAutoPlay = (options: UseVideoAutoPlayOptions = {}) => {
   // Check if this is the first video
   const isFirstVideo = firstVideoId === postId;
 
+  // Mark as initialized
+  if (!initializedRef.current) {
+    initializedRef.current = true;
+  }
+
   // Initial setup effect - runs only once when video element is available
   useEffect(() => {
     const video = videoRef.current;
-    if (!video) return;
+    if (!video) {
+      return;
+    }
 
     // Register video with context
     registerVideoRef.current(postId, video);
@@ -61,7 +70,6 @@ export const useVideoAutoPlay = (options: UseVideoAutoPlayOptions = {}) => {
     video.loop = loop;
     video.playsInline = true;
     video.preload = 'metadata';
-
 
     // Cleanup
     return () => {
@@ -74,7 +82,10 @@ export const useVideoAutoPlay = (options: UseVideoAutoPlayOptions = {}) => {
     const video = videoRef.current;
     if (!video) return;
 
-    video.muted = isGlobalMuted;
+    // Only sync if the video's current muted state differs from global state
+    if (video.muted !== isGlobalMuted) {
+      video.muted = isGlobalMuted;
+    }
     
   }, [isGlobalMuted, postId, isFirstVideo]);
 
@@ -88,7 +99,9 @@ export const useVideoAutoPlay = (options: UseVideoAutoPlayOptions = {}) => {
 
     // Handle visibility change
     const handleVisibilityChange = () => {
+      const wasActive = isTabActive;
       isTabActive = document.visibilityState === 'visible';
+      
       if (!isTabActive && !video.paused) {
         video.pause();
         setIsPlaying(false);
@@ -117,7 +130,6 @@ export const useVideoAutoPlay = (options: UseVideoAutoPlayOptions = {}) => {
           const isIntersecting = entry.isIntersecting;
           const intersectionRatio = entry.intersectionRatio;
           
-          
           setIsVisible(isIntersecting);
           
           // Auto-play logic - only use global interaction to enable autoplay capability
@@ -131,6 +143,8 @@ export const useVideoAutoPlay = (options: UseVideoAutoPlayOptions = {}) => {
                            globalUserInteracted; // Only use global state, not individual hasUserInteracted
           
           if (shouldPlay) {
+            // Pause all other videos before autoplaying this one
+            pauseAllVideosExcept(postId);
             
             video.play().then(() => {
               setIsPlaying(true);
@@ -154,8 +168,13 @@ export const useVideoAutoPlay = (options: UseVideoAutoPlayOptions = {}) => {
     observer.observe(video);
 
     // Video event listeners
-    const handlePlay = () => setIsPlaying(true);
-    const handlePause = () => setIsPlaying(false);
+    const handlePlay = () => {
+      setIsPlaying(true);
+    };
+    
+    const handlePause = () => {
+      setIsPlaying(false);
+    };
     
     video.addEventListener('play', handlePlay);
     video.addEventListener('pause', handlePause);
@@ -181,6 +200,9 @@ export const useVideoAutoPlay = (options: UseVideoAutoPlayOptions = {}) => {
       setManuallyPaused(false);
       setUserInteractedRef.current();
       
+      // Pause all other videos before playing this one
+      pauseAllVideosExcept(postId);
+      
       videoRef.current.play().then(() => {
         setIsPlaying(true);
         setAutoPlayBlocked(false);
@@ -196,7 +218,6 @@ export const useVideoAutoPlay = (options: UseVideoAutoPlayOptions = {}) => {
 
   // Mute toggle
   const toggleMute = () => {
-    console.log('🔊 [MUTE TOGGLE] User clicked volume button:', { postId, currentMutedState: isGlobalMuted });
     toggleGlobalMute();
   };
 

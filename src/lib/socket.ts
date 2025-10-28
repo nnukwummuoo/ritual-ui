@@ -5,21 +5,17 @@ let socket: ReturnType<typeof io> | null = null;
 let isConnecting = false;
 
 // Helper function to attach socket event listeners
-const attachSocketEvents = (socketInstance: ReturnType<typeof io>, socketUrl: string) => {
+const attachSocketEvents = (socketInstance: ReturnType<typeof io>) => {
   socketInstance.on("connect", () => {
-    console.log("✅ [Socket] Connected to server at:", socketUrl);
-    console.log("✅ [Socket] Socket ID:", socketInstance.id);
-    console.log("✅ [Socket] Transport:", socketInstance.io.engine.transport.name);
+    // Connected to server
   });
   
-  socketInstance.on("disconnect", (reason) => {
-    console.log("⚠️ [Socket] Disconnected:", reason);
-    console.log("⚠️ [Socket] Was connected:", socketInstance.connected);
+  socketInstance.on("disconnect", () => {
+    // Disconnected from server
   });
   
-  socketInstance.on("reconnect", (attemptNumber) => {
-    console.log("🔄 [Socket] Reconnected after", attemptNumber, "attempts");
-    console.log("🔄 [Socket] New Socket ID:", socketInstance.id);
+  socketInstance.on("reconnect", () => {
+    // Reconnected to server
   });
   
   socketInstance.on("reconnect_error", (err) => {
@@ -46,7 +42,6 @@ export const joinUserRoom = (userId: string) => {
   const socket = getSocket();
   if (socket) {
     socket.emit("join_user_room", { userId });
-    console.log("🔍 [Socket] Joined user room:", userId);
   }
 };
 
@@ -54,7 +49,6 @@ export const leaveUserRoom = (userId: string) => {
   const socket = getSocket();
   if (socket) {
     socket.emit("leave_user_room", { userId });
-    console.log("🔍 [Socket] Left user room:", userId);
   }
 };
 
@@ -149,10 +143,6 @@ export const getSocket = () => {
         }
       }
       
-      console.log("[Socket] Environment:", process.env.NODE_ENV);
-      console.log("[Socket] Hostname:", window.location.hostname);
-      console.log("[Socket] Connecting to:", socketUrl);
-      
       socket = io(socketUrl, {
         withCredentials: true,
         autoConnect: true,
@@ -168,7 +158,7 @@ export const getSocket = () => {
       });
       
       // Attach event listeners
-      attachSocketEvents(socket, socketUrl);
+      attachSocketEvents(socket);
       
       // Reset connecting flag when connected
       socket.on("connect", () => {
@@ -201,7 +191,7 @@ export const getSocket = () => {
           });
           
           // Re-attach event listeners
-          attachSocketEvents(socket, "http://localhost:3100");
+          attachSocketEvents(socket);
         }
         // If connecting to local server failed and we're in production build on localhost,
         // try connecting to production server as fallback
@@ -227,7 +217,7 @@ export const getSocket = () => {
           });
           
           // Re-attach event listeners
-          attachSocketEvents(socket, "https://mmekoapi.onrender.com");
+          attachSocketEvents(socket);
         }
       });
       

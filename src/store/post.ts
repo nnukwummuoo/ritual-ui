@@ -148,7 +148,6 @@ export const fetchposts = async (page = 1) => {
       console.error("Error getting user ID from localStorage:", error);
     }
 
-    console.log(`📄 [POSTS] Fetching posts - Page ${page}`);
     let response = await axios.post(`${URL}/getallpost`, { 
       userid,
       page,
@@ -158,8 +157,6 @@ export const fetchposts = async (page = 1) => {
     // Backend already returns posts with likes and comments via aggregation
     // No need for additional API calls - use the data directly!
     const posts = response.data.post || [];
-    
-    console.log(`✅ [PERFORMANCE] Received ${posts.length} posts with complete data from backend`);
 
     return {
       ...response.data,
