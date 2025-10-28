@@ -15,8 +15,9 @@ export const useVideoAutoPlay = (options: UseVideoAutoPlayOptions = {}) => {
   const [isVisible, setIsVisible] = useState(false);
   const [hasUserInteracted, setHasUserInteracted] = useState(false);
   const [manuallyPaused, setManuallyPaused] = useState(false);
-  const [autoPlayBlocked, setAutoPlayBlocked] = useState(false);
+  const [autoPlayBlocked, setAutoPlayBlocked] = useState(true); // Start as blocked until user interacts
   const initializedRef = useRef(false);
+  
   
   const {
     isGlobalMuted,
@@ -43,7 +44,6 @@ export const useVideoAutoPlay = (options: UseVideoAutoPlayOptions = {}) => {
 
   const {
     autoPlay = true,
-    muted = true,
     loop = true,
     postId = 'default'
   } = options;
@@ -99,7 +99,6 @@ export const useVideoAutoPlay = (options: UseVideoAutoPlayOptions = {}) => {
 
     // Handle visibility change
     const handleVisibilityChange = () => {
-      const wasActive = isTabActive;
       isTabActive = document.visibilityState === 'visible';
       
       if (!isTabActive && !video.paused) {
@@ -113,6 +112,7 @@ export const useVideoAutoPlay = (options: UseVideoAutoPlayOptions = {}) => {
       if (!hasUserInteracted) {
         setHasUserInteracted(true);
         setUserInteractedRef.current();
+        // Don't set autoPlayBlocked to false here - let autoplay attempt decide
       }
     };
 
@@ -134,7 +134,6 @@ export const useVideoAutoPlay = (options: UseVideoAutoPlayOptions = {}) => {
           
           // Auto-play logic - only use global interaction to enable autoplay capability
           // Each video should only autoplay when it's in viewport AND user has interacted globally
-          // But we don't want clicking one video to make ALL videos autoplay
           const shouldPlay = isIntersecting && 
                            intersectionRatio >= 0.8 && 
                            autoPlay && 
@@ -149,10 +148,9 @@ export const useVideoAutoPlay = (options: UseVideoAutoPlayOptions = {}) => {
             video.play().then(() => {
               setIsPlaying(true);
               setAutoPlayBlocked(false);
-            }).catch((error) => {
+            }).catch(() => {
+              console.log('Autoplay blocked for video:', postId);
               setAutoPlayBlocked(true);
-              // Don't treat this as an error - it's expected behavior
-              // The video will play when user clicks it
             });
           } else if (!isIntersecting || intersectionRatio < 0.8) {
             if (!video.paused) {
@@ -162,7 +160,10 @@ export const useVideoAutoPlay = (options: UseVideoAutoPlayOptions = {}) => {
           }
         });
       },
-      { threshold: [0.8] }
+      { 
+        threshold: [0.8],
+        rootMargin: '0px' // Don't trigger outside viewport
+      }
     );
 
     observer.observe(video);
@@ -190,7 +191,7 @@ export const useVideoAutoPlay = (options: UseVideoAutoPlayOptions = {}) => {
       document.removeEventListener('click', handleUserActivity);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [autoPlay, postId, globalUserInteracted, manuallyPaused]); // Removed hasUserInteracted since we only use globalUserInteracted
+  }, [autoPlay, postId, globalUserInteracted, manuallyPaused, hasUserInteracted, pauseAllVideosExcept]);
 
   // Manual play/pause controls
   const togglePlay = () => {
@@ -206,7 +207,7 @@ export const useVideoAutoPlay = (options: UseVideoAutoPlayOptions = {}) => {
       videoRef.current.play().then(() => {
         setIsPlaying(true);
         setAutoPlayBlocked(false);
-      }).catch((error) => {
+      }).catch(() => {
         setIsPlaying(false);
       });
     } else {

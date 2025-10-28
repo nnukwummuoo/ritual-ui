@@ -1,5 +1,6 @@
 "use client";
 import React, { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react';
+import { usePathname } from 'next/navigation';
 
 interface VideoContextType {
   isGlobalMuted: boolean;
@@ -32,12 +33,32 @@ export const VideoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const videosRef = useRef<Map<string, HTMLVideoElement>>(new Map());
   const isGlobalMutedRef = useRef(isGlobalMuted);
   const firstVideoIdRef = useRef(firstVideoId);
+  const pathname = usePathname();
 
   // Load user interaction state from localStorage
   useEffect(() => {
     const globalInteraction = localStorage.getItem('videoUserInteraction') === 'true';
     setHasUserInteracted(globalInteraction);
+    
+    // Reset user interaction state when user actually leaves the page
+    const handlePageUnload = () => {
+      setHasUserInteracted(false);
+      localStorage.removeItem('videoUserInteraction');
+    };
+
+    // Listen for actual page navigation/unload
+    window.addEventListener('beforeunload', handlePageUnload);
+    
+    return () => {
+      window.removeEventListener('beforeunload', handlePageUnload);
+    };
   }, []);
+
+  // Reset interaction state when pathname changes (user navigates to different page)
+  useEffect(() => {
+    setHasUserInteracted(false);
+    localStorage.removeItem('videoUserInteraction');
+  }, [pathname]);
 
   // Update refs when state changes
   useEffect(() => {
