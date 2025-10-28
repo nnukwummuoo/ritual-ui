@@ -64,12 +64,12 @@ export const Profile = () => {
   const dispatch = useDispatch<AppDispatch>();
  // const fileRef = useRef<HTMLInputElement | null>(null);
   
-   // State for user posts
-   const [userPosts, setUserPosts] = useState<any[]>([]);
-   const [isLoadingPosts, setIsLoadingPosts] = useState(false);
-   const [selectedPost, setSelectedPost] = useState<any>(null);
-   const [showPostModal, setShowPostModal] = useState(false);
-   const [avatarSrc, setAvatarSrc] = useState<string | undefined>(undefined);
+  // State for user posts
+  const [userPosts, setUserPosts] = useState<any[]>([]);
+  const [isLoadingPosts, setIsLoadingPosts] = useState(false);
+  const [selectedPost, setSelectedPost] = useState<any>(null);
+  const [showPostModal, setShowPostModal] = useState(false);
+  const [avatarSrc, setAvatarSrc] = useState<string | undefined>(undefined);
    const [clickedPostId, setClickedPostId] = useState<string | null>(null);
   // Get current user profile data (for side menu and current user info)
   const currentUserProfile = useSelector((s: RootState) => s.profile);
@@ -1249,38 +1249,38 @@ const PostModal = () => {
   if (!userPosts || userPosts.length === 0) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] bg-black">
-        {/* Header */}
-      <div className="sticky top-0 z-10 bg-black border-b border-gray-800 p-4 flex justify-between items-center">
-          <div className="flex items-center gap-3">
+    <div className="fixed inset-0 z-[100] bg-gray-900">
+      {/* Header */}
+      <div className="sticky top-0 z-10 bg-gray-900 border-b border-gray-800 p-4 flex justify-between items-center">
+        <div className="flex items-center gap-3">
           <div className="relative w-10 h-10 rounded-full overflow-hidden bg-gray-700">
-              {(() => {
+            {(() => {
               const profileImage = isViewingOwnProfile ? photolink : profileData?.photolink;
               const userName = isViewingOwnProfile ? `${firstname} ${lastname}`.trim() : 
                 `${profileData?.firstname || ""} ${profileData?.lastname || ""}`.trim();
-                const initials = userName.split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2) || "?";
-                
-                if (profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined") {
-                  const imageSource = getImageSource(profileImage, 'profile');
-                  return (
-                    <Image 
-                      src={imageSource.src} 
-                      alt="Profile" 
+              const initials = userName.split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2) || "?";
+              
+              if (profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined") {
+                const imageSource = getImageSource(profileImage, 'profile');
+                return (
+                  <Image 
+                    src={imageSource.src} 
+                    alt="Profile" 
                     width={40} 
                     height={40} 
-                      className="object-cover w-full h-full"
-                    />
-                  );
-                }
-                
-                return (
-                <div className="w-full h-full bg-gray-600 flex items-center justify-center text-white text-sm font-semibold">
-                    {initials}
-                  </div>
+                    className="object-cover w-full h-full"
+                  />
                 );
-              })()}
-            </div>
-            <div>
+              }
+              
+              return (
+                <div className="w-full h-full bg-gray-600 flex items-center justify-center text-white text-sm font-semibold">
+                  {initials}
+                </div>
+              );
+            })()}
+          </div>
+          <div>
             <h2 className="text-white font-semibold text-lg">
               {isViewingOwnProfile ? `${firstname} ${lastname}`.trim() : 
                 `${profileData?.firstname || ""} ${profileData?.lastname || ""}`.trim()}
@@ -1288,19 +1288,19 @@ const PostModal = () => {
             <p className="text-gray-400 text-sm">
               {userPosts.length} {userPosts.length === 1 ? 'post' : 'posts'}
             </p>
-            </div>
           </div>
-          <button 
-            onClick={() => setShowPostModal(false)}
-          className="text-gray-400 hover:text-white transition-colors p-2"
-          >
-            <X className="w-6 h-6" />
-          </button>
         </div>
-        
-       {/* Posts Content */}
+        <button 
+          onClick={() => setShowPostModal(false)}
+          className="text-gray-400 hover:text-white transition-colors p-2"
+        >
+          <X className="w-6 h-6" />
+        </button>
+      </div>
+      
+      {/* Posts Content */}
        <div ref={scrollContainerRef} className="h-[calc(100vh-80px)] overflow-y-auto">
-         <div className="max-w-2xl mx-auto p-4 space-y-6">
+        <div className="max-w-2xl mx-auto p-4 space-y-6">
           {userPosts.map((post, index) => {
             const { src, postType } = getMediaSource(post);
             
@@ -1316,8 +1316,8 @@ const PostModal = () => {
             const pathUrlPrimary = asString ? `${API_URL}/api/image/view/${encodeURIComponent(asString)}` : "";
             const queryUrlFallback = asString ? `https://mmekoapi.onrender.com/api/image/view?publicId=${encodeURIComponent(asString)}` : "";
             const pathUrlFallback = asString ? `https://mmekoapi.onrender.com/api/image/view/${encodeURIComponent(asString)}` : "";
-            
-             return (
+
+  return (
                <div 
                  key={post._id || post.postid || index} 
                  data-post-id={post._id || post.postid || post.id}
@@ -1325,36 +1325,36 @@ const PostModal = () => {
                >
                 {/* Post Header */}
                 <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3">
                     <div className="relative">
                       <div className="size-10 rounded-full overflow-hidden bg-gray-700">
-                              {(() => {
+              {(() => {
                           const profileImage = isViewingOwnProfile ? photolink : profileData?.photolink;
                           const userName = isViewingOwnProfile ? `${firstname} ${lastname}`.trim() : 
                             `${profileData?.firstname || ""} ${profileData?.lastname || ""}`.trim();
-                          const initials = userName.split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2) || "?";
-                                
-                                if (profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined") {
-                            const imageSource = getImageSource(profileImage, 'profile');
-                                  return (
-                                    <Image
-                                src={imageSource.src} 
-                                alt="Profile" 
+                const initials = userName.split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2) || "?";
+                
+                if (profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined") {
+                  const imageSource = getImageSource(profileImage, 'profile');
+                  return (
+                    <Image 
+                      src={imageSource.src} 
+                      alt="Profile" 
                                       width={40}
                                       height={40}
-                                className="object-cover w-full h-full"
-                                    />
-                                  );
-                                }
-                                
-                                return (
+                      className="object-cover w-full h-full"
+                    />
+                  );
+                }
+                
+                return (
                             <div className="w-full h-full bg-gray-600 flex items-center justify-center text-white text-sm font-semibold">
-                                    {initials}
-                                  </div>
-                                );
-                              })()}
-                            </div>
-                          </div>
+                    {initials}
+                  </div>
+                );
+              })()}
+              </div>
+            </div>
                           <div className="flex-1">
                       <p className="font-medium text-white">
                         {isViewingOwnProfile ? `${firstname} ${lastname}`.trim() : 
@@ -1362,49 +1362,49 @@ const PostModal = () => {
                       </p>
                       <span className="text-gray-400 text-sm">
                         {isViewingOwnProfile ? nickname : profileData?.nickname || ""}
-                                    </span>
-                              </div>
-                            </div>
-                          </div>
+                    </span>
+              </div>
+            </div>
+          </div>
 
                 {/* Post Content */}
                 {post?.content && (
                   <div className="my-2">
                     <p className="text-white">{post.content}</p>
-                        </div>
+        </div>
                 )}
-
+        
                 {/* Post Media */}
-                {postType === "image" && src && (
+          {postType === "image" && src && (
                   <div className="w-full max-h-[480px] relative rounded overflow-hidden">
                                 <Image
-                      src={src}
+                src={src}
                       alt={post?.content || "post image"}
                       width={800}
                       height={480}
                       className="w-full h-auto object-contain cursor-pointer hover:opacity-90 transition-opacity duration-200"
-                      onError={(e) => {
-                        const img = e.currentTarget as HTMLImageElement & { dataset: any };
+                onError={(e) => {
+                  const img = e.currentTarget as HTMLImageElement & { dataset: any };
                         const { pathUrlPrimary, queryUrlFallback, pathUrlFallback } = getMediaSource(post);
-                        if (!img.dataset.fallback1 && pathUrlPrimary) {
-                          img.dataset.fallback1 = "1";
-                          img.src = pathUrlPrimary;
-                          return;
-                        }
-                        if (!img.dataset.fallback2 && queryUrlFallback) {
-                          img.dataset.fallback2 = "1";
-                          img.src = queryUrlFallback;
-                          return;
-                        }
-                        if (!img.dataset.fallback3 && pathUrlFallback) {
-                          img.dataset.fallback3 = "1";
-                          img.src = pathUrlFallback;
-                        }
-                      }}
-                    />
-                  </div>
-                )}
-                
+                  if (!img.dataset.fallback1 && pathUrlPrimary) {
+                    img.dataset.fallback1 = "1";
+                    img.src = pathUrlPrimary;
+                    return;
+                  }
+                  if (!img.dataset.fallback2 && queryUrlFallback) {
+                    img.dataset.fallback2 = "1";
+                    img.src = queryUrlFallback;
+                    return;
+                  }
+                  if (!img.dataset.fallback3 && pathUrlFallback) {
+                    img.dataset.fallback3 = "1";
+                    img.src = pathUrlFallback;
+                  }
+                }}
+              />
+            </div>
+          )}
+          
                 {postType === "video" && (
                   (() => {
                     // For videos, use the direct URL from postfilelink (like RemainingPosts does)
@@ -1444,7 +1444,7 @@ const PostModal = () => {
                       return <div className="w-full h-[500px] bg-gray-800 rounded flex items-center justify-center text-white">No video source</div>;
                             }
                             
-                            return (
+                                  return (
                  <VideoComponent
                    post={post}
                    src={videoSrc}
@@ -1898,11 +1898,11 @@ const PostModal = () => {
       <div
         key={post._id}
         className="relative aspect-square group cursor-pointer rounded-sm overflow-hidden bg-black"
-         onClick={() => { 
+        onClick={() => { 
            const postId = post._id || post.postid || post.id;
            setClickedPostId(postId);
-           setShowPostModal(true); 
-         }}
+          setShowPostModal(true); 
+        }}
       >
         {/* Image Post */}
         {postType === "image" && src && (

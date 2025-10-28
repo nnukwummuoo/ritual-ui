@@ -174,7 +174,7 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
     queryUrlFallback?: string;
     pathUrlFallback?: string;
   }) => {
-    const { videoRef, isPlaying, isVisible, autoPlayBlocked, togglePlay, toggleMute, isMuted } = useVideoAutoPlay({
+    const { videoRef, isPlaying, isVisible, autoPlayBlocked, hasUserInteracted, togglePlay, toggleMute, isMuted } = useVideoAutoPlay({
       autoPlay: true,
       muted: true,
       loop: true,
@@ -238,7 +238,6 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
           <video
             ref={videoRef}
             src={src}
-            autoPlay
             muted
             loop
             playsInline
@@ -302,7 +301,7 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
             </div>
           )}
           
-          {/* Center Play/Pause Button - Shows when showControls is true OR when auto-play is blocked */}
+          {/* Center Play/Pause Button - Shows when controls are visible OR when autoplay is blocked */}
           {(showControls || autoPlayBlocked) && (
             <div className="absolute inset-0 flex items-center justify-center transition-opacity duration-300 opacity-100">
               <div 
@@ -317,9 +316,7 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
                     setShowControls(false);
                   }, 3000);
                 }}
-                className={`bg-black bg-opacity-70 rounded-full p-5 hover:bg-opacity-90 hover:scale-110 cursor-pointer transition-all ${
-                  autoPlayBlocked ? 'animate-pulse' : ''
-                }`}
+                className="bg-black bg-opacity-70 rounded-full p-5 hover:bg-opacity-90 hover:scale-110 cursor-pointer transition-all"
               >
                 {isPlaying ? (
                   <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -332,11 +329,26 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
                   </svg>
                 )}
               </div>
-              {autoPlayBlocked && (
-                <div className="absolute bottom-16 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-75 text-white text-xs px-2 py-1 rounded">
-                  Click to play
+            </div>
+          )}
+
+          {/* Click to Play Overlay - Shows when autoplay is blocked and video is not playing */}
+          {(autoPlayBlocked || !hasUserInteracted) && !isPlaying && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30">
+              <div className="text-center text-white">
+                 <div 
+                   onClick={(e) => {
+                     e.stopPropagation();
+                     togglePlay();
+                   }}
+                   className="bg-black bg-opacity-70 rounded-full p-6 hover:bg-opacity-90 hover:scale-110 cursor-pointer transition-all mb-4 mx-auto w-fit opacity-0"
+                 >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                  </svg>
                 </div>
-              )}
+                <p className="text-lg font-medium">Click to play</p>
+              </div>
             </div>
           )}
         </div>

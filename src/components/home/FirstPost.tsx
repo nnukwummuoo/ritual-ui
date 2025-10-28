@@ -175,7 +175,7 @@ const FirstPost: React.FC<FirstPostProps> = ({
   const controlsTimerRef = React.useRef<NodeJS.Timeout | null>(null);
 
   // Video auto-play hook with post ID for global management
-  const { videoRef, isPlaying, isVisible, autoPlayBlocked, togglePlay, toggleMute, isMuted } = useVideoAutoPlay({
+  const { videoRef, isPlaying, isVisible, autoPlayBlocked, hasUserInteracted, togglePlay, toggleMute, isMuted } = useVideoAutoPlay({
     autoPlay: true,
     muted: true,
     loop: true,
@@ -485,7 +485,6 @@ const FirstPost: React.FC<FirstPostProps> = ({
             <video
               ref={videoRef}
               src={src}
-              autoPlay
               muted
               loop
               playsInline
@@ -549,8 +548,8 @@ const FirstPost: React.FC<FirstPostProps> = ({
               </div>
             )}
             
-            {/* Center Play/Pause Button - Shows only when showControls is true */}
-            {showControls && (
+            {/* Center Play/Pause Button - Shows when controls are visible OR when autoplay is blocked */}
+            {(showControls || autoPlayBlocked) && (
               <div className="absolute inset-0 flex items-center justify-center transition-opacity duration-300 opacity-100">
                 <div 
                   onClick={(e) => {
@@ -576,6 +575,26 @@ const FirstPost: React.FC<FirstPostProps> = ({
                       <polygon points="5 3 19 12 5 21 5 3"></polygon>
                     </svg>
                   )}
+                </div>
+              </div>
+            )}
+
+            {/* Click to Play Overlay - Shows when autoplay is blocked and video is not playing */}
+            {(autoPlayBlocked || !hasUserInteracted) && !isPlaying && (
+              <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30">
+                <div className="text-center text-white">
+                   <div 
+                     onClick={(e) => {
+                       e.stopPropagation();
+                       togglePlay();
+                     }}
+                     className="bg-black bg-opacity-70 rounded-full p-6 hover:bg-opacity-90 hover:scale-110 cursor-pointer transition-all mb-4 mx-auto w-fit opacity-0"
+                   >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                    </svg>
+                  </div>
+                  <p className="text-lg font-medium">Click to play</p>
                 </div>
               </div>
             )}
