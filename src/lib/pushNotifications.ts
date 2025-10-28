@@ -82,11 +82,7 @@ class PushNotificationService {
         return false;
       }
 
-      console.log('🔔 [Push] Starting subscription process for user:', userid);
-      console.log('🔔 [Push] Service Worker registration:', this.registration);
-
       const permission = await this.requestPermission();
-      console.log('🔔 [Push] Permission status:', permission);
       
       if (permission !== 'granted') {
         console.error('🔔 [Push] Permission not granted:', permission);
@@ -95,23 +91,17 @@ class PushNotificationService {
 
       // Convert VAPID key - ensure it's properly formatted
       const applicationServerKey = this.urlBase64ToUint8Array(VAPID_PUBLIC_KEY);
-      console.log('🔔 [Push] VAPID key converted, length:', applicationServerKey.length);
 
       // Subscribe to push notifications
-      console.log('🔔 [Push] Creating push subscription...');
       this.subscription = await this.registration.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: applicationServerKey,
       });
 
-      console.log('🔔 [Push] Subscription created:', this.subscription);
-
       // Send subscription to server
-      console.log('🔔 [Push] Sending subscription to server...');
       const success = await this.sendSubscriptionToServer(userid, this.subscription);
       
       if (success) {
-        console.log('🔔 [Push] Subscription successful!');
         return true;
       } else {
         console.error('🔔 [Push] Failed to send subscription to server');
@@ -148,13 +138,6 @@ class PushNotificationService {
   // Send subscription to server
   private async sendSubscriptionToServer(userid: string, subscription: PushSubscription): Promise<boolean> {
     try {
-      console.log('🔔 [Push] Sending subscription to /api/push/subscribe');
-      console.log('🔔 [Push] Subscription data:', {
-        userid,
-        endpoint: subscription.endpoint,
-        keys: subscription.getKey('p256dh') ? 'present' : 'missing'
-      });
-
       const response = await fetch('/api/push/subscribe', {
         method: 'POST',
         headers: {
@@ -166,16 +149,13 @@ class PushNotificationService {
         })
       });
 
-      console.log('🔔 [Push] Server response status:', response.status);
-      
       if (!response.ok) {
         const errorText = await response.text();
         console.error('🔔 [Push] Server error response:', errorText);
         return false;
       }
 
-      const result = await response.json();
-      console.log('🔔 [Push] Server success response:', result);
+      await response.json();
       return true;
     } catch (error) {
       console.error('🔔 [Push] Error sending subscription to server:', error);

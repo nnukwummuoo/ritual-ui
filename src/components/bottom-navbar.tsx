@@ -256,7 +256,7 @@ export default function BottomNavBar() {
                   {/* Unread indicator - only show when there are unread messages */}
                   {item.showUnreadIndicator && (
                     <div className="absolute -top-1 -right-1 min-w-[18px] h-[18px] bg-white text-black text-xs rounded-full flex items-center justify-center font-semibold">
-                      {item.unreadCount && item.unreadCount > 99 ? (
+                      {item.unreadCount && item.unreadCount > 9 ? (
                         <span className="flex items-center">
                           <span>99</span>
                           <span className="text-[10px] ml-0.5">+</span>

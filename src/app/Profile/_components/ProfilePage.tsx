@@ -24,6 +24,7 @@ import { Heart, MessageCircle, X } from "lucide-react";
 import Image from "next/image";
 import { URL as API_URL } from "@/api/config";
 import PostActions from "@/components/home/PostActions";
+import { useVideoAutoPlay } from "@/hooks/useVideoAutoPlayNew";
 import { toast } from "material-react-toastify";
 import { postlike } from "@/store/like";
 import { getpostcomment, postcomment } from "@/store/comment";
@@ -63,12 +64,13 @@ export const Profile = () => {
   const dispatch = useDispatch<AppDispatch>();
  // const fileRef = useRef<HTMLInputElement | null>(null);
   
-  // State for user posts
-  const [userPosts, setUserPosts] = useState<any[]>([]);
-  const [isLoadingPosts, setIsLoadingPosts] = useState(false);
-  const [selectedPost, setSelectedPost] = useState<any>(null);
-  const [showPostModal, setShowPostModal] = useState(false);
-  const [avatarSrc, setAvatarSrc] = useState<string | undefined>(undefined);
+   // State for user posts
+   const [userPosts, setUserPosts] = useState<any[]>([]);
+   const [isLoadingPosts, setIsLoadingPosts] = useState(false);
+   const [selectedPost, setSelectedPost] = useState<any>(null);
+   const [showPostModal, setShowPostModal] = useState(false);
+   const [avatarSrc, setAvatarSrc] = useState<string | undefined>(undefined);
+   const [clickedPostId, setClickedPostId] = useState<string | null>(null);
   // Get current user profile data (for side menu and current user info)
   const currentUserProfile = useSelector((s: RootState) => s.profile);
   
@@ -505,7 +507,10 @@ export const Profile = () => {
     try {
       // Use the URL constant from config for backend requests
       const response = await axios.post(`${API_URL}/getalluserpost`, 
-        { userid: userId }, 
+        { 
+          userid: userId,
+          sort: 'newest' // Request posts sorted by newest first
+        }, 
         { 
               headers: { 
                 'Content-Type': 'application/json',
@@ -567,7 +572,7 @@ export const Profile = () => {
           
           return postData;
         } catch (err) {
-          console.log('Error fetching post data:', err);
+          // Handle error gracefully
           return {
             ...post,
             likeCount: post.likeCount || 0,
@@ -1025,231 +1030,234 @@ export const Profile = () => {
 //       </div>
 //     );
 //   };
-// Post Modal component
+
+   // Video Component for profile modal - using the same approach as FirstPost and RemainingPosts
+   const VideoComponent = React.memo(function VideoComponent({ post, src, pathUrlPrimary, queryUrlFallback, pathUrlFallback, isFirstVideo = false }: {
+     post: any;
+     src: string;
+     pathUrlPrimary?: string;
+     queryUrlFallback?: string;
+     pathUrlFallback?: string;
+     isFirstVideo?: boolean;
+   }) {
+     // Use useVideoAutoPlay hook but disable auto-play for profile modal
+     const { videoRef, isPlaying, isVisible, autoPlayBlocked, togglePlay, toggleMute, isMuted } = useVideoAutoPlay({
+       autoPlay: false, // Disable auto-play for profile modal
+       muted: true,
+       loop: true,
+       postId: post?._id || post?.postid || post?.id || `profile-post-${Math.random()}`
+     });
+     
+     // State and ref for auto-hiding video controls (same as FirstPost/RemainingPosts)
+     const [showControls, setShowControls] = React.useState(false);
+     const [isVideoLoaded, setIsVideoLoaded] = React.useState(false);
+     const controlsTimerRef = React.useRef<NodeJS.Timeout | null>(null);
+     
+     // Clear timeout when component unmounts
+     React.useEffect(() => {
+       // Show controls initially when the video loads (for profile modal)
+       setShowControls(true);
+       
+       // Don't auto-hide controls initially since videos don't auto-play
+       // Controls will hide after user interaction
+       
+       return () => {
+         // Clean up all timeouts on unmount
+         if (controlsTimerRef.current) clearTimeout(controlsTimerRef.current);
+       };
+     }, []);
+
+     return (
+       <div className="relative w-full h-[500px] rounded overflow-hidden">
+         {/* Video skeleton - show while video is loading */}
+         {!isVideoLoaded && (
+           <div className="absolute inset-0 w-full h-full bg-gray-800 animate-pulse flex items-center justify-center">
+             <div className="w-16 h-16 bg-gray-600 rounded-full flex items-center justify-center">
+               <svg className="w-8 h-8 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+                 <polygon points="5 3 19 12 5 21 5 3"></polygon>
+               </svg>
+             </div>
+           </div>
+         )}
+         
+         {/* Video with controls that auto-hide */}
+         <div 
+           className={`relative w-full h-full ${!isVideoLoaded ? 'opacity-0 absolute top-0 left-0' : 'opacity-100 transition-opacity duration-300'}`}
+           onMouseMove={() => {
+             // Show controls and reset the timer when mouse moves
+             setShowControls(true);
+             if (controlsTimerRef.current) {
+               clearTimeout(controlsTimerRef.current);
+             }
+             controlsTimerRef.current = setTimeout(() => {
+               setShowControls(false);
+             }, 3000);
+           }}
+           onClick={() => {
+             // Show controls and toggle play when clicking
+             setShowControls(true);
+             togglePlay();
+             if (controlsTimerRef.current) {
+               clearTimeout(controlsTimerRef.current);
+             }
+             controlsTimerRef.current = setTimeout(() => {
+               setShowControls(false);
+             }, 3000);
+           }}
+         >
+           <video
+             ref={videoRef}
+             src={src}
+             muted
+             loop
+             playsInline
+             className="w-full h-[500px] object-cover rounded cursor-pointer"
+             onLoadedData={() => {
+               setIsVideoLoaded(true);
+             }}
+             onError={(e) => {
+               const video = e.currentTarget as HTMLVideoElement & { dataset: any };
+               if (!video.dataset.fallback1 && pathUrlPrimary) {
+                 video.dataset.fallback1 = "1";
+                 video.src = pathUrlPrimary;
+                 video.load();
+                 return;
+               }
+               if (!video.dataset.fallback2 && queryUrlFallback) {
+                 video.dataset.fallback2 = "1";
+                 video.src = queryUrlFallback;
+                 video.load();
+                 return;
+               }
+               if (!video.dataset.fallback3 && pathUrlFallback) {
+                 video.dataset.fallback3 = "1";
+                 video.src = pathUrlFallback;
+                 video.load();
+               }
+             }}
+           />
+           
+           {/* Volume Button - Shows only when showControls is true */}
+           {showControls && (
+             <div className="absolute bottom-3 right-3 z-10 transition-opacity duration-300 opacity-100">
+               <button 
+                 onClick={(e) => {
+                   e.stopPropagation();
+                   toggleMute();
+                   // Reset auto-hide timer when interacting with controls
+                   if (controlsTimerRef.current) {
+                     clearTimeout(controlsTimerRef.current);
+                   }
+                   controlsTimerRef.current = setTimeout(() => {
+                     setShowControls(false);
+                   }, 3000);
+                 }} 
+                 className="bg-black bg-opacity-70 rounded-full p-2.5 hover:bg-opacity-90 transition-all hover:scale-110"
+                 aria-label={isMuted ? "Unmute video" : "Mute video"}
+               >
+                 {isMuted ? (
+                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                     <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                     <line x1="23" y1="9" x2="17" y2="15"></line>
+                     <line x1="17" y1="9" x2="23" y2="15"></line>
+                   </svg>
+                 ) : (
+                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                     <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                     <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                   </svg>
+                 )}
+               </button>
+             </div>
+           )}
+           
+           {/* Center Play/Pause Button - Always show initially since videos don't auto-play */}
+           {(showControls || autoPlayBlocked || !isPlaying) && (
+             <div className="absolute inset-0 flex items-center justify-center transition-opacity duration-300 opacity-100">
+               <div 
+                 onClick={(e) => {
+                   e.stopPropagation();
+                   togglePlay();
+                   // Reset auto-hide timer when interacting with controls
+                   if (controlsTimerRef.current) {
+                     clearTimeout(controlsTimerRef.current);
+                   }
+                   controlsTimerRef.current = setTimeout(() => {
+                     setShowControls(false);
+                   }, 3000);
+                 }}
+                 className={`bg-black bg-opacity-70 rounded-full p-5 hover:bg-opacity-90 hover:scale-110 cursor-pointer transition-all ${
+                   autoPlayBlocked ? 'animate-pulse' : ''
+                 }`}
+               >
+                 {isPlaying ? (
+                   <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                     <rect x="6" y="4" width="4" height="16"></rect>
+                     <rect x="14" y="4" width="4" height="16"></rect>
+                   </svg>
+                 ) : (
+                   <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                     <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                   </svg>
+                 )}
+               </div>
+               {autoPlayBlocked && (
+                 <div className="absolute bottom-16 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-75 text-white text-xs px-2 py-1 rounded">
+                   Click to play
+                 </div>
+               )}
+             </div>
+           )}
+         </div>
+       </div>
+     );
+   });
+
+// Post Modal component - Full screen modal showing all posts using RemainingPosts
 const PostModal = () => {
-  // Get auth data for the modal post - initialize with default values first
-  const [modalUi, setModalUi] = React.useState({
-    liked: false,
-    likeCount: 0,
-    comments: [] as any[],
-    commentCount: 0,
-    open: false,
-    input: "",
-    loadingComments: false,
-    sending: false
-  });
+  // State for managing UI state for all posts in the modal
+  const [modalUi, setModalUi] = React.useState<Record<string, any>>({});
+  const scrollContainerRef = React.useRef<HTMLDivElement>(null);
 
-  // State for post author data
-  const [postAuthorData, setPostAuthorData] = React.useState<any>(null);
-
-  // Update state when selectedPost changes
+  // Scroll to clicked post when modal opens
   React.useEffect(() => {
-    if (selectedPost) {
-      setModalUi({
-        liked: selectedPost.likedBy?.includes(loggedInUserId) || false,
-        likeCount: selectedPost.likeCount || selectedPost.likes?.length || 0,
-        comments: selectedPost.comments || [],
-        commentCount: selectedPost.commentCount || selectedPost.comments?.length || 0,
-        open: false,
-        input: "",
-        loadingComments: false,
-        sending: false
-      });
-
-      // If post doesn't have user data, fetch it separately
-      if (!selectedPost.user && selectedPost.userid) {
-        fetchPostAuthorData(selectedPost.userid);
-      } else {
-        setPostAuthorData(selectedPost.user);
-      }
-    }
-  }, [selectedPost, loggedInUserId]);
-
-  // Function to fetch post author data
-  const fetchPostAuthorData = async (userId: string) => {
-    try {
-      const response = await axios.post(`${API_URL}/getprofilebyID`, 
-        { userid: userId }, 
-        { 
-          headers: { 
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          }
-        }
-      );
-      
-      if (response.data && response.data.profile) {
-        setPostAuthorData(response.data.profile);
-      }
-    } catch (error) {
-      console.error('Error fetching post author data:', error);
-    }
-  };
-
-  if (!selectedPost) return null;
-
-  const { src, postType } = getMediaSource(selectedPost);
-
-  const postId = selectedPost._id || selectedPost.postid || selectedPost.id;
-
-  // Handle like for modal post
-  const handleModalLike = async () => {
-    const uid = String(loggedInUserId || localUserid || "");
-    
-    if (!postId || !token) {
-      toast.error("Please login to like posts");
-      return;
-    }
-    
-    const currentLiked = modalUi.liked;
-    const currentCount = modalUi.likeCount;
-    
-    // Optimistic update
-    setModalUi(prev => ({
-      ...prev,
-      liked: !currentLiked,
-      likeCount: Math.max(0, currentCount + (!currentLiked ? 1 : -1)),
-    }));
-
-    try {
-      await dispatch(postlike({
-        userid: uid,
-        postid: postId,
-        token: token
-      } as any)).unwrap();
-      
-      // Refresh the post data
-      fetchUserPosts(String(targetUserId));
-    } catch (err) {
-      // Revert on error
-      setModalUi(prev => ({
-        ...prev,
-        liked: currentLiked,
-        likeCount: currentCount,
-      }));
-      toast.error("Failed to update like. Please try again.");
-    }
-  };
-
-  // Handle comment toggle for modal
-  const handleModalCommentToggle = () => {
-    setModalUi(prev => ({
-      ...prev,
-      open: !prev.open
-    }));
-
-    // If comments are already loaded, don't fetch again
-    if (!modalUi.open && modalUi.comments.length > 0) {
-      return;
-    }
-
-    // Only fetch if comments are not already loaded
-    if (!modalUi.open && modalUi.comments.length === 0) {
-      setModalUi(prev => ({ ...prev, loadingComments: true }));
-      dispatch(getpostcomment({ postid: postId } as any))
-        .unwrap()
-        .then((res: any) => {
-          const arr = (res && (res.comment || res.comments)) || [];
-          setModalUi(prev => ({
-            ...prev,
-            comments: arr,
-            commentCount: arr.length,
-            loadingComments: false
-          }));
-        })
-        .catch(() => {
-          setModalUi(prev => ({
-            ...prev,
-            loadingComments: false
-          }));
-        });
-    }
-  };
-
-  // Handle comment submission for modal
-  const handleModalCommentSubmit = () => {
-    const text = modalUi.input.trim();
-    if (!text || !postId) return;
-
-    const tempComment = {
-      content: text,
-      comment: text,
-      username: nickname || 'you',
-      commentusername: nickname || 'you',
-      commentuserphoto: photolink || '',
-      userid: String(loggedInUserId || localUserid || ''),
-      createdAt: new Date().toISOString(),
-      commenttime: Date.now(),
-      temp: true,
-      initials: generateInitials(firstname, lastname, nickname)
-    };
-
-    // Optimistic update
-    setModalUi(prev => ({
-      ...prev,
-      input: "",
-      sending: true,
-      comments: [...prev.comments, tempComment],
-      commentCount: prev.comments.length + 1,
-    }));
-
-    const uid = String(loggedInUserId || localUserid || "");
-    
-    if (uid && token) {
-      dispatch(postcomment({
-        userid: uid,
-        postid: postId,
-        content: text,
-        token: token
-      } as any))
-        .unwrap()
-        .then((res: any) => {
-          // Refresh comments after successful post
-          dispatch(getpostcomment({ postid: postId } as any))
-            .unwrap()
-            .then((commentRes: any) => {
-              const serverComments = (commentRes && (commentRes.comment || commentRes.comments)) || [];
-              setModalUi(prev => ({
-              ...prev,
-              sending: false,
-                comments: serverComments,
-                commentCount: serverComments.length,
-              }));
-            })
-            .catch(() => {
-              setModalUi(prev => ({
-                ...prev,
-                sending: false,
-              }));
+    if (clickedPostId && scrollContainerRef.current && showPostModal) {
+      // Small delay to ensure DOM is ready
+      const timer = setTimeout(() => {
+        const postElement = scrollContainerRef.current?.querySelector(`[data-post-id="${clickedPostId}"]`);
+        if (postElement) {
+          // Scroll to the post with smooth behavior
+          postElement.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'start',
+            inline: 'nearest'
           });
-        })
-        .catch(() => {
-          setModalUi(prev => ({
-            ...prev,
-            sending: false,
-          }));
-          toast.error("Failed to post comment");
-        });
-    } else {
-      setModalUi(prev => ({
-        ...prev,
-        sending: false,
-      }));
+        }
+      }, 100);
+      
+      return () => clearTimeout(timer);
     }
-  };
+  }, [clickedPostId, showPostModal]);
+
+  // Reset clicked post ID when modal closes
+  React.useEffect(() => {
+    if (!showPostModal) {
+      setClickedPostId(null);
+    }
+  }, [showPostModal]);
+
+  if (!userPosts || userPosts.length === 0) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75 p-4">
-      <div className="bg-gray-900 rounded-lg max-w-3xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+    <div className="fixed inset-0 z-[100] bg-black">
         {/* Header */}
-        <div className="p-4 border-b border-gray-800 flex justify-between items-center">
+      <div className="sticky top-0 z-10 bg-black border-b border-gray-800 p-4 flex justify-between items-center">
           <div className="flex items-center gap-3">
-            <div className="relative w-12 h-12 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 p-0.5">
-              <div className="w-full h-full rounded-full overflow-hidden bg-gray-700">
+          <div className="relative w-10 h-10 rounded-full overflow-hidden bg-gray-700">
               {(() => {
-                const userData = postAuthorData || selectedPost.user;
-                const profileImage = userData?.photolink;
-                const userName = `${userData?.firstname || ""} ${userData?.lastname || ""}`.trim();
+              const profileImage = isViewingOwnProfile ? photolink : profileData?.photolink;
+              const userName = isViewingOwnProfile ? `${firstname} ${lastname}`.trim() : 
+                `${profileData?.firstname || ""} ${profileData?.lastname || ""}`.trim();
                 const initials = userName.split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2) || "?";
                 
                 if (profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined") {
@@ -1258,294 +1266,252 @@ const PostModal = () => {
                     <Image 
                       src={imageSource.src} 
                       alt="Profile" 
-                        width={48} 
-                        height={48} 
+                    width={40} 
+                    height={40} 
                       className="object-cover w-full h-full"
                     />
                   );
                 }
                 
                 return (
-                    <div className="w-full h-full bg-gray-600 flex items-center justify-center text-white text-lg font-semibold">
+                <div className="w-full h-full bg-gray-600 flex items-center justify-center text-white text-sm font-semibold">
                     {initials}
                   </div>
                 );
               })()}
-              </div>
-              
-              {/* VIP Lion Badge - show if the post author has VIP status */}
-              {(() => {
-                const userData = postAuthorData || selectedPost.user;
-                const isVipActive = userData?.isVip && userData?.vipEndDate && new Date(userData.vipEndDate) > new Date();
-                return isVipActive && (
-                  <VIPBadge size="lg" className="absolute -top-2 -right-2" isVip={userData.isVip} vipEndDate={userData.vipEndDate} />
-                );
-              })()}
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <p className="font-semibold text-lg">
-                {(postAuthorData || selectedPost.user)?.firstname || 'No firstname'} {(postAuthorData || selectedPost.user)?.lastname || 'No lastname'}
-              </p>
-                {(() => {
-                  const userData = postAuthorData || selectedPost.user;
-                  const isVipActive = userData?.isVip && userData?.vipEndDate && new Date(userData.vipEndDate) > new Date();
-                  return isVipActive && (
-                    <span className="text-xs bg-gradient-to-r from-yellow-400 to-orange-500 text-black px-2 py-1 rounded-full font-medium">
-                      VIP
-                    </span>
-                  );
-                })()}
-              </div>
-              <p className="text-sm text-blue-400 font-medium">
-                {(postAuthorData || selectedPost.user)?.nickname || (postAuthorData || selectedPost.user)?.username || 'No username'}
-              </p>
+            <h2 className="text-white font-semibold text-lg">
+              {isViewingOwnProfile ? `${firstname} ${lastname}`.trim() : 
+                `${profileData?.firstname || ""} ${profileData?.lastname || ""}`.trim()}
+            </h2>
+            <p className="text-gray-400 text-sm">
+              {userPosts.length} {userPosts.length === 1 ? 'post' : 'posts'}
+            </p>
             </div>
           </div>
           <button 
             onClick={() => setShowPostModal(false)}
-            className="text-gray-400 hover:text-white transition-colors"
+          className="text-gray-400 hover:text-white transition-colors p-2"
           >
             <X className="w-6 h-6" />
           </button>
         </div>
         
-        {/* Content */}
-        <div className="flex-1 overflow-auto">
-          {/* Media display with proper fallbacks */}
-          {postType === "image" && src && (
-            <div className="relative bg-black flex items-center justify-center min-h-[400px]">
-              <img
-                src={src}
-                alt={selectedPost?.content || "post image"}
-                className="max-w-full max-h-[70vh] object-contain"
-                onError={(e) => {
-                  const img = e.currentTarget as HTMLImageElement & { dataset: any };
-                  const { pathUrlPrimary, queryUrlFallback, pathUrlFallback } = getMediaSource(selectedPost);
-                  
-                  if (!img.dataset.fallback1 && pathUrlPrimary) {
-                    img.dataset.fallback1 = "1";
-                    img.src = pathUrlPrimary;
-                    return;
-                  }
-                  if (!img.dataset.fallback2 && queryUrlFallback) {
-                    img.dataset.fallback2 = "1";
-                    img.src = queryUrlFallback;
-                    return;
-                  }
-                  if (!img.dataset.fallback3 && pathUrlFallback) {
-                    img.dataset.fallback3 = "1";
-                    img.src = pathUrlFallback;
-                  }
-                }}
-              />
-            </div>
-          )}
-          
-          {postType === "video" && src && (
-            <div className="relative bg-black flex items-center justify-center min-h-[400px]">
-              <video
-                src={src}
-                controls
-                className="max-w-full max-h-[70vh]"
-                onError={(e) => {
-                  const video = e.currentTarget as HTMLVideoElement & { dataset: any };
-                  const { pathUrlPrimary, queryUrlFallback, pathUrlFallback } = getMediaSource(selectedPost);
-                  
-                  if (!video.dataset.fallback1 && pathUrlPrimary) {
-                    video.dataset.fallback1 = "1";
-                    video.src = pathUrlPrimary;
-                    video.load();
-                    return;
-                  }
-                  if (!video.dataset.fallback2 && queryUrlFallback) {
-                    video.dataset.fallback2 = "1";
-                    video.src = queryUrlFallback;
-                    video.load();
-                    return;
-                  }
-                  if (!video.dataset.fallback3 && pathUrlFallback) {
-                    video.dataset.fallback3 = "1";
-                    video.src = pathUrlFallback;
-                    video.load();
-                  }
-                }}
-              />
-            </div>
-          )}
-          
-          {/* Post content and actions */}
-          <div className="p-4">
-            {/* Post content */}
-            <p className="mb-4 whitespace-pre-wrap">{selectedPost.content}</p>
+       {/* Posts Content */}
+       <div ref={scrollContainerRef} className="h-[calc(100vh-80px)] overflow-y-auto">
+         <div className="max-w-2xl mx-auto p-4 space-y-6">
+          {userPosts.map((post, index) => {
+            const { src, postType } = getMediaSource(post);
             
-            {/* Post date */}
-            {selectedPost.createdAt && (
-              <p className="text-sm text-gray-400 mb-4">
-                {new Date(selectedPost.createdAt).toLocaleString()}
-              </p>
-            )}
+            // Generate fallback URLs for video error handling
+            const mediaRef = post?.postfilelink || post?.postphoto || post?.postvideo || post?.postlink || 
+                            post?.postFile || post?.file || post?.proxy_view || post?.file_link || 
+                            post?.media || post?.image || post?.video || post?.thumblink || 
+                            post?.postfilepublicid || post?.publicId || post?.public_id || 
+                            post?.imageId || "";
+            const asString = typeof mediaRef === "string" ? mediaRef : (mediaRef?.publicId || mediaRef?.public_id || mediaRef?.url || "");
             
-            {/* Post Actions - WITHOUT star button */}
-            <PostActions
-              className="mt-3 border-t border-gray-700 pt-2"
-              liked={modalUi.liked}
-              likeCount={modalUi.likeCount}
-              commentCount={modalUi.commentCount}
-              post={selectedPost}
-              onLike={handleModalLike}
-              onComment={handleModalCommentToggle}
-              // Remove the star-related props entirely
-            />
+            const queryUrlPrimary = asString ? `${API_URL}/api/image/view?publicId=${encodeURIComponent(asString)}` : "";
+            const pathUrlPrimary = asString ? `${API_URL}/api/image/view/${encodeURIComponent(asString)}` : "";
+            const queryUrlFallback = asString ? `https://mmekoapi.onrender.com/api/image/view?publicId=${encodeURIComponent(asString)}` : "";
+            const pathUrlFallback = asString ? `https://mmekoapi.onrender.com/api/image/view/${encodeURIComponent(asString)}` : "";
             
-            {/* Comments section */}
-            {modalUi.open && (
-              <div className="mt-4 border-t border-gray-700 pt-4">
-                {modalUi.loadingComments ? (
-                  <div className="flex justify-center py-4">
-                    <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-orange-500"></div>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {/* Comments list */}
-                    {modalUi.comments.length > 0 ? (
-                      modalUi.comments.map((comment: any, index: number) => (
-                        <div key={index} className="flex gap-3">
-                          <div className="flex-shrink-0">
-                            <div className="relative w-10 h-10 rounded-full bg-gradient-to-r from-green-500 to-teal-600 p-0.5">
-                              <div className="w-full h-full rounded-full overflow-hidden bg-gray-700">
+             return (
+               <div 
+                 key={post._id || post.postid || index} 
+                 data-post-id={post._id || post.postid || post.id}
+                 className="mx-auto max-w-[30rem] w-full bg-gray-800 rounded-md p-3"
+               >
+                {/* Post Header */}
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-3">
+                    <div className="relative">
+                      <div className="size-10 rounded-full overflow-hidden bg-gray-700">
                               {(() => {
-                                const profileImage = comment.commentuserphoto || comment.user?.photolink;
-                                const userName = comment.commentusername || comment.user?.username || comment.username || "User";
-                                const initials = comment.initials || userName.split(/\s+/).map((n: string) => n[0]).join('').toUpperCase().slice(0, 2) || "?";
+                          const profileImage = isViewingOwnProfile ? photolink : profileData?.photolink;
+                          const userName = isViewingOwnProfile ? `${firstname} ${lastname}`.trim() : 
+                            `${profileData?.firstname || ""} ${profileData?.lastname || ""}`.trim();
+                          const initials = userName.split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2) || "?";
                                 
                                 if (profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined") {
+                            const imageSource = getImageSource(profileImage, 'profile');
                                   return (
                                     <Image
-                                      src={profileImage}
-                                      alt="Commenter"
+                                src={imageSource.src} 
+                                alt="Profile" 
                                       width={40}
                                       height={40}
-                                      className="object-cover w-full h-full rounded-full"
-                                      onError={(e) => {
-                                        const target = e.target as HTMLImageElement;
-                                        target.style.display = 'none';
-                                        const parent = target.parentElement;
-                                        if (parent) {
-                                          const fallbackDiv = document.createElement('div');
-                                          fallbackDiv.className = 'w-full h-full rounded-full bg-gray-600 flex items-center justify-center text-sm text-white font-semibold';
-                                          fallbackDiv.textContent = initials;
-                                          parent.appendChild(fallbackDiv);
-                                        }
-                                      }}
+                                className="object-cover w-full h-full"
                                     />
                                   );
                                 }
                                 
                                 return (
-                                  <div className="w-full h-full rounded-full bg-gray-600 flex items-center justify-center text-sm text-white font-semibold">
+                            <div className="w-full h-full bg-gray-600 flex items-center justify-center text-white text-sm font-semibold">
                                     {initials}
                                   </div>
-                                );
-                              })()}
-                              </div>
-                              
-                              {/* VIP Lion Badge - show if the commenter has VIP status */}
-                              {(() => {
-                                const isVipActive = comment.isVip && comment.vipEndDate && new Date(comment.vipEndDate) > new Date();
-                                return isVipActive && (
-                                  <VIPBadge size="md" className="absolute -top-1 -right-1" isVip={comment.isVip} vipEndDate={comment.vipEndDate} />
                                 );
                               })()}
                             </div>
                           </div>
                           <div className="flex-1">
-                            <div className="bg-gray-800 rounded-lg p-3">
-                              <div className="flex items-center gap-2 mb-2">
-                                <p className="font-semibold text-sm text-white">
-                                  {comment.commentusername || comment.user?.username || comment.username || 'User'}
-                                </p>
-                                {/* {(() => {
-                                  const isVipActive = comment.isVip && comment.vipEndDate && new Date(comment.vipEndDate) > new Date();
-                                  return isVipActive && (
-                                    <span className="text-xs bg-gradient-to-r from-yellow-400 to-orange-500 text-black px-2 py-0.5 rounded-full font-medium">
-                                      VIP
+                      <p className="font-medium text-white">
+                        {isViewingOwnProfile ? `${firstname} ${lastname}`.trim() : 
+                          `${profileData?.firstname || ""} ${profileData?.lastname || ""}`.trim()}
+                      </p>
+                      <span className="text-gray-400 text-sm">
+                        {isViewingOwnProfile ? nickname : profileData?.nickname || ""}
                                     </span>
-                                  );
-                                })()} */}
                               </div>
-                              <p className="text-gray-200 text-sm leading-relaxed">
-                                {comment.comment || comment.content || String(comment)}
-                              </p>
                             </div>
-                            <p className="text-xs text-gray-500 mt-1 ml-1">
-                              {comment.createdAt ? new Date(comment.createdAt).toLocaleDateString() : 'Just now'}
-                            </p>
                           </div>
+
+                {/* Post Content */}
+                {post?.content && (
+                  <div className="my-2">
+                    <p className="text-white">{post.content}</p>
                         </div>
-                      ))
-                    ) : (
-                      <p className="text-center text-gray-500 py-4">No comments yet.</p>
-                    )}
-                    
-                    {/* Comment input */}
-                    <div className="flex items-center gap-3 pt-2">
-                      <div className="relative w-8 h-8 rounded-full bg-gradient-to-r from-purple-500 to-pink-600 p-0.5 flex-shrink-0">
-                        <div className="w-full h-full rounded-full overflow-hidden bg-gray-700">
-                          {(() => {
-                            const profileImage = photolink || avatarSrc;
-                            const userName = `${firstname || ""} ${lastname || ""}`.trim();
-                            const initials = userName.split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2) || "?";
-                            
-                            if (profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined") {
-                              const imageSource = getImageSource(profileImage, 'profile');
-                              return (
+                )}
+
+                {/* Post Media */}
+                {postType === "image" && src && (
+                  <div className="w-full max-h-[480px] relative rounded overflow-hidden">
                                 <Image
-                                  src={imageSource.src}
-                                  alt="Your profile"
-                                  width={32}
-                                  height={32}
-                                  className="object-cover w-full h-full"
-                                />
-                              );
+                      src={src}
+                      alt={post?.content || "post image"}
+                      width={800}
+                      height={480}
+                      className="w-full h-auto object-contain cursor-pointer hover:opacity-90 transition-opacity duration-200"
+                      onError={(e) => {
+                        const img = e.currentTarget as HTMLImageElement & { dataset: any };
+                        const { pathUrlPrimary, queryUrlFallback, pathUrlFallback } = getMediaSource(post);
+                        if (!img.dataset.fallback1 && pathUrlPrimary) {
+                          img.dataset.fallback1 = "1";
+                          img.src = pathUrlPrimary;
+                          return;
+                        }
+                        if (!img.dataset.fallback2 && queryUrlFallback) {
+                          img.dataset.fallback2 = "1";
+                          img.src = queryUrlFallback;
+                          return;
+                        }
+                        if (!img.dataset.fallback3 && pathUrlFallback) {
+                          img.dataset.fallback3 = "1";
+                          img.src = pathUrlFallback;
+                        }
+                      }}
+                    />
+                  </div>
+                )}
+                
+                {postType === "video" && (
+                  (() => {
+                    // For videos, use the direct URL from postfilelink (like RemainingPosts does)
+                    const mediaRef = post?.postfilelink || post?.postphoto || post?.postvideo || post?.postlink || 
+                                    post?.postFile || post?.file || post?.proxy_view || post?.file_link || 
+                                    post?.media || post?.image || post?.video || post?.thumblink || 
+                                    post?.postfilepublicid || post?.publicId || post?.public_id || 
+                                    post?.imageId || "";
+                    const asString = typeof mediaRef === "string" ? mediaRef : (mediaRef?.publicId || mediaRef?.public_id || mediaRef?.url || "");
+                    const isHttpUrl = typeof asString === "string" && /^https?:\/\//i.test(asString);
+                    const isBlobUrl = typeof asString === "string" && /^blob:/i.test(asString);
+                    const isDataUrl = typeof asString === "string" && /^data:/i.test(asString);
+                    const isUrl = isHttpUrl || isBlobUrl || isDataUrl;
+                    
+                    // Use getImageSource for all videos (same as RemainingPosts)
+                    const imageSource = getImageSource(asString, 'post');
+                    const videoSrc = imageSource.src;
+                    
+                    console.log('🎬 [POST DEBUG] Rendering video:', {
+                      postId: post._id || post.postid || post.id,
+                      postType,
+                      mediaRef,
+                      asString,
+                      isUrl,
+                      originalSrc: src,
+                      videoSrc,
+                      hasVideoSrc: !!videoSrc,
+                      pathUrlPrimary,
+                      queryUrlFallback,
+                      pathUrlFallback,
+                      post: post
+                    });
+                    
+                    // Only render if we have a valid video source
+                    if (!videoSrc) {
+                      console.log('❌ [POST DEBUG] No video source found for post:', post._id || post.postid || post.id);
+                      return <div className="w-full h-[500px] bg-gray-800 rounded flex items-center justify-center text-white">No video source</div>;
                             }
                             
                             return (
-                              <div className="w-full h-full bg-gray-600 flex items-center justify-center text-xs text-white font-semibold">
-                                {initials}
-                              </div>
-                            );
-                          })()}
-                        </div>
-                      </div>
-                      <input
-                        value={modalUi.input}
-                        onChange={(e) => setModalUi(prev => ({
+                 <VideoComponent
+                   post={post}
+                   src={videoSrc}
+                   pathUrlPrimary={pathUrlPrimary}
+                   queryUrlFallback={queryUrlFallback}
+                   pathUrlFallback={pathUrlFallback}
+                 />
+                    );
+                  })()
+                )}
+
+                {/* Post Actions */}
+                <PostActions
+                  className="mt-3 border-t border-gray-700 pt-2"
+                  starred={false}
+                  liked={false}
+                  likeCount={post.likeCount || post.likes?.length || 0}
+                  commentCount={post.commentCount || post.comments?.length || 0}
+                  post={post}
+                  onStar={() => {}}
+                  onLike={async () => {
+                    const uid = String(loggedInUserId || localUserid || "");
+                    const postId = post._id || post.postid || post.id;
+                    
+                    if (!postId || !token) {
+                      toast.error("Please login to like posts");
+                      return;
+                    }
+
+                    try {
+                      await dispatch(postlike({
+                        userid: uid,
+                        postid: postId,
+                        token: token
+                      } as any)).unwrap();
+                      
+                      toast.success("Post liked!");
+                      // Refresh posts
+                      fetchUserPosts(String(targetUserId));
+                    } catch (err) {
+                      toast.error("Failed to like post");
+                    }
+                  }}
+                  onComment={() => {
+                    // Simple comment toggle for modal
+                    const postId = post._id || post.postid || post.id;
+                    setModalUi(prev => ({
                           ...prev,
-                          input: e.target.value
-                        }))}
-                        placeholder="Write a comment…"
-                        className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm outline-none focus:border-gray-500"
-                        onKeyPress={(e) => {
-                          if (e.key === 'Enter' && !e.shiftKey) {
-                            e.preventDefault();
-                            handleModalCommentSubmit();
-                          }
-                        }}
-                      />
-                      <button
-                        disabled={!modalUi.input.trim() || modalUi.sending}
-                        onClick={handleModalCommentSubmit}
-                        className="px-4 py-2 text-sm bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:from-blue-600 hover:to-purple-700 transition-colors"
-                      >
-                        {modalUi.sending ? "..." : "Post"}
-                      </button>
+                      [postId]: {
+                        ...prev[postId],
+                        open: !prev[postId]?.open
+                      }
+                    }));
+                  }}
+                />
+
+                {/* Comments Section */}
+                {modalUi[post._id || post.postid || post.id]?.open && (
+                  <div className="mt-2 border-t border-gray-700 pt-2">
+                    <div className="space-y-2">
+                      <p className="text-sm text-gray-500">Comments feature coming soon...</p>
                     </div>
                   </div>
                 )}
               </div>
-            )}
-          </div>
+            );
+          })}
         </div>
       </div>
     </div>
@@ -1925,19 +1891,18 @@ const PostModal = () => {
                     </div>
                   ) : (
                     <div className="grid grid-cols-3 gap-1 md:gap-2">
-  {[...userPosts].reverse().map((post) => {
+  {userPosts.map((post) => {
     const { src, postType, pathUrlPrimary, queryUrlFallback, pathUrlFallback } = getMediaSource(post);
     
     return (
       <div
         key={post._id}
         className="relative aspect-square group cursor-pointer rounded-sm overflow-hidden bg-black"
-        onClick={() => { 
-          console.log('🔍 [Debug] Selected post data:', post);
-          console.log('🔍 [Debug] Post user data:', post.user);
-          setSelectedPost(post); 
-          setShowPostModal(true); 
-        }}
+         onClick={() => { 
+           const postId = post._id || post.postid || post.id;
+           setClickedPostId(postId);
+           setShowPostModal(true); 
+         }}
       >
         {/* Image Post */}
         {postType === "image" && src && (

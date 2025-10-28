@@ -261,6 +261,43 @@ export default function PostsCard() {
     }
   }, [loggedInUserId, dispatch]);
 
+  // Reset video state when component mounts (user returns to homepage)
+  useEffect(() => {
+    // Clear any existing video state from localStorage
+    localStorage.removeItem('videoUserInteraction');
+    
+    // Dispatch a custom event to reset video context
+    window.dispatchEvent(new CustomEvent('resetVideoState'));
+    
+    return () => {
+      // Pause all videos when leaving the page
+      window.dispatchEvent(new CustomEvent('pauseAllVideos'));
+    };
+  }, []);
+
+  // Listen for navigation events to reset video state
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      window.dispatchEvent(new CustomEvent('pauseAllVideos'));
+    };
+
+    const handlePageShow = (event: PageTransitionEvent) => {
+      if (event.persisted) {
+        // Page was restored from cache, reset video state
+        localStorage.removeItem('videoUserInteraction');
+        window.dispatchEvent(new CustomEvent('resetVideoState'));
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener('pageshow', handlePageShow);
+    
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener('pageshow', handlePageShow);
+    };
+  }, []);
+
   // Remove localStorage UI state loading - start fresh each time
 
   // Define fetchFeed function first
@@ -348,7 +385,6 @@ export default function PostsCard() {
         
         // Backend already returns posts with likes and comments via aggregation
         // No need for additional API calls - the data is already complete!
-        console.log('✅ [PERFORMANCE] Using backend data directly - no redundant API calls needed');
         
         // Force a re-render by updating timeUpdate
         setTimeUpdate(prev => prev + 1);

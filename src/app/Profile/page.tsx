@@ -10,16 +10,12 @@ export default function ProfileRedirectPage() {
   useEffect(() => {
     // If we already have a userId, go immediately
     if (userId && userId.length > 0) {
-      // eslint-disable-next-line no-console
-      console.log("[/Profile redirect] userId found, redirecting to:", `/Profile/${userId}`);
       router.replace(`/Profile/${userId}`);
       return;
     }
 
     // Otherwise, wait briefly to allow Redux/localStorage to resolve
     const t = setTimeout(() => {
-      // eslint-disable-next-line no-console
-      console.log("[/Profile redirect] no userId after delay, redirecting to /login");
       router.replace("/login");
     }, 1200);
 

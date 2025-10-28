@@ -181,7 +181,7 @@ const FirstPost: React.FC<FirstPostProps> = ({
     loop: true,
     postId: post?._id || post?.postid || post?.id || 'first-post'
   });
-  
+
   // Clear timeout when component unmounts
   React.useEffect(() => {
     // Show controls initially when the video loads

@@ -44,8 +44,6 @@ export class ServiceWorkerManager {
         scope: '/'
       });
       
-      console.log('Push SW registered:', this.pushRegistration);
-      
       // Wait for the service worker to be ready
       await navigator.serviceWorker.ready;
       

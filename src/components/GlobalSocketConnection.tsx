@@ -61,7 +61,6 @@ export default function GlobalSocketConnection() {
       const handleConnect = () => {
         // Join user room for online status (same as message components)
         joinUserRoom(userid);
-        console.log('🌐 [GlobalSocket] Emitting online status for user:', userid, 'Type:', typeof userid);
         socket.emit("online", userid);
         setHasConnected(true);
       };
@@ -77,7 +76,6 @@ export default function GlobalSocketConnection() {
     joinUserRoom(userid);
     
     // Emit online status when user is authenticated
-    console.log('🌐 [GlobalSocket] Emitting online status for user:', userid, 'Type:', typeof userid);
     socket.emit("online", userid);
     setHasConnected(true);
     
