@@ -19,6 +19,7 @@ const publicRoutes = [
   '/support',
   "/creators",
   '/offline',
+  '/banned',  // Allow banned users to access banned page
 ];
 
 // Routes that should redirect authenticated users away

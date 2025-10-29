@@ -7,17 +7,17 @@ import PacmanLoader from "react-spinners/RingLoader";
 import { ToastContainer, toast } from "material-react-toastify";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "@/store/store";
-import { getalluser, deleteuser, sendmessage } from "@/store/admin";
+import { getalluser } from "@/store/admin";
 import { loginAuthUser } from "@/store/registerSlice";
 import { getprofile } from "@/store/profile";
 import { URL } from "@/api/config";
 import { getImageSource } from "@/lib/imageUtils";
+import { checkUserBanStatus } from "@/utils/banCheck";
 
 interface User {
   _id: string;
   firstname: string;
   lastname: string;
-  email: string;
   gender: string;
   country: string;
   photolink: string;
@@ -42,6 +42,9 @@ interface User {
   vipStartDate?: string;
   vipEndDate?: string;
   vipAutoRenewal?: boolean;
+  banned?: boolean;
+  banReason?: string;
+  bannedAt?: string | null;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -120,7 +123,7 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, isOpen, onClose
       await onUpdateUser(user._id, editedUser);
       setIsEditing(false);
       toast.success("User updated successfully");
-    } catch (error) {
+    } catch {
       toast.error("Failed to update user");
     } finally {
       setLoading(false);
@@ -213,19 +216,6 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, isOpen, onClose
                     />
                   ) : (
                     <p className="text-white">{user.lastname}</p>
-                  )}
-                </div>
-                <div>
-                  <label className="text-gray-300 text-sm">Email</label>
-                  {isEditing ? (
-                    <input
-                      type="email"
-                      value={editedUser.email || ""}
-                      onChange={(e) => setEditedUser({ ...editedUser, email: e.target.value })}
-                      className="w-full bg-gray-700 text-white p-2 rounded mt-1"
-                    />
-                  ) : (
-                    <p className="text-white">{user.email}</p>
                   )}
                 </div>
                 <div>
@@ -638,8 +628,12 @@ export default function Users(): JSX.Element {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [notificationMessage, setNotificationMessage] = useState("");
+  const [notificationTitle, setNotificationTitle] = useState("");
   const [showNotificationModal, setShowNotificationModal] = useState(false);
-  const [notificationGender, setNotificationGender] = useState<"all" | "male" | "female">("all");
+  const [notificationGender, setNotificationGender] = useState<"all" | "creators" | "male" | "female">("all");
+  const [hasLearnMore, setHasLearnMore] = useState(false);
+  const [learnMoreUrl, setLearnMoreUrl] = useState("");
+  const [sendingNotification, setSendingNotification] = useState(false);
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -656,13 +650,13 @@ export default function Users(): JSX.Element {
   const token = useSelector((s: RootState) => s.register.refreshtoken);
   const userid = useSelector((s: RootState) => s.register.userID);
   const profileStatus = useSelector((s: RootState) => s.profile.status);
-  const usersFromStore = useSelector((s: RootState) => s.admin.alluser_list) as unknown as User[];
+  const usersFromStore = useSelector((s: RootState) => s.admin.alluser_list) as User[];
   const usersStatus = useSelector((s: RootState) => s.admin.alluser_stats);
 
   useEffect(() => {
     // Ensure profile is loaded before enforcing admin gate
     if (token && userid && profileStatus === "idle") {
-      dispatch(getprofile({ userid, token } as any));
+      dispatch(getprofile({ userid, token }));
     }
 
     // Hydrate from localStorage if token/ids are missing
@@ -688,7 +682,7 @@ export default function Users(): JSX.Element {
     }
 
     if (usersStatus === "idle") {
-      dispatch(getalluser({} as any));
+      dispatch(getalluser({}));
     }
   }, [dispatch, token, userid, usersStatus, profileStatus]);
 
@@ -736,12 +730,12 @@ export default function Users(): JSX.Element {
                   <tr>
                     <th className="px-4 py-3 text-left text-yellow-500 font-semibold">Photo</th>
                     <th className="px-4 py-3 text-left text-yellow-500 font-semibold">Name</th>
-                    <th className="px-4 py-3 text-left text-yellow-500 font-semibold">Email</th>
                     <th className="px-4 py-3 text-left text-yellow-500 font-semibold">Gender</th>
                     <th className="px-4 py-3 text-left text-yellow-500 font-semibold">Country</th>
                     <th className="px-4 py-3 text-left text-yellow-500 font-semibold">Balance</th>
                     <th className="px-4 py-3 text-left text-yellow-500 font-semibold">Earnings</th>
                     <th className="px-4 py-3 text-left text-yellow-500 font-semibold">Status</th>
+                    <th className="px-4 py-3 text-left text-yellow-500 font-semibold">Ban Status</th>
                     <th className="px-4 py-3 text-left text-yellow-500 font-semibold">Actions</th>
                   </tr>
                 </thead>
@@ -785,7 +779,6 @@ export default function Users(): JSX.Element {
                       <td className="px-4 py-3 text-white">
                         {user.firstname} {user.lastname}
                       </td>
-                      <td className="px-4 py-3 text-white text-sm">{user.email}</td>
                       <td className="px-4 py-3 text-white capitalize">{user.gender}</td>
                       <td className="px-4 py-3 text-white">{user.country}</td>
                       <td className="px-4 py-3 text-white">{user.balance || "0"}</td>
@@ -804,6 +797,20 @@ export default function Users(): JSX.Element {
                         </div>
                       </td>
                       <td className="px-4 py-3">
+                        <div className="flex flex-col gap-1">
+                          {user.banned ? (
+                            <span className="px-2 py-1 rounded text-xs bg-red-500">Banned</span>
+                          ) : (
+                            <span className="px-2 py-1 rounded text-xs bg-green-500">Active</span>
+                          )}
+                          {user.banned && user.banReason && (
+                            <span className="px-1 py-0.5 rounded text-xs bg-red-800 text-xs" title={user.banReason}>
+                              {user.banReason.length > 20 ? user.banReason.substring(0, 20) + '...' : user.banReason}
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3">
                         <div className="flex gap-2">
                           <button
                             onClick={() => handleViewUser(user)}
@@ -811,9 +818,24 @@ export default function Users(): JSX.Element {
                           >
                             View
                           </button>
+                          {user.banned ? (
+                            <button
+                              onClick={() => handleUnbanUser(user._id)}
+                              className="bg-green-500 text-white px-3 py-1 rounded text-xs hover:bg-green-600"
+                            >
+                              Unban
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => handleBanUser(user._id)}
+                              className="bg-red-500 text-white px-3 py-1 rounded text-xs hover:bg-red-600"
+                            >
+                              Ban
+                            </button>
+                          )}
                           <button
                             onClick={() => handleDeleteUser(user._id)}
-                            className="bg-red-500 text-white px-3 py-1 rounded text-xs hover:bg-red-600"
+                            className="bg-gray-500 text-white px-3 py-1 rounded text-xs hover:bg-gray-600"
                           >
                             Delete
                           </button>
@@ -976,12 +998,106 @@ export default function Users(): JSX.Element {
     setIsModalOpen(true);
   };
 
+  const handleBanUser = async (userId: string) => {
+    const reason = prompt("Enter ban reason (optional):");
+    if (reason === null) return; // User cancelled
+
+    try {
+      const response = await fetch(`${URL}/banuser`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          userId: userId,
+          reason: reason || "Violation of terms of service"
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        toast.success(data.message || "User banned successfully", { autoClose: 2000 });
+        
+        // Update user in local state
+        setuser_list(prev => prev.map(user => 
+          user._id === userId ? { ...user, banned: true, banReason: reason || "Violation of terms of service", bannedAt: new Date().toISOString() } : user
+        ));
+        setalluser_list(prev => prev.map(user => 
+          user._id === userId ? { ...user, banned: true, banReason: reason || "Violation of terms of service", bannedAt: new Date().toISOString() } : user
+        ));
+        
+        // Update the selected user in the modal if it's the same user
+        if (selectedUser && selectedUser._id === userId) {
+          setSelectedUser({ ...selectedUser, banned: true, banReason: reason || "Violation of terms of service", bannedAt: new Date().toISOString() });
+        }
+        
+        // Check if current user was banned (immediate logout)
+        await checkUserBanStatus();
+      } else {
+        const errorData = await response.json();
+        toast.error(errorData.message || "Failed to ban user", { autoClose: 2000 });
+      }
+    } catch (error) {
+      console.error('Error banning user:', error);
+      toast.error("Failed to ban user", { autoClose: 2000 });
+    }
+  };
+
+  const handleUnbanUser = async (userId: string) => {
+    if (!window.confirm("Are you sure you want to unban this user?")) return;
+
+    try {
+      const response = await fetch(`${URL}/unbanuser`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          userId: userId
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        toast.success(data.message || "User unbanned successfully", { autoClose: 2000 });
+        
+        // Update user in local state
+        setuser_list(prev => prev.map(user => 
+          user._id === userId ? { ...user, banned: false, banReason: "", bannedAt: undefined } : user
+        ));
+        setalluser_list(prev => prev.map(user => 
+          user._id === userId ? { ...user, banned: false, banReason: "", bannedAt: undefined } : user
+        ));
+        
+        // Update the selected user in the modal if it's the same user
+        if (selectedUser && selectedUser._id === userId) {
+          setSelectedUser({ ...selectedUser, banned: false, banReason: "", bannedAt: undefined });
+        }
+      } else {
+        const errorData = await response.json();
+        toast.error(errorData.message || "Failed to unban user", { autoClose: 2000 });
+      }
+    } catch (error) {
+      console.error('Error unbanning user:', error);
+      toast.error("Failed to unban user", { autoClose: 2000 });
+    }
+  };
+
+
   const handleSendNotification = async () => {
+    if (!notificationTitle.trim()) {
+      toast.error("Please enter a title");
+      return;
+    }
     if (!notificationMessage.trim()) {
       toast.error("Please enter a message");
       return;
     }
+    // Learn More URL is optional - if hasLearnMore is true, it can be empty
 
+    setSendingNotification(true);
     try {
       const response = await fetch(`${URL}/adminNotificationSystem`, {
         method: 'POST',
@@ -990,10 +1106,12 @@ export default function Users(): JSX.Element {
           'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify({
+          title: notificationTitle,
           message: notificationMessage,
           targetGender: notificationGender,
           notificationType: 'admin_broadcast',
-          title: 'Admin Notification'
+          hasLearnMore: hasLearnMore,
+          learnMoreUrl: hasLearnMore ? learnMoreUrl : null
         })
       });
 
@@ -1001,8 +1119,11 @@ export default function Users(): JSX.Element {
         const data = await response.json();
         toast.success(`Notification sent to ${data.details?.totalTargets || 0} users`);
         setShowNotificationModal(false);
+        setNotificationTitle("");
         setNotificationMessage("");
         setNotificationGender("all");
+        setHasLearnMore(false);
+        setLearnMoreUrl("");
       } else {
         const errorData = await response.json();
         toast.error(errorData.message || "Failed to send notification");
@@ -1010,6 +1131,8 @@ export default function Users(): JSX.Element {
     } catch (error) {
       console.error('Error sending notification:', error);
       toast.error("Failed to send notification");
+    } finally {
+      setSendingNotification(false);
     }
   };
 
@@ -1023,12 +1146,12 @@ export default function Users(): JSX.Element {
               {/* Search */}
               <div className="flex flex-wrap items-center gap-2 mt-3">
                 <label className="text-white mr-2 text-sm font-bold">
-                  Name or Email
+                  Search by Name
                 </label>
                 <input
                   type="text"
                   className="rounded-lg bg-slate-400 placeholder:text-slate-600 placeholder:text-xs mr-1 pl-2 placeholder:text-center h-10 w-full md:w-[28rem] lg:w-[34rem]"
-                  placeholder="search by name/email"
+                  placeholder="search by name"
                   onInput={(e) => {
                     const val = e.currentTarget.value;
                     if (val) {
@@ -1042,9 +1165,7 @@ export default function Users(): JSX.Element {
                           value.lastname.toLowerCase().trim() ===
                             val.toLowerCase().trim() ||
                           val === name ||
-                          val === name1 ||
-                          val.toLowerCase().trim() ===
-                            value.email.toLowerCase().trim()
+                          val === name1
                         );
                       });
                       setalluser_list(filtered.length ? filtered : user_list);
@@ -1068,9 +1189,7 @@ export default function Users(): JSX.Element {
                           value.lastname.toLowerCase().trim() ===
                             search_text.toLowerCase().trim() ||
                           search_text === name ||
-                          search_text === name1 ||
-                          search_text.toLowerCase().trim() ===
-                            value.email.toLowerCase().trim()
+                          search_text === name1
                         );
                       });
                       setalluser_list(filtered.length ? filtered : user_list);
@@ -1160,6 +1279,7 @@ export default function Users(): JSX.Element {
                   <img alt="sendicon" src={sendIcon.src} />
                 </button>
                 
+                
                 <div className="text-white text-sm">
                   Total Users: <span className="text-yellow-500 font-bold">{alluser_list.length}</span>
                   {totalPages > 1 && (
@@ -1201,18 +1321,18 @@ export default function Users(): JSX.Element {
       {/* Notification Modal */}
       {showNotificationModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-gray-900 rounded-lg max-w-md w-full p-6">
-            <h3 className="text-xl font-bold text-yellow-500 mb-4">Send Notification</h3>
+          <div className="bg-gray-900 rounded-lg max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto">
+            <h3 className="text-xl font-bold text-yellow-500 mb-4">Send Admin Notification</h3>
             
             <div className="mb-4">
               <label className="text-white text-sm font-bold mb-2 block">Target Audience</label>
-              <div className="flex gap-4">
+              <div className="grid grid-cols-2 gap-2">
                 <label className="flex items-center">
                   <input
                     type="radio"
                     value="all"
                     checked={notificationGender === "all"}
-                    onChange={(e) => setNotificationGender(e.target.value as "all" | "male" | "female")}
+                    onChange={(e) => setNotificationGender(e.target.value as "all" | "creators" | "male" | "female")}
                     className="mr-2"
                   />
                   <span className="text-white text-sm">All Users</span>
@@ -1220,9 +1340,19 @@ export default function Users(): JSX.Element {
                 <label className="flex items-center">
                   <input
                     type="radio"
+                    value="creators"
+                    checked={notificationGender === "creators"}
+                    onChange={(e) => setNotificationGender(e.target.value as "all" | "creators" | "male" | "female")}
+                    className="mr-2"
+                  />
+                  <span className="text-white text-sm">Creators Only</span>
+                </label>
+                <label className="flex items-center">
+                  <input
+                    type="radio"
                     value="male"
                     checked={notificationGender === "male"}
-                    onChange={(e) => setNotificationGender(e.target.value as "all" | "male" | "female")}
+                    onChange={(e) => setNotificationGender(e.target.value as "all" | "creators" | "male" | "female")}
                     className="mr-2"
                   />
                   <span className="text-white text-sm">Male Only</span>
@@ -1232,7 +1362,7 @@ export default function Users(): JSX.Element {
                     type="radio"
                     value="female"
                     checked={notificationGender === "female"}
-                    onChange={(e) => setNotificationGender(e.target.value as "all" | "male" | "female")}
+                    onChange={(e) => setNotificationGender(e.target.value as "all" | "creators" | "male" | "female")}
                     className="mr-2"
                   />
                   <span className="text-white text-sm">Female Only</span>
@@ -1241,7 +1371,18 @@ export default function Users(): JSX.Element {
             </div>
 
             <div className="mb-4">
-              <label className="text-white text-sm font-bold mb-2 block">Message</label>
+              <label className="text-white text-sm font-bold mb-2 block">Title *</label>
+              <input
+                type="text"
+                value={notificationTitle}
+                onChange={(e) => setNotificationTitle(e.target.value)}
+                className="w-full bg-gray-700 text-white p-3 rounded"
+                placeholder="Enter notification title..."
+              />
+            </div>
+
+            <div className="mb-4">
+              <label className="text-white text-sm font-bold mb-2 block">Message *</label>
               <textarea
                 value={notificationMessage}
                 onChange={(e) => setNotificationMessage(e.target.value)}
@@ -1250,17 +1391,55 @@ export default function Users(): JSX.Element {
               />
             </div>
 
+            <div className="mb-4">
+              <label className="flex items-center mb-2">
+                <input
+                  type="checkbox"
+                  checked={hasLearnMore}
+                  onChange={(e) => setHasLearnMore(e.target.checked)}
+                  className="mr-2"
+                />
+                <span className="text-white text-sm font-bold">Include Learn More Page</span>
+              </label>
+              {hasLearnMore && (
+                <div className="mt-2">
+                  <label className="text-white text-sm font-bold mb-2 block">Additional Content (Optional)</label>
+                  <textarea
+                    value={learnMoreUrl}
+                    onChange={(e) => setLearnMoreUrl(e.target.value)}
+                    className="w-full bg-gray-700 text-white p-3 rounded h-20 resize-none"
+                    placeholder="Enter additional content that will be shown on the Learn More page..."
+                  />
+                  <p className="text-gray-400 text-xs mt-1">
+                    This content will be displayed on the Learn More page. Leave empty to just show the main message.
+                  </p>
+                </div>
+              )}
+            </div>
+
             <div className="flex gap-2">
               <button
                 onClick={handleSendNotification}
-                className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 flex-1"
+                disabled={sendingNotification}
+                className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 flex-1 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
               >
-                Send Notification
+                {sendingNotification ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Sending...
+                  </>
+                ) : (
+                  "Send Notification"
+                )}
               </button>
               <button
                 onClick={() => {
                   setShowNotificationModal(false);
+                  setNotificationTitle("");
                   setNotificationMessage("");
+                  setNotificationGender("all");
+                  setHasLearnMore(false);
+                  setLearnMoreUrl("");
                 }}
                 className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
               >

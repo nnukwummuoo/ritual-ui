@@ -557,7 +557,10 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
                   className="flex-1 cursor-pointer" 
                
                 >
-                  <p className="font-medium text-white">{p?.user?.firstname} { p?.user?.lastname}</p>
+                  <p className="font-medium text-white"  onClick={(e) => {
+                e.stopPropagation();
+                router.push(`/Profile/${postAuthorId}`);
+              }}>{p?.user?.firstname} { p?.user?.lastname}</p>
                   <span className="text-gray-400 text-sm">{handleStr ? `${handleStr}` : ""}</span>
                 </div>
               </div>
@@ -608,6 +611,11 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
                     if (!img.dataset.fallback3 && pathUrlFallback) {
                       img.dataset.fallback3 = "1";
                       img.src = pathUrlFallback;
+                      return;
+                    }
+                    if (!img.dataset.fallback4) {
+                      img.dataset.fallback4 = "1";
+                      img.src = "/postfall.jpg";
                     }
                   }}
                 />

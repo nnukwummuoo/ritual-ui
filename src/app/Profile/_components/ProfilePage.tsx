@@ -42,6 +42,104 @@ const formatNumber = (num: number): string => {
   return `${(num / 1000000).toFixed(1)}M`;
 };
 
+// Utility function to format relative time (same as RemainingPosts and FirstPost)
+const formatRelativeTime = (timestamp: string | number | Date): string => {
+  try {
+    const now = new Date();
+    let time: Date;
+    
+    // Handle different timestamp formats
+    if (typeof timestamp === 'number') {
+      time = new Date(timestamp < 10000000000 ? timestamp * 1000 : timestamp);
+    } else if (typeof timestamp === 'string') {
+      if (/^\d+$/.test(timestamp)) {
+        const numTimestamp = parseInt(timestamp, 10);
+        time = new Date(numTimestamp < 10000000000 ? numTimestamp * 1000 : numTimestamp);
+      } else {
+        time = new Date(timestamp);
+      }
+    } else {
+      time = new Date(timestamp);
+    }
+    
+    if (isNaN(time.getTime())) {
+      if (typeof timestamp === 'string') {
+        const altTime = new Date(timestamp.replace(/[^\d]/g, ''));
+        if (!isNaN(altTime.getTime())) {
+          time = altTime;
+        } else {
+          return 'recently';
+        }
+      } else if (typeof timestamp === 'number') {
+        if (timestamp > 1000000000000) {
+          time = new Date(timestamp);
+        } else if (timestamp > 1000000000) {
+          time = new Date(timestamp * 1000);
+        } else {
+          return 'recently';
+        }
+      } else {
+        return 'recently';
+      }
+      
+      if (isNaN(time.getTime())) {
+        return 'recently';
+      }
+    }
+    
+    const diffInSeconds = Math.floor((now.getTime() - time.getTime()) / 1000);
+    
+    if (diffInSeconds < 0) {
+      const futureDiff = Math.abs(diffInSeconds);
+      if (futureDiff < 3600) {
+        return 'in a moment';
+      } else if (futureDiff < 86400) {
+        const hours = Math.floor(futureDiff / 3600);
+        return `in ${hours}h`;
+      } else if (futureDiff < 31536000) {
+        const days = Math.floor(futureDiff / 86400);
+        return `in ${days}d`;
+      } else {
+        return 'recently';
+      }
+    }
+
+    if (diffInSeconds < 60) {
+      return 'just now';
+    }
+
+    const diffInMinutes = Math.floor(diffInSeconds / 60);
+    if (diffInMinutes < 60) {
+      return `${diffInMinutes}m ago`;
+    }
+
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    if (diffInHours < 24) {
+      return `${diffInHours}h ago`;
+    }
+
+    const diffInDays = Math.floor(diffInHours / 24);
+    if (diffInDays < 7) {
+      return `${diffInDays}d ago`;
+    }
+
+    const diffInWeeks = Math.floor(diffInDays / 7);
+    if (diffInWeeks < 4) {
+      return `${diffInWeeks}w ago`;
+    }
+
+    const diffInMonths = Math.floor(diffInDays / 30);
+    if (diffInMonths < 12) {
+      return `${diffInMonths}mo ago`;
+    }
+
+    const diffInYears = Math.floor(diffInDays / 365);
+    return `${diffInYears}y ago`;
+  } catch (error) {
+    return 'recently';
+  }
+};
+
 // const Months = [
 //   "January",
 //   "February",
@@ -1366,6 +1464,19 @@ const PostModal = () => {
               </div>
             </div>
           </div>
+
+                {/* Post Timestamp */}
+                {post?.createdAt && (
+                  <p className="my-3 text-gray-400 text-sm cursor-pointer">
+                    {(() => {
+                      const formatted = formatRelativeTime(post.createdAt);
+                      if (formatted === 'Invalid time' || formatted === 'Unknown time') {
+                        return 'recently';
+                      }
+                      return formatted;
+                    })()}
+                  </p>
+                )}
 
                 {/* Post Content */}
                 {post?.content && (

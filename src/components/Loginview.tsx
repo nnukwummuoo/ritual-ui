@@ -9,6 +9,9 @@ import { isRegistered } from "@/lib/service/manageSession";
 import toastError from "./ToastError";
 import { FaHome } from "react-icons/fa";
 import { useRouter } from "next/navigation";
+import { useDispatch } from "react-redux";
+import { loginAuthUser } from "@/store/registerSlice";
+import type { AppDispatch } from "@/store/store";
 // Removed unused imports to fix linting errors
 
 
@@ -66,6 +69,7 @@ export const Loginview = () => {
   const { setIsLoggedIn, setStatus, isLoggedIn, status } = useAuth();
   const [, setUser] = useState<User | undefined>();
   const router = useRouter();
+  const dispatch = useDispatch<AppDispatch>();
 
   // Debug status changes - removed to prevent console spam
 
@@ -89,7 +93,33 @@ export const Loginview = () => {
       // Set loading state
       setStatus("checking");
 
-      const res = await isRegistered({ nickname, password }) as LoginResponse;
+          const res = await isRegistered({ nickname, password }) as LoginResponse & { banned?: boolean };
+      
+      // Check if user is banned
+      if (res?.banned) {
+        setStatus("idle");
+        
+        // Show ban message
+        toastError({ 
+          message: res?.error || "This account has been banned for violating our rules" 
+        });
+        
+        // Clear any existing auth data
+        if (typeof window !== "undefined") {
+          localStorage.removeItem("login");
+          localStorage.removeItem("user");
+          sessionStorage.clear();
+          // Clear cookies manually
+          document.cookie = 'auth_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+          document.cookie = 'refresh_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+        }
+        
+        // Redirect to banned page after a short delay to show the toast
+        setTimeout(() => {
+          router.push('/banned');
+        }, 2000);
+        return;
+      }
       
       if (!res?.user?.nickname?.length) {
         setStatus("idle");
@@ -159,14 +189,25 @@ export const Loginview = () => {
         };
         
         localStorage.setItem("login", JSON.stringify(userDataToStore));
-        console.log("✅ [Login] All user data saved to localStorage:", userDataToStore);
-      } catch (e) {
-        console.error("[Login] Failed to save localStorage:", e);
+      } catch {
+        // Failed to save localStorage
       }
 
       setUser(userData);
       setIsLoggedIn(true);
       setStatus("resolved");
+      
+      // Update Redux state
+      dispatch(loginAuthUser({
+        email: userData.nickname, // Using nickname as email since email is not used
+        password: password,
+        message: "login_success",
+        refreshtoken: userData.refreshtoken,
+        accesstoken: userData.accessToken,
+        userID: userData._id,
+        creator_portfolio_id: userData.creator_portfolio_id,
+        creator_portfolio: userData.creator_portfolio,
+      }));
       
       // Create session immediately after successful login (like registration)
       try {
@@ -215,7 +256,13 @@ export const Loginview = () => {
 
   return (
     <div className="w-full h-full overflow-hidden flex flex-col items-center justify-center">
-      <ToastContainer position="top-center" theme="dark" />
+      <ToastContainer 
+        position="top-center" 
+        theme="dark" 
+        style={{ zIndex: 99999 }}
+        toastClassName="!z-[99999]"
+        bodyClassName="!z-[99999]"
+      />
       
       {/* Home Icon */}
       <div className="absolute top-4 right-4 z-10">

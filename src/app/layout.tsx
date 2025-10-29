@@ -8,6 +8,9 @@ import ConditionalLayout from "@/components/ConditionalLayout";
 import ServiceWorkerProvider from "@/components/ServiceWorkerProvider";
 import { NotificationModalWrapper } from "@/components/NotificationModalWrapper";
 import { VideoProvider } from "@/contexts/VideoContext";
+import GlobalBanChecker from "@/components/GlobalBanChecker";
+import ReduxHydrator from "@/components/ReduxHydrator";
+import ScrollToTopAdvanced from "@/components/ScrollToTopAdvanced";
 
 const inter = Inter({
   weight: ["100", "300", "400", "500", "700"],
@@ -49,6 +52,20 @@ export default async function RootLayout({
         <ServiceWorkerProvider />
         <Providers>
           <VideoProvider>
+            <ReduxHydrator />
+            <GlobalBanChecker />
+            <ScrollToTopAdvanced
+              smooth={true}
+              delay={100}
+              preserveScrollRoutes={[
+                "/message",
+                "/settings", 
+                "/profile"
+              ]}
+              scrollOnSearchChange={false}
+              scrollOnPopState={true}
+              debug={process.env.NODE_ENV === "development"}
+            />
             <ConditionalLayout isAuthenticated={isAuthenticated}>
               {children}
               {isAuthenticated && <NotificationModalWrapper />}
