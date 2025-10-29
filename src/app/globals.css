@@ -63,3 +63,29 @@ button{
   /* background: #000; */
 }
 
+/* Toast z-index fix - ensure toasts appear above everything */
+.Toastify__toast-container {
+  z-index: 999999 !important;
+}
+
+.Toastify__toast {
+  z-index: 999999 !important;
+}
+
+.Toastify__toast-body {
+  z-index: 999999 !important;
+}
+
+/* Extra high z-index for banned page toasts */
+body .Toastify__toast-container {
+  z-index: 999999 !important;
+}
+
+body .Toastify__toast {
+  z-index: 999999 !important;
+}
+
+body .Toastify__toast-body {
+  z-index: 999999 !important;
+}
+

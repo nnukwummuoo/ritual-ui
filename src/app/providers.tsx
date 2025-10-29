@@ -11,7 +11,6 @@ import { SnackbarProvider } from "notistack";
 import { Suspense } from "react";
 import { SNACKBAR_OPTIONS } from "@/constants";
 import dynamic from "next/dynamic";
-import "material-react-toastify/dist/ReactToastify.css";
 // Install global Axios interceptor fallback
 import "@/api/axiosSetup";
 
@@ -21,11 +20,13 @@ const Loader = () => (
   </div>
 );
 
+// Create a client-side only ToastProvider component
+const ToastProvider = dynamic(() => import("@/components/ToastProvider"), {
+  ssr: false,
+  loading: () => null
+});
+
 export default function Providers({ children }: { children: React.ReactNode }) {
-  const ClientToastContainer = dynamic(
-    () => import("material-react-toastify").then((m) => m.ToastContainer),
-    { ssr: false }
-  );
   return (
     <Provider store={store}>
       <SnackbarProvider {...SNACKBAR_OPTIONS}>
@@ -34,7 +35,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
             <VideoCallProvider>
               <PushNotificationProvider>
                 <GlobalSocketConnection />
-                <ClientToastContainer position="top-center"/>
+                <ToastProvider />
                 <Suspense fallback={<Loader />}>{children}</Suspense>
               </PushNotificationProvider>
             </VideoCallProvider>

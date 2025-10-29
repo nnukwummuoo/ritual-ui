@@ -195,6 +195,29 @@ const registerSlice = createSlice({
     changepasswordback(state, action) {
       state.chagepassword = action.payload;
     },
+    logout(state) {
+      state.status = "idle";
+      state.error = null;
+      state.verifystatus = "idle";
+      state.userID = "";
+      state.compstats = "";
+      state.message = "";
+      state.logedin = false;
+      state.refreshtoken = "";
+      state.accesstoken = "";
+      state.logstats = "idle";
+      state.balance = 0;
+      state.email = "";
+      state.password = "";
+      state.forgetpassstate = "idle";
+      state.conpasswordstate = "idle";
+      state.chagepassword = "idle";
+      state.creator_portfolio_id = undefined;
+      state.creator_portfolio = false;
+      state.isVip = false;
+      state.vipStartDate = undefined;
+      state.vipEndDate = undefined;
+    },
     loginAuthUser(state, action) {
       state.email = action.payload.email;
       state.password = action.payload.password;
@@ -410,4 +433,5 @@ export const {
   changelogin,
   loginAuthUser,
   changepasswordback,
+  logout,
 } = registerSlice.actions;

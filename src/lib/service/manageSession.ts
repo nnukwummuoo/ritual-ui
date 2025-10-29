@@ -40,7 +40,7 @@ export async function decryptData(input: string): Promise<{ status: string; body
   }
 }
 
-export async function isRegistered(payload: { nickname: string; password: string }): Promise<{ user?: any; error?: string }> {
+export async function isRegistered(payload: { nickname: string; password: string }): Promise<{ user?: any; error?: string; banned?: boolean }> {
   try {
     const res = await axios.post(
       `${URL}/login`,
@@ -50,10 +50,15 @@ export async function isRegistered(payload: { nickname: string; password: string
     console.log("Backend response:", res.data);
     const data = res.data;
     if (!data.ok) {
+      // Check if user is banned
+      if (data.banned || res.status === 403) {
+        return { error: data.message || "Login failed", banned: true };
+      }
       return { error: data.message || "Login failed" };
     }
-    // Construct user object from backend response
+    // Use the complete user object from backend response
     const user = {
+      ...data.user, // Include all user data from backend
       _id: data.userId,
       nickname: payload.nickname.toLowerCase().trim(),
       accessToken: data.accessToken,
@@ -63,7 +68,12 @@ export async function isRegistered(payload: { nickname: string; password: string
     return { user };
   } catch (error: any) {
     console.error("Login API error:", error.message);
-    // credentials = false; // Removed unused variable
+    
+    // Check if user is banned (403 status)
+    if (error?.response?.status === 403 || error?.response?.data?.banned) {
+      return { error: error?.response?.data?.message || "This account has been banned for violating our rules", banned: true };
+    }
+    
     return { error: error?.response?.data?.message || "Login failed" };
   }
 }
