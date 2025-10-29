@@ -15,7 +15,7 @@ const PrivacySafetyPage = () => {
     <div className='flex flex-col w-full px-4 md:px-0 '>
     <Head heading="PRIVACY & SAFETY" />
       <p className="py-4 text-sm text-slate-400">
-        See informationa about your account, change Password or learn more about
+        See information about your account, change Password or learn more about
         your account deactivation
       </p>
       <div className="pt-4" onClick={()=>router.push("/settings/privacy-safety/blocked-users")}>

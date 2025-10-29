@@ -35,7 +35,7 @@ import NavigateForward from "../_components/NavigateForward";
       </header>
 
       <p className="py-4 text-sm text-slate-400">
-        See informationa about your account, change Password or learn more about
+        See information about your account, change Password or learn more about
         your account deactivation
       </p>
       <div className="pt-4">

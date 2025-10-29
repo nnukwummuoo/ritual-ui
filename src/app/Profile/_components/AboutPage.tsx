@@ -220,7 +220,6 @@ const AboutPage = () => {
         <div className="mb-8">
           <p className="text-gray-300 text-xs text-center  leading-relaxed">
             To help keep our community authentic, we&apos;re showing information about accounts on our platform. 
-            <span className="text-blue-400 cursor-pointer hover:underline"> See why this information is important.</span>
           </p>
         </div>
 

@@ -351,7 +351,7 @@ export const Allview = () => {
                     <button
                       className="px-4 py-2 border border-slate-700 hover:border-slate-500 
                                 rounded-lg text-sm text-slate-200 transition">
-                      Creator Portfolio
+                      Create Portfolio
                     </button>
                   </Link>
                 </div>
