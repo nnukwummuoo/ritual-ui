@@ -11,7 +11,7 @@ import { getpostcomment, postcomment } from "@/store/comment";
 import { checkVipStatus } from "@/store/vip";
 import VIPBadge from "@/components/VIPBadge";
 import { URL as API_BASE } from "@/api/config";
-const PROD_BASE = "https://mmekoapi.onrender.com";
+const PROD_BASE = "https://backendritual.work";
 import PostSkeleton from "../PostSkeleton";
 import PostActions from "./PostActions";
 import { toast } from "material-react-toastify";

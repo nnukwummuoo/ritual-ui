@@ -6,7 +6,7 @@
 import { URL as API_BASE } from "@/api/config";
 
 // Secondary base (production) used as a fallback when the local proxy is down
-const PROD_BASE = "https://mmekoapi.onrender.com";
+const PROD_BASE = "https://backendritual.work";
 
 export type UploadResponse = {
   public_id: string;

@@ -10,7 +10,7 @@ export const URL = (() => {
     // Server-side rendering
     return process.env.NODE_ENV === "development"
       ? "http://localhost:3100"
-      : "https://mmekoapi.onrender.com";
+      : "https://backendritual.work";
   }
   
   // Client-side - check environment
@@ -20,5 +20,5 @@ export const URL = (() => {
   }
   
   // Production - use production backend
-  return "https://mmekoapi.onrender.com";
+  return "https://backendritual.work";
 })();

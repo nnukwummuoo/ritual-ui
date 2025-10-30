@@ -50,8 +50,8 @@ export const SocketDebug = () => {
     results.push({ url: 'http://localhost:3100', connected: localResult });
     
     // Test production server
-    const prodResult = await testSocketConnection('https://mmekoapi.onrender.com');
-    results.push({ url: 'https://mmekoapi.onrender.com', connected: prodResult });
+    const prodResult = await testSocketConnection('https://backendritual.work');
+    results.push({ url: 'https://backendritual.work', connected: prodResult });
     
     setTestResults(results);
   };
