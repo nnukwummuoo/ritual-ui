@@ -80,7 +80,7 @@ export default function PaymentAccountPage() {
       const userData = localStorage.getItem('userData');
       if (userData) {
         const parsed = JSON.parse(userData);
-        return parsed.fullName || parsed.name || parsed.nickname || '';
+        return parsed.fullName || parsed.name || parsed.username || '';
       }
     } catch (error) {
       console.error('Error parsing localStorage userData:', error);

@@ -4,7 +4,7 @@ export interface Profile {
   firstname: string;
   lastname: string;
   email: string;
-  nickname: string;
+  username: string;
   active: boolean;
   State: string;
   country: string;

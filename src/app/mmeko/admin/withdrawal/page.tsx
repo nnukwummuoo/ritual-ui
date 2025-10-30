@@ -45,12 +45,12 @@ const WithdrawalRequests = () => {
   // Filter withdrawals based on search term and selected color
   const filteredWithdrawals = withdrawals.filter((req) => {
     const userFullName = (req as any).userId ? `${(req as any).userId.firstname || ''} ${(req as any).userId.lastname || ''}`.trim() : '';
-    const userNickname = (req as any).userId?.nickname || '';
+    const userUsername = (req as any).userId?.username || '';
     const credentialsFullName = req.credentials?.fullName || '';
     
     const matchesSearch = !searchTerm || 
       userFullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      userNickname.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      userUsername.toLowerCase().includes(searchTerm.toLowerCase()) ||
       credentialsFullName.toLowerCase().includes(searchTerm.toLowerCase());
     
     const withdrawalColor = getColorForWithdrawal(req._id);
@@ -200,8 +200,8 @@ const WithdrawalRequests = () => {
                     <h2 className="text-lg font-semibold">
                       {(req as any).userId ? `${(req as any).userId.firstname || ''} ${(req as any).userId.lastname || ''}`.trim() || req.credentials?.fullName || "User" : req.credentials?.fullName || "User"}
                     </h2>
-                    {(req as any).userId?.nickname && (
-                      <p className="text-sm text-gray-400">{(req as any).userId.nickname}</p>
+                    {(req as any).userId?.username && (
+                      <p className="text-sm text-gray-400">{(req as any).userId.username}</p>
                     )}
                   </div>
                   <span
@@ -272,8 +272,8 @@ const WithdrawalRequests = () => {
           <div className="text-sm text-gray-700 space-y-2">
             <p><strong>Method:</strong> {selected.credentials.method}</p>
             <p><strong>User Name:</strong> {(selected as any).userId ? `${(selected as any).userId.firstname || ''} ${(selected as any).userId.lastname || ''}`.trim() || selected.credentials.fullName : selected.credentials.fullName}</p>
-            {(selected as any).userId?.nickname && (
-              <p><strong>Nickname:</strong> @{(selected as any).userId.nickname}</p>
+            {(selected as any).userId?.username && (
+              <p><strong>Username:</strong> @{(selected as any).userId.username}</p>
             )}
             <p><strong>Payment Name:</strong> {selected.credentials.fullName}</p>
             <p><strong>Email:</strong> {selected.credentials.email}</p>

@@ -47,7 +47,7 @@ function PostSingle() {
     // Get auth data
     const loggedInUserId = useSelector((s: RootState) => s.register.userID);
     const authToken = useSelector((s: RootState) => s.register.refreshtoken || s.register.accesstoken);
-    const { nickname, firstname, lastname, photolink } = useSelector((s: RootState) => s.profile);
+    const { username, firstname, lastname, photolink } = useSelector((s: RootState) => s.profile);
     
     // State for the post
     const [thePost, setThePost] = React.useState<any>({});
@@ -233,14 +233,14 @@ function PostSingle() {
         const tempComment = {
             content: text,
             comment: text,
-            username: nickname || 'you',
-            commentusername: nickname || 'you',
+            username: username || 'you',
+            commentusername: username || 'you',
             commentuserphoto: photolink || '',
             userid: String(loggedInUserId || ''),
             createdAt: new Date().toISOString(),
             commenttime: Date.now(),
             temp: true,
-            initials: generateInitials(firstname, lastname, nickname)
+            initials: generateInitials(firstname, lastname, username)
         };
 
         // Optimistic update
@@ -434,7 +434,7 @@ function PostSingle() {
                                     })()} */}
                                 </div>
                                 <p className="text-sm text-blue-400 font-medium">
-                                    {(postAuthorData || thePost.user)?.nickname || (postAuthorData || thePost.user)?.username || 'No username'}
+                                    {(postAuthorData || thePost.user)?.username || (postAuthorData || thePost.user)?.username || 'No username'}
                                 </p>
                             </div>
                       </div>

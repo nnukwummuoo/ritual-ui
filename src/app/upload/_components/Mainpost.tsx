@@ -27,7 +27,7 @@ export const Mainpost = () => {
   // const photo = useSelector((state) => state.comprofile.profilephoto);
   // const token = useSelector((state) => state.register.refreshtoken);
   // const poststatus = useSelector((state) => state.post.poststatus);
-  const { firstname, lastname, nickname } = useSelector((s: RootState) => s.profile);
+  const { firstname, lastname, username } = useSelector((s: RootState) => s.profile);
   const posts = useSelector((s: RootState) => s.post.allPost as any[]);
   // const userid = useSelector((state) => state.register.userID);
   // const [propics, setpropics] = useState(person);
@@ -133,7 +133,7 @@ export const Mainpost = () => {
       const currentUsername = (() => {
         try {
           return (
-            nickname ||
+            username ||
             localStorage.getItem('username') ||
             localStorage.getItem('userName') ||
             localStorage.getItem('profileusername') ||
@@ -200,7 +200,7 @@ export const Mainpost = () => {
               const currentUsername = (() => {
                 try {
                   return (
-                    nickname ||
+                    username ||
                     localStorage.getItem('username') ||
                     localStorage.getItem('userName') ||
                     localStorage.getItem('profileusername') ||
@@ -264,7 +264,7 @@ export const Mainpost = () => {
       const currentUsername = (() => {
         try {
           return (
-            nickname ||
+            username ||
             localStorage.getItem('username') ||
             localStorage.getItem('userName') ||
             localStorage.getItem('profileusername') ||
@@ -410,7 +410,7 @@ export const Mainpost = () => {
                 const currentUsername = (() => {
                   try {
                     return (
-                      nickname ||
+                      username ||
                       localStorage.getItem('username') ||
                       localStorage.getItem('userName') ||
                       localStorage.getItem('profileusername') ||
@@ -472,7 +472,7 @@ export const Mainpost = () => {
                         const currentUsername = (() => {
                           try {
                             return (
-                              nickname ||
+                              username ||
                               localStorage.getItem('username') ||
                               localStorage.getItem('userName') ||
                               localStorage.getItem('profileusername') ||

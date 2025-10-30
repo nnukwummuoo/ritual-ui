@@ -118,7 +118,7 @@ const Crush: React.FC<{
         {items?.length ? (
           items.map((it: any, idx: number) => {
             const src = it.photolink || it.photo || it.image || it.src || "";
-            const name = it.creatorname || it.name || it.nickname || "Creator";
+            const name = it.creatorname || it.name || it.username || "Creator";
             const status = it.status || "active";
             const type = it.type || "standard";
             const creator_portfolio_id = it.creator_portfolio_id || it.creator_portfolio_id || it.id || it._id || String(idx);

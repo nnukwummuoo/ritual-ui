@@ -208,7 +208,7 @@ export const Profile = () => {
     status,
     firstname,
     lastname,
-    nickname,
+    username,
   } = profileData;
   
   // Access properties that might not exist on both types
@@ -573,7 +573,7 @@ export const Profile = () => {
       user: {
         firstname: firstname || 'User',
         lastname: lastname || '',
-        nickname: nickname || '@user',
+        username: username || '@user',
         photolink: photolink || avatarSrc || '/icons/profile.png'
       },
       createdAt: new Date().toISOString()
@@ -587,12 +587,12 @@ export const Profile = () => {
       user: {
         firstname: firstname || 'User',
         lastname: lastname || '',
-        nickname: nickname || '@user',
+        username: username || '@user',
         photolink: photolink || avatarSrc || '/icons/profile.png'
       },
       createdAt: new Date().toISOString()
     }
-  ], [firstname, lastname, nickname]);
+  ], [firstname, lastname, username]);
 
   // Fetch user posts - wrapped in useCallback to avoid dependency cycle
   const fetchUserPosts = React.useCallback(async (userId: string) => {
@@ -1023,7 +1023,7 @@ export const Profile = () => {
 //               </div>
 //               <div>
 //                 <p className="font-medium">{selectedPost.user?.firstname} {selectedPost.user?.lastname}</p>
-//                 <p className="text-xs text-gray-400">{selectedPost.user?.nickname}</p>
+//                 <p className="text-xs text-gray-400">{selectedPost.user?.username}</p>
 //               </div>
 //             </div>
 //             <button 
@@ -1459,7 +1459,7 @@ const PostModal = () => {
                           `${profileData?.firstname || ""} ${profileData?.lastname || ""}`.trim()}
                       </p>
                       <span className="text-gray-400 text-sm">
-                        {isViewingOwnProfile ? nickname : profileData?.nickname || ""}
+                        {isViewingOwnProfile ? username : profileData?.username || ""}
                     </span>
               </div>
             </div>
@@ -1696,7 +1696,7 @@ const PostModal = () => {
             <p className="text-white text-xl font-bold">
               {firstname} {lastname}
             </p>
-            <p className="text-gray-300">{nickname}</p>
+            <p className="text-gray-300">{username}</p>
           </div>
         </div>
       </div>
@@ -1750,7 +1750,7 @@ const PostModal = () => {
                     </div>
                   </div>
                 </div>
-                {/* Bio and nickname skeleton */}
+                {/* Bio and username skeleton */}
                 <div className="mt-3 ml-6">
                   <Skeleton width={80} height={18} />
                   <Skeleton width={180} height={16} />
@@ -1848,7 +1848,7 @@ const PostModal = () => {
               <div>
                 <div className="mt-3 ml-6 ">
                  
-                  <p className="text-blue-500">{nickname}</p>
+                  <p className="text-blue-500">{username}</p>
                 
                 
                   {(profile as any).creator_portfolio && (
@@ -2250,8 +2250,8 @@ const PostModal = () => {
                           </div>
                           <div className="flex-1">
                             <div className="flex items-center gap-2">
-                              {review.fanNickname && (
-                                <p className="text-gray-400 text-sm">{review.fanNickname}</p>
+                              {review.fanUsername && (
+                                <p className="text-gray-400 text-sm">{review.fanUsername}</p>
                               )}
                                 <span className="text-xs bg-blue-600 text-white px-2 py-1 rounded">Fan</span>
                             </div>
@@ -2318,8 +2318,8 @@ const PostModal = () => {
                             </div>
                             <div className="flex-1">
                               <div className="flex items-center gap-2">
-                                {rating.creatorNickname && (
-                                  <p className="text-gray-400 text-sm">{rating.creatorNickname}</p>
+                                {rating.creatorUsername && (
+                                  <p className="text-gray-400 text-sm">{rating.creatorUsername}</p>
                                 )}
                                 <span className="text-xs bg-green-600 text-white px-2 py-1 rounded">Creator</span>
                               </div>

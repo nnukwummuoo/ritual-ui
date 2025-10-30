@@ -78,7 +78,7 @@ const EditProfile: React.FC = () => {
   const [lastnamepl, setLastnamepl] = useState("last name");
   const [countrypl, setCountrypl] = useState("country");
   const [biopl, setBiopl] = useState("about me");
-  const [nicknamepl, setNicknamepl] = useState("nickname");
+  const [usernamepl, setUsernamepl] = useState("username");
 
   // Form input values
   const [profileimg, setProfileimg] = useState<string>(profileIcon.src);
@@ -86,7 +86,7 @@ const EditProfile: React.FC = () => {
   const [lastname, setLastname] = useState("");
   const [country, setCountry] = useState("");
   const [bio, setBio] = useState("");
-  const [nickname, setNickname] = useState("");
+  const [username, setUsername] = useState("");
   const [click, setclick] = useState(false);
 
   // Photo update tracking
@@ -309,9 +309,9 @@ const EditProfile: React.FC = () => {
           console.log("📊 [EditProfile] Direct API response data:", {
             hasProfile: !!response.data.profile,
             profileKeys: response.data.profile ? Object.keys(response.data.profile) : [],
-            hasNickname: !!response.data.profile?.nickname,
+            hasUsername: !!response.data.profile?.username,
             hasBio: !!response.data.profile?.bio,
-            nickname: response.data.profile?.nickname,
+            username: response.data.profile?.username,
             bio: response.data.profile?.bio
           });
           
@@ -349,13 +349,13 @@ const EditProfile: React.FC = () => {
               setBio(profileData.bio || profileData.details);
             }
             
-            if (profileData.nickname) {
+            if (profileData.username) {
               // Remove @ prefix if it exists when loading from database
-              const cleanNickname = profileData.nickname.startsWith('@') 
-                ? profileData.nickname.substring(1) 
-                : profileData.nickname;
-              setNicknamepl(cleanNickname);
-              setNickname(cleanNickname);
+              const cleanUsername = profileData.username.startsWith('@') 
+                ? profileData.username.substring(1) 
+                : profileData.username;
+              setUsernamepl(cleanUsername);
+              setUsername(cleanUsername);
             }
             
             // Show the form
@@ -496,13 +496,13 @@ const EditProfile: React.FC = () => {
                     setBio(profileData.bio);
                   }
                   
-                  if (profileData.nickname) {
+                  if (profileData.username) {
                     // Remove @ prefix if it exists when loading from database
-                    const cleanNickname = profileData.nickname.startsWith('@') 
-                      ? profileData.nickname.substring(1) 
-                      : profileData.nickname;
-                    setNicknamepl(cleanNickname);
-                    setNickname(cleanNickname);
+                    const cleanUsername = profileData.username.startsWith('@') 
+                      ? profileData.username.substring(1) 
+                      : profileData.username;
+                    setUsernamepl(cleanUsername);
+                    setUsername(cleanUsername);
                   }
                   
                   // Show the form
@@ -557,14 +557,14 @@ const EditProfile: React.FC = () => {
                   setBio(data.bio);
                 }
                 
-                // Nickname may not be in localStorage
-                if (data.nickname) {
+                // Username may not be in localStorage
+                if (data.username) {
                   // Remove @ prefix if it exists when loading from localStorage
-                  const cleanNickname = data.nickname.startsWith('@') 
-                    ? data.nickname.substring(1) 
-                    : data.nickname;
-                  setNicknamepl(cleanNickname);
-                  setNickname(cleanNickname);
+                  const cleanUsername = data.username.startsWith('@') 
+                    ? data.username.substring(1) 
+                    : data.username;
+                  setUsernamepl(cleanUsername);
+                  setUsername(cleanUsername);
                 }
               }
             } catch (e) {
@@ -683,9 +683,9 @@ const EditProfile: React.FC = () => {
         // Extract the actual profile data from the nested structure
         const profileData = data.data || data;
         console.log("📊 [EditProfile] Extracted profile data:", {
-          hasNickname: !!profileData.nickname,
+          hasUsername: !!profileData.username,
           hasBio: !!profileData.bio,
-          nickname: profileData.nickname,
+          username: profileData.username,
           bio: profileData.bio,
           allKeys: Object.keys(profileData)
         });
@@ -719,13 +719,13 @@ const EditProfile: React.FC = () => {
           setBio(profileData.bio); // Also set the actual input value
         }
         
-        if (profileData.nickname) {
+        if (profileData.username) {
           // Remove @ prefix if it exists when loading from database
-          const cleanNickname = profileData.nickname.startsWith('@') 
-            ? profileData.nickname.substring(1) 
-            : profileData.nickname;
-          setNicknamepl(cleanNickname);
-          setNickname(cleanNickname); // Also set the actual input value
+          const cleanUsername = profileData.username.startsWith('@') 
+            ? profileData.username.substring(1) 
+            : profileData.username;
+          setUsernamepl(cleanUsername);
+          setUsername(cleanUsername); // Also set the actual input value
         }
       }
     }
@@ -786,14 +786,14 @@ const EditProfile: React.FC = () => {
             setBio(localData.bio);
           }
           
-          // Nickname may not be in localStorage
-          if (localData.nickname) {
+          // Username may not be in localStorage
+          if (localData.username) {
             // Remove @ prefix if it exists when loading from localStorage
-            const cleanNickname = localData.nickname.startsWith('@') 
-              ? localData.nickname.substring(1) 
-              : localData.nickname;
-            setNicknamepl(cleanNickname);
-            setNickname(cleanNickname);
+            const cleanUsername = localData.username.startsWith('@') 
+              ? localData.username.substring(1) 
+              : localData.username;
+            setUsernamepl(cleanUsername);
+            setUsername(cleanUsername);
           }
         }
       } catch (e) {
@@ -863,10 +863,10 @@ const EditProfile: React.FC = () => {
   const updateButton = async () => {
     
       // Only validate username if user has entered one
-      // if (nickname && nickname.length >= 3) {
+      // if (username && username.length >= 3) {
       //   // Check username format first
       //   const usernameRegex = /^[a-z0-9_]{3,15}$/;
-      //   if (!usernameRegex.test(nickname)) {
+      //   if (!usernameRegex.test(username)) {
       //     setErrorMessage("Username must be 3-15 characters, lowercase letters, numbers, and underscores only");
       //     return;
       //   }
@@ -918,21 +918,21 @@ const EditProfile: React.FC = () => {
         ...(lastname && { lastname }),
         ...(country && { state: country, country }),
         ...(bio && { bio }),
-        ...(nickname && { nickname: `@${nickname}` }), // Add @ prefix when saving
+        ...(username && { username: `@${username}` }), // Add @ prefix when saving
       };
 
       // Log the profile update payload (without actual token values)
       console.log("🔍 [EditProfile] Form values being sent:", {
         bioValue: bio,
         bioPlaceholder: biopl,
-        nicknameValue: nickname,
-        nicknamePlaceholder: nicknamepl,
+        usernameValue: username,
+        usernamePlaceholder: usernamepl,
         bioFinal: bio || biopl,
-        nicknameFinal: nickname || nicknamepl,
+        usernameFinal: username || usernamepl,
         bioIsEmpty: !bio,
-        nicknameIsEmpty: !nickname,
+        usernameIsEmpty: !username,
         bioLength: bio?.length || 0,
-        nicknameLength: nickname?.length || 0
+        usernameLength: username?.length || 0
       });
       
       console.log("Sending profile update payload:", {
@@ -948,7 +948,7 @@ const EditProfile: React.FC = () => {
         firstname: changedProfileData.firstname,
         lastname: changedProfileData.lastname,
         bio: changedProfileData.bio,
-        nickname: changedProfileData.nickname,
+        username: changedProfileData.username,
         state: changedProfileData.state
       });
       
@@ -1202,12 +1202,12 @@ const EditProfile: React.FC = () => {
                         usernameStatus === "checking" ? 'border border-yellow-500' : ''
                       }`}
                       placeholder="username"
-                      value={nickname}
+                      value={username}
                       onChange={async (e) => {
                         const value = e.target.value;
                         // Remove spaces, periods, convert to lowercase, and remove @ if user types it
                         const cleanValue = value.replace(/\s/g, '').replace(/\./g, '').toLowerCase().replace('@', '');
-                        setNickname(cleanValue);
+                        setUsername(cleanValue);
                         
                         // Reset status when user starts typing
                         setUsernameStatus("");
@@ -1241,7 +1241,7 @@ const EditProfile: React.FC = () => {
                     </div>
                   </div>
                   <div className="text-xs text-right mt-1 text-slate-400">
-                    @{nickname.length}/15 characters
+                    @{username.length}/15 characters
                   </div>
                   <div className="text-xs text-slate-500 mt-1">
                     • Must be between 3-15 characters • No periods (.) allowed • Only letters, numbers, and underscores • Must be unique

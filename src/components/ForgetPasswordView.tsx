@@ -21,11 +21,11 @@ export const ForgetPasswordView = () => {
     setFormError(null);
 
     const formData = new FormData(e.currentTarget);
-    const nickname = formData.get("nickname")?.toString() || "";
+    const username = formData.get("username")?.toString() || "";
     const secretPhrase = formData.get("secretPhrase")?.toString() || "";
     const newPassword = formData.get("newPassword")?.toString() || "";
 
-    if (!nickname || !secretPhrase || !newPassword) {
+    if (!username || !secretPhrase || !newPassword) {
       setFormError("Please fill in all fields.");
       toastError({ message: "Please fill in all fields." });
       setLoading(false);
@@ -42,7 +42,7 @@ export const ForgetPasswordView = () => {
 
     try {
       const response: ForgetPasswordResponse = await forgetpass({
-        nickname,
+        username,
         secretPhrase: secretPhraseArray,
         newPassword,
       });
@@ -90,13 +90,13 @@ export const ForgetPasswordView = () => {
           <div className="flex flex-col">
             <Input
               type="text"
-              name="nickname"
+              name="username"
               placeholder="@username"
               pattern="@[a-z0-9_]{3,15}"
               title="Username: @ followed by 3-15 lowercase letters, numbers, or _"
               required={true}
             />
-            <label htmlFor="nickname" className="text-gray-400 text-sm mt-1">
+            <label htmlFor="username" className="text-gray-400 text-sm mt-1">
               Username
             </label>
           </div>

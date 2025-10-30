@@ -59,7 +59,7 @@ const initialState = {
   firstname: "",
   lastname: "",
   email: "",
-  nickname: "",
+  username: "",
   active: false,
   State: "",
   country: "",
@@ -825,7 +825,7 @@ const profile = createSlice({
         state.userId = p.userId ?? p._id ?? "";
         state.firstname = p.firstname ?? "";
         state.lastname = p.lastname ?? "";
-        state.nickname = p.nickname ?? "";
+        state.username = p.username ?? "";
         state.active = p.active ?? false;
         // Use state if present, otherwise fall back to country for display
         state.State = (p as any).state ?? p.country ?? "";

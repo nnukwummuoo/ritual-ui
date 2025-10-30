@@ -54,7 +54,7 @@ export const enrichCommentsWithUserInfo = async (comments: any[]): Promise<any[]
           ...comment,
           commentuserphoto: user.photolink || user.photoLink || user.profileImage || user.avatar || user.image || "",
           commentusername: `${user.firstname || ''} ${user.lastname || ''}`.trim(),
-          commentnickname: user.nickname || "",
+          commentusername: user.username || "",
           commentuserid: user._id,
           isVip: user.isVip || false,
           vipStartDate: user.vipStartDate,

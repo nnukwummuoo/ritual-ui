@@ -14,7 +14,7 @@ import { popup, status } from "@/constants/status";
 // Define the Session interface
 export interface Session {
   _id?: string;
-  nickname: string;
+  username: string;
   token?: string;
   isAdmin?: boolean;
   refreshToken?: string;
@@ -120,7 +120,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
           const data = JSON.parse(raw) || {};
           setSession({
             _id: data.userID || data._id || data.id || "",
-            nickname: data.nickname || "",
+            username: data.username || "",
             token: data.accesstoken || data.accessToken || data.token || "",
             refreshToken: data.refreshtoken || data.refreshToken || data.token || "",
             isAdmin: data.admin ?? false, // Default to false if not provided
@@ -157,7 +157,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
             updatedAt: data.updatedAt || null
           });
           // Set isLoggedIn to true if we have valid session data
-          if (data.nickname && (data.userID || data._id || data.id)) {
+          if (data.username && (data.userID || data._id || data.id)) {
             setIsLoggedIn(true);
           }
         } else {
@@ -177,8 +177,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
                 if (sessionData.valid && sessionData.user) {
                   // Session is valid, restore user data to localStorage
                   const userData = {
-                    nickname: sessionData.user.nickname,
-                    userID: sessionData.user.nickname, // Use nickname as ID for now
+                    username: sessionData.user.username,
+                    userID: sessionData.user.username, // Use username as ID for now
                     accesstoken: '', // Will be filled by backend
                     refreshtoken: '', // Will be filled by backend
                     // Include all user data from session
@@ -220,7 +220,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
                   // Set session state
                   setSession({
                     _id: userData.userID,
-                    nickname: userData.nickname,
+                    username: userData.username,
                     token: userData.accesstoken,
                     refreshToken: userData.refreshtoken,
                     isAdmin: userData.admin || false,

@@ -17,7 +17,7 @@ import type { AppDispatch } from "@/store/store";
 
 
 type User = {
-  nickname: string;
+  username: string;
   password: string;
   _id?: string;
   firstname?: string;
@@ -78,11 +78,11 @@ export const Loginview = () => {
     const formData = new FormData(e.currentTarget);
     
     try {
-      const nicknameInput = formData.get("nickname")?.toString().trim() || "";
-      const nickname = nicknameInput.startsWith("@") ? nicknameInput : (nicknameInput ? `@${nicknameInput}` : "");
+      const usernameInput = formData.get("username")?.toString().trim() || "";
+      const username = usernameInput.startsWith("@") ? usernameInput : (usernameInput ? `@${usernameInput}` : "");
       const password = formData.get("password")?.toString() || "";
 
-      if (!nickname || !password) {
+      if (!username || !password) {
         return toastError({ message: "Please input your username and password!" });
       }
       if (!acceptedTerms) {
@@ -94,7 +94,7 @@ export const Loginview = () => {
       // Set loading state
       setStatus("checking");
 
-          const res = await isRegistered({ nickname, password }) as LoginResponse & { banned?: boolean };
+          const res = await isRegistered({ username, password }) as LoginResponse & { banned?: boolean };
       
       // Check if user is banned
       if (res?.banned) {
@@ -122,7 +122,7 @@ export const Loginview = () => {
         return;
       }
       
-      if (!res?.user?.nickname?.length) {
+      if (!res?.user?.username?.length) {
         setStatus("idle");
         throw new Error(res?.error || "No user found");
       }
@@ -131,7 +131,7 @@ export const Loginview = () => {
       const userData = {
         ...res.user,
         password: password, // Store the password for session creation
-        nickname: res.user.nickname,
+        username: res.user.username,
         _id: res.user._id,
         accessToken: res.user.accessToken,
         refreshtoken: res.user.refreshtoken
@@ -141,7 +141,7 @@ export const Loginview = () => {
       try {
         const userDataToStore = {
           // Authentication data
-          nickname: res.user.nickname,
+          username: res.user.username,
           userID: res.user._id,
           refreshtoken: res.user.refreshtoken,
           accesstoken: res.user.accessToken,
@@ -200,7 +200,7 @@ export const Loginview = () => {
       
       // Update Redux state
       dispatch(loginAuthUser({
-        email: userData.nickname, // Using nickname as email since email is not used
+        email: userData.username, // Using username as email since email is not used
         password: password,
         message: "login_success",
         refreshtoken: userData.refreshtoken,
@@ -213,7 +213,7 @@ export const Loginview = () => {
       // Create session immediately after successful login (like registration)
       try {
         const sessionData = { 
-          nickname: userData.nickname, 
+          username: userData.username, 
           password: password,
           userId: userData._id,
             admin: res.user?.admin || false,
@@ -245,7 +245,7 @@ export const Loginview = () => {
       }, 500);
       
     } catch (error) {
-      setUser({ nickname: "", password: "" });
+      setUser({ username: "", password: "" });
       setStatus("idle");
       
       const errorMessage = error instanceof Error ? error.message : "Login failed!";
@@ -299,7 +299,7 @@ export const Loginview = () => {
           <div className="flex flex-col">
             <Input
               type="text"
-              name="nickname"
+              name="username"
               placeholder="@username"
               pattern="^@?[a-z0-9_]{3,15}$"
               title="Username: optional @ followed by 3-15 lowercase letters, numbers, or _"

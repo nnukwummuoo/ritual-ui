@@ -97,7 +97,7 @@ export const Register = () => {
     lastname: "",
     dob: "",
     gender: "",
-    nickname: "",
+    username: "",
     password: "",
     confirmPassword: "",
   });
@@ -114,8 +114,8 @@ export const Register = () => {
         // Prevent special characters in name fields
         const sanitizedValue = value.replace(/[^a-zA-Z]/g, '');
         setFormValues(prev => ({ ...prev, [name]: sanitizedValue }));
-    } else if (name === 'nickname') {
-        // Enforce nickname format: starts with @, no special chars except _, lowercase
+    } else if (name === 'username') {
+        // Enforce username format: starts with @, no special chars except _, lowercase
         let formattedValue = value;
         if (!formattedValue.startsWith('@')) {
             formattedValue = '@' + formattedValue;
@@ -272,11 +272,11 @@ export const Register = () => {
     if (currentStep === 2) {
         if (!formValues.gender) { newErrors.gender = "Please select your gender."; isValid = false; }
         if (!country) { newErrors.country = "Please select your country."; isValid = false; }
-        if (!formValues.nickname) { newErrors.nickname = "Username is required."; isValid = false; }
-        else if (!/^@[a-z0-9_]{3,15}$/.test(formValues.nickname)) { newErrors.nickname = "Must be 3-15 characters (letters, numbers, or _)."; isValid = false; }
-        else if (usernameStatus === "invalid") { newErrors.nickname = usernameError || "Please choose a different username."; isValid = false; }
-        else if (usernameStatus === "" && formValues.nickname.length >= 3) { newErrors.nickname = "Please wait for username validation."; isValid = false; }
-        else if (usernameStatus === "checking") { newErrors.nickname = "Checking username availability..."; isValid = false; }
+        if (!formValues.username) { newErrors.username = "Username is required."; isValid = false; }
+        else if (!/^@[a-z0-9_]{3,15}$/.test(formValues.username)) { newErrors.username = "Must be 3-15 characters (letters, numbers, or _)."; isValid = false; }
+        else if (usernameStatus === "invalid") { newErrors.username = usernameError || "Please choose a different username."; isValid = false; }
+        else if (usernameStatus === "" && formValues.username.length >= 3) { newErrors.username = "Please wait for username validation."; isValid = false; }
+        else if (usernameStatus === "checking") { newErrors.username = "Checking username availability..."; isValid = false; }
     }
 
     if (currentStep === 3) {
@@ -309,7 +309,7 @@ export const Register = () => {
     }
     
     // Check username validation
-    if (formValues.nickname && formValues.nickname.length >= 3) {
+    if (formValues.username && formValues.username.length >= 3) {
       if (usernameStatus === "invalid") {
         toast.error("Please choose a different username.", { style: { backgroundColor: "#111" } });
         return;
@@ -336,7 +336,7 @@ export const Register = () => {
           const sessionResult = await fetch(`${process.env.NEXT_PUBLIC_URL}/api/session`, {
             method: "POST",
             body: JSON.stringify({ 
-              nickname: formValues.nickname, 
+              username: formValues.username, 
               password: formValues.password 
             }),
             credentials: "include",
@@ -356,7 +356,7 @@ export const Register = () => {
       }
     } catch (error) {
       const errorMessage = (error as any)?.response?.data?.message || "Registration failed.";
-      toast.error(errorMessage === "Nickname already taken!" ? "Username exists." : errorMessage, { style: { backgroundColor: "#111" } });
+      toast.error(errorMessage === "Username already taken!" ? "Username exists." : errorMessage, { style: { backgroundColor: "#111" } });
     } finally {
       setLoading(false);
     }
@@ -421,22 +421,22 @@ export const Register = () => {
           )
         },
         {
-          name: "nickname",
+          name: "username",
           label: "@User Name",
           input: (
             <div className="relative">
               <Input 
-                id="nickname" 
+                id="username" 
                 required={true} 
                 type="text" 
-                name="nickname" 
+                name="username" 
                 placeholder="@username" 
                 overide={false}
                 classNames={`${usernameStatus === "valid" ? 'border border-green-500' : usernameStatus === "invalid" ? 'border border-red-500' : usernameStatus === "checking" ? 'border border-yellow-500' : ''}`}
                 maxLength={16} 
                 pattern="@[a-z0-9_]{3,15}" 
                 title="Username: @ followed by 3-15 lowercase letters, numbers, or _" 
-                value={formValues.nickname} 
+                value={formValues.username} 
                 onChange={handleInputChange} 
               />
               {/* Status indicator */}
@@ -519,10 +519,10 @@ export const Register = () => {
              {inputs[0].step_2.map((v, i)=>(
               <div className="floating-label-group" key={i}>
                 {v.input}
-                {v.name !== "nickname" && <label htmlFor={v.name}>{v.label}</label>}
+                {v.name !== "username" && <label htmlFor={v.name}>{v.label}</label>}
                 <p className="error-text h-6">{errors[v.name] || ""}</p>
                 {/* Username specific messages */}
-                {v.name === "nickname" && (
+                {v.name === "username" && (
                   <>
                     {usernameStatus === "valid" && (
                       <div className="text-xs text-green-400 mt-1">

@@ -325,7 +325,7 @@ export const VideoCallProvider: React.FC<VideoCallProviderProps> = ({ children }
            answererName: session.name || 'Creator',
            answererFirstName: session.firstname,
            answererLastName: session.lastname,
-           answererUsername: session.nickname,
+           answererUsername: session.username,
            answererIsVip: answererIsVip,
            answererVipEndDate: answererVipEndDate,
            isCreator: isCreator, // Use creator status from database

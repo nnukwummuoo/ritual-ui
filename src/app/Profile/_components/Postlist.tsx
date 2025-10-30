@@ -61,7 +61,7 @@ const PostlistComponent = ({
   postlog,
   postuserid,
   likelist,
-  nickname,
+  username,
   isfollow,
   currentPlayingIndex,
   setCurrentPlayingIndex,
@@ -704,7 +704,7 @@ const PostlistComponent = ({
                         {username}
                       </div>
                       <div className="text-xs text-slate-400 text-start">
-                        {nickname}
+                        {username}
                       </div>
                     </div>
                   </div>
@@ -829,7 +829,7 @@ const PostlistComponent = ({
                     {username}
                   </div>
                   <div className="text-xs text-slate-400 text-start">
-                    {nickname}
+                    {username}
                   </div>
                 </div>
               </div>
@@ -893,7 +893,7 @@ const PostlistComponent = ({
                     {username}
                   </div>
                   <div className="text-xs text-slate-400 text-start">
-                    {nickname}
+                    {username}
                   </div>
                 </div>
               </div>

@@ -20,14 +20,14 @@ export const Menubar = () => {
   // const photo =  useSelector(state => state.comprofile.profilephoto)
   // const firstname =   useSelector(state=> state.profile.firstname)
   // const lastname =   useSelector(state=> state.profile.lastname)
-  // const nickname =   useSelector(state=> state.profile.nickname)
+  // const username =   useSelector(state=> state.profile.username)
   // const balance =   useSelector(state=> state.profile.balance)
   // const withdraw =   useSelector(state=> state.profile.witdrawable)
   // const creator =   useSelector(state=> state.profile.creator)
   // const creator_portfolio_id =   useSelector(state=> state.profile.creator_portfolio_id)
   // const postuserid = useSelector(state => state.register.userID)
   // const [profilepics,setprofilepics] = useState();
-  // const [username,setusername] = useState(nickname);
+  // const [username,setusername] = useState(username);
   // const [Balance,setBalance] = useState('');
 
 
@@ -42,7 +42,7 @@ export const Menubar = () => {
 //     if(photo){
 //       setprofilepics(photo)
 //     }
-//     if(!nickname){
+//     if(!username){
 //       let namees = `${firstname} ${lastname}`
 //       setusername(namees)
 //     }

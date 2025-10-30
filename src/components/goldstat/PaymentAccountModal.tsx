@@ -64,7 +64,7 @@ const PaymentAccountModal: React.FC<PaymentAccountModalProps> = ({ accesstoken, 
       console.log("localStorage userData:", userData);
       if (userData) {
         const parsed = JSON.parse(userData);
-        const fullName = parsed.fullName || parsed.name || parsed.nickname || '';
+        const fullName = parsed.fullName || parsed.name || parsed.username || '';
         console.log("Using localStorage:", fullName);
         return fullName;
       }

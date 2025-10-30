@@ -6,7 +6,7 @@ import axios from "axios";
 import { URL } from "../../api/config";
 
 export type user = { 
-  nickname: string; 
+  username: string; 
   password: string; 
   userId?: string;
   _id?: string;
@@ -36,15 +36,15 @@ export async function decryptData(input: string): Promise<{ status: string; body
     return { status: "valid", body: typedPayload.user };
   } catch (error: any) {
     console.error("JWT verification error:", error.message);
-    return { status: "expired", body: error?.payload?.user ?? { nickname: "", password: "" } };
+    return { status: "expired", body: error?.payload?.user ?? { username: "", password: "" } };
   }
 }
 
-export async function isRegistered(payload: { nickname: string; password: string }): Promise<{ user?: any; error?: string; banned?: boolean }> {
+export async function isRegistered(payload: { username: string; password: string }): Promise<{ user?: any; error?: string; banned?: boolean }> {
   try {
     const res = await axios.post(
       `${URL}/login`,
-      { nickname: payload.nickname.toLowerCase().trim(), password: payload.password },
+      { username: payload.username.toLowerCase().trim(), password: payload.password },
       { withCredentials: true }
     );
     console.log("Backend response:", res.data);
@@ -60,7 +60,7 @@ export async function isRegistered(payload: { nickname: string; password: string
     const user = {
       ...data.user, // Include all user data from backend
       _id: data.userId,
-      nickname: payload.nickname.toLowerCase().trim(),
+      username: payload.username.toLowerCase().trim(),
       accessToken: data.accessToken,
       refreshtoken: data.token,
       admin: data.isAdmin || data.user?.admin || false,

@@ -13,7 +13,7 @@ interface UserListProps {
   gender: string;
   age: number;
   userid: string;
-  nickname: string;
+  username: string;
 }
 
 export const UserList: React.FC<UserListProps> = ({
@@ -23,7 +23,7 @@ export const UserList: React.FC<UserListProps> = ({
   gender,
   age,
   userid,
-  nickname,
+  username,
 }) => {
   const [userPic, setUserPic] = useState<string | StaticImageData>(Person);
   const router = useRouter();
@@ -57,7 +57,7 @@ export const UserList: React.FC<UserListProps> = ({
       <div className="flex flex-col ml-2">
         <div className="flex flex-col mb-1">
           <p className="text-slate-100 font-bold text-start">{name}</p>
-          <p className="text-slate-300 text-xs text-start">{nickname}</p>
+          <p className="text-slate-300 text-xs text-start">{username}</p>
         </div>
         <p className="text-slate-300 font-semibold text-start">{country}</p>
         <p className="text-slate-300 font-semibold text-start">{gender}</p>

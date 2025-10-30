@@ -16,7 +16,7 @@ interface VirtualizedPostListProps {
   vipStatus: any;
   firstname: string;
   lastname: string;
-  nickname: string;
+  username: string;
   photolink: string;
   itemHeight?: number;
   overscan?: number;
@@ -34,7 +34,7 @@ const VirtualizedPostList: React.FC<VirtualizedPostListProps> = ({
   vipStatus,
   firstname,
   lastname,
-  nickname,
+  username,
   photolink,
   itemHeight = 600, // Estimated height per post
   overscan = 3 // Number of items to render outside viewport
@@ -129,7 +129,7 @@ const VirtualizedPostList: React.FC<VirtualizedPostListProps> = ({
                 vipStatus={vipStatus}
                 firstname={firstname}
                 lastname={lastname}
-                nickname={nickname}
+                username={username}
                 photolink={photolink}
                 isFirstPost={post.virtualIndex === 0}
               />

@@ -20,7 +20,7 @@ interface Request {
   status: "request" | "expired" | "completed" | "accepted" | "declined" | "cancelled";
   otherUser?: {
     name: string;
-    nickname?: string; // Add nickname field
+    username?: string; // Add username field
     firstname?: string; // Add first name field
     lastname?: string; // Add last name field
     photolink: string;
@@ -213,7 +213,7 @@ export default function Activity() {
             })()}
             status={request.status}
             name={request.otherUser?.name || "Unknown User"}
-            nickname={request.otherUser?.nickname} // Add nickname prop
+            username={request.otherUser?.username} // Add username prop
             firstName={request.otherUser?.firstname} // Add first name prop
             lastName={request.otherUser?.lastname} // Add last name prop
             titles={request.otherUser?.isCreator ? ["Creator"] : ["Fan"]}

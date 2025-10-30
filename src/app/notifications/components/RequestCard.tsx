@@ -191,7 +191,7 @@ const generateInitials = (firstName?: string, lastName?: string, fallbackName?: 
     return initial;
   }
   
-  // Fallback to the original logic using name/nickname
+  // Fallback to the original logic using name/username
   if (cleanFallbackName) {
     const names = cleanFallbackName.split(' ').filter(name => name.trim().length > 0);
     if (names.length >= 2) {
@@ -219,7 +219,7 @@ interface CardProps {
     type: "fan" | "creator";
     titles?: string[];
     name: string;
-    nickname?: string; // Add nickname prop
+    username?: string; // Add username prop
     firstName?: string; // Add first name prop
     lastName?: string; // Add last name prop
     img: string;
@@ -237,7 +237,7 @@ interface CardProps {
     onStatusChange?: (requestId: string, newStatus: string) => void;
 }
 
-export default function RequestCard({exp, img, name, nickname, firstName, lastName, titles=["fan"], status, type="fan", requestId, price, details, userid, creator_portfolio_id, targetUserId, hosttype, isVip=false, vipEndDate=null, createdAt, onStatusChange}: CardProps) {
+export default function RequestCard({exp, img, name, username, firstName, lastName, titles=["fan"], status, type="fan", requestId, price, details, userid, creator_portfolio_id, targetUserId, hosttype, isVip=false, vipEndDate=null, createdAt, onStatusChange}: CardProps) {
   const [loading, setLoading] = useState(false);
   const [currentStatus, setCurrentStatus] = useState(status);
   const [timeLeft, setTimeLeft] = useState<string>("");
@@ -430,7 +430,7 @@ export default function RequestCard({exp, img, name, nickname, firstName, lastNa
           setRatingData({
             rating: data.rating,
             feedback: data.feedback,
-            fanName: firstName && lastName ? `${firstName} ${lastName}` : (nickname || name) // Use the fan's first/last name or fallback
+            fanName: firstName && lastName ? `${firstName} ${lastName}` : (username || name) // Use the fan's first/last name or fallback
           });
         } else {
           setSubmittedRating(0);
@@ -478,7 +478,7 @@ export default function RequestCard({exp, img, name, nickname, firstName, lastNa
           setFanRatingData({
             rating: fanRatingData.rating,
             feedback: fanRatingData.feedback,
-            creatorName: firstName && lastName ? `${firstName} ${lastName}` : (nickname || name)
+            creatorName: firstName && lastName ? `${firstName} ${lastName}` : (username || name)
           });
         } else {
           setSubmittedFanRating(0);
@@ -489,7 +489,7 @@ export default function RequestCard({exp, img, name, nickname, firstName, lastNa
         setFanRatingData(null);
       }
     }
-  }, [requestId, currentUserId, type, currentStatus, userid, name, creator_portfolio_id, firstName, lastName, nickname]);
+  }, [requestId, currentUserId, type, currentStatus, userid, name, creator_portfolio_id, firstName, lastName, username]);
 
   // Check for existing rating when component loads or dependencies change
   useEffect(() => {
@@ -712,9 +712,9 @@ export default function RequestCard({exp, img, name, nickname, firstName, lastNa
     
     // If it's a Fan Call, start video call instead of completing
     if (hosttype === "Fan call") {
-      if (creator_portfolio_id && (nickname || name)) {
+      if (creator_portfolio_id && (username || name)) {
        
-        startVideoCall(creator_portfolio_id, nickname || name, price || 1, isVip, vipEndDate, firstName, lastName);
+        startVideoCall(creator_portfolio_id, username || name, price || 1, isVip, vipEndDate, firstName, lastName);
       }
       return;
     }
@@ -956,14 +956,14 @@ export default function RequestCard({exp, img, name, nickname, firstName, lastNa
                   if (parent) {
                     const fallbackDiv = document.createElement('div');
                     fallbackDiv.className = 'w-full h-full flex items-center justify-center bg-gray-600 text-white font-bold text-xl';
-                    fallbackDiv.textContent = generateInitials(firstName, lastName, nickname || name);
+                    fallbackDiv.textContent = generateInitials(firstName, lastName, username || name);
                     parent.appendChild(fallbackDiv);
                   }
                 }}
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center bg-gray-600 text-white font-bold text-xl">
-                {generateInitials(firstName, lastName, nickname || name)}
+                {generateInitials(firstName, lastName, username || name)}
               </div>
             )}
             
@@ -971,7 +971,7 @@ export default function RequestCard({exp, img, name, nickname, firstName, lastNa
           <div className='text-sm'>
             <div className='flex items-center gap-2'>
               <p className='font-bold cursor-pointer hover:text-blue-400 transition-colors' onClick={handleProfileClick}>
-                {nickname || name}
+                {username || name}
               </p>
             </div>
             <div className='flex gap-1'>{titles?.map((title, i)=> i === titles.length -1 ? <p key={title}>{title}</p> : <p key={title}>{title} &#x2022; </p>)}</div>
@@ -1032,7 +1032,7 @@ export default function RequestCard({exp, img, name, nickname, firstName, lastNa
       {/* Rating Stars - Show for creators when completed and rated */}
       {type === "creator" && currentStatus === "completed" && submittedRating > 0 && (
         <div className="flex flex-col items-center gap-2 py-3">
-          <p className="text-sm text-gray-400 mb-2">Rating from {firstName && lastName ? `${firstName} ${lastName}` : (nickname || name)}:</p>
+          <p className="text-sm text-gray-400 mb-2">Rating from {firstName && lastName ? `${firstName} ${lastName}` : (username || name)}:</p>
           <div className="flex justify-center gap-2">
             {[1, 2, 3, 4, 5].map((star) => {
               const isFilled = star <= submittedRating;
@@ -1106,7 +1106,7 @@ export default function RequestCard({exp, img, name, nickname, firstName, lastNa
       {/* Fan Rating Stars - Show for fans when completed (to view creator's rating of them) */}
       {type === "fan" && currentStatus === "completed" && submittedFanRating > 0 && (
         <div className="flex flex-col items-center gap-2 py-3 border-t border-gray-600 pt-3">
-          <p className="text-sm text-gray-400 mb-2">Rating from {firstName && lastName ? `${firstName} ${lastName}` : (nickname || name)}:</p>
+          <p className="text-sm text-gray-400 mb-2">Rating from {firstName && lastName ? `${firstName} ${lastName}` : (username || name)}:</p>
           <div className="flex justify-center gap-2">
             {[1, 2, 3, 4, 5].map((star) => {
               const isFilled = star <= submittedFanRating;
@@ -1144,7 +1144,7 @@ export default function RequestCard({exp, img, name, nickname, firstName, lastNa
           setSelectedRating(0);
         }}
         onSubmit={handleRatingSubmit}
-        creatorName={firstName && lastName ? `${firstName} ${lastName}` : (nickname || name)}
+        creatorName={firstName && lastName ? `${firstName} ${lastName}` : (username || name)}
         hostType={hosttype}
         loading={ratingLoading}
         preSelectedRating={selectedRating}
@@ -1158,7 +1158,7 @@ export default function RequestCard({exp, img, name, nickname, firstName, lastNa
           setSelectedFanRating(0);
         }}
         onSubmit={handleFanRatingSubmit}
-        fanName={firstName && lastName ? `${firstName} ${lastName}` : (nickname || name)}
+        fanName={firstName && lastName ? `${firstName} ${lastName}` : (username || name)}
         hostType={hosttype}
         loading={fanRatingLoading}
         preSelectedRating={selectedFanRating}

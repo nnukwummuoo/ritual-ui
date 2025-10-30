@@ -664,7 +664,7 @@ export const Chat = () => {
       if (viewingProfile.userId === currentTargetUserId) {
         setfirstname(viewingProfile.firstname || "");
         setlastname(viewingProfile.lastname || "");
-        setchatusername(viewingProfile.nickname || "");
+        setchatusername(viewingProfile.username || "");
         
         // Ensure we have a valid photo link
         const photoLink = (viewingProfile as any).photolink;

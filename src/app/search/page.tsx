@@ -15,7 +15,7 @@ interface User {
   gender: string;
   age: number;
   userid: string;
-  nickname: string;
+  username: string;
 }
 
 const SearchBar: React.FC = () => {
@@ -38,7 +38,7 @@ const SearchBar: React.FC = () => {
           gender={user.gender}
           age={user.age}
           userid={user.userid}
-          nickname={user.nickname}
+          username={user.username}
         />
       ));
     }
@@ -72,7 +72,7 @@ const SearchBar: React.FC = () => {
         searchUsers.filter((user: any) => {
           const firstNameParts = user.name.split(' ');
           return (
-            user.nickname.toLowerCase() === searchValue ||
+            user.username.toLowerCase() === searchValue ||
             firstNameParts[0].toLowerCase() === searchValue ||
             (firstNameParts[1] && firstNameParts[1].toLowerCase() === searchValue) ||
             user.name.toLowerCase() === searchValue ||

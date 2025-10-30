@@ -10,7 +10,7 @@ export type postListConstants = {
     postlog: string,
     postuserid: string,
     likelist: string[],
-    nickname: string,
+    username: string,
     isfollow: boolean,
     currentPlayingIndex: number,
     setCurrentPlayingIndex: (index: number) => void,

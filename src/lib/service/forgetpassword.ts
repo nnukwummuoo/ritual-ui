@@ -5,7 +5,7 @@ import { URL } from "../../api/config";
  * Defines the shape of the data required for password reset.
  */
 interface ForgetPasswordPayload {
-  nickname: string;
+  username: string;
   secretPhrase: string[];
   newPassword: string;
 }

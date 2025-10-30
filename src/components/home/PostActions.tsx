@@ -235,7 +235,7 @@ function DotsIcon({ post }: { post: any }) { // eslint-disable-line @typescript-
         <div className="block w-full text-left px-4 py-2 hover:bg-gray-700 rounded" onClick={async() => {
           try {
             await navigator.share({
-              title: post?.user?.nickname+"'s post",
+              title: post?.user?.username+"'s post",
               text: post?.content?.slice(0, 100) + (post?.content?.length > 100 ? '...' : ''),
               url: window.location.origin + `/post/${extractPostId(post._id)}`
             });

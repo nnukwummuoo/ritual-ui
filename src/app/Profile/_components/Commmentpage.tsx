@@ -184,7 +184,7 @@ export const Commmentpage = ({
                 //       setbuttontext={setbuttontext}
                 //       setbuttonpress={setbuttonpress}
                 //       setcommentsids={setcommentsids}
-                //       nickname={value.commentnickname}
+                //       username={value.commentusername}
                 //     />
                 //   );
                 // })

@@ -8,7 +8,7 @@ interface ViewingProfileState {
   userId: string;
   firstname: string;
   lastname: string;
-  nickname: string;
+  username: string;
   bio: string;
   photolink: string;
   State: string;
@@ -48,7 +48,7 @@ const initialState: ViewingProfileState = {
   userId: "",
   firstname: "",
   lastname: "",
-  nickname: "",
+  username: "",
   bio: "",
   photolink: "",
   State: "",
@@ -154,7 +154,7 @@ const viewingProfileSlice = createSlice({
         state.userId = p.userId ?? p._id ?? "";
         state.firstname = p.firstname ?? "";
         state.lastname = p.lastname ?? "";
-        state.nickname = p.nickname ?? "";
+        state.username = p.username ?? "";
         state.active = p.active ?? false;
         state.State = (p as any).state ?? p.country ?? "";
         state.country = p.country ?? "";

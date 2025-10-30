@@ -145,7 +145,7 @@ interface RemainingPostsProps {
   vipStatus: any;
   firstname: string;
   lastname: string;
-  nickname: string;
+  username: string;
   photolink: string;
 }
 
@@ -161,7 +161,7 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
   vipStatus,
   firstname,
   lastname,
-  nickname,
+  username,
   photolink
 }) => {
   const router = useRouter();
@@ -425,7 +425,7 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
         let displayName =
           p?.user?.username ||
           p?.user?.name ||
-          p?.user?.nickname ||
+          p?.user?.username ||
           combinedName ||
           p?.user?.fullname ||
           p?.user?.fullName ||
@@ -444,13 +444,13 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
         );
         if (isSelf && (!displayName || displayName === "User")) {
           const selfCombined = [firstname, lastname].filter(Boolean).join(" ");
-          displayName = nickname || selfCombined || displayName;
+          displayName = username || selfCombined || displayName;
         }
         const handleStr =
           p?.handle ||
           p?.user?.handle ||
-          p?.nickname ||
-          p?.user?.nickname ||
+          p?.username ||
+          p?.user?.username ||
           p?.username ||
           p?.postedBy?.username ||
           null;
@@ -927,7 +927,7 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
                                     c?.fullname ||
                                     c?.fullName ||
                                     c?.name ||
-                                    c?.nickname ||
+                                    c?.username ||
                                     c?.username ||
                                     c?.author ||
                                     'User';
@@ -997,14 +997,14 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
                                 { 
                                   content: text, 
                                   comment: text, 
-                                  username: [firstname, lastname].filter(Boolean).join(' ') || nickname || 'you',
-                                  commentusername: [firstname, lastname].filter(Boolean).join(' ') || nickname || 'you',
+                                  username: [firstname, lastname].filter(Boolean).join(' ') || username || 'you',
+                                  commentusername: [firstname, lastname].filter(Boolean).join(' ') || username || 'you',
                                   commentuserphoto: photolink || '',
                                   userid: String(loggedInUserId || selfId || ''),
                                   createdAt: new Date().toISOString(),
                                   commenttime: Date.now(),
                                   temp: true,
-                                  initials: generateInitials(firstname, lastname, nickname),
+                                  initials: generateInitials(firstname, lastname, username),
                                   firstname: firstname || '',
                                   lastname: lastname || ''
                                 },

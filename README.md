@@ -585,7 +585,7 @@ Comprehensive profile system for both creators and fans with detailed informatio
   _id: "user_id",
   firstname: "user_first_name",
   lastname: "user_last_name",
-  nickname: "user_nickname",
+  username: "user_username",
   bio: "user_bio",
   photolink: "profile_photo_url",
   gender: "Male|Female|Other",
@@ -1331,7 +1331,7 @@ Calls the isRegistered function to verify credentials.
 
 2. On Success
 
-Stores user data (e.g., nickname, userID, tokens) in localStorage.
+Stores user data (e.g., username, userID, tokens) in localStorage.
 
 Updates the Redux store with setUser and setIsLoggedIn.
 
@@ -1372,7 +1372,7 @@ POST /login
 Request Body
 
 {
-  "nickname": "@username",
+  "username": "@username",
   "password": "yourpassword"
 }
 
@@ -1380,7 +1380,7 @@ Validation
 
 All fields are required.
 
-nickname must start with @.
+username must start with @.
 
 Verifies that the user exists and password matches.
 
@@ -1486,7 +1486,7 @@ Request Body
   "firstname": "John",
   "lastname": "Doe",
   "gender": "male",
-  "nickname": "@username",
+  "username": "@username",
   "password": "yourpassword",
   "age": "18",
   "country": "Country",
@@ -1498,7 +1498,7 @@ Validation
 
 All fields are required except optional ones.
 
-nickname must be unique.
+username must be unique.
 
 Password strength and confirmation are checked.
 
@@ -1547,7 +1547,7 @@ Defined in profile.ts:
   token: string,
   name: string,
   email: string,
-  nickname: string,
+  username: string,
   country: string,
   balance: number,
   isCreator: boolean,

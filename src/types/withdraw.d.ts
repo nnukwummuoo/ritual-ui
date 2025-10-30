@@ -8,7 +8,7 @@ export interface WithdrawalRequest {
     _id: string;
     firstname?: string;
     lastname?: string;
-    nickname?: string;
+    username?: string;
   };
   credentials?: {
     method?: string;

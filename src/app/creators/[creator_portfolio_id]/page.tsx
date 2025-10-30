@@ -99,7 +99,7 @@ interface RootState {
         userid: string;
         hostid: string;
         name: string;
-        nickname?: string;
+        username?: string;
         age: string;
         location: string;
         price: string;
@@ -1241,7 +1241,7 @@ export default function Creatorbyid () {
                 <h1 className="text-xl font-bold text-white mb-2">
                   {getStatus(String(creator?.hosttype))} {creator.name.split(" ")[0]}
                 </h1>
-                <p className="text-gray-300 text-1xl">{creator.nickname}</p>
+                <p className="text-gray-300 text-1xl">{creator.username}</p>
               </div>
             </div>
 

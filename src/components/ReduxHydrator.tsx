@@ -22,7 +22,7 @@ const ReduxHydrator: React.FC = () => {
           // Check if we have valid login data
           if (data?.userID && (data?.refreshtoken || data?.accesstoken)) {
             dispatch(loginAuthUser({
-              email: data.nickname || data.email || '', // Use nickname as email
+              email: data.username || data.email || '', // Use username as email
               password: data.password || '',
               message: "restored_from_storage",
               refreshtoken: data.refreshtoken || '',

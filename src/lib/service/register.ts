@@ -8,7 +8,7 @@ interface RegistrationPayload {
   firstname: string;
   lastname: string;
   gender: string;
-  nickname: string;
+  username: string;
   password: string;
   age: string;
   country: string;

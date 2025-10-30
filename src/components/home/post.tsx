@@ -157,7 +157,7 @@ export default function PostsCard() {
   const loggedInUserId = reduxUserId || localUserid;
   const token = reduxToken || localToken;
   
-  const { firstname, lastname, nickname, photolink } = useSelector((s: RootState) => s.profile);
+  const { firstname, lastname, username, photolink } = useSelector((s: RootState) => s.profile);
   const vipStatus = useSelector((s: RootState) => s.vip.vipStatus);
   const [selfId, setSelfId] = React.useState<string>("");
   const [selfNick, setSelfNick] = React.useState<string | undefined>(undefined);
@@ -404,7 +404,7 @@ export default function PostsCard() {
         const saved = JSON.parse(raw);
         const lid = saved?.userID || saved?.userid || saved?.id || undefined;
         setSelfId(lid);
-        setSelfNick(saved?.nickname || saved?.username || undefined);
+        setSelfNick(saved?.username || saved?.username || undefined);
         const ln = [saved?.firstname, saved?.lastname].filter(Boolean).join(' ').trim();
         setSelfName(ln || saved?.name || undefined);
         try {
@@ -587,7 +587,7 @@ export default function PostsCard() {
           vipStatus={vipStatus}
           firstname={firstname}
           lastname={lastname}
-          nickname={nickname}
+          username={username}
           photolink={photolink}
         />
       )}
@@ -611,7 +611,7 @@ export default function PostsCard() {
           vipStatus={vipStatus}
           firstname={firstname}
           lastname={lastname}
-          nickname={nickname}
+          username={username}
           photolink={photolink}
         />
       ) : (
@@ -632,7 +632,7 @@ export default function PostsCard() {
                 vipStatus={vipStatus}
                 firstname={firstname}
                 lastname={lastname}
-                nickname={nickname}
+                username={username}
                 photolink={photolink}
                 isFirstPost={false}
               />

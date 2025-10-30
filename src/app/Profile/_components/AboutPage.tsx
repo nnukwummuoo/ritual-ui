@@ -28,7 +28,7 @@ const AboutPage = () => {
   const isViewingOwnProfile = viewingUserId === currentUserProfile.userId;
   const profileData = isViewingOwnProfile ? currentUserProfile : viewingProfile;
   
-  const { status, firstname, lastname, nickname, country: location } = profileData;
+  const { status, firstname, lastname, username, country: location } = profileData;
   const profile = useSelector((state: RootState) => state.comprofile.profile);
   const getprofilebyidstats = useSelector((state: RootState) => state.comprofile.getprofileidstatus);
   
@@ -205,7 +205,7 @@ const AboutPage = () => {
               </div>
               {/* <h2 className="text-2xl font-bold mb-2">{firstname} {lastname}</h2> */}
               <div className="flex items-center justify-center gap-2">
-                <span className="text-gray-400">{nickname}</span>
+                <span className="text-gray-400">{username}</span>
                 {/* <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
                   <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />

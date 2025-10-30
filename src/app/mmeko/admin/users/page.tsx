@@ -21,7 +21,7 @@ interface User {
   gender: string;
   country: string;
   photolink: string;
-  nickname?: string;
+  username?: string;
   bio?: string;
   age?: string;
   dob?: string;
@@ -426,16 +426,16 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, isOpen, onClose
                   <p className="text-white">{followData.following.length}</p>
                 </div>
                 <div>
-                  <label className="text-gray-300 text-sm">Nickname</label>
+                  <label className="text-gray-300 text-sm">Username</label>
                   {isEditing ? (
                     <input
                       type="text"
-                      value={editedUser.nickname || ""}
-                      onChange={(e) => setEditedUser({ ...editedUser, nickname: e.target.value })}
+                      value={editedUser.username || ""}
+                      onChange={(e) => setEditedUser({ ...editedUser, username: e.target.value })}
                       className="w-full bg-gray-700 text-white p-2 rounded mt-1"
                     />
                   ) : (
-                    <p className="text-white">{user.nickname || "N/A"}</p>
+                    <p className="text-white">{user.username || "N/A"}</p>
                   )}
                 </div>
                 <div>

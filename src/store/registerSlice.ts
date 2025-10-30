@@ -258,7 +258,7 @@ const registerSlice = createSlice({
             "login",
             JSON.stringify({
               userID: action.payload.userId,
-              nickname: action.payload.nickname || "",
+              username: action.payload.username || "",
               accesstoken: action.payload.accessToken,
               refreshtoken: action.payload.token || "",
             })
@@ -308,7 +308,7 @@ const registerSlice = createSlice({
             // Authentication data
             email: state.email,
             password: state.password,
-            nickname: action.payload.user?.nickname,
+            username: action.payload.user?.username,
             userID: action.payload.userId,
             refreshtoken: action.payload.token,
             accesstoken: action.payload.accessToken,
