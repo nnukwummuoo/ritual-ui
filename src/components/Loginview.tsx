@@ -78,7 +78,8 @@ export const Loginview = () => {
     const formData = new FormData(e.currentTarget);
     
     try {
-      const nickname = formData.get("nickname")?.toString() || "";
+      const nicknameInput = formData.get("nickname")?.toString().trim() || "";
+      const nickname = nicknameInput.startsWith("@") ? nicknameInput : (nicknameInput ? `@${nicknameInput}` : "");
       const password = formData.get("password")?.toString() || "";
 
       if (!nickname || !password) {
@@ -300,8 +301,8 @@ export const Loginview = () => {
               type="text"
               name="nickname"
               placeholder="@username"
-              pattern="@[a-z0-9_]{3,15}"
-              title="Username: @ followed by 3-15 lowercase letters, numbers, or _"
+              pattern="^@?[a-z0-9_]{3,15}$"
+              title="Username: optional @ followed by 3-15 lowercase letters, numbers, or _"
               required={true}
               classNames="border rounded-lg text-center"
             />

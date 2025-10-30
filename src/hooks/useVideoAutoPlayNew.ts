@@ -13,7 +13,7 @@ export const useVideoAutoPlay = (options: UseVideoAutoPlayOptions = {}) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
-  const [hasUserInteracted, setHasUserInteracted] = useState(false);
+  // Remove local per-hook interaction; rely on global interaction set only on video click
   const [manuallyPaused, setManuallyPaused] = useState(false);
   const [autoPlayBlocked, setAutoPlayBlocked] = useState(true); // Start as blocked until user interacts
   const initializedRef = useRef(false);
@@ -107,20 +107,7 @@ export const useVideoAutoPlay = (options: UseVideoAutoPlayOptions = {}) => {
       }
     };
 
-    // User interaction handler
-    const handleUserActivity = () => {
-      if (!hasUserInteracted) {
-        setHasUserInteracted(true);
-        setUserInteractedRef.current();
-        // Don't set autoPlayBlocked to false here - let autoplay attempt decide
-      }
-    };
-
-    // Monitor user activity
-    document.addEventListener('mousemove', handleUserActivity);
-    document.addEventListener('keydown', handleUserActivity);
-    document.addEventListener('scroll', handleUserActivity);
-    document.addEventListener('click', handleUserActivity);
+    // Do NOT mark global interaction on page-wide events; only explicit video clicks should unlock autoplay
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
     // Intersection Observer for auto-play
@@ -185,13 +172,9 @@ export const useVideoAutoPlay = (options: UseVideoAutoPlayOptions = {}) => {
       observer.disconnect();
       video.removeEventListener('play', handlePlay);
       video.removeEventListener('pause', handlePause);
-      document.removeEventListener('mousemove', handleUserActivity);
-      document.removeEventListener('keydown', handleUserActivity);
-      document.removeEventListener('scroll', handleUserActivity);
-      document.removeEventListener('click', handleUserActivity);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [autoPlay, postId, globalUserInteracted, manuallyPaused, hasUserInteracted, pauseAllVideosExcept]);
+  }, [autoPlay, postId, globalUserInteracted, manuallyPaused, pauseAllVideosExcept]);
 
   // Manual play/pause controls
   const togglePlay = () => {
