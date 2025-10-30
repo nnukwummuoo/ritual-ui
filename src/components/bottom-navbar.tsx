@@ -258,8 +258,8 @@ export default function BottomNavBar() {
                     <div className="absolute -top-1 -right-1 min-w-[18px] h-[18px] bg-white text-black text-xs rounded-full flex items-center justify-center font-semibold">
                       {item.unreadCount && item.unreadCount > 9 ? (
                         <span className="flex items-center">
-                          <span>99</span>
-                          <span className="text-[10px] ml-0.5">+</span>
+                          <span>9</span>
+                          <span className="text-[10px] ">+</span>
                         </span>
                       ) : (
                         item.unreadCount || 0

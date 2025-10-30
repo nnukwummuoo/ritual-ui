@@ -32,7 +32,7 @@ export default function ConditionalLayout({ children, isAuthenticated }: Conditi
   
   // Otherwise, render with main layout
   return (
-    <main className="flex mb-16 overflow-hidden h-screen relative">
+    <main className="flex mb-28 overflow-hidden h-screen relative">
       <Sidebar />
       <Navbar isAuthenticated={isAuthenticated} />
       <div className="w-full grid grid-cols-1 grid-rows-[auto_1fr_auto] overflow-hidden mt-12">
@@ -42,7 +42,7 @@ export default function ConditionalLayout({ children, isAuthenticated }: Conditi
           </div>
           {/* Show CreatorCards only on home route and make it same size as bottom navbar */}
           {isHomeRoute && (
-            <div className="w-full  h-full max-[1000px]:w-0 mt-28 lg:block hidden">
+            <div className="w-full  h-full max-[1000px]:w-0 mt-36 sticky lg:block hidden">
               <div className="sticky top-4 -mr-16">
                 <div className="w-[25rem] mx-auto max-[600px]:w-[90%] rounded-2xl px-4 pt-4 pb-2 bg-gray-900">
                   <CreatorCards />

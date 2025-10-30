@@ -223,17 +223,6 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
               setShowControls(false);
             }, 3000);
           }}
-          onClick={() => {
-            // Show controls and toggle play when clicking
-            setShowControls(true);
-            togglePlay();
-            if (controlsTimerRef.current) {
-              clearTimeout(controlsTimerRef.current);
-            }
-            controlsTimerRef.current = setTimeout(() => {
-              setShowControls(false);
-            }, 3000);
-          }}
         >
           <video
             ref={videoRef}
@@ -244,6 +233,17 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
             className="w-full h-[500px] object-cover rounded cursor-pointer"
             onLoadedData={() => {
               setIsVideoLoaded(true);
+            }}
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowControls(true);
+              togglePlay();
+              if (controlsTimerRef.current) {
+                clearTimeout(controlsTimerRef.current);
+              }
+              controlsTimerRef.current = setTimeout(() => {
+                setShowControls(false);
+              }, 3000);
             }}
             onError={(e) => {
               const video = e.currentTarget as HTMLVideoElement & { dataset: any };
@@ -347,7 +347,6 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
                     <polygon points="5 3 19 12 5 21 5 3"></polygon>
                   </svg>
                 </div>
-                <p className="text-lg font-medium">Click to play</p>
               </div>
             </div>
           )}
