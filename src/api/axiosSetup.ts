@@ -4,7 +4,7 @@ import axios from "axios";
 import { URL as API_BASE } from "./config";
 
 // Fallback production base (same as used elsewhere)
-const PROD_BASE = "https://mmekoapi.onrender.com";
+const PROD_BASE = "https://backendritual.work";
 
 // Ensure interceptor is only registered once per window
 (function setupAxiosFallback() {

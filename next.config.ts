@@ -40,7 +40,7 @@ const nextConfig: NextConfig = {
             ? "http://localhost:3100/:path*"
             : process.env.NEXT_PUBLIC_API
               ? `${process.env.NEXT_PUBLIC_API}/:path*`
-              : "https://mmekoapi.onrender.com/:path*",
+              : "https://backendritual.work/:path*",
       },
     ];
   },

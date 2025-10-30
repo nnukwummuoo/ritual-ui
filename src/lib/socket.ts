@@ -136,10 +136,10 @@ export const getSocket = () => {
           socketUrl = "http://localhost:3100";
         } else if (window.location.hostname.includes('vercel.app')) {
           // Vercel deployment - use production backend
-          socketUrl = "https://mmekoapi.onrender.com";
+          socketUrl = "https://backendritual.work";
         } else {
           // Other production domains - use production URL
-          socketUrl = "https://mmekoapi.onrender.com";
+          socketUrl = "https://backendritual.work";
         }
       }
       
@@ -207,7 +207,7 @@ export const getSocket = () => {
           }
           
           // Create new socket with production URL
-          socket = io("https://mmekoapi.onrender.com", {
+          socket = io("https://backendritual.work", {
             withCredentials: true,
             autoConnect: true,
             reconnection: true,

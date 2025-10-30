@@ -10,7 +10,7 @@ import { getpostcomment, postcomment } from "@/store/comment";
 import { follow as followThunk, unfollow as unfollowThunk, getfollow } from "@/store/profile";
 import VIPBadge from "@/components/VIPBadge";
 import { URL as API_BASE } from "@/api/config";
-const PROD_BASE = "https://mmekoapi.onrender.com";
+const PROD_BASE = "https://backendritual.work";
 import PostActions from "./PostActions";
 import { toast } from "material-react-toastify";
 import Image from "next/image";
@@ -725,7 +725,7 @@ const FirstPost: React.FC<FirstPostProps> = ({
             };
             
             console.log('🚀 Sending like request to backend:', likeData);
-            console.log('📡 API URL:', `${process.env.NEXT_PUBLIC_API_URL || 'https://mmekoapi.onrender.com'}/like`);
+            console.log('📡 API URL:', `${process.env.NEXT_PUBLIC_API_URL || 'https://backendritual.work'}/like`);
             
             const result = await dispatch(postlike(likeData as any)).unwrap();
             

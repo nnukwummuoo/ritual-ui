@@ -8,7 +8,7 @@ export async function POST(request: NextRequest) {
   const { nickname, password } = await request.json();
 
   try{
-    const response = await fetch(`${process.env.NODE_ENV === 'development' ? 'http://localhost:3100' : 'https://mmekoapi.onrender.com'}/login`, {
+    const response = await fetch(`${process.env.NODE_ENV === 'development' ? 'http://localhost:3100' : 'https://backendritual.work'}/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ nickname, password }),

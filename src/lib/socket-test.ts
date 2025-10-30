@@ -50,7 +50,7 @@ export const diagnoseSocketIssues = async () => {
   
   const testUrls = [
     "http://localhost:3100",
-    "https://mmekoapi.onrender.com"
+    "https://backendritual.work"
   ];
 
   for (const url of testUrls) {

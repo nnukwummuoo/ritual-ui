@@ -419,8 +419,8 @@ export const QuickChatConversation = () => {
     // For Appwrite files, use the API endpoint like post.tsx
     const queryUrlPrimary = fileUrl ? `${API_URL}/api/image/view?publicId=${encodeURIComponent(fileUrl)}` : "";
     const pathUrlPrimary = fileUrl ? `${API_URL}/api/image/view/${encodeURIComponent(fileUrl)}` : "";
-    const queryUrlFallback = fileUrl ? `https://mmekoapi.onrender.com/api/image/view?publicId=${encodeURIComponent(fileUrl)}` : "";
-    const pathUrlFallback = fileUrl ? `https://mmekoapi.onrender.com/api/image/view/${encodeURIComponent(fileUrl)}` : "";
+    const queryUrlFallback = fileUrl ? `https://backendritual.work/api/image/view?publicId=${encodeURIComponent(fileUrl)}` : "";
+    const pathUrlFallback = fileUrl ? `https://backendritual.work/api/image/view/${encodeURIComponent(fileUrl)}` : "";
     
     // Use direct URL if it's already a full URL, otherwise use API endpoint
     const fullUrl = isUrl ? fileUrl : queryUrlPrimary;
