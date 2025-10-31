@@ -169,12 +169,6 @@ export function PopUp() {
     },
     {
       icon: (
-        <div className="w-6 h-6 text-purple-500 hover:scale-110 transition-all duration-300 ease-in-out">💳</div>
-      ),
-      text: "Simple payments. Instant experiences.",
-    },
-    {
-      icon: (
         <div className="w-6 h-6 text-teal-500 hover:scale-110 transition-all duration-300 ease-in-out">🦢</div>
       ),
       text: "No pressure, just genuine connection.",
