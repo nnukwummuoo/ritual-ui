@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import Image from "next/image";
 import { toast } from "material-react-toastify";
 import { IoChevronBack, IoChevronForward } from "react-icons/io5";
+import PacmanLoader from "react-spinners/PacmanLoader";
 
 interface RequestDetailsFormProps {
   onDone: (details: { date: string; time: string; venue: string }) => void;
@@ -25,8 +26,13 @@ export const RequestDetailsForm: React.FC<RequestDetailsFormProps> = ({
   const [venue, setVenue] = useState("");
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [showCalendar, setShowCalendar] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async () => {
+    if (loading) {
+      return; // Prevent multiple submissions
+    }
+
     if (!date || !time || !venue) {
       toast.error("Please fill in all fields", { autoClose: 2000 });
       return;
@@ -57,7 +63,15 @@ export const RequestDetailsForm: React.FC<RequestDetailsFormProps> = ({
       return;
     }
 
-    onDone({ date, time, venue });
+    setLoading(true);
+    try {
+      await onDone({ date, time, venue });
+    } catch (error) {
+      console.error('Error submitting request details:', error);
+      toast.error("Failed to submit request. Please try again.", { autoClose: 2000 });
+    } finally {
+      setLoading(false);
+    }
   };
 
 
@@ -245,14 +259,26 @@ export const RequestDetailsForm: React.FC<RequestDetailsFormProps> = ({
         {/* Request Button */}
         <button
           onClick={handleSubmit}
-          className="w-full mt-4 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-bold py-4 px-6 rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg flex items-center justify-center gap-2"
+          disabled={loading}
+          className="w-full mt-4 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-bold py-4 px-6 rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
         >
-          <span className="w-6 h-6 bg-white rounded-full flex items-center justify-center">
-            {creatorType === "Fan call" || creatorType === "Fan Call" ? "📞" : 
-             creatorType === "Fan date" || creatorType === "Fan Date" ? "💕" : 
-             "🎯"}
-          </span>
-          Request {creatorType}
+          {loading && (
+            <PacmanLoader
+              color="#ffffff"
+              loading={true}
+              size={10}
+              aria-label="Loading Spinner"
+              data-testid="button-loader"
+            />
+          )}
+          {!loading && (
+            <span className="w-6 h-6 bg-white rounded-full flex items-center justify-center">
+              {creatorType === "Fan call" || creatorType === "Fan Call" ? "📞" : 
+               creatorType === "Fan date" || creatorType === "Fan Date" ? "💕" : 
+               "🎯"}
+            </span>
+          )}
+          {loading ? "Processing Request..." : `Request ${creatorType}`}
          </button>
        </div>
 

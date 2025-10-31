@@ -11,6 +11,10 @@ import Image from "next/image";
 import { getCountryData } from "@/api/getCountries";
 import VIPBadge from "@/components/VIPBadge";
 import { URL as API_BASE } from "@/api/config";
+import { getImageSource } from "@/lib/imageUtils";
+
+const PROD_BASE = "https://backendritual.work";
+const RENDER_BASE = "https://mmekoapi.onrender.com";
 
 // Props interface
 export interface CreatorCardProps {
@@ -110,57 +114,86 @@ export const CreatorCard = ({
     router.push(`/creators/${hostid}`);
   };
 
-  // Handle Storj URLs with backend proxy
-  const getImageSrc = () => {
-    if (!photolink) return "/icons/mmekoDummy.png";
-    
-    const isStorj = photolink.startsWith('https://gateway.storjshare.io/');
-    if (isStorj) {
-      // Extract bucket name from the original URL
-      const urlParts = photolink.split('/');
-      const bucketIndex = urlParts.findIndex(part => part === 'gateway.storjshare.io') + 1;
-      const bucket = urlParts[bucketIndex] || 'post'; // Default to 'post' for legacy images
-      const key = urlParts[urlParts.length - 1];
-      
-      if (key) {
-        const proxyUrl = `${API_BASE}/api/image/view?publicId=${encodeURIComponent(key)}&bucket=${bucket}`;
-        console.log('[CreatorCard] Using Storj proxy:', { original: photolink, bucket, key, proxyUrl });
-        return proxyUrl;
-      }
+  // Get image source using the utility function
+  const imageSource = getImageSource(photolink || '', 'creator');
+  const [currentSrc, setCurrentSrc] = useState(imageSource.src || "/icons/mmekoDummy.png");
+
+  // Update src when photolink changes
+  useEffect(() => {
+    if (photolink) {
+      const newImageSource = getImageSource(photolink, 'creator');
+      setCurrentSrc(newImageSource.src || "/icons/mmekoDummy.png");
+    } else {
+      setCurrentSrc("/icons/mmekoDummy.png");
     }
-    console.log('[CreatorCard] Using direct URL:', photolink);
-    return photolink;
-  };
+  }, [photolink]);
 
-  // State to track if direct URL failed and we should try proxy
-  const [imageError, setImageError] = useState(false);
-  const [currentSrc, setCurrentSrc] = useState(getImageSrc());
-
-  // Handle image error - try proxy if direct URL failed
+  // Handle image error with multiple fallback URLs
   const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>) => {
-    const target = e.target as HTMLImageElement;
-    const src = target.src;
+    const target = e.currentTarget as HTMLImageElement & { dataset: any };
+    const failedSrc = target.src || currentSrc || photolink || "";
     
-    console.error('[CreatorCard] Image failed to load:', { src });
+    // Only log if we have meaningful information (avoid empty object logs)
+    if (failedSrc && failedSrc !== "/icons/mmekoDummy.png" && failedSrc.length > 0) {
+      console.warn('[CreatorCard] Image failed to load, trying fallbacks:', { 
+        failedSrc: failedSrc.length > 100 ? failedSrc.substring(0, 100) + '...' : failedSrc,
+        originalUrl: photolink ? (photolink.length > 100 ? photolink.substring(0, 100) + '...' : photolink) : "N/A"
+      });
+    }
     
-    // If it's a Storj URL and we haven't tried the proxy yet
-    if (src.startsWith('https://gateway.storjshare.io/') && !imageError) {
-      const urlParts = src.split('/');
-      const bucketIndex = urlParts.findIndex(part => part === 'gateway.storjshare.io') + 1;
-      const bucket = urlParts[bucketIndex] || 'post';
-      const key = urlParts[urlParts.length - 1];
-      
-      if (key) {
-        const proxyUrl = `${API_BASE}/api/image/view?publicId=${encodeURIComponent(key)}&bucket=${bucket}`;
-        console.log('[CreatorCard] Direct URL failed, trying proxy:', { bucket, key, proxyUrl });
-        setImageError(true);
-        setCurrentSrc(proxyUrl);
-        return;
-      }
+    // Get current image source for fallback URL generation
+    const currentImageSource = getImageSource(photolink || '', 'creator');
+    const fallbackKey = currentImageSource.isStorj && currentImageSource.key 
+      ? currentImageSource.key 
+      : (photolink || "");
+    
+    // Prepare fallback URLs
+    const pathUrlPrimary = fallbackKey ? `${API_BASE}/api/image/view/${encodeURIComponent(fallbackKey)}` : "";
+    const queryUrlFallback = currentImageSource.isStorj && currentImageSource.key && currentImageSource.bucket
+      ? `${PROD_BASE}/api/image/view?publicId=${encodeURIComponent(currentImageSource.key)}&bucket=${currentImageSource.bucket}`
+      : (fallbackKey ? `${PROD_BASE}/api/image/view?publicId=${encodeURIComponent(fallbackKey)}` : "");
+    const pathUrlFallback = fallbackKey ? `${PROD_BASE}/api/image/view/${encodeURIComponent(fallbackKey)}` : "";
+    const renderQueryUrl = currentImageSource.isStorj && currentImageSource.key && currentImageSource.bucket
+      ? `${RENDER_BASE}/api/image/view?publicId=${encodeURIComponent(currentImageSource.key)}&bucket=${currentImageSource.bucket}`
+      : (fallbackKey ? `${RENDER_BASE}/api/image/view?publicId=${encodeURIComponent(fallbackKey)}` : "");
+    const renderPathUrl = fallbackKey ? `${RENDER_BASE}/api/image/view/${encodeURIComponent(fallbackKey)}` : "";
+    
+    // Try fallback URLs in sequence
+    if (!target.dataset.fallback1 && pathUrlPrimary && currentSrc !== pathUrlPrimary) {
+      target.dataset.fallback1 = "1";
+      setCurrentSrc(pathUrlPrimary);
+      return;
+    }
+    
+    if (!target.dataset.fallback2 && queryUrlFallback && currentSrc !== queryUrlFallback) {
+      target.dataset.fallback2 = "1";
+      setCurrentSrc(queryUrlFallback);
+      return;
+    }
+    
+    if (!target.dataset.fallback3 && pathUrlFallback && currentSrc !== pathUrlFallback) {
+      target.dataset.fallback3 = "1";
+      setCurrentSrc(pathUrlFallback);
+      return;
+    }
+    
+    if (!target.dataset.fallback4 && renderQueryUrl && currentSrc !== renderQueryUrl) {
+      target.dataset.fallback4 = "1";
+      setCurrentSrc(renderQueryUrl);
+      return;
+    }
+    
+    if (!target.dataset.fallback5 && renderPathUrl && currentSrc !== renderPathUrl) {
+      target.dataset.fallback5 = "1";
+      setCurrentSrc(renderPathUrl);
+      return;
     }
     
     // Final fallback to dummy image
-    setCurrentSrc("/icons/mmekoDummy.png");
+    if (!target.dataset.fallback6 && currentSrc !== "/icons/mmekoDummy.png") {
+      target.dataset.fallback6 = "1";
+      setCurrentSrc("/icons/mmekoDummy.png");
+    }
   };
 
   return (
@@ -173,9 +206,6 @@ export const CreatorCard = ({
           width={400}
           height={300}
           className="object-cover w-full rounded h-80"
-          onLoad={() => {
-            console.log('[CreatorCard] Image loaded successfully:', currentSrc);
-          }}
           onError={handleImageError}
         />
       </div>
