@@ -8,6 +8,9 @@ import { useRouter } from "next/navigation";
 import type { AppDispatch, RootState } from "@/store/store";
 import { getcollection, deletecollection } from "@/store/profile";
 import { remove_Crush } from "@/store/creatorSlice";
+import { getImageSource } from "@/lib/imageUtils";
+import { URL as API_BASE } from "@/api/config";
+const PROD_BASE = "https://backendritual.work";
 
 interface ImageCardProps {
   src: string;
@@ -19,6 +22,17 @@ interface ImageCardProps {
 const ImageCard: React.FC<ImageCardProps> = ({ src, status, type, name }) => {
   const [isLoaded, setIsLoaded] = useState(false);
   const hasSrc = Boolean(src);
+  
+  // Process image source similar to post components
+  const mediaRef = src || "";
+  const asString = typeof mediaRef === "string" ? mediaRef : (typeof mediaRef === "object" && mediaRef ? (mediaRef.publicId || mediaRef.public_id || (mediaRef as any).url || "") : "");
+  const imageSource = getImageSource(asString, 'post');
+  const imageSrc = imageSource.src;
+  
+  // Fallback URLs similar to post components
+  const pathUrlPrimary = asString ? `${API_BASE}/api/image/view/${encodeURIComponent(asString)}` : "";
+  const queryUrlFallback = asString ? `${PROD_BASE}/api/image/view?publicId=${encodeURIComponent(asString)}` : "";
+  const pathUrlFallback = asString ? `${PROD_BASE}/api/image/view/${encodeURIComponent(asString)}` : "";
 
   return (
     <div className="relative rounded-xl overflow-hidden shadow-lg bg-gray-800">
@@ -29,12 +43,34 @@ const ImageCard: React.FC<ImageCardProps> = ({ src, status, type, name }) => {
       )}
       {hasSrc ? (
         <img
-          src={src}
+          src={imageSrc}
           alt="Preview"
           className={`w-full h-72 object-cover sm:rounded-xl transition-opacity duration-300 ${
             isLoaded ? "opacity-100" : "opacity-0"
           }`}
           onLoad={() => setIsLoaded(true)}
+          onError={(e) => {
+            const img = e.currentTarget as HTMLImageElement & { dataset: any };
+            if (!img.dataset.fallback1 && pathUrlPrimary) {
+              img.dataset.fallback1 = "1";
+              img.src = pathUrlPrimary;
+              return;
+            }
+            if (!img.dataset.fallback2 && queryUrlFallback) {
+              img.dataset.fallback2 = "1";
+              img.src = queryUrlFallback;
+              return;
+            }
+            if (!img.dataset.fallback3 && pathUrlFallback) {
+              img.dataset.fallback3 = "1";
+              img.src = pathUrlFallback;
+              return;
+            }
+            if (!img.dataset.fallback4) {
+              img.dataset.fallback4 = "1";
+              img.src = "/postfall.jpg";
+            }
+          }}
         />
       ) : (
         <div className="w-full h-72 bg-gradient-to-br from-slate-700 to-slate-600 flex items-center justify-center text-slate-300">
@@ -117,7 +153,18 @@ const Crush: React.FC<{
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {items?.length ? (
           items.map((it: any, idx: number) => {
-            const src = it.photolink || it.photo || it.image || it.src || "";
+            const mediaRef = it.photolink || it.photo || it.image || it.src || "";
+            const asString = typeof mediaRef === "string" ? mediaRef : (typeof mediaRef === "object" && mediaRef ? (mediaRef.publicId || mediaRef.public_id || (mediaRef as any).url || "") : "");
+            
+            // Use getImageSource for profile images
+            const imageSource = getImageSource(asString, 'profile');
+            const src = imageSource.src;
+            
+            // Fallback URLs similar to post components
+            const pathUrlPrimary = asString ? `${API_BASE}/api/image/view/${encodeURIComponent(asString)}` : "";
+            const queryUrlFallback = asString ? `${PROD_BASE}/api/image/view?publicId=${encodeURIComponent(asString)}` : "";
+            const pathUrlFallback = asString ? `${PROD_BASE}/api/image/view/${encodeURIComponent(asString)}` : "";
+            
             const name = it.creatorname || it.name || it.username || "Creator";
             const status = it.status || "active";
             const type = it.type || "standard";
@@ -137,7 +184,26 @@ const Crush: React.FC<{
                     alt={name}
                     className="w-full h-48 object-cover"
                     onError={(e) => {
-                      e.currentTarget.src = "https://via.placeholder.com/300x200/374151/ffffff?text=No+Image";
+                      const img = e.currentTarget as HTMLImageElement & { dataset: any };
+                      if (!img.dataset.fallback1 && pathUrlPrimary) {
+                        img.dataset.fallback1 = "1";
+                        img.src = pathUrlPrimary;
+                        return;
+                      }
+                      if (!img.dataset.fallback2 && queryUrlFallback) {
+                        img.dataset.fallback2 = "1";
+                        img.src = queryUrlFallback;
+                        return;
+                      }
+                      if (!img.dataset.fallback3 && pathUrlFallback) {
+                        img.dataset.fallback3 = "1";
+                        img.src = pathUrlFallback;
+                        return;
+                      }
+                      if (!img.dataset.fallback4) {
+                        img.dataset.fallback4 = "1";
+                        img.src = "/postfall.jpg";
+                      }
                     }}
                   />
                   

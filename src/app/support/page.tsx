@@ -371,9 +371,9 @@ Timestamp: ${new Date().toLocaleString()}`;
                   onClick={() => {
                     const currentUserId = getCurrentUserId();
                     if (currentUserId) {
-                      router.push(`/profile/${currentUserId}`);
+                      router.push(`/Profile/${currentUserId}`);
                     } else {
-                      router.push("/profile");
+                      router.push("/Profile");
                     }
                   }}
                   className="w-full text-left p-3 bg-gray-700 rounded-lg hover:bg-gray-600 transition-colors"

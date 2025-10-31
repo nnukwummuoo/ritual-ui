@@ -78,14 +78,15 @@ class PushNotificationService {
   async subscribe(userid: string): Promise<boolean> {
     try {
       if (!this.registration) {
-        console.error('Service Worker not registered');
+        console.warn('🔔 [Push] Service Worker not registered');
         return false;
       }
 
       const permission = await this.requestPermission();
       
       if (permission !== 'granted') {
-        console.error('🔔 [Push] Permission not granted:', permission);
+        // Use console.warn - permission denial is expected and not an error
+        console.warn('🔔 [Push] Permission not granted:', permission);
         return false;
       }
 
@@ -98,22 +99,25 @@ class PushNotificationService {
         applicationServerKey: applicationServerKey,
       });
 
+      // Validate userid before attempting to subscribe
+      if (!userid || userid.trim() === '') {
+        console.warn('🔔 [Push] Cannot subscribe: userid is missing');
+        return false;
+      }
+
       // Send subscription to server
       const success = await this.sendSubscriptionToServer(userid, this.subscription);
       
       if (success) {
         return true;
       } else {
-        console.error('🔔 [Push] Failed to send subscription to server');
+        // Use console.warn instead of console.error - push notifications are optional
+        console.warn('🔔 [Push] Failed to send subscription to server (this is non-critical)');
         return false;
       }
     } catch (error) {
-      console.error('🔔 [Push] Error subscribing to push notifications:', error);
-      console.error('🔔 [Push] Error details:', {
-        name: error instanceof Error ? error.name : 'Unknown',
-        message: error instanceof Error ? error.message : String(error),
-        stack: error instanceof Error ? error.stack : undefined
-      });
+      // Use console.warn - push notification errors are non-critical
+      console.warn('🔔 [Push] Error subscribing to push notifications:', error);
       return false;
     }
   }
@@ -138,6 +142,12 @@ class PushNotificationService {
   // Send subscription to server
   private async sendSubscriptionToServer(userid: string, subscription: PushSubscription): Promise<boolean> {
     try {
+      // Validate userid before attempting to send
+      if (!userid || userid.trim() === '') {
+        console.warn('🔔 [Push] Cannot send subscription: userid is missing');
+        return false;
+      }
+
       const response = await fetch('/api/push/subscribe', {
         method: 'POST',
         headers: {
@@ -151,14 +161,16 @@ class PushNotificationService {
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('🔔 [Push] Server error response:', errorText);
+        // Use console.warn instead of console.error for non-critical push notification failures
+        console.warn('🔔 [Push] Server error response:', errorText);
         return false;
       }
 
       await response.json();
       return true;
     } catch (error) {
-      console.error('🔔 [Push] Error sending subscription to server:', error);
+      // Use console.warn instead of console.error for non-critical push notification failures
+      console.warn('🔔 [Push] Error sending subscription to server:', error);
       return false;
     }
   }
