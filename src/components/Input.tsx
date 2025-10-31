@@ -15,14 +15,23 @@ export default function Input({required, value, name, type, placeholder, id, ove
   pattern?: string;
   title?: string;
 }) {
+  // For text inputs with onChange, ensure value is always defined to keep it controlled
+  // For checkboxes, use checked prop instead of value
+  const isCheckbox = type === "checkbox";
+  // If onChange is provided for non-checkbox inputs, ensure value is always defined (controlled)
+  // Otherwise, only set value if explicitly provided
+  const inputValue = isCheckbox 
+    ? undefined 
+    : (value !== undefined ? value : (onChange ? "" : undefined));
+  
   return <input
     type={type}
     className={overide ? classNames : "w-full px-4 py-2 bg-gray-700 text-white rounded focus:outline-none focus:ring-2 focus:ring-blue-500"}
     placeholder={placeholder}
-    value={value}
+    value={inputValue}
     name={name || type}
     id={id}
-    checked={type === "checkbox" ? checked : undefined}
+    checked={isCheckbox ? checked : undefined}
     onChange={onChange}
     required={required}
     maxLength={maxLength}

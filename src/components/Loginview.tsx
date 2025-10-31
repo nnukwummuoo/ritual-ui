@@ -66,6 +66,7 @@ type LoginResponse = {
 
 export const Loginview = () => {
   const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [username, setUsername] = useState("");
   const { setIsLoggedIn, setStatus, isLoggedIn, status } = useAuth();
   const [, setUser] = useState<User | undefined>();
   const router = useRouter();
@@ -305,6 +306,8 @@ export const Loginview = () => {
               title="Username: optional @ followed by 3-15 lowercase letters, numbers, or _"
               required={true}
               classNames="border rounded-lg text-center"
+              value={username}
+              onChange={(e) => setUsername(e.target.value.toLowerCase())}
             />
           </div>
           <div className="flex flex-col">

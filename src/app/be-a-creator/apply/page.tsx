@@ -79,6 +79,11 @@ export default function VerifiedUserForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Prevent multiple submissions
+    if (loading) {
+      return;
+    }
+
     if (!(formData.idPhotofile instanceof File) || !(formData.holdingIdPhotofile instanceof File)) {
       toast.error("Please upload both ID photo and holding ID photo.");
       return;
@@ -320,9 +325,19 @@ export default function VerifiedUserForm() {
                   ) : (
                     <button
                       type="submit"
-                      className="ml-auto bg-gradient-to-r from-green-600 to-green-700 text-white px-5 py-2 rounded-lg hover:from-green-700 hover:to-green-800 transition duration-300"
+                      disabled={loading}
+                      className="ml-auto bg-gradient-to-r from-green-600 to-green-700 text-white px-5 py-2 rounded-lg hover:from-green-700 hover:to-green-800 transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                     >
-                      Submit Application
+                      {loading && (
+                        <PacmanLoader
+                          color="#ffffff"
+                          loading={true}
+                          size={12}
+                          aria-label="Loading Spinner"
+                          data-testid="button-loader"
+                        />
+                      )}
+                      {loading ? "Submitting Application..." : "Submit Application"}
                     </button>
                   )}
                 </div>

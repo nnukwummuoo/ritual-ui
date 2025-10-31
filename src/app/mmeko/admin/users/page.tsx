@@ -140,11 +140,6 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, isOpen, onClose
     return new Date(dateString).toLocaleDateString();
   };
 
-  const formatCurrency = (amount?: string | number) => {
-    if (amount === undefined || amount === null) return "0";
-    return typeof amount === "string" ? amount : amount.toString();
-  };
-
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-gray-900 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
@@ -277,7 +272,22 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, isOpen, onClose
                       className="w-full bg-gray-700 text-white p-2 rounded mt-1"
                     />
                   ) : (
-                    <p className="text-white  text-lg">{user.balance} </p>
+                    <p className="text-white  text-lg">{user.balance || "0"} </p>
+                  )}
+                </div>
+
+                {/* Pending Amount - Always shown for both creator and normal users */}
+                <div>
+                  <label className="text-gray-300 text-sm">Pending Amount</label>
+                  {isEditing ? (
+                    <input
+                      type="number"
+                      value={editedUser.pending || 0}
+                      onChange={(e) => setEditedUser({ ...editedUser, pending: Number(e.target.value) })}
+                      className="w-full bg-gray-700 text-white p-2 rounded mt-1"
+                    />
+                  ) : (
+                    <p className="text-white text-lg">{user.pending || 0}</p>
                   )}
                 </div>
 
@@ -315,12 +325,6 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, isOpen, onClose
                       ) : (
                         <p className="text-white">{user.coinBalance || 0} coins</p>
                       )}
-                    </div>
-                    <div>
-                      <label className="text-gray-300 text-sm">Pending Amount</label>
-                      <p className="text-white">
-                        ${formatCurrency(user.pending || 0)}
-                      </p>
                     </div>
                     
                     {/* Withdrawal Logic - Only based on earnings */}
@@ -730,6 +734,7 @@ export default function Users(): JSX.Element {
                   <tr>
                     <th className="px-4 py-3 text-left text-yellow-500 font-semibold">Photo</th>
                     <th className="px-4 py-3 text-left text-yellow-500 font-semibold">Name</th>
+                    <th className="px-4 py-3 text-left text-yellow-500 font-semibold">Username</th>
                     <th className="px-4 py-3 text-left text-yellow-500 font-semibold">Gender</th>
                     <th className="px-4 py-3 text-left text-yellow-500 font-semibold">Country</th>
                     <th className="px-4 py-3 text-left text-yellow-500 font-semibold">Balance</th>
@@ -778,6 +783,9 @@ export default function Users(): JSX.Element {
                       </td>
                       <td className="px-4 py-3 text-white">
                         {user.firstname} {user.lastname}
+                      </td>
+                      <td className="px-4 py-3 text-white">
+                        {user.username || "N/A"}
                       </td>
                       <td className="px-4 py-3 text-white capitalize">{user.gender}</td>
                       <td className="px-4 py-3 text-white">{user.country}</td>

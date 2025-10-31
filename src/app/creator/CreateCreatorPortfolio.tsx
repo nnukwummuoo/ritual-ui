@@ -152,6 +152,11 @@ const uploadToStorjBackend = async (file: File): Promise<string> => {
 // checkuserInput
 // -----------------------------
 const checkuserInput = async () => {
+  // Prevent multiple submissions
+  if (disablebut || loading) {
+    return;
+  }
+
   if (!name || name.trim() === "") return toast.error("Full name is required");
   if (!age) return toast.error("Age is required");
   if (!hosttype) return toast.error("Select host type");
@@ -165,6 +170,7 @@ const checkuserInput = async () => {
   if (!token) return toast.error("Missing token");
 
   try {
+    // Set loading states immediately to prevent duplicate submissions
     setdisablebut(true);
     setLoading(true);
 
@@ -203,7 +209,9 @@ const checkuserInput = async () => {
       photolink: photolink, // Pass file objects directly
     });
 
+    // Success: Keep button disabled and show success message
     toast.success("Portfolio created successfully", { autoClose: 3000 });
+    // Navigate away - don't reset states since we're leaving the page
     router.push("/creators");
   } catch (err: any) {
     console.error("Failed to create portfolio", err?.response || err);
@@ -213,7 +221,7 @@ const checkuserInput = async () => {
     const detail = typeof data === "object" ? JSON.stringify(data).slice(0, 400) : String(data || "");
     const msg = serverMsg ? String(serverMsg) : "Failed to create portfolio";
     toast.error(`${status ? `[${status}]` : ""}${msg}${detail && serverMsg !== detail ? `\n${detail}` : ""}`, { autoClose: 6000 });
-  } finally {
+    // Only reset states on error so user can retry
     setdisablebut(false);
     setLoading(false);
   }
@@ -774,13 +782,24 @@ if (!isCreatorVerified) {
             <hr className="mb-3 bg-slate-300"></hr>
 
             <button
-              className="block w-full h-10 font-semibold text-center text-white transition bg-yellow-600 btn rounded-2xl hover:bg-yellow-500"
-              disabled={disablebut}
+              className="block w-full h-10 font-semibold text-center text-white transition bg-yellow-600 btn rounded-2xl hover:bg-yellow-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              disabled={disablebut || loading}
               onClick={() => {
-                checkuserInput();
+                if (!disablebut && !loading) {
+                  checkuserInput();
+                }
               }}
             >
-              Procced
+              {loading && (
+                <PacmanLoader
+                  color="#ffffff"
+                  loading={true}
+                  size={10}
+                  aria-label="Loading Spinner"
+                  data-testid="button-loader"
+                />
+              )}
+              {loading ? "Creating Portfolio..." : "Procced"}
             </button>
 
             <div className="flex justify-between mt-3 overflow-hidden">

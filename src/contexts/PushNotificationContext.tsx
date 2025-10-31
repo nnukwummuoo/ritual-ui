@@ -100,7 +100,7 @@ export const PushNotificationProvider: React.FC<PushNotificationProviderProps> =
           setPermission(currentPermission);
 
           // If permission is granted, automatically subscribe
-          if (currentPermission === 'granted') {
+          if (currentPermission === 'granted' && userid) {
             const subscribed = await pushNotificationService.subscribe(userid);
             setIsSubscribed(subscribed);
           } else {
