@@ -215,7 +215,7 @@ export default function Activity() {
         
         // Get image source with correct bucket
         // Try with the determined bucket first, then fallback to 'profile' if that doesn't work
-        let imageSource = getImageSource(photolink, bucket);
+        const imageSource = getImageSource(photolink, bucket);
         let imageSrc = imageSource.src || photolink;
         
         // If no src and photolink exists, try with 'profile' bucket as fallback
@@ -234,6 +234,7 @@ export default function Activity() {
           <RequestCard
             type={request.type}
             img={imageSrc}
+            originalPhotoLink={photolink}
             status={request.status}
             name={name}
             username={username}

@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useState, useRef } from "react";
-import Image from "next/image";
 import { useSelector, useDispatch } from "react-redux";
 import { AnyAction } from "redux";
 import PacmanLoader from "react-spinners/RingLoader";
@@ -12,13 +11,13 @@ import { URL as API_URL } from "@/api/config";
 import profileIcon from "@/icons/icons8-profile_Icon.png";
 // Import used for the profile image upload button in JSX
 import uploadIcon from "@/icons/uploadIcon.svg"; // eslint-disable-line
+import { getImageSource } from "@/lib/imageUtils";
 
 import {
   getEdit,
   comprofilechangeStatus,
   updateEdit,
 } from "@/store/comprofile";
-import { getallpost } from "@/store/post";
 
 // ✅ Update RootState type according to your Redux store
 import { RootState } from "@/store/store";
@@ -93,6 +92,7 @@ const EditProfile: React.FC = () => {
   const [updatePhoto, setUpdatePhoto] = useState<File | undefined>();
   const [deletePhotolink, setDeletePhotolink] = useState<string | undefined>();
   const [deletePhotoID, setDeletePhotoID] = useState<string | undefined>();
+  const [imageLoadFailed, setImageLoadFailed] = useState(false);
 
   // Username validation
   const [usernameError, setUsernameError] = useState("");
@@ -319,12 +319,36 @@ const EditProfile: React.FC = () => {
           if (response.data) {
             // Check if data is nested in a profile object
             const profileData = response.data.profile || response.data;
-            console.log("Using profile data:", profileData);
-            // Set profile image if available
-            if (profileData.photolink || profileData.photoLink) {
-              setProfileimg(profileData.photolink || profileData.photoLink);
-              setDeletePhotolink(profileData.photolink || profileData.photoLink);
-              setDeletePhotoID(profileData.photoID);
+            console.log("📥 [EditProfile] Using profile data from direct fetch:", {
+              hasPhotolink: !!profileData.photolink,
+              hasPhotoLink: !!profileData.photoLink,
+              photolink: profileData.photolink || "NONE",
+              photoLink: profileData.photoLink || "NONE",
+              photoID: profileData.photoID || "NONE"
+            });
+            
+            // Set profile image if available - check both camelCase and lowercase versions
+            const imageLink = profileData.photolink || profileData.photoLink;
+            const imageID = profileData.photoID || profileData.PhotoID;
+            
+            if (imageLink && imageLink.trim() && imageLink !== "null" && imageLink !== "undefined") {
+              console.log("✅ [EditProfile] Direct fetch - Setting profile image:", {
+                imageLink: imageLink,
+                imageID: imageID,
+                willSet: true,
+                currentProfileimg: profileimg
+              });
+              setProfileimg(imageLink);
+              setDeletePhotolink(imageLink);
+              setDeletePhotoID(imageID);
+              // Reset image load failed state when setting new image
+              setImageLoadFailed(false);
+              console.log("✅ [EditProfile] Direct fetch - Profile image set successfully");
+            } else {
+              console.warn("⚠️ [EditProfile] Direct fetch - No valid photolink found in profile data!", {
+                imageLink: imageLink,
+                currentProfileimg: profileimg
+              });
             }
             
             // Set form values
@@ -586,10 +610,20 @@ const EditProfile: React.FC = () => {
     }
   }, [isAuthorized, token, loggedInUserId, routeUserId, directAuthVerified]);
   
+  // Reset fetch state when routeUserId changes (user navigates to different profile or returns to edit page)
+  useEffect(() => {
+    console.log("🔄 [EditProfile] Route user ID changed, resetting fetch state:", routeUserId);
+    dataFetchedRef.current = false;
+    apiRequestTracker.resetGetEditRequested();
+  }, [routeUserId]);
+
   // Fetch profile data once when component mounts
   useEffect(() => {
     // Prevent duplicate API calls
-    if (dataFetchedRef.current) return;
+    if (dataFetchedRef.current) {
+      console.log("⏭️ [EditProfile] Skipping fetch - already fetched");
+      return;
+    }
     
     // Get data from all possible sources
     const localData = getLocalStorageData();
@@ -598,7 +632,7 @@ const EditProfile: React.FC = () => {
     // Try all possible token sources
     const effectiveToken = token || localData.token || cookieToken;
     
-    console.log("Edit profile - Token sources:", { 
+    console.log("🔑 [EditProfile] Token sources:", { 
       reduxToken: token ? "exists" : "missing", 
       localStorageToken: localData.token ? "exists" : "missing",
       cookieToken: cookieToken ? "exists" : "missing"
@@ -606,11 +640,12 @@ const EditProfile: React.FC = () => {
     
     // Log the actual token (first few characters) for debugging
     if (effectiveToken) {
-      console.log("Token preview:", effectiveToken.substring(0, 10) + "...");
+      console.log("🔑 [EditProfile] Token preview:", effectiveToken.substring(0, 10) + "...");
     }
     
     // Only fetch if we have the required data, are authorized, and either direct auth is verified or we haven't tried yet
     if (routeUserId && effectiveToken && isAuthorized && !apiRequestTracker.getEditRequested && (directAuthVerified || !dataFetchedRef.current)) {
+      console.log("🚀 [EditProfile] Starting profile data fetch...");
       apiRequestTracker.getEditRequested = true;
       dataFetchedRef.current = true;
       
@@ -678,23 +713,47 @@ const EditProfile: React.FC = () => {
 
       // Populate form with fetched data
       if (data) {
-        console.log("Successfully fetched profile data:", data);
+        console.log("✅ [EditProfile] Successfully fetched profile data:", data);
         
         // Extract the actual profile data from the nested structure
         const profileData = data.data || data;
         console.log("📊 [EditProfile] Extracted profile data:", {
           hasUsername: !!profileData.username,
           hasBio: !!profileData.bio,
+          hasPhotolink: !!profileData.photolink,
+          hasPhotoID: !!profileData.photoID,
           username: profileData.username,
           bio: profileData.bio,
+          photolink: profileData.photolink || "NONE",
+          photoID: profileData.photoID || "NONE",
           allKeys: Object.keys(profileData)
         });
         
-        // Set profile image if available
-        if (profileData.photolink) {
-          setProfileimg(profileData.photolink);
-          setDeletePhotolink(profileData.photolink);
-          setDeletePhotoID(profileData.photoID);
+        // Set profile image if available - only update if we have a photolink to prevent overwriting with empty values
+        if (profileData.photolink && profileData.photolink.trim() && profileData.photolink !== "null" && profileData.photolink !== "undefined") {
+          console.log("✅ [EditProfile] Setting profile image from getEdit:", {
+            photolink: profileData.photolink,
+            photoID: profileData.photoID,
+            willSet: true,
+            currentProfileimg: profileimg
+          });
+          // Only set if we don't already have a profile image, or if the new one is different
+          if (!profileimg || profileimg === profileIcon.src || profileimg !== profileData.photolink) {
+            setProfileimg(profileData.photolink);
+            setDeletePhotolink(profileData.photolink);
+            setDeletePhotoID(profileData.photoID);
+            // Reset image load failed state when setting new image
+            setImageLoadFailed(false);
+            console.log("✅ [EditProfile] Profile image updated successfully");
+          } else {
+            console.log("⏭️ [EditProfile] Profile image already set, skipping update");
+          }
+        } else {
+          console.warn("⚠️ [EditProfile] No valid photolink in profile data!", {
+            profileData: profileData,
+            photolinkValue: profileData.photolink,
+            currentProfileimg: profileimg
+          });
         }
         
         // Set form placeholders with current values
@@ -806,6 +865,13 @@ const EditProfile: React.FC = () => {
   useEffect(() => {
     // Handle successful profile update
     if (updateEdit_stats === "succeeded") {
+      console.log("✅ [EditProfile] Profile update succeeded!");
+      console.log("✅ [EditProfile] Current profile image state:", {
+        profileimg: profileimg,
+        updatePhoto: updatePhoto ? "file provided" : "no file",
+        deletePhotolink: deletePhotolink || "none"
+      });
+      
       setTimeout(() => {
         dispatch(comprofilechangeStatus("idle") as unknown as AnyAction);
       }, 300);
@@ -813,21 +879,13 @@ const EditProfile: React.FC = () => {
       setLoading(false);
       setSuccessMessage("Profile updated successfully!");
 
-      // Redirect back to profile page after a short delay
+      // Force full page reload to profile page after a short delay
       setTimeout(() => {
-        // Use uppercase 'P' in Profile to match the directory structure
-        router.push(`/Profile/${routeUserId}`);
-        // Refresh posts to show updated user info
-        dispatch(getallpost({ 
-          userid: routeUserId,
-          hasToken: true 
-        }) as unknown as AnyAction);
-        
-        // Force a page refresh to show updated profile image
-        setTimeout(() => {
-          window.location.reload();
-        }, 1000);
-      }, 2000);
+        console.log("🔄 [EditProfile] Reloading page to show updated profile...");
+        // Use window.location.href to force a complete page reload
+        // This ensures the entire web page loads fresh with updated data
+        window.location.href = `/Profile/${routeUserId}`;
+      }, 1500);
     }
 
     // Handle failed profile update
@@ -1039,19 +1097,94 @@ const EditProfile: React.FC = () => {
                         const userName = `${firstname || ""} ${lastname || ""}`.trim();
                         const initials = userName.split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2) || "?";
                         
-                        if (profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined" && profileImage !== profileIcon.src) {
+                        // Show image if we have a valid URL and it hasn't failed to load
+                        if (profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined" && profileImage !== profileIcon.src && !imageLoadFailed) {
+                          // Use getImageSource to handle Storj URLs properly (same as ProfilePage.tsx)
+                          const imageSource = getImageSource(profileImage, 'profile');
+                          const imageSrc = imageSource.src;
+                          
+                          console.log("🖼️ [EditProfile] Rendering profile image:", {
+                            originalUrl: profileImage,
+                            processedSrc: imageSrc,
+                            isStorj: imageSource.isStorj,
+                            bucket: imageSource.bucket,
+                            willRender: true,
+                            imageLoadFailed: imageLoadFailed
+                          });
+                          
+                          // Use regular img tag with processed URL from getImageSource
                           return (
-                            <Image
+                            <img
                               alt="Profile Picture"
-                              src={profileImage}
-                              width={112}
-                              height={112}
-                              className="w-full h-full object-cover"
-                              onError={() => setProfileimg(profileIcon.src)}
+                              src={imageSrc}
+                              className="w-full h-full object-cover rounded-full"
+                              onError={(e) => {
+                                try {
+                                  const target = e.target as HTMLImageElement;
+                                  console.error("❌ [EditProfile] Image load error:", {
+                                    originalUrl: profileImage,
+                                    attemptedSrc: target?.src || "unknown",
+                                    processedSrc: imageSrc,
+                                    errorType: e?.type || "unknown",
+                                    naturalWidth: target?.naturalWidth || 0,
+                                    naturalHeight: target?.naturalHeight || 0,
+                                    complete: target?.complete || false,
+                                    note: "Image failed to load. Will show initials as fallback. Check Network tab to see if request failed."
+                                  });
+                                  // Try fallback to original URL if proxy failed
+                                  if (imageSource.isStorj && target?.src !== profileImage) {
+                                    console.log("🔄 [EditProfile] Trying original Storj URL as fallback:", profileImage);
+                                    target.src = profileImage;
+                                    return;
+                                  }
+                                  // Mark image as failed so we show initials on next render
+                                  setImageLoadFailed(true);
+                                } catch (err) {
+                                  console.error("❌ [EditProfile] Image load error (error handler failed):", {
+                                    src: profileImage,
+                                    error: err
+                                  });
+                                  setImageLoadFailed(true);
+                                }
+                              }}
+                              onLoad={(e) => {
+                                try {
+                                  const target = e.target as HTMLImageElement;
+                                  console.log("✅ [EditProfile] Profile image loaded successfully:", {
+                                    originalUrl: profileImage,
+                                    loadedSrc: target?.src,
+                                    naturalWidth: target?.naturalWidth || 0,
+                                    naturalHeight: target?.naturalHeight || 0,
+                                    complete: target?.complete || false
+                                  });
+                                  // Reset failed state if image loads successfully
+                                  setImageLoadFailed(false);
+                                } catch {
+                                  console.log("✅ [EditProfile] Profile image loaded (details unavailable):", profileImage);
+                                  setImageLoadFailed(false);
+                                }
+                              }}
+                              style={{ 
+                                width: '100%', 
+                                height: '100%', 
+                                objectFit: 'cover',
+                                borderRadius: '50%',
+                                display: 'block'
+                              }}
                             />
                           );
+                        } else {
+                          console.log("🖼️ [EditProfile] Showing initials instead of image. Reason:", {
+                            hasProfileImage: !!profileImage,
+                            isNull: profileImage === "null",
+                            isUndefined: profileImage === "undefined",
+                            isProfileIcon: profileImage === profileIcon.src,
+                            imageLoadFailed: imageLoadFailed,
+                            profileImageValue: profileImage
+                          });
                         }
                         
+                        // Show initials as fallback
                         return (
                           <div className="w-full h-full flex items-center justify-center text-white text-3xl font-bold bg-gray-600">
                             {initials}

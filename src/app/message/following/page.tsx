@@ -11,6 +11,7 @@ import { loginAuthUser } from "@/store/registerSlice";
 import { User } from "@/types/user";
 import VIPBadge from "@/components/VIPBadge";
 import { useRouter } from "next/navigation";
+import { getImageSource } from "@/lib/imageUtils";
 
 const FollowingMessagesPage: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -269,25 +270,38 @@ const FollowingMessagesPage: React.FC = () => {
                       className="relative cursor-pointer"
                       onClick={() => handleProfileClick(user.id)}
                     >
-                      {hasImage ? (
-                        <img
-                          src={user.image}
-                          alt={user.name}
-                          className="w-12 h-12 rounded-full object-cover flex-shrink-0"
-                          onError={(e) => {
-                            const target = e.target as HTMLImageElement;
-                            target.style.display = 'none';
-                            // Show initials instead of fallback image
-                            const parent = target.parentElement;
-                            if (parent) {
-                              const initialsDiv = document.createElement('div');
-                              initialsDiv.className = 'w-12 h-12 rounded-full bg-gray-700 flex items-center justify-center text-white text-sm font-semibold flex-shrink-0';
-                              initialsDiv.textContent = initials;
-                              parent.appendChild(initialsDiv);
-                            }
-                          }}
-                        />
-                      ) : (
+                      {hasImage ? (() => {
+                        // Use getImageSource to handle Storj URLs properly (same as ProfilePage.tsx and EditProfile)
+                        const imageSource = getImageSource(user.image, 'profile');
+                        const imageSrc = imageSource.src;
+                        
+                        return (
+                          <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-700 flex items-center justify-center flex-shrink-0">
+                            <img
+                              src={imageSrc}
+                              alt={user.name}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                // Try fallback to original URL if proxy failed
+                                if (imageSource.isStorj && target?.src !== user.image) {
+                                  target.src = user.image;
+                                  return;
+                                }
+                                // Hide image and show initials
+                                target.style.display = 'none';
+                                const parent = target.parentElement;
+                                if (parent) {
+                                  const initialsDiv = document.createElement('div');
+                                  initialsDiv.className = 'w-full h-full flex items-center justify-center text-white text-sm font-semibold';
+                                  initialsDiv.textContent = initials;
+                                  parent.appendChild(initialsDiv);
+                                }
+                              }}
+                            />
+                          </div>
+                        );
+                      })() : (
                         <div className="w-12 h-12 rounded-full bg-gray-700 flex items-center justify-center text-white text-sm font-semibold flex-shrink-0">
                           {initials}
                         </div>

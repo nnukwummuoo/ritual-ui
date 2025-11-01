@@ -130,31 +130,53 @@ export const getEdit = createAsyncThunk<any, {
             });
             
             if (directResponse.status === 200 && directResponse.data) {
-                console.log("Direct getprofile approach succeeded:", {
+                console.log("✅ [getEdit] Direct getprofile approach succeeded:", {
                     status: directResponse.status,
-                    dataReceived: !!directResponse.data
+                    hasData: !!directResponse.data,
+                    hasProfile: !!directResponse.data.profile,
+                    profileKeys: directResponse.data.profile ? Object.keys(directResponse.data.profile).length : 0
                 });
                 
                 // Log the raw response data for debugging
-                console.log("Raw direct response data:", directResponse.data);
+                console.log("📊 [getEdit] Raw direct response data:", {
+                    hasProfile: !!directResponse.data.profile,
+                    directDataKeys: Object.keys(directResponse.data),
+                    profileDataKeys: directResponse.data.profile ? Object.keys(directResponse.data.profile) : []
+                });
+                
+                // getprofile returns data in response.data.profile, check both locations
+                const profileData = directResponse.data.profile || directResponse.data;
+                
+                console.log("📊 [getEdit] Profile data extracted:", {
+                    hasPhotolink: !!profileData.photolink,
+                    hasPhotoLink: !!profileData.photoLink,
+                    photolink: profileData.photolink || "NONE",
+                    photoLink: profileData.photoLink || "NONE",
+                    photoID: profileData.photoID || "NONE"
+                });
                 
                 // Transform the response to match the expected format
                 const transformedData = {
                     ok: true,
                     message: "Profile fetched successfully",
                     data: {
-                        id: directResponse.data._id || directResponse.data.userId || data.userid,
-                        photolink: directResponse.data.photolink || directResponse.data.photoLink,
-                        photoID: directResponse.data.photoID,
-                        firstname: directResponse.data.firstname,
-                        lastname: directResponse.data.lastname,
-                        state: directResponse.data.state,
-                        country: directResponse.data.state,
-                        bio: directResponse.data.bio || directResponse.data.details
+                        id: profileData._id || profileData.userId || data.userid,
+                        photolink: profileData.photolink || profileData.photoLink || "",
+                        photoID: profileData.photoID || "",
+                        firstname: profileData.firstname || "",
+                        lastname: profileData.lastname || "",
+                        state: profileData.state || "",
+                        country: profileData.country || profileData.state || "",
+                        bio: profileData.bio || profileData.details || "",
+                        username: profileData.username || ""
                     }
                 };
                 
-                console.log("Transformed data for Redux:", transformedData);
+                console.log("✅ [getEdit] Transformed data for Redux:", {
+                    hasPhotolink: !!transformedData.data.photolink,
+                    photolink: transformedData.data.photolink || "NONE",
+                    hasPhotoID: !!transformedData.data.photoID
+                });
                 return transformedData;
             }
         } catch (directError) {

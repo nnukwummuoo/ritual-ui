@@ -223,6 +223,7 @@ interface CardProps {
     firstName?: string; // Add first name prop
     lastName?: string; // Add last name prop
     img: string;
+    originalPhotoLink?: string; // Original photolink URL (before processing with getImageSource)
     status: "request" | "expired" | "completed" | "accepted" | "declined" | "cancelled";
     requestId?: string;
     price?: number;
@@ -237,7 +238,7 @@ interface CardProps {
     onStatusChange?: (requestId: string, newStatus: string) => void;
 }
 
-export default function RequestCard({exp, img, name, username, firstName, lastName, titles=["fan"], status, type="fan", requestId, price, details, userid, creator_portfolio_id, targetUserId, hosttype, isVip=false, vipEndDate=null, createdAt, onStatusChange}: CardProps) {
+export default function RequestCard({exp, img, originalPhotoLink, name, username, firstName, lastName, titles=["fan"], status, type="fan", requestId, price, details, userid, creator_portfolio_id, targetUserId, hosttype, isVip=false, vipEndDate=null, createdAt, onStatusChange}: CardProps) {
   const [loading, setLoading] = useState(false);
   const [currentStatus, setCurrentStatus] = useState(status);
   const [timeLeft, setTimeLeft] = useState<string>("");
@@ -713,8 +714,15 @@ export default function RequestCard({exp, img, name, username, firstName, lastNa
     // If it's a Fan Call, start video call instead of completing
     if (hosttype === "Fan call") {
       if (creator_portfolio_id && (username || name)) {
-       
-        startVideoCall(creator_portfolio_id, username || name, price || 1, isVip, vipEndDate, firstName, lastName);
+        // Pass the original photo URL (before proxy processing) if available
+        // This ensures we have the original Storj URL for proper processing in FanCallModal
+        const photoUrl = originalPhotoLink && originalPhotoLink !== '/picture-1.jfif' && originalPhotoLink !== '/default-image.png'
+          ? originalPhotoLink
+          : (img && img !== '/picture-1.jfif' && img !== '/default-image.png' && !img.includes('/api/image/view'))
+            ? img // Use img if it's not a proxy URL and not default
+            : undefined;
+        
+        startVideoCall(creator_portfolio_id, username || name, price || 1, isVip, vipEndDate, firstName, lastName, photoUrl);
       }
       return;
     }
