@@ -334,14 +334,17 @@ export default function FanCallModal({
   const handleEndCall = () => {
     if (!socket) return;
     
+    // Immediately close for the user ending the call (don't wait for socket response)
+    handleCleanup();
+    onClose();
+    
+    // Emit end event to notify the other party
     socket.emit('fan_call_end', {
       callId: callData?.callId,
       callerId: callData?.callerId,
+      answererId: callData?.answererId,
       userId: currentUserId
     });
-    
-    handleCleanup();
-    onClose();
   };
 
   const handleCallAgain = () => {
@@ -819,7 +822,15 @@ export default function FanCallModal({
       }
     };
 
-    const handleCallEnded = () => {
+    const handleCallEnded = (data?: any) => {
+      // Verify this event is for the current call
+      if (data && data.callId && callData?.callId && data.callId !== callData.callId) {
+        // This event is for a different call, ignore it
+        return;
+      }
+      
+      // Immediately close the call for the answerer
+      console.log('📞 [VideoCall] Call ended event received, closing immediately');
       handleCleanup();
       onClose();
     };
