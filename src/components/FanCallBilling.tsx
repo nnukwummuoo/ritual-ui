@@ -86,6 +86,8 @@ export default function VideoCallBilling({
   const callStartTimeRef = useRef<number>(0);
   const durationIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const billingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const endCallTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const lastCheckedMinuteRef = useRef<number>(-1); // Track which minute we last checked for next minute
   const socket = getSocket();
 
   // Format duration display
@@ -132,16 +134,18 @@ export default function VideoCallBilling({
     lastBilledMinuteRef.current = 0;
     
     const interval = setInterval(() => {
-      const currentMinute = Math.floor(callDurationRef.current / 60);
+      const currentSeconds = callDurationRef.current;
+      const currentMinute = Math.floor(currentSeconds / 60);
+      const secondsIntoCurrentMinute = currentSeconds % 60;
       
       // Only bill if we haven't billed this minute yet, it's a new minute, and no billing is in progress
       if (currentMinute > lastBilledMinuteRef.current && currentMinute > 0 && !isBillingInProgressRef.current) {
         console.log(`💰 [Billing] Billing for minute ${currentMinute}, last billed: ${lastBilledMinuteRef.current}`);
         
-        // Check if caller has enough balance
+        // Check if caller has enough balance for THIS minute
         if (currentBalanceRef.current < callRateRef.current) {
-          console.log(`❌ [Billing] Insufficient funds: ${currentBalanceRef.current} < ${callRateRef.current}`);
-          // Insufficient funds - ending call
+          console.log(`❌ [Billing] Insufficient funds for minute ${currentMinute}: ${currentBalanceRef.current} < ${callRateRef.current}`);
+          // Insufficient funds - ending call immediately
           onInsufficientFunds();
           return;
         }
@@ -175,6 +179,42 @@ export default function VideoCallBilling({
           }, 10000);
         }
       }
+      
+      // Proactive check: At the END of each minute (around 58-59 seconds), check if user has enough for NEXT minute
+      // This ensures the call ends gracefully before the next minute starts if they can't afford it
+      // Only check once per minute to avoid multiple timeouts
+      if (currentMinute > 0 && 
+          secondsIntoCurrentMinute >= 58 && 
+          secondsIntoCurrentMinute < 60 && 
+          lastCheckedMinuteRef.current !== currentMinute) {
+        
+        // Mark that we've checked this minute
+        lastCheckedMinuteRef.current = currentMinute;
+        
+        // Check if user has enough balance for the NEXT minute
+        const nextMinute = currentMinute + 1;
+        const projectedBalance = currentBalanceRef.current; // Current balance after this minute's billing
+        
+        // Check if they can afford the next minute
+        if (projectedBalance < callRateRef.current) {
+          console.log(`⚠️ [Billing] User cannot afford minute ${nextMinute}. Current balance: ${projectedBalance}, Required: ${callRateRef.current}`);
+          console.log(`🔚 [Billing] Ending call at end of minute ${currentMinute} (${currentSeconds}s) - insufficient funds for next minute`);
+          
+          // Clear any existing end call timeout
+          if (endCallTimeoutRef.current) {
+            clearTimeout(endCallTimeoutRef.current);
+          }
+          
+          // End call at the end of the current minute (at 60 seconds)
+          // Calculate milliseconds until the minute ends
+          const msUntilMinuteEnd = (60 - secondsIntoCurrentMinute) * 1000;
+          endCallTimeoutRef.current = setTimeout(() => {
+            console.log(`🔚 [Billing] Call ending now - minute ${currentMinute} completed, insufficient funds for minute ${nextMinute}`);
+            onInsufficientFunds();
+            endCallTimeoutRef.current = null;
+          }, msUntilMinuteEnd);
+        }
+      }
     }, 1000); // Check every second
     
     billingIntervalRef.current = interval;
@@ -187,9 +227,16 @@ export default function VideoCallBilling({
       clearInterval(billingIntervalRef.current);
       billingIntervalRef.current = null;
     }
+    // Clear any pending end call timeout
+    if (endCallTimeoutRef.current) {
+      clearTimeout(endCallTimeoutRef.current);
+      endCallTimeoutRef.current = null;
+    }
     // Reset billing state
     setIsBillingInProgress(false);
     isBillingInProgressRef.current = false;
+    // Reset check tracking
+    lastCheckedMinuteRef.current = -1;
   }, []);
 
   // Handle balance updates from backend
@@ -201,6 +248,42 @@ export default function VideoCallBilling({
       // Reset billing in progress flag after successful deduction
       setIsBillingInProgress(false);
       isBillingInProgressRef.current = false;
+      
+      // After deduction, check if user can afford the next minute
+      // This is a proactive check to end the call gracefully
+      const currentSeconds = callDurationRef.current;
+      const currentMinute = Math.floor(currentSeconds / 60);
+      const nextMinute = currentMinute + 1;
+      
+      // If they can't afford the next minute, schedule call end at the end of current minute
+      if (newBalance < callRateRef.current) {
+        const secondsIntoCurrentMinute = currentSeconds % 60;
+        // Only schedule if we haven't already scheduled it for this minute
+        if (lastCheckedMinuteRef.current !== currentMinute) {
+          console.log(`⚠️ [Billing] After deduction: Balance ${newBalance} < ${callRateRef.current} required for minute ${nextMinute}`);
+          
+          // Clear any existing end call timeout
+          if (endCallTimeoutRef.current) {
+            clearTimeout(endCallTimeoutRef.current);
+          }
+          
+          // Calculate time until current minute ends
+          const msUntilMinuteEnd = Math.max(0, (60 - secondsIntoCurrentMinute) * 1000);
+          
+          if (msUntilMinuteEnd > 0) {
+            endCallTimeoutRef.current = setTimeout(() => {
+              console.log(`🔚 [Billing] Call ending after minute ${currentMinute} - insufficient funds for minute ${nextMinute}`);
+              onInsufficientFunds();
+              endCallTimeoutRef.current = null;
+            }, msUntilMinuteEnd);
+            lastCheckedMinuteRef.current = currentMinute;
+          } else {
+            // Already past the minute mark, end immediately
+            console.log(`🔚 [Billing] Ending call immediately - insufficient funds`);
+            onInsufficientFunds();
+          }
+        }
+      }
     } else if (data.type === 'earn') {
       setCurrentEarnings(data.earnings);
       // Add to call-specific earnings
@@ -208,7 +291,7 @@ export default function VideoCallBilling({
         setCallSpecificEarnings(prev => prev + data.callEarnings);
       }
     }
-  }, []);
+  }, [onInsufficientFunds]);
 
   // Handle insufficient funds from backend (only for the caller)
   const handleInsufficientFunds = useCallback((data: any) => {

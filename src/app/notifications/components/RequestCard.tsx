@@ -941,23 +941,39 @@ export default function RequestCard({exp, img, name, username, firstName, lastNa
             className={`size-16 relative rounded-full border-4 overflow-hidden ${cardBorderVariance} bg-gray-900 flex items-center justify-center cursor-pointer hover:opacity-80 transition-opacity`}
             onClick={handleProfileClick}
           >
-            {img && img !== '/picture-1.jfif' && img !== '/default-image.png' ? (
+            {img && img !== '/picture-1.jfif' && img !== '/default-image.png' && img.trim() !== '' ? (
               <Image 
                 src={img} 
                 width={100} 
                 alt="picture" 
                 height={100} 
                 className='absolute top-0 left-0 size-full object-cover'
+                unoptimized
                 onError={(e) => {
                   // If image fails to load, show initials instead
                   const target = e.target as HTMLImageElement;
                   target.style.display = 'none';
                   const parent = target.parentElement;
                   if (parent) {
-                    const fallbackDiv = document.createElement('div');
-                    fallbackDiv.className = 'w-full h-full flex items-center justify-center bg-gray-600 text-white font-bold text-xl';
-                    fallbackDiv.textContent = generateInitials(firstName, lastName, username || name);
-                    parent.appendChild(fallbackDiv);
+                    // Check if fallback div already exists
+                    const existingFallback = parent.querySelector('.fallback-initials');
+                    if (!existingFallback) {
+                      const fallbackDiv = document.createElement('div');
+                      fallbackDiv.className = 'w-full h-full flex items-center justify-center bg-gray-600 text-white font-bold text-xl fallback-initials';
+                      fallbackDiv.textContent = generateInitials(firstName, lastName, username || name);
+                      parent.appendChild(fallbackDiv);
+                    }
+                  }
+                }}
+                onLoad={(e) => {
+                  // Hide any existing fallback div when image loads successfully
+                  const target = e.target as HTMLImageElement;
+                  const parent = target.parentElement;
+                  if (parent) {
+                    const fallbackDiv = parent.querySelector('.fallback-initials');
+                    if (fallbackDiv) {
+                      fallbackDiv.remove();
+                    }
                   }
                 }}
               />
