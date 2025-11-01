@@ -203,42 +203,19 @@ export default function Activity() {
         </div>
       </div>
       
-      {requests.map((request: Request) => {
-        // Determine the correct bucket based on user type (creator vs fan)
-        const isCreator = request.otherUser?.isCreator || false;
-        const bucket = isCreator ? 'creator' : 'profile';
-        const photolink = request.otherUser?.photolink || '';
-        const name = request.otherUser?.name || "Unknown User";
-        const username = request.otherUser?.username || '';
-        const firstName = request.otherUser?.firstname || '';
-        const lastName = request.otherUser?.lastname || '';
-        
-        // Get image source with correct bucket
-        // Try with the determined bucket first, then fallback to 'profile' if that doesn't work
-        let imageSource = getImageSource(photolink, bucket);
-        let imageSrc = imageSource.src || photolink;
-        
-        // If no src and photolink exists, try with 'profile' bucket as fallback
-        if (!imageSrc && photolink && bucket === 'creator') {
-          const fallbackSource = getImageSource(photolink, 'profile');
-          imageSrc = fallbackSource.src || photolink;
-        }
-        
-        // Final fallback to default image
-        if (!imageSrc || imageSrc.trim() === '') {
-          imageSrc = "/picture-1.jfif";
-        }
-        
-        return (
+      {requests.map((request: Request) => (
         <div key={request.requestId} className="relative">
           <RequestCard
             type={request.type}
-            img={imageSrc}
+            img={(() => {
+              const imageSource = getImageSource(request.otherUser?.photolink || '', 'profile');
+              return imageSource.src || request.otherUser?.photolink || "/picture-1.jfif";
+            })()}
             status={request.status}
-            name={name}
-            username={username}
-            firstName={firstName}
-            lastName={lastName}
+            name={request.otherUser?.name || "Unknown User"}
+            username={request.otherUser?.username} // Add username prop
+            firstName={request.otherUser?.firstname} // Add first name prop
+            lastName={request.otherUser?.lastname} // Add last name prop
             titles={request.otherUser?.isCreator ? ["Creator"] : ["Fan"]}
             exp={request.timeRemaining || "Expired"}
             requestId={request.requestId}
@@ -268,8 +245,7 @@ export default function Activity() {
             />
           )}
         </div>
-        );
-      })}
+      ))}
   </div>
   );
 }

@@ -43,7 +43,6 @@ export default function CreateCreatorPortfolio() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
-  const containerRef = useRef<HTMLDivElement>(null);
 
   // Get profile data from Redux (like side menu)
 
@@ -125,50 +124,6 @@ export default function CreateCreatorPortfolio() {
       }
     }
   }, [profile, reduxUserId, userid, dispatch, name]);
-
-  // Scroll to top whenever step changes - scroll the parent scrollable container
-  useEffect(() => {
-    const scrollToTop = () => {
-      // Find the scrollable parent container (from ConditionalLayout with overflow-y-auto)
-      let scrollableContainer: HTMLElement | null = null;
-      
-      // Try to find the container by class name (scrollbar overflow-y-auto)
-      scrollableContainer = document.querySelector('.scrollbar.overflow-y-auto') as HTMLElement;
-      
-      // Fallback: find parent element with overflow-y-auto
-      if (!scrollableContainer && containerRef.current) {
-        let parent = containerRef.current.parentElement;
-        while (parent) {
-          const styles = window.getComputedStyle(parent);
-          if (styles.overflowY === 'auto' || styles.overflowY === 'scroll') {
-            scrollableContainer = parent;
-            break;
-          }
-          parent = parent.parentElement;
-        }
-      }
-      
-      // If we found the scrollable container, scroll it to top
-      if (scrollableContainer) {
-        scrollableContainer.scrollTop = 0;
-      } else {
-        // Fallback to window scroll if container not found
-        window.scrollTo(0, 0);
-        document.documentElement.scrollTop = 0;
-        document.body.scrollTop = 0;
-      }
-    };
-    
-    // Scroll immediately
-    scrollToTop();
-    
-    // Also scroll after DOM update to ensure it works
-    requestAnimationFrame(() => {
-      scrollToTop();
-      // One more time after a tiny delay to catch any layout changes
-      setTimeout(scrollToTop, 10);
-    });
-  }, [step]);
 
 // Initialize Storj upload function
 // Upload a file to Storj via backend API and return its public URL
@@ -256,8 +211,8 @@ const checkuserInput = async () => {
 
     // Success: Keep button disabled and show success message
     toast.success("Portfolio created successfully", { autoClose: 3000 });
-    // Navigate away with full page refresh to reload entire app state
-    window.location.href = "/creators";
+    // Navigate away - don't reset states since we're leaving the page
+    router.push("/creators");
   } catch (err: any) {
     console.error("Failed to create portfolio", err?.response || err);
     const status = err?.response?.status;
@@ -280,16 +235,10 @@ const checkuserInput = async () => {
 
   const handleNextStep = () => {
     const skipValidation = process.env.NEXT_PUBLIC_SKIP_CREATE_MODEL_VALIDATION === "true";
-    if (skipValidation || validateStep(step)) {
-      setStep(step + 1);
-    }
+    if (skipValidation || validateStep(step)) setStep(step + 1);
   };
-  const handlePreviousStep = () => {
-    setStep(step - 1);
-  };
-  const handleSkipStep = () => {
-    setStep(step + 1);
-  };
+  const handlePreviousStep = () => setStep(step - 1);
+  const handleSkipStep = () => setStep(step + 1);
   const getLocation = (country: any) => setlocation(`${country}`);
 
   const validateStep = (stepNumber: number) => {
@@ -325,7 +274,7 @@ if (!isCreatorVerified) {
 
   return (
     <>
-      <div ref={containerRef} className="pt-16 md:pt-8">
+      <div className="pt-16 md:pt-8">
         <ToastContainer position="top-center" theme="dark" />
         <p className="text-2xl font-semibold text-center text-slate-300 sm:w-1/2">
           Create Portfolio 
