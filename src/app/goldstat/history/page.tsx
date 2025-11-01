@@ -37,7 +37,7 @@ const WithdrawRequestCard = ({ usd, onWithdrawClick }: { usd: number; onWithdraw
     <div className="flex justify-between items-center">
       <div>
         <p className="text-sm">Withdrawable Money</p>
-        {usd >= 50 ? <p className="text-xl font-bold">${usd.toFixed(2)}</p> : <p className="text-xs">Available once balance &gt; $50</p>}
+        {usd >= 50 ? <p className="text-xl font-bold">${usd.toFixed(2)}</p> : <p className="text-xs">Available once balance ≥ $50</p>}
       </div>
       <button 
         className={`transition-all text-white font-bold px-4 py-2 rounded-lg ${

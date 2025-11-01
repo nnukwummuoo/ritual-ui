@@ -180,13 +180,15 @@ const AboutPage = () => {
                   if (profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined") {
                     const imageSource = getImageSource(profileImage, 'profile');
                     return (
-                      <Image
-                        src={imageSource.src}
-                        alt="Profile picture"
-                        width={120}
-                        height={120}
-                        className="rounded-full object-cover"
-                      />
+                      <div className="w-[120px] h-[120px] rounded-full overflow-hidden flex items-center justify-center bg-gray-800">
+                        <Image
+                          src={imageSource.src}
+                          alt="Profile picture"
+                          width={120}
+                          height={120}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
                     );
                   }
                   

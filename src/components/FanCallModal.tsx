@@ -9,6 +9,7 @@ import { IoCall, IoCallSharp, IoVideocam, IoVideocamOff, IoMic, IoMicOff, IoClos
 import { getSocket } from '@/lib/socket';
 import VideoCallBilling from './FanCallBilling';
 import VIPBadge from './VIPBadge';
+import { getImageSource } from '@/lib/imageUtils';
 
 interface FanCallModalProps {
   isOpen: boolean;
@@ -54,6 +55,7 @@ export default function FanCallModal({
   isCreator = false, 
   callRate = 1 
 }: FanCallModalProps) {
+
   const [callStatus, setCallStatus] = useState<'ringing' | 'connecting' | 'connected' | 'ended'>('ringing');
   const [isVideoEnabled, setIsVideoEnabled] = useState(true);
   const [isAudioEnabled, setIsAudioEnabled] = useState(true);
@@ -98,7 +100,6 @@ export default function FanCallModal({
       
       callTimeoutRef.current = setTimeout(() => {
         if (callStatus === 'ringing') {
-          console.log('📞 [VideoCall] Call timeout after 30 seconds');
           setCallTimeout(true);
           // Emit timeout event to terminate the call for both users
           if (socket) {
@@ -368,10 +369,75 @@ export default function FanCallModal({
 
   // Helper function to render user profile picture or initials (from post card logic)
   const renderUserProfile = (userInfo: any, isCreator: boolean = false) => {
+
     // For incoming calls, show caller info. For outgoing calls, show answerer info
-    const profileImage = callData?.isIncoming 
-      ? (callData?.callerPhoto || userInfo?.callerPhoto || userInfo?.photo || userInfo?.photolink || userInfo?.photoLink || userInfo?.profileImage || userInfo?.avatar || userInfo?.image)
-      : (callData?.answererPhoto || userInfo?.answererPhoto || userInfo?.photo || userInfo?.photolink || userInfo?.photoLink || userInfo?.profileImage || userInfo?.avatar || userInfo?.image);
+    // IMPORTANT: For incoming calls, we want to show the CALLER's photo (person calling you)
+    // For outgoing calls, we want to show the ANSWERER's photo (person you're calling)
+    let profileImage: string | undefined;
+    
+    if (callData?.isIncoming) {
+      // INCOMING CALL: Show the CALLER's photo (the person calling you)
+      profileImage = callData?.callerPhoto 
+        || userInfo?.callerPhoto 
+        || userInfo?.photo 
+        || userInfo?.photolink 
+        || userInfo?.photoLink 
+        || userInfo?.profileImage 
+        || userInfo?.avatar 
+        || userInfo?.image
+        || undefined;
+      
+      // If still not found, try to extract from callData directly if it's the caller's data
+      if (!profileImage && callData?.callerId === userInfo?.callerId) {
+        profileImage = callData?.callerPhoto || undefined;
+      }
+      
+      // Last resort: if userInfo IS callData (which it often is), try checking all photo fields
+      if (!profileImage && userInfo === callData) {
+        // Search through all keys in callData for photo fields
+        const allKeys = Object.keys(callData || {});
+        for (const key of allKeys) {
+          const lowerKey = key.toLowerCase();
+          const value = (callData as any)[key];
+          if ((lowerKey.includes('caller') && (lowerKey.includes('photo') || lowerKey.includes('avatar') || lowerKey.includes('image'))) 
+              && typeof value === 'string' && value.trim() !== '' && value !== 'null' && value !== 'undefined' && value !== 'NOT FOUND' && value !== 'NOT PROVIDED') {
+            profileImage = value;
+            break;
+          }
+        }
+      }
+    } else {
+      // OUTGOING CALL: Show the ANSWERER's photo (the person you're calling)
+      profileImage = callData?.answererPhoto 
+        || userInfo?.answererPhoto 
+        || userInfo?.photo 
+        || userInfo?.photolink 
+        || userInfo?.photoLink 
+        || userInfo?.profileImage 
+        || userInfo?.avatar 
+        || userInfo?.image
+        || undefined;
+      
+      // If still not found, try to extract from callData directly if it's the answerer's data
+      if (!profileImage && callData?.answererId === userInfo?.answererId) {
+        profileImage = callData?.answererPhoto || undefined;
+      }
+      
+      // Last resort: if userInfo IS callData (which it often is), try checking all photo fields
+      if (!profileImage && userInfo === callData) {
+        // Search through all keys in callData for photo fields
+        const allKeys = Object.keys(callData || {});
+        for (const key of allKeys) {
+          const lowerKey = key.toLowerCase();
+          const value = (callData as any)[key];
+          if ((lowerKey.includes('answerer') && (lowerKey.includes('photo') || lowerKey.includes('avatar') || lowerKey.includes('image'))) 
+              && typeof value === 'string' && value.trim() !== '' && value !== 'null' && value !== 'undefined' && value !== 'NOT FOUND' && value !== 'NOT PROVIDED') {
+            profileImage = value;
+            break;
+          }
+        }
+      }
+    }
     
     const userName = callData?.isIncoming 
       ? (callData?.callerUsername || userInfo?.callerUsername || userInfo?.username || callData?.callerName || userInfo?.callerName || userInfo?.name || userInfo?.firstname || 'User')
@@ -406,26 +472,78 @@ export default function FanCallModal({
     }
     
     
+    // Use getImageSource to handle Storj URLs properly (same as ProfilePage.tsx and EditProfile)
+    const hasValidImage = profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined";
+    
+    // Determine the correct bucket - check if it's a creator photo or profile photo
+    // If the URL contains 'creator' in the path, use 'creator' bucket, otherwise 'profile'
+    let fallbackBucket = 'profile';
+    if (profileImage && profileImage.includes('gateway.storjshare.io/creator/')) {
+      fallbackBucket = 'creator';
+    }
+    
+    const imageSource = hasValidImage ? getImageSource(profileImage, fallbackBucket) : null;
+    const imageSrc = imageSource?.src || profileImage;
+
     return (
       <div className="relative">
-        <div className="w-32 h-32 rounded-full overflow-hidden bg-gray-700 mx-auto mb-4">
-          {profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined" ? (
-            <Image
+        <div className="w-32 h-32 rounded-full overflow-hidden bg-gray-700 mx-auto mb-4 flex items-center justify-center">
+          {hasValidImage && imageSource ? (
+            <img
               alt="Profile picture"
-              src={profileImage}
-              fill
-              className="object-cover"
+              src={imageSrc}
+              className="w-full h-full object-cover"
+              onLoad={(e) => {
+                const target = e.target as HTMLImageElement;
+                // Ensure initials are hidden when image loads
+                const parent = target.parentElement;
+                if (parent) {
+                  const initialsDiv = parent.querySelector('.initials-fallback') as HTMLElement;
+                  if (initialsDiv) {
+                    initialsDiv.style.display = 'none';
+                  }
+                }
+              }}
               onError={(e) => {
-                const target = e.currentTarget as HTMLImageElement;
-                target.style.display = 'none';
-                const nextElement = target.nextElementSibling as HTMLElement;
-                if (nextElement) {
-                  nextElement.style.setProperty('display', 'flex');
+                try {
+                  const target = e.target as HTMLImageElement;
+                  const currentSrc = target?.src || "";
+                  
+                  // If we tried proxy URL and it failed, try original Storj URL
+                  if (imageSource.isStorj && imageSource.originalUrl && currentSrc === imageSrc && currentSrc !== imageSource.originalUrl) {
+                    target.src = imageSource.originalUrl;
+                    return; // Don't show initials yet, wait for this to fail too
+                  }
+                  
+                  // If original URL also failed (or wasn't Storj), show initials
+                  target.style.display = 'none';
+                  const parent = target.parentElement;
+                  if (parent) {
+                    const initialsDiv = parent.querySelector('.initials-fallback') as HTMLElement;
+                    if (initialsDiv) {
+                      initialsDiv.style.display = 'flex';
+                    }
+                  }
+                } catch (err) {
+                  // Fallback: just hide image
+                  try {
+                    const target = e.target as HTMLImageElement;
+                    if (target) {
+                      target.style.display = 'none';
+                      const parent = target.parentElement;
+                      if (parent) {
+                        const initialsDiv = parent.querySelector('.initials-fallback') as HTMLElement;
+                        if (initialsDiv) {
+                          initialsDiv.style.display = 'flex';
+                        }
+                      }
+                    }
+                  } catch {}
                 }
               }}
             />
           ) : null}
-          <div className="w-full h-full flex items-center justify-center text-white text-4xl font-semibold bg-gray-600" style={{display: profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined" ? 'none' : 'flex'}}>
+          <div className="w-full h-full flex items-center justify-center text-white text-4xl font-semibold bg-gray-600 initials-fallback" style={{display: hasValidImage && imageSource ? 'none' : 'flex'}}>
             {initials}
           </div>
         </div>
@@ -615,22 +733,18 @@ export default function FanCallModal({
       // The answerer should wait for the offer
       if (data.callerId === currentUserId && !callData?.isIncoming) {
         // I am the original caller - create peer connection and offer
-        console.log('📞 [VideoCall] I am the original caller, creating peer connection and offer');
         const pc = createPeerConnection();
         setPeerConnection(pc);
         
         if (localStream) {
-          console.log('📞 [VideoCall] Adding local stream tracks to peer connection');
           localStream.getTracks().forEach(track => {
             pc.addTrack(track, localStream);
           });
         }
         
         pc.createOffer().then(offer => {
-          console.log('📞 [VideoCall] Created offer, setting local description');
           return pc.setLocalDescription(offer);
         }).then(() => {
-          console.log('📞 [VideoCall] Sending offer to remote peer');
           socket.emit('fan_call_offer', {
             callId: callData?.callId,
             offer: pc.localDescription
@@ -638,42 +752,28 @@ export default function FanCallModal({
         }).catch(error => {
           console.error('❌ [VideoCall] Error creating/sending offer:', error);
         });
-      } else {
-        console.log('📞 [VideoCall] I am the answerer, waiting for offer');
       }
     };
 
     const handleOffer = async (data: any) => {
       // Received offer
-      console.log('📞 [VideoCall] Received offer:', { 
-        callId: data.callId, 
-        currentCallId: callData?.callId,
-        hasPeerConnection: !!peerConnection,
-        isIncoming: callData?.isIncoming
-      });
       
       // Only process offer if we don't have a peer connection yet AND we're the answerer
       if ((data.callId === callData?.callId || data.callId.startsWith('temp_')) && !peerConnection && callData?.isIncoming) {
-        console.log('📞 [VideoCall] Processing offer, creating peer connection as answerer');
         const pc = createPeerConnection();
         setPeerConnection(pc);
         
         if (localStream) {
-          console.log('📞 [VideoCall] Adding local stream tracks to peer connection');
           localStream.getTracks().forEach(track => {
             pc.addTrack(track, localStream);
           });
         }
         
         try {
-          console.log('📞 [VideoCall] Setting remote description');
           await pc.setRemoteDescription(data.offer);
-          console.log('📞 [VideoCall] Creating answer');
           const answer = await pc.createAnswer();
-          console.log('📞 [VideoCall] Setting local description');
           await pc.setLocalDescription(answer);
           
-          console.log('📞 [VideoCall] Sending answer to remote peer');
           socket.emit('fan_call_answer', {
             callId: callData?.callId || data.callId,
             answer: answer
@@ -681,24 +781,15 @@ export default function FanCallModal({
         } catch (error) {
           console.error('❌ [VideoCall] Error processing offer:', error);
         }
-      } else {
-        console.log('📞 [VideoCall] Ignoring offer - already have peer connection or not the answerer');
       }
     };
 
     const handleAnswer = async (data: any) => {
       // Received answer
-      console.log('📞 [VideoCall] Received answer:', { 
-        callId: data.callId, 
-        currentCallId: callData?.callId,
-        hasPeerConnection: !!peerConnection 
-      });
       
       if ((data.callId === callData?.callId || data.callId.startsWith('temp_')) && peerConnection) {
         try {
-          console.log('📞 [VideoCall] Setting remote description from answer');
           await peerConnection.setRemoteDescription(data.answer);
-          console.log('📞 [VideoCall] Remote description set successfully');
         } catch (error) {
           console.error('❌ [VideoCall] Error setting remote description:', error);
         }
@@ -734,7 +825,6 @@ export default function FanCallModal({
     };
 
     const handleCallTimeout = () => {
-      console.log('📞 [VideoCall] Call timeout received - closing modal');
       // For incoming calls (answerer), just close the modal
       if (callData?.isIncoming) {
         handleCleanup();
@@ -743,7 +833,6 @@ export default function FanCallModal({
     };
 
     const handleMissedCall = (data: any) => {
-      console.log('📞 [VideoCall] Missed call notification received:', data);
       // This will be handled by the socket listener in the parent component
       // to create notifications and push notifications
     };

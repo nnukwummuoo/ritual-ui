@@ -8,6 +8,7 @@ import { checkVipStatus } from "@/store/vip";
 import { getSocket } from "@/lib/socket";
 import VIPBadge from "@/components/VIPBadge";
 import { toast } from "material-react-toastify";
+import { getImageSource } from "@/lib/imageUtils";
 
 interface FollowerCardProps {
   image: string;
@@ -323,27 +324,38 @@ const FollowerCard: React.FC<FollowerCardProps> = ({ image, name, creator_portfo
       <div className="flex items-center gap-3 flex-1 min-w-0">
         {/* Avatar - fixed size, never shrinks */}
         <div className="relative flex-shrink-0">
-          {hasImage ? (
-            <Image
-              src={image}
-              alt={name}
-              width={48}
-              height={48}
-              className="w-12 h-12 rounded-full object-cover"
-              onError={(e) => {
-                const target = e.target as HTMLImageElement;
-                target.style.display = 'none';
-                // Show initials instead of fallback image
-                const parent = target.parentElement;
-                if (parent) {
-                  const initialsDiv = document.createElement('div');
-                  initialsDiv.className = 'w-12 h-12 rounded-full bg-gray-700 flex items-center justify-center text-white text-sm font-semibold';
-                  initialsDiv.textContent = initials;
-                  parent.appendChild(initialsDiv);
-                }
-              }}
-            />
-          ) : (
+          {hasImage ? (() => {
+            // Use getImageSource to handle Storj URLs properly (same as ProfilePage.tsx and EditProfile)
+            const imageSource = getImageSource(image, 'profile');
+            const imageSrc = imageSource.src;
+            
+            return (
+              <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-700 flex items-center justify-center">
+                <img
+                  src={imageSrc}
+                  alt={name}
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    // Try fallback to original URL if proxy failed
+                    if (imageSource.isStorj && target?.src !== image) {
+                      target.src = image;
+                      return;
+                    }
+                    // Hide image and show initials
+                    target.style.display = 'none';
+                    const parent = target.parentElement;
+                    if (parent) {
+                      const initialsDiv = document.createElement('div');
+                      initialsDiv.className = 'w-full h-full flex items-center justify-center text-white text-sm font-semibold';
+                      initialsDiv.textContent = initials;
+                      parent.appendChild(initialsDiv);
+                    }
+                  }}
+                />
+              </div>
+            );
+          })() : (
             <div className="w-12 h-12 rounded-full bg-gray-700 flex items-center justify-center text-white text-sm font-semibold">
               {initials}
             </div>

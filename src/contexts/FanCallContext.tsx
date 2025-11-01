@@ -33,7 +33,7 @@ interface FanCallData {
 interface VideoCallContextType {
   isVideoCallOpen: boolean;
   videoCallData: FanCallData | null;
-  startVideoCall: (answererId: string, answererName: string, price?: number, answererIsVip?: boolean, answererVipEndDate?: string | null, answererFirstName?: string, answererLastName?: string) => Promise<void>;
+  startVideoCall: (answererId: string, answererName: string, price?: number, answererIsVip?: boolean, answererVipEndDate?: string | null, answererFirstName?: string, answererLastName?: string, answererPhoto?: string) => Promise<void>;
   closeVideoCall: () => void;
 }
 
@@ -58,7 +58,7 @@ export const VideoCallProvider: React.FC<VideoCallProviderProps> = ({ children }
   const socket = getSocket();
 
   // Start a video call
-  const startVideoCall = async (answererId: string, answererName: string, price?: number, answererIsVip?: boolean, answererVipEndDate?: string | null, answererFirstName?: string, answererLastName?: string) => {
+  const startVideoCall = async (answererId: string, answererName: string, price?: number, answererIsVip?: boolean, answererVipEndDate?: string | null, answererFirstName?: string, answererLastName?: string, answererPhoto?: string) => {
     if (!socket || !session?._id) return;
 
     try {
@@ -78,9 +78,44 @@ export const VideoCallProvider: React.FC<VideoCallProviderProps> = ({ children }
       }
 
       const data = await response.json();
+      
+      const profileKeys = data.profile ? Object.keys(data.profile) : [];
+      
       const userBalance = parseInt(data.profile?.balance) || 0; // Parse balance as integer
       const isCreator = data.profile?.creator || false; // Get creator status from database
       const callRate = price || 1; // Use price from request card, default to 1 if not provided
+      
+      // Get caller's photo - check multiple possible field names (case-insensitive search)
+      let callerPhoto = '';
+      if (data.profile) {
+        // Try exact matches first
+        callerPhoto = data.profile.photolink 
+          || data.profile.photoLink 
+          || data.profile.photo 
+          || data.profile.avatar 
+          || data.profile.image;
+        
+        // If not found, search case-insensitively through all keys
+        if (!callerPhoto && profileKeys.length > 0) {
+          for (const key of profileKeys) {
+            const lowerKey = key.toLowerCase();
+            const value = data.profile[key];
+            if ((lowerKey.includes('photo') || lowerKey.includes('avatar') || lowerKey.includes('image') || lowerKey.includes('pic')) 
+                && typeof value === 'string' && value.trim() !== '' && value !== 'null' && value !== 'undefined') {
+              callerPhoto = value;
+              break;
+            }
+          }
+        }
+      }
+      
+      // Fallback to session
+      if (!callerPhoto) {
+        callerPhoto = (session as { photolink?: string })?.photolink 
+          || (session as { photoLink?: string })?.photoLink 
+          || (session as any)?.photo 
+          || '';
+      }
       
       // Get caller's name and VIP status from database profile
       const callerName = data.profile?.firstname && data.profile?.lastname 
@@ -89,17 +124,20 @@ export const VideoCallProvider: React.FC<VideoCallProviderProps> = ({ children }
       const callerIsVip = data.profile?.isVip || false;
       const callerVipEndDate = data.profile?.vipEndDate || null;
       
+      
       if (userBalance < callRate) {
         alert('Insufficient funds to start call. Please purchase gold first.');
         return;
       }
 
        // Use data passed from RequestCard, or fetch if not provided
-       let answererPhoto = '';
+       // Priority: 1) Passed photo parameter, 2) Fetch from API
+       let answererPhotoValue = answererPhoto || '';
        let answererVipStatus = answererIsVip || false;
        let answererVipEndDateValue = answererVipEndDate || null;
        let answererFirstNameValue = answererFirstName || '';
        let answererLastNameValue = answererLastName || '';
+       
        
        // If firstname/lastname not provided, fetch from database
        if (!answererFirstNameValue || !answererLastNameValue) {
@@ -116,7 +154,34 @@ export const VideoCallProvider: React.FC<VideoCallProviderProps> = ({ children }
 
            if (answererResponse.ok) {
              const answererData = await answererResponse.json();
-             answererPhoto = answererData.profile?.photolink || '';
+             
+             const answererProfileKeys = answererData.profile ? Object.keys(answererData.profile) : [];
+             
+             // Only fetch photo if not already provided from RequestCard
+             if (!answererPhotoValue) {
+               // Check multiple possible field names for photo (including creatorphotolink)
+               answererPhotoValue = answererData.profile?.photolink 
+                 || answererData.profile?.photoLink 
+                 || answererData.profile?.creatorphotolink
+                 || answererData.profile?.photo 
+                 || answererData.profile?.avatar 
+                 || answererData.profile?.image 
+                 || '';
+               
+               // If not found, search case-insensitively
+               if (!answererPhotoValue && answererProfileKeys.length > 0) {
+                 for (const key of answererProfileKeys) {
+                   const lowerKey = key.toLowerCase();
+                   const value = answererData.profile[key];
+                   if ((lowerKey.includes('photo') || lowerKey.includes('avatar') || lowerKey.includes('image') || lowerKey.includes('pic')) 
+                       && typeof value === 'string' && value.trim() !== '' && value !== 'null' && value !== 'undefined') {
+                     answererPhotoValue = value;
+                     break;
+                   }
+                 }
+               }
+               
+             }
              
              // Only use fetched data if not already provided
              if (!answererFirstNameValue) {
@@ -132,14 +197,7 @@ export const VideoCallProvider: React.FC<VideoCallProviderProps> = ({ children }
                answererVipEndDateValue = answererData.profile?.vipEndDate || null;
              }
              
-             console.log('🔍 [VIP Debug] startVideoCall - Fetched answerer profile data:', {
-               answererId,
-               answererData: answererData.profile,
-               answererFirstName: answererFirstNameValue,
-               answererLastName: answererLastNameValue,
-               answererIsVip: answererVipStatus,
-               answererVipEndDate: answererVipEndDateValue
-             });
+           } else {
            }
          } catch (error) {
            console.error('Error fetching answerer profile:', error);
@@ -159,22 +217,50 @@ export const VideoCallProvider: React.FC<VideoCallProviderProps> = ({ children }
 
            if (answererResponse.ok) {
              const answererData = await answererResponse.json();
-             answererPhoto = answererData.profile?.photolink || '';
+             
+             const answererProfileKeys = answererData.profile ? Object.keys(answererData.profile) : [];
+             
+             // Only fetch photo if not already provided from RequestCard
+             if (!answererPhotoValue) {
+               // Check multiple possible field names for photo
+               answererPhotoValue = answererData.profile?.photolink 
+                 || answererData.profile?.photoLink 
+                 || answererData.profile?.creatorphotolink
+                 || answererData.profile?.photo 
+                 || answererData.profile?.avatar 
+                 || answererData.profile?.image 
+                 || '';
+               
+               // If not found, search case-insensitively
+               if (!answererPhotoValue && answererProfileKeys.length > 0) {
+                 for (const key of answererProfileKeys) {
+                   const lowerKey = key.toLowerCase();
+                   const value = answererData.profile[key];
+                   if ((lowerKey.includes('photo') || lowerKey.includes('avatar') || lowerKey.includes('image') || lowerKey.includes('pic')) 
+                       && typeof value === 'string' && value.trim() !== '' && value !== 'null' && value !== 'undefined') {
+                     answererPhotoValue = value;
+                     break;
+                   }
+                 }
+               }
+               
+             }
            }
          } catch (error) {
            console.error('Error fetching answerer photo:', error);
          }
        }
 
+
       // Starting call
       
       socket.emit('fan_call_start', {
         callerId: session._id,
         callerName: callerName,
-        callerPhoto: data.profile?.photolink || (session as { photolink?: string })?.photolink || '',
+        callerPhoto: callerPhoto,
         answererId: answererId,
         answererName: answererName,
-        answererPhoto: answererPhoto,
+        answererPhoto: answererPhotoValue,
         userBalance: userBalance,
         callRate: callRate
       });
@@ -185,14 +271,14 @@ export const VideoCallProvider: React.FC<VideoCallProviderProps> = ({ children }
          callerName: callerName,
          callerFirstName: data.profile?.firstname || '',
          callerLastName: data.profile?.lastname || '',
-         callerPhoto: data.profile?.photolink || (session as { photolink?: string })?.photolink || '',
+         callerPhoto: callerPhoto,
          callerIsVip: callerIsVip,
          callerVipEndDate: callerVipEndDate,
          answererId: answererId,
          answererName: answererName,
          answererFirstName: answererFirstNameValue,
          answererLastName: answererLastNameValue,
-         answererPhoto: answererPhoto,
+         answererPhoto: answererPhotoValue,
          answererIsVip: answererVipStatus,
          answererVipEndDate: answererVipEndDateValue,
          userBalance: userBalance, // Use real-time balance from database
@@ -200,6 +286,7 @@ export const VideoCallProvider: React.FC<VideoCallProviderProps> = ({ children }
          isCreator: isCreator, // Use creator status from database
          isIncoming: false
        };
+
       
 
       setVideoCallData(callData);
@@ -243,25 +330,9 @@ export const VideoCallProvider: React.FC<VideoCallProviderProps> = ({ children }
        answererFirstName?: string;
        answererLastName?: string;
        answererUsername?: string;
-       answererIsVip?: boolean;
-       answererVipEndDate?: string | null;
-     }) => {
-       console.log('📞 [VideoCall] Received incoming call:', {
-         callId: data.callId,
-         callerId: data.callerId,
-         callerName: data.callerName,
-         callerFirstName: data.callerFirstName,
-         callerLastName: data.callerLastName,
-         callerUsername: data.callerUsername,
-         callerPhoto: data.callerPhoto,
-         callerIsVip: data.callerIsVip,
-         callerVipEndDate: data.callerVipEndDate,
-         answererFirstName: data.answererFirstName,
-         answererLastName: data.answererLastName,
-         answererUsername: data.answererUsername,
-         answererIsVip: data.answererIsVip,
-         answererVipEndDate: data.answererVipEndDate
-       });
+      answererIsVip?: boolean;
+      answererVipEndDate?: string | null;
+    }) => {
       
       try {
         // Get current user profile to determine creator status
@@ -289,8 +360,9 @@ export const VideoCallProvider: React.FC<VideoCallProviderProps> = ({ children }
         let answererIsVip = data.answererIsVip || false;
         let answererVipEndDate = data.answererVipEndDate || null;
         
-        // Only fetch photo if not provided by backend
-        if (!callerPhoto) {
+        // ALWAYS fetch caller photo if not provided by socket (it's often missing)
+        // This ensures we have the photo for incoming calls
+        if (!callerPhoto || callerPhoto === '' || callerPhoto === 'NOT FOUND') {
           try {
             const callerResponse = await fetch(`${URL}/getprofile`, {
               method: 'POST',
@@ -304,11 +376,18 @@ export const VideoCallProvider: React.FC<VideoCallProviderProps> = ({ children }
 
             if (callerResponse.ok) {
               const callerData = await callerResponse.json();
-              callerPhoto = callerData.profile?.photolink || '';
+              callerPhoto = callerData.profile?.photolink || callerData.profile?.photoLink || '';
             }
           } catch (error) {
             console.error('Error fetching caller photo:', error);
           }
+        }
+
+        // Fetch answerer (current user) photo
+        let answererPhoto = profileData.profile?.photolink || (session as { photolink?: string })?.photolink || '';
+        if (!answererPhoto) {
+          // Try to get from session
+          answererPhoto = (session as any)?.photo || (session as any)?.photoLink || '';
         }
 
          const callData: FanCallData = {
@@ -326,11 +405,13 @@ export const VideoCallProvider: React.FC<VideoCallProviderProps> = ({ children }
            answererFirstName: session.firstname,
            answererLastName: session.lastname,
            answererUsername: session.username,
+           answererPhoto: answererPhoto, // Set answerer photo for incoming calls
            answererIsVip: answererIsVip,
            answererVipEndDate: answererVipEndDate,
            isCreator: isCreator, // Use creator status from database
            isIncoming: true
          };
+
 
         setVideoCallData(callData);
         setIsVideoCallOpen(true);
@@ -368,29 +449,9 @@ export const VideoCallProvider: React.FC<VideoCallProviderProps> = ({ children }
       answererIsVip?: boolean;
       answererVipEndDate?: string | null;
     }) => {
-      console.log('📞 [VideoCall] Call accepted, updating call ID:', data.callId);
-      console.log('🔍 [VIP Debug] Call accepted data in context:', {
-        callerIsVip: data.callerIsVip,
-        callerVipEndDate: data.callerVipEndDate,
-        answererIsVip: data.answererIsVip,
-        answererVipEndDate: data.answererVipEndDate,
-        callerFirstName: data.callerFirstName,
-        callerLastName: data.callerLastName,
-        answererFirstName: data.answererFirstName,
-        answererLastName: data.answererLastName
-      });
       
       // Update call data with real call ID and VIP data if we have a temporary one
       if (videoCallData?.callId.startsWith('temp_')) {
-        console.log('🔍 [VIP Debug] handleCallAccepted - Updating call data with VIP info:', {
-          oldData: videoCallData,
-          newVipData: {
-            callerIsVip: data.callerIsVip,
-            callerVipEndDate: data.callerVipEndDate,
-            answererIsVip: data.answererIsVip,
-            answererVipEndDate: data.answererVipEndDate
-          }
-        });
         
         setVideoCallData(prev => prev ? { 
           ...prev, 
@@ -404,7 +465,6 @@ export const VideoCallProvider: React.FC<VideoCallProviderProps> = ({ children }
           answererIsVip: data.answererIsVip || prev.answererIsVip,
           answererVipEndDate: data.answererVipEndDate || prev.answererVipEndDate
         } : null);
-        console.log('📞 [VideoCall] Updated call ID from temp to:', data.callId);
       }
     };
 
@@ -422,7 +482,6 @@ export const VideoCallProvider: React.FC<VideoCallProviderProps> = ({ children }
     };
 
     const handleCallTimeout = () => {
-      console.log('📞 [VideoCall] Call timeout - closing modal for answerer');
       // For the answerer (creator), just close the modal without any special message
       closeVideoCall();
     };
