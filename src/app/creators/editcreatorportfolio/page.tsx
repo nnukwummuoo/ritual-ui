@@ -78,6 +78,7 @@ export default function Editcreator () {
   );
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const hosttypeInitialized = useRef(false);
+  const containerRef = useRef<HTMLDivElement>(null);
   const token = useAuthToken();
 
   // Prefill fields from store creator and guard when missing
@@ -207,6 +208,49 @@ export default function Editcreator () {
     }
   }, [profile, reduxUserId, userid, name]);
 
+  // Scroll to top whenever step changes - scroll the parent scrollable container
+  useEffect(() => {
+    const scrollToTop = () => {
+      // Find the scrollable parent container (from ConditionalLayout with overflow-y-auto)
+      let scrollableContainer: HTMLElement | null = null;
+      
+      // Try to find the container by class name (scrollbar overflow-y-auto)
+      scrollableContainer = document.querySelector('.scrollbar.overflow-y-auto') as HTMLElement;
+      
+      // Fallback: find parent element with overflow-y-auto
+      if (!scrollableContainer && containerRef.current) {
+        let parent = containerRef.current.parentElement;
+        while (parent) {
+          const styles = window.getComputedStyle(parent);
+          if (styles.overflowY === 'auto' || styles.overflowY === 'scroll') {
+            scrollableContainer = parent;
+            break;
+          }
+          parent = parent.parentElement;
+        }
+      }
+      
+      // If we found the scrollable container, scroll it to top
+      if (scrollableContainer) {
+        scrollableContainer.scrollTop = 0;
+      } else {
+        // Fallback to window scroll if container not found
+        window.scrollTo(0, 0);
+        document.documentElement.scrollTop = 0;
+        document.body.scrollTop = 0;
+      }
+    };
+    
+    // Scroll immediately
+    scrollToTop();
+    
+    // Also scroll after DOM update to ensure it works
+    requestAnimationFrame(() => {
+      scrollToTop();
+      // One more time after a tiny delay to catch any layout changes
+      setTimeout(scrollToTop, 10);
+    });
+  }, [step]);
 
   // useEffect(() => {
   //   if (!login) {
@@ -326,7 +370,8 @@ export default function Editcreator () {
       });
       
       toast.success("Portfolio updated successfully");
-      router.push(`/creators/${creator_portfolio_id}`);
+      // Navigate away with full page refresh to reload entire app state
+      window.location.href = `/creators/${creator_portfolio_id}`;
     } catch (err:any) {
       console.error("Failed to update portfolio", err);
       toast.error(typeof err === 'string' ? err : 'Failed to update portfolio');
@@ -395,7 +440,7 @@ export default function Editcreator () {
   };
   
   return (
-    <div className="">
+    <div ref={containerRef} className="">
       <div className="">
         <HeaderBackNav />
         <ToastContainer position="top-center" theme="dark" />

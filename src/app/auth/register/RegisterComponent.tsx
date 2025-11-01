@@ -78,6 +78,7 @@ export const Register = () => {
   const [saved, setSaved] = useState(false);
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
+  const containerRef = React.useRef<HTMLDivElement>(null);
   
   // State for form validation errors
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
@@ -474,8 +475,52 @@ export const Register = () => {
     }
   ];
 
+  // Scroll to top whenever step changes - scroll the parent scrollable container
+  useEffect(() => {
+    const scrollToTop = () => {
+      // Find the scrollable parent container (from ConditionalLayout with overflow-y-auto)
+      let scrollableContainer: HTMLElement | null = null;
+      
+      // Try to find the container by class name (scrollbar overflow-y-auto)
+      scrollableContainer = document.querySelector('.scrollbar.overflow-y-auto') as HTMLElement;
+      
+      // Fallback: find parent element with overflow-y-auto
+      if (!scrollableContainer && containerRef.current) {
+        let parent = containerRef.current.parentElement;
+        while (parent) {
+          const styles = window.getComputedStyle(parent);
+          if (styles.overflowY === 'auto' || styles.overflowY === 'scroll') {
+            scrollableContainer = parent;
+            break;
+          }
+          parent = parent.parentElement;
+        }
+      }
+      
+      // If we found the scrollable container, scroll it to top
+      if (scrollableContainer) {
+        scrollableContainer.scrollTop = 0;
+      } else {
+        // Fallback to window scroll if container not found
+        window.scrollTo(0, 0);
+        document.documentElement.scrollTop = 0;
+        document.body.scrollTop = 0;
+      }
+    };
+    
+    // Scroll immediately
+    scrollToTop();
+    
+    // Also scroll after DOM update to ensure it works
+    requestAnimationFrame(() => {
+      scrollToTop();
+      // One more time after a tiny delay to catch any layout changes
+      setTimeout(scrollToTop, 10);
+    });
+  }, [step]);
+
   return (
-    <div className="body w-full h-auto overflow-scroll min-h-screen">
+    <div ref={containerRef} className="body w-full h-auto overflow-scroll min-h-screen">
       {/* Home Icon */}
       <div className="absolute top-4 right-4 z-10">
         <button

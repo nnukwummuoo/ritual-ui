@@ -65,6 +65,7 @@ export default function FanCallModal({
   const [mediaError, setMediaError] = useState<string | null>(null);
   const [callTimeout, setCallTimeout] = useState(false);
   const [callStartTime, setCallStartTime] = useState<number | null>(null);
+  const [insufficientFunds, setInsufficientFunds] = useState(false);
   
   const mainVideoRef = useRef<HTMLVideoElement>(null);
   const thumbnailVideoRef = useRef<HTMLVideoElement>(null);
@@ -457,22 +458,13 @@ export default function FanCallModal({
     );
   };
 
-  // Handle insufficient funds (for whoever is paying for the call)
-  const handleInsufficientFunds = () => {
-    // Show insufficient funds alert for whoever initiated the call (the one paying)
-    const isCaller = callData?.callerId === currentUserId;
-    if (isCaller) {
-      alert('Insufficient funds to continue call');
-      handleEndCall();
-    }
-  };
-
   // Cleanup function
   const handleCleanup = useCallback(() => {
     console.log('🧹 [VideoCall] Cleaning up video call');
     setUsersCanSeeEachOther(false);
     setCallTimeout(false);
     setCallStartTime(null);
+    setInsufficientFunds(false);
     
     // Clear controls timeout
     if (controlsTimeoutRef.current) {
@@ -501,6 +493,33 @@ export default function FanCallModal({
     setRemoteStream(null);
     pendingIceCandidatesRef.current = [];
   }, [localStream, peerConnection]);
+
+  // Handle insufficient funds (for whoever is paying for the call)
+  const handleInsufficientFunds = useCallback(() => {
+    // Show insufficient funds notification for whoever initiated the call (the one paying)
+    const isCaller = callData?.callerId === currentUserId;
+    if (isCaller) {
+      console.log('💰 [VideoCall] Insufficient funds detected - ending call');
+      setInsufficientFunds(true);
+      
+      // End the call after a brief delay to show the message
+      setTimeout(() => {
+        // Emit end call event to backend
+        if (socket) {
+          socket.emit('fan_call_end', {
+            callId: callData?.callId,
+            callerId: callData?.callerId,
+            userId: currentUserId,
+            reason: 'insufficient_funds'
+          });
+        }
+        
+        // Cleanup and close modal
+        handleCleanup();
+        onClose();
+      }, 2000); // Show message for 2 seconds before ending
+    }
+  }, [callData, currentUserId, socket, handleCleanup, onClose]);
 
   // Toggle video/audio
   const toggleVideo = () => {
@@ -729,6 +748,16 @@ export default function FanCallModal({
       // to create notifications and push notifications
     };
 
+    const handleInsufficientFundsFromServer = (data: any) => {
+      console.log('💰 [VideoCall] Insufficient funds received from server:', data);
+      // Check if this insufficient funds event is for the current call
+      const isCaller = callData?.callerId === currentUserId;
+      if ((data.callId === callData?.callId || !data.callId) && isCaller) {
+        // Handle insufficient funds - this will show notification and end call
+        handleInsufficientFunds();
+      }
+    };
+
     socket.on('fan_call_accepted', handleCallAccepted);
     socket.on('fan_call_offer', handleOffer);
     socket.on('fan_call_answer', handleAnswer);
@@ -736,6 +765,7 @@ export default function FanCallModal({
     socket.on('fan_call_ended', handleCallEnded);
     socket.on('fan_call_timeout', handleCallTimeout);
     socket.on('fan_call_missed', handleMissedCall);
+    socket.on('insufficient_funds', handleInsufficientFundsFromServer);
 
     return () => {
       socket.off('fan_call_accepted', handleCallAccepted);
@@ -745,8 +775,9 @@ export default function FanCallModal({
       socket.off('fan_call_ended', handleCallEnded);
       socket.off('fan_call_timeout', handleCallTimeout);
       socket.off('fan_call_missed', handleMissedCall);
+      socket.off('insufficient_funds', handleInsufficientFundsFromServer);
     };
-  }, [socket, isOpen, currentUserId, callData, peerConnection, localStream, createPeerConnection, handleCleanup, onClose]);
+  }, [socket, isOpen, currentUserId, callData, peerConnection, localStream, createPeerConnection, handleCleanup, onClose, handleInsufficientFunds]);
 
   // Process pending ICE candidates when peer connection is ready
   useEffect(() => {
@@ -807,8 +838,23 @@ export default function FanCallModal({
           </div>
         )}
         
+        {/* Insufficient Funds Notification */}
+        {insufficientFunds && (
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-[10000] bg-red-600 bg-opacity-95 text-white px-8 py-6 rounded-lg shadow-2xl text-center max-w-md">
+            <div className="flex flex-col items-center gap-4">
+              <div className="text-5xl">💰</div>
+              <div>
+                <h3 className="text-xl font-bold mb-2">Insufficient Funds</h3>
+                <p className="text-sm opacity-90">
+                  You don't have enough balance to continue this call. The call will end shortly.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Call Timer and Billing */}
-        {callStatus === 'connected' && usersCanSeeEachOther && (
+        {callStatus === 'connected' && usersCanSeeEachOther && !insufficientFunds && (
           <VideoCallBilling
             callId={callData?.callId}
             callerId={callData?.callerId}

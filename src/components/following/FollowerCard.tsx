@@ -314,21 +314,22 @@ const FollowerCard: React.FC<FollowerCardProps> = ({ image, name, creator_portfo
 
   return (
     <div 
-      className="flex items-center gap-7 justify-between w-full px-2 py-3 mb-3 rounded-lg hover:bg-gray-800/30 cursor-pointer transition-colors"
+      className="flex items-center gap-3 w-full px-2 py-3 mb-3 rounded-lg hover:bg-gray-800/30 cursor-pointer transition-colors"
       onClick={handleProfileClick}
       data-userid={userId}
       data-following={isFollowing ? 'true' : 'false'}
     >
-      {/* Left side: avatar + name */}
-      <div className="flex items-center gap-3 w-2/3">
-        <div className="relative">
+      {/* Left side: avatar + name - fixed width avatar, flexible name */}
+      <div className="flex items-center gap-3 flex-1 min-w-0">
+        {/* Avatar - fixed size, never shrinks */}
+        <div className="relative flex-shrink-0">
           {hasImage ? (
             <Image
               src={image}
               alt={name}
               width={48}
               height={48}
-              className="w-12 h-12 rounded-full object-cover flex-shrink-0"
+              className="w-12 h-12 rounded-full object-cover"
               onError={(e) => {
                 const target = e.target as HTMLImageElement;
                 target.style.display = 'none';
@@ -336,14 +337,14 @@ const FollowerCard: React.FC<FollowerCardProps> = ({ image, name, creator_portfo
                 const parent = target.parentElement;
                 if (parent) {
                   const initialsDiv = document.createElement('div');
-                  initialsDiv.className = 'w-12 h-12 rounded-full bg-gray-700 flex items-center justify-center text-white text-sm font-semibold flex-shrink-0';
+                  initialsDiv.className = 'w-12 h-12 rounded-full bg-gray-700 flex items-center justify-center text-white text-sm font-semibold';
                   initialsDiv.textContent = initials;
                   parent.appendChild(initialsDiv);
                 }
               }}
             />
           ) : (
-            <div className="w-12 h-12 rounded-full bg-gray-700 flex items-center justify-center text-white text-sm font-semibold flex-shrink-0">
+            <div className="w-12 h-12 rounded-full bg-gray-700 flex items-center justify-center text-white text-sm font-semibold">
               {initials}
             </div>
           )}
@@ -351,18 +352,19 @@ const FollowerCard: React.FC<FollowerCardProps> = ({ image, name, creator_portfo
           {/* VIP Lion Badge */}
           <VIPBadge size="xl" className="absolute -top-5 -right-5" isVip={isVip} vipEndDate={vipEndDate} />
         </div>
-        <div className="flex flex-col gap-1 min-w-0 flex-1">
-          <div className="text-white font-semibold truncate">{name}</div>
+        {/* Name - flexible, truncates when long */}
+        <div className="flex flex-col gap-1 min-w-0 flex-1 overflow-hidden">
+          <div className="text-white font-semibold truncate" title={name}>{name}</div>
         </div>
       </div>
 
-      {/* Right side: Follow/Message button taking full width and positioned at far right */}
-      <div className="flex items-center justify-end w-1/3">
-        {userId && userId !== currentUserId && (
+      {/* Right side: Follow/Message button - fixed width, always aligned right */}
+      {userId && userId !== currentUserId && (
+        <div className="flex items-center justify-end flex-shrink-0">
           <button
             onClick={isFollowing ? handleMessageClick : handleFollowToggle}
             disabled={isProcessing}
-            className={`w-full max-w-[120px] px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+            className={`px-4 py-2 rounded-full text-sm font-medium transition-colors whitespace-nowrap ${
               isFollowing
                 ? "bg-green-600 hover:bg-green-700 text-white"
                 : "bg-blue-600 hover:bg-blue-700 text-white"
@@ -370,8 +372,8 @@ const FollowerCard: React.FC<FollowerCardProps> = ({ image, name, creator_portfo
           >
             {isProcessing ? "..." : isFollowing ? "Message" : "Follow"}
           </button>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import React, { useState, useEffect } from "react";
 import { FaPlus } from "react-icons/fa";
@@ -29,6 +30,7 @@ export default function VerifiedUserForm() {
   const [step, setStep] = useState(1);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [applicationStatus, setApplicationStatus] = useState<"pending" | "rejected" | "none">("none");
+  const containerRef = React.useRef<HTMLDivElement>(null);
 
   const nextStep = () => setStep((prev) => Math.min(prev + 1, 3));
   const prevStep = () => setStep((prev) => Math.max(prev - 1, 1));
@@ -66,6 +68,50 @@ export default function VerifiedUserForm() {
         setApplicationStatus("none");
       });
   }, [userId, token, dispatch, router]);
+
+  // Scroll to top whenever step changes - scroll the parent scrollable container
+  useEffect(() => {
+    const scrollToTop = () => {
+      // Find the scrollable parent container (from ConditionalLayout with overflow-y-auto)
+      let scrollableContainer: HTMLElement | null = null;
+      
+      // Try to find the container by class name (scrollbar overflow-y-auto)
+      scrollableContainer = document.querySelector('.scrollbar.overflow-y-auto') as HTMLElement;
+      
+      // Fallback: find parent element with overflow-y-auto
+      if (!scrollableContainer && containerRef.current) {
+        let parent = containerRef.current.parentElement;
+        while (parent) {
+          const styles = window.getComputedStyle(parent);
+          if (styles.overflowY === 'auto' || styles.overflowY === 'scroll') {
+            scrollableContainer = parent;
+            break;
+          }
+          parent = parent.parentElement;
+        }
+      }
+      
+      // If we found the scrollable container, scroll it to top
+      if (scrollableContainer) {
+        scrollableContainer.scrollTop = 0;
+      } else {
+        // Fallback to window scroll if container not found
+        window.scrollTo(0, 0);
+        document.documentElement.scrollTop = 0;
+        document.body.scrollTop = 0;
+      }
+    };
+    
+    // Scroll immediately
+    scrollToTop();
+    
+    // Also scroll after DOM update to ensure it works
+    requestAnimationFrame(() => {
+      scrollToTop();
+      // One more time after a tiny delay to catch any layout changes
+      setTimeout(scrollToTop, 10);
+    });
+  }, [step]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type, checked, files } = e.target as any;
@@ -147,7 +193,7 @@ export default function VerifiedUserForm() {
           </div>
           <h2 className="text-xl font-semibold mb-2">Application Status</h2>
           <p className="text-slate-400 mb-4">
-            Your application has been submitted and is now pending review. You'll hear from us within a few hours.
+              Your application has been submitted and is now pending review. You&apos;ll hear from us within a few hours.
           </p>
           <button
             onClick={handleModalClose}
@@ -162,7 +208,7 @@ export default function VerifiedUserForm() {
 
   if (applicationStatus === "rejected" || applicationStatus === "none") {
     return (
-      <div className="text-white">
+      <div ref={containerRef} className="text-white">
         <ToastContainer position="top-center" theme="dark" />
         <HeaderBackNav title="Verification" />
         <div className="w-full md:w-5/4 flex flex-col mb-12">
@@ -172,7 +218,7 @@ export default function VerifiedUserForm() {
             </h1>
             <p className="text-slate-400 mb-6">
               Please provide us with information for verification. Once verified,
-              you'll be able to start a creator account.
+              you&apos;ll be able to start a creator account.
             </p>
             {loading && (
               <div className="flex flex-col items-center mt-16 w-full z-10 relative top-3/4">
@@ -275,7 +321,7 @@ export default function VerifiedUserForm() {
                       <option className="bg-black text-white" value="">Select Document Type</option>
                       <option className="bg-black text-white" value="passport">Passport</option>
                       <option className="bg-black text-white" value="nationalId">ID Card</option>
-                      <option className="bg-black text-white" value="driversLicense">Driver's License</option>
+                      <option className="bg-black text-white" value="driversLicense">Driver&apos;s License</option>
                       </select>
                     </div>
                     <FileInput
