@@ -54,6 +54,8 @@ interface VideoCallProviderProps {
 export const VideoCallProvider: React.FC<VideoCallProviderProps> = ({ children }) => {
   const [isVideoCallOpen, setIsVideoCallOpen] = useState(false);
   const [videoCallData, setVideoCallData] = useState<FanCallData | null>(null);
+  const [hasCallEnded, setHasCallEnded] = useState(false);
+  const [endedCallId, setEndedCallId] = useState<string | null>(null);
   const { session } = useAuth();
   const socket = getSocket();
 
@@ -287,7 +289,9 @@ export const VideoCallProvider: React.FC<VideoCallProviderProps> = ({ children }
          isIncoming: false
        };
 
-      
+       // Reset ended call state when starting a new call
+      setHasCallEnded(false);
+      setEndedCallId(null);
 
       setVideoCallData(callData);
       setIsVideoCallOpen(true);
@@ -310,6 +314,11 @@ export const VideoCallProvider: React.FC<VideoCallProviderProps> = ({ children }
   // Close video call
   const closeVideoCall = () => {
     setIsVideoCallOpen(false);
+    // Mark call as ended to prevent reopening
+    if (videoCallData?.callId) {
+      setHasCallEnded(true);
+      setEndedCallId(videoCallData.callId);
+    }
     setVideoCallData(null);
   };
 
@@ -333,6 +342,11 @@ export const VideoCallProvider: React.FC<VideoCallProviderProps> = ({ children }
       answererIsVip?: boolean;
       answererVipEndDate?: string | null;
     }) => {
+      // Don't open modal if this call has already ended
+      if (hasCallEnded && endedCallId === data.callId) {
+        console.log('🚫 [FanCall] Ignoring incoming call event - call already ended:', data.callId);
+        return;
+      }
       
       try {
         // Get current user profile to determine creator status
@@ -408,10 +422,13 @@ export const VideoCallProvider: React.FC<VideoCallProviderProps> = ({ children }
            answererPhoto: answererPhoto, // Set answerer photo for incoming calls
            answererIsVip: answererIsVip,
            answererVipEndDate: answererVipEndDate,
-           isCreator: isCreator, // Use creator status from database
-           isIncoming: true
-         };
+          isCreator: isCreator, // Use creator status from database
+          isIncoming: true
+        };
 
+        // Reset ended call state when receiving incoming call
+        setHasCallEnded(false);
+        setEndedCallId(null);
 
         setVideoCallData(callData);
         setIsVideoCallOpen(true);
@@ -430,6 +447,10 @@ export const VideoCallProvider: React.FC<VideoCallProviderProps> = ({ children }
            isIncoming: true
          };
 
+        // Reset ended call state when receiving incoming call (fallback)
+        setHasCallEnded(false);
+        setEndedCallId(null);
+        
         setVideoCallData(callData);
         setIsVideoCallOpen(true);
       }
@@ -449,6 +470,11 @@ export const VideoCallProvider: React.FC<VideoCallProviderProps> = ({ children }
       answererIsVip?: boolean;
       answererVipEndDate?: string | null;
     }) => {
+      // Don't process if this call has already ended
+      if (hasCallEnded && endedCallId === data.callId) {
+        console.log('🚫 [FanCall] Ignoring call accepted event - call already ended:', data.callId);
+        return;
+      }
       
       // Update call data with real call ID and VIP data if we have a temporary one
       if (videoCallData?.callId.startsWith('temp_')) {
@@ -472,7 +498,16 @@ export const VideoCallProvider: React.FC<VideoCallProviderProps> = ({ children }
       closeVideoCall();
     };
 
-    const handleCallEnded = () => {
+    const handleCallEnded = (data?: { callId?: string; endedBy?: string }) => {
+      console.log('📞 [FanCall] Call ended event received in context:', data);
+      // Mark as ended before closing to prevent reopening
+      if (data?.callId) {
+        setHasCallEnded(true);
+        setEndedCallId(data.callId);
+      } else if (videoCallData?.callId) {
+        setHasCallEnded(true);
+        setEndedCallId(videoCallData.callId);
+      }
       closeVideoCall();
     };
 
@@ -501,7 +536,7 @@ export const VideoCallProvider: React.FC<VideoCallProviderProps> = ({ children }
       socket.off('fan_call_error', handleCallError);
       socket.off('fan_call_timeout', handleCallTimeout);
     };
-  }, [socket, session?._id, session?.isCreator, videoCallData?.callId]);
+  }, [socket, session?._id, session?.isCreator, videoCallData?.callId, hasCallEnded, endedCallId]);
 
   const contextValue: VideoCallContextType = {
     isVideoCallOpen,
