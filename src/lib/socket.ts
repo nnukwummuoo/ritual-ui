@@ -136,10 +136,10 @@ export const getSocket = () => {
           socketUrl = "http://localhost:3100";
         } else if (window.location.hostname.includes('vercel.app')) {
           // Vercel deployment - use production backend
-          socketUrl = "https://backendritual.work";
+          socketUrl = process.env.NEXT_PUBLIC_BACKEND || "";
         } else {
           // Other production domains - use production URL
-          socketUrl = "https://backendritual.work";
+          socketUrl = process.env.NEXT_PUBLIC_BACKEND || "";
         }
       }
       
@@ -207,7 +207,7 @@ export const getSocket = () => {
           }
           
           // Create new socket with production URL
-          socket = io("https://backendritual.work", {
+          socket = io(process.env.NEXT_PUBLIC_BACKEND || "", {
             withCredentials: true,
             autoConnect: true,
             reconnection: true,

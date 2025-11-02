@@ -4,7 +4,7 @@ import axios from "axios";
 import { URL as API_BASE } from "./config";
 
 // Fallback production base (same as used elsewhere)
-const PROD_BASE = "https://backendritual.work";
+const PROD_BASE = process.env.NEXT_PUBLIC_BACKEND || "";
 
 // Ensure interceptor is only registered once per window
 (function setupAxiosFallback() {

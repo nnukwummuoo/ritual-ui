@@ -13,7 +13,7 @@ import VIPBadge from "@/components/VIPBadge";
 import { URL as API_BASE } from "@/api/config";
 import { getImageSource } from "@/lib/imageUtils";
 
-const PROD_BASE = "https://backendritual.work";
+const PROD_BASE = process.env.NEXT_PUBLIC_BACKEND || "";
 const RENDER_BASE = "https://mmekoapi.onrender.com";
 
 // Props interface

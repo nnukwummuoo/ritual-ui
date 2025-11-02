@@ -50,8 +50,11 @@ export const SocketDebug = () => {
     results.push({ url: 'http://localhost:3100', connected: localResult });
     
     // Test production server
-    const prodResult = await testSocketConnection('https://backendritual.work');
-    results.push({ url: 'https://backendritual.work', connected: prodResult });
+    const prodUrl = process.env.NEXT_PUBLIC_BACKEND || "";
+    if (prodUrl) {
+      const prodResult = await testSocketConnection(prodUrl);
+      results.push({ url: prodUrl, connected: prodResult });
+    }
     
     setTestResults(results);
   };
