@@ -50,8 +50,8 @@ export const diagnoseSocketIssues = async () => {
   
   const testUrls = [
     "http://localhost:3100",
-    "https://backendritual.work"
-  ];
+    process.env.NEXT_PUBLIC_BACKEND || ""
+  ].filter(Boolean);
 
   for (const url of testUrls) {
     const isConnected = await testSocketConnection(url);

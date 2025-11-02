@@ -25,7 +25,7 @@ async function handleRequest(request: NextRequest, path: string) {
   } else if (process.env.NODE_ENV === 'development') {
     targetUrl = `http://localhost:3100/${path}`;
   } else {
-    targetUrl = `https://backendritual.work/${path}`;
+    targetUrl = `${process.env.NEXT_PUBLIC_BACKEND || ""}/${path}`;
   }
 
   try {

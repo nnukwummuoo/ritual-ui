@@ -8,7 +8,7 @@ import { URL as API_BASE } from "@/api/config";
 import { fetchsinglepost } from "@/store/post";
 import { postlike } from "@/store/like";
 import { getpostcomment, postcomment } from "@/store/comment";
-const PROD_BASE = "https://backendritual.work"; // fallback when local proxy is down
+const PROD_BASE = process.env.NEXT_PUBLIC_BACKEND || ""; // fallback when local proxy is down
 import { toast } from "material-react-toastify";
 import PostActions from "../../../components/home/PostActions";
 import { getImageSource } from "@/lib/imageUtils";

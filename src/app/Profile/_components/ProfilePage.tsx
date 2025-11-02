@@ -32,7 +32,7 @@ import VIPBadge from "@/components/VIPBadge";
 import { checkVipCelebration, markVipCelebrationViewed } from "@/api/vipCelebration";
 
 // Add the same constants from PostsCard
-const PROD_BASE = "https://backendritual.work"; // fallback when local proxy is down
+const PROD_BASE = process.env.NEXT_PUBLIC_BACKEND || ""; // fallback when local proxy is down
 
 // Helper function to format numbers (e.g., 1000 -> 1K)
 const formatNumber = (num: number): string => {
@@ -1412,8 +1412,8 @@ const PostModal = () => {
             
             const queryUrlPrimary = asString ? `${API_URL}/api/image/view?publicId=${encodeURIComponent(asString)}` : "";
             const pathUrlPrimary = asString ? `${API_URL}/api/image/view/${encodeURIComponent(asString)}` : "";
-            const queryUrlFallback = asString ? `https://backendritual.work/api/image/view?publicId=${encodeURIComponent(asString)}` : "";
-            const pathUrlFallback = asString ? `https://backendritual.work/api/image/view/${encodeURIComponent(asString)}` : "";
+            const queryUrlFallback = asString ? `${process.env.NEXT_PUBLIC_BACKEND || ""}/api/image/view?publicId=${encodeURIComponent(asString)}` : "";
+            const pathUrlFallback = asString ? `${process.env.NEXT_PUBLIC_BACKEND || ""}/api/image/view/${encodeURIComponent(asString)}` : "";
 
   return (
                <div 

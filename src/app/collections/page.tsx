@@ -10,7 +10,7 @@ import { getcollection, deletecollection } from "@/store/profile";
 import { remove_Crush } from "@/store/creatorSlice";
 import { getImageSource } from "@/lib/imageUtils";
 import { URL as API_BASE } from "@/api/config";
-const PROD_BASE = "https://backendritual.work";
+const PROD_BASE = process.env.NEXT_PUBLIC_BACKEND || "";
 
 interface ImageCardProps {
   src: string;
