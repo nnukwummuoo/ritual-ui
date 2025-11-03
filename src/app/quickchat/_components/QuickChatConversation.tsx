@@ -419,8 +419,8 @@ export const QuickChatConversation = () => {
     // For Appwrite files, use the API endpoint like post.tsx
     const queryUrlPrimary = fileUrl ? `${API_URL}/api/image/view?publicId=${encodeURIComponent(fileUrl)}` : "";
     const pathUrlPrimary = fileUrl ? `${API_URL}/api/image/view/${encodeURIComponent(fileUrl)}` : "";
-    const queryUrlFallback = fileUrl ? `${process.env.NEXT_PUBLIC_BACKEND || ""}/api/image/view?publicId=${encodeURIComponent(fileUrl)}` : "";
-    const pathUrlFallback = fileUrl ? `${process.env.NEXT_PUBLIC_BACKEND || ""}/api/image/view/${encodeURIComponent(fileUrl)}` : "";
+    const queryUrlFallback = fileUrl ? `${process.env.NEXT_PUBLIC_API || ""}/api/image/view?publicId=${encodeURIComponent(fileUrl)}` : "";
+    const pathUrlFallback = fileUrl ? `${process.env.NEXT_PUBLIC_API || ""}/api/image/view/${encodeURIComponent(fileUrl)}` : "";
     
     // Use direct URL if it's already a full URL, otherwise use API endpoint
     const fullUrl = isUrl ? fileUrl : queryUrlPrimary;

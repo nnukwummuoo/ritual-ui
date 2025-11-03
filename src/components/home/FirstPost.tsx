@@ -10,7 +10,7 @@ import { getpostcomment, postcomment } from "@/store/comment";
 import { follow as followThunk, unfollow as unfollowThunk, getfollow } from "@/store/profile";
 import VIPBadge from "@/components/VIPBadge";
 import { URL as API_BASE } from "@/api/config";
-const PROD_BASE = process.env.NEXT_PUBLIC_BACKEND || "";
+const PROD_BASE = process.env.NEXT_PUBLIC_API || "";
 import PostActions from "./PostActions";
 import { toast } from "material-react-toastify";
 import Image from "next/image";
@@ -724,7 +724,7 @@ const FirstPost: React.FC<FirstPostProps> = ({
             };
             
             console.log('🚀 Sending like request to backend:', likeData);
-            console.log('📡 API URL:', `${process.env.NEXT_PUBLIC_BACKEND || ""}/like`);
+            console.log('📡 API URL:', `${process.env.NEXT_PUBLIC_API || ""}/like`);
             
             const result = await dispatch(postlike(likeData as any)).unwrap();
             
@@ -870,20 +870,46 @@ const FirstPost: React.FC<FirstPostProps> = ({
                                 target.style.display = 'none';
                                 const parent = target.parentElement;
                                 if (parent) {
-                                  const fallbackDiv = document.createElement('div');
-                                  fallbackDiv.className = 'w-full h-full rounded-full bg-gray-600 flex items-center justify-center text-xs text-white font-medium';
-                                  fallbackDiv.textContent = c?.initials || (c?.commentusername || c?.username || 'U').charAt(0).toUpperCase();
-                                  parent.appendChild(fallbackDiv);
+                                        const fallbackDiv = document.createElement('div');
+                                        fallbackDiv.className = 'w-full h-full rounded-full bg-gray-600 flex items-center justify-center text-xs text-white font-medium';
+                                        // Generate initials from firstname/lastname, fallback to username
+                                        let initialsText = c?.initials;
+                                        if (!initialsText) {
+                                          const firstName = c?.firstname || '';
+                                          const lastName = c?.lastname || '';
+                                          if (firstName || lastName) {
+                                            const nameParts = [firstName, lastName].filter(Boolean);
+                                            initialsText = nameParts.map(n => n[0]).join('').toUpperCase().slice(0, 2) || '?';
+                                          } else {
+                                            initialsText = (c?.commentusername || c?.username || 'U').charAt(0).toUpperCase();
+                                          }
+                                        }
+                                        fallbackDiv.textContent = initialsText;
+                                        parent.appendChild(fallbackDiv);
                                 }
                               }}
                             />
                           );
                         }
                         
-                        // Show initials as fallback when no profile image
+                              // Show initials as fallback when no profile image
                         return (
                           <div className="w-full h-full rounded-full bg-gray-600 flex items-center justify-center text-xs text-white font-medium">
-                            {c?.initials || (c?.commentusername || c?.username || 'U').charAt(0).toUpperCase()}
+                            {(() => {
+                              // Prioritize server-provided initials
+                              if (c?.initials) return c.initials;
+                              
+                              // Generate from firstname and lastname if available
+                              const firstName = c?.firstname || '';
+                              const lastName = c?.lastname || '';
+                              if (firstName || lastName) {
+                                const nameParts = [firstName, lastName].filter(Boolean);
+                                return nameParts.map(n => n[0]).join('').toUpperCase().slice(0, 2) || '?';
+                              }
+                              
+                              // Fallback to username if names not available
+                              return (c?.commentusername || c?.username || 'U').charAt(0).toUpperCase();
+                            })()}
                           </div>
                         );
                       })()}

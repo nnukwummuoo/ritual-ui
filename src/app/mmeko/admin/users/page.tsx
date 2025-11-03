@@ -623,7 +623,32 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, isOpen, onClose
   );
 };
 
+interface NotificationCampaign {
+  _id: string;
+  title: string;
+  message: string;
+  targetGender: string;
+  isSpecificUsers?: boolean;
+  hasLearnMore: boolean;
+  learnMoreUrl: string | null;
+  isActive: boolean;
+  type: string;
+  createdAt: string;
+  updatedAt: string;
+  totalSent: number;
+  targetUserIds: string[];
+  users: Array<{
+    _id: string;
+    name: string;
+    username: string;
+    photolink: string;
+    gender: string;
+    creator_verified: boolean;
+  }>;
+}
+
 export default function Users(): JSX.Element {
+  const [activeTab, setActiveTab] = useState<"users" | "notifications">("users");
   const [male_click, setmale_click] = useState(false);
   const [female_click, setfemale_click] = useState(false);
   const [showall_click, setshowall_click] = useState(false);
@@ -634,10 +659,21 @@ export default function Users(): JSX.Element {
   const [notificationMessage, setNotificationMessage] = useState("");
   const [notificationTitle, setNotificationTitle] = useState("");
   const [showNotificationModal, setShowNotificationModal] = useState(false);
-  const [notificationGender, setNotificationGender] = useState<"all" | "creators" | "male" | "female">("all");
+  const [notificationGender, setNotificationGender] = useState<"all" | "creators" | "male" | "female" | "specific">("all");
   const [hasLearnMore, setHasLearnMore] = useState(false);
   const [learnMoreUrl, setLearnMoreUrl] = useState("");
   const [sendingNotification, setSendingNotification] = useState(false);
+  const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
+  const [showUserSelector, setShowUserSelector] = useState(false);
+  
+  // Notifications state
+  const [notifications, setNotifications] = useState<NotificationCampaign[]>([]);
+  const [loadingNotifications, setLoadingNotifications] = useState(false);
+  const [editingNotification, setEditingNotification] = useState<NotificationCampaign | null>(null);
+  const [editTitle, setEditTitle] = useState("");
+  const [editMessage, setEditMessage] = useState("");
+  const [editHasLearnMore, setEditHasLearnMore] = useState(false);
+  const [editLearnMoreUrl, setEditLearnMoreUrl] = useState("");
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -697,6 +733,38 @@ export default function Users(): JSX.Element {
     setdisplay(true);
     setLoading(usersStatus === "loading");
   }, [usersFromStore, usersStatus]);
+
+  // Fetch notifications when notifications tab is active
+  useEffect(() => {
+    if (activeTab === "notifications") {
+      fetchNotifications();
+    }
+  }, [activeTab, token]);
+
+  const fetchNotifications = async () => {
+    setLoadingNotifications(true);
+    try {
+      const response = await fetch(`${URL}/getAllAdminNotifications`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setNotifications(data.campaigns || []);
+      } else {
+        toast.error("Failed to fetch notifications");
+      }
+    } catch (error) {
+      console.error('Error fetching notifications:', error);
+      toast.error("Failed to fetch notifications");
+    } finally {
+      setLoadingNotifications(false);
+    }
+  };
 
   // Handle pagination when alluser_list changes
   useEffect(() => {
@@ -1103,24 +1171,38 @@ export default function Users(): JSX.Element {
       toast.error("Please enter a message");
       return;
     }
-    // Learn More URL is optional - if hasLearnMore is true, it can be empty
+    
+    // Validate specific users selection
+    if (notificationGender === "specific" && selectedUserIds.length === 0) {
+      toast.error("Please select at least one user");
+      return;
+    }
 
     setSendingNotification(true);
     try {
+      const requestBody: any = {
+        title: notificationTitle,
+        message: notificationMessage,
+        notificationType: 'admin_broadcast',
+        hasLearnMore: hasLearnMore,
+        learnMoreUrl: hasLearnMore ? learnMoreUrl : null
+      };
+
+      // If specific users are selected, use targetUserIds; otherwise use targetGender
+      if (notificationGender === "specific") {
+        requestBody.targetUserIds = selectedUserIds;
+        requestBody.targetGender = "all"; // Override for API
+      } else {
+        requestBody.targetGender = notificationGender;
+      }
+
       const response = await fetch(`${URL}/adminNotificationSystem`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          title: notificationTitle,
-          message: notificationMessage,
-          targetGender: notificationGender,
-          notificationType: 'admin_broadcast',
-          hasLearnMore: hasLearnMore,
-          learnMoreUrl: hasLearnMore ? learnMoreUrl : null
-        })
+        body: JSON.stringify(requestBody)
       });
 
       if (response.ok) {
@@ -1132,6 +1214,12 @@ export default function Users(): JSX.Element {
         setNotificationGender("all");
         setHasLearnMore(false);
         setLearnMoreUrl("");
+        setSelectedUserIds([]);
+        
+        // Refresh notifications if on notifications tab
+        if (activeTab === "notifications") {
+          fetchNotifications();
+        }
       } else {
         const errorData = await response.json();
         toast.error(errorData.message || "Failed to send notification");
@@ -1144,36 +1232,271 @@ export default function Users(): JSX.Element {
     }
   };
 
+  const handleEditNotification = (campaign: NotificationCampaign) => {
+    setEditingNotification(campaign);
+    setEditTitle(campaign.title);
+    setEditMessage(campaign.message);
+    setEditHasLearnMore(campaign.hasLearnMore);
+    setEditLearnMoreUrl(campaign.learnMoreUrl || "");
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingNotification) return;
+    
+    if (!editTitle.trim()) {
+      toast.error("Please enter a title");
+      return;
+    }
+    if (!editMessage.trim()) {
+      toast.error("Please enter a message");
+      return;
+    }
+
+    try {
+      const response = await fetch(`${URL}/updateAdminNotification`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          campaignId: editingNotification._id,
+          title: editTitle,
+          message: editMessage,
+          hasLearnMore: editHasLearnMore,
+          learnMoreUrl: editHasLearnMore ? editLearnMoreUrl : null
+        })
+      });
+
+      if (response.ok) {
+        toast.success("Notification updated successfully");
+        setEditingNotification(null);
+        fetchNotifications();
+      } else {
+        const errorData = await response.json();
+        toast.error(errorData.message || "Failed to update notification");
+      }
+    } catch (error) {
+      console.error('Error updating notification:', error);
+      toast.error("Failed to update notification");
+    }
+  };
+
+  const handleDeleteNotification = async (campaignId: string) => {
+    if (!window.confirm("Are you sure you want to delete this notification campaign? This will delete all notifications in this campaign.")) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`${URL}/deleteAdminNotification`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          campaignId: campaignId
+        })
+      });
+
+      if (response.ok) {
+        toast.success("Notification campaign deleted successfully");
+        fetchNotifications();
+      } else {
+        const errorData = await response.json();
+        toast.error(errorData.message || "Failed to delete notification");
+      }
+    } catch (error) {
+      console.error('Error deleting notification:', error);
+      toast.error("Failed to delete notification");
+    }
+  };
+
+  const toggleUserSelection = (userId: string) => {
+    setSelectedUserIds(prev => 
+      prev.includes(userId) 
+        ? prev.filter(id => id !== userId)
+        : [...prev, userId]
+    );
+  };
+
+  const renderNotificationsTab = () => {
+    if (loadingNotifications) {
+      return (
+        <div className="flex flex-col items-center justify-center h-full w-full">
+          <PacmanLoader
+            color={color}
+            loading={loadingNotifications}
+            size={30}
+            aria-label="Loading Spinner"
+            data-testid="loader"
+          />
+          <p className="text-yellow-500 text-xs mt-4">Loading notifications...</p>
+        </div>
+      );
+    }
+
+    return (
+      <div className="w-full h-full flex flex-col p-4">
+        <div className="mb-4">
+          <button
+            className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 flex items-center gap-2"
+            onClick={() => setShowNotificationModal(true)}
+          >
+            <img alt="sendicon" src={sendIcon.src} />
+            <span>Send New Notification</span>
+          </button>
+        </div>
+
+        {notifications.length === 0 ? (
+          <div className="flex items-center justify-center h-full">
+            <p className="text-yellow-500 text-lg">No notifications found</p>
+          </div>
+        ) : (
+          <div className="flex-1 overflow-auto">
+            <div className="space-y-4">
+              {notifications.map((campaign) => (
+                <div key={campaign._id} className="bg-gray-800 rounded-lg p-4">
+                  <div className="flex justify-between items-start mb-3">
+                    <div className="flex-1">
+                      <h3 className="text-xl font-bold text-yellow-500 mb-2">{campaign.title}</h3>
+                      <p className="text-white mb-2">{campaign.message}</p>
+                      <div className="flex flex-wrap gap-2 text-sm">
+                        <span className={`px-2 py-1 rounded ${campaign.isActive ? 'bg-green-500' : 'bg-gray-500'} text-white`}>
+                          {campaign.isActive ? 'Active' : 'Inactive'}
+                        </span>
+                        <span className="px-2 py-1 rounded bg-blue-500 text-white">
+                          Target: {campaign.targetGender === 'all' ? 'All Users' : 
+                            campaign.targetGender === 'creators' ? 'Creators' :
+                            campaign.targetGender === 'male' ? 'Male' :
+                            campaign.targetGender === 'female' ? 'Female' :
+                            campaign.targetGender === 'specific' || campaign.isSpecificUsers ? 'Specific Users' : 'All Users'}
+                        </span>
+                        <span className="px-2 py-1 rounded bg-purple-500 text-white">
+                          Sent to: {campaign.totalSent} users
+                        </span>
+                        {campaign.hasLearnMore && (
+                          <span className="px-2 py-1 rounded bg-yellow-600 text-white">
+                            Has Learn More
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-gray-400 text-xs mt-2">
+                        Created: {new Date(campaign.createdAt).toLocaleString()}
+                      </p>
+                      {campaign.updatedAt !== campaign.createdAt && (
+                        <p className="text-gray-400 text-xs">
+                          Updated: {new Date(campaign.updatedAt).toLocaleString()}
+                        </p>
+                      )}
+                    </div>
+                    <div className="flex gap-2 ml-4">
+                      <button
+                        onClick={() => handleEditNotification(campaign)}
+                        className="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDeleteNotification(campaign._id)}
+                        className="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                  
+                  {campaign.hasLearnMore && campaign.learnMoreUrl && (
+                    <div className="mt-3 p-3 bg-gray-700 rounded">
+                      <p className="text-gray-300 text-sm">
+                        <strong>Learn More Content:</strong> {campaign.learnMoreUrl}
+                      </p>
+                    </div>
+                  )}
+
+                  {campaign.users.length > 0 && campaign.users.length <= 10 && (
+                    <div className="mt-3">
+                      <p className="text-gray-300 text-sm mb-2">Target Users:</p>
+                      <div className="flex flex-wrap gap-2">
+                        {campaign.users.map((user) => (
+                          <div key={user._id} className="bg-gray-700 px-2 py-1 rounded text-sm text-white">
+                            {user.name}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {campaign.users.length > 10 && (
+                    <div className="mt-3">
+                      <p className="text-gray-300 text-sm">
+                        Target Users: {campaign.users.length} users (too many to display)
+                      </p>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="w-full h-full flex flex-col">
       <ToastContainer position="top-center" theme="dark" />
 
-      {!loading && display && (
+      {/* Tab Navigation */}
+      <div className="flex gap-2 p-4 border-b border-gray-700">
+        <button
+          onClick={() => setActiveTab("users")}
+          className={`px-6 py-2 rounded-lg font-medium transition-colors ${
+            activeTab === "users"
+              ? 'bg-yellow-500 text-black'
+              : 'bg-gray-700 text-white hover:bg-gray-600'
+          }`}
+        >
+          Users
+        </button>
+        <button
+          onClick={() => setActiveTab("notifications")}
+          className={`px-6 py-2 rounded-lg font-medium transition-colors ${
+            activeTab === "notifications"
+              ? 'bg-yellow-500 text-black'
+              : 'bg-gray-700 text-white hover:bg-gray-600'
+          }`}
+        >
+          Notifications
+        </button>
+      </div>
+
+      {activeTab === "users" && !loading && display && (
         <div className="w-full h-full flex flex-col">
           <div className="w-full flex flex-col gap-3 p-4 mb-4">
               {/* Search */}
               <div className="flex flex-wrap items-center gap-2 mt-3">
                 <label className="text-white mr-2 text-sm font-bold">
-                  Search by Name
+                  Search by Name or Username
                 </label>
                 <input
                   type="text"
                   className="rounded-lg bg-slate-400 placeholder:text-slate-600 placeholder:text-xs mr-1 pl-2 placeholder:text-center h-10 w-full md:w-[28rem] lg:w-[34rem]"
-                  placeholder="search by name"
+                  placeholder="search by name or username"
                   onInput={(e) => {
                     const val = e.currentTarget.value;
                     if (val) {
                       set_search_text(val);
+                      const valLower = val.toLowerCase().trim();
                       const filtered = user_list.filter((value) => {
                         const name = `${value.firstname} ${value.lastname}`;
                         const name1 = `${value.lastname} ${value.firstname}`;
+                        const username = value.username || "";
                         return (
-                          value.firstname.toLowerCase().trim() ===
-                            val.toLowerCase().trim() ||
-                          value.lastname.toLowerCase().trim() ===
-                            val.toLowerCase().trim() ||
-                          val === name ||
-                          val === name1
+                          value.firstname.toLowerCase().trim() === valLower ||
+                          value.lastname.toLowerCase().trim() === valLower ||
+                          name.toLowerCase().includes(valLower) ||
+                          name1.toLowerCase().includes(valLower) ||
+                          username.toLowerCase().includes(valLower)
                         );
                       });
                       setalluser_list(filtered.length ? filtered : user_list);
@@ -1188,16 +1511,17 @@ export default function Users(): JSX.Element {
                   className="bg-yellow-500 w-fit h-fit rounded-full p-2"
                   onClick={() => {
                     if (search_text) {
+                      const searchTextLower = search_text.toLowerCase().trim();
                       const filtered = user_list.filter((value) => {
                         const name = `${value.firstname} ${value.lastname}`;
                         const name1 = `${value.lastname} ${value.firstname}`;
+                        const username = value.username || "";
                         return (
-                          value.firstname.toLowerCase().trim() ===
-                            search_text.toLowerCase().trim() ||
-                          value.lastname.toLowerCase().trim() ===
-                            search_text.toLowerCase().trim() ||
-                          search_text === name ||
-                          search_text === name1
+                          value.firstname.toLowerCase().trim() === searchTextLower ||
+                          value.lastname.toLowerCase().trim() === searchTextLower ||
+                          name.toLowerCase().includes(searchTextLower) ||
+                          name1.toLowerCase().includes(searchTextLower) ||
+                          username.toLowerCase().includes(searchTextLower)
                         );
                       });
                       setalluser_list(filtered.length ? filtered : user_list);
@@ -1282,7 +1606,7 @@ export default function Users(): JSX.Element {
                   onClick={() => setShowNotificationModal(true)}
                 >
                   <label className="text-white text-sm font-bold mr-2">
-                    Send Notification to All Users
+                    Send Notification to Users
                   </label>
                   <img alt="sendicon" src={sendIcon.src} />
                 </button>
@@ -1307,13 +1631,16 @@ export default function Users(): JSX.Element {
         )}
 
       {/* Show loading state when loading */}
-      {loading && (
+      {activeTab === "users" && loading && (
         <div className="w-full h-full flex flex-col">
           <div className="flex-1 overflow-hidden">
             {diplay_users()}
           </div>
         </div>
       )}
+
+      {/* Notifications Tab */}
+      {activeTab === "notifications" && renderNotificationsTab()}
 
       {/* User Detail Modal */}
       <UserDetailModal
@@ -1326,10 +1653,87 @@ export default function Users(): JSX.Element {
         onUpdateUser={handleUpdateUser}
       />
 
+      {/* Edit Notification Modal */}
+      {editingNotification && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-900 rounded-lg max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto">
+            <h3 className="text-xl font-bold text-yellow-500 mb-4">Edit Notification</h3>
+            
+            <div className="mb-4">
+              <label className="text-white text-sm font-bold mb-2 block">Title *</label>
+              <input
+                type="text"
+                value={editTitle}
+                onChange={(e) => setEditTitle(e.target.value)}
+                className="w-full bg-gray-700 text-white p-3 rounded"
+                placeholder="Enter notification title..."
+              />
+            </div>
+
+            <div className="mb-4">
+              <label className="text-white text-sm font-bold mb-2 block">Message *</label>
+              <textarea
+                value={editMessage}
+                onChange={(e) => setEditMessage(e.target.value)}
+                className="w-full bg-gray-700 text-white p-3 rounded h-24 resize-none"
+                placeholder="Enter your notification message..."
+              />
+            </div>
+
+            <div className="mb-4">
+              <label className="flex items-center mb-2">
+                <input
+                  type="checkbox"
+                  checked={editHasLearnMore}
+                  onChange={(e) => setEditHasLearnMore(e.target.checked)}
+                  className="mr-2"
+                />
+                <span className="text-white text-sm font-bold">Include Learn More Page</span>
+              </label>
+              {editHasLearnMore && (
+                <div className="mt-2">
+                  <label className="text-white text-sm font-bold mb-2 block">Additional Content (Optional)</label>
+                  <textarea
+                    value={editLearnMoreUrl}
+                    onChange={(e) => setEditLearnMoreUrl(e.target.value)}
+                    className="w-full bg-gray-700 text-white p-3 rounded h-20 resize-none"
+                    placeholder="Enter additional content that will be shown on the Learn More page..."
+                  />
+                  <p className="text-gray-400 text-xs mt-1">
+                    This content will be displayed on the Learn More page. Leave empty to just show the main message.
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <div className="flex gap-2">
+              <button
+                onClick={handleSaveEdit}
+                className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 flex-1"
+              >
+                Save Changes
+              </button>
+              <button
+                onClick={() => {
+                  setEditingNotification(null);
+                  setEditTitle("");
+                  setEditMessage("");
+                  setEditHasLearnMore(false);
+                  setEditLearnMoreUrl("");
+                }}
+                className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Notification Modal */}
       {showNotificationModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-gray-900 rounded-lg max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto">
+          <div className="bg-gray-900 rounded-lg max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
             <h3 className="text-xl font-bold text-yellow-500 mb-4">Send Admin Notification</h3>
             
             <div className="mb-4">
@@ -1340,7 +1744,10 @@ export default function Users(): JSX.Element {
                     type="radio"
                     value="all"
                     checked={notificationGender === "all"}
-                    onChange={(e) => setNotificationGender(e.target.value as "all" | "creators" | "male" | "female")}
+                    onChange={(e) => {
+                      setNotificationGender(e.target.value as "all" | "creators" | "male" | "female" | "specific");
+                      setSelectedUserIds([]);
+                    }}
                     className="mr-2"
                   />
                   <span className="text-white text-sm">All Users</span>
@@ -1350,7 +1757,10 @@ export default function Users(): JSX.Element {
                     type="radio"
                     value="creators"
                     checked={notificationGender === "creators"}
-                    onChange={(e) => setNotificationGender(e.target.value as "all" | "creators" | "male" | "female")}
+                    onChange={(e) => {
+                      setNotificationGender(e.target.value as "all" | "creators" | "male" | "female" | "specific");
+                      setSelectedUserIds([]);
+                    }}
                     className="mr-2"
                   />
                   <span className="text-white text-sm">Creators Only</span>
@@ -1360,7 +1770,10 @@ export default function Users(): JSX.Element {
                     type="radio"
                     value="male"
                     checked={notificationGender === "male"}
-                    onChange={(e) => setNotificationGender(e.target.value as "all" | "creators" | "male" | "female")}
+                    onChange={(e) => {
+                      setNotificationGender(e.target.value as "all" | "creators" | "male" | "female" | "specific");
+                      setSelectedUserIds([]);
+                    }}
                     className="mr-2"
                   />
                   <span className="text-white text-sm">Male Only</span>
@@ -1370,13 +1783,128 @@ export default function Users(): JSX.Element {
                     type="radio"
                     value="female"
                     checked={notificationGender === "female"}
-                    onChange={(e) => setNotificationGender(e.target.value as "all" | "creators" | "male" | "female")}
+                    onChange={(e) => {
+                      setNotificationGender(e.target.value as "all" | "creators" | "male" | "female" | "specific");
+                      setSelectedUserIds([]);
+                    }}
                     className="mr-2"
                   />
                   <span className="text-white text-sm">Female Only</span>
                 </label>
+                <label className="flex items-center col-span-2">
+                  <input
+                    type="radio"
+                    value="specific"
+                    checked={notificationGender === "specific"}
+                    onChange={(e) => {
+                      setNotificationGender(e.target.value as "all" | "creators" | "male" | "female" | "specific");
+                      setShowUserSelector(true);
+                    }}
+                    className="mr-2"
+                  />
+                  <span className="text-white text-sm">Specific Users</span>
+                </label>
               </div>
             </div>
+
+            {/* User Selector for Specific Users */}
+            {notificationGender === "specific" && (
+              <div className="mb-4">
+                <div className="flex justify-between items-center mb-2">
+                  <label className="text-white text-sm font-bold">Select Users</label>
+                  <button
+                    onClick={() => setShowUserSelector(!showUserSelector)}
+                    className="text-yellow-500 text-sm hover:underline"
+                  >
+                    {showUserSelector ? "Hide" : "Show"} User List
+                  </button>
+                </div>
+                
+                {selectedUserIds.length > 0 && (
+                  <div className="mb-2">
+                    <p className="text-white text-xs mb-1">
+                      Selected: {selectedUserIds.length} user(s)
+                    </p>
+                    <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto">
+                      {selectedUserIds.map((userId) => {
+                        const user = user_list.find(u => u._id === userId);
+                        return user ? (
+                          <div
+                            key={userId}
+                            className="bg-yellow-500 text-black px-2 py-1 rounded text-xs flex items-center gap-1"
+                          >
+                            {user.firstname} {user.lastname}
+                            <button
+                              onClick={() => toggleUserSelection(userId)}
+                              className="hover:bg-yellow-600 rounded px-1"
+                            >
+                              ×
+                            </button>
+                          </div>
+                        ) : null;
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {showUserSelector && (
+                  <div className="border border-gray-600 rounded-lg p-3 max-h-64 overflow-y-auto bg-gray-800">
+                    <div className="space-y-2">
+                      {user_list.map((user) => (
+                        <label
+                          key={user._id}
+                          className="flex items-center gap-2 p-2 hover:bg-gray-700 rounded cursor-pointer"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={selectedUserIds.includes(user._id)}
+                            onChange={() => toggleUserSelection(user._id)}
+                            className="w-4 h-4"
+                          />
+                          <div className="flex items-center gap-2 flex-1">
+                            {(() => {
+                              const profileImage = user.photolink;
+                              const imageSource = getImageSource(profileImage || "", 'profile');
+                              const initials = `${user.firstname?.[0] || ''}${user.lastname?.[0] || ''}`.toUpperCase();
+                              
+                              return (
+                                <div className="relative w-8 h-8 rounded-full overflow-hidden bg-gray-600 flex items-center justify-center">
+                                  {profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined" ? (
+                                    <img
+                                      src={imageSource.src}
+                                      alt="Profile"
+                                      className="w-full h-full object-cover"
+                                      onError={(e) => {
+                                        const target = e.currentTarget as HTMLImageElement;
+                                        target.style.display = 'none';
+                                        const nextElement = target.nextElementSibling as HTMLElement;
+                                        if (nextElement) nextElement.style.display = 'flex';
+                                      }}
+                                    />
+                                  ) : null}
+                                  <div className="absolute inset-0 bg-gray-600 flex items-center justify-center text-white text-xs font-bold" style={{ display: (!profileImage || profileImage === "null" || profileImage === "undefined") ? 'flex' : 'none' }}>
+                                    {initials || '?'}
+                                  </div>
+                                </div>
+                              );
+                            })()}
+                            <span className="text-white text-sm">
+                              {user.firstname} {user.lastname}
+                            </span>
+                            {user.username && (
+                              <span className="text-gray-400 text-xs">(@{user.username})</span>
+                            )}
+                            {user.creator_verified && (
+                              <span className="px-1 py-0.5 rounded text-xs bg-blue-500 text-white">Creator</span>
+                            )}
+                          </div>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
 
             <div className="mb-4">
               <label className="text-white text-sm font-bold mb-2 block">Title *</label>
@@ -1448,6 +1976,8 @@ export default function Users(): JSX.Element {
                   setNotificationGender("all");
                   setHasLearnMore(false);
                   setLearnMoreUrl("");
+                  setSelectedUserIds([]);
+                  setShowUserSelector(false);
                 }}
                 className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
               >

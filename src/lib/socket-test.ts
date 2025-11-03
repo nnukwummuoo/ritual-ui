@@ -50,7 +50,7 @@ export const diagnoseSocketIssues = async () => {
   
   const testUrls = [
     "http://localhost:3100",
-    process.env.NEXT_PUBLIC_BACKEND || ""
+    process.env.NEXT_PUBLIC_API || ""
   ].filter(Boolean);
 
   for (const url of testUrls) {
