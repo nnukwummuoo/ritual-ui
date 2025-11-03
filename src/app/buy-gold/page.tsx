@@ -13,7 +13,6 @@ import { Copy, Check } from "lucide-react";
 
 // Icons for tags
 const tagIcons: Record<string, React.ReactNode> = {
-  "Test Pack": <span role="img" aria-label="test">🧪</span>,
   "Casual Fan": null,
   "Hot Choice": <span role="img" aria-label="hot">🔥</span>,
   "Most Popular": <span role="img" aria-label="star">⭐</span>,
@@ -286,34 +285,20 @@ const Topup: React.FC = () => {
   };
 
   // Table data from golds array
-  const tableRows = golds.map((gold) => (
-    <tr key={gold.value} className={`border-b border-[#323544] last:border-b-0 ${gold.tag === 'Test Pack' ? 'bg-yellow-900/20' : ''}`}>
+  const tableRows = golds.filter((gold) => gold.tag !== 'Test Pack').map((gold) => (
+    <tr key={gold.value} className="border-b border-[#323544] last:border-b-0">
       <td className="py-2 px-2 text-center text-sm sm:text-base border-r border-[#323544] whitespace-nowrap">
-        {gold.tag === 'Test Pack' ? (
-          <span className="text-yellow-400 font-bold">{gold.value}</span>
-        ) : (
-          gold.value
-        )}
+        {gold.value}
       </td>
       <td className="py-2 px-2 text-center text-sm sm:text-base border-r border-[#323544] whitespace-nowrap">
-        {gold.tag === 'Test Pack' ? (
-          <span className="text-yellow-400 font-bold">{gold.amount}</span>
-        ) : (
-          gold.amount
-        )}
+        {gold.amount}
       </td>
       <td className="py-2 px-2 text-center text-sm sm:text-base border-r border-[#323544] whitespace-nowrap">
-        {gold.tag === 'Test Pack' ? (
-          <span className="text-yellow-400 font-bold">{gold.bonus}</span>
-        ) : (
-          gold.bonus || "-"
-        )}
+        {gold.bonus || "-"}
       </td>
       <td className="py-2 px-2 text-center text-sm sm:text-base whitespace-nowrap">
         {gold.tag ? (
-          <span className={`flex items-center gap-1 justify-center whitespace-nowrap ${
-            gold.tag === 'Test Pack' ? 'text-yellow-400 font-bold' : ''
-          }`}>
+          <span className="flex items-center gap-1 justify-center whitespace-nowrap">
             {tagIcons[gold.tag] || null}
             {gold.tag}
           </span>
@@ -384,9 +369,9 @@ const Topup: React.FC = () => {
             <option value="" disabled>
               Choose Gold Pack
             </option>
-            {golds.map((value) => (
+            {golds.filter((value) => value.tag !== 'Test Pack').map((value) => (
               <option key={value.value} value={value.value}>
-                {value.tag === 'Test Pack' ? '🧪 ' : ''}{value.value} Gold / ${value.amount.replace(/[^0-9.]/g, "")} {value.bonus ? `/ +${value.bonus} Bonus` : ""}
+                {value.value} Gold / ${value.amount.replace(/[^0-9.]/g, "")} {value.bonus ? `/ +${value.bonus} Bonus` : ""}
               </option>
             ))}
           </select>
