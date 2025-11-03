@@ -20,6 +20,8 @@ import Image from 'next/image';
 import { getSocket } from '@/lib/socket';
 import { getImageSource } from '@/lib/imageUtils';
 import VIPBadge from '@/components/VIPBadge';
+import axios from 'axios';
+import { Paperclip, X, Send, File, Download } from 'lucide-react';
 
 interface SupportChat {
   _id: string;
@@ -58,6 +60,7 @@ interface ChatMessage {
   isAdmin: boolean;
   isVip?: boolean;
   vipEndDate?: string;
+  files?: string[];
 }
 
 const AdminSupportChat = () => {
@@ -68,11 +71,24 @@ const AdminSupportChat = () => {
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
   const [sendingMessage, setSendingMessage] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>('');
   const [categoryFilter, setCategoryFilter] = useState<string>('');
   const [searchTerm, setSearchTerm] = useState('');
   const [showChatView, setShowChatView] = useState(false);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [previewFiles, setPreviewFiles] = useState<Array<{
+    file: File;
+    preview: string | ArrayBuffer | null;
+    type: string;
+  }>>([]);
+  const [selectedFileModal, setSelectedFileModal] = useState<{
+    fileUrl: string;
+    fileName?: string;
+    type: string;
+  } | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Load all support chats
   const loadSupportChats = async () => {
@@ -130,12 +146,312 @@ const AdminSupportChat = () => {
     setMessages([]);
   };
 
+  // File validation function
+  const validateFile = (file: File): { valid: boolean; error?: string } => {
+    const maxImageSize = 5 * 1024 * 1024; // 5MB
+    const maxVideoSize = 10 * 1024 * 1024; // 10MB
+    
+    if (file.type.startsWith('image/')) {
+      if (file.size > maxImageSize) {
+        return { valid: false, error: 'Image size must be less than 5MB' };
+      }
+    } else if (file.type.startsWith('video/')) {
+      if (file.size > maxVideoSize) {
+        return { valid: false, error: 'Video size must be less than 10MB' };
+      }
+    } else {
+      return { valid: false, error: 'Only images and videos are allowed' };
+    }
+    
+    return { valid: true };
+  };
+
+  // Handle file selection
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files || []);
+    const validFiles: File[] = [];
+    const errors: string[] = [];
+
+    files.forEach(file => {
+      const validation = validateFile(file);
+      if (validation.valid) {
+        validFiles.push(file);
+      } else {
+        errors.push(`${file.name}: ${validation.error}`);
+      }
+    });
+
+    if (errors.length > 0) {
+      errors.forEach(error => toast.error(error));
+    }
+
+    if (validFiles.length > 0) {
+      setSelectedFiles(prev => [...prev, ...validFiles]);
+      
+      // Create previews
+      validFiles.forEach(file => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          setPreviewFiles(prev => [...prev, {
+            file,
+            preview: e.target?.result || null,
+            type: file.type.startsWith('image/') ? 'image' : 'video'
+          }]);
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    // Reset input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  // Remove selected file
+  const removeFile = (index: number) => {
+    setSelectedFiles(prev => prev.filter((_, i) => i !== index));
+    setPreviewFiles(prev => prev.filter((_, i) => i !== index));
+  };
+
+  // Upload files to backend
+  const uploadFiles = async (files: File[]): Promise<string[]> => {
+    const formData = new FormData();
+    files.forEach((file) => {
+      formData.append('file', file);
+    });
+
+    try {
+      const response = await axios.post(`${URL}/upload-message-files`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      return response.data.fileUrls || [];
+    } catch (error: any) {
+      console.error('File upload error:', error);
+      if (error.response?.status === 404) {
+        throw new Error('Upload endpoint not found. Please check if the backend server is running and the route is properly configured.');
+      }
+      throw new Error('Failed to upload files');
+    }
+  };
+
+  // File preview component
+  const FilePreview = ({ fileUrl, fileName }: { fileUrl: string; fileName?: string }) => {
+    const [isLoading, setIsLoading] = useState(true);
+    const [hasError, setHasError] = useState(false);
+    
+    React.useEffect(() => {
+      const timeout = setTimeout(() => {
+        if (isLoading) {
+          setIsLoading(false);
+        }
+      }, 5000);
+      
+      return () => clearTimeout(timeout);
+    }, [isLoading, fileUrl]);
+    
+    const getFileType = (url: string, name?: string) => {
+      const fileName = name || url;
+      const extension = fileName.split('.').pop()?.toLowerCase();
+      
+      const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg'];
+      if (imageExtensions.includes(extension || '')) {
+        return 'image';
+      }
+      
+      const videoExtensions = ['mp4', 'avi', 'mov', 'wmv', 'flv', 'webm', 'mkv'];
+      if (videoExtensions.includes(extension || '')) {
+        return 'video';
+      }
+      
+      const documentExtensions = ['pdf', 'doc', 'docx', 'txt', 'rtf', 'odt'];
+      if (documentExtensions.includes(extension || '')) {
+        return 'document';
+      }
+      
+      if (url.includes('image') || url.includes('photo') || url.includes('img')) {
+        return 'image';
+      }
+      if (url.includes('video') || url.includes('movie') || url.includes('vid')) {
+        return 'video';
+      }
+      
+      return 'image';
+    };
+    
+    const fileType = getFileType(fileUrl, fileName);
+    const isImage = fileType === 'image';
+    const isVideo = fileType === 'video';
+    const isDocument = fileType === 'document';
+    
+    const imageSource = getImageSource(fileUrl, 'message');
+    const fullUrl = imageSource.src;
+    
+    const pathUrlPrimary = fileUrl ? `${URL}/api/image/view/${encodeURIComponent(fileUrl)}` : "";
+    const queryUrlFallback = fileUrl ? `${process.env.NEXT_PUBLIC_API || ""}/api/image/view?publicId=${encodeURIComponent(fileUrl)}` : "";
+    const pathUrlFallback = fileUrl ? `${process.env.NEXT_PUBLIC_API || ""}/api/image/view/${encodeURIComponent(fileUrl)}` : "";
+    
+    const handleLoad = () => {
+      setIsLoading(false);
+    };
+    
+    const handleError = () => {
+      setIsLoading(false);
+      setHasError(true);
+    };
+    
+    if (hasError) {
+      return (
+        <div className="flex items-center gap-2 p-3 bg-gray-700 rounded-lg">
+          <File className="w-5 h-5 text-gray-400" />
+          <div className="flex-1">
+            <p className="text-sm text-gray-300">Failed to load file</p>
+            <p className="text-xs text-gray-500">{fileName || 'Unknown file'}</p>
+          </div>
+        </div>
+      );
+    }
+    
+    return (
+      <div className="relative">
+        {isLoading && (
+          <div className="absolute inset-0 bg-gray-700 rounded-lg animate-pulse flex items-center justify-center">
+            <div className="w-8 h-8 border-2 border-gray-500 border-t-transparent rounded-full animate-spin"></div>
+          </div>
+        )}
+        
+        {isImage && (
+          <div className="relative cursor-pointer" onClick={() => setSelectedFileModal({ fileUrl, fileName, type: 'image' })}>
+            <Image
+              src={fullUrl}
+              alt="Shared image"
+              width={200}
+              height={200}
+              className="rounded-lg object-cover max-w-full h-auto hover:opacity-90 transition-opacity"
+              onLoad={handleLoad}
+              onError={(e) => {
+                const img = e.currentTarget as HTMLImageElement & { dataset: any };
+                
+                if (!img.dataset.fallback1 && pathUrlPrimary) {
+                  img.dataset.fallback1 = "1";
+                  img.src = pathUrlPrimary;
+                  return;
+                }
+                if (!img.dataset.fallback2 && queryUrlFallback) {
+                  img.dataset.fallback2 = "1";
+                  img.src = queryUrlFallback;
+                  return;
+                }
+                if (!img.dataset.fallback3 && pathUrlFallback) {
+                  img.dataset.fallback3 = "1";
+                  img.src = pathUrlFallback;
+                  return;
+                }
+                handleError();
+              }}
+            />
+          </div>
+        )}
+        
+        {isVideo && (
+          <div className="relative cursor-pointer" onClick={() => setSelectedFileModal({ fileUrl, fileName, type: 'video' })}>
+            <video
+              src={fullUrl}
+              controls
+              className="rounded-lg max-w-full h-auto hover:opacity-90 transition-opacity"
+              style={{ maxHeight: '200px' }}
+              onLoadedData={handleLoad}
+              onError={(e) => {
+                const video = e.currentTarget as HTMLVideoElement & { dataset: any };
+                if (!video.dataset.fallback1 && pathUrlPrimary) {
+                  video.dataset.fallback1 = "1";
+                  video.src = pathUrlPrimary;
+                  video.load();
+                  return;
+                }
+                if (!video.dataset.fallback2 && queryUrlFallback) {
+                  video.dataset.fallback2 = "1";
+                  video.src = queryUrlFallback;
+                  video.load();
+                  return;
+                }
+                if (!video.dataset.fallback3 && pathUrlFallback) {
+                  video.dataset.fallback3 = "1";
+                  video.src = pathUrlFallback;
+                  video.load();
+                  return;
+                }
+                handleError();
+              }}
+            />
+          </div>
+        )}
+        
+        {isDocument && (
+          <div className="flex items-center gap-3 p-3 bg-gray-700 rounded-lg">
+            <File className="w-6 h-6 text-blue-400" />
+            <div className="flex-1">
+              <p className="text-sm text-gray-300">{fileName || 'Document'}</p>
+              <p className="text-xs text-gray-500">Click to download</p>
+            </div>
+            <a
+              href={fullUrl}
+              download={fileName}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-2 hover:bg-gray-600 rounded-lg transition-colors"
+            >
+              <Download className="w-4 h-4 text-gray-400" />
+            </a>
+          </div>
+        )}
+        
+        {!isImage && !isVideo && !isDocument && (
+          <div className="flex items-center gap-3 p-3 bg-gray-700 rounded-lg">
+            <Paperclip className="w-5 h-5 text-gray-400" />
+            <div className="flex-1">
+              <p className="text-sm text-gray-300">{fileName || 'File attachment'}</p>
+              <p className="text-xs text-gray-500">Click to download</p>
+            </div>
+            <a
+              href={fullUrl}
+              download={fileName}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-2 hover:bg-gray-600 rounded-lg transition-colors"
+            >
+              <Download className="w-4 h-4 text-gray-400" />
+            </a>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   // Send admin message
   const sendAdminMessage = async () => {
-    if (!newMessage.trim() || !selectedChat) return;
+    if ((!newMessage.trim() && selectedFiles.length === 0) || !selectedChat) return;
 
     try {
       setSendingMessage(true);
+      setUploading(selectedFiles.length > 0);
+
+      let fileUrls: string[] = [];
+      
+      // Upload files if any
+      if (selectedFiles.length > 0) {
+        try {
+          fileUrls = await uploadFiles(selectedFiles);
+        } catch (uploadError) {
+          console.error("File upload failed:", uploadError);
+          toast.error("File upload failed. Sending message without files.");
+          fileUrls = [];
+        }
+      }
+
       const response = await fetch(`${URL}/support-chat/admin/send-message`, {
         method: 'POST',
         headers: {
@@ -144,7 +460,8 @@ const AdminSupportChat = () => {
         },
         body: JSON.stringify({
           chatId: selectedChat._id,
-          message: newMessage.trim(),
+          message: newMessage.trim() || (fileUrls.length > 0 ? `Sent ${fileUrls.length} file(s)` : 'File message'),
+          files: fileUrls,
         }),
       });
 
@@ -153,6 +470,8 @@ const AdminSupportChat = () => {
         setMessages(data.supportChat.messages || []);
         // Clear input immediately
         setNewMessage('');
+        setSelectedFiles([]);
+        setPreviewFiles([]);
         toast.success('Message sent successfully');
         // Refresh chat list to update last message
         loadSupportChats();
@@ -166,6 +485,7 @@ const AdminSupportChat = () => {
       setNewMessage('');
     } finally {
       setSendingMessage(false);
+      setUploading(false);
     }
   };
 
@@ -572,6 +892,20 @@ const AdminSupportChat = () => {
                         </div>
                       )}
                       <p className="text-sm md:text-base break-words">{message.content}</p>
+                      
+                      {/* Display files if any */}
+                      {message.files && message.files.length > 0 && (
+                        <div className="mt-2 space-y-2">
+                          {message.files.map((fileUrl: string, fileIndex: number) => (
+                            <FilePreview
+                              key={fileIndex}
+                              fileUrl={fileUrl}
+                              fileName={`File ${fileIndex + 1}`}
+                            />
+                          ))}
+                        </div>
+                      )}
+                      
                       <p className="text-xs opacity-70 mt-1">
                         {new Date(message.date).toLocaleString()}
                       </p>
@@ -582,9 +916,96 @@ const AdminSupportChat = () => {
               <div ref={messagesEndRef} />
             </div>
 
+            {/* File Preview Area */}
+            {previewFiles.length > 0 && (
+              <div className="bg-gray-800/50 border-t border-gray-700 p-3 md:p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm text-gray-300 font-medium">
+                    {previewFiles.length} file{previewFiles.length > 1 ? 's' : ''} selected
+                  </span>
+                  <button
+                    onClick={() => {
+                      setSelectedFiles([]);
+                      setPreviewFiles([]);
+                    }}
+                    className="text-xs text-gray-400 hover:text-white underline"
+                  >
+                    Clear all
+                  </button>
+                </div>
+                <div className="flex flex-wrap gap-2 sm:gap-3">
+                  {previewFiles.map((preview, index) => (
+                    <div key={index} className="relative">
+                      {preview.type === 'image' && (
+                        <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden border border-gray-600">
+                          <Image
+                            src={preview.preview as string}
+                            alt="Preview"
+                            width={80}
+                            height={80}
+                            className="w-full h-full object-cover"
+                          />
+                          <button
+                            onClick={() => removeFile(index)}
+                            className="absolute -top-1 -right-1 w-5 h-5 sm:w-6 sm:h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600 transition-colors"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </div>
+                      )}
+                      {preview.type === 'video' && (
+                        <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden bg-gray-700 flex items-center justify-center border border-gray-600">
+                          <video
+                            src={preview.preview as string}
+                            className="w-full h-full object-cover"
+                            muted
+                          />
+                          <button
+                            onClick={() => removeFile(index)}
+                            className="absolute -top-1 -right-1 w-5 h-5 sm:w-6 sm:h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600 transition-colors"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </div>
+                      )}
+                      {preview.type === 'file' && (
+                        <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-lg bg-gray-700 flex flex-col items-center justify-center border border-gray-600 p-1">
+                          <Paperclip className="w-4 h-4 sm:w-6 sm:h-6 text-gray-400" />
+                          <span className="text-xs text-gray-300 truncate max-w-12 sm:max-w-16 text-center">{preview.file.name}</span>
+                          <button
+                            onClick={() => removeFile(index)}
+                            className="absolute -top-1 -right-1 w-5 h-5 sm:w-6 sm:h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600 transition-colors"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Message Input */}
             <div className="p-3 md:p-4 border-t border-gray-700 bg-gray-800 flex-shrink-0">
               <div className="flex gap-2">
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleFileSelect}
+                  multiple
+                  accept="image/*,video/*,.pdf,.doc,.docx,.txt"
+                  className="hidden"
+                />
+                
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  className="flex-shrink-0 p-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors"
+                  title="Attach file"
+                >
+                  <Paperclip className="w-5 h-5" />
+                </button>
+
                 <input
                   type="text"
                   value={newMessage}
@@ -600,13 +1021,16 @@ const AdminSupportChat = () => {
                 />
                 <button
                   onClick={sendAdminMessage}
-                  disabled={!newMessage.trim() || sendingMessage}
-                  className="px-3 md:px-4 py-2 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-600 disabled:cursor-not-allowed text-white rounded-lg transition-colors text-sm md:text-base"
+                  disabled={(!newMessage.trim() && selectedFiles.length === 0) || sendingMessage || uploading}
+                  className="px-3 md:px-4 py-2 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-600 disabled:cursor-not-allowed text-white rounded-lg transition-colors text-sm md:text-base flex items-center gap-2"
                 >
-                  {sendingMessage ? (
+                  {sendingMessage || uploading ? (
                     <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
                   ) : (
-                    'Send'
+                    <>
+                      <Send className="w-4 h-4" />
+                      <span>Send</span>
+                    </>
                   )}
                 </button>
               </div>
@@ -621,6 +1045,89 @@ const AdminSupportChat = () => {
           </div>
         )}
       </div>
+
+      {/* File Modal */}
+      {selectedFileModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-90" onClick={() => setSelectedFileModal(null)}>
+          <div className="relative max-w-4xl max-h-4xl w-full h-full flex items-center justify-center p-4">
+            {/* Close Button */}
+            <button
+              onClick={() => setSelectedFileModal(null)}
+              className="absolute top-4 right-4 z-10 w-10 h-10 bg-black bg-opacity-50 text-white rounded-full flex items-center justify-center hover:bg-opacity-70 transition-all"
+            >
+              <X className="w-6 h-6" />
+            </button>
+            
+            {/* File Content */}
+            <div className="relative w-full h-full flex items-center justify-center">
+              {selectedFileModal.type === 'image' && (
+                <Image
+                  src={getImageSource(selectedFileModal.fileUrl, 'message').src}
+                  alt={selectedFileModal.fileName || 'Shared image'}
+                  fill
+                  className="object-contain"
+                  onError={(e) => {
+                    const img = e.currentTarget as HTMLImageElement & { dataset: any };
+                    const pathUrlPrimary = selectedFileModal.fileUrl ? `${URL}/api/image/view/${encodeURIComponent(selectedFileModal.fileUrl)}` : "";
+                    const queryUrlFallback = selectedFileModal.fileUrl ? `${process.env.NEXT_PUBLIC_API || ""}/api/image/view?publicId=${encodeURIComponent(selectedFileModal.fileUrl)}` : "";
+                    const pathUrlFallback = selectedFileModal.fileUrl ? `${process.env.NEXT_PUBLIC_API || ""}/api/image/view/${encodeURIComponent(selectedFileModal.fileUrl)}` : "";
+                    
+                    if (!img.dataset.fallback1 && pathUrlPrimary) {
+                      img.dataset.fallback1 = "1";
+                      img.src = pathUrlPrimary;
+                      return;
+                    }
+                    if (!img.dataset.fallback2 && queryUrlFallback) {
+                      img.dataset.fallback2 = "1";
+                      img.src = queryUrlFallback;
+                      return;
+                    }
+                    if (!img.dataset.fallback3 && pathUrlFallback) {
+                      img.dataset.fallback3 = "1";
+                      img.src = pathUrlFallback;
+                      return;
+                    }
+                  }}
+                />
+              )}
+              
+              {selectedFileModal.type === 'video' && (
+                <video
+                  src={getImageSource(selectedFileModal.fileUrl, 'message').src}
+                  controls
+                  autoPlay
+                  className="max-w-full max-h-full"
+                  onError={(e) => {
+                    const video = e.currentTarget as HTMLVideoElement & { dataset: any };
+                    const pathUrlPrimary = selectedFileModal.fileUrl ? `${URL}/api/image/view/${encodeURIComponent(selectedFileModal.fileUrl)}` : "";
+                    const queryUrlFallback = selectedFileModal.fileUrl ? `${process.env.NEXT_PUBLIC_API || ""}/api/image/view?publicId=${encodeURIComponent(selectedFileModal.fileUrl)}` : "";
+                    const pathUrlFallback = selectedFileModal.fileUrl ? `${process.env.NEXT_PUBLIC_API || ""}/api/image/view/${encodeURIComponent(selectedFileModal.fileUrl)}` : "";
+                    
+                    if (!video.dataset.fallback1 && pathUrlPrimary) {
+                      video.dataset.fallback1 = "1";
+                      video.src = pathUrlPrimary;
+                      video.load();
+                      return;
+                    }
+                    if (!video.dataset.fallback2 && queryUrlFallback) {
+                      video.dataset.fallback2 = "1";
+                      video.src = queryUrlFallback;
+                      video.load();
+                      return;
+                    }
+                    if (!video.dataset.fallback3 && pathUrlFallback) {
+                      video.dataset.fallback3 = "1";
+                      video.src = pathUrlFallback;
+                      video.load();
+                      return;
+                    }
+                  }}
+                />
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

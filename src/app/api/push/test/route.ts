@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
     const userid = request.headers.get('x-user-id') || '68d4e80038daebb570e30f6a';
 
     // Send push notification via your Express API
-    const apiResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND || ""}/api/push/send-test`, {
+    const apiResponse = await fetch(`${process.env.NEXT_PUBLIC_API || ""}/api/push/send-test`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

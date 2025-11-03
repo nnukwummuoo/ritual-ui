@@ -38,8 +38,8 @@ const nextConfig: NextConfig = {
         destination:
           process.env.NODE_ENV === "development"
             ? "http://localhost:3100/:path*"
-            : process.env.NEXT_PUBLIC_BACKEND
-              ? `${process.env.NEXT_PUBLIC_BACKEND}/:path*`
+            : process.env.NEXT_PUBLIC_API
+              ? `${process.env.NEXT_PUBLIC_API}/:path*`
               : "",
       },
     ];

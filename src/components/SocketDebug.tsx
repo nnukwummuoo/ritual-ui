@@ -50,7 +50,7 @@ export const SocketDebug = () => {
     results.push({ url: 'http://localhost:3100', connected: localResult });
     
     // Test production server
-    const prodUrl = process.env.NEXT_PUBLIC_BACKEND || "";
+    const prodUrl = process.env.NEXT_PUBLIC_API || "";
     if (prodUrl) {
       const prodResult = await testSocketConnection(prodUrl);
       results.push({ url: prodUrl, connected: prodResult });

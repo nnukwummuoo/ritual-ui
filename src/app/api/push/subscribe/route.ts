@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Forward the subscription to your backend API
-    const apiResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND || ""}/subpushid`, {
+    const apiResponse = await fetch(`${process.env.NEXT_PUBLIC_API || ""}/subpushid`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -80,7 +80,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Forward the unsubscribe request to your backend API
-    const apiResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND || ""}/subpushid`, {
+    const apiResponse = await fetch(`${process.env.NEXT_PUBLIC_API || ""}/subpushid`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',

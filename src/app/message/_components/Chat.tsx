@@ -183,8 +183,8 @@ export const Chat = () => {
     
     // Keep fallback URLs for error handling
     const pathUrlPrimary = fileUrl ? `${API_URL}/api/image/view/${encodeURIComponent(fileUrl)}` : "";
-    const queryUrlFallback = fileUrl ? `${process.env.NEXT_PUBLIC_BACKEND || ""}/api/image/view?publicId=${encodeURIComponent(fileUrl)}` : "";
-    const pathUrlFallback = fileUrl ? `${process.env.NEXT_PUBLIC_BACKEND || ""}/api/image/view/${encodeURIComponent(fileUrl)}` : "";
+    const queryUrlFallback = fileUrl ? `${process.env.NEXT_PUBLIC_API || ""}/api/image/view?publicId=${encodeURIComponent(fileUrl)}` : "";
+    const pathUrlFallback = fileUrl ? `${process.env.NEXT_PUBLIC_API || ""}/api/image/view/${encodeURIComponent(fileUrl)}` : "";
     
     
     const handleLoad = () => {
@@ -1997,8 +1997,8 @@ export const Chat = () => {
                   onError={(e) => {
                     const img = e.currentTarget as HTMLImageElement & { dataset: any };
                     const pathUrlPrimary = selectedFileModal.fileUrl ? `${API_URL}/api/image/view/${encodeURIComponent(selectedFileModal.fileUrl)}` : "";
-                    const queryUrlFallback = selectedFileModal.fileUrl ? `${process.env.NEXT_PUBLIC_BACKEND || ""}/api/image/view?publicId=${encodeURIComponent(selectedFileModal.fileUrl)}` : "";
-                    const pathUrlFallback = selectedFileModal.fileUrl ? `${process.env.NEXT_PUBLIC_BACKEND || ""}/api/image/view/${encodeURIComponent(selectedFileModal.fileUrl)}` : "";
+                    const queryUrlFallback = selectedFileModal.fileUrl ? `${process.env.NEXT_PUBLIC_API || ""}/api/image/view?publicId=${encodeURIComponent(selectedFileModal.fileUrl)}` : "";
+                    const pathUrlFallback = selectedFileModal.fileUrl ? `${process.env.NEXT_PUBLIC_API || ""}/api/image/view/${encodeURIComponent(selectedFileModal.fileUrl)}` : "";
                     
                     if (!img.dataset.fallback1 && pathUrlPrimary) {
                       img.dataset.fallback1 = "1";
@@ -2028,8 +2028,8 @@ export const Chat = () => {
                   onError={(e) => {
                     const video = e.currentTarget as HTMLVideoElement & { dataset: any };
                     const pathUrlPrimary = selectedFileModal.fileUrl ? `${API_URL}/api/image/view/${encodeURIComponent(selectedFileModal.fileUrl)}` : "";
-                    const queryUrlFallback = selectedFileModal.fileUrl ? `${process.env.NEXT_PUBLIC_BACKEND || ""}/api/image/view?publicId=${encodeURIComponent(selectedFileModal.fileUrl)}` : "";
-                    const pathUrlFallback = selectedFileModal.fileUrl ? `${process.env.NEXT_PUBLIC_BACKEND || ""}/api/image/view/${encodeURIComponent(selectedFileModal.fileUrl)}` : "";
+                    const queryUrlFallback = selectedFileModal.fileUrl ? `${process.env.NEXT_PUBLIC_API || ""}/api/image/view?publicId=${encodeURIComponent(selectedFileModal.fileUrl)}` : "";
+                    const pathUrlFallback = selectedFileModal.fileUrl ? `${process.env.NEXT_PUBLIC_API || ""}/api/image/view/${encodeURIComponent(selectedFileModal.fileUrl)}` : "";
                     
                     if (!video.dataset.fallback1 && pathUrlPrimary) {
                       video.dataset.fallback1 = "1";

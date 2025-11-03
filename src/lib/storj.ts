@@ -6,7 +6,7 @@
 import { URL as API_BASE } from "@/api/config";
 
 // Secondary base (production) used as a fallback when the local proxy is down
-const PROD_BASE = process.env.NEXT_PUBLIC_BACKEND || "";
+const PROD_BASE = process.env.NEXT_PUBLIC_API || "";
 
 export type UploadResponse = {
   public_id: string;
