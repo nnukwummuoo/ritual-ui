@@ -540,7 +540,7 @@ export default function Creatorbyid () {
     if (normalizedHosttype == "Fan meet") {
       return ("Meet and Greet with");
     } else if (normalizedHosttype == "Fan date") {
-      return ("A Date with");
+      return ("Exclusive Date with");
     } else if (normalizedHosttype == "Fan call" || normalizedHosttype == "Fan Call") {
       return ("A Private Conversation with");
     } else {
