@@ -29,6 +29,7 @@ import Users from "./users/page";
 import Reports from "./reports/page";
 import AdminSupportChat from "./support-chat/page";
 import VipAnalysisPage from "./vip-analysis/page";
+import WebsiteAnalyticsPage from "./website-analytics/page";
 import BackupManagement from "./backup/page";
 import TransactionsPage from "./transactions/page";
 import PushNotificationToggle from "@/components/PushNotificationToggle";
@@ -135,6 +136,11 @@ const AdminPage = () => {
       name: "VIP Analysis",
       icon: <IoAnalyticsOutline size={22} />,
       component: <VipAnalysisPage />,
+    },
+    {
+      name: "Website Analytics",
+      icon: <IoAnalyticsOutline size={22} />,
+      component: <WebsiteAnalyticsPage />,
     },
     {
       name: "Support Chat",

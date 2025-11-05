@@ -969,8 +969,10 @@ const EditProfile: React.FC = () => {
         userID: localData.userID || loggedInUserId || routeUserId,
         
         // Profile data - only include fields that have been changed
-        ...(deletePhotolink && { deletePhotolink }),
-        ...(deletePhotoID && { deletePhotoID }),
+        // Only send deletePhotolink and deletePhotoID if user is uploading a new photo
+        // This ensures the current photo is preserved if user only changes other fields
+        ...(updatePhoto && deletePhotolink && { deletePhotolink }),
+        ...(updatePhoto && deletePhotoID && { deletePhotoID }),
         ...(updatePhoto && { updatePhoto }),
         ...(firstname && { firstname }),
         ...(lastname && { lastname }),

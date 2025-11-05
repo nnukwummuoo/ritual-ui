@@ -11,6 +11,7 @@ import { VideoProvider } from "@/contexts/VideoContext";
 import GlobalBanChecker from "@/components/GlobalBanChecker";
 import ReduxHydrator from "@/components/ReduxHydrator";
 import ScrollToTopAdvanced from "@/components/ScrollToTopAdvanced";
+import GlobalVisitorTracker from "@/components/GlobalVisitorTracker";
 
 const inter = Inter({
   weight: ["100", "300", "400", "500", "700"],
@@ -66,6 +67,7 @@ export default async function RootLayout({
               scrollOnPopState={true}
               debug={process.env.NODE_ENV === "development"}
             />
+            <GlobalVisitorTracker />
             <ConditionalLayout isAuthenticated={isAuthenticated}>
               {children}
               {isAuthenticated && <NotificationModalWrapper />}
