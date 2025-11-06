@@ -1316,6 +1316,30 @@ const PostModal = () => {
   // State for managing UI state for all posts in the modal
   const [modalUi, setModalUi] = React.useState<Record<string, any>>({});
   const scrollContainerRef = React.useRef<HTMLDivElement>(null);
+  // State for full-screen image viewer
+  const [fullScreenImage, setFullScreenImage] = React.useState<string | null>(null);
+
+  // Handle Escape key to close full-screen image
+  React.useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && fullScreenImage) {
+        setFullScreenImage(null);
+      }
+    };
+
+    if (fullScreenImage) {
+      window.addEventListener('keydown', handleEscape);
+      // Prevent body scroll when full-screen image is open
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+
+    return () => {
+      window.removeEventListener('keydown', handleEscape);
+      document.body.style.overflow = '';
+    };
+  }, [fullScreenImage]);
 
   // Scroll to clicked post when modal opens
   React.useEffect(() => {
@@ -1337,10 +1361,11 @@ const PostModal = () => {
     }
   }, [clickedPostId, showPostModal]);
 
-  // Reset clicked post ID when modal closes
+  // Reset clicked post ID and close full-screen image when modal closes
   React.useEffect(() => {
     if (!showPostModal) {
       setClickedPostId(null);
+      setFullScreenImage(null);
     }
   }, [showPostModal]);
 
@@ -1494,6 +1519,14 @@ const PostModal = () => {
                       width={800}
                       height={480}
                       className="w-full h-auto object-contain cursor-pointer hover:opacity-90 transition-opacity duration-200"
+                      onClick={() => {
+                        // Get the full image source with fallbacks
+                        const { pathUrlPrimary, queryUrlFallback, pathUrlFallback } = getMediaSource(post);
+                        const imageSrc = src || pathUrlPrimary || queryUrlFallback || pathUrlFallback || '';
+                        if (imageSrc) {
+                          setFullScreenImage(imageSrc);
+                        }
+                      }}
                 onError={(e) => {
                   const img = e.currentTarget as HTMLImageElement & { dataset: any };
                         const { pathUrlPrimary, queryUrlFallback, pathUrlFallback } = getMediaSource(post);
@@ -1625,6 +1658,65 @@ const PostModal = () => {
           })}
         </div>
       </div>
+
+      {/* Full-Screen Image Viewer */}
+      {fullScreenImage && (
+        <div 
+          className="fixed inset-0 z-[10000] bg-black bg-opacity-95 flex items-center justify-center p-4"
+          onClick={() => setFullScreenImage(null)}
+          style={{ zIndex: 10000 }}
+        >
+          {/* Close Button - Top Right */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setFullScreenImage(null);
+            }}
+            className="absolute top-4 right-4 z-10 p-3 bg-black bg-opacity-50 hover:bg-opacity-70 rounded-full text-white transition-all duration-200 hover:scale-110"
+            aria-label="Close full screen image"
+          >
+            <X className="w-6 h-6" />
+          </button>
+
+          {/* Full-Screen Image */}
+          <div 
+            className="relative max-w-full max-h-full w-full h-full flex items-center justify-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <img
+              src={fullScreenImage}
+              alt="Full screen post image"
+              className="max-w-full max-h-full object-contain"
+              onError={(e) => {
+                // Try fallbacks if main image fails
+                const img = e.currentTarget as HTMLImageElement & { dataset: any };
+                const currentPost = userPosts.find(p => {
+                  const { src } = getMediaSource(p);
+                  return src === fullScreenImage;
+                });
+                
+                if (currentPost) {
+                  const { pathUrlPrimary, queryUrlFallback, pathUrlFallback } = getMediaSource(currentPost);
+                  if (!img.dataset.fallback1 && pathUrlPrimary && pathUrlPrimary !== fullScreenImage) {
+                    img.dataset.fallback1 = "1";
+                    img.src = pathUrlPrimary;
+                    return;
+                  }
+                  if (!img.dataset.fallback2 && queryUrlFallback && queryUrlFallback !== fullScreenImage) {
+                    img.dataset.fallback2 = "1";
+                    img.src = queryUrlFallback;
+                    return;
+                  }
+                  if (!img.dataset.fallback3 && pathUrlFallback && pathUrlFallback !== fullScreenImage) {
+                    img.dataset.fallback3 = "1";
+                    img.src = pathUrlFallback;
+                  }
+                }
+              }}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 };

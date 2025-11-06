@@ -9,6 +9,7 @@ export const useVisitorTracking = (userId?: string | null) => {
   const startTimeRef = useRef<number>(Date.now());
   const lastActivityRef = useRef<number>(Date.now());
   const trackingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const lastUpdateTimeRef = useRef<number>(Date.now()); // Track last time we sent an update
 
   useEffect(() => {
     // Always run tracking, even for anonymous users
@@ -76,10 +77,42 @@ export const useVisitorTracking = (userId?: string | null) => {
     // This ensures anonymous users are tracked consistently across sessions
     const visitorId = userId || temporaryVisitorId || sessionId;
     
+    // Get or set session start time (persists across page navigations in same session)
+    const getSessionStartTime = (): number => {
+      const STORAGE_KEY = `mmeko_session_start_${visitorId}`;
+      try {
+        const stored = sessionStorage.getItem(STORAGE_KEY);
+        if (stored) {
+          const startTime = parseInt(stored, 10);
+          if (!isNaN(startTime)) {
+            startTimeRef.current = startTime;
+            return startTime;
+          }
+        }
+      } catch (error) {
+        console.warn('⚠️ [Tracking] Could not access sessionStorage for session start time');
+      }
+      
+      // Set new session start time
+      const now = Date.now();
+      startTimeRef.current = now;
+      try {
+        sessionStorage.setItem(STORAGE_KEY, now.toString());
+      } catch (error) {
+        // Ignore if can't store
+      }
+      return now;
+    };
+    
+    // Initialize session start time
+    const sessionStartTime = getSessionStartTime();
+    lastUpdateTimeRef.current = sessionStartTime;
+    
     // Log for debugging
     if (!userId) {
       console.log('✅ [Tracking] Using temporary visitor ID for anonymous user:', temporaryVisitorId);
     }
+    console.log('🕐 [Tracking] Session start time:', new Date(sessionStartTime).toISOString());
 
 
     // Get device information
@@ -184,26 +217,44 @@ export const useVisitorTracking = (userId?: string | null) => {
       }
     };
 
-    // Track time spent periodically
+    // Track time spent periodically (send incremental time since last update)
     const trackTimeSpent = async () => {
       try {
-        const timeSpent = Date.now() - lastActivityRef.current;
-        if (timeSpent > 0) {
+        const now = Date.now();
+        // Calculate time since last update (not since last activity)
+        const timeSinceLastUpdate = now - lastUpdateTimeRef.current;
+        
+        // Only send if at least 5 seconds have passed (to avoid too many requests)
+        if (timeSinceLastUpdate >= 5000) {
           const API_URL = URL;
-          await fetch(`${API_URL}/api/update-visitor-time`, {
+          if (!API_URL) {
+            console.error('❌ [Frontend] API URL is not configured. Cannot update visitor time.');
+            return;
+          }
+          
+          console.log(`⏱️ [Tracking] Updating visitor time: ${Math.round(timeSinceLastUpdate / 1000)}s (${Math.round(timeSinceLastUpdate / 1000 / 60)} minutes)`);
+          
+          const response = await fetch(`${API_URL}/api/update-visitor-time`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
               visitorId: visitorId, // Use userId for logged-in users, persistent anonymous ID for anonymous
-              timeSpent,
+              timeSpent: timeSinceLastUpdate, // Send incremental time
             }),
           });
-          lastActivityRef.current = Date.now();
+          
+          if (response.ok) {
+            // Update last update time only if request was successful
+            lastUpdateTimeRef.current = now;
+            console.log(`✅ [Tracking] Visitor time updated successfully`);
+          } else {
+            console.error('❌ [Tracking] Failed to update visitor time:', response.status);
+          }
         }
       } catch (error) {
-        console.error('Error updating visitor time:', error);
+        console.error('❌ [Tracking] Error updating visitor time:', error);
       }
     };
 
@@ -228,23 +279,29 @@ export const useVisitorTracking = (userId?: string | null) => {
       window.addEventListener(event, updateActivity, { passive: true });
     });
 
-    // Track time spent every 30 seconds
+    // Track time spent every 30 seconds (send incremental updates)
     trackingIntervalRef.current = setInterval(trackTimeSpent, 30000);
 
     // Track time spent on page unload
     const handleBeforeUnload = () => {
-      const totalTime = Date.now() - startTimeRef.current;
-      if (totalTime > 0) {
+      const now = Date.now();
+      const timeSinceLastUpdate = now - lastUpdateTimeRef.current;
+      
+      // Only send if there's time to report (at least 1 second)
+      if (timeSinceLastUpdate >= 1000) {
         // Use sendBeacon for reliable tracking on page unload
         const API_URL = URL;
-        const data = JSON.stringify({
-          visitorId: visitorId, // Use userId for logged-in users, persistent anonymous ID for anonymous
-          timeSpent: totalTime,
-        });
-        navigator.sendBeacon(
-          `${API_URL}/api/update-visitor-time`,
-          new Blob([data], { type: 'application/json' })
-        );
+        if (API_URL) {
+          const data = JSON.stringify({
+            visitorId: visitorId, // Use userId for logged-in users, persistent anonymous ID for anonymous
+            timeSpent: timeSinceLastUpdate, // Send incremental time since last update
+          });
+          navigator.sendBeacon(
+            `${API_URL}/api/update-visitor-time`,
+            new Blob([data], { type: 'application/json' })
+          );
+          console.log(`📤 [Tracking] Sent final time update on unload: ${Math.round(timeSinceLastUpdate / 1000)}s`);
+        }
       }
     };
 
@@ -260,18 +317,24 @@ export const useVisitorTracking = (userId?: string | null) => {
         clearInterval(trackingIntervalRef.current);
       }
       
-      // Track final time spent
-      const totalTime = Date.now() - startTimeRef.current;
-      if (totalTime > 0) {
+      // Track final time spent on cleanup
+      const now = Date.now();
+      const timeSinceLastUpdate = now - lastUpdateTimeRef.current;
+      
+      // Only send if there's time to report (at least 1 second)
+      if (timeSinceLastUpdate >= 1000) {
         const API_URL = URL;
-        const data = JSON.stringify({
-          visitorId: visitorId, // Use userId for logged-in users, persistent anonymous ID for anonymous
-          timeSpent: totalTime,
-        });
-        navigator.sendBeacon(
-          `${API_URL}/api/update-visitor-time`,
-          new Blob([data], { type: 'application/json' })
-        );
+        if (API_URL) {
+          const data = JSON.stringify({
+            visitorId: visitorId, // Use userId for logged-in users, persistent anonymous ID for anonymous
+            timeSpent: timeSinceLastUpdate, // Send incremental time since last update
+          });
+          navigator.sendBeacon(
+            `${API_URL}/api/update-visitor-time`,
+            new Blob([data], { type: 'application/json' })
+          );
+          console.log(`📤 [Tracking] Sent final time update on cleanup: ${Math.round(timeSinceLastUpdate / 1000)}s`);
+        }
       }
     };
   }, [userId]);

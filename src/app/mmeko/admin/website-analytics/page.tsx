@@ -70,6 +70,13 @@ interface UserRanking {
       other: number;
     };
   };
+  location: {
+    ipAddress: string;
+    country: string;
+    city: string;
+    region: string;
+    timezone: string;
+  };
 }
 
 interface Visitor {
@@ -89,6 +96,13 @@ interface Visitor {
   visitDate: Date;
   totalTimeSpentHours: number;
   pageViews: number;
+  location: {
+    ipAddress: string;
+    country: string;
+    city: string;
+    region: string;
+    timezone: string;
+  };
 }
 
 interface WebsiteAnalyticsData {
@@ -285,7 +299,7 @@ const WebsiteAnalyticsPage = () => {
               </div>
               <div className="text-xs text-green-200 mt-2">
                 Male: {data?.summary.signUpsByGender.male} | Female: {data?.summary.signUpsByGender.female}
-                {data?.summary.signUpsByGender.other > 0 && ` | Other: ${data?.summary.signUpsByGender.other}`}
+                {(data?.summary.signUpsByGender.other || 0) > 0 && ` | Other: ${data?.summary.signUpsByGender.other}`}
               </div>
             </>
           )}
@@ -418,6 +432,8 @@ const WebsiteAnalyticsPage = () => {
                       <th className="text-right py-3 px-4 text-sm font-semibold text-gray-300">Time Spent</th>
                       <th className="text-right py-3 px-4 text-sm font-semibold text-gray-300">Posts</th>
                       <th className="text-right py-3 px-4 text-sm font-semibold text-gray-300">Activities</th>
+                      <th className="text-left py-3 px-4 text-sm font-semibold text-gray-300">IP Address</th>
+                      <th className="text-left py-3 px-4 text-sm font-semibold text-gray-300">Location</th>
                       <th className="text-center py-3 px-4 text-sm font-semibold text-gray-300">Status</th>
                     </tr>
                   </thead>
@@ -493,6 +509,20 @@ const WebsiteAnalyticsPage = () => {
                               L:{user.stats.activityBreakdown.likes} C:{user.stats.activityBreakdown.comments} M:{user.stats.activityBreakdown.messages}
                             </div>
                           </td>
+                          <td className="py-4 px-4">
+                            <div className="text-white text-sm font-mono">
+                              {user.location?.ipAddress || 'Unknown'}
+                            </div>
+                          </td>
+                          <td className="py-4 px-4">
+                            <div className="text-white text-sm">
+                              {user.location?.city && user.location.city !== 'Unknown' ? `${user.location.city}, ` : ''}
+                              {user.location?.country || 'Unknown'}
+                            </div>
+                            {user.location?.region && user.location.region !== 'Unknown' && (
+                              <div className="text-xs text-gray-400">{user.location.region}</div>
+                            )}
+                          </td>
                           <td className="py-4 px-4 text-center">
                             <div className="flex items-center justify-center gap-2">
                               {user.userDetails.isVip && (
@@ -507,7 +537,7 @@ const WebsiteAnalyticsPage = () => {
                       ))
                     ) : (
                       <tr>
-                        <td colSpan={7} className="py-8 text-center text-gray-400">
+                        <td colSpan={8} className="py-8 text-center text-gray-400">
                           No user activity data available
                         </td>
                       </tr>
@@ -569,6 +599,8 @@ const WebsiteAnalyticsPage = () => {
                         <th className="text-left py-3 px-4 text-sm font-semibold text-gray-300">Visit Date</th>
                         <th className="text-right py-3 px-4 text-sm font-semibold text-gray-300">Time Spent</th>
                         <th className="text-right py-3 px-4 text-sm font-semibold text-gray-300">Page Views</th>
+                        <th className="text-left py-3 px-4 text-sm font-semibold text-gray-300">IP Address</th>
+                        <th className="text-left py-3 px-4 text-sm font-semibold text-gray-300">Location</th>
                         <th className="text-center py-3 px-4 text-sm font-semibold text-gray-300">Status</th>
                       </tr>
                     </thead>
@@ -638,13 +670,29 @@ const WebsiteAnalyticsPage = () => {
                             </td>
                             <td className="py-4 px-4">
                               <span className="text-gray-300">
-                                {new Date(visitor.visitDate).toLocaleDateString('en-US', {
-                                  year: 'numeric',
-                                  month: 'short',
-                                  day: 'numeric',
-                                  hour: '2-digit',
-                                  minute: '2-digit'
-                                })}
+                                {(() => {
+                                  // Parse the visit date - handle both string and Date objects
+                                  const visitDate = visitor.visitDate 
+                                    ? new Date(visitor.visitDate) 
+                                    : new Date();
+                                  
+                                  // Check if date is valid
+                                  if (isNaN(visitDate.getTime())) {
+                                    return 'Invalid Date';
+                                  }
+                                  
+                                  // Convert to user's local timezone automatically
+                                  // The browser automatically converts UTC/server time to user's local timezone
+                                  return visitDate.toLocaleString('en-US', {
+                                    year: 'numeric',
+                                    month: 'short',
+                                    day: 'numeric',
+                                    hour: '2-digit',
+                                    minute: '2-digit',
+                                    second: '2-digit', // Add seconds for more precision
+                                    timeZoneName: 'short' // Shows timezone abbreviation (e.g., EST, PST, GMT)
+                                  });
+                                })()}
                               </span>
                             </td>
                             <td className="py-4 px-4 text-right">
@@ -652,6 +700,20 @@ const WebsiteAnalyticsPage = () => {
                             </td>
                             <td className="py-4 px-4 text-right">
                               <span className="text-white font-medium">{visitor.pageViews}</span>
+                            </td>
+                            <td className="py-4 px-4">
+                              <div className="text-white text-sm font-mono">
+                                {visitor.location?.ipAddress || 'Unknown'}
+                              </div>
+                            </td>
+                            <td className="py-4 px-4">
+                              <div className="text-white text-sm">
+                                {visitor.location?.city && visitor.location.city !== 'Unknown' ? `${visitor.location.city}, ` : ''}
+                                {visitor.location?.country || 'Unknown'}
+                              </div>
+                              {visitor.location?.region && visitor.location.region !== 'Unknown' && (
+                                <div className="text-xs text-gray-400">{visitor.location.region}</div>
+                              )}
                             </td>
                             <td className="py-4 px-4 text-center">
                               {visitor.isAnonymous ? (
@@ -676,7 +738,7 @@ const WebsiteAnalyticsPage = () => {
                         ))
                       ) : (
                         <tr>
-                          <td colSpan={6} className="py-8 text-center text-gray-400">
+                          <td colSpan={7} className="py-8 text-center text-gray-400">
                             No visitor data available
                           </td>
                         </tr>

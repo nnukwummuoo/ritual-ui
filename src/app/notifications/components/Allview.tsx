@@ -223,7 +223,7 @@ export const Allview = () => {
         }
 
         // determine title based on notification type
-        let title = "Admin Notification"; // Default fallback
+        let title = "MMEKO"; // Default fallback
         if (message.includes("application")) {
           title = "Application Status";
         } else if (message.includes("follow")) {
