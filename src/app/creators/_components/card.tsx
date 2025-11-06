@@ -205,7 +205,7 @@ export const CreatorCard = ({
           src={currentSrc}
           width={400}
           height={300}
-          className="object-cover w-full rounded h-80"
+          className="object-cover w-full rounded h-64 sm:h-80 md:h-96"
           onError={handleImageError}
         />
       </div>
@@ -213,18 +213,18 @@ export const CreatorCard = ({
 
       {/* New Badge */}
       {isNew && (
-        <div className="absolute top-0 right-0 m-1 ">
-          <span className="inline-flex items-center px-2 py-1 text-xs font-bold text-white bg-gradient-to-br from-blue-500 to-purple-600 shadow-2xl rounded-full">
+        <div className="absolute top-0 right-0 m-2">
+          <span className="inline-flex items-center px-2.5 py-1.5 text-sm font-bold text-white bg-gradient-to-br from-blue-500 to-purple-600 shadow-2xl rounded-full">
             New
           </span>
         </div>
       )}
 
       {/* Bottom Info */}
-      <div className="absolute bottom-1">
-        <div className="flex flex-col items-start gap-1 px-1 overflow-auto sm:gap-2">
+      <div className="absolute bottom-2">
+        <div className="flex flex-col items-start gap-1.5 px-1 overflow-auto sm:gap-2">
           {/* Country */}
-          <div className="flex items-center gap-1 p-1 bg-black bg-opacity-40 rounded-lg">
+          <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-black bg-opacity-40 rounded-lg">
             {countryData.flag && (
               <div className="rounded-full overflow-hidden size-4">
                 <img                  src={countryData.flag}
@@ -239,12 +239,12 @@ export const CreatorCard = ({
           </div>
 
           {/* Host Type */}
-          <h4 className="p-1 text-xs bg-black bg-opacity-40 rounded-lg whitespace-nowrap">
+          <h4 className="px-2.5 py-1.5 text-xs bg-black bg-opacity-40 rounded-lg whitespace-nowrap">
             {hosttype}
           </h4>
 
           {/* First Name */}
-          <h4 className="p-1 text-xs bg-black bg-opacity-50 rounded-lg overflow-auto">
+          <h4 className="px-2.5 py-1.5 text-xs bg-black bg-opacity-50 rounded-lg overflow-auto">
             {name?.split?.(" ")[0] ?? "Name"}
           </h4>
         </div>

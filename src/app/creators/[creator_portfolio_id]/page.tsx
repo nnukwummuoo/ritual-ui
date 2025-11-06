@@ -50,6 +50,7 @@ import { useUserId } from "@/lib/hooks/useUserId";
 import { useAuth } from "@/lib/context/auth-context";
 import VIPBadge from "@/components/VIPBadge";
 import { checkVipCelebration, markVipCelebrationViewed } from "@/api/vipCelebration";
+import { checkVipStatus } from "@/store/vip";
 import { URL } from "@/api/config";
 
 
@@ -213,6 +214,9 @@ export default function Creatorbyid () {
   );
   const creator = useSelector((state: RootState) => state.creator.creatorbyid);
   const profile = useSelector((state: RootState) => state.profile);
+  
+  // Get VIP status from Redux store (for the creator's userid)
+  const vipStatus = useSelector((s: any) => s.vip?.vipStatus);
 
   // Get VIP status directly from creator data (like creators page)
   const vipStatusFromCreator = creator?.isVip ? {
@@ -302,26 +306,42 @@ export default function Creatorbyid () {
   }, [token]);
 
 
-  // VIP status is now included directly from backend, no need for separate API call
+  // Check VIP status for the creator's userid (not portfolio_id)
+  useEffect(() => {
+    // Get the creator's actual userid (not portfolio_id)
+    const creatorUserId = creator?.userid;
+    
+    if (creatorUserId) {
+      dispatch(checkVipStatus(creatorUserId) as any);
+    }
+  }, [creator?.userid, dispatch]);
 
   // Check VIP celebration status when VIP status is confirmed
   useEffect(() => {
     const checkCelebration = async () => {
       const currentUserId = getCurrentUserId();
+      
+      // Get the creator's actual userid (not portfolio_id)
+      const creatorUserId = creator?.userid;
 
-      // Only proceed if VIP status is confirmed from creator data
-      if (vipStatusFromCreator?.isVip === true && creatorbyidstatus === "succeeded" && Creator[0] && currentUserId && !celebrationChecked) {
+      // Check VIP status from both creator data and Redux store
+      // Use creator.userid (the actual user ID) instead of Creator[0] (portfolio_id)
+      const isVip = vipStatus?.isVip || vipStatusFromCreator?.isVip;
+      
+      // Only proceed if VIP status is confirmed and we have both user IDs
+      if (isVip === true && creatorbyidstatus === "succeeded" && creatorUserId && currentUserId && !celebrationChecked) {
         setCelebrationChecked(true);
         
         try {
-          const shouldShow = await checkVipCelebrationStatus(Creator[0], currentUserId);
+          // Use creator's userid, not portfolio_id
+          const shouldShow = await checkVipCelebrationStatus(creatorUserId, currentUserId);
           
           if (shouldShow) {
             setShowVipCelebration(true);
             setVipCelebrationShown(true);
             
-            // Mark as viewed in database
-            await markVipCelebrationAsViewed(Creator[0], currentUserId);
+            // Mark as viewed in database - use creator's userid
+            await markVipCelebrationAsViewed(creatorUserId, currentUserId);
             
             // Hide the celebration after 5 seconds
             setTimeout(() => {
@@ -335,14 +355,14 @@ export default function Creatorbyid () {
     };
 
     checkCelebration();
-  }, [vipStatusFromCreator, creatorbyidstatus, Creator[0], userid, celebrationChecked, checkVipCelebrationStatus, markVipCelebrationAsViewed]);
+  }, [vipStatus, vipStatusFromCreator, creatorbyidstatus, creator?.userid, userid, celebrationChecked, checkVipCelebrationStatus, markVipCelebrationAsViewed]);
 
-  // Reset VIP celebration tracking when switching creators
+  // Reset VIP celebration tracking when switching creators (use creator.userid instead of portfolio_id)
   useEffect(() => {
     setVipCelebrationShown(false);
     setShowVipCelebration(false);
     setCelebrationChecked(false);
-  }, [Creator[0]]);
+  }, [creator?.userid, Creator[0]]);
 
   useEffect(() => {
     const currentUserId = getCurrentUserId();
@@ -1252,10 +1272,12 @@ export default function Creatorbyid () {
               
               {/* VIP Badge - positioned on top-left of creator image */}
               {(() => {
-                const shouldShowVip = vipStatusFromCreator?.isVip === true;
-                return shouldShowVip && (
+                // Check VIP status from both Redux store and creator data
+                const isVip = vipStatus?.isVip || vipStatusFromCreator?.isVip;
+                const vipEndDate = vipStatus?.vipEndDate || vipStatusFromCreator?.vipEndDate;
+                return isVip === true && (
                   <div className="absolute top-2 left-20">
-                    <VIPBadge size="xxl" isVip={vipStatusFromCreator.isVip} vipEndDate={vipStatusFromCreator.vipEndDate} />
+                    <VIPBadge size="xxl" isVip={isVip} vipEndDate={vipEndDate} />
                   </div>
                 );
               })()}

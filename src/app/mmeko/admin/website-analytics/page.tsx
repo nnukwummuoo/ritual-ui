@@ -278,9 +278,7 @@ const WebsiteAnalyticsPage = () => {
               <div className="text-3xl font-bold text-white">
                 {data?.summary.totalVisitors.toLocaleString() || 0}
               </div>
-              <div className="text-xs text-blue-200 mt-2">
-                Peak Day: Day {data?.summary.dayWithMostVisitors.dayNumber} ({data?.summary.dayWithMostVisitors.visitors} visitors)
-              </div>
+              
             </>
           )}
         </div>
@@ -492,7 +490,7 @@ const WebsiteAnalyticsPage = () => {
                                   {user.userDetails.firstname} {user.userDetails.lastname}
                                 </div>
                                 {user.userDetails.username && (
-                                  <div className="text-xs text-gray-400">@{user.userDetails.username}</div>
+                                  <div className="text-xs text-gray-400">{user.userDetails.username}</div>
                                 )}
                               </div>
                             </div>
@@ -660,7 +658,7 @@ const WebsiteAnalyticsPage = () => {
                                       {visitor.userDetails.firstname} {visitor.userDetails.lastname}
                                     </div>
                                     {visitor.userDetails.username && (
-                                      <div className="text-xs text-gray-400">@{visitor.userDetails.username}</div>
+                                      <div className="text-xs text-gray-400">{visitor.userDetails.username}</div>
                                     )}
                                   </div>
                                 </div>
