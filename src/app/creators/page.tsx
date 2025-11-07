@@ -53,9 +53,9 @@ export default function CreatorPage() {
 
   const buttonData = [
     { label: "All", value: "All" },
-    { label: "Fan call", value: "Fan Call" },
-    { label: "Fan meet", value: "Fan meet" },
-    { label: "Fan date", value: "Fan date" },
+    { label: "Fan call", value: "fan call" },
+    { label: "Fan meet", value: "fan meet" },
+    { label: "Fan date", value: "fan date" },
   ];
 
   const toggleModal = () => setShowCountries((prev) => !prev);
@@ -280,24 +280,23 @@ const renderCreators = () => {
     return (
       <SkeletonTheme baseColor="#202020" highlightColor="#444">
         <div className="w-full p-4 space-y-4">
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+          <div className="grid grid-cols-2 gap-2 mt-4 mb-12 md:grid-cols-3">
             {Array(8)
               .fill(0)
               .map((_, index) => (
                 <div
                   key={index}
-                  className="relative flex flex-col items-center p-4 bg-[#121212] rounded-lg shadow-lg"
+                  className="relative overflow-hidden rounded"
                 >
                   <Skeleton 
                     width="100%" 
-                    height={250} 
-                    className="rounded-lg" 
-                    style={{ maxWidth: '200px' }}
+                    height={256}
+                    className="rounded h-64 sm:h-80 md:h-96" 
                   />
-                  <div className="mt-3 w-full space-y-2">
-                    <Skeleton width="80%" height={16} className="mx-auto" />
-                    <Skeleton width="60%" height={14} className="mx-auto" />
-                    <Skeleton width="40%" height={12} className="mx-auto" />
+                  <div className="absolute bottom-1 left-1 space-y-1">
+                    <Skeleton width={60} height={20} className="rounded-lg" />
+                    <Skeleton width={80} height={20} className="rounded-lg" />
+                    <Skeleton width={50} height={20} className="rounded-lg" />
                   </div>
                 </div>
               ))}
@@ -325,7 +324,10 @@ const renderCreators = () => {
     if (categoryButton === "All") {
       return true; // Show all creators
     }
-    return creator.hosttype === categoryButton;
+    // Convert both to lowercase for case-insensitive matching
+    const creatorHostType = (creator.hosttype || "").toLowerCase().trim();
+    const selectedCategory = categoryButton.toLowerCase().trim();
+    return creatorHostType === selectedCategory;
   });
 
   // Sort creators based on authentication status

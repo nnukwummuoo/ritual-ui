@@ -83,6 +83,9 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, isOpen, onClose
   const [followData, setFollowData] = useState<FollowData>({ followers: [], following: [] });
   const [loadingFollows, setLoadingFollows] = useState(false);
   const [activeTab, setActiveTab] = useState<'followers' | 'following'>('followers');
+  const [showVipManager, setShowVipManager] = useState(false);
+  const [vipDuration, setVipDuration] = useState<7 | 30>(30);
+  const [grantingVip, setGrantingVip] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -138,6 +141,40 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, isOpen, onClose
   const formatDate = (dateString?: string) => {
     if (!dateString) return "N/A";
     return new Date(dateString).toLocaleDateString();
+  };
+
+  const handleGrantVip = async () => {
+    if (!user) return;
+    
+    setGrantingVip(true);
+    try {
+      // Calculate VIP dates based on duration
+      const startDate = new Date();
+      const endDate = new Date();
+      endDate.setDate(endDate.getDate() + vipDuration);
+
+      // Prepare VIP updates
+      const vipUpdates = {
+        isVip: true,
+        vipStartDate: startDate.toISOString(),
+        vipEndDate: endDate.toISOString(),
+        vipAutoRenewal: true
+      };
+
+      // Use onUpdateUser which handles the API call and state updates
+      await onUpdateUser(user._id, vipUpdates);
+      
+      toast.success(`VIP granted successfully for ${vipDuration} days with auto-renewal enabled`);
+      
+      // Update local edited user state
+      setEditedUser({ ...editedUser, ...vipUpdates });
+      setShowVipManager(false);
+    } catch (error) {
+      console.error('Error granting VIP:', error);
+      toast.error("Failed to grant VIP");
+    } finally {
+      setGrantingVip(false);
+    }
   };
 
   return (
@@ -404,16 +441,118 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, isOpen, onClose
                     </span>
                   )}
                 </div>
-                <div className="flex items-center gap-2">
-                  <label className="text-gray-300 text-sm">VIP Status:</label>
-                  <span className={`px-2 py-1 rounded text-xs ${user.isVip ? "bg-yellow-500" : "bg-gray-500"}`}>
-                    {user.isVip ? "VIP" : "Regular"}
-                  </span>
-                </div>
                 <div>
                   <label className="text-gray-300 text-sm">Creator Application Status</label>
                   <p className="text-white capitalize">{user.Creator_Application_status || "None"}</p>
                 </div>
+              </div>
+            </div>
+
+            {/* VIP Management */}
+            <div className="bg-gray-800 p-4 rounded-lg">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-semibold text-yellow-500">VIP Management</h3>
+                {!user.isVip && (
+                  <button
+                    onClick={() => setShowVipManager(!showVipManager)}
+                    className="bg-yellow-500 text-black px-4 py-2 rounded hover:bg-yellow-600 text-sm font-bold"
+                  >
+                    Grant VIP
+                  </button>
+                )}
+              </div>
+              
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <label className="text-gray-300 text-sm">VIP Status:</label>
+                  <span className={`px-2 py-1 rounded text-xs ${user.isVip ? "bg-yellow-500" : "bg-gray-500"}`}>
+                    {user.isVip ? "VIP Active" : "Not VIP"}
+                  </span>
+                </div>
+                
+                {user.isVip && (
+                  <>
+                    <div>
+                      <label className="text-gray-300 text-sm">VIP Start Date</label>
+                      <p className="text-white">{formatDate(user.vipStartDate)}</p>
+                    </div>
+                    <div>
+                      <label className="text-gray-300 text-sm">VIP End Date</label>
+                      <p className="text-white">{formatDate(user.vipEndDate)}</p>
+                    </div>
+                    <div>
+                      <label className="text-gray-300 text-sm">Auto-Renewal</label>
+                      <span className={`px-2 py-1 rounded text-xs ml-2 ${user.vipAutoRenewal ? "bg-green-500" : "bg-red-500"}`}>
+                        {user.vipAutoRenewal ? "Enabled" : "Disabled"}
+                      </span>
+                    </div>
+                    {user.vipEndDate && (
+                      <div>
+                        <label className="text-gray-300 text-sm">Days Remaining</label>
+                        <p className="text-white">
+                          {Math.max(0, Math.ceil((new Date(user.vipEndDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)))} days
+                        </p>
+                      </div>
+                    )}
+                  </>
+                )}
+
+                {/* VIP Grant Form */}
+                {showVipManager && !user.isVip && (
+                  <div className="mt-4 p-4 bg-gray-700 rounded-lg border border-yellow-500">
+                    <h4 className="text-white font-bold mb-3">Grant VIP Status</h4>
+                    <div className="space-y-3">
+                      <div>
+                        <label className="text-gray-300 text-sm mb-2 block">Select Duration</label>
+                        <div className="flex gap-4">
+                          <label className="flex items-center cursor-pointer">
+                            <input
+                              type="radio"
+                              name="vipDuration"
+                              value="7"
+                              checked={vipDuration === 7}
+                              onChange={() => setVipDuration(7)}
+                              className="mr-2"
+                            />
+                            <span className="text-white">One Week (7 days)</span>
+                          </label>
+                          <label className="flex items-center cursor-pointer">
+                            <input
+                              type="radio"
+                              name="vipDuration"
+                              value="30"
+                              checked={vipDuration === 30}
+                              onChange={() => setVipDuration(30)}
+                              className="mr-2"
+                            />
+                            <span className="text-white">One Month (30 days)</span>
+                          </label>
+                        </div>
+                      </div>
+                      <div className="bg-blue-900/20 border border-blue-500/30 rounded-lg p-3">
+                        <p className="text-blue-300 text-sm">
+                          <strong>Note:</strong> VIP will be granted with auto-renewal enabled. 
+                          The user will have VIP benefits for {vipDuration} days.
+                        </p>
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={handleGrantVip}
+                          disabled={grantingVip}
+                          className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed flex-1"
+                        >
+                          {grantingVip ? "Granting..." : "Grant VIP"}
+                        </button>
+                        <button
+                          onClick={() => setShowVipManager(false)}
+                          className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
