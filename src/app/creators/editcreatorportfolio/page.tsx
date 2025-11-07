@@ -994,7 +994,7 @@ export default function Editcreator () {
                   </div>
                   <h4 className="text-white font-semibold">Fan call (online)</h4>
                 </div>
-                <p className="text-yellow-400 font-bold text-lg">10 - 120 gold / min</p>
+                <p className="text-yellow-400 font-bold text-lg">10 - 20 gold / min</p>
                 <p className="text-gray-300 text-sm">(≈ $0.40 - $0.80 / min)</p>
               </div>
 

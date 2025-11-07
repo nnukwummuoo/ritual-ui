@@ -5767,7 +5767,7 @@ const PostModal = () => {
 
                         <div>
 
-                          <p className="text-sm mb-2">Share your first post with your followers</p>
+                          <p className="text-sm mb-2">Share your first post with your fans</p>
 
                           <button 
 
