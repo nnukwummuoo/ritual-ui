@@ -40,6 +40,8 @@ import StarIcon from "@/icons/transparentstar.svg";
 
 import StarIcon2 from "@/icons/star.svg";
 
+import { MoreVertical, MoreHorizontal } from "lucide-react";
+
 import axios from "axios";
 
 import { Heart, MessageCircle, X, Plus, Upload, Lock } from "lucide-react";
@@ -422,21 +424,6 @@ export const Profile = () => {
 
   
 
-  // Exclusive content upload modal state
-
-  const [showExclusiveUploadModal, setShowExclusiveUploadModal] = useState(false);
-
-  const [exclusiveContentPrice, setExclusiveContentPrice] = useState<string>("");
-
-  const [exclusiveContentFile, setExclusiveContentFile] = useState<File | null>(null);
-
-  const [exclusiveContentPreview, setExclusiveContentPreview] = useState<string | null>(null);
-
-  const [exclusiveContentDescription, setExclusiveContentDescription] = useState<string>("");
-
-  const [isUploadingExclusive, setIsUploadingExclusive] = useState(false);
-
-  
 
   // VIP celebration tracking state
 
@@ -1690,7 +1677,29 @@ export const Profile = () => {
 
         }
 
-      );
+      ).catch((error) => {
+
+        // Log more details about the error for debugging
+
+        console.error("Error fetching exclusive posts - Full error:", {
+
+          message: error.message,
+
+          status: error.response?.status,
+
+          statusText: error.response?.statusText,
+
+          url: error.config?.url,
+
+          method: error.config?.method,
+
+          data: error.response?.data
+
+        });
+
+        throw error;
+
+      });
 
       
 
@@ -1743,10 +1752,25 @@ export const Profile = () => {
         
         await Promise.all(purchaseChecks);
       }
-    } catch (error) {
+    } catch (error: any) {
 
       console.error("Error fetching exclusive posts:", error);
 
+      // Log detailed error information
+      if (error.response) {
+        console.error("Response error:", {
+          status: error.response.status,
+          statusText: error.response.statusText,
+          data: error.response.data,
+          url: error.config?.url
+        });
+      } else if (error.request) {
+        console.error("Request error - no response received:", error.request);
+      } else {
+        console.error("Error setting up request:", error.message);
+      }
+
+      // Set empty array on error to prevent UI issues
       setExclusivePosts([]);
 
     } finally {
@@ -1812,7 +1836,7 @@ export const Profile = () => {
 
         setPurchasePost(null);
 
-        toast.success("Post purchased successfully!");
+        toast.success("Content purchased successfully!");
 
         // Refresh exclusive posts
 
@@ -3996,6 +4020,9 @@ const PostModal = () => {
     const [fullScreenImageOriginal, setFullScreenImageOriginal] = React.useState<string | null>(null);
     // Track image loading state per post
     const imageLoadingStatesRef = React.useRef<Map<string, { loading: boolean; error: boolean }>>(new Map());
+    // Track dropdown open state per post
+    const [openDropdowns, setOpenDropdowns] = React.useState<Set<string>>(new Set());
+    const [deletingPostId, setDeletingPostId] = React.useState<string | null>(null);
 
 
     // Handle Escape key to close full-screen image
@@ -4074,7 +4101,23 @@ const PostModal = () => {
 
     }, [clickedExclusivePostId, showExclusivePostModal]);
 
+    // Toggle dropdown for a specific post
+    const toggleDropdown = React.useCallback((postId: string) => {
+      setOpenDropdowns(prev => {
+        const newSet = new Set(prev);
+        if (newSet.has(postId)) {
+          newSet.delete(postId);
+        } else {
+          newSet.add(postId);
+        }
+        return newSet;
+      });
+    }, []);
 
+    // Close all dropdowns
+    const closeAllDropdowns = React.useCallback(() => {
+      setOpenDropdowns(new Set());
+    }, []);
 
     // Reset clicked post ID when modal closes
 
@@ -4089,9 +4132,11 @@ const PostModal = () => {
         setFullScreenImageOriginal(null);
         // Reset image loading states when modal closes
         imageLoadingStatesRef.current.clear();
+        // Close all dropdowns when modal closes
+        closeAllDropdowns();
       }
 
-    }, [showExclusivePostModal]);
+    }, [showExclusivePostModal, closeAllDropdowns]);
 
 
 
@@ -4121,29 +4166,164 @@ const PostModal = () => {
 
     }, [showExclusivePostModal, loggedInUserId, exclusivePosts, purchasedPostIds, checkPostPurchase, localUserid]);
 
+    // Handle delete exclusive post
+    const handleDeletePost = React.useCallback(async (post: any) => {
+      const postId = post._id || post.postid || post.id;
+      
+      if (!postId || !token) {
+        toast.error("Unable to delete post. Please log in and try again.");
+        return;
+      }
 
+      // Confirmation dialog
+      const confirmed = await new Promise<boolean>((resolve) => {
+        toast.info(
+          <div className="flex flex-col gap-3 bg-red-900 p-4 rounded-lg">
+            <div className="text-white">
+              Are you sure you want to delete this exclusive post? This action cannot be undone.
+            </div>
+            <div className="flex gap-2 justify-end">
+              <button
+                className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-sm"
+                onClick={() => {
+                  toast.dismiss();
+                  resolve(true);
+                }}
+              >
+                Delete
+              </button>
+              <button
+                className="px-3 py-1 bg-gray-600 text-white rounded hover:bg-gray-700 text-sm"
+                onClick={() => {
+                  toast.dismiss();
+                  resolve(false);
+                }}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>,
+          {
+            position: "top-center",
+            autoClose: false,
+            closeOnClick: false,
+            draggable: false,
+            className: "toast-confirmation"
+          }
+        );
+      });
+
+      if (!confirmed) {
+        return;
+      }
+
+      setDeletingPostId(postId);
+      closeAllDropdowns();
+
+      try {
+        const response = await axios.patch(`${API_URL}/exclusive`, {
+          id: postId
+        }, {
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          }
+        });
+
+        if (response.data?.ok) {
+          toast.success("Exclusive post deleted successfully!");
+          // Remove from local state
+          setExclusivePosts(prev => prev.filter(p => {
+            const pId = p._id || p.postid || p.id;
+            return String(pId) !== String(postId);
+          }));
+          
+          // Refresh the exclusive posts list to ensure consistency
+          if (targetUserId) {
+            // Small delay to ensure backend has processed the deletion
+            setTimeout(() => {
+              fetchExclusivePosts(String(targetUserId));
+            }, 500);
+          }
+        } else {
+          toast.error(response.data?.message || "Failed to delete post");
+        }
+      } catch (error: any) {
+        console.error("Error deleting exclusive post:", error);
+        
+        // Provide more detailed error messages
+        if (error.response) {
+          const errorMessage = error.response.data?.message || error.response.statusText || "Failed to delete post";
+          toast.error(errorMessage);
+        } else if (error.request) {
+          toast.error("Network error. Please check your connection and try again.");
+        } else {
+          toast.error("Failed to delete post. Please try again.");
+        }
+      } finally {
+        setDeletingPostId(null);
+      }
+    }, [token, closeAllDropdowns, targetUserId, fetchExclusivePosts]);
+
+    // Handle share exclusive post
+    const handleSharePost = React.useCallback(async (post: any) => {
+      const postId = post._id || post.postid || post.id;
+      if (!postId) return;
+
+      const postUrl = `${window.location.origin}/Profile/${viewingUserId}?exclusive=${postId}`;
+      
+      closeAllDropdowns();
+
+      try {
+        // Try native share API first
+        if (navigator.share) {
+          await navigator.share({
+            title: `${isViewingOwnProfile ? firstname : profileData?.firstname || ""}'s exclusive post`,
+            text: post?.content?.slice(0, 100) + (post?.content?.length > 100 ? '...' : '') || "Check out this exclusive content!",
+            url: postUrl
+          });
+        } else {
+          // Fallback to clipboard
+          await navigator.clipboard.writeText(postUrl);
+          toast.success("Link copied to clipboard!");
+        }
+      } catch (error: any) {
+        // If user cancels share, don't show error
+        if (error.name !== 'AbortError') {
+          // Fallback to clipboard
+          try {
+            await navigator.clipboard.writeText(postUrl);
+            toast.success("Link copied to clipboard!");
+          } catch (clipboardError) {
+            toast.error("Failed to share post");
+          }
+        }
+      }
+    }, [viewingUserId, isViewingOwnProfile, firstname, profileData, closeAllDropdowns]);
+
+    // Close dropdowns when clicking outside
+    React.useEffect(() => {
+      const handleClickOutside = (event: MouseEvent) => {
+        const target = event.target as HTMLElement;
+        if (!target.closest('.exclusive-post-dropdown')) {
+          closeAllDropdowns();
+        }
+      };
+
+      if (openDropdowns.size > 0) {
+        document.addEventListener('click', handleClickOutside);
+        return () => document.removeEventListener('click', handleClickOutside);
+      }
+    }, [openDropdowns, closeAllDropdowns]);
+
+    const handleEditPost = React.useCallback((post: any) => {
+      const postId = post._id || post.postid || post.id;
+      setShowExclusivePostModal(false);
+      // Navigate to upload-exclusive page with post ID for editing
+      router.push(`/Profile/${viewingUserId}/upload-exclusive?postId=${postId}`);
+    }, [viewingUserId, router]);
 
     if (!exclusivePosts || exclusivePosts.length === 0) return null;
-
-
-
-    const handleEditPost = (post: any) => {
-
-      setEditingExclusivePost(post);
-
-      setEditExclusiveContent(post.content || "");
-
-      setEditExclusivePrice(post.price?.toString() || "");
-
-      setEditExclusiveFile(null);
-
-      setEditExclusivePreview(null);
-
-      setShowExclusivePostModal(false);
-
-      setShowEditExclusiveModal(true);
-
-    };
 
 
 
@@ -4371,26 +4551,6 @@ const PostModal = () => {
                       </div>
 
                     </div>
-
-                    {/* Edit Button - Only show for post owner */}
-
-                    {isPostOwner && (
-
-                      <button
-
-                        onClick={() => handleEditPost(post)}
-
-                        className="text-gray-400 hover:text-orange-500 transition-colors p-2"
-
-                        title="Edit post"
-
-                      >
-
-                        <BiPencil className="w-5 h-5" />
-
-                      </button>
-
-                    )}
 
                   </div>
 
@@ -4687,87 +4847,212 @@ const PostModal = () => {
 
                   {/* Post Actions */}
 
-                  <PostActions
+                  <div className="mt-3 border-t border-gray-700 pt-2 flex items-center justify-between">
 
-                    className="mt-3 border-t border-gray-700 pt-2"
+                    <div className="flex-1 flex items-center gap-2">
+                      {/* Like Button */}
+                      <button
+                        type="button"
+                        className="flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-700/50 transition-colors duration-200 text-gray-400 hover:text-gray-200"
+                        onClick={async () => {
+                          const uid = String(loggedInUserId || localUserid || "");
+                          const postId = post._id || post.postid || post.id;
+                          
+                          if (!postId || !token) {
+                            toast.error("Please login to like posts");
+                            return;
+                          }
 
-                    starred={false}
+                          try {
+                            await dispatch(postlike({
+                              userid: uid,
+                              postid: postId,
+                              token: token
+                            } as any)).unwrap();
+                            
+                            toast.success("Post liked!");
+                            fetchExclusivePosts(String(targetUserId));
+                          } catch (err) {
+                            toast.error("Failed to like post");
+                          }
+                        }}
+                      >
+                        <Heart className="w-5 h-5" />
+                        <span className="text-sm tabular-nums">{post.likeCount || post.likes?.length || 0}</span>
+                      </button>
 
-                    liked={false}
+                      {/* Comment Button */}
+                      <button
+                        type="button"
+                        className="flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-700/50 transition-colors duration-200 text-gray-400 hover:text-gray-200"
+                        onClick={() => {
+                          const postId = post._id || post.postid || post.id;
+                          setModalUi(prev => ({
+                            ...prev,
+                            [postId]: {
+                              ...prev[postId],
+                              open: !prev[postId]?.open
+                            }
+                          }));
+                        }}
+                      >
+                        <MessageCircle className="w-5 h-5" />
+                        <span className="text-sm tabular-nums">{post.commentCount || post.comments?.length || 0}</span>
+                      </button>
+                    </div>
 
-                    likeCount={post.likeCount || post.likes?.length || 0}
+                    {/* Dropdown Menu - Show for everyone, but Edit/Delete only for owner */}
 
-                    commentCount={post.commentCount || post.comments?.length || 0}
+                    <div className="relative exclusive-post-dropdown ml-2">
 
-                    post={post}
+                      <button
 
-                    onStar={() => {}}
+                        onClick={(e) => {
 
-                    onLike={async () => {
+                          e.stopPropagation();
 
-                      const uid = String(loggedInUserId || localUserid || "");
+                          toggleDropdown(String(postId));
 
-                      const postId = post._id || post.postid || post.id;
+                        }}
 
-                      
+                        className="text-gray-400 hover:text-white transition-colors p-2"
 
-                      if (!postId || !token) {
+                        title="More options"
 
-                        toast.error("Please login to like posts");
+                      >
 
-                        return;
+                        <MoreHorizontal className="w-5 h-5" />
 
-                      }
+                      </button>
 
+                      {openDropdowns.has(String(postId)) && (
 
+                        <div
 
-                      try {
+                          className="absolute right-0 bottom-full mb-2 w-48 rounded-md shadow-lg bg-gray-800 ring-1 ring-gray-600 ring-opacity-5 focus:outline-none z-50"
 
-                        await dispatch(postlike({
+                          role="menu"
 
-                          userid: uid,
+                          aria-orientation="vertical"
 
-                          postid: postId,
+                          onClick={(e) => e.stopPropagation()}
 
-                          token: token
+                        >
 
-                        } as any)).unwrap();
+                          <div className="py-1" role="none">
 
-                        
+                            {/* Edit - Only show for post owner */}
+                            {isPostOwner && (
+                              <button
 
-                        toast.success("Post liked!");
+                                onClick={(e) => {
 
-                        fetchExclusivePosts(String(targetUserId));
+                                  e.stopPropagation();
 
-                      } catch (err) {
+                                  closeAllDropdowns();
 
-                        toast.error("Failed to like post");
+                                  handleEditPost(post);
 
-                      }
+                                }}
 
-                    }}
+                                className="text-white block w-full text-left px-4 py-2 text-sm hover:bg-gray-700 transition-colors flex items-center gap-2"
 
-                    onComment={() => {
+                                role="menuitem"
 
-                      const postId = post._id || post.postid || post.id;
+                              >
 
-                      setModalUi(prev => ({
+                                <BiPencil className="w-4 h-4" />
 
-                        ...prev,
+                                Edit
 
-                        [postId]: {
+                              </button>
+                            )}
 
-                          ...prev[postId],
+                            {/* Share - Show for everyone */}
+                            <button
 
-                          open: !prev[postId]?.open
+                              onClick={(e) => {
 
-                        }
+                                e.stopPropagation();
 
-                      }));
+                                handleSharePost(post);
 
-                    }}
+                              }}
 
-                  />
+                              className="text-white block w-full text-left px-4 py-2 text-sm hover:bg-gray-700 transition-colors flex items-center gap-2"
+
+                              role="menuitem"
+
+                            >
+
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+
+                              </svg>
+
+                              Share
+
+                            </button>
+
+                            {/* Delete - Only show for post owner */}
+                            {isPostOwner && (
+                              <button
+
+                                onClick={(e) => {
+
+                                  e.stopPropagation();
+
+                                  handleDeletePost(post);
+
+                                }}
+
+                                disabled={deletingPostId === String(postId)}
+
+                                className="text-red-400 block w-full text-left px-4 py-2 text-sm hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+
+                                role="menuitem"
+
+                              >
+
+                                {deletingPostId === String(postId) ? (
+
+                                  <div className="flex items-center gap-2">
+
+                                    <div className="w-3 h-3 border border-red-400 border-t-transparent rounded-full animate-spin"></div>
+
+                                    Deleting...
+
+                                  </div>
+
+                                ) : (
+
+                                  <>
+
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+
+                                    </svg>
+
+                                    Delete
+
+                                  </>
+
+                                )}
+
+                              </button>
+                            )}
+
+                          </div>
+
+                        </div>
+
+                      )}
+
+                    </div>
+
+                  </div>
 
 
 
@@ -5792,7 +6077,7 @@ const PostModal = () => {
 
                           className="relative aspect-square group cursor-pointer rounded-sm overflow-hidden bg-gray-800 dark:bg-gray-700 border-2 border-dashed border-gray-600 dark:border-gray-500 hover:border-orange-500 dark:hover:border-orange-500 transition-colors flex items-center justify-center"
 
-                          onClick={() => setShowExclusiveUploadModal(true)}
+                          onClick={() => router.push(`/Profile/${viewingUserId}/upload-exclusive`)}
 
                         >
 
@@ -6577,426 +6862,6 @@ const PostModal = () => {
 
       
 
-      {/* Exclusive Content Upload Modal */}
-
-      {showExclusiveUploadModal && (
-
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75 p-4">
-
-          <div className="bg-gray-900 dark:bg-gray-800 rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto">
-
-            <div className="sticky top-0 bg-gray-900 dark:bg-gray-800 border-b border-gray-700 px-6 py-4 flex items-center justify-between">
-
-              <h2 className="text-xl font-semibold text-white">Upload Exclusive Content</h2>
-
-              <button
-
-                onClick={() => {
-
-                  setShowExclusiveUploadModal(false);
-
-                  setExclusiveContentFile(null);
-
-                  setExclusiveContentPreview(null);
-
-                  setExclusiveContentPrice("");
-
-                  setExclusiveContentDescription("");
-
-                }}
-
-                className="text-gray-400 hover:text-white transition-colors"
-
-              >
-
-                <X className="w-6 h-6" />
-
-              </button>
-
-            </div>
-
-            
-
-            <div className="p-6 space-y-6">
-
-              {/* File Upload Area */}
-
-              <div>
-
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-
-                  Content (Image or Video)
-
-                </label>
-
-                <div
-
-                  className="border-2 border-dashed border-gray-600 dark:border-gray-500 rounded-lg p-8 text-center cursor-pointer hover:border-orange-500 dark:hover:border-orange-500 transition-colors"
-
-                  onClick={() => {
-
-                    const input = document.createElement('input');
-
-                    input.type = 'file';
-
-                    input.accept = 'image/*,video/*';
-
-                    input.onchange = (e) => {
-
-                      const file = (e.target as HTMLInputElement).files?.[0];
-
-                      if (file) {
-
-                        setExclusiveContentFile(file);
-
-                        const reader = new FileReader();
-
-                        reader.onloadend = () => {
-
-                          setExclusiveContentPreview(reader.result as string);
-
-                        };
-
-                        if (file.type.startsWith('image/')) {
-
-                          reader.readAsDataURL(file);
-
-                        } else if (file.type.startsWith('video/')) {
-
-                          reader.readAsDataURL(file);
-
-                        }
-
-                      }
-
-                    };
-
-                    input.click();
-
-                  }}
-
-                >
-
-                  {exclusiveContentPreview ? (
-
-                    <div className="space-y-4">
-
-                      {exclusiveContentFile?.type.startsWith('image/') ? (
-
-                        <img
-
-                          src={exclusiveContentPreview}
-
-                          alt="Preview"
-
-                          className="max-h-64 mx-auto rounded-lg"
-
-                        />
-
-                      ) : exclusiveContentFile?.type.startsWith('video/') ? (
-
-                        <div className="w-full">
-                          <VideoComponent
-                            post={{
-                              _id: 'upload-preview',
-                              postid: 'upload-preview',
-                              id: 'upload-preview'
-                            }}
-                            src={exclusiveContentPreview}
-                            pathUrlPrimary=""
-                            queryUrlFallback=""
-                            pathUrlFallback=""
-                          />
-                        </div>
-
-                      ) : null}
-
-                      <p className="text-sm text-gray-400">{exclusiveContentFile?.name}</p>
-
-                      <button
-
-                        type="button"
-
-                        onClick={(e) => {
-
-                          e.stopPropagation();
-
-                          setExclusiveContentFile(null);
-
-                          setExclusiveContentPreview(null);
-
-                        }}
-
-                        className="text-sm text-orange-500 hover:text-orange-600"
-
-                      >
-
-                        Remove
-
-                      </button>
-
-                    </div>
-
-                  ) : (
-
-                    <div>
-
-                      <Upload className="w-12 h-12 mx-auto mb-4 text-gray-400" />
-
-                      <p className="text-gray-400 mb-2">Click to upload or drag and drop</p>
-
-                      <p className="text-sm text-gray-500">Image or Video</p>
-
-                    </div>
-
-                  )}
-
-                </div>
-
-              </div>
-
-              
-
-              {/* Content/Description Input */}
-
-              <div>
-
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-
-                  Description
-
-                </label>
-
-                <textarea
-
-                  value={exclusiveContentDescription}
-
-                  onChange={(e) => setExclusiveContentDescription(e.target.value)}
-
-                  placeholder="Add a description for your exclusive content..."
-
-                  rows={3}
-
-                  className="w-full px-4 py-2 bg-gray-800 dark:bg-gray-700 border border-gray-600 dark:border-gray-500 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 resize-none"
-
-                />
-
-              </div>
-
-              
-
-              {/* Price Input */}
-
-              <div>
-
-                <label className="block text-sm font-medium text-gray-300 mb-2 flex items-center gap-2">
-
-                  Price
-
-                  <span className="text-yellow-400 text-lg">🪙</span>
-
-                </label>
-
-                <input
-
-                  type="number"
-
-                  min="0"
-
-                  step="0.01"
-
-                  value={exclusiveContentPrice}
-
-                  onChange={(e) => setExclusiveContentPrice(e.target.value)}
-
-                  placeholder="0.00"
-
-                  className="w-full px-4 py-2 bg-gray-800 dark:bg-gray-700 border border-gray-600 dark:border-gray-500 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500"
-
-                />
-
-                <p className="text-xs text-gray-500 mt-1">Set the price for this exclusive content</p>
-
-              </div>
-
-              
-
-              {/* Submit Button */}
-
-              <div className="flex gap-3">
-
-                <button
-
-                  onClick={() => {
-
-                    setShowExclusiveUploadModal(false);
-
-                    setExclusiveContentFile(null);
-
-                    setExclusiveContentPreview(null);
-
-                    setExclusiveContentPrice("");
-
-                    setExclusiveContentDescription("");
-
-                  }}
-
-                  className="flex-1 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors"
-
-                >
-
-                  Cancel
-
-                </button>
-
-                <button
-
-                  onClick={async () => {
-
-                    if (!exclusiveContentFile) {
-
-                      toast.error("Please select a file to upload");
-
-                      return;
-
-                    }
-
-                    if (!exclusiveContentPrice || parseFloat(exclusiveContentPrice) <= 0) {
-
-                      toast.error("Please enter a valid price");
-
-                      return;
-
-                    }
-
-                    
-
-                    setIsUploadingExclusive(true);
-
-                    
-
-                    try {
-
-                      // Get user ID and token
-
-                      const userid = loggedInUserId || localUserid;
-
-                      const authToken = token;
-
-                      
-
-                      if (!userid) {
-
-                        toast.error("Please log in to upload content");
-
-                        setIsUploadingExclusive(false);
-
-                        return;
-
-                      }
-
-                      
-
-                      // Create FormData
-
-                      const formData = new FormData();
-
-                      formData.append("file", exclusiveContentFile);
-
-                      formData.append("data", JSON.stringify({
-
-                        userid,
-
-                        content: exclusiveContentDescription || "",
-
-                        price: parseFloat(exclusiveContentPrice),
-
-                      }));
-
-                      
-
-                      // Upload to backend
-
-                      const response = await axios.post(`${API_URL}/exclusivepost`, formData, {
-
-                        headers: {
-
-                          "Content-Type": "multipart/form-data",
-
-                          ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
-
-                        },
-
-                      });
-
-                      
-
-                      if (response.data.ok) {
-
-                        toast.success("Exclusive content uploaded successfully!");
-
-                        setShowExclusiveUploadModal(false);
-
-                        setExclusiveContentFile(null);
-
-                        setExclusiveContentPreview(null);
-
-                        setExclusiveContentPrice("");
-
-                        setExclusiveContentDescription("");
-
-                        // Refresh exclusive posts
-
-                        if (targetUserId) {
-
-                          fetchExclusivePosts(String(targetUserId));
-
-                        }
-
-                      } else {
-
-                        toast.error(response.data.message || "Upload failed");
-
-                      }
-
-                    } catch (error: any) {
-
-                      console.error("Upload error:", error);
-
-                      const errorMessage = error.response?.data?.message || error.message || "Upload failed. Please try again.";
-
-                      toast.error(errorMessage);
-
-                    } finally {
-
-                      setIsUploadingExclusive(false);
-
-                    }
-
-                  }}
-
-                  disabled={isUploadingExclusive}
-
-                  className="flex-1 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-
-                >
-
-                  {isUploadingExclusive ? "Uploading..." : "Upload"}
-
-                </button>
-
-              </div>
-
-            </div>
-
-          </div>
-
-        </div>
-
-      )}
-
-      
-
       {/* Purchase Confirmation Modal */}
 
       {showPurchaseModal && purchasePost && (
@@ -7007,7 +6872,7 @@ const PostModal = () => {
 
             <div className="flex items-center justify-between mb-4">
 
-              <h2 className="text-xl font-semibold text-white">Purchase Exclusive Post</h2>
+              <h2 className="text-xl font-semibold text-white">Purchase Exclusive Content</h2>
 
               <button
 
@@ -7035,7 +6900,7 @@ const PostModal = () => {
 
               <div className="text-center">
 
-                <p className="text-gray-300 mb-2">Are you sure you want to purchase this exclusive post?</p>
+                <p className="text-gray-300 mb-2">Are you sure you want to purchase this exclusive content?</p>
 
                 <div className="flex items-center justify-center gap-2 text-yellow-400 text-2xl font-bold">
 
