@@ -9,6 +9,7 @@ import Image from "next/image";
 import Skeleton, { SkeletonTheme } from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 import { getImageSource } from "@/lib/imageUtils";
+import { toast } from "material-react-toastify";
 
 const AboutPage = () => {
   const params = useParams();
@@ -30,11 +31,49 @@ const AboutPage = () => {
   
   const { status, firstname, lastname, username, country: location } = profileData;
   const profile = useSelector((state: RootState) => state.comprofile.profile);
-  const getprofilebyidstats = useSelector((state: RootState) => state.comprofile.getprofileidstatus);
   
   // Try to get createdAt from multiple sources
-  const createdAt = profileData?.createdAt || profile?.createdAt || profileData?.created_at || profile?.created_at;
-  const [about, setAbout] = useState("");
+  const createdAt = profileData?.createdAt || profile?.createdAt || (profileData as any)?.created_at || (profile as any)?.created_at;
+  const [copied, setCopied] = useState(false);
+  
+  // Generate profile URL
+  const profileUrl = React.useMemo(() => {
+    if (!viewingUserId) return "";
+    if (typeof window !== "undefined") {
+      return `${window.location.origin}/Profile/${viewingUserId}`;
+    }
+    return "";
+  }, [viewingUserId]);
+  
+  // Copy profile link to clipboard
+  const handleCopyProfileLink = async () => {
+    if (!profileUrl) return;
+    
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(profileUrl);
+        toast.success("Profile link copied to clipboard!");
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      } else {
+        // Fallback for older browsers
+        const textArea = document.createElement("textarea");
+        textArea.value = profileUrl;
+        textArea.style.position = "fixed";
+        textArea.style.left = "-999999px";
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textArea);
+        toast.success("Profile link copied to clipboard!");
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      }
+    } catch (error) {
+      console.error("Failed to copy profile link:", error);
+      toast.error("Failed to copy profile link");
+    }
+  };
   
   
   // Use the same useMemo approach as ProfilePage
@@ -85,13 +124,15 @@ const AboutPage = () => {
     }
   }, [params, dispatch, currentUserProfile.userId, currentUserProfile.status]);
 
-  useEffect(() => {
-    if (getprofilebyidstats === "succeeded") {
-      setAbout(profile.aboutuser || "");
-    }
-  }, [getprofilebyidstats, profile.aboutuser]);
 
-  const accountDetails = [
+  type AccountDetail = {
+    icon: React.ReactNode;
+    label: string;
+    value: string;
+    isLink?: boolean;
+  };
+
+  const accountDetails: AccountDetail[] = [
     {
       icon: (
         <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -106,13 +147,13 @@ const AboutPage = () => {
         }
         
         // Try profileData joined fields
-        if (profileData?.joined_month && profileData?.joined_year) {
-          return `${profileData.joined_month}, ${profileData.joined_year}`;
+        if ((profileData as any)?.joined_month && (profileData as any)?.joined_year) {
+          return `${(profileData as any).joined_month}, ${(profileData as any).joined_year}`;
         }
         
         // Try profile joined fields
-        if (profile?.joined_month && profile?.joined_year) {
-          return `${profile.joined_month}, ${profile.joined_year}`;
+        if ((profile as any)?.joined_month && (profile as any)?.joined_year) {
+          return `${(profile as any).joined_month}, ${(profile as any).joined_year}`;
         }
         
         // Fallback to raw createdAt if available
@@ -137,6 +178,16 @@ const AboutPage = () => {
       ),
       label: "Account based in",
       value: location || "Not specified"
+    },
+    {
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+        </svg>
+      ),
+      label: "Profile link",
+      value: profileUrl,
+      isLink: true
     }
   ];
 
@@ -234,7 +285,30 @@ const AboutPage = () => {
               </div>
               <div className="flex justify-between w-full items-center">
                 <p className="text-gray-300 font-bold text-sm">{detail.label}</p>
-                <p className="text-white font-medium">{detail.value}</p>
+                {detail.isLink ? (
+                  <div className="flex items-center gap-2">
+                    <p className="text-white font-medium text-xs truncate max-w-[200px]" title={detail.value}>
+                      {detail.value}
+                    </p>
+                    <button
+                      onClick={handleCopyProfileLink}
+                      className="text-gray-400 hover:text-white transition-colors p-1 flex-shrink-0"
+                      title="Copy profile link"
+                    >
+                      {copied ? (
+                        <svg className="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                      ) : (
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                        </svg>
+                      )}
+                    </button>
+                  </div>
+                ) : (
+                  <p className="text-white font-medium">{detail.value}</p>
+                )}
               </div>
             </div>
           ))}
