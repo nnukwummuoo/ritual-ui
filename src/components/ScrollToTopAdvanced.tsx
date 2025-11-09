@@ -61,10 +61,8 @@ const ScrollToTopAdvanced = ({
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const lastPathnameRef = useRef<string>("");
 
-  const log = (message: string, ...args: any[]) => {
-    if (debug) {
-      console.log(`[ScrollToTop] ${message}`, ...args);
-    }
+  const log = (_message: string, ..._args: any[]) => {
+    // Logging disabled - remove if not needed
   };
 
   const scrollToPosition = () => {

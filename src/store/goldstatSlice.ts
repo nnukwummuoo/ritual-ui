@@ -40,14 +40,11 @@ export const get_monthly_history = createAsyncThunk(
   'goldstat/get_monthly_history',
   async ({ userId, token }: { userId: string; token: string }, { rejectWithValue }) => {
     try {
-      console.log("🚀 [FRONTEND] Calling /statistics/monthly with:", { userid: userId, token });
       // API expects "userid" key (lowercase), map from our arg userId
       const response = await axios.post(`${URL}/statistics/monthly`, { userid: userId, token });
-      console.log("✅ [FRONTEND] API response received:", response.data);
       // Adjust response.data as per backend structure
       return response.data;
     } catch (err: any) {
-      console.log("❌ [FRONTEND] API error:", err.response?.data || err.message);
       return rejectWithValue(err.response?.data?.message || 'Failed to fetch monthly history');
     }
   }
@@ -59,7 +56,6 @@ export const get_my_history = createAsyncThunk(
     try {
       // API expects "userid" key (lowercase), map from our arg userId
       const response = await axios.post(`${URL}/statistics`, { userid: userId, token });
-      console.log("HISTORY RESPONSE", response.data);
       // Adjust response.data as per backend structure
       return response.data;
     } catch (err: any) {
@@ -95,7 +91,6 @@ const goldstatSlice = createSlice({
         state.loading = false;
         // Extract Month array from backend response
         state.earnings = action.payload.Month || action.payload;
-        console.log("📊 [FRONTEND] Earnings data received:", state.earnings);
       })
       .addCase(get_monthly_history.rejected, (state, action) => {
         state.loading = false;

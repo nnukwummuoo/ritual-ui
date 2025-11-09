@@ -14,7 +14,8 @@ import {
   IoCloseCircleOutline,
   IoRefreshOutline,
   IoSearchOutline,
-  IoArrowBackOutline
+  IoArrowBackOutline,
+  IoHomeOutline
 } from 'react-icons/io5';
 import Image from 'next/image';
 import { getSocket } from '@/lib/socket';
@@ -22,6 +23,7 @@ import { getImageSource } from '@/lib/imageUtils';
 import VIPBadge from '@/components/VIPBadge';
 import axios from 'axios';
 import { Paperclip, X, Send, File, Download } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 interface SupportChat {
   _id: string;
@@ -65,6 +67,7 @@ interface ChatMessage {
 
 const AdminSupportChat = () => {
   const token = useAuthToken();
+  const router = useRouter();
   const [supportChats, setSupportChats] = useState<SupportChat[]>([]);
   const [selectedChat, setSelectedChat] = useState<SupportChat | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -620,9 +623,25 @@ const AdminSupportChat = () => {
   };
 
   return (
-    <div className="h-screen flex bg-gray-900 text-white">
-      {/* Chat List Sidebar */}
-      <div className={`${showChatView ? 'hidden md:flex' : 'flex'} w-full md:w-1/3 border-r border-gray-700 flex-col h-full`}>
+    <div className="h-screen flex flex-col bg-gray-900 text-white">
+      {/* Header */}
+      <header className="flex justify-between items-center p-4 md:p-8 pb-4 border-b border-gray-700 flex-shrink-0">
+        <h2 className="text-2xl md:text-3xl font-bold text-white">Support Chat</h2>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => router.push('/')}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors duration-200"
+          >
+            <IoHomeOutline size={18} />
+            <span className="hidden sm:inline">Back to Home</span>
+          </button>
+        </div>
+      </header>
+
+      {/* Chat Container */}
+      <div className="flex-1 flex overflow-hidden">
+        {/* Chat List Sidebar */}
+        <div className={`${showChatView ? 'hidden md:flex' : 'flex'} w-full md:w-1/3 border-r border-gray-700 flex-col h-full`}>
         {/* Header */}
         <div className="p-3 md:p-4 border-b border-gray-700">
           <h2 className="text-lg md:text-xl font-bold mb-3 md:mb-4">Support Chats</h2>
@@ -1128,6 +1147,7 @@ const AdminSupportChat = () => {
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 };

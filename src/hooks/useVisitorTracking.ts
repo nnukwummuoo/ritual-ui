@@ -13,7 +13,6 @@ export const useVisitorTracking = (userId?: string | null) => {
 
   useEffect(() => {
     // Always run tracking, even for anonymous users
-    console.log('🔍 [Tracking] Hook initialized, userId:', userId || 'undefined (anonymous)');
     
     // Generate or retrieve persistent temporary visitor ID
     // This ID is ALWAYS created on first visit and persists across browser sessions
@@ -26,7 +25,6 @@ export const useVisitorTracking = (userId?: string | null) => {
         const stored = localStorage.getItem(STORAGE_KEY);
         if (stored) {
           visitorIdRef.current = stored;
-          console.log('✅ [Tracking] Retrieved existing temporary visitor ID:', stored);
           return stored;
         }
         
@@ -38,7 +36,6 @@ export const useVisitorTracking = (userId?: string | null) => {
         localStorage.setItem(STORAGE_KEY, newTempId);
         visitorIdRef.current = newTempId;
         
-        console.log('✅ [Tracking] Created new temporary visitor ID:', newTempId);
         return newTempId;
       } catch (error) {
         // Fallback to sessionStorage if localStorage is not available
@@ -107,12 +104,6 @@ export const useVisitorTracking = (userId?: string | null) => {
     // Initialize session start time
     const sessionStartTime = getSessionStartTime();
     lastUpdateTimeRef.current = sessionStartTime;
-    
-    // Log for debugging
-    if (!userId) {
-      console.log('✅ [Tracking] Using temporary visitor ID for anonymous user:', temporaryVisitorId);
-    }
-    console.log('🕐 [Tracking] Session start time:', new Date(sessionStartTime).toISOString());
 
 
     // Get device information
@@ -186,15 +177,6 @@ export const useVisitorTracking = (userId?: string | null) => {
         }
         
         const trackUrl = `${API_URL}/api/track-visitor`;
-        
-        console.log('📤 [Frontend] Sending tracking request:', {
-          url: trackUrl,
-          API_URL,
-          visitorId: payload.visitorId,
-          userid: payload.userid || 'null',
-          sessionId: payload.sessionId || 'null',
-          isAnonymous: !userId,
-        });
 
         const response = await fetch(trackUrl, {
           method: 'POST',
@@ -210,8 +192,7 @@ export const useVisitorTracking = (userId?: string | null) => {
           throw new Error(`HTTP ${response.status}: ${errorData.message || 'Unknown error'}`);
         }
 
-        const result = await response.json();
-        console.log('✅ [Frontend] Tracking response:', result);
+        await response.json();
       } catch (error) {
         console.error('❌ [Frontend] Error tracking visitor:', error);
       }
@@ -232,8 +213,6 @@ export const useVisitorTracking = (userId?: string | null) => {
             return;
           }
           
-          console.log(`⏱️ [Tracking] Updating visitor time: ${Math.round(timeSinceLastUpdate / 1000)}s (${Math.round(timeSinceLastUpdate / 1000 / 60)} minutes)`);
-          
           const response = await fetch(`${API_URL}/api/update-visitor-time`, {
             method: 'POST',
             headers: {
@@ -248,7 +227,6 @@ export const useVisitorTracking = (userId?: string | null) => {
           if (response.ok) {
             // Update last update time only if request was successful
             lastUpdateTimeRef.current = now;
-            console.log(`✅ [Tracking] Visitor time updated successfully`);
           } else {
             console.error('❌ [Tracking] Failed to update visitor time:', response.status);
           }
@@ -261,9 +239,6 @@ export const useVisitorTracking = (userId?: string | null) => {
     // Track page view immediately when component mounts
     // This ensures visitors are tracked even if they don't connect via socket
     trackVisit()
-      .then(() => {
-        console.log('✅ [Frontend] Visitor tracked successfully:', visitorId, userId ? '(logged in)' : '(anonymous)');
-      })
       .catch(err => {
         console.error('❌ [Frontend] Error tracking initial visit:', err);
       });
@@ -300,7 +275,6 @@ export const useVisitorTracking = (userId?: string | null) => {
             `${API_URL}/api/update-visitor-time`,
             new Blob([data], { type: 'application/json' })
           );
-          console.log(`📤 [Tracking] Sent final time update on unload: ${Math.round(timeSinceLastUpdate / 1000)}s`);
         }
       }
     };
@@ -333,7 +307,6 @@ export const useVisitorTracking = (userId?: string | null) => {
             `${API_URL}/api/update-visitor-time`,
             new Blob([data], { type: 'application/json' })
           );
-          console.log(`📤 [Tracking] Sent final time update on cleanup: ${Math.round(timeSinceLastUpdate / 1000)}s`);
         }
       }
     };

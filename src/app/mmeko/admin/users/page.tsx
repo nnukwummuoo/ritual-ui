@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, JSX } from "react";
+import React, { useState, useEffect, useCallback, useRef, JSX } from "react";
 import searchIcon from "@/icons/searchicon.svg";
 import sendIcon from "@/icons/emailsendIcon.svg";
 import PacmanLoader from "react-spinners/RingLoader";
@@ -13,6 +13,9 @@ import { getprofile } from "@/store/profile";
 import { URL } from "@/api/config";
 import { getImageSource } from "@/lib/imageUtils";
 import { checkUserBanStatus } from "@/utils/banCheck";
+import { useVideoAutoPlay } from "@/hooks/useVideoAutoPlayNew";
+import { URL as API_BASE } from "@/api/config";
+const PROD_BASE = process.env.NEXT_PUBLIC_API || "";
 
 interface User {
   _id: string;
@@ -47,6 +50,7 @@ interface User {
   bannedAt?: string | null;
   createdAt?: string;
   updatedAt?: string;
+  ipAddress?: string;
 }
 
 
@@ -69,6 +73,58 @@ interface FollowData {
   following: FollowerUser[];
 }
 
+interface Post {
+  _id?: string;
+  postid?: string;
+  id?: string;
+  content?: string;
+  posttype?: string;
+  type?: string;
+  postfilelink?: string;
+  postfilepublicid?: string;
+  createdAt?: string;
+  posttime?: string;
+  created_at?: string;
+  user?: {
+    firstname?: string;
+    lastname?: string;
+    username?: string;
+    photolink?: string;
+  };
+}
+
+interface CreatorPortfolio {
+  hostid?: string;
+  name?: string;
+  username?: string;
+  age?: string;
+  location?: string;
+  price?: string;
+  duration?: string;
+  bodytype?: string;
+  smoke?: string;
+  drink?: string;
+  interestedin?: string;
+  height?: string;
+  weight?: string;
+  description?: string;
+  gender?: string;
+  timeava?: string;
+  daysava?: string;
+  hosttype?: string;
+  userid?: string;
+  verify?: boolean;
+  active?: boolean;
+  views?: number;
+  photolink?: string | string[];
+  creatorfiles?: Array<{
+    creatorfilelink?: string;
+    creatorfilepublicid?: string;
+  }>;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 interface UserDetailModalProps {
   user: User | null;
   isOpen: boolean;
@@ -82,17 +138,20 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, isOpen, onClose
   const [loading, setLoading] = useState(false);
   const [followData, setFollowData] = useState<FollowData>({ followers: [], following: [] });
   const [loadingFollows, setLoadingFollows] = useState(false);
-  const [activeTab, setActiveTab] = useState<'followers' | 'following'>('followers');
+  const [activeTab, setActiveTab] = useState<'followers' | 'following' | 'posts' | 'portfolio'>('followers');
   const [showVipManager, setShowVipManager] = useState(false);
   const [vipDuration, setVipDuration] = useState<7 | 30>(30);
   const [grantingVip, setGrantingVip] = useState(false);
-
-  useEffect(() => {
-    if (user) {
-      setEditedUser({ ...user });
-      fetchUserFollows(user._id);
-    }
-  }, [user]);
+  const [userPosts, setUserPosts] = useState<Post[]>([]);
+  const [loadingPosts, setLoadingPosts] = useState(false);
+  const [editingPostId, setEditingPostId] = useState<string | null>(null);
+  const [editingPostContent, setEditingPostContent] = useState("");
+  const [creatorPortfolio, setCreatorPortfolio] = useState<CreatorPortfolio | null>(null);
+  const [loadingPortfolio, setLoadingPortfolio] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+  const [selectedImage, setSelectedImage] = useState("");
+  const token = useSelector((s: RootState) => s.register.refreshtoken);
 
   const fetchUserFollows = async (userId: string) => {
     setLoadingFollows(true);
@@ -116,6 +175,476 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, isOpen, onClose
     } finally {
       setLoadingFollows(false);
     }
+  };
+
+  const fetchUserPosts = useCallback(async (userId: string) => {
+    if (!token) return;
+    
+    setLoadingPosts(true);
+    try {
+      const response = await fetch(`${URL}/getalluserpost`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ userid: userId })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setUserPosts(data.post || []);
+      } else {
+        console.error('Failed to fetch user posts');
+        toast.error("Failed to fetch user posts");
+      }
+    } catch (error) {
+      console.error('Error fetching user posts:', error);
+      toast.error("Failed to fetch user posts");
+    } finally {
+      setLoadingPosts(false);
+    }
+  }, [token]);
+
+  const fetchCreatorPortfolio = useCallback(async (portfolioId: string) => {
+    if (!token || !portfolioId) return;
+    
+    setLoadingPortfolio(true);
+    try {
+      const response = await fetch(`${URL}/getcreatorbyportfolioid`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ 
+          hostid: portfolioId,
+          userid: user?._id || "",
+          token: token
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setCreatorPortfolio(data.host || null);
+        // Reset image index
+        setCurrentImageIndex(0);
+      } else {
+        console.error('Failed to fetch creator portfolio');
+        toast.error("Failed to fetch creator portfolio");
+      }
+    } catch (error) {
+      console.error('Error fetching creator portfolio:', error);
+      toast.error("Failed to fetch creator portfolio");
+    } finally {
+      setLoadingPortfolio(false);
+    }
+  }, [token, user?._id]);
+
+  useEffect(() => {
+    if (user) {
+      setEditedUser({ ...user });
+      fetchUserFollows(user._id);
+      if (activeTab === 'posts') {
+        fetchUserPosts(user._id);
+      }
+      if (activeTab === 'portfolio' && user.creator_portfolio_id) {
+        fetchCreatorPortfolio(user.creator_portfolio_id);
+      }
+    }
+  }, [user, activeTab, fetchUserPosts, fetchCreatorPortfolio]);
+
+  const handleDeletePost = async (postId: string) => {
+    if (!window.confirm("Are you sure you want to delete this post? This action cannot be undone.")) {
+      return;
+    }
+
+    try {
+      // Use /post endpoint with DELETE method and postid in body
+      const response = await fetch(`${URL}/post`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ postid: postId })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        toast.success(data.message || "Post deleted successfully");
+        // Remove post from local state
+        setUserPosts(prev => prev.filter(post => (post._id || post.postid || post.id) !== postId));
+      } else {
+        // Try to parse error response, but handle HTML responses
+        let errorMessage = "Failed to delete post";
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorMessage;
+        } catch {
+          // If response is not JSON (like HTML error page), use default message
+          errorMessage = `Failed to delete post (${response.status})`;
+        }
+        toast.error(errorMessage);
+      }
+    } catch (error) {
+      console.error('Error deleting post:', error);
+      toast.error("Failed to delete post");
+    }
+  };
+
+  const handleEditPost = async (postId: string) => {
+    if (!editingPostContent.trim()) {
+      toast.error("Post content cannot be empty");
+      return;
+    }
+
+    try {
+      // Use /getallpost/:pid endpoint for PUT (this route actually updates the content)
+      const response = await fetch(`${URL}/getallpost/${postId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ content: editingPostContent })
+      });
+
+      if (response.ok) {
+        toast.success("Post updated successfully");
+        // Update post in local state
+        setUserPosts(prev => prev.map(post => {
+          const pid = post._id || post.postid || post.id;
+          if (pid === postId) {
+            return { ...post, content: editingPostContent };
+          }
+          return post;
+        }));
+        setEditingPostId(null);
+        setEditingPostContent("");
+      } else {
+        // Try to parse error response, but handle HTML responses
+        let errorMessage = "Failed to update post";
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorMessage;
+        } catch {
+          // If response is not JSON (like HTML error page), use default message
+          errorMessage = `Failed to update post (${response.status})`;
+        }
+        toast.error(errorMessage);
+      }
+    } catch (error) {
+      console.error('Error updating post:', error);
+      toast.error("Failed to update post");
+    }
+  };
+
+
+  const handleDeletePortfolio = async () => {
+    if (!user?.creator_portfolio_id) return;
+    
+    if (!window.confirm("Are you sure you want to delete this creator portfolio? This action cannot be undone and will refund all pending requests.")) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`${URL}/deletecreator`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          hostid: user.creator_portfolio_id,
+          token: token,
+          photolink: creatorPortfolio?.photolink || [],
+          photocount: creatorPortfolio?.photolink?.length || 0,
+          documentlink: [],
+          docCount: 0
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        toast.success(data.message || "Creator portfolio deleted successfully");
+        // Update user state to reflect portfolio deletion
+        setCreatorPortfolio(null);
+        // Update the user in parent component
+        await onUpdateUser(user._id, { 
+          creator_portfolio: false, 
+          creator_portfolio_id: "" 
+        });
+      } else {
+        const errorData = await response.json();
+        toast.error(errorData.message || "Failed to delete portfolio");
+      }
+    } catch (error) {
+      console.error('Error deleting portfolio:', error);
+      toast.error("Failed to delete portfolio");
+    }
+  };
+
+  const openImageModal = (imageSrc: string) => {
+    setSelectedImage(imageSrc);
+    setIsImageModalOpen(true);
+    document.body.style.overflow = "hidden";
+  };
+
+  const closeImageModal = () => {
+    setIsImageModalOpen(false);
+    setSelectedImage("");
+    document.body.style.overflow = "unset";
+  };
+
+  const handleImageModalClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (e.target === e.currentTarget) {
+      closeImageModal();
+    }
+  };
+
+  const formatRelativeTime = (timestamp: string | number | Date): string => {
+    try {
+      const now = new Date();
+      let time: Date;
+      
+      if (typeof timestamp === 'number') {
+        time = new Date(timestamp < 10000000000 ? timestamp * 1000 : timestamp);
+      } else if (typeof timestamp === 'string') {
+        if (/^\d+$/.test(timestamp)) {
+          const numTimestamp = parseInt(timestamp, 10);
+          time = new Date(numTimestamp < 10000000000 ? numTimestamp * 1000 : numTimestamp);
+        } else {
+          time = new Date(timestamp);
+        }
+      } else {
+        time = new Date(timestamp);
+      }
+      
+      if (isNaN(time.getTime())) {
+        return 'recently';
+      }
+      
+      const diffInSeconds = Math.floor((now.getTime() - time.getTime()) / 1000);
+      
+      if (diffInSeconds < 60) return 'just now';
+      const diffInMinutes = Math.floor(diffInSeconds / 60);
+      if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
+      const diffInHours = Math.floor(diffInMinutes / 60);
+      if (diffInHours < 24) return `${diffInHours}h ago`;
+      const diffInDays = Math.floor(diffInHours / 24);
+      if (diffInDays < 7) return `${diffInDays}d ago`;
+      const diffInWeeks = Math.floor(diffInDays / 7);
+      if (diffInWeeks < 4) return `${diffInWeeks}w ago`;
+      const diffInMonths = Math.floor(diffInDays / 30);
+      if (diffInMonths < 12) return `${diffInMonths}mo ago`;
+      const diffInYears = Math.floor(diffInDays / 365);
+      return `${diffInYears}y ago`;
+    } catch {
+      return 'recently';
+    }
+  };
+
+  // Video skeleton component for loading state
+  const VideoSkeleton = () => (
+    <div className="relative w-full h-[400px] rounded overflow-hidden bg-gray-700 animate-pulse">
+      <div className="w-full h-full flex items-center justify-center">
+        {/* Play button skeleton */}
+        <div className="w-16 h-16 bg-gray-600 rounded-full flex items-center justify-center">
+          <div className="w-0 h-0 border-l-[12px] border-l-white border-y-[8px] border-y-transparent ml-1"></div>
+        </div>
+      </div>
+      {/* Video controls skeleton */}
+      <div className="absolute bottom-3 right-3">
+        <div className="w-10 h-10 bg-gray-600 rounded-full"></div>
+      </div>
+    </div>
+  );
+
+  // Custom Video Component for posts
+  const VideoComponent = ({ post, src, pathUrlPrimary, queryUrlFallback, pathUrlFallback }: {
+    post: Post;
+    src: string;
+    pathUrlPrimary?: string;
+    queryUrlFallback?: string;
+    pathUrlFallback?: string;
+  }) => {
+    const [showControls, setShowControls] = useState(false);
+    const [isVideoLoaded, setIsVideoLoaded] = useState(false);
+    const controlsTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+    const { videoRef, isPlaying, autoPlayBlocked, togglePlay, toggleMute, isMuted } = useVideoAutoPlay({
+      autoPlay: false, // Don't auto-play in admin view
+      muted: true,
+      loop: true,
+      postId: post._id || post.postid || post.id || `admin-post-${Math.random()}`
+    });
+
+    // Clear timeout when component unmounts
+    useEffect(() => {
+      // Show controls initially
+      setShowControls(true);
+      
+      // Set timer to hide controls
+      const initialTimer = setTimeout(() => {
+        setShowControls(false);
+      }, 3000);
+      
+      return () => {
+        if (initialTimer) clearTimeout(initialTimer);
+        if (controlsTimerRef.current) clearTimeout(controlsTimerRef.current);
+      };
+    }, []);
+
+    return (
+      <div className="relative w-full h-[400px] rounded overflow-hidden">
+        {/* Video skeleton - show while video is loading */}
+        {!isVideoLoaded && (
+          <VideoSkeleton />
+        )}
+        
+        {/* Video with controls that auto-hide */}
+        <div 
+          className={`relative w-full h-full ${!isVideoLoaded ? 'opacity-0 absolute top-0 left-0' : 'opacity-100 transition-opacity duration-300'}`}
+          onMouseMove={() => {
+            // Show controls and reset the timer when mouse moves
+            setShowControls(true);
+            if (controlsTimerRef.current) {
+              clearTimeout(controlsTimerRef.current);
+            }
+            controlsTimerRef.current = setTimeout(() => {
+              setShowControls(false);
+            }, 3000);
+          }}
+        >
+          <video
+            ref={videoRef}
+            src={src}
+            muted
+            loop
+            playsInline
+            className="w-full h-[400px] object-cover rounded cursor-pointer"
+            onLoadedData={() => {
+              setIsVideoLoaded(true);
+            }}
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowControls(true);
+              togglePlay();
+              if (controlsTimerRef.current) {
+                clearTimeout(controlsTimerRef.current);
+              }
+              controlsTimerRef.current = setTimeout(() => {
+                setShowControls(false);
+              }, 3000);
+            }}
+            onError={(e) => {
+              const video = e.currentTarget as HTMLVideoElement & { dataset: { fallback1?: string; fallback2?: string; fallback3?: string } };
+              if (!video.dataset.fallback1 && pathUrlPrimary) {
+                video.dataset.fallback1 = "1";
+                video.src = pathUrlPrimary;
+                video.load();
+                return;
+              }
+              if (!video.dataset.fallback2 && queryUrlFallback) {
+                video.dataset.fallback2 = "1";
+                video.src = queryUrlFallback;
+                video.load();
+                return;
+              }
+              if (!video.dataset.fallback3 && pathUrlFallback) {
+                video.dataset.fallback3 = "1";
+                video.src = pathUrlFallback;
+                video.load();
+              }
+            }}
+          />
+          
+          {/* Volume Button - Shows only when showControls is true */}
+          {showControls && (
+            <div className="absolute bottom-3 right-3 z-10 transition-opacity duration-300 opacity-100">
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleMute();
+                  // Reset auto-hide timer when interacting with controls
+                  if (controlsTimerRef.current) {
+                    clearTimeout(controlsTimerRef.current);
+                  }
+                  controlsTimerRef.current = setTimeout(() => {
+                    setShowControls(false);
+                  }, 3000);
+                }}
+                className="bg-black bg-opacity-50 rounded-full p-2 hover:bg-opacity-70 transition-all duration-200"
+              >
+                {isMuted ? (
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                    <line x1="23" y1="9" x2="17" y2="15"></line>
+                    <line x1="17" y1="9" x2="23" y2="15"></line>
+                  </svg>
+                ) : (
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                    <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                  </svg>
+                )}
+              </button>
+            </div>
+          )}
+          
+          {/* Center Play/Pause Button - Shows when controls are visible OR when autoplay is blocked */}
+          {(showControls || autoPlayBlocked) && (
+            <div className="absolute inset-0 flex items-center justify-center transition-opacity duration-300 opacity-100">
+              <div 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  togglePlay();
+                  // Reset auto-hide timer when interacting with controls
+                  if (controlsTimerRef.current) {
+                    clearTimeout(controlsTimerRef.current);
+                  }
+                  controlsTimerRef.current = setTimeout(() => {
+                    setShowControls(false);
+                  }, 3000);
+                }}
+                className="bg-black bg-opacity-70 rounded-full p-5 hover:bg-opacity-90 hover:scale-110 cursor-pointer transition-all"
+              >
+                {isPlaying ? (
+                  <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="6" y="4" width="4" height="16"></rect>
+                    <rect x="14" y="4" width="4" height="16"></rect>
+                  </svg>
+                ) : (
+                  <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                  </svg>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Click to Play Overlay - Shows when autoplay is blocked and video is not playing */}
+          {/* {(autoPlayBlocked || !hasUserInteracted) && !isPlaying && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30">
+              <div className="text-center text-white">
+                 <div 
+                   onClick={(e) => {
+                     e.stopPropagation();
+                     togglePlay();
+                   }}
+                   className="bg-black bg-opacity-70 rounded-full p-6 hover:bg-opacity-90 hover:scale-110 cursor-pointer transition-all mb-4 mx-auto w-fit"
+                 >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                  </svg>
+                </div>
+              </div>
+            </div>
+          )} */}
+        </div>
+      </div>
+    );
   };
 
   if (!isOpen || !user) return null;
@@ -666,12 +1195,16 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, isOpen, onClose
                </div>
              </div>
 
-             {/* Followers and Following */}
+             {/* Followers, Following, Posts, and Portfolio */}
              <div className="bg-gray-800 p-4 rounded-lg md:col-span-2">
-               <h3 className="text-lg font-semibold text-yellow-500 mb-4">Followers & Following</h3>
+               <h3 className="text-lg font-semibold text-yellow-500 mb-4">
+                 {activeTab === 'posts' ? 'User Posts' : 
+                  activeTab === 'portfolio' ? 'Creator Portfolio' : 
+                  'Followers & Following'}
+               </h3>
                
                {/* Tab Navigation */}
-               <div className="flex gap-2 mb-4">
+               <div className="flex gap-2 mb-4 flex-wrap">
                  <button
                    onClick={() => setActiveTab('followers')}
                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
@@ -692,71 +1225,516 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, isOpen, onClose
                  >
                    Following ({followData.following.length})
                  </button>
+                 <button
+                   onClick={() => {
+                     setActiveTab('posts');
+                     if (user && userPosts.length === 0) {
+                       fetchUserPosts(user._id);
+                     }
+                   }}
+                   className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                     activeTab === 'posts'
+                       ? 'bg-yellow-500 text-black'
+                       : 'bg-gray-700 text-white hover:bg-gray-600'
+                   }`}
+                 >
+                   Posts ({userPosts.length})
+                 </button>
+                 {user.creator_portfolio_id && (
+                   <button
+                     onClick={() => {
+                       setActiveTab('portfolio');
+                       if (user && user.creator_portfolio_id && !creatorPortfolio) {
+                         fetchCreatorPortfolio(user.creator_portfolio_id);
+                       }
+                     }}
+                     className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                       activeTab === 'portfolio'
+                         ? 'bg-yellow-500 text-black'
+                         : 'bg-gray-700 text-white hover:bg-gray-600'
+                     }`}
+                   >
+                     Portfolio
+                   </button>
+                 )}
                </div>
 
                {/* Content */}
-               <div className="max-h-64 overflow-y-auto">
-                 {loadingFollows ? (
-                   <div className="flex justify-center items-center py-8">
-                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-yellow-500"></div>
-                     <span className="ml-2 text-white">Loading...</span>
-                   </div>
-                 ) : (
-                   <div className="space-y-3">
-                     {(activeTab === 'followers' ? followData.followers : followData.following).map((follower) => (
-                       <div key={follower.id} className="flex items-center p-3 bg-gray-700 rounded-lg">
-                         <div className="flex items-center space-x-3">
-                           <div className="relative w-10 h-10 rounded-full overflow-hidden bg-gray-600 flex items-center justify-center">
-                             {follower.image && follower.image.trim() && follower.image !== "null" && follower.image !== "undefined" ? (
+               {activeTab === 'portfolio' ? (
+                 <div className="max-h-[600px] overflow-y-auto">
+                   {loadingPortfolio ? (
+                     <div className="flex justify-center items-center py-8">
+                       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-yellow-500"></div>
+                       <span className="ml-2 text-white">Loading portfolio...</span>
+                     </div>
+                   ) : !creatorPortfolio ? (
+                     <div className="text-center py-8">
+                       <p className="text-gray-400">No portfolio found</p>
+                     </div>
+                   ) : (
+                     <div className="space-y-4">
+                       {/* Portfolio Header */}
+                       <div className="bg-gray-700 rounded-lg p-4">
+                         <div className="flex justify-between items-start mb-4">
+                           <div>
+                             <h4 className="text-xl font-bold text-white mb-2">{creatorPortfolio.name}</h4>
+                             <p className="text-gray-300 text-sm">{creatorPortfolio.username || user.username || "N/A"}</p>
+                             <div className="flex gap-2 mt-2">
+                               <span className={`px-2 py-1 rounded text-xs ${creatorPortfolio.verify ? 'bg-green-500' : 'bg-yellow-500'}`}>
+                                 {creatorPortfolio.verify ? 'Verified' : 'Not Verified'}
+                               </span>
+                               <span className={`px-2 py-1 rounded text-xs ${creatorPortfolio.active ? 'bg-green-500' : 'bg-gray-500'}`}>
+                                 {creatorPortfolio.active ? 'Online' : 'Offline'}
+                               </span>
+                               <span className="px-2 py-1 rounded text-xs bg-blue-500">
+                                 {creatorPortfolio.hosttype || 'Fan meet'}
+                               </span>
+                             </div>
+                           </div>
+                           <button
+                             onClick={handleDeletePortfolio}
+                             className="bg-red-500 text-white px-4 py-2 rounded text-sm hover:bg-red-600"
+                           >
+                             Delete Portfolio
+                           </button>
+                         </div>
+                       </div>
+
+                       {/* Portfolio Images */}
+                       {(() => {
+                         // Handle both new creatorfiles structure and legacy photolink
+                         const images = (() => {
+                           // Check if portfolio has creatorfiles array (new structure)
+                           if (Array.isArray(creatorPortfolio.creatorfiles) && creatorPortfolio.creatorfiles.length > 0) {
+                             return creatorPortfolio.creatorfiles
+                               .map((f) => f?.creatorfilelink)
+                               .filter((url): url is string => url !== undefined && typeof url === 'string' && url.trim() !== '');
+                           }
+                           // Fallback to legacy photolink
+                           if (Array.isArray(creatorPortfolio.photolink)) {
+                             return creatorPortfolio.photolink.filter((url: string) => url && url.trim());
+                           }
+                           if (typeof creatorPortfolio.photolink === 'string') {
+                             return creatorPortfolio.photolink.split(',').filter((url: string) => url.trim());
+                           }
+                           return [];
+                         })();
+                         
+                         if (images.length === 0) {
+                           return (
+                             <div className="bg-gray-700 rounded-lg p-4 text-center">
+                               <p className="text-gray-400">No images available</p>
+                             </div>
+                           );
+                         }
+
+                         const currentImage = images[currentImageIndex] || images[0];
+                         const imageSrc = getImageSource(currentImage, 'post').src;
+
+                         return (
+                           <div className="bg-gray-700 rounded-lg p-4">
+                             <div className="relative w-full h-[300px] overflow-hidden rounded-md mb-4">
                                <img
-                                 src={getImageSource(follower.image, 'profile').src}
-                                 alt="Profile"
-                                 className="w-full h-full object-cover"
+                                 src={imageSrc}
+                                 alt={`Portfolio image ${currentImageIndex + 1}`}
+                                 className="w-full h-full object-cover cursor-pointer hover:opacity-90 transition-opacity"
+                                 onClick={() => openImageModal(imageSrc)}
                                  onError={(e) => {
                                    const target = e.currentTarget as HTMLImageElement;
                                    target.style.display = 'none';
-                                   const nextElement = target.nextElementSibling as HTMLElement;
-                                   if (nextElement) nextElement.style.display = 'flex';
                                  }}
                                />
-                             ) : null}
-                             <div className="absolute inset-0 bg-gray-600 flex items-center justify-center text-white text-sm font-bold" style={{ display: follower.image && follower.image.trim() && follower.image !== "null" && follower.image !== "undefined" ? 'none' : 'flex' }}>
-                               {follower.name.split(' ').map(n => n[0]).join('').toUpperCase() || '?'}
+                               
+                               {/* Navigation arrows */}
+                               {images.length > 1 && (
+                                 <>
+                                   <button
+                                     onClick={(e) => {
+                                       e.stopPropagation();
+                                       setCurrentImageIndex((prev) => 
+                                         prev === 0 ? images.length - 1 : prev - 1
+                                       );
+                                     }}
+                                     className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-70 transition-all"
+                                   >
+                                     ←
+                                   </button>
+                                   <button
+                                     onClick={(e) => {
+                                       e.stopPropagation();
+                                       setCurrentImageIndex((prev) => 
+                                         prev === images.length - 1 ? 0 : prev + 1
+                                       );
+                                     }}
+                                     className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-70 transition-all"
+                                   >
+                                     →
+                                   </button>
+                                 </>
+                               )}
+                               
+                               {/* Image counter */}
+                               {images.length > 1 && (
+                                 <div className="absolute bottom-2 right-2 bg-black bg-opacity-50 text-white px-2 py-1 rounded text-sm">
+                                   {currentImageIndex + 1} / {images.length}
+                                 </div>
+                               )}
                              </div>
                            </div>
-                           <div>
-                             <p className="text-white font-medium">{follower.name}</p>
-                             <p className="text-gray-400 text-sm">{follower.email}</p>
-                             <div className="flex gap-2 mt-1">
-                               <span className={`px-2 py-1 rounded text-xs ${follower.creator_verified ? 'bg-blue-500' : 'bg-gray-500'}`}>
-                                 {follower.creator_verified ? 'Creator' : 'Fan'}
+                         );
+                       })()}
+
+                       {/* Portfolio Details */}
+                       <div className="bg-gray-700 rounded-lg p-4">
+                         <h4 className="text-lg font-semibold text-yellow-500 mb-4">Portfolio Details</h4>
+                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                           <div className="space-y-2">
+                             <div className="flex justify-between">
+                               <span className="text-gray-300">Age:</span>
+                               <span className="text-white">{creatorPortfolio.age || "N/A"}</span>
+                             </div>
+                             <div className="flex justify-between">
+                               <span className="text-gray-300">Location:</span>
+                               <span className="text-white">{creatorPortfolio.location || "N/A"}</span>
+                             </div>
+                             <div className="flex justify-between">
+                               <span className="text-gray-300">Gender:</span>
+                               <span className="text-white capitalize">{creatorPortfolio.gender || "N/A"}</span>
+                             </div>
+                             <div className="flex justify-between">
+                               <span className="text-gray-300">Height:</span>
+                               <span className="text-white">{creatorPortfolio.height || "N/A"}</span>
+                             </div>
+                             <div className="flex justify-between">
+                               <span className="text-gray-300">Weight:</span>
+                               <span className="text-white">{creatorPortfolio.weight || "N/A"}</span>
+                             </div>
+                             <div className="flex justify-between">
+                               <span className="text-gray-300">Body Type:</span>
+                               <span className="text-white">{creatorPortfolio.bodytype || "N/A"}</span>
+                             </div>
+                           </div>
+                           <div className="space-y-2">
+                             <div className="flex justify-between">
+                               <span className="text-gray-300">Price:</span>
+                               <span className="text-yellow-400 font-bold">{creatorPortfolio.price || "N/A"}</span>
+                             </div>
+                             <div className="flex justify-between">
+                               <span className="text-gray-300">Duration:</span>
+                               <span className="text-white">{creatorPortfolio.duration || "N/A"} min</span>
+                             </div>
+                             <div className="flex justify-between">
+                               <span className="text-gray-300">Smoke:</span>
+                               <span className={`font-semibold ${creatorPortfolio.smoke === 'Yes' ? 'text-red-400' : 'text-green-400'}`}>
+                                 {creatorPortfolio.smoke || "N/A"}
                                </span>
-                               {follower.isVip && (
-                                 <span className="px-2 py-1 rounded text-xs bg-yellow-500">VIP</span>
-                               )}
-                               <span className="px-2 py-1 rounded text-xs bg-gray-600">
-                                 {follower.gender}
+                             </div>
+                             <div className="flex justify-between">
+                               <span className="text-gray-300">Drink:</span>
+                               <span className={`font-semibold ${creatorPortfolio.drink === 'Yes' ? 'text-red-400' : 'text-green-400'}`}>
+                                 {creatorPortfolio.drink || "N/A"}
                                </span>
+                             </div>
+                             <div className="flex justify-between">
+                               <span className="text-gray-300">Views:</span>
+                               <span className="text-white">{creatorPortfolio.views || 0}</span>
+                             </div>
+                             <div className="flex justify-between">
+                               <span className="text-gray-300">Host Type:</span>
+                               <span className="text-white">{creatorPortfolio.hosttype || "N/A"}</span>
                              </div>
                            </div>
                          </div>
+
+                         {/* Interests */}
+                         {creatorPortfolio.interestedin && (
+                           <div className="mt-4">
+                             <h5 className="text-gray-300 mb-2">Interested In:</h5>
+                             <div className="flex flex-wrap gap-2">
+                               {creatorPortfolio.interestedin.split(" ").map((interest: string, index: number) => (
+                                 <span key={index} className="px-2 py-1 bg-purple-600 text-white rounded-full text-xs">
+                                   {interest}
+                                 </span>
+                               ))}
+                             </div>
+                           </div>
+                         )}
+
+                         {/* Availability */}
+                         {(creatorPortfolio.timeava || creatorPortfolio.daysava) && (
+                           <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                             {creatorPortfolio.timeava && (
+                               <div>
+                                 <h5 className="text-gray-300 mb-2">Time Available:</h5>
+                                 <p className="text-white">{creatorPortfolio.timeava}</p>
+                               </div>
+                             )}
+                             {creatorPortfolio.daysava && (
+                               <div>
+                                 <h5 className="text-gray-300 mb-2">Days Available:</h5>
+                                 <p className="text-white">{creatorPortfolio.daysava}</p>
+                               </div>
+                             )}
+                           </div>
+                         )}
+
+                         {/* Description */}
+                         {creatorPortfolio.description && (
+                           <div className="mt-4">
+                             <h5 className="text-gray-300 mb-2">Description:</h5>
+                             <p className="text-white whitespace-pre-wrap">{creatorPortfolio.description}</p>
+                           </div>
+                         )}
                        </div>
-                     ))}
-                     
-                     {(activeTab === 'followers' ? followData.followers : followData.following).length === 0 && (
-                       <div className="text-center py-8">
-                         <p className="text-gray-400">
-                           No {activeTab} found
-                         </p>
-                       </div>
-                     )}
-                   </div>
-                 )}
-               </div>
+                     </div>
+                   )}
+                 </div>
+               ) : activeTab === 'posts' ? (
+                 <div className="max-h-[600px] overflow-y-auto">
+                   {loadingPosts ? (
+                     <div className="flex justify-center items-center py-8">
+                       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-yellow-500"></div>
+                       <span className="ml-2 text-white">Loading posts...</span>
+                     </div>
+                   ) : userPosts.length === 0 ? (
+                     <div className="text-center py-8">
+                       <p className="text-gray-400">No posts found</p>
+                     </div>
+                   ) : (
+                     <div className="space-y-4">
+                       {userPosts.map((post) => {
+                         const postId = post._id || post.postid || post.id || "";
+                         if (!postId) return null;
+                         const isEditing = editingPostId === postId;
+                         const postType = post?.posttype || post?.type || "text";
+                         const mediaRef = post?.postfilelink || post?.postfilepublicid || "";
+                         const imageSource = getImageSource(mediaRef, 'post');
+                         const src = imageSource.src;
+                         
+                         return (
+                           <div key={postId} className="bg-gray-700 rounded-lg p-4">
+                             {/* Post Header */}
+                             <div className="flex items-center justify-between mb-3">
+                               <div className="flex items-center gap-3">
+                                 <div className="relative w-10 h-10 rounded-full overflow-hidden bg-gray-600 flex items-center justify-center">
+                                   {(() => {
+                                     const profileImage = user.photolink;
+                                     const initials = `${user.firstname?.[0] || ''}${user.lastname?.[0] || ''}`.toUpperCase();
+                                     
+                                     if (profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined") {
+                                       const profileImageSource = getImageSource(profileImage, 'profile');
+                                       return (
+                                         <img
+                                           src={profileImageSource.src}
+                                           alt="Profile"
+                                           className="w-full h-full object-cover"
+                                           onError={(e) => {
+                                             const target = e.currentTarget as HTMLImageElement;
+                                             target.style.display = 'none';
+                                             const nextElement = target.nextElementSibling as HTMLElement;
+                                             if (nextElement) nextElement.style.display = 'flex';
+                                           }}
+                                         />
+                                       );
+                                     }
+                                     
+                                     return (
+                                       <div className="w-full h-full flex items-center justify-center text-white text-sm font-bold">
+                                         {initials || '?'}
+                                       </div>
+                                     );
+                                   })()}
+                                 </div>
+                                 <div>
+                                   <p className="text-white font-medium">{user.firstname} {user.lastname}</p>
+                                   <p className="text-gray-400 text-xs">
+                                     {formatRelativeTime(post.createdAt || post.posttime || post.created_at || Date.now())}
+                                   </p>
+                                 </div>
+                               </div>
+                               <div className="flex gap-2">
+                                 {isEditing ? (
+                                   <>
+                                     <button
+                                       onClick={() => handleEditPost(postId)}
+                                       className="bg-green-500 text-white px-3 py-1 rounded text-xs hover:bg-green-600"
+                                     >
+                                       Save
+                                     </button>
+                                     <button
+                                       onClick={() => {
+                                         setEditingPostId(null);
+                                         setEditingPostContent("");
+                                       }}
+                                       className="bg-gray-500 text-white px-3 py-1 rounded text-xs hover:bg-gray-600"
+                                     >
+                                       Cancel
+                                     </button>
+                                   </>
+                                 ) : (
+                                   <>
+                                     <button
+                                       onClick={() => {
+                                         setEditingPostId(postId);
+                                         setEditingPostContent(post.content || "");
+                                       }}
+                                       className="bg-blue-500 text-white px-3 py-1 rounded text-xs hover:bg-blue-600"
+                                     >
+                                       Edit
+                                     </button>
+                                     <button
+                                       onClick={() => handleDeletePost(postId)}
+                                       className="bg-red-500 text-white px-3 py-1 rounded text-xs hover:bg-red-600"
+                                     >
+                                       Delete
+                                     </button>
+                                   </>
+                                 )}
+                               </div>
+                             </div>
+
+                             {/* Post Content */}
+                             {isEditing ? (
+                               <textarea
+                                 value={editingPostContent}
+                                 onChange={(e) => setEditingPostContent(e.target.value)}
+                                 className="w-full bg-gray-800 text-white p-3 rounded mb-3 min-h-[100px]"
+                                 placeholder="Post content..."
+                               />
+                             ) : (
+                               post.content && (
+                                 <p className="text-white mb-3 whitespace-pre-wrap">{post.content}</p>
+                               )
+                             )}
+
+                             {/* Post Media */}
+                             {postType === "image" && src && !isEditing && (
+                               <div className="w-full max-h-[400px] rounded overflow-hidden mb-3">
+                                 <img
+                                   src={src}
+                                   alt={post.content || "Post image"}
+                                   className="w-full h-auto object-contain cursor-pointer hover:opacity-90 transition-opacity"
+                                   onError={(e) => {
+                                     const target = e.currentTarget as HTMLImageElement;
+                                     target.style.display = 'none';
+                                   }}
+                                 />
+                               </div>
+                             )}
+
+                             {postType === "video" && src && !isEditing && (
+                               <div className="w-full mb-3">
+                                 <VideoComponent
+                                   post={post}
+                                   src={src}
+                                   pathUrlPrimary={mediaRef ? `${API_BASE}/api/image/view/${encodeURIComponent(mediaRef)}` : undefined}
+                                   queryUrlFallback={mediaRef ? `${PROD_BASE}/api/image/view?publicId=${encodeURIComponent(mediaRef)}` : undefined}
+                                   pathUrlFallback={mediaRef ? `${PROD_BASE}/api/image/view/${encodeURIComponent(mediaRef)}` : undefined}
+                                 />
+                               </div>
+                             )}
+
+                             {/* Post Type Badge */}
+                             <div className="flex items-center gap-2 mt-2">
+                               <span className="px-2 py-1 rounded text-xs bg-gray-600 text-gray-300">
+                                 {postType === "image" ? "Image" : postType === "video" ? "Video" : "Text"}
+                               </span>
+                             </div>
+                           </div>
+                         );
+                       })}
+                     </div>
+                   )}
+                 </div>
+               ) : (
+                 <div className="max-h-64 overflow-y-auto">
+                   {loadingFollows ? (
+                     <div className="flex justify-center items-center py-8">
+                       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-yellow-500"></div>
+                       <span className="ml-2 text-white">Loading...</span>
+                     </div>
+                   ) : (
+                     <div className="space-y-3">
+                       {(activeTab === 'followers' ? followData.followers : followData.following).map((follower) => (
+                         <div key={follower.id} className="flex items-center p-3 bg-gray-700 rounded-lg">
+                           <div className="flex items-center space-x-3">
+                             <div className="relative w-10 h-10 rounded-full overflow-hidden bg-gray-600 flex items-center justify-center">
+                               {follower.image && follower.image.trim() && follower.image !== "null" && follower.image !== "undefined" ? (
+                                 <img
+                                   src={getImageSource(follower.image, 'profile').src}
+                                   alt="Profile"
+                                   className="w-full h-full object-cover"
+                                   onError={(e) => {
+                                     const target = e.currentTarget as HTMLImageElement;
+                                     target.style.display = 'none';
+                                     const nextElement = target.nextElementSibling as HTMLElement;
+                                     if (nextElement) nextElement.style.display = 'flex';
+                                   }}
+                                 />
+                               ) : null}
+                               <div className="absolute inset-0 bg-gray-600 flex items-center justify-center text-white text-sm font-bold" style={{ display: follower.image && follower.image.trim() && follower.image !== "null" && follower.image !== "undefined" ? 'none' : 'flex' }}>
+                                 {follower.name.split(' ').map(n => n[0]).join('').toUpperCase() || '?'}
+                               </div>
+                             </div>
+                             <div>
+                               <p className="text-white font-medium">{follower.name}</p>
+                               <p className="text-gray-400 text-sm">{follower.email}</p>
+                               <div className="flex gap-2 mt-1">
+                                 <span className={`px-2 py-1 rounded text-xs ${follower.creator_verified ? 'bg-blue-500' : 'bg-gray-500'}`}>
+                                   {follower.creator_verified ? 'Creator' : 'Fan'}
+                                 </span>
+                                 {follower.isVip && (
+                                   <span className="px-2 py-1 rounded text-xs bg-yellow-500">VIP</span>
+                                 )}
+                                 <span className="px-2 py-1 rounded text-xs bg-gray-600">
+                                   {follower.gender}
+                                 </span>
+                               </div>
+                             </div>
+                           </div>
+                         </div>
+                       ))}
+                       
+                       {(activeTab === 'followers' ? followData.followers : followData.following).length === 0 && (
+                         <div className="text-center py-8">
+                           <p className="text-gray-400">
+                             No {activeTab} found
+                           </p>
+                         </div>
+                       )}
+                     </div>
+                   )}
+                 </div>
+               )}
              </div>
 
            </div>
         </div>
+
+        {/* Image Modal for Portfolio */}
+        {isImageModalOpen && (
+          <div
+            className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50 p-4"
+            onClick={handleImageModalClick}
+          >
+            <button
+              onClick={closeImageModal}
+              className="absolute top-4 right-4 text-white text-3xl hover:text-gray-300 transition-colors duration-200 z-10"
+              aria-label="Close modal"
+            >
+              ×
+            </button>
+
+            <div className="relative max-w-full max-h-full">
+              <img
+                src={selectedImage}
+                alt="Fullscreen portfolio image"
+                className="max-w-full max-h-[90vh] object-contain rounded-lg"
+                onClick={(e) => e.stopPropagation()}
+              />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -804,6 +1782,7 @@ export default function Users(): JSX.Element {
   const [sendingNotification, setSendingNotification] = useState(false);
   const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
   const [showUserSelector, setShowUserSelector] = useState(false);
+  const [userSearchText, setUserSearchText] = useState("");
   
   // Notifications state
   const [notifications, setNotifications] = useState<NotificationCampaign[]>([]);
@@ -946,6 +1925,7 @@ export default function Users(): JSX.Element {
                     <th className="px-4 py-3 text-left text-yellow-500 font-semibold">Country</th>
                     <th className="px-4 py-3 text-left text-yellow-500 font-semibold">Balance</th>
                     <th className="px-4 py-3 text-left text-yellow-500 font-semibold">Earnings</th>
+                    <th className="px-4 py-3 text-left text-yellow-500 font-semibold">IP Address</th>
                     <th className="px-4 py-3 text-left text-yellow-500 font-semibold">Status</th>
                     <th className="px-4 py-3 text-left text-yellow-500 font-semibold">Ban Status</th>
                     <th className="px-4 py-3 text-left text-yellow-500 font-semibold">Actions</th>
@@ -998,6 +1978,11 @@ export default function Users(): JSX.Element {
                       <td className="px-4 py-3 text-white">{user.country}</td>
                       <td className="px-4 py-3 text-white">{user.balance || "0"}</td>
                       <td className="px-4 py-3 text-white">{user.earnings || "0"}</td>
+                      <td className="px-4 py-3">
+                        <div className="text-white text-sm font-mono">
+                          {user.ipAddress || "Unknown"}
+                        </div>
+                      </td>
                       <td className="px-4 py-3">
                         <div className="flex flex-col gap-1">
                         {!user.creator_verified && (
@@ -1319,21 +2304,26 @@ export default function Users(): JSX.Element {
 
     setSendingNotification(true);
     try {
-      const requestBody: any = {
+      // Build request body based on notification type
+      const requestBody: {
+        title: string;
+        message: string;
+        notificationType: string;
+        hasLearnMore: boolean;
+        learnMoreUrl: string | null;
+        targetUserIds?: string[];
+        targetGender: string;
+      } = {
         title: notificationTitle,
         message: notificationMessage,
         notificationType: 'admin_broadcast',
         hasLearnMore: hasLearnMore,
-        learnMoreUrl: hasLearnMore ? learnMoreUrl : null
+        learnMoreUrl: hasLearnMore ? learnMoreUrl : null,
+        // If specific users are selected, use targetUserIds; otherwise use targetGender
+        ...(notificationGender === "specific" 
+          ? { targetUserIds: selectedUserIds, targetGender: "all" } 
+          : { targetGender: notificationGender })
       };
-
-      // If specific users are selected, use targetUserIds; otherwise use targetGender
-      if (notificationGender === "specific") {
-        requestBody.targetUserIds = selectedUserIds;
-        requestBody.targetGender = "all"; // Override for API
-      } else {
-        requestBody.targetGender = notificationGender;
-      }
 
       const response = await fetch(`${URL}/adminNotificationSystem`, {
         method: 'POST',
@@ -1949,20 +2939,48 @@ export default function Users(): JSX.Element {
             {/* User Selector for Specific Users */}
             {notificationGender === "specific" && (
               <div className="mb-4">
-                <div className="flex justify-between items-center mb-2">
-                  <label className="text-white text-sm font-bold">Select Users</label>
-                  <button
-                    onClick={() => setShowUserSelector(!showUserSelector)}
-                    className="text-yellow-500 text-sm hover:underline"
-                  >
-                    {showUserSelector ? "Hide" : "Show"} User List
-                  </button>
+                <div className="flex justify-between items-center mb-3">
+                  <div>
+                    <label className="text-white text-sm font-bold block mb-1">Select Users</label>
+                    <p className="text-gray-400 text-xs">
+                      {selectedUserIds.length > 0 
+                        ? `${selectedUserIds.length} user(s) selected` 
+                        : "No users selected"}
+                    </p>
+                  </div>
+                  <div className="flex gap-2">
+                    {user_list.length > 0 && (
+                      <>
+                        <button
+                          onClick={() => {
+                            const allIds = user_list.map(u => u._id);
+                            setSelectedUserIds(allIds);
+                          }}
+                          className="text-yellow-500 text-xs hover:underline px-2 py-1 border border-yellow-500 rounded"
+                        >
+                          Select All
+                        </button>
+                        <button
+                          onClick={() => setSelectedUserIds([])}
+                          className="text-gray-400 text-xs hover:underline px-2 py-1 border border-gray-400 rounded"
+                        >
+                          Clear All
+                        </button>
+                      </>
+                    )}
+                    <button
+                      onClick={() => setShowUserSelector(!showUserSelector)}
+                      className="text-yellow-500 text-sm hover:underline px-2 py-1 border border-yellow-500 rounded"
+                    >
+                      {showUserSelector ? "Hide" : "Show"} List
+                    </button>
+                  </div>
                 </div>
                 
                 {selectedUserIds.length > 0 && (
-                  <div className="mb-2">
-                    <p className="text-white text-xs mb-1">
-                      Selected: {selectedUserIds.length} user(s)
+                  <div className="mb-3 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
+                    <p className="text-yellow-400 text-xs font-semibold mb-2">
+                      Selected Users ({selectedUserIds.length}):
                     </p>
                     <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto">
                       {selectedUserIds.map((userId) => {
@@ -1970,12 +2988,16 @@ export default function Users(): JSX.Element {
                         return user ? (
                           <div
                             key={userId}
-                            className="bg-yellow-500 text-black px-2 py-1 rounded text-xs flex items-center gap-1"
+                            className="bg-yellow-500 text-black px-3 py-1.5 rounded-full text-xs flex items-center gap-2 font-medium"
                           >
-                            {user.firstname} {user.lastname}
+                            <span>{user.firstname} {user.lastname}</span>
+                            {user.username && (
+                              <span className="text-gray-700">({user.username})</span>
+                            )}
                             <button
                               onClick={() => toggleUserSelection(userId)}
-                              className="hover:bg-yellow-600 rounded px-1"
+                              className="hover:bg-yellow-600 rounded-full w-5 h-5 flex items-center justify-center font-bold"
+                              title="Remove"
                             >
                               ×
                             </button>
@@ -1987,58 +3009,121 @@ export default function Users(): JSX.Element {
                 )}
 
                 {showUserSelector && (
-                  <div className="border border-gray-600 rounded-lg p-3 max-h-64 overflow-y-auto bg-gray-800">
-                    <div className="space-y-2">
-                      {user_list.map((user) => (
-                        <label
-                          key={user._id}
-                          className="flex items-center gap-2 p-2 hover:bg-gray-700 rounded cursor-pointer"
-                        >
-                          <input
-                            type="checkbox"
-                            checked={selectedUserIds.includes(user._id)}
-                            onChange={() => toggleUserSelection(user._id)}
-                            className="w-4 h-4"
-                          />
-                          <div className="flex items-center gap-2 flex-1">
-                            {(() => {
-                              const profileImage = user.photolink;
-                              const imageSource = getImageSource(profileImage || "", 'profile');
-                              const initials = `${user.firstname?.[0] || ''}${user.lastname?.[0] || ''}`.toUpperCase();
-                              
+                  <div className="border border-gray-600 rounded-lg bg-gray-800">
+                    {/* Search Bar */}
+                    <div className="p-3 border-b border-gray-600">
+                      <div className="flex items-center gap-2">
+                        <img alt="searchIcon" src={searchIcon.src} className="w-4 h-4" />
+                        <input
+                          type="text"
+                          value={userSearchText}
+                          onChange={(e) => setUserSearchText(e.target.value)}
+                          placeholder="Search users by name or username..."
+                          className="flex-1 bg-gray-700 text-white px-3 py-2 rounded text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                        />
+                        {userSearchText && (
+                          <button
+                            onClick={() => setUserSearchText("")}
+                            className="text-gray-400 hover:text-white"
+                          >
+                            ×
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* User List */}
+                    <div className="max-h-64 overflow-y-auto p-2">
+                      {(() => {
+                        // Filter users based on search text
+                        const filteredUsers = user_list.filter((user) => {
+                          if (!userSearchText.trim()) return true;
+                          const searchLower = userSearchText.toLowerCase().trim();
+                          const fullName = `${user.firstname} ${user.lastname}`.toLowerCase();
+                          const username = (user.username || "").toLowerCase();
+                          return fullName.includes(searchLower) || username.includes(searchLower);
+                        });
+
+                        if (filteredUsers.length === 0) {
+                          return (
+                            <div className="text-center py-8">
+                              <p className="text-gray-400 text-sm">No users found</p>
+                            </div>
+                          );
+                        }
+
+                        return (
+                          <div className="space-y-1">
+                            {filteredUsers.map((user) => {
+                              const isSelected = selectedUserIds.includes(user._id);
                               return (
-                                <div className="relative w-8 h-8 rounded-full overflow-hidden bg-gray-600 flex items-center justify-center">
-                                  {profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined" ? (
-                                    <img
-                                      src={imageSource.src}
-                                      alt="Profile"
-                                      className="w-full h-full object-cover"
-                                      onError={(e) => {
-                                        const target = e.currentTarget as HTMLImageElement;
-                                        target.style.display = 'none';
-                                        const nextElement = target.nextElementSibling as HTMLElement;
-                                        if (nextElement) nextElement.style.display = 'flex';
-                                      }}
-                                    />
-                                  ) : null}
-                                  <div className="absolute inset-0 bg-gray-600 flex items-center justify-center text-white text-xs font-bold" style={{ display: (!profileImage || profileImage === "null" || profileImage === "undefined") ? 'flex' : 'none' }}>
-                                    {initials || '?'}
+                                <label
+                                  key={user._id}
+                                  className={`flex items-center gap-3 p-2 rounded cursor-pointer transition-colors ${
+                                    isSelected 
+                                      ? 'bg-yellow-500/20 border border-yellow-500/50' 
+                                      : 'hover:bg-gray-700'
+                                  }`}
+                                >
+                                  <input
+                                    type="checkbox"
+                                    checked={isSelected}
+                                    onChange={() => toggleUserSelection(user._id)}
+                                    className="w-4 h-4 text-yellow-500 focus:ring-yellow-500 focus:ring-2 rounded"
+                                  />
+                                  <div className="flex items-center gap-2 flex-1">
+                                    {(() => {
+                                      const profileImage = user.photolink;
+                                      const imageSource = getImageSource(profileImage || "", 'profile');
+                                      const initials = `${user.firstname?.[0] || ''}${user.lastname?.[0] || ''}`.toUpperCase();
+                                      
+                                      return (
+                                        <div className="relative w-10 h-10 rounded-full overflow-hidden bg-gray-600 flex items-center justify-center flex-shrink-0">
+                                          {profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined" ? (
+                                            <img
+                                              src={imageSource.src}
+                                              alt="Profile"
+                                              className="w-full h-full object-cover"
+                                              onError={(e) => {
+                                                const target = e.currentTarget as HTMLImageElement;
+                                                target.style.display = 'none';
+                                                const nextElement = target.nextElementSibling as HTMLElement;
+                                                if (nextElement) nextElement.style.display = 'flex';
+                                              }}
+                                            />
+                                          ) : null}
+                                          <div className="absolute inset-0 bg-gray-600 flex items-center justify-center text-white text-xs font-bold" style={{ display: (!profileImage || profileImage === "null" || profileImage === "undefined") ? 'flex' : 'none' }}>
+                                            {initials || '?'}
+                                          </div>
+                                        </div>
+                                      );
+                                    })()}
+                                    <div className="flex-1 min-w-0">
+                                      <div className="flex items-center gap-2 flex-wrap">
+                                        <span className="text-white text-sm font-medium">
+                                          {user.firstname} {user.lastname}
+                                        </span>
+                                        {user.username && (
+                                          <span className="text-gray-400 text-xs">{user.username}</span>
+                                        )}
+                                        {user.creator_verified && (
+                                          <span className="px-1.5 py-0.5 rounded text-xs bg-blue-500 text-white">Creator</span>
+                                        )}
+                                        {user.isVip && (
+                                          <span className="px-1.5 py-0.5 rounded text-xs bg-yellow-500 text-black">VIP</span>
+                                        )}
+                                      </div>
+                                      <div className="text-gray-400 text-xs mt-0.5">
+                                        {user.gender} • {user.country}
+                                      </div>
+                                    </div>
                                   </div>
-                                </div>
+                                </label>
                               );
-                            })()}
-                            <span className="text-white text-sm">
-                              {user.firstname} {user.lastname}
-                            </span>
-                            {user.username && (
-                              <span className="text-gray-400 text-xs">(@{user.username})</span>
-                            )}
-                            {user.creator_verified && (
-                              <span className="px-1 py-0.5 rounded text-xs bg-blue-500 text-white">Creator</span>
-                            )}
+                            })}
                           </div>
-                        </label>
-                      ))}
+                        );
+                      })()}
                     </div>
                   </div>
                 )}
@@ -2117,6 +3202,7 @@ export default function Users(): JSX.Element {
                   setLearnMoreUrl("");
                   setSelectedUserIds([]);
                   setShowUserSelector(false);
+                  setUserSearchText("");
                 }}
                 className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
               >
