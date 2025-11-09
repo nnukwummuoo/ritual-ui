@@ -22,9 +22,6 @@ export default function GlobalVisitorTracker() {
         // Create temporary visitor ID immediately if it doesn't exist
         const newTempId = `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}_${Math.random().toString(36).substr(2, 9)}`;
         localStorage.setItem(STORAGE_KEY, newTempId);
-        console.log('✅ [GlobalTracker] Created temporary visitor ID on mount:', newTempId);
-      } else {
-        console.log('✅ [GlobalTracker] Found existing temporary visitor ID:', existing);
       }
     }
   }, []); // Run once on mount

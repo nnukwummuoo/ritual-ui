@@ -1,9 +1,11 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { URL as API_URL } from './config';
 
 export interface Transaction {
   _id: string;
   orderId: string;
   userId: string;
+  username?: string;
   amount: number;
   payCurrency: string;
   status: string;

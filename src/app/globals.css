@@ -15,11 +15,28 @@
 html{
   -webkit-text-size-adjust: 100%;
   tab-size: 4;
+  overflow: hidden;
+  height: 100%;
 }
 
 body {
   background: var(--background);
   font-family: Arial, Helvetica, sans-serif;
+  overflow: hidden;
+  height: 100%;
+}
+
+/* Allow scrolling on mobile/tablet (below md breakpoint) */
+@media (max-width: 767px) {
+  html {
+    overflow: auto;
+    height: auto;
+  }
+  
+  body {
+    overflow: auto;
+    height: auto;
+  }
 }
 
 /* Prevent body scrolling on message routes */
@@ -39,6 +56,12 @@ body.message-route {
   box-sizing: border-box;
   &:hover{
     scrollbar-color: #192050 var(--secondary);
+  }
+}
+
+/* Only allow scrollbar hover effect on mobile/tablet */
+@media (max-width: 767px) {
+  .scrollbar:hover {
     overflow-y: scroll;
   }
 }
@@ -89,3 +112,15 @@ body .Toastify__toast-body {
   z-index: 999999 !important;
 }
 
+/* Navbar visibility classes */
+.top-bar-visibility {
+  transition: transform 0.3s ease-in-out;
+}
+
+.navbar-hidden {
+  transform: translateY(-100%) !important;
+}
+
+.navbar-visible {
+  transform: translateY(0) !important;
+}

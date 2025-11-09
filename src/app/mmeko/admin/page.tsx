@@ -12,6 +12,7 @@ import {
     IoAnalyticsOutline,
     IoServerOutline,
     IoCardOutline,
+    IoBarChartOutline,
 } from "react-icons/io5";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "@/store/store";
@@ -32,6 +33,7 @@ import VipAnalysisPage from "./vip-analysis/page";
 import WebsiteAnalyticsPage from "./website-analytics/page";
 import BackupManagement from "./backup/page";
 import TransactionsPage from "./transactions/page";
+import RevenuePage from "./revenue/page";
 import PushNotificationToggle from "@/components/PushNotificationToggle";
 
 const AdminPage = () => {
@@ -161,6 +163,11 @@ const AdminPage = () => {
       name: "Transactions",
       icon: <IoCardOutline size={22} />,
       component: <TransactionsPage />,
+    },
+    {
+      name: "Revenue",
+      icon: <IoBarChartOutline size={22} />,
+      component: <RevenuePage />,
     },
     {
       name: "Users",

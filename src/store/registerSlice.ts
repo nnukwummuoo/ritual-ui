@@ -233,13 +233,6 @@ const registerSlice = createSlice({
       state.isVip = action.payload.isVip || false;
       state.vipStartDate = action.payload.vipStartDate;
       state.vipEndDate = action.payload.vipEndDate;
-      
-      console.log(`🔍 [REGISTER SLICE] loginAuthUser - VIP Status:`, {
-        isVip: action.payload.isVip,
-        vipStartDate: action.payload.vipStartDate,
-        vipEndDate: action.payload.vipEndDate,
-        userID: action.payload.userID
-      });
     },
   },
 

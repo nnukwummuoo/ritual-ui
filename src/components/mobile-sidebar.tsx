@@ -91,9 +91,10 @@ export default function MobileSidebar() {
           onClick={toggle}
         />
       )}
+     
       <section
         ref={sidebarRef}
-        className={`sidebar bg-gray-900 ${isOpen ? "sidebar-open" : "sidebar-closed"}`}
+        className={`sidebar bg-gray-900 h-full flex flex-col overflow-y-auto ${isOpen ? "sidebar-open" : "sidebar-closed"}`}
       >
       <Link href="/" style={{ width: "100%", display: "flex", justifyContent: "center" }}>
         <Image src={anyaLogo} alt="logo" className="brand-logo w-20" />

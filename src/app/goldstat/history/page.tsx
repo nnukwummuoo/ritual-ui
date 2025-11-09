@@ -5,7 +5,7 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
-import { get_my_history, get_transaction_history } from "@/store/goldstatSlice";
+import { get_my_history, get_transaction_history, get_monthly_history } from "@/store/goldstatSlice";
 import { getprofile } from "@/store/profile";
 import { getViews } from "@/store/creatorSlice";
 import { RootState } from "@/store/store";
@@ -72,6 +72,14 @@ const HistoryPage = () => {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [showToast, setShowToast] = useState(false);
+  // Initialize with current month/year
+  const now = new Date();
+  const currentMonth = (now.getMonth() + 1).toString(); // 1-12
+  const currentYear = now.getFullYear().toString();
+  
+  const [selectedMonth, setSelectedMonth] = useState<string>(currentMonth);
+  const [selectedYear, setSelectedYear] = useState<string>(currentYear);
+  const [monthlyHistory, setMonthlyHistory] = useState<any[]>([]);
 
   // Toast notification function
   const showToastNotification = (message: string) => {
@@ -251,43 +259,132 @@ const HistoryPage = () => {
     (state: RootState) => state.profile
   );
   
+  // Calculate total current balance (not month-specific)
+  const totalCurrentBalance = typeof earnings === 'number' ? earnings : parseFloat(earnings || '0') || 0;
+  const totalCurrentBalanceUSD = totalCurrentBalance * 0.04;
+  
   const [views, setViews] = useState(0);
 
-  // Get analytics from history data or use profile data
+  // Get analytics from history data or use profile data based on selected month
   const analytics: Analytics = useMemo(() => {
-    // Check if we have data for current month
-    const hasCurrentMonthData = history?.history && 
-      ((history.history.earning !== "---" && history.history.earning !== "0" && history.history.earning !== 0) ||
-      (history.history.request !== "0" && history.history.request !== 0) ||
-      (history.history.gift !== "0" && history.history.gift !== 0) ||
-      (history.history.like !== "0" && history.history.like !== 0) ||
-      (history.history.followers !== "0" && history.history.followers !== 0));
+    const targetMonth = parseInt(selectedMonth) - 1; // Convert to 0-11
+    const targetYear = parseInt(selectedYear);
     
+    const now = new Date();
     
-    // Only show data if there's activity in current month
-    if (!hasCurrentMonthData) {
-      return {
-    coin: 0,
-    usd: 0,
-    request: 0,
-    earning: 0,
-    gift: 0,
-    like: 0,
-        followers: 0,
-      };
+    // Check if selected month is current month FIRST - if so, prefer history.history
+    const isCurrentMonth = parseInt(selectedMonth) === (now.getMonth() + 1) && parseInt(selectedYear) === now.getFullYear();
+    
+    // Try to find data for selected month from monthlyHistory (for past months)
+    if (monthlyHistory && monthlyHistory.length > 0) {
+      const monthData = monthlyHistory.find((item: any) => {
+        if (!item.month || !item.data) {
+          return false;
+        }
+        
+        try {
+          // Parse month string (e.g., "January", "February", etc.)
+          const monthNames = ["January", "February", "March", "April", "May", "June",
+            "July", "August", "September", "October", "November", "December"];
+          const monthIndex = monthNames.indexOf(item.month);
+          
+          if (monthIndex === targetMonth && item.data.year === targetYear) {
+            return true;
+          }
+        } catch (error) {
+          return false;
+        }
+        return false;
+      });
+      
+      if (monthData && monthData.data) {
+        // For current month, skip monthlyHistory and use history.history instead
+        if (isCurrentMonth && history?.history) {
+          // Will fall through to use history.history below
+        } else {
+          // For past months, use monthlyHistory data
+          const transactions = monthData.data.earning || [];
+          
+          // Check transaction structure - transactions have: income, spend, date, userid, detail, id
+          let requestCount = 0;
+          let giftCount = 0;
+          let likeCount = 0;
+          let totalEarning = 0; // Calculate total earnings from transactions
+          
+          transactions.forEach((t: any) => {
+            // The detail field contains the description (e.g., "completed - payment received")
+            const detail = (t.detail || t.details || t.description || "").toLowerCase();
+            
+            // Calculate earnings: sum all income values (positive income means money earned)
+            const income = parseFloat(t.income || "0");
+            if (income > 0) {
+              totalEarning += income;
+            }
+            
+            if (detail.includes('request') || detail.includes('fan meet') || detail.includes('completed - payment received')) {
+              requestCount++;
+            }
+            if (detail.includes('gift') || detail.includes('tip')) {
+              giftCount++;
+            }
+            if (detail.includes('like')) {
+              likeCount++;
+            }
+          });
+          
+          return {
+            coin: parseFloat(monthData.total) || 0,
+            usd: (parseFloat(monthData.total) || 0) * 0.04,
+            request: requestCount,
+            earning: totalEarning, // Use calculated earning from transactions
+            gift: giftCount,
+            like: likeCount,
+            followers: 0, // This might need to come from a different source
+          };
+        }
+      }
     }
     
+    // IMPORTANT: For current month, ALWAYS use history.history data (it has actual counts)
+    if (isCurrentMonth && history?.history) {
+      const hasActivity = 
+        (history.history.earning !== "---" && history.history.earning !== "0" && history.history.earning !== 0) ||
+        (history.history.request !== "0" && history.history.request !== 0) ||
+        (history.history.gift !== "0" && history.history.gift !== 0) ||
+        (history.history.like !== "0" && history.history.like !== 0) ||
+        (history.history.followers !== "0" && history.history.followers !== 0);
+      
+      if (hasActivity) {
+        // Parse string values to numbers, handling "---" and "0"
+        const parseValue = (val: any) => {
+          if (val === "---" || val === null || val === undefined) return 0;
+          const parsed = typeof val === 'string' ? parseFloat(val) : val;
+          return isNaN(parsed) ? 0 : parsed;
+        };
+        
+        return {
+          coin: parseValue(history.history.coin),
+          usd: parseValue(history.history.usd),
+          request: parseValue(history.history.request),
+          earning: parseValue(history.history.earning), // Use earning from history.history
+          gift: parseValue(history.history.gift),
+          like: parseValue(history.history.like),
+          followers: parseValue(history.history.followers),
+        };
+      }
+    }
+    
+    // Return zeros if no data for selected month
     return {
-      coin: history?.history?.coin || 0,
-      usd: history?.history?.usd || 0,
-      request: history?.history?.request || 0,
-      // Always use profile earnings (total earnings) instead of monthly history
-      earning: typeof earnings === 'string' ? parseFloat(earnings) || 0 : earnings || 0,
-      gift: history?.history?.gift || 0,
-      like: history?.history?.like || 0,
-      followers: history?.history?.followers || 0,
+      coin: 0,
+      usd: 0,
+      request: 0,
+      earning: 0, // No earnings if no data
+      gift: 0,
+      like: 0,
+      followers: 0,
     };
-  }, [history?.history, earnings]);
+  }, [history, selectedMonth, selectedYear, monthlyHistory]);
 
 
 
@@ -314,11 +411,25 @@ const HistoryPage = () => {
       }
     };
 
+    const fetchMonthlyHistory = async () => {
+      if (!session?._id || !session?.token) return;
+      
+      try {
+        const result = await dispatch(get_monthly_history({ userId: session._id, token: session.token }) as any);
+        if (result.payload && result.payload.Month) {
+          setMonthlyHistory(result.payload.Month);
+        }
+      } catch (error) {
+        console.error('Error fetching monthly history:', error);
+      }
+    };
+
     if (session?._id && session?.token) {
       dispatch(get_my_history({ userId: session._id, token: session.token }) as any);
       dispatch(get_transaction_history({ userId: session._id, token: session.token }) as any);
       dispatch(getprofile({ userid: session._id, token: session.token }) as any);
       fetchPendingWithdrawals();
+      fetchMonthlyHistory();
     }
   }, [dispatch, session]);
 
@@ -387,7 +498,7 @@ const HistoryPage = () => {
         </div>
       )}
 
-      {/* Gold Card */}
+      {/* Gold Card - Always show total current balance, not month-specific */}
       <div className="bg-gray-800 rounded-lg px-4 py-3 mb-3">
         <div className="flex justify-between">
           <button
@@ -420,22 +531,58 @@ const HistoryPage = () => {
               className="mr-1"
             />
           </button>
-          <p className="text-lg font-bold">{analytics.earning}</p>
+          <p className="text-lg font-bold">{totalCurrentBalance}</p>
         </div>
-        <p className="text-sm">= ${(analytics.earning * 0.04).toFixed(2)}</p>
+        <p className="text-sm">= ${totalCurrentBalanceUSD.toFixed(2)}</p>
       </div>
 
      
 
-      {/* Withdraw Request */}
-      <WithdrawRequestCard usd={analytics.earning * 0.04} onWithdrawClick={handleWithdrawClick} />
+      {/* Withdraw Request - Always show total current balance, not month-specific */}
+      <WithdrawRequestCard usd={totalCurrentBalanceUSD} onWithdrawClick={handleWithdrawClick} />
 
        {/* Account Analytics - Only show if there's current month activity */}
-       {analytics.earning > 0 || analytics.request > 0 || analytics.gift > 0 || analytics.like > 0 ? (
+       {/* Note: Monthly analytics reset at the start of each new month */}
+       {analytics.request > 0 || analytics.gift > 0 || analytics.like > 0 || analytics.followers > 0 ? (
       <div className="bg-gray-800 rounded-lg px-4 py-3 mb-3">
-        <div className="flex justify-between mb-3">
+        <div className="flex justify-between items-center mb-3">
           <p className="font-semibold text-sm">Account analytics</p>
-          <p className="text-xs">{new Date().toLocaleString('default', { month: 'long', year: 'numeric' })}</p>
+          <div className="flex items-center gap-2">
+            {/* Month Selector */}
+            <select
+              value={selectedMonth}
+              onChange={(e) => setSelectedMonth(e.target.value)}
+              className="bg-gray-700 text-white text-xs px-2 py-1 rounded border border-gray-600 focus:outline-none focus:ring-1 focus:ring-yellow-500"
+            >
+              <option value="1">January</option>
+              <option value="2">February</option>
+              <option value="3">March</option>
+              <option value="4">April</option>
+              <option value="5">May</option>
+              <option value="6">June</option>
+              <option value="7">July</option>
+              <option value="8">August</option>
+              <option value="9">September</option>
+              <option value="10">October</option>
+              <option value="11">November</option>
+              <option value="12">December</option>
+            </select>
+            {/* Year Selector */}
+            <select
+              value={selectedYear}
+              onChange={(e) => setSelectedYear(e.target.value)}
+              className="bg-gray-700 text-white text-xs px-2 py-1 rounded border border-gray-600 focus:outline-none focus:ring-1 focus:ring-yellow-500"
+            >
+              {Array.from({ length: 5 }, (_, i) => {
+                const year = new Date().getFullYear() - i;
+                return (
+                  <option key={year} value={year.toString()}>
+                    {year}
+                  </option>
+                );
+              })}
+            </select>
+          </div>
         </div>
         <div className="grid grid-cols-2 gap-2 text-sm">
           <div className="bg-slate-600 rounded-lg p-2 flex flex-col">
@@ -458,8 +605,47 @@ const HistoryPage = () => {
       </div>
        ) : (
          <div className="bg-gray-800 rounded-lg px-4 py-3 mb-3">
+           <div className="flex justify-between items-center mb-3">
+             <p className="font-semibold text-sm">Account analytics</p>
+             <div className="flex items-center gap-2">
+               {/* Month Selector */}
+               <select
+                 value={selectedMonth}
+                 onChange={(e) => setSelectedMonth(e.target.value)}
+                 className="bg-gray-700 text-white text-xs px-2 py-1 rounded border border-gray-600 focus:outline-none focus:ring-1 focus:ring-yellow-500"
+               >
+                 <option value="1">January</option>
+                 <option value="2">February</option>
+                 <option value="3">March</option>
+                 <option value="4">April</option>
+                 <option value="5">May</option>
+                 <option value="6">June</option>
+                 <option value="7">July</option>
+                 <option value="8">August</option>
+                 <option value="9">September</option>
+                 <option value="10">October</option>
+                 <option value="11">November</option>
+                 <option value="12">December</option>
+               </select>
+               {/* Year Selector */}
+               <select
+                 value={selectedYear}
+                 onChange={(e) => setSelectedYear(e.target.value)}
+                 className="bg-gray-700 text-white text-xs px-2 py-1 rounded border border-gray-600 focus:outline-none focus:ring-1 focus:ring-yellow-500"
+               >
+                 {Array.from({ length: 5 }, (_, i) => {
+                   const year = new Date().getFullYear() - i;
+                   return (
+                     <option key={year} value={year.toString()}>
+                       {year}
+                     </option>
+                   );
+                 })}
+               </select>
+             </div>
+           </div>
            <div className="text-center text-gray-400">
-             <p className="text-sm">No activity this month</p>
+             <p className="text-sm">No activity for {new Date(parseInt(selectedYear), parseInt(selectedMonth) - 1).toLocaleString('default', { month: 'long', year: 'numeric' })}</p>
              <p className="text-xs mt-1">Complete fan meets to see your earnings here</p>
            </div>
          </div>
