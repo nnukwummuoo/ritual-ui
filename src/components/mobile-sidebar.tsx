@@ -8,6 +8,7 @@ import React, { useEffect, useRef } from "react";
 import {
   FaCamera,
   FaCog,
+  FaCompass,
   FaHeart,
   FaQuestionCircle,
   FaUpload,
@@ -49,11 +50,11 @@ export default function MobileSidebar() {
       name: "Creators",
       icon: <FaCamera size={25} />,
     },
-    // {
-    //   route: "/search",
-    //   name: "Explorer",
-    //   icon: <FaCompass size={25} />,
-    // },
+    {
+      route: "/discover",
+      name: "Discover",
+      icon: <FaCompass size={25} />,
+    },
     {
       route: "/upload",
       name: "Upload",
@@ -96,7 +97,15 @@ export default function MobileSidebar() {
         ref={sidebarRef}
         className={`sidebar bg-gray-900 h-full flex flex-col overflow-y-auto ${isOpen ? "sidebar-open" : "sidebar-closed"}`}
       >
-      <Link href="/" style={{ width: "100%", display: "flex", justifyContent: "center" }}>
+      <Link 
+        href="/" 
+        style={{ width: "100%", display: "flex", justifyContent: "center" }}
+        onClick={() => {
+          if (isOpen) {
+            toggle();
+          }
+        }}
+      >
         <Image src={anyaLogo} alt="logo" className="brand-logo w-20" />
         <Image src={MmekoLogo} alt="logo" className="sidebar-logo" />
       </Link>
@@ -113,8 +122,10 @@ export default function MobileSidebar() {
               className="flex items-center gap-4 text-white space-x-2"
               href={item.route}
               onClick={() => {
-                // Close sidebar immediately for better UX
-                toggle();
+                // Close sidebar when clicking navigation link
+                if (isOpen) {
+                  toggle();
+                }
               }}
             >
               {item.icon}
