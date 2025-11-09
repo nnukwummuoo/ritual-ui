@@ -119,7 +119,7 @@ const formatRelativeTime = (timestamp: string | number | Date): string => {
 
 // Video skeleton component for loading state
 const VideoSkeleton = () => (
-  <div className="relative w-full h-[500px] rounded overflow-hidden bg-gray-700 animate-pulse">
+  <div className="relative w-full h-[400px] rounded overflow-hidden bg-gray-700 animate-pulse">
     <div className="w-full h-full flex items-center justify-center">
       {/* Play button skeleton */}
       <div className="w-16 h-16 bg-gray-600 rounded-full flex items-center justify-center">
@@ -204,7 +204,7 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
     }, []);
 
     return (
-      <div className="relative w-full h-[500px] rounded overflow-hidden">
+      <div className="relative w-full h-[400px] rounded overflow-hidden">
         {/* Video skeleton - show while video is loading */}
         {!isVideoLoaded && (
           <VideoSkeleton />
@@ -230,7 +230,7 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
             muted
             loop
             playsInline
-            className="w-full h-[500px] object-cover rounded cursor-pointer"
+            className="w-full h-[400px] object-cover rounded cursor-pointer"
             onLoadedData={() => {
               setIsVideoLoaded(true);
             }}
@@ -587,13 +587,13 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
             )}
             
             {postType == "image" && src && (
-              <div className="w-full max-h-[480px] relative rounded overflow-hidden">
+              <div className="w-full max-h-[400px] relative rounded overflow-hidden">
                 <Image
                   src={src}
                   alt={p?.content || "post image"}
                   width={800}
-                  height={480}
-                  className="w-full h-auto object-contain cursor-pointer hover:opacity-90 transition-opacity duration-200"
+                  height={400}
+                  className="w-full h-[400px] object-cover cursor-pointer hover:opacity-90 transition-opacity duration-200"
                   onClick={() => openModal(src)}
                   onError={(e) => {
                     const img = e.currentTarget as HTMLImageElement & { dataset: any };

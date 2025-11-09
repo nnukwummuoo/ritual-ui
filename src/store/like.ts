@@ -19,18 +19,6 @@ export const postlike = createAsyncThunk("like/postlike",async data=>{
     try{
         console.log("🚀 [REDUX] Making axios request...");
         
-        // Test if backend is reachable first
-        try {
-            console.log("🔍 [REDUX] Testing backend connection...");
-            const testResponse = await axios.get(`${URL}/getallpost`, { 
-                timeout: 5000,
-                data: { userid: data.userid }
-            });
-            console.log("✅ [REDUX] Backend is reachable, test response:", testResponse.status);
-        } catch (testError) {
-            console.error("❌ [REDUX] Backend connection test failed:", testError);
-        }
-        
         let response = await axios.put(`${URL}/like`,data)
         console.log("✅ [REDUX] Backend response received:", response);
         console.log("📄 [REDUX] Response status:", response.status);

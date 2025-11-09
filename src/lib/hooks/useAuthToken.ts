@@ -18,8 +18,6 @@ export function useAuthToken(): string | undefined {
     if (reduxToken && reduxToken.trim().length > 0) return;
     try {
       const raw = typeof window !== 'undefined' ? localStorage.getItem("login") : null;
-      // eslint-disable-next-line no-console
-      console.log("[useAuthToken] localStorage raw:", raw);
       if (raw) {
         const saved = JSON.parse(raw);
         const t = saved?.refreshtoken || saved?.accesstoken || saved?.token;

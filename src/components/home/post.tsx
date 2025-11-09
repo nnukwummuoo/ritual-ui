@@ -170,6 +170,8 @@ export default function PostsCard() {
   const [loadingMore, setLoadingMore] = React.useState(false);
   const [directPosts, setDirectPosts] = React.useState<any[]>([]); // Direct API response storage
   const [useVirtualization, setUseVirtualization] = React.useState(false); // Disabled by default
+  const loadMoreRef = React.useRef<HTMLDivElement>(null); // Ref for intersection observer
+  const [autoLoadEnabled, setAutoLoadEnabled] = React.useState(true); // Enable/disable auto-load
   
   // Performance monitoring
   const { 
@@ -365,18 +367,23 @@ export default function PostsCard() {
         
         // Handle pagination - Store data directly in directPosts
         if (append && page > 1) {
-          // Append to existing posts
+          // Append to existing posts - use functional form to access current value
           setDirectPosts(prev => {
-            const combinedPosts = [...prev, ...enrichedPosts];
-            setPostResolve(combinedPosts);
-            dispatch(hydrateFromCache(combinedPosts));
-            return combinedPosts;
+            const newPosts = [...prev, ...enrichedPosts];
+            // Defer dispatch and setPostResolve to avoid updating during render
+            queueMicrotask(() => {
+              setPostResolve(newPosts);
+              dispatch(hydrateFromCache(newPosts));
+            });
+            return newPosts;
           });
         } else {
           // Replace posts for first page
-          setDirectPosts(enrichedPosts);
-          setPostResolve(enrichedPosts);
-          dispatch(hydrateFromCache(enrichedPosts));
+          const newPosts = enrichedPosts;
+          setDirectPosts(newPosts);
+          // Update other states (React will batch these)
+          setPostResolve(newPosts);
+          dispatch(hydrateFromCache(newPosts));
         }
         
         // Update pagination state
@@ -421,12 +428,12 @@ export default function PostsCard() {
   }, [dispatch, fetchFeed]);
 
   // Load more posts function
-  const loadMorePosts = async () => {
+  const loadMorePosts = React.useCallback(async () => {
     if (hasMorePosts && !loadingMore) {
       const nextPage = currentPage + 1;
       await fetchFeed(nextPage, true);
     }
-  };
+  }, [hasMorePosts, loadingMore, currentPage, fetchFeed]);
 
   useLayoutEffect(() => {
     // Initialize UI state for existing posts with proper like/follow status
@@ -547,6 +554,39 @@ export default function PostsCard() {
   // Determine if we should use virtualization (for large lists)
   const shouldUseVirtualization = useVirtualization && displayPosts.length > 20;
 
+  // Auto-load posts when scrolling to bottom using Intersection Observer
+  React.useEffect(() => {
+    if (shouldUseVirtualization || !autoLoadEnabled || !hasMorePosts) {
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const [entry] = entries;
+        // When the sentinel element is visible (user scrolled to bottom)
+        if (entry.isIntersecting && hasMorePosts && !loadingMore) {
+          loadMorePosts();
+        }
+      },
+      {
+        root: null, // Use viewport as root
+        rootMargin: '200px', // Start loading 200px before reaching the bottom
+        threshold: 0.1, // Trigger when 10% of the element is visible
+      }
+    );
+
+    const currentRef = loadMoreRef.current;
+    if (currentRef) {
+      observer.observe(currentRef);
+    }
+
+    return () => {
+      if (currentRef) {
+        observer.unobserve(currentRef);
+      }
+    };
+  }, [hasMorePosts, loadingMore, shouldUseVirtualization, autoLoadEnabled, loadMorePosts]);
+
   // Update performance metrics only when monitoring is enabled
   React.useEffect(() => {
     if (isMonitoring) {
@@ -639,6 +679,11 @@ export default function PostsCard() {
             ))}
           </div>
         </>
+      )}
+
+      {/* Intersection Observer Sentinel - Invisible element to detect when user scrolls to bottom */}
+      {hasMorePosts && !shouldUseVirtualization && (
+        <div ref={loadMoreRef} className="h-1 w-full" />
       )}
 
       {/* Load More Button - Only show when not using virtualization */}

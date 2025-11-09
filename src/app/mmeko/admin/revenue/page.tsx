@@ -9,6 +9,8 @@ import { golds } from "@/data/intresttypes";
 interface RevenueData {
   goldAmount: string;
   purchase: number;
+  total: number;
+  profit: number;
   revenue: number;
   percentage: number;
 }
@@ -114,6 +116,8 @@ const RevenuePage = () => {
           goldValue,
           goldAmount,
           purchase: 0,
+          total: 0,
+          profit: 0,
           revenue: 0,
           percentage: 0,
         };
@@ -140,6 +144,8 @@ const RevenuePage = () => {
         return {
           goldAmount: revenueItem.goldAmount,
           purchase: revenueItem.purchase,
+          total: revenueItem.total || 0,
+          profit: revenueItem.profit || 0,
           revenue: revenueItem.revenue || 0,
           percentage: revenueItem.percentage,
         };
@@ -148,6 +154,8 @@ const RevenuePage = () => {
       return {
         goldAmount: pack.goldAmount,
         purchase: 0,
+        total: 0,
+        profit: 0,
         revenue: 0,
         percentage: 0,
       };
@@ -236,6 +244,12 @@ const RevenuePage = () => {
                       Purchase
                     </th>
                     <th className="py-2 px-2 font-semibold text-sm sm:text-base text-center border-r border-[#323544] whitespace-nowrap">
+                      Total
+                    </th>
+                    <th className="py-2 px-2 font-semibold text-sm sm:text-base text-center border-r border-[#323544] whitespace-nowrap">
+                      Profit
+                    </th>
+                    <th className="py-2 px-2 font-semibold text-sm sm:text-base text-center border-r border-[#323544] whitespace-nowrap">
                       Revenue
                     </th>
                     <th className="py-2 px-2 font-semibold text-sm sm:text-base text-center whitespace-nowrap">
@@ -254,6 +268,12 @@ const RevenuePage = () => {
                       </td>
                       <td className="py-2 px-2 text-center text-sm sm:text-base border-r border-[#323544] whitespace-nowrap">
                         {row.purchase}
+                      </td>
+                      <td className="py-2 px-2 text-center text-sm sm:text-base border-r border-[#323544] whitespace-nowrap">
+                        {row.total}
+                      </td>
+                      <td className="py-2 px-2 text-center text-sm sm:text-base border-r border-[#323544] whitespace-nowrap">
+                        ${row.profit.toFixed(2)}
                       </td>
                       <td className="py-2 px-2 text-center text-sm sm:text-base border-r border-[#323544] whitespace-nowrap">
                         ${row.revenue.toFixed(2)}
