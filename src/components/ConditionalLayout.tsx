@@ -47,6 +47,9 @@ export default function ConditionalLayout({ children, isAuthenticated }: Conditi
       if (!ticking) {
         requestAnimationFrame(() => {
           const currentScrollY = scrollContainer.scrollTop;
+          const reachedBottom =
+            scrollContainer.scrollTop + scrollContainer.clientHeight >=
+            scrollContainer.scrollHeight - 8;
           
           // Only handle on mobile screens
           if (window.innerWidth >= 768) {
@@ -56,11 +59,14 @@ export default function ConditionalLayout({ children, isAuthenticated }: Conditi
           }
           
           // Show navbar when scrolling up, hide when scrolling down
-          if (currentScrollY < lastScrollY) {
+          if (currentScrollY < lastScrollY && !reachedBottom) {
             // Scrolling up
             setShowNavbar(true);
           } else if (currentScrollY > lastScrollY && currentScrollY > 100) {
             // Scrolling down and past 100px
+            setShowNavbar(false);
+          } else if (reachedBottom) {
+            // Keep navbar hidden when the user is pushing against the bottom
             setShowNavbar(false);
           }
           
