@@ -727,7 +727,7 @@ export const getAllUserRatings = createAsyncThunk<
     const response = await axios.get(`${apiUrl}/review/user/${data.userId}/all`, { headers });
     return response.data;
   } catch (err) {
-    console.error('❌ [getAllUserRatings] Error:', err);
+ 
     throw getErrorMessageWithNetworkFallback(err);
   }
 });

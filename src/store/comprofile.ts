@@ -31,6 +31,7 @@ interface UpdateEditPayload {
     lastname?: string;
     country?: string;
     bio?: string;
+    username?: string; // Add username field
     token: string;
     updatePhoto?: File | Blob | string | null;
     // Additional auth fields
@@ -285,6 +286,7 @@ export const updateEdit = createAsyncThunk<any, UpdateEditPayload>("comprofile/u
         refreshtokenProvided: !!data.refreshtoken,
         firstname: data.firstname,
         lastname: data.lastname,
+        username: data.username || "not provided",
         bio: data.bio ? "provided" : "not provided",
         state: data.state,
         country: data.state,
@@ -304,9 +306,7 @@ export const updateEdit = createAsyncThunk<any, UpdateEditPayload>("comprofile/u
             console.log("Image file validation passed");
         }
         
-        // Use editprofilemore endpoint for proper file upload handling with profile bucket
-        console.log("Using editprofilemore endpoint for profile updates with proper bucket handling...");
-        
+       
         // Create FormData for file upload
         const formData = new FormData();
         formData.append('data', JSON.stringify({
@@ -315,6 +315,7 @@ export const updateEdit = createAsyncThunk<any, UpdateEditPayload>("comprofile/u
             lastname: data.lastname,
             bio: data.bio,
             country: data.state || data.country,
+            username: data.username, // Add username to FormData
             deletePhotolink: data.deletePhotolink,
             deletePhotoID: data.deletePhotoID
         }));
@@ -324,10 +325,23 @@ export const updateEdit = createAsyncThunk<any, UpdateEditPayload>("comprofile/u
             formData.append('updatePhoto', data.updatePhoto);
         }
 
+        // Log the data being sent in FormData
+        const formDataPayload = {
+            userid: data.userid,
+            firstname: data.firstname,
+            lastname: data.lastname,
+            bio: data.bio,
+            country: data.state || data.country,
+            username: data.username,
+            deletePhotolink: data.deletePhotolink,
+            deletePhotoID: data.deletePhotoID
+        };
+        
         console.log("Sending profile update with FormData:", {
             userid: data.userid,
             hasFile: !!(data.updatePhoto && data.updatePhoto instanceof File),
-            fileName: data.updatePhoto instanceof File ? data.updatePhoto.name : 'no file'
+            fileName: data.updatePhoto instanceof File ? data.updatePhoto.name : 'no file',
+            formDataPayload: formDataPayload
         });
         
         console.log("Making request to editmoreprofile with:", {
