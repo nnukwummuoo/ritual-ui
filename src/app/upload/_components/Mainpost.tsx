@@ -385,7 +385,7 @@ export const Mainpost = () => {
         <div className="flex flex-col items-start gap-3">
           <textarea
             className="w-full p-2 text-white bg-transparent border border-gray-600 rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="What's hot?! Use #hashtags to make your post discoverable"
+            placeholder="What's hot?!"
             rows={3}
             value={postcontent}
             onChange={(e) => setpostcontent(e.target.value)}
