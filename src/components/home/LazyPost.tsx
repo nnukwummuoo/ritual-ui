@@ -631,7 +631,12 @@ const LazyPost: React.FC<LazyPostProps> = ({
           <div 
             className="flex-1 cursor-pointer" 
           >
-            <p className="font-medium text-white ">{post?.user?.firstname} { post?.user?.lastname}</p>
+            <p className="font-medium text-white " 
+               onClick={(e) => {
+                e.stopPropagation();
+                router.push(`/Profile/${postAuthorId}`);
+              }}
+            >{post?.user?.firstname} { post?.user?.lastname}</p>
             <span className="text-gray-400 text-sm">{handleStr ? `${handleStr}` : ""}</span>
           </div>
         </div>

@@ -978,7 +978,8 @@ const EditProfile: React.FC = () => {
         ...(lastname && { lastname }),
         ...(country && { state: country, country }),
         ...(bio && { bio }),
-        ...(username && { username: `@${username}` }), // Add @ prefix when saving
+        // Always send username if it exists (user entered one) or if placeholder exists (keep current)
+        ...((username || usernamepl) && { username: `@${username || usernamepl}` }), // Add @ prefix when saving
       };
 
       // Log the profile update payload (without actual token values)
