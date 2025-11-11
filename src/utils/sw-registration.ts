@@ -3,7 +3,7 @@ export function registerServiceWorker() {
   if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
     window.addEventListener('load', async () => {
       try {
-        const registration = await navigator.serviceWorker.register('/sw-pwa.js');
+        const registration = await navigator.serviceWorker.register('/sw.js');
         
         console.log('SW registered: ', registration);
         
