@@ -39,8 +39,18 @@ class PushNotificationService {
         return false;
       }
 
-      // Register push notification service worker
-      this.registration = await navigator.serviceWorker.register('/sw-push.js', {
+      // Clean up old service workers first
+      const existingRegistrations = await navigator.serviceWorker.getRegistrations();
+      for (const reg of existingRegistrations) {
+        const scriptURL = reg.active?.scriptURL || reg.installing?.scriptURL || reg.waiting?.scriptURL || '';
+        if (scriptURL && (scriptURL.includes('sw-pwa.js') || scriptURL.includes('sw-push.js'))) {
+          console.log('Push service: Unregistering old service worker:', scriptURL);
+          await reg.unregister();
+        }
+      }
+
+      // Register unified service worker (includes both PWA and push notifications)
+      this.registration = await navigator.serviceWorker.register('/sw.js', {
         scope: '/'
       });
       
