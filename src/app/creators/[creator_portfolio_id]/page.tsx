@@ -1630,10 +1630,10 @@ export default function Creatorbyid () {
           )}
           {requestclick && (
             <div
-              className="fixed inset-0 z-50 flex items-start justify-center bg-black bg-opacity-50 pt-52"
+              className="fixed inset-0 z-[9999] flex items-center justify-center bg-black bg-opacity-50 w-full h-full"
               onClick={() => setrequestclick(false)}
             >
-              <div onClick={(e) => e.stopPropagation()}>
+              <div className="w-full h-full flex items-center justify-center p-4" onClick={(e) => e.stopPropagation()}>
                 <Requestinfo
                     setrequestclick={setrequestclick}
                   amount={creator.price}
@@ -1646,10 +1646,10 @@ export default function Creatorbyid () {
 
           {success && (
             <div
-              className="fixed inset-0 z-50 flex items-start justify-center bg-black bg-opacity-50 pt-52"
+              className="fixed inset-0 z-[9999] flex items-center justify-center bg-black bg-opacity-50 w-full h-full"
               onClick={() => setsuccess(false)}
             >
-              <div onClick={(e) => e.stopPropagation()}>
+              <div className="w-full h-full flex items-center justify-center p-4" onClick={(e) => e.stopPropagation()}>
                 <Requestform
                   setsuccess={setsuccess}
                   price={Number(creator.price) || 0}
@@ -1665,10 +1665,10 @@ export default function Creatorbyid () {
 
           {requested && (
             <div
-              className="fixed inset-0 z-50 flex items-start justify-center bg-black bg-opacity-50 pt-52"
+              className="fixed inset-0 z-[9999] flex items-center justify-center bg-black bg-opacity-50 w-full h-full"
               onClick={() => setrequested(false)}
             >
-              <div onClick={(e) => e.stopPropagation()}>
+              <div className="w-full h-full flex items-center justify-center p-4" onClick={(e) => e.stopPropagation()}>
                 <Requestsuccess setrequested={setrequested} />
               </div>
             </div>

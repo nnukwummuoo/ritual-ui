@@ -12,6 +12,7 @@ import GlobalBanChecker from "@/components/GlobalBanChecker";
 import ReduxHydrator from "@/components/ReduxHydrator";
 import ScrollToTopAdvanced from "@/components/ScrollToTopAdvanced";
 import GlobalVisitorTracker from "@/components/GlobalVisitorTracker";
+import { ContentFilterProvider } from "@/lib/context/content-filter-context";
 
 const inter = Inter({
   weight: ["100", "300", "400", "500", "700"],
@@ -52,27 +53,29 @@ export default async function RootLayout({
       <body className={`${inter.className} antialiased bg-background`}>
         <ServiceWorkerProvider />
         <Providers>
-          <VideoProvider>
-            <ReduxHydrator />
-            <GlobalBanChecker />
-            <ScrollToTopAdvanced
-              smooth={true}
-              delay={100}
-              preserveScrollRoutes={[
-                "/message",
-                "/settings", 
-                "/profile"
-              ]}
-              scrollOnSearchChange={false}
-              scrollOnPopState={true}
-              debug={process.env.NODE_ENV === "development"}
-            />
-            <GlobalVisitorTracker />
-            <ConditionalLayout isAuthenticated={isAuthenticated}>
-              {children}
-              {isAuthenticated && <NotificationModalWrapper />}
-            </ConditionalLayout>
-          </VideoProvider>
+          <ContentFilterProvider>
+            <VideoProvider>
+              <ReduxHydrator />
+              <GlobalBanChecker />
+              <ScrollToTopAdvanced
+                smooth={true}
+                delay={100}
+                preserveScrollRoutes={[
+                  "/message",
+                  "/settings", 
+                  "/profile"
+                ]}
+                scrollOnSearchChange={false}
+                scrollOnPopState={true}
+                debug={process.env.NODE_ENV === "development"}
+              />
+              <GlobalVisitorTracker />
+              <ConditionalLayout isAuthenticated={isAuthenticated}>
+                {children}
+                {isAuthenticated && <NotificationModalWrapper />}
+              </ConditionalLayout>
+            </VideoProvider>
+          </ContentFilterProvider>
         </Providers>
       </body>
     </html>
