@@ -26,6 +26,7 @@ import VirtualizedPostList from "./VirtualizedPostList";
 import { generateInitials } from "@/utils/generateInitials";
 import { enrichCommentsWithUserInfo } from "@/utils/enrichComments";
 import { usePerformanceMonitor } from "@/hooks/usePerformanceMonitor";
+import { useContentFilter } from "@/lib/context/content-filter-context";
 
 
 // Utility function to format relative time
@@ -545,14 +546,67 @@ export default function PostsCard() {
   };
 
 
+  // Get content filter from context
+  const { filter: contentFilter } = useContentFilter();
+
+  // Filter posts based on content type
+  const filterPostsByType = React.useCallback((postsToFilter: any[]) => {
+    if (contentFilter === "all") {
+      return postsToFilter;
+    }
+
+    return postsToFilter.filter((post) => {
+      // Get explicit post type from post data
+      let postType: string = post?.posttype || post?.type || "";
+      
+      // If no explicit type, determine from media fields
+      if (!postType) {
+        const mediaSrc = post?.postfilelink || post?.postphoto || post?.postvideo || post?.image || "";
+        
+        // Check if it's a video
+        if (post?.postvideo || 
+            (typeof mediaSrc === "string" && (
+              mediaSrc.includes(".mp4") || 
+              mediaSrc.includes(".webm") || 
+              mediaSrc.includes(".mov")
+            ))) {
+          postType = "video";
+        } 
+        // Check if it has image/photo
+        else if (post?.postphoto || post?.image || post?.postfilelink) {
+          postType = "image";
+        } 
+        // Otherwise it's text
+        else {
+          postType = "text";
+        }
+      }
+
+      // Normalize post type to lowercase
+      postType = postType.toLowerCase();
+
+      // Map filter values to post types
+      if (contentFilter === "text") {
+        return postType === "text";
+      } else if (contentFilter === "video") {
+        return postType === "video";
+      } else if (contentFilter === "photo") {
+        return postType === "image" || postType === "photo";
+      }
+
+      return true;
+    });
+  }, [contentFilter]);
+
   // Get the first post and remaining posts
   // Use directPosts as primary source, fallback to Redux, then local state
-  const displayPosts = directPosts.length > 0 ? directPosts : (posts.length > 0 ? posts : postResolve);
-  const firstPost = displayPosts[0];
-  const remainingPosts = displayPosts.slice(1);
+  const allPosts = directPosts.length > 0 ? directPosts : (posts.length > 0 ? posts : postResolve);
+  const filteredPosts = filterPostsByType(allPosts);
+  const firstPost = filteredPosts[0];
+  const remainingPosts = filteredPosts.slice(1);
 
   // Determine if we should use virtualization (for large lists)
-  const shouldUseVirtualization = useVirtualization && displayPosts.length > 20;
+  const shouldUseVirtualization = useVirtualization && filteredPosts.length > 20;
 
   // Auto-load posts when scrolling to bottom using Intersection Observer
   React.useEffect(() => {
@@ -590,9 +644,9 @@ export default function PostsCard() {
   // Update performance metrics only when monitoring is enabled
   React.useEffect(() => {
     if (isMonitoring) {
-      updatePostCount(displayPosts.length);
+      updatePostCount(filteredPosts.length);
     }
-  }, [displayPosts.length, isMonitoring, updatePostCount]);
+  }, [filteredPosts.length, isMonitoring, updatePostCount]);
 
   // Measure render performance only when monitoring is enabled
   React.useEffect(() => {
@@ -602,12 +656,26 @@ export default function PostsCard() {
         endRenderMeasure();
       };
     }
-  }, [displayPosts, isMonitoring, startRenderMeasure, endRenderMeasure]);
+  }, [filteredPosts, isMonitoring, startRenderMeasure, endRenderMeasure]);
 
   // Always show skeleton until posts are ready
   const hasPosts = directPosts.length > 0 || posts.length > 0 || postResolve.length > 0;
   if (status === "loading" || !hasPosts || !hasAttemptedFetch) {
     return <PostSkeleton />;
+  }
+
+  // Show message if no posts match the filter
+  if (hasPosts && filteredPosts.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-12 px-4">
+        <p className="text-gray-400 text-lg">
+          No {contentFilter === "text" ? "text" : contentFilter === "video" ? "video" : "photo"} posts found.
+        </p>
+        <p className="text-gray-500 text-sm mt-2">
+          Try selecting a different filter or check back later.
+        </p>
+      </div>
+    );
   }
 
   return (

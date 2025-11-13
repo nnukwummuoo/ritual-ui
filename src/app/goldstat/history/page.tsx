@@ -255,18 +255,34 @@ const HistoryPage = () => {
     (state: RootState) => state.goldstat
   ) as { history: any; transactions: Transaction[]; loading: boolean; error: string | null };
   
-  const {  earnings, creator_portfolio_id } = useSelector(
+  const {  earnings, creator_portfolio_id, creator_verified } = useSelector(
     (state: RootState) => state.profile
   );
   
-  // Calculate total current balance (not month-specific)
-  const totalCurrentBalance = typeof earnings === 'number' ? earnings : parseFloat(earnings || '0') || 0;
+  // Check if user is a creator - only creators have earnings
+  const isCreator = creator_verified || !!creator_portfolio_id;
+  
+  // Calculate total current balance (not month-specific) - only for creators
+  const totalCurrentBalance = isCreator ? (typeof earnings === 'number' ? earnings : parseFloat(earnings || '0') || 0) : 0;
   const totalCurrentBalanceUSD = totalCurrentBalance * 0.04;
   
   const [views, setViews] = useState(0);
 
   // Get analytics from history data or use profile data based on selected month
   const analytics: Analytics = useMemo(() => {
+    // If user is not a creator, return zeros for earnings
+    if (!isCreator) {
+      return {
+        coin: 0,
+        usd: 0,
+        request: 0,
+        earning: 0,
+        gift: 0,
+        like: 0,
+        followers: 0,
+      };
+    }
+    
     const targetMonth = parseInt(selectedMonth) - 1; // Convert to 0-11
     const targetYear = parseInt(selectedYear);
     
@@ -305,6 +321,42 @@ const HistoryPage = () => {
           // For past months, use monthlyHistory data
           const transactions = monthData.data.earning || [];
           
+          // Helper function to check if transaction is an earnings transaction (not balance transaction)
+          const isEarningsTransaction = (details: string) => {
+            if (!details) return false;
+            const detailsLower = details.toLowerCase();
+            
+            // Include earnings-related transactions
+            const isEarnings = 
+              details.includes("completed - payment received") ||
+              details.includes("completed - payment transferred") ||
+              details.includes("Fan call - payment received") ||
+              details.includes("Fan call - payment for") ||
+              details.includes("exclusive post sale") ||
+              details.includes("exclusive post") ||
+              details.includes("exclusive content sale") ||
+              details.includes("exclusive content") ||
+              details.includes("exclusive sale") ||
+              detailsLower.includes("withdrawal") ||
+              detailsLower.includes("withdraw") ||
+              detailsLower.includes("earnings") ||
+              details.includes("hosting service completed");
+            
+            // Exclude balance-related transactions
+            const isBalance = 
+              details.includes("refund") ||
+              details.includes("expired") ||
+              details.includes("cancelled") ||
+              details.includes("declined") ||
+              details.includes("balance") ||
+              details.includes("purchase") ||
+              details.includes("top up") ||
+              details.includes("top-up") ||
+              details.includes("deposit");
+            
+            return isEarnings && !isBalance;
+          };
+          
           // Check transaction structure - transactions have: income, spend, date, userid, detail, id
           let requestCount = 0;
           let giftCount = 0;
@@ -313,21 +365,28 @@ const HistoryPage = () => {
           
           transactions.forEach((t: any) => {
             // The detail field contains the description (e.g., "completed - payment received")
-            const detail = (t.detail || t.details || t.description || "").toLowerCase();
+            const detail = (t.detail || t.details || t.description || "");
+            
+            // Only count earnings transactions, not balance transactions
+            if (!isEarningsTransaction(detail)) {
+              return; // Skip balance transactions
+            }
             
             // Calculate earnings: sum all income values (positive income means money earned)
+            // Only count income from earnings transactions, not from purchases/refunds
             const income = parseFloat(t.income || "0");
             if (income > 0) {
               totalEarning += income;
             }
             
-            if (detail.includes('request') || detail.includes('fan meet') || detail.includes('completed - payment received')) {
+            const detailLower = detail.toLowerCase();
+            if (detailLower.includes('request') || detailLower.includes('fan meet') || detailLower.includes('completed - payment received')) {
               requestCount++;
             }
-            if (detail.includes('gift') || detail.includes('tip')) {
+            if (detailLower.includes('gift') || detailLower.includes('tip')) {
               giftCount++;
             }
-            if (detail.includes('like')) {
+            if (detailLower.includes('like')) {
               likeCount++;
             }
           });
@@ -384,7 +443,7 @@ const HistoryPage = () => {
       like: 0,
       followers: 0,
     };
-  }, [history, selectedMonth, selectedYear, monthlyHistory]);
+  }, [history, selectedMonth, selectedYear, monthlyHistory, isCreator]);
 
 
 

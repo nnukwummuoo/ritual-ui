@@ -4180,7 +4180,7 @@ const PostModal = () => {
         toast.info(
           <div className="flex flex-col gap-3 bg-red-900 p-4 rounded-lg">
             <div className="text-white">
-              Are you sure you want to delete this exclusive post? This action cannot be undone.
+              Are you sure you want to delete this exclusive Content? This action cannot be undone.
             </div>
             <div className="flex gap-2 justify-end">
               <button

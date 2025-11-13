@@ -172,8 +172,9 @@ export const RequestDetailsForm: React.FC<RequestDetailsFormProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black bg-opacity-50 w-full h-full">
+      <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 w-full h-full flex flex-col overflow-y-auto">
+        <div className="w-full max-w-2xl mx-auto p-4 md:p-8 flex-1 flex flex-col">
         {/* Header with lion image */}
         <div className="text-center mb-6">
           <div className="relative w-48 h-16 mx-auto mb-4">
@@ -280,11 +281,10 @@ export const RequestDetailsForm: React.FC<RequestDetailsFormProps> = ({
           )}
           {loading ? "Processing Request..." : `Request ${creatorType}`}
          </button>
-       </div>
 
        {/* Calendar Modal */}
        {showCalendar && (
-         <div className="fixed inset-0 z-60 flex items-center justify-center bg-black bg-opacity-75">
+         <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black bg-opacity-75">
            <div className="bg-gray-800 rounded-2xl p-6 max-w-sm w-full mx-4 shadow-2xl">
              {/* Calendar Header */}
              <div className="flex items-center justify-between mb-4">
@@ -336,10 +336,12 @@ export const RequestDetailsForm: React.FC<RequestDetailsFormProps> = ({
                className="w-full bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
              >
                Close
-        </button>
-      </div>
+             </button>
+           </div>
          </div>
        )}
+        </div>
+      </div>
     </div>
   );
 };

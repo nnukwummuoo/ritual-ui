@@ -1,4 +1,5 @@
 import { useAuth } from "@/lib/context/auth-context";
+import { useContentFilter } from "@/lib/context/content-filter-context";
 import "../styles/app.css"
 import Image from "next/image";
 import anyaLogo from '@/icons/logo.png';
@@ -16,11 +17,15 @@ import {
   FaTimes,
   FaBars,
 } from "react-icons/fa";
+import ContentFilterModal from "./ContentFilterModal";
+import { usePathname } from "next/navigation";
 
 export default function MobileSidebar() {
   const sidebarRef = useRef<HTMLElement>(null);
   const { isOpen, toggle } = useAuth();
-  
+  const { isModalOpen, setIsModalOpen, filter, setFilter } = useContentFilter();
+  const pathname = usePathname();
+  const isHomePage = pathname === "/";
 
   // Handle click outside to close sidebar
   useEffect(() => {
@@ -39,7 +44,33 @@ export default function MobileSidebar() {
     };
   }, [isOpen, toggle]);
 
+  const handleAllClick = () => {
+    if (isHomePage) {
+      // Close sidebar and open filter modal
+      if (isOpen) {
+        toggle();
+      }
+      setIsModalOpen(true);
+    }
+  };
+
+  const handleFilterApply = (selectedFilter: typeof filter) => {
+    setFilter(selectedFilter);
+    setIsModalOpen(false);
+  };
+
+  const handleFilterClose = () => {
+    setIsModalOpen(false);
+  };
+
   const sideBarItems = [
+    // Add "All" item at the beginning if on home page
+    ...(isHomePage ? [{
+      route: "#",
+      name: "All",
+      icon: <FaCompass size={25} />,
+      isFilter: true,
+    }] : []),
     {
       route: "/",
       name: "For You",
@@ -118,24 +149,44 @@ export default function MobileSidebar() {
       <ul className="py-4">
         {sideBarItems.map((item) => (
           <li key={item.name} className="gap-y-3.5 text-sm">
-            <Link
-              className="flex items-center gap-4 text-white space-x-2"
-              href={item.route}
-              onClick={() => {
-                // Close sidebar when clicking navigation link
-                if (isOpen) {
-                  toggle();
-                }
-              }}
-            >
-              {item.icon}
-              <p className="text-lg">{item.name}</p>
-            </Link>
+            {item.isFilter ? (
+              <button
+                className="flex items-center gap-4 text-white space-x-2 hover:opacity-80 transition-opacity"
+                onClick={handleAllClick}
+                style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
+              >
+                {item.icon}
+                <p className="text-lg">{item.name}</p>
+              </button>
+            ) : (
+              <Link
+                className="flex items-center gap-4 text-white space-x-2 hover:opacity-80 transition-opacity"
+                href={item.route}
+                onClick={() => {
+                  // Close sidebar when clicking navigation link
+                  if (isOpen) {
+                    toggle();
+                  }
+                }}
+              >
+                {item.icon}
+                <p className="text-lg">{item.name}</p>
+              </Link>
+            )}
           </li>
-
         ))}
       </ul>
     </section>
+    
+    {/* Content Filter Modal - Only show on home page, rendered outside sidebar for proper z-index */}
+    {isHomePage && (
+      <ContentFilterModal
+        isOpen={isModalOpen}
+        onClose={handleFilterClose}
+        onApply={handleFilterApply}
+        currentFilter={filter}
+      />
+    )}
     </>
   );
 }

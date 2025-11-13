@@ -17,8 +17,8 @@ const CategoryButtonComponent: React.FC<Props> = ({ buttons, selected, onButtonC
       {buttons.map((button) => (
         <button
           key={button.value}
-          className={`border border-slate text-sm md:text-xl  p-2 rounded-lg bg-slate-400 text-blue-600
-            ${selected === button.value ? "border-green-500 text-white" : ""}`}
+          className={` text-sm md:text-xl bg-gray-800 p-2 rounded-lg
+            ${selected === button.value ? "bg-gray-700" : ""}`}
           onClick={() => onButtonClick(button.value)}
         >
           {button.label}

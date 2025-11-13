@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuthToken } from '@/lib/hooks/useAuthToken';
 import { useUserId } from '@/lib/hooks/useUserId';
 import { URL } from '@/api/config';
@@ -29,6 +29,8 @@ export default function BackupManagement() {
   const [backupStatus, setBackupStatus] = useState<BackupStatus | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'all' | 'failed'>('all');
+  const [isTriggeringBackup, setIsTriggeringBackup] = useState(false);
+  const [triggerFeedback, setTriggerFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   
   const token = useAuthToken();
   const userid = useUserId();
@@ -62,9 +64,94 @@ export default function BackupManagement() {
     }
   }, [fetchBackupStatus, token, userid]);
 
-  const history = backupStatus?.history ?? [];
+  const history = useMemo(() => backupStatus?.history ?? [], [backupStatus]);
   const failedBackups = history.filter((backup) => backup.status === 'failed');
   const displayedHistory = activeTab === 'failed' ? failedBackups : history;
+  const hasSuccessfulBackupToday = useMemo(() => {
+    const today = new Date().toISOString().split('T')[0];
+
+    return history.some((backup) => {
+      const normalizedStatus = (backup.status || '').toLowerCase();
+      if (normalizedStatus === 'failed' || normalizedStatus === 'error') {
+        return false;
+      }
+
+      const backupDateFromField = backup.date;
+      const backupDateFromLastModified = backup.lastModified ? new Date(backup.lastModified).toISOString().split('T')[0] : null;
+      const backupDate = backupDateFromField || backupDateFromLastModified;
+
+      return backupDate === today;
+    });
+  }, [history]);
+
+  const manualBackupButtonLabel = isTriggeringBackup
+    ? 'Running Backup...'
+    : hasSuccessfulBackupToday
+      ? 'Backup Already Completed Today'
+      : 'Run Backup';
+
+  const manualBackupDisabled = isLoading || !token || !userid || isTriggeringBackup || hasSuccessfulBackupToday;
+
+  const manualBackupHelperText = isLoading
+    ? 'Loading backup status...'
+    : isTriggeringBackup
+      ? 'Please wait while the backup completes.'
+      : hasSuccessfulBackupToday
+        ? 'Automatic backup has already completed for today.'
+        : 'Manual backups are limited to one successful run per day.';
+
+  const handleManualBackup = useCallback(async () => {
+    if (!token || !userid) {
+      return;
+    }
+
+    if (hasSuccessfulBackupToday) {
+      setTriggerFeedback({
+        type: 'error',
+        message: 'A successful backup already exists for today.',
+      });
+      return;
+    }
+
+    setIsTriggeringBackup(true);
+    setTriggerFeedback(null);
+
+    try {
+      const response = await fetch(`${URL}/api/backup/trigger`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok || data?.success === false) {
+        const errorMessage = data?.error || data?.message || 'Failed to start backup.';
+        setTriggerFeedback({
+          type: 'error',
+          message: errorMessage,
+        });
+        return;
+      }
+
+      setTriggerFeedback({
+        type: 'success',
+        message: data?.message || 'Backup completed successfully.',
+      });
+
+      await fetchBackupStatus();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unexpected error triggering backup.';
+      setTriggerFeedback({
+        type: 'error',
+        message,
+      });
+    } finally {
+      setIsTriggeringBackup(false);
+    }
+  }, [fetchBackupStatus, hasSuccessfulBackupToday, token, userid]);
 
   const renderStatusBadge = (status?: string) => {
     const normalized = (status || 'success').toLowerCase();
@@ -121,6 +208,34 @@ export default function BackupManagement() {
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">Backup Management</h1>
           <p className="text-gray-400">MongoDB database backups</p>
+          <div className="mt-4 flex flex-wrap items-center gap-4">
+            <button
+              onClick={handleManualBackup}
+              disabled={manualBackupDisabled}
+              className={`px-4 py-2 rounded-lg font-medium transition ${
+                manualBackupDisabled
+                  ? 'bg-gray-700 text-gray-400 cursor-not-allowed'
+                  : 'bg-yellow-500/10 text-yellow-400 border border-yellow-500 hover:bg-yellow-500/20'
+              }`}
+            >
+              {manualBackupButtonLabel}
+            </button>
+            <span className="text-sm text-gray-400">
+              {manualBackupHelperText}
+            </span>
+          </div>
+
+          {triggerFeedback && (
+            <div
+              className={`mt-4 rounded-lg border px-4 py-3 text-sm ${
+                triggerFeedback.type === 'success'
+                  ? 'border-green-500 bg-green-500/10 text-green-200'
+                  : 'border-red-500 bg-red-500/10 text-red-200'
+              }`}
+            >
+              {triggerFeedback.message}
+            </div>
+          )}
         </div>
 
 
