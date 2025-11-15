@@ -245,25 +245,10 @@ const registerSlice = createSlice({
         state.status = "succeeded";
         state.error = action.payload.message;
         
-        // Store user data in localStorage for authentication
-        try {
-          localStorage.setItem(
-            "login",
-            JSON.stringify({
-              userID: action.payload.userId,
-              username: action.payload.username || "",
-              accesstoken: action.payload.accessToken,
-              refreshtoken: action.payload.token || "",
-            })
-          );
-          
-          // Update Redux state
-          state.userID = action.payload.userId;
-          state.accesstoken = action.payload.accessToken;
-          state.logedin = true;
-        } catch (e) {
-          console.error("Failed to store registration data:", e);
-        }
+        // Registration successful - DO NOT auto-login
+        // User must log in manually after registration
+        // Do not store tokens or set logedin to true
+        // Just mark registration as successful
       })
       .addCase(registernewUser.rejected, (state, action) => {
         state.status = "failed";

@@ -6,6 +6,7 @@ import { cookies } from "next/headers";
 import 'react-loading-skeleton/dist/skeleton.css';
 import ConditionalLayout from "@/components/ConditionalLayout";
 import ServiceWorkerProvider from "@/components/ServiceWorkerProvider";
+import PWAInstallPrompt from "@/components/PWAInstallPrompt";
 import { NotificationModalWrapper } from "@/components/NotificationModalWrapper";
 import { VideoProvider } from "@/contexts/VideoContext";
 import GlobalBanChecker from "@/components/GlobalBanChecker";
@@ -26,6 +27,8 @@ export const metadata: Metadata = {
     default: "Mmeko - Welcome",
   },
   description: "",
+  manifest: "/manifest.json",
+  themeColor: "#00A86B",
   viewport: {
     width: "device-width",
     initialScale: 1,
@@ -46,12 +49,18 @@ export default async function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-         <meta name="color-scheme" content="light only" />
+        <meta name="color-scheme" content="light only" />
         <meta name="supported-color-schemes" content="light" />
-
-        </head>
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#00A86B" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-title" content="Mmeko" />
+      </head>
       <body className={`${inter.className} antialiased bg-background`}>
         <ServiceWorkerProvider />
+        <PWAInstallPrompt />
         <Providers>
           <ContentFilterProvider>
             <VideoProvider>

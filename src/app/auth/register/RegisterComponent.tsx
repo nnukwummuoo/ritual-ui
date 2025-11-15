@@ -332,26 +332,13 @@ export const Register = () => {
       const resultAction = await dispatch(registernewUser(payload));
       
       if (registernewUser.fulfilled.match(resultAction)) {
-        // Create session for the newly registered user
-        try {
-          const sessionResult = await fetch(`${process.env.NEXT_PUBLIC_URL}/api/session`, {
-            method: "POST",
-            body: JSON.stringify({ 
-              username: formValues.username, 
-              password: formValues.password 
-            }),
-            credentials: "include",
-            headers: {
-              "Content-Type": "application/json",
-            },
-          });
-          console.log("Session creation result:", await sessionResult.text());
-        } catch (sessionError) {
-          console.error("Session creation error:", sessionError);
-        }
-        
-      toast.success("Registration successful! Redirecting...", { style: { backgroundColor: "#111" } });
-      router.push("/");
+        // Registration successful - redirect to login page
+        // User must log in manually after registration
+        toast.success("Registration successful! Please log in to continue.", { style: { backgroundColor: "#111" } });
+        // Redirect to login page after a short delay
+        setTimeout(() => {
+          router.push("/auth/login");
+        }, 1500);
       } else {
         throw new Error("Registration failed");
       }
