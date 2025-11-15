@@ -34,7 +34,6 @@ const RevenuePage = () => {
   // Generate month and year options
   const currentDate = new Date();
   const currentYear = currentDate.getFullYear();
-  const currentMonth = currentDate.getMonth() + 1;
 
   const months = [
     { value: "1", label: "January" },
@@ -82,7 +81,7 @@ const RevenuePage = () => {
       } else {
         throw new Error("Failed to fetch revenue data");
       }
-    } catch (error) {
+    } catch {
       toast.error("Failed to load revenue data");
     } finally {
       setLoading(false);
@@ -101,16 +100,9 @@ const RevenuePage = () => {
       .filter((gold) => gold.tag !== 'Test Pack')
       .map((gold) => {
         const goldValue = Number(gold.value);
-        const bonus = gold.bonus || '';
         
-        // Calculate gold amount with bonus
-        let goldAmount = goldValue.toString();
-        if (bonus && bonus !== '') {
-          const bonusPercent = parseFloat(bonus.replace('%', ''));
-          const bonusGold = Math.round(goldValue * (bonusPercent / 100));
-          const totalGold = goldValue + bonusGold;
-          goldAmount = `${goldValue} + (${bonus} BONUS) = ${totalGold}`;
-        }
+        // Gold amount is just the value (no bonus)
+        const goldAmount = goldValue.toString();
 
         return {
           goldValue,
@@ -128,7 +120,7 @@ const RevenuePage = () => {
     const revenueMap = new Map<number, RevenueData>();
     revenueData.forEach((item) => {
       // Extract the base gold value from the goldAmount string (first number)
-      // Handles formats like "1000 + (37% BONUS) = 1037" or "50"
+      // Handles formats like "1000" or "50"
       const match = item.goldAmount.match(/^(\d+)/);
       if (match) {
         const baseGold = parseInt(match[1]);

@@ -154,7 +154,6 @@ const Topup: React.FC = () => {
 
   const checkPaymentStatus = async () => {
     if (!web3Payment?.orderId) {
-      console.log("❌ [FRONTEND] No order ID available for status check");
       return;
     }
     
@@ -167,26 +166,8 @@ const Topup: React.FC = () => {
       
       const status = await checkWeb3PaymentStatus(web3Payment.orderId);
       
-      console.log(`📥 [FRONTEND] API Response received:`, status);
-      console.log(`📊 [FRONTEND] Response details:`);
-      console.log(`📊 [FRONTEND] - Order ID: ${status.orderId}`);
-      console.log(`📊 [FRONTEND] - Status: ${status.status}`);
-      console.log(`📊 [FRONTEND] - Amount: ${status.amount}`);
-      console.log(`📊 [FRONTEND] - Created: ${status.createdAt}`);
-      console.log(`📊 [FRONTEND] - Updated: ${status.updatedAt}`);
-      console.log(`📊 [FRONTEND] - Has TX Data: ${status.txData ? 'Yes' : 'No'}`);
-      
-      if (status.txData) {
-        console.log(`📊 [FRONTEND] - TX Data Details:`);
-        console.log(`📊 [FRONTEND]   - From Address: ${status.txData.fromAddress || 'N/A'}`);
-        console.log(`📊 [FRONTEND]   - To Address: ${status.txData.toAddress || 'N/A'}`);
-        console.log(`📊 [FRONTEND]   - Confirmed At: ${status.txData.confirmedAt || 'N/A'}`);
-        console.log(`📊 [FRONTEND]   - TX Hash: ${status.txData.txHash || 'N/A'}`);
-        console.log(`📊 [FRONTEND]   - Network: ${status.txData.network || 'N/A'}`);
-      }
-      
+     
       if (status.status === 'confirmed') {
-        console.log(`✅ [FRONTEND] Payment confirmed! Processing success...`);
         toast.success("Payment confirmed! Your gold has been added to your account.", { autoClose: 5000 });
         setWeb3Payment(null);
         setCurrencyValue(0);
@@ -198,12 +179,6 @@ const Topup: React.FC = () => {
         toast.info(`Payment status: ${status.status}`, { autoClose: 3000 });
       }
     } catch (error) {
-      console.error("❌ [FRONTEND] Status check error:", error);
-      console.error("❌ [FRONTEND] Error details:", {
-        message: error instanceof Error ? error.message : 'Unknown error',
-        stack: error instanceof Error ? error.stack : 'No stack trace',
-        name: error instanceof Error ? error.name : 'Unknown'
-      });
       toast.error("Failed to check payment status", { autoClose: 2000 });
     } finally {
       setCheckingStatus(false);
@@ -293,9 +268,6 @@ const Topup: React.FC = () => {
       <td className="py-2 px-2 text-center text-sm sm:text-base border-r border-[#323544] whitespace-nowrap">
         {gold.amount}
       </td>
-      <td className="py-2 px-2 text-center text-sm sm:text-base border-r border-[#323544] whitespace-nowrap">
-        {gold.bonus || "-"}
-      </td>
       <td className="py-2 px-2 text-center text-sm sm:text-base whitespace-nowrap">
         {gold.tag ? (
           <span className="flex items-center gap-1 justify-center whitespace-nowrap">
@@ -349,7 +321,6 @@ const Topup: React.FC = () => {
               <tr className="border-b border-[#323544]">
                 <th className="py-2 px-2 font-semibold text-sm sm:text-base text-center border-r border-[#323544] whitespace-nowrap">Pack</th>
                 <th className="py-2 px-2 font-semibold text-sm sm:text-base text-center border-r border-[#323544] whitespace-nowrap">Price</th>
-                <th className="py-2 px-2 font-semibold text-sm sm:text-base text-center border-r border-[#323544] whitespace-nowrap">Bonus</th>
                 <th className="py-2 px-2 font-semibold text-sm sm:text-base text-center whitespace-nowrap">Tag</th>
               </tr>
             </thead>
@@ -371,7 +342,7 @@ const Topup: React.FC = () => {
             </option>
             {golds.filter((value) => value.tag !== 'Test Pack').map((value) => (
               <option key={value.value} value={value.value}>
-                {value.value} Gold / ${value.amount.replace(/[^0-9.]/g, "")} {value.bonus ? `/ +${value.bonus} Bonus` : ""}
+                {value.value} Gold / ${value.amount.replace(/[^0-9.]/g, "")}
               </option>
             ))}
           </select>
