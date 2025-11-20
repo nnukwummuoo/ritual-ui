@@ -104,7 +104,7 @@ function DiscoverPageContent() {
   const selfId = useSelector((s: RootState) => s.profile?.userId || s.profile?.creator_portfolio_id);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const vipStatus = useSelector((s: RootState) => (s.profile as any)?.vipStatus);
-  
+
   const [searchQuery, setSearchQuery] = useState("");
   const [topFans, setTopFans] = useState<UserWithFans[]>([]);
   const [topViews, setTopViews] = useState<CreatorWithViews[]>([]);
@@ -172,7 +172,7 @@ function DiscoverPageContent() {
         const data = await response.json();
         const posts = data.posts || [];
         setHashtagPosts(posts);
-        
+
         // Initialize UI state with likes from backend (similar to home route)
         setUi(prev => {
           const newState = { ...prev };
@@ -183,7 +183,7 @@ function DiscoverPageContent() {
               const likedByArr = Array.isArray(post?.likedBy) ? post.likedBy : [];
               const selfIdStr = String(loggedInUserId || selfId || "");
               const hasLiked = selfIdStr && likedByArr.includes(selfIdStr);
-              
+
               // Only initialize if not already set (preserve user interactions)
               if (!newState[postId]) {
                 newState[postId] = {
@@ -254,7 +254,7 @@ function DiscoverPageContent() {
     try {
       const now = new Date();
       let time: Date;
-      
+
       if (typeof timestamp === 'number') {
         time = new Date(timestamp < 10000000000 ? timestamp * 1000 : timestamp);
       } else if (typeof timestamp === 'string') {
@@ -267,13 +267,13 @@ function DiscoverPageContent() {
       } else {
         time = new Date(timestamp);
       }
-      
+
       if (isNaN(time.getTime())) {
         return 'recently';
       }
-      
+
       const diffInSeconds = Math.floor((now.getTime() - time.getTime()) / 1000);
-      
+
       if (diffInSeconds < 60) return 'just now';
       const diffInMinutes = Math.floor(diffInSeconds / 60);
       if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
@@ -296,7 +296,7 @@ function DiscoverPageContent() {
     e.preventDefault();
     if (searchQuery.trim()) {
       const query = searchQuery.trim();
-      
+
       // Check if query starts with # (hashtag search)
       if (query.startsWith('#')) {
         const hashtag = query.replace(/^#/, '');
@@ -325,7 +325,7 @@ function DiscoverPageContent() {
         {/* Header */}
         <div className="mb-6">
           <h1 className="text-3xl font-bold mb-4">Discover</h1>
-          
+
           {/* Search Bar */}
           <form onSubmit={handleSearch} className="relative">
             <div className="flex items-center bg-gray-800 rounded-lg border border-gray-700 px-4 py-3">
@@ -391,28 +391,26 @@ function DiscoverPageContent() {
               {searchUsers.map((user, index) => {
                 const isCreatorEntry = user.resultType === 'creator';
                 const uniqueKey = `${user.userId}-${user.resultType || 'user'}-${index}`;
-                const href = isCreatorEntry && user.creatorPortfolioId 
-                  ? `/creators/${user.creatorPortfolioId}` 
+                const href = isCreatorEntry && user.creatorPortfolioId
+                  ? `/creators/${user.creatorPortfolioId}`
                   : `/Profile/${user.userId}`;
-                
+
                 return (
                   <Link
                     key={uniqueKey}
                     href={href}
-                    className={`flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-colors cursor-pointer ${
-                      isCreatorEntry 
-                        ? 'bg-gradient-to-br from-purple-900/30 to-blue-900/30 border-purple-600 hover:border-purple-500' 
+                    className={`flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-colors cursor-pointer ${isCreatorEntry
+                        ? 'bg-gradient-to-br from-purple-900/30 to-blue-900/30 border-purple-600 hover:border-purple-500'
                         : 'bg-gray-800 border-gray-700 hover:border-gray-600'
-                    }`}
+                      }`}
                   >
                     <div className="relative">
-                      <div className={`relative w-20 h-20 rounded-full overflow-hidden border-2 ${
-                        isCreatorEntry ? 'border-purple-500' : 'border-gray-700'
-                      }`}>
+                      <div className={`relative w-20 h-20 rounded-full overflow-hidden border-2 ${isCreatorEntry ? 'border-purple-500' : 'border-gray-700'
+                        }`}>
                         {(() => {
                           const profileImage = user.photoLink || "";
                           const initials = user.name.split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2) || "?";
-                          
+
                           if (profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined") {
                             const imageSource = getImageSource(profileImage, isCreatorEntry ? 'creator' : 'profile');
                             return (
@@ -431,7 +429,7 @@ function DiscoverPageContent() {
                               />
                             );
                           }
-                          
+
                           return (
                             <div className="w-full h-full flex items-center justify-center text-white text-xl font-semibold bg-gray-700">
                               {initials}
@@ -443,7 +441,7 @@ function DiscoverPageContent() {
                       {(() => {
                         const isVipActive = user.isVip && user.vipEndDate && new Date(user.vipEndDate) > new Date();
                         return isVipActive && (
-                          <VIPBadge size="xl" className="absolute -top-1 -right-2" isVip={user.isVip} vipEndDate={user.vipEndDate} />
+                          <VIPBadge size="xl" className="absolute -top-1 -right-3" isVip={user.isVip} vipEndDate={user.vipEndDate} />
                         );
                       })()}
                       {/* Creator Badge */}
@@ -507,7 +505,7 @@ function DiscoverPageContent() {
                   const asString = typeof mediaRef === "string" ? mediaRef : "";
                   const imageSource = getImageSource(asString, 'post');
                   const src = imageSource.src;
-                  
+
                   const pathUrlPrimary = asString ? `${API_BASE}/api/image/view/${encodeURIComponent(asString)}` : "";
                   const queryUrlFallback = asString ? `${PROD_BASE}/api/image/view?publicId=${encodeURIComponent(asString)}` : "";
                   const pathUrlFallback = asString ? `${PROD_BASE}/api/image/view/${encodeURIComponent(asString)}` : "";
@@ -518,7 +516,7 @@ function DiscoverPageContent() {
                     combinedName ||
                     p?.user?.username ||
                     "User";
-                  
+
                   const postAuthorId = p?.userId || p?.userid || "";
                   const isSelf = (
                     (loggedInUserId && postAuthorId && String(loggedInUserId) === String(postAuthorId)) ||
@@ -567,17 +565,17 @@ function DiscoverPageContent() {
                       loop: true,
                       postId: post?.postId || post?.postid || post?.id || post?._id || `post-${Math.random()}`
                     });
-                    
+
                     const [showControls, setShowControls] = React.useState(false);
                     const [isVideoLoaded, setIsVideoLoaded] = React.useState(false);
                     const controlsTimerRef = React.useRef<NodeJS.Timeout | null>(null);
-                    
+
                     React.useEffect(() => {
                       setShowControls(true);
                       const initialTimer = setTimeout(() => {
                         setShowControls(false);
                       }, 3000);
-                      
+
                       return () => {
                         if (initialTimer) clearTimeout(initialTimer);
                         if (controlsTimerRef.current) clearTimeout(controlsTimerRef.current);
@@ -595,8 +593,8 @@ function DiscoverPageContent() {
                             </div>
                           </div>
                         )}
-                        
-                        <div 
+
+                        <div
                           className={`relative w-full h-full ${!isVideoLoaded ? 'opacity-0 absolute top-0 left-0' : 'opacity-100 transition-opacity duration-300'}`}
                           onMouseMove={() => {
                             setShowControls(true);
@@ -650,10 +648,10 @@ function DiscoverPageContent() {
                               }
                             }}
                           />
-                          
+
                           {showControls && (
                             <div className="absolute bottom-3 right-3 z-10 transition-opacity duration-300 opacity-100">
-                              <button 
+                              <button
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   toggleMute();
@@ -663,7 +661,7 @@ function DiscoverPageContent() {
                                   controlsTimerRef.current = setTimeout(() => {
                                     setShowControls(false);
                                   }, 3000);
-                                }} 
+                                }}
                                 className="bg-black bg-opacity-70 rounded-full p-2.5 hover:bg-opacity-90 transition-all hover:scale-110"
                                 aria-label={isMuted ? "Unmute video" : "Mute video"}
                               >
@@ -682,10 +680,10 @@ function DiscoverPageContent() {
                               </button>
                             </div>
                           )}
-                          
+
                           {(showControls || autoPlayBlocked) && (
                             <div className="absolute inset-0 flex items-center justify-center transition-opacity duration-300 opacity-100">
-                              <div 
+                              <div
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   togglePlay();
@@ -721,24 +719,24 @@ function DiscoverPageContent() {
                       <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center gap-3">
                           <div className="relative">
-                            <div 
-                              className="size-10 rounded-full overflow-hidden bg-gray-700 cursor-pointer hover:opacity-80 transition-opacity" 
+                            <div
+                              className="size-10 rounded-full overflow-hidden bg-gray-700 cursor-pointer hover:opacity-80 transition-opacity"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 router.push(`/Profile/${postAuthorId}`);
                               }}
                             >
                               {(() => {
-                                const profileImage = isSelf ? photolink : 
-                                  p?.user?.photoLink || 
-                                  p?.user?.photolink || 
+                                const profileImage = isSelf ? photolink :
+                                  p?.user?.photoLink ||
+                                  p?.user?.photolink ||
                                   "";
-                                
-                                const userName = isSelf ? `${firstname} ${lastname}`.trim() : 
+
+                                const userName = isSelf ? `${firstname} ${lastname}`.trim() :
                                   `${p?.user?.firstname || ""} ${p?.user?.lastname || ""}`.trim();
-                                
+
                                 const initials = userName.split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2) || "?";
-                                
+
                                 if (profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined") {
                                   const imageSource = getImageSource(profileImage, 'profile');
                                   return (
@@ -757,7 +755,7 @@ function DiscoverPageContent() {
                                     />
                                   );
                                 }
-                                
+
                                 return (
                                   <div className="w-full h-full flex items-center justify-center text-white text-sm font-semibold bg-gray-600">
                                     {initials}
@@ -765,12 +763,12 @@ function DiscoverPageContent() {
                                 );
                               })()}
                             </div>
-                            
+
                             {/* VIP Lion Badge - show if the post author is VIP */}
                             {(() => {
                               // Use post user VIP status (backend always includes it)
                               // For self posts, prefer Redux vipStatus if available, otherwise use post data
-                              const userVipStatus = isSelf 
+                              const userVipStatus = isSelf
                                 ? (vipStatus?.isVip ?? p?.user?.isVip ?? false)
                                 : (p?.user?.isVip ?? false);
                               const userVipEndDate = isSelf
@@ -785,8 +783,8 @@ function DiscoverPageContent() {
                               return null;
                             })()}
                           </div>
-                          <div 
-                            className="flex-1 cursor-pointer" 
+                          <div
+                            className="flex-1 cursor-pointer"
                           >
                             <p className="font-medium text-white" onClick={(e) => {
                               e.stopPropagation();
@@ -808,15 +806,15 @@ function DiscoverPageContent() {
                           })()}
                         </p>
                       )}
-                      
+
                       {p?.content && (
-                        <ExpandableText 
+                        <ExpandableText
                           text={p.content}
                           maxLength={100}
                           className="my-2"
                         />
                       )}
-                      
+
                       {postType == "image" && src && (
                         <div className="w-full max-h-[400px] relative rounded overflow-hidden">
                           <Image
@@ -851,7 +849,7 @@ function DiscoverPageContent() {
                           />
                         </div>
                       )}
-                      
+
                       {postType == "video" && src && (
                         <VideoComponent
                           post={p}
@@ -861,7 +859,7 @@ function DiscoverPageContent() {
                           pathUrlFallback={pathUrlFallback}
                         />
                       )}
-                      
+
                       <PostActions
                         className="mt-3 border-t border-gray-700 pt-2"
                         starred={uiIsFollowing}
@@ -888,12 +886,12 @@ function DiscoverPageContent() {
 
                           try {
                             if (currentlyFollowing) {
-                              await dispatch(unfollowThunk({ 
+                              await dispatch(unfollowThunk({
                                 userid: Array.isArray(postAuthorId) ? postAuthorId.join(',') : postAuthorId,
-                                followerid: loggedInUserId, 
-                                token 
+                                followerid: loggedInUserId,
+                                token
                               })).unwrap();
-                              
+
                               toast.success("Unfollowed successfully!");
                             } else {
                               await dispatch(followThunk({
@@ -901,12 +899,12 @@ function DiscoverPageContent() {
                                 followerid: loggedInUserId,
                                 token
                               })).unwrap();
-                              
+
                               toast.success("Followed successfully!");
                             }
-                            
+
                             dispatch(getfollow({ userid: loggedInUserId, token }));
-                            
+
                           } catch {
                             setUi(prev => ({
                               ...prev,
@@ -915,23 +913,23 @@ function DiscoverPageContent() {
                                 isFollowing: currentlyFollowing,
                               },
                             }));
-                            
+
                             toast.error(`Failed to ${currentlyFollowing ? 'unfollow' : 'follow'}. Please try again.`);
                           }
                         }}
                         onLike={async () => {
                           const uid = String(loggedInUserId || selfId || "");
                           const localPid = p?.postId || p?.postid || p?.id || p?._id;
-                          
+
                           if (!localPid || !token) {
                             toast.error("Please login to like posts");
                             return;
                           }
-                          
+
                           const curr = ui[pid] || {};
                           const nextLiked = !(curr.liked ?? liked);
                           const currentCount = curr.likeCount ?? likeCount;
-                          
+
                           setUi((prev) => ({
                             ...prev,
                             [pid]: {
@@ -947,16 +945,16 @@ function DiscoverPageContent() {
                               postid: localPid,
                               token: token
                             };
-                            
+
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             await (dispatch(postlike(likeData as any)) as any).unwrap();
-                            
+
                             toast.success(nextLiked ? "Post liked!" : "Post unliked!");
-                            
+
                             setTimeout(() => {
                               window.dispatchEvent(new CustomEvent('refreshfeed'));
                             }, 1000);
-                            
+
                           } catch {
                             setUi((prev) => ({
                               ...prev,
@@ -971,45 +969,45 @@ function DiscoverPageContent() {
                         }}
                         onComment={() => {
                           const localPid = p?.postId || p?.postid || p?.id || p?._id;
-                          
+
                           if (!localPid) {
                             return;
                           }
-                          
+
                           const currentUiState = ui[pid] || {};
                           const isCurrentlyOpen = currentUiState.open;
-                          
+
                           setUi((prev) => ({
                             ...prev,
                             [pid]: { ...(prev[pid] || {}), open: !isCurrentlyOpen }
                           }));
-                          
+
                           const curr = ui[pid];
-                          
+
                           if (curr && Array.isArray(curr.comments) && curr.comments.length > 0) {
                             return;
                           }
-                          
+
                           const shouldFetch = !(curr && Array.isArray(curr.comments));
-                          
+
                           if (shouldFetch) {
                             setUi((prev) => ({
                               ...prev,
                               [pid]: { ...(prev[pid] || {}), loadingComments: true }
                             }));
-                            
+
                             (dispatch(getpostcomment({ postid: localPid } as { postid: string })) as unknown as { unwrap: () => Promise<{ comment?: unknown[]; comments?: unknown[] }> })
                               .unwrap()
                               .then((res: { comment?: unknown[]; comments?: unknown[] }) => {
                                 const arr = (res && (res.comment || res.comments)) || [];
-                                
+
                                 setUi((prev) => {
                                   const currentState = prev[pid] || {};
                                   return {
                                     ...prev,
-                                    [pid]: { 
-                                      ...currentState, 
-                                      comments: arr, 
+                                    [pid]: {
+                                      ...currentState,
+                                      comments: arr,
                                       loadingComments: false,
                                       commentCount: arr.length,
                                       liked: currentState.liked,
@@ -1028,7 +1026,7 @@ function DiscoverPageContent() {
                           }
                         }}
                       />
-                      
+
                       {uiOpen && (
                         <div className="mt-2 border-t border-gray-700 pt-2">
                           {uiLoading ? (
@@ -1040,29 +1038,29 @@ function DiscoverPageContent() {
                                   .sort((a, b) => {
                                     const aRecord = a as Record<string, unknown>;
                                     const bRecord = b as Record<string, unknown>;
-                                    
+
                                     const aVipEndDate = typeof aRecord?.vipEndDate === 'string' ? aRecord.vipEndDate : null;
                                     const bVipEndDate = typeof bRecord?.vipEndDate === 'string' ? bRecord.vipEndDate : null;
                                     const aIsVip = Boolean(aRecord?.isVip) && aVipEndDate && new Date(aVipEndDate) > new Date();
                                     const bIsVip = Boolean(bRecord?.isVip) && bVipEndDate && new Date(bVipEndDate) > new Date();
-                                    
+
                                     if (aIsVip && !bIsVip) return -1;
                                     if (bIsVip && !aIsVip) return 1;
-                                    
+
                                     const aTime = typeof aRecord?.commenttime === 'number' ? aRecord.commenttime :
-                                                  typeof aRecord?.date === 'number' ? aRecord.date :
-                                                  typeof aRecord?.createdAt === 'number' ? aRecord.createdAt :
-                                                  typeof aRecord?.commenttime === 'string' ? new Date(aRecord.commenttime).getTime() :
-                                                  typeof aRecord?.date === 'string' ? new Date(aRecord.date).getTime() :
-                                                  typeof aRecord?.createdAt === 'string' ? new Date(aRecord.createdAt).getTime() : 0;
-                                    
+                                      typeof aRecord?.date === 'number' ? aRecord.date :
+                                        typeof aRecord?.createdAt === 'number' ? aRecord.createdAt :
+                                          typeof aRecord?.commenttime === 'string' ? new Date(aRecord.commenttime).getTime() :
+                                            typeof aRecord?.date === 'string' ? new Date(aRecord.date).getTime() :
+                                              typeof aRecord?.createdAt === 'string' ? new Date(aRecord.createdAt).getTime() : 0;
+
                                     const bTime = typeof bRecord?.commenttime === 'number' ? bRecord.commenttime :
-                                                  typeof bRecord?.date === 'number' ? bRecord.date :
-                                                  typeof bRecord?.createdAt === 'number' ? bRecord.createdAt :
-                                                  typeof bRecord?.commenttime === 'string' ? new Date(bRecord.commenttime).getTime() :
-                                                  typeof bRecord?.date === 'string' ? new Date(bRecord.date).getTime() :
-                                                  typeof bRecord?.createdAt === 'string' ? new Date(bRecord.createdAt).getTime() : 0;
-                                    
+                                      typeof bRecord?.date === 'number' ? bRecord.date :
+                                        typeof bRecord?.createdAt === 'number' ? bRecord.createdAt :
+                                          typeof bRecord?.commenttime === 'string' ? new Date(bRecord.commenttime).getTime() :
+                                            typeof bRecord?.date === 'string' ? new Date(bRecord.date).getTime() :
+                                              typeof bRecord?.createdAt === 'string' ? new Date(bRecord.createdAt).getTime() : 0;
+
                                     return bTime - aTime;
                                   })
                                   .map((c, i) => {
@@ -1072,10 +1070,10 @@ function DiscoverPageContent() {
                                         <div className="relative flex-shrink-0 w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center text-xs overflow-hidden">
                                           {(() => {
                                             const profileImage = typeof cRecord?.commentuserphoto === 'string' ? cRecord.commentuserphoto :
-                                                                 typeof cRecord?.photo === 'string' ? cRecord.photo :
-                                                                 typeof cRecord?.photolink === 'string' ? cRecord.photolink :
-                                                                 typeof cRecord?.photoLink === 'string' ? cRecord.photoLink : "";
-                                            
+                                              typeof cRecord?.photo === 'string' ? cRecord.photo :
+                                                typeof cRecord?.photolink === 'string' ? cRecord.photolink :
+                                                  typeof cRecord?.photoLink === 'string' ? cRecord.photoLink : "";
+
                                             if (profileImage && profileImage.trim() && profileImage !== 'null' && profileImage !== 'undefined') {
                                               const imageSource = getImageSource(profileImage, 'profile');
                                               return (
@@ -1099,7 +1097,7 @@ function DiscoverPageContent() {
                                                           initialsText = nameParts.map(n => n[0]).join('').toUpperCase().slice(0, 2) || '?';
                                                         } else {
                                                           const username = typeof cRecord?.commentusername === 'string' ? cRecord.commentusername :
-                                                                           typeof cRecord?.username === 'string' ? cRecord.username : 'U';
+                                                            typeof cRecord?.username === 'string' ? cRecord.username : 'U';
                                                           initialsText = username.charAt(0).toUpperCase();
                                                         }
                                                       }
@@ -1110,7 +1108,7 @@ function DiscoverPageContent() {
                                                 />
                                               );
                                             }
-                                            
+
                                             return (
                                               <div className="w-full h-full rounded-full bg-gray-600 flex items-center justify-center text-xs text-white font-medium">
                                                 {(() => {
@@ -1122,14 +1120,14 @@ function DiscoverPageContent() {
                                                     return nameParts.map(n => n[0]).join('').toUpperCase().slice(0, 2) || '?';
                                                   }
                                                   const username = typeof cRecord?.commentusername === 'string' ? cRecord.commentusername :
-                                                                   typeof cRecord?.username === 'string' ? cRecord.username : 'U';
+                                                    typeof cRecord?.username === 'string' ? cRecord.username : 'U';
                                                   return username.charAt(0).toUpperCase();
                                                 })()}
                                               </div>
                                             );
                                           })()}
                                         </div>
-                                        
+
                                         {(() => {
                                           const isVip = Boolean(cRecord?.isVip);
                                           const vipEndDate = typeof cRecord?.vipEndDate === 'string' ? cRecord.vipEndDate : null;
@@ -1158,29 +1156,29 @@ function DiscoverPageContent() {
                                             </span>
                                             <span className="text-xs text-gray-500">
                                               {(() => {
-                                                const timestamp = cRecord?.commenttime || 
-                                                                cRecord?.date || 
-                                                                cRecord?.createdAt || 
-                                                                cRecord?.timestamp;
-                                                
+                                                const timestamp = cRecord?.commenttime ||
+                                                  cRecord?.date ||
+                                                  cRecord?.createdAt ||
+                                                  cRecord?.timestamp;
+
                                                 if (!timestamp) {
                                                   return 'Unknown time';
                                                 }
-                                                
+
                                                 const formatted = formatRelativeTime(timestamp as string | number | Date);
-                                                
+
                                                 if (formatted === 'Invalid time' || formatted === 'Unknown time') {
                                                   return 'recently';
                                                 }
-                                                
+
                                                 return formatted;
                                               })()}
                                             </span>
                                           </div>
                                           <div className="text-gray-200 mt-1">
                                             {typeof cRecord?.content === 'string' ? cRecord.content :
-                                             typeof cRecord?.comment === 'string' ? cRecord.comment :
-                                             String(cRecord)}
+                                              typeof cRecord?.comment === 'string' ? cRecord.comment :
+                                                String(cRecord)}
                                           </div>
                                         </div>
                                       </div>
@@ -1215,9 +1213,9 @@ function DiscoverPageContent() {
                                         sending: true,
                                         comments: [
                                           ...((prev[pid]?.comments as unknown[]) || []),
-                                          { 
-                                            content: text, 
-                                            comment: text, 
+                                          {
+                                            content: text,
+                                            comment: text,
                                             username: [firstname, lastname].filter(Boolean).join(' ') || username || 'you',
                                             commentusername: [firstname, lastname].filter(Boolean).join(' ') || username || 'you',
                                             commentuserphoto: photolink || '',
@@ -1338,8 +1336,8 @@ function DiscoverPageContent() {
                   topFans.map((user) => (
                     <Link
                       key={user.userId}
-                      href={user.isCreator && user.creatorPortfolioId 
-                        ? `/Profile/${user.userId}` 
+                      href={user.isCreator && user.creatorPortfolioId
+                        ? `/Profile/${user.userId}`
                         : `/Profile/${user.userId}`}
                       className="flex-shrink-0 flex flex-col items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity"
                     >
@@ -1348,7 +1346,7 @@ function DiscoverPageContent() {
                           {(() => {
                             const profileImage = user.photoLink || "";
                             const initials = user.name.split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2) || "?";
-                            
+
                             if (profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined") {
                               const imageSource = getImageSource(profileImage, user.isCreator ? 'creator' : 'profile');
                               return (
@@ -1367,7 +1365,7 @@ function DiscoverPageContent() {
                                 />
                               );
                             }
-                            
+
                             return (
                               <div className="w-full h-full flex items-center justify-center text-white text-xl font-semibold bg-gray-700">
                                 {initials}
@@ -1379,7 +1377,7 @@ function DiscoverPageContent() {
                         {(() => {
                           const isVipActive = user.isVip && user.vipEndDate && new Date(user.vipEndDate) > new Date();
                           return isVipActive && (
-                            <VIPBadge size="xl" className="absolute -top-1 -right-2" isVip={user.isVip} vipEndDate={user.vipEndDate} />
+                            <VIPBadge size="xl" className="absolute -top-1 -right-4" isVip={user.isVip} vipEndDate={user.vipEndDate} />
                           );
                         })()}
                       </div>
@@ -1392,7 +1390,7 @@ function DiscoverPageContent() {
 
             {/* Creators with Most Views - Grid Layout */}
             <div>
-  
+
               {topViews.length === 0 ? (
                 <p className="text-gray-400">No creators found</p>
               ) : (
@@ -1406,18 +1404,18 @@ function DiscoverPageContent() {
                       <div className="relative aspect-[4/5] rounded-lg overflow-hidden border border-gray-700">
                         {(() => {
                           const displayImage = creator.displayImage || "";
-                          
+
                           if (displayImage && displayImage.trim() && displayImage !== "null" && displayImage !== "undefined") {
                             const imageSource = getImageSource(displayImage, 'creator');
-                            
+
                             // Prepare fallback URLs (same as creator card)
-                            const fallbackKey = imageSource.isStorj && imageSource.key 
-                              ? imageSource.key 
+                            const fallbackKey = imageSource.isStorj && imageSource.key
+                              ? imageSource.key
                               : (displayImage || "");
-                            
+
                             // Start with the proxy URL from getImageSource (query format with bucket)
                             const initialSrc = imageSource.src;
-                            
+
                             // Fallback URLs in order of preference
                             const pathUrlPrimary = fallbackKey ? `${API_BASE}/api/image/view/${encodeURIComponent(fallbackKey)}` : "";
                             const queryUrlFallback = imageSource.isStorj && imageSource.key && imageSource.bucket
@@ -1428,7 +1426,7 @@ function DiscoverPageContent() {
                               ? `${RENDER_BASE}/api/image/view?publicId=${encodeURIComponent(imageSource.key)}&bucket=${imageSource.bucket}`
                               : (fallbackKey ? `${RENDER_BASE}/api/image/view?publicId=${encodeURIComponent(fallbackKey)}` : "");
                             const renderPathUrl = fallbackKey ? `${RENDER_BASE}/api/image/view/${encodeURIComponent(fallbackKey)}` : "";
-                            
+
                             return (
                               <>
                                 <img
@@ -1437,45 +1435,45 @@ function DiscoverPageContent() {
                                   className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
                                   onError={(e) => {
                                     const target = e.currentTarget as HTMLImageElement & { dataset: Record<string, string> };
-                                    
+
                                     // Try fallback URLs in sequence (same as creator card)
                                     if (!target.dataset.fallback1 && pathUrlPrimary && target.src !== pathUrlPrimary) {
                                       target.dataset.fallback1 = "1";
                                       target.src = pathUrlPrimary;
                                       return;
                                     }
-                                    
+
                                     if (!target.dataset.fallback2 && queryUrlFallback && target.src !== queryUrlFallback) {
                                       target.dataset.fallback2 = "1";
                                       target.src = queryUrlFallback;
                                       return;
                                     }
-                                    
+
                                     if (!target.dataset.fallback3 && pathUrlFallback && target.src !== pathUrlFallback) {
                                       target.dataset.fallback3 = "1";
                                       target.src = pathUrlFallback;
                                       return;
                                     }
-                                    
+
                                     if (!target.dataset.fallback4 && renderQueryUrl && target.src !== renderQueryUrl) {
                                       target.dataset.fallback4 = "1";
                                       target.src = renderQueryUrl;
                                       return;
                                     }
-                                    
+
                                     if (!target.dataset.fallback5 && renderPathUrl && target.src !== renderPathUrl) {
                                       target.dataset.fallback5 = "1";
                                       target.src = renderPathUrl;
                                       return;
                                     }
-                                    
+
                                     // Try original Storj URL as last resort
                                     if (imageSource.isStorj && imageSource.originalUrl && target.src !== imageSource.originalUrl) {
                                       target.dataset.fallback6 = "1";
                                       target.src = imageSource.originalUrl;
                                       return;
                                     }
-                                    
+
                                     // All fallbacks exhausted - show placeholder
                                     target.style.display = 'none';
                                     const nextElement = target.nextElementSibling as HTMLElement;
@@ -1490,7 +1488,7 @@ function DiscoverPageContent() {
                               </>
                             );
                           }
-                          
+
                           return (
                             <div className="w-full h-full bg-gray-800 flex items-center justify-center">
                               <FaCompass className="text-4xl text-gray-600" />

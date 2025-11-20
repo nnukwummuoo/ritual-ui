@@ -57,12 +57,12 @@ const CreatorCard: React.FC<CreatorCardProps> = ({
   };
 
   return (
-    <div 
+    <div
       className="relative bg-gray-800 rounded-lg p-3 w-48 flex-shrink-0 cursor-pointer hover:bg-gray-750 transition-colors"
       onClick={handleCardClick}
     >
       {/* Close button */}
-      <button 
+      <button
         className="absolute top-2 right-2 text-gray-400 hover:text-white z-10"
         onClick={(e) => {
           e.stopPropagation();
@@ -76,7 +76,7 @@ const CreatorCard: React.FC<CreatorCardProps> = ({
 
       {/* Profile Image */}
       <div className="relative mb-3">
-        <div 
+        <div
           className="w-16 h-16 rounded-full overflow-hidden bg-gray-700 cursor-pointer hover:opacity-80 transition-opacity mx-auto"
           onClick={handleCardClick}
         >
@@ -95,18 +95,18 @@ const CreatorCard: React.FC<CreatorCardProps> = ({
               }}
             />
           ) : null}
-          <div className="w-full h-full flex items-center justify-center text-white text-lg font-semibold bg-gray-600" style={{display: photolink && photolink !== "/images/default-placeholder.png" ? 'none' : 'flex'}}>
+          <div className="w-full h-full flex items-center justify-center text-white text-lg font-semibold bg-gray-600" style={{ display: photolink && photolink !== "/images/default-placeholder.png" ? 'none' : 'flex' }}>
             {name.split(' ').map(n => n.charAt(0)).join('').toUpperCase()}
           </div>
         </div>
-        
+
         {/* VIP Badge */}
         {isVip && (
           <div className="absolute -top-2 left-32">
             <VIPBadge size="xl" isVip={isVip} vipEndDate={vipEndDate} />
           </div>
         )}
-        
+
         {/* Online Status */}
         {isOnline && (
           <div className="absolute bottom-0 right-0 w-4 h-4 bg-green-500 rounded-full border-2 border-gray-800"></div>
@@ -134,7 +134,7 @@ const CreatorCard: React.FC<CreatorCardProps> = ({
         onClick={handleCardClick}
         className="w-full py-2 px-3 rounded-lg text-sm font-medium transition-all duration-200 bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:scale-105"
       >
-      Request
+        Request
       </button>
     </div>
   );
@@ -154,7 +154,7 @@ const CreatorCards: React.FC = () => {
 
   // Check localStorage for user data as fallback
   const [localUserData, setLocalUserData] = useState<any>(null);
-  
+
   useEffect(() => {
     try {
       const raw = localStorage.getItem("login");
@@ -187,155 +187,124 @@ const CreatorCards: React.FC = () => {
     const fetchCreators = async () => {
       try {
         // console.log('[CreatorCards] Fetch attempt - effective user ID:', effectiveUserId);
-        
+
         // Always attempt to fetch, even without user session (for public feed)
         setLoading(true);
         setHasAttemptedFetch(true);
-        
+
         // Fetch creators for both logged-in and non-logged-in users
         let res;
         if (effectiveUserId && effectiveToken) {
           // console.log('[CreatorCards] Fetching creators for logged-in user:', effectiveUserId);
-          res = await getMyCreator({ 
-            userid: effectiveUserId, 
-            token: effectiveToken 
+          res = await getMyCreator({
+            userid: effectiveUserId,
+            token: effectiveToken
           });
         } else {
           // console.log('[CreatorCards] Fetching public creators for non-logged-in user');
           // For non-logged-in users, try to fetch public creators
           try {
             // Try calling the API with minimal auth (some backends allow this)
-            res = await getMyCreator({ 
-              userid: 'guest', 
-              token: 'guest' 
+            res = await getMyCreator({
+              userid: 'guest',
+              token: 'guest'
             });
           } catch (error) {
             console.log('[CreatorCards] Guest API failed, trying alternative approach');
             try {
               // Alternative: try with empty/null values
-              res = await getMyCreator({ 
-                userid: '', 
-                token: '' 
+              res = await getMyCreator({
+                userid: '',
+                token: ''
               });
             } catch (secondError) {
-              console.log('[CreatorCards] All API attempts failed, using mock creators for demo');
-              // Final fallback: mock data for demo purposes
-              res = { 
-                host: [
-                  {
-                    name: "Demo Creator 1",
-                    age: 25,
-                    gender: "Female",
-                    location: "New York",
-                    hosttype: "Model",
-                    photolink: "/images/default-placeholder.png",
-                    creator_portfolio_id: "demo-1",
-                    userid: "demo-1",
-                    isVip: false,
-                    vipEndDate: null,
-                    views: 1500,
-                    isOnline: true,
-                    isFollowing: false
-                  },
-                  {
-                    name: "Demo Creator 2", 
-                    age: 28,
-                    gender: "Male",
-                    location: "Los Angeles",
-                    hosttype: "Photographer",
-                    photolink: "/images/default-placeholder.png",
-                    creator_portfolio_id: "demo-2",
-                    userid: "demo-2",
-                    isVip: true,
-                    vipEndDate: "2024-12-31",
-                    views: 3200,
-                    isOnline: false,
-                    isFollowing: false
-                  }
-                ] 
+              console.log('[CreatorCards] All API attempts failed, returning empty list');
+              // Final fallback: empty list
+              res = {
+                host: []
               };
             }
           }
         }
-        
+
         // Handle different response formats
-        const list = Array.isArray(res?.host) ? [...res.host] : 
-                    Array.isArray(res) ? [...res] : 
-                    Array.isArray(res?.data) ? [...res.data] : [];
-        
+        const list = Array.isArray(res?.host) ? [...res.host] :
+          Array.isArray(res) ? [...res] :
+            Array.isArray(res?.data) ? [...res.data] : [];
+
         // Map to CreatorCardProps format
         const mappedCreators: CreatorCardProps[] = list.slice(0, 5).map((m: any) => {
-            // Helper: pick first valid string from array or single value
-            const pickValidPhoto = (value: any) => {
-              if (!value) return null;
-              if (Array.isArray(value)) {
-                for (const v of value) {
-                  if (typeof v === "string" && v.trim() !== "") return v;
-                }
-                return null;
+          // Helper: pick first valid string from array or single value
+          const pickValidPhoto = (value: any) => {
+            if (!value) return null;
+            if (Array.isArray(value)) {
+              for (const v of value) {
+                if (typeof v === "string" && v.trim() !== "") return v;
               }
-              if (typeof value === "string" && value.trim() !== "") return value;
               return null;
-            };
-
-            // Try multiple fields in order
-            const rawPhoto =
-              (Array.isArray(m.creatorfiles) && m.creatorfiles.length > 0 
-                ? pickValidPhoto(m.creatorfiles[0]?.creatorfilelink)
-                : null) ||
-              pickValidPhoto(m.photolink) ||
-              pickValidPhoto(m.photo) ||
-              pickValidPhoto(m.image) ||
-              pickValidPhoto(m.images) ||
-              pickValidPhoto(m.photos);
-
-            const photo = rawPhoto && !rawPhoto.startsWith("http")
-              ? `${process.env.NEXT_PUBLIC_BASE_URL || ""}${rawPhoto.replace(/^\.?\//, "/")}`
-              : rawPhoto;
-
-            const amountVal = m.price ?? m.amount ?? 0;
-            let amountNum = 0;
-            if (typeof amountVal === "string") {
-              const digits = amountVal.replace(/[^0-9]/g, "");
-              amountNum = digits ? parseInt(digits, 10) : 0;
-            } else if (typeof amountVal === "number") {
-              amountNum = amountVal;
             }
+            if (typeof value === "string" && value.trim() !== "") return value;
+            return null;
+          };
 
-            const mappedCreator = {
-              photolink: photo || "/images/default-placeholder.png",
-              hosttype: m.hosttype || m.category || "",
-              name: m.name || m.fullName || "Creator",
-              age: Number(m.age || 0),
-              gender: m.gender || "",
-              location: m.location || "",
-              interest: m.interestedin || m.interests || [],
-              amount: amountNum,
-              creator_portfolio_id: m.hostid || m._id || m.id || m.creator_portfolio_id || "",
-              userid: m.userid || m.hostid || m.ownerId || "",
-              createdAt: m.createdAt || m.created_at || "",
+          // Try multiple fields in order
+          const rawPhoto =
+            (Array.isArray(m.creatorfiles) && m.creatorfiles.length > 0
+              ? pickValidPhoto(m.creatorfiles[0]?.creatorfilelink)
+              : null) ||
+            pickValidPhoto(m.photolink) ||
+            pickValidPhoto(m.photo) ||
+            pickValidPhoto(m.image) ||
+            pickValidPhoto(m.images) ||
+            pickValidPhoto(m.photos);
+
+          const photo = rawPhoto && !rawPhoto.startsWith("http")
+            ? `${process.env.NEXT_PUBLIC_BASE_URL || ""}${rawPhoto.replace(/^\.?\//, "/")}`
+            : rawPhoto;
+
+          const amountVal = m.price ?? m.amount ?? 0;
+          let amountNum = 0;
+          if (typeof amountVal === "string") {
+            const digits = amountVal.replace(/[^0-9]/g, "");
+            amountNum = digits ? parseInt(digits, 10) : 0;
+          } else if (typeof amountVal === "number") {
+            amountNum = amountVal;
+          }
+
+          const mappedCreator = {
+            photolink: photo || "/images/default-placeholder.png",
+            hosttype: m.hosttype || m.category || "",
+            name: m.name || m.fullName || "Creator",
+            age: Number(m.age || 0),
+            gender: m.gender || "",
+            location: m.location || "",
+            interest: m.interestedin || m.interests || [],
+            amount: amountNum,
+            creator_portfolio_id: m.hostid || m._id || m.id || m.creator_portfolio_id || "",
+            userid: m.userid || m.hostid || m.ownerId || "",
+            createdAt: m.createdAt || m.created_at || "",
+            hostid: m.hostid,
+            isVip: m.isVip || false,
+            vipEndDate: m.vipEndDate || null,
+            views: m.views || m.viewCount || m.view_count || m.totalViews || m.total_views || m.portfolioViews || m.portfolio_views || 0,
+            isOnline: m.isOnline || m.online || m.is_online || m.onlineStatus || m.online_status || m.status === 'online' || false,
+            isFollowing: m.isFollowing || m.following || m.followingUser || m.is_following || m.following_status || m.followedBy || m.followed_by || false,
+          };
+
+          // Debug logging for creator_portfolio_id issue
+          if (!mappedCreator.creator_portfolio_id) {
+            console.warn('[CreatorCards] Missing creator_portfolio_id for creator:', {
+              name: mappedCreator.name,
               hostid: m.hostid,
-              isVip: m.isVip || false,
-              vipEndDate: m.vipEndDate || null,
-              views: m.views || m.viewCount || m.view_count || m.totalViews || m.total_views || m.portfolioViews || m.portfolio_views || 0,
-              isOnline: m.isOnline || m.online || m.is_online || m.onlineStatus || m.online_status || m.status === 'online' || false,
-              isFollowing: m.isFollowing || m.following || m.followingUser || m.is_following || m.following_status || m.followedBy || m.followed_by || false,
-            };
+              _id: m._id,
+              id: m.id,
+              creator_portfolio_id: m.creator_portfolio_id,
+              rawData: m
+            });
+          }
 
-            // Debug logging for creator_portfolio_id issue
-            if (!mappedCreator.creator_portfolio_id) {
-              console.warn('[CreatorCards] Missing creator_portfolio_id for creator:', {
-                name: mappedCreator.name,
-                hostid: m.hostid,
-                _id: m._id,
-                id: m.id,
-                creator_portfolio_id: m.creator_portfolio_id,
-                rawData: m
-              });
-            }
-
-            return mappedCreator;
-          });
+          return mappedCreator;
+        });
 
         setCreators(mappedCreators);
       } catch (error) {
@@ -354,14 +323,14 @@ const CreatorCards: React.FC = () => {
     return null;
   }
 
-    // console.log('[CreatorCards] Render state:', {
-    //   loading,
-    //   creatorsLength: creators.length,
-    //   hasAttemptedFetch,
-    //   hasUserSession: !!effectiveUserId,
-    //   effectiveUserId,
-    //   hasToken: !!effectiveToken
-    // });
+  // console.log('[CreatorCards] Render state:', {
+  //   loading,
+  //   creatorsLength: creators.length,
+  //   hasAttemptedFetch,
+  //   hasUserSession: !!effectiveUserId,
+  //   effectiveUserId,
+  //   hasToken: !!effectiveToken
+  // });
 
   // Always show skeleton if loading or no creators yet
   if (loading || !creators.length) {
@@ -397,14 +366,14 @@ const CreatorCards: React.FC = () => {
     <div>
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-white font-medium">Top Creators</h3>
-        <button 
+        <button
           className="text-blue-500 text-sm hover:underline"
           onClick={() => router.push('/creators')}
         >
           See all
         </button>
       </div>
-      
+
       <div className="flex gap-3 overflow-x-auto pb-2">
         {creators.map((creator, index) => (
           <CreatorCard key={`${creator.creator_portfolio_id}-${index}`} {...creator} />

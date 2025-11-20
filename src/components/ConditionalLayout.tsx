@@ -1,6 +1,7 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
+import useClientAuth from "@/hooks/useClientAuth";
 import { ReactNode, useState, useEffect, useRef } from "react";
 import Sidebar from "@/components/sidebar";
 import Navbar from "@/components/navbar";
@@ -21,16 +22,16 @@ export default function ConditionalLayout({ children, isAuthenticated }: Conditi
   const [lastScrollY, setLastScrollY] = useState(0);
   const [mounted, setMounted] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  
+
   // Check if it's a QuickChat [userid] route
   const isQuickChatRoute = pathname.includes('/message/') && pathname.split('/').length > 2;
-  
+
   // Check if it's an admin route
   const isAdminRoute = pathname.includes('/mmeko/admin');
-  
+
   // Check if it's the home route
   const isHomeRoute = pathname === '/';
-  
+
   // Set mounted to true after component mounts (client-side only)
   useEffect(() => {
     setMounted(true);
@@ -42,7 +43,7 @@ export default function ConditionalLayout({ children, isAuthenticated }: Conditi
     if (!scrollContainer) return;
 
     let ticking = false;
-    
+
     const handleScroll = () => {
       if (!ticking) {
         requestAnimationFrame(() => {
@@ -50,14 +51,14 @@ export default function ConditionalLayout({ children, isAuthenticated }: Conditi
           const reachedBottom =
             scrollContainer.scrollTop + scrollContainer.clientHeight >=
             scrollContainer.scrollHeight - 8;
-          
+
           // Only handle on mobile screens
           if (window.innerWidth >= 768) {
             setShowNavbar(true);
             ticking = false;
             return;
           }
-          
+
           // Show navbar when scrolling up, hide when scrolling down
           if (currentScrollY < lastScrollY && !reachedBottom) {
             // Scrolling up
@@ -69,12 +70,12 @@ export default function ConditionalLayout({ children, isAuthenticated }: Conditi
             // Keep navbar hidden when the user is pushing against the bottom
             setShowNavbar(false);
           }
-          
+
           // Always show navbar at the top
           if (currentScrollY < 10) {
             setShowNavbar(true);
           }
-          
+
           setLastScrollY(currentScrollY);
           ticking = false;
         });
@@ -83,16 +84,16 @@ export default function ConditionalLayout({ children, isAuthenticated }: Conditi
     };
 
     scrollContainer.addEventListener('scroll', handleScroll, { passive: true });
-    
+
     return () => {
       scrollContainer.removeEventListener('scroll', handleScroll);
     };
   }, [lastScrollY]);
-  
+
   // Apply transform to navbar's fixed div (client-side only) - only for mobile/tablet
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    
+
     // Check if we're on md or larger screen - if so, don't apply transform
     if (window.innerWidth >= 768) {
       // Ensure navbar is visible on md+ screens
@@ -103,7 +104,7 @@ export default function ConditionalLayout({ children, isAuthenticated }: Conditi
       }
       return;
     }
-    
+
     const navbarElement = document.querySelector('.top-bar-visibility') as HTMLElement;
     if (navbarElement) {
       if (showNavbar) {
@@ -115,12 +116,12 @@ export default function ConditionalLayout({ children, isAuthenticated }: Conditi
       }
     }
   }, [showNavbar]);
-  
+
   // If it's a QuickChat [userid] route or admin route, render without main layout
   if (isQuickChatRoute || isAdminRoute) {
     return <>{children}</>;
   }
-  
+
   // Otherwise, render with main layout
   return (
     <main className="flex overflow-hidden h-screen relative">
@@ -130,17 +131,17 @@ export default function ConditionalLayout({ children, isAuthenticated }: Conditi
           <Sidebar />
         </div>
       </div>
-      
+
       {/* Mobile Sidebar - Only visible on mobile, positioned fixed */}
       <div className="sm:hidden">
         <Sidebar />
       </div>
-     
+
       {/* Navbar - Hidden on md devices and up */}
       <div className="md:hidden">
         <Navbar isAuthenticated={isAuthenticated} />
       </div>
-      
+
       {/* Login Button - Only shown on md devices and up, when not authenticated */}
       {!isAuthenticated && (
         <button
@@ -154,9 +155,9 @@ export default function ConditionalLayout({ children, isAuthenticated }: Conditi
           <FaSignInAlt size={18} className="text-gray-900" />
         </button>
       )}
-      
+
       <div className={`flex-1 flex flex-col overflow-hidden transition-all duration-300 min-w-0 min-h-0 ${mounted && !showNavbar ? 'mt-0' : 'md:mt-0 mt-12'}`}>
-        <div 
+        <div
           ref={scrollContainerRef}
           className="flex-1 scrollbar overflow-y-auto overflow-x-hidden w-full pt-4 min-w-0"
           style={{ minHeight: 0 }}

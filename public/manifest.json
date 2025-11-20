@@ -5,11 +5,15 @@
   "start_url": "/",
   "display": "standalone",
   "background_color": "#000000",
-  "theme_color": "#00A86B",
+  "theme_color": "#1f2937",
   "orientation": "portrait-primary",
   "scope": "/",
   "lang": "en",
-  "categories": ["social", "entertainment", "lifestyle"],
+  "categories": [
+    "social",
+    "entertainment",
+    "lifestyle"
+  ],
   "icons": [
     {
       "src": "/icons/icon-72x72.png",

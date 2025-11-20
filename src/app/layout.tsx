@@ -4,10 +4,9 @@ import "./globals.css";
 import Providers from "./providers";
 import { cookies } from "next/headers";
 import 'react-loading-skeleton/dist/skeleton.css';
-import ConditionalLayout from "@/components/ConditionalLayout";
 import ServiceWorkerProvider from "@/components/ServiceWorkerProvider";
 import PWAInstallPrompt from "@/components/PWAInstallPrompt";
-import { NotificationModalWrapper } from "@/components/NotificationModalWrapper";
+import ConditionalLayoutWrapper from "@/components/ConditionalLayoutWrapper";
 import { VideoProvider } from "@/contexts/VideoContext";
 import GlobalBanChecker from "@/components/GlobalBanChecker";
 import ReduxHydrator from "@/components/ReduxHydrator";
@@ -45,14 +44,14 @@ export default async function RootLayout({
   const cookieStore = await cookies();
   const authToken = cookieStore.get('session')?.value;
   const isAuthenticated = !!authToken?.length;
-  
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
         <meta name="color-scheme" content="light only" />
         <meta name="supported-color-schemes" content="light" />
         <link rel="manifest" href="/manifest.json" />
-        <meta name="theme-color" content="#00A86B" />
+        <meta name="theme-color" content="#1f2937" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -71,7 +70,7 @@ export default async function RootLayout({
                 delay={100}
                 preserveScrollRoutes={[
                   "/message",
-                  "/settings", 
+                  "/settings",
                   "/profile"
                 ]}
                 scrollOnSearchChange={false}
@@ -79,10 +78,9 @@ export default async function RootLayout({
                 debug={process.env.NODE_ENV === "development"}
               />
               <GlobalVisitorTracker />
-              <ConditionalLayout isAuthenticated={isAuthenticated}>
+              <ConditionalLayoutWrapper ssrAuth={isAuthenticated}>
                 {children}
-                {isAuthenticated && <NotificationModalWrapper />}
-              </ConditionalLayout>
+              </ConditionalLayoutWrapper>
             </VideoProvider>
           </ContentFilterProvider>
         </Providers>

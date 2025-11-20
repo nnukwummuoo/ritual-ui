@@ -22,26 +22,26 @@ import { FaHome } from "react-icons/fa";
 
 // Word list for generating a mnemonic phrase (unchanged)
 const wordList = [
-// Igbo
-"chi","aku","obi","mma","nne","nna","nwa","elu","ala","uzo","ulo","anu","mmiri","oku","igwe","osisi","ite","ugwu","igweoma","ike","ife","eze","ada","uzochi","odogwu","obioma","nwanne","okwu","ego","uto","mmirioma","nkume","ugwuoma","onyema","olile","ndidi","obiomaeze","chukwu","onyinye","okwuoma","okike","uwa","nnamdi","oge","udo","ihe","isi","aka","ukwu","anya",
+  // Igbo
+  "chi", "aku", "obi", "mma", "nne", "nna", "nwa", "elu", "ala", "uzo", "ulo", "anu", "mmiri", "oku", "igwe", "osisi", "ite", "ugwu", "igweoma", "ike", "ife", "eze", "ada", "uzochi", "odogwu", "obioma", "nwanne", "okwu", "ego", "uto", "mmirioma", "nkume", "ugwuoma", "onyema", "olile", "ndidi", "obiomaeze", "chukwu", "onyinye", "okwuoma", "okike", "uwa", "nnamdi", "oge", "udo", "ihe", "isi", "aka", "ukwu", "anya",
 
-// Yoruba
-"omo","iya","baba","orun","ile","omi","ina","igi","orunmila","orunko","ire","ayo","ife","oro","owon","ojo","orunke","agbara","ebi","ireti","ojooma","ore","ogo","ala","irele","awon","aseyori","agbara nla","otito","ire gbogbo",
+  // Yoruba
+  "omo", "iya", "baba", "orun", "ile", "omi", "ina", "igi", "orunmila", "orunko", "ire", "ayo", "ife", "oro", "owon", "ojo", "orunke", "agbara", "ebi", "ireti", "ojooma", "ore", "ogo", "ala", "irele", "awon", "aseyori", "agbara nla", "otito", "ire gbogbo",
 
-// Hausa
-"uba","uwa","yaro","yarinya","ruwa","wuta","sama","kasa","gida","hanya","zuciya","zuciyarmu","sarki","mace","namiji","gari","rana","dare","lafiya","arziki","karfi","hakuri","gaskiya","soyayya","bege","kyauta","aboki","farin ciki","duniya","lokaci",
+  // Hausa
+  "uba", "uwa", "yaro", "yarinya", "ruwa", "wuta", "sama", "kasa", "gida", "hanya", "zuciya", "zuciyarmu", "sarki", "mace", "namiji", "gari", "rana", "dare", "lafiya", "arziki", "karfi", "hakuri", "gaskiya", "soyayya", "bege", "kyauta", "aboki", "farin ciki", "duniya", "lokaci",
 
-// Ghana (Twi)
-"agya","ena","abofra","nsuo","ogya","soro","asaase","ofie","kwan","akoma","ohene","obaa","barima","anadwo","owia","osrane","adesua","nkrabea","nkwagye","nokware","aseda","ahonya","anigye","animuonyam","asomdwoe","bere","wiase",
+  // Ghana (Twi)
+  "agya", "ena", "abofra", "nsuo", "ogya", "soro", "asaase", "ofie", "kwan", "akoma", "ohene", "obaa", "barima", "anadwo", "owia", "osrane", "adesua", "nkrabea", "nkwagye", "nokware", "aseda", "ahonya", "anigye", "animuonyam", "asomdwoe", "bere", "wiase",
 
-// Zulu
-"Inhliziyo","Indlu","Amanzi","Inyama","Ekuseni","Usuku","Ubusuku","Ingane","Umgwaqo","Ikhanda","Umlenze","Isandla","Umlilo","Ukudla","Umngane","Isikhathi","Umhlaba","Indoda","Owesifazane","Imali","Incwadi","Inhlanzi","Ingubo","Amandla","Ithemba","Uthando","Injabulo","Ilanga","Izulu","Ukuphila",
+  // Zulu
+  "Inhliziyo", "Indlu", "Amanzi", "Inyama", "Ekuseni", "Usuku", "Ubusuku", "Ingane", "Umgwaqo", "Ikhanda", "Umlenze", "Isandla", "Umlilo", "Ukudla", "Umngane", "Isikhathi", "Umhlaba", "Indoda", "Owesifazane", "Imali", "Incwadi", "Inhlanzi", "Ingubo", "Amandla", "Ithemba", "Uthando", "Injabulo", "Ilanga", "Izulu", "Ukuphila",
 
-// Swahili
-"Moyo","Nyumba","Maji","Nyama","Asubuhi","Siku","Usiku","Mtoto","Barabara","Kichwa","Mguu","Mkono","Moto","Chakula","Rafiki","Wakati","Dunia","Mwanaume","Mwanamke","Pesa","Kitabu","Samaki","Nguo","Nguvu","Nuru","Upendo","Furaha","Jua","Mbingu","Maisha",
+  // Swahili
+  "Moyo", "Nyumba", "Maji", "Nyama", "Asubuhi", "Siku", "Usiku", "Mtoto", "Barabara", "Kichwa", "Mguu", "Mkono", "Moto", "Chakula", "Rafiki", "Wakati", "Dunia", "Mwanaume", "Mwanamke", "Pesa", "Kitabu", "Samaki", "Nguo", "Nguvu", "Nuru", "Upendo", "Furaha", "Jua", "Mbingu", "Maisha",
 
-// Tagalog (Philippines)
-"Araw","Buwan","Tubig","Apoy","Hangin","Lupa","Ulan","Gubat","Bundok","Ilog","Puso","Mabuhay","Kamay","Ulo","Katawan","Mata","Saya","Lungkot","Galit","Ginhawa","Umaga","Gabi","Oras","Lakad","Takbo","Bahay","Kaibigan","Salita","Buhay","Mundo"
+  // Tagalog (Philippines)
+  "Araw", "Buwan", "Tubig", "Apoy", "Hangin", "Lupa", "Ulan", "Gubat", "Bundok", "Ilog", "Puso", "Mabuhay", "Kamay", "Ulo", "Katawan", "Mata", "Saya", "Lungkot", "Galit", "Ginhawa", "Umaga", "Gabi", "Oras", "Lakad", "Takbo", "Bahay", "Kaibigan", "Salita", "Buhay", "Mundo"
 ];
 
 // Function to generate a 12-word secret phrase (unchanged)
@@ -56,15 +56,15 @@ const generateSecretPhrase = (): string[] => {
 
 // Function to calculate age from date of birth (unchanged)
 const calculateAge = (dob: string): number => {
-    if (!dob) return 0;
-    const birthDate = new Date(dob);
-    const today = new Date();
-    let age = today.getFullYear() - birthDate.getFullYear();
-    const monthDifference = today.getMonth() - birthDate.getMonth();
-    if (monthDifference < 0 || (monthDifference === 0 && today.getDate() < birthDate.getDate())) {
-        age--;
-    }
-    return age;
+  if (!dob) return 0;
+  const birthDate = new Date(dob);
+  const today = new Date();
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const monthDifference = today.getMonth() - birthDate.getMonth();
+  if (monthDifference < 0 || (monthDifference === 0 && today.getDate() < birthDate.getDate())) {
+    age--;
+  }
+  return age;
 };
 
 export const Register = () => {
@@ -79,7 +79,7 @@ export const Register = () => {
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
   const containerRef = React.useRef<HTMLDivElement>(null);
-  
+
   // State for form validation errors
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   // State to track if current step is valid
@@ -105,52 +105,52 @@ export const Register = () => {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    
+
     // Clear the error for the field being edited
     if (errors[name]) {
-        setErrors(prev => ({ ...prev, [name]: '' }));
+      setErrors(prev => ({ ...prev, [name]: '' }));
     }
 
     if (name === 'firstname' || name === 'lastname') {
-        // Prevent special characters in name fields
-        const sanitizedValue = value.replace(/[^a-zA-Z]/g, '');
-        setFormValues(prev => ({ ...prev, [name]: sanitizedValue }));
+      // Prevent special characters in name fields
+      const sanitizedValue = value.replace(/[^a-zA-Z]/g, '');
+      setFormValues(prev => ({ ...prev, [name]: sanitizedValue }));
     } else if (name === 'username') {
-        // Enforce username format: starts with @, no special chars except _, lowercase
-        let formattedValue = value;
-        if (!formattedValue.startsWith('@')) {
-            formattedValue = '@' + formattedValue;
-        }
-        const usernamePart = formattedValue.substring(1).toLowerCase().replace(/[^a-z0-9_]/g, '');
-        formattedValue = '@' + usernamePart;
-        
-        if (formattedValue.length > 16) { // @ + 15 characters
-             formattedValue = formattedValue.substring(0, 16);
-        }
+      // Enforce username format: starts with @, no special chars except _, lowercase
+      let formattedValue = value;
+      if (!formattedValue.startsWith('@')) {
+        formattedValue = '@' + formattedValue;
+      }
+      const usernamePart = formattedValue.substring(1).toLowerCase().replace(/[^a-z0-9_]/g, '');
+      formattedValue = '@' + usernamePart;
 
-        setFormValues(prev => ({ ...prev, [name]: formattedValue }));
-        
-        // Reset username validation status when user starts typing
-        setUsernameStatus("");
-        setUsernameValid(false);
-        setUsernameError("");
-        
-        // Check uniqueness after a short delay
-        const cleanUsername = formattedValue.substring(1); // Remove @ prefix
-        if (cleanUsername.length >= 3) {
-          setTimeout(() => {
-            checkUsernameUniqueness(cleanUsername);
-          }, 500);
-        }
+      if (formattedValue.length > 16) { // @ + 15 characters
+        formattedValue = formattedValue.substring(0, 16);
+      }
+
+      setFormValues(prev => ({ ...prev, [name]: formattedValue }));
+
+      // Reset username validation status when user starts typing
+      setUsernameStatus("");
+      setUsernameValid(false);
+      setUsernameError("");
+
+      // Check uniqueness after a short delay
+      const cleanUsername = formattedValue.substring(1); // Remove @ prefix
+      if (cleanUsername.length >= 3) {
+        setTimeout(() => {
+          checkUsernameUniqueness(cleanUsername);
+        }, 500);
+      }
     } else {
-        setFormValues(prev => ({ ...prev, [name]: value }));
+      setFormValues(prev => ({ ...prev, [name]: value }));
     }
   };
 
   const getLocation = (country: string) => {
     setCountry(country);
     if (errors.country) {
-        setErrors(prev => ({ ...prev, country: '' }));
+      setErrors(prev => ({ ...prev, country: '' }));
     }
   };
 
@@ -216,7 +216,7 @@ export const Register = () => {
   const copyToClipboard = () => { navigator.clipboard.writeText(secretPhrase.join(" ")); setCopied(true); toast.success("Phrase copied!", { style: { backgroundColor: "#111" } }); setTimeout(() => setCopied(false), 2000); };
 
   const downloadPhrase = () => {
-  const htmlContent = `
+    const htmlContent = `
     <html>
       <head>
         <title>Recovery Phrase</title>
@@ -240,19 +240,19 @@ export const Register = () => {
       </head>
       <body>
         ${secretPhrase
-          .map((word) => `<div class="word">${word}</div>`)
-          .join("")}
+        .map((word) => `<div class="word">${word}</div>`)
+        .join("")}
       </body>
     </html>
   `;
-  const element = document.createElement("a");
-  const file = new Blob([htmlContent], { type: "text/html" });
-  element.href = URL.createObjectURL(file);
-  element.download = "recovery-phrase.html";
-  document.body.appendChild(element);
-  element.click();
-  document.body.removeChild(element);
-}
+    const element = document.createElement("a");
+    const file = new Blob([htmlContent], { type: "text/html" });
+    element.href = URL.createObjectURL(file);
+    element.download = "recovery-phrase.html";
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+  }
 
   // Validation logic for each step
   const validateStep = (currentStep: number): boolean => {
@@ -260,30 +260,30 @@ export const Register = () => {
     let isValid = true;
 
     if (currentStep === 1) {
-        if (!formValues.firstname) { newErrors.firstname = "First name is required."; isValid = false; }
-        else if (!/^[a-zA-Z]{1,9}$/.test(formValues.firstname)) { newErrors.firstname = "First name must be 1-9 letters."; isValid = false; }
+      if (!formValues.firstname) { newErrors.firstname = "First name is required."; isValid = false; }
+      else if (!/^[a-zA-Z]{1,9}$/.test(formValues.firstname)) { newErrors.firstname = "First name must be 1-9 letters."; isValid = false; }
 
-        if (!formValues.lastname) { newErrors.lastname = "Last name is required."; isValid = false; }
-        else if (!/^[a-zA-Z]{1,9}$/.test(formValues.lastname)) { newErrors.lastname = "Last name must be 1-9 letters."; isValid = false; }
+      if (!formValues.lastname) { newErrors.lastname = "Last name is required."; isValid = false; }
+      else if (!/^[a-zA-Z]{1,9}$/.test(formValues.lastname)) { newErrors.lastname = "Last name must be 1-9 letters."; isValid = false; }
 
-        if (!formValues.dob) { newErrors.dob = "Date of birth is required."; isValid = false; }
-        else if (calculateAge(formValues.dob) < 18) { newErrors.dob = "You must be at least 18 years old."; isValid = false; }
+      if (!formValues.dob) { newErrors.dob = "Date of birth is required."; isValid = false; }
+      else if (calculateAge(formValues.dob) < 18) { newErrors.dob = "You must be at least 18 years old."; isValid = false; }
     }
 
     if (currentStep === 2) {
-        if (!formValues.gender) { newErrors.gender = "Please select your gender."; isValid = false; }
-        if (!country) { newErrors.country = "Please select your country."; isValid = false; }
-        if (!formValues.username) { newErrors.username = "Username is required."; isValid = false; }
-        else if (!/^@[a-z0-9_]{3,15}$/.test(formValues.username)) { newErrors.username = "Must be 3-15 characters (letters, numbers, or _)."; isValid = false; }
-        else if (usernameStatus === "invalid") { newErrors.username = usernameError || "Please choose a different username."; isValid = false; }
-        else if (usernameStatus === "" && formValues.username.length >= 3) { newErrors.username = "Please wait for username validation."; isValid = false; }
-        else if (usernameStatus === "checking") { newErrors.username = "Checking username availability..."; isValid = false; }
+      if (!formValues.gender) { newErrors.gender = "Please select your gender."; isValid = false; }
+      if (!country) { newErrors.country = "Please select your country."; isValid = false; }
+      if (!formValues.username) { newErrors.username = "Username is required."; isValid = false; }
+      else if (!/^@[a-z0-9_]{3,15}$/.test(formValues.username)) { newErrors.username = "Must be 3-15 characters (letters, numbers, or _)."; isValid = false; }
+      else if (usernameStatus === "invalid") { newErrors.username = usernameError || "Please choose a different username."; isValid = false; }
+      else if (usernameStatus === "" && formValues.username.length >= 3) { newErrors.username = "Please wait for username validation."; isValid = false; }
+      else if (usernameStatus === "checking") { newErrors.username = "Checking username availability..."; isValid = false; }
     }
 
     if (currentStep === 3) {
-        if (!formValues.password) { newErrors.password = "Password is required."; isValid = false; }
-        if (!formValues.confirmPassword) { newErrors.confirmPassword = "Please confirm your password."; isValid = false; }
-        else if (formValues.password !== formValues.confirmPassword) { newErrors.confirmPassword = "Passwords do not match."; isValid = false; }
+      if (!formValues.password) { newErrors.password = "Password is required."; isValid = false; }
+      if (!formValues.confirmPassword) { newErrors.confirmPassword = "Please confirm your password."; isValid = false; }
+      else if (formValues.password !== formValues.confirmPassword) { newErrors.confirmPassword = "Passwords do not match."; isValid = false; }
     }
 
     setErrors(newErrors);
@@ -292,23 +292,23 @@ export const Register = () => {
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!agreedPrivacy || !agreedTerms) { 
-      toast.error("Agree to the Terms & Conditions / Privacy & Policy.", { style: { backgroundColor: "#111" } }); 
-      return; 
+    if (!agreedPrivacy || !agreedTerms) {
+      toast.error("Agree to the Terms & Conditions / Privacy & Policy.", { style: { backgroundColor: "#111" } });
+      return;
     }
-    if (!saved) { 
-      toast.error("Please confirm you've saved your recovery phrase.", { style: { backgroundColor: "#111" } }); 
-      return; 
+    if (!saved) {
+      toast.error("Please confirm you've saved your recovery phrase.", { style: { backgroundColor: "#111" } });
+      return;
     }
-    if (formValues.password !== formValues.confirmPassword) { 
-      toast.error("Passwords do not match.", { style: { backgroundColor: "#111" } }); 
-      return; 
+    if (formValues.password !== formValues.confirmPassword) {
+      toast.error("Passwords do not match.", { style: { backgroundColor: "#111" } });
+      return;
     }
-    if (calculateAge(formValues.dob) < 18) { 
-      toast.error("You must be at least 18 years old.", { style: { backgroundColor: "#111" } }); 
-      return; 
+    if (calculateAge(formValues.dob) < 18) {
+      toast.error("You must be at least 18 years old.", { style: { backgroundColor: "#111" } });
+      return;
     }
-    
+
     // Check username validation
     if (formValues.username && formValues.username.length >= 3) {
       if (usernameStatus === "invalid") {
@@ -326,15 +326,15 @@ export const Register = () => {
     }
 
     const payload = { ...formValues, age: calculateAge(formValues.dob).toString(), country, secretPhrase };
-    
+
     try {
       setLoading(true);
       const resultAction = await dispatch(registernewUser(payload));
-      
+
       if (registernewUser.fulfilled.match(resultAction)) {
         // Registration successful - redirect to login page
         // User must log in manually after registration
-        toast.success("Registration successful! Please log in to continue.", { style: { backgroundColor: "#111" } });
+        toast.success("Registration successful! Please log in to continue.", { style: { backgroundColor: "#111", zIndex: 9999 } });
         // Redirect to login page after a short delay
         setTimeout(() => {
           router.push("/auth/login");
@@ -344,7 +344,7 @@ export const Register = () => {
       }
     } catch (error) {
       const errorMessage = (error as any)?.response?.data?.message || "Registration failed.";
-      toast.error(errorMessage === "Username already taken!" ? "Username exists." : errorMessage, { style: { backgroundColor: "#111" } });
+      toast.error(errorMessage === "Username already taken!" ? "Username exists." : errorMessage, { style: { backgroundColor: "#111", zIndex: 9999 } });
     } finally {
       setLoading(false);
     }
@@ -413,19 +413,19 @@ export const Register = () => {
           label: "@User Name",
           input: (
             <div className="relative">
-              <Input 
-                id="username" 
-                required={true} 
-                type="text" 
-                name="username" 
-                placeholder="@username" 
+              <Input
+                id="username"
+                required={true}
+                type="text"
+                name="username"
+                placeholder="@username"
                 overide={false}
                 classNames={`${usernameStatus === "valid" ? 'border border-green-500' : usernameStatus === "invalid" ? 'border border-red-500' : usernameStatus === "checking" ? 'border border-yellow-500' : ''}`}
-                maxLength={16} 
-                pattern="@[a-z0-9_]{3,15}" 
-                title="Username: @ followed by 3-15 lowercase letters, numbers, or _" 
-                value={formValues.username} 
-                onChange={handleInputChange} 
+                maxLength={16}
+                pattern="@[a-z0-9_]{3,15}"
+                title="Username: @ followed by 3-15 lowercase letters, numbers, or _"
+                value={formValues.username}
+                onChange={handleInputChange}
               />
               {/* Status indicator */}
               <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
@@ -456,7 +456,7 @@ export const Register = () => {
         {
           name: "confirmPassword",
           label: "Confirm Password",
-          input: <Input id="confirmPassword" type="password" name="confirmPassword" placeholder=" " overide={true} classNames="" required={true} value={formValues.confirmPassword} onChange={handleInputChange}/>,
+          input: <Input id="confirmPassword" type="password" name="confirmPassword" placeholder=" " overide={true} classNames="" required={true} value={formValues.confirmPassword} onChange={handleInputChange} />,
         },
       ]
     }
@@ -467,10 +467,10 @@ export const Register = () => {
     const scrollToTop = () => {
       // Find the scrollable parent container (from ConditionalLayout with overflow-y-auto)
       let scrollableContainer: HTMLElement | null = null;
-      
+
       // Try to find the container by class name (scrollbar overflow-y-auto)
       scrollableContainer = document.querySelector('.scrollbar.overflow-y-auto') as HTMLElement;
-      
+
       // Fallback: find parent element with overflow-y-auto
       if (!scrollableContainer && containerRef.current) {
         let parent = containerRef.current.parentElement;
@@ -483,7 +483,7 @@ export const Register = () => {
           parent = parent.parentElement;
         }
       }
-      
+
       // If we found the scrollable container, scroll it to top
       if (scrollableContainer) {
         scrollableContainer.scrollTop = 0;
@@ -494,10 +494,10 @@ export const Register = () => {
         document.body.scrollTop = 0;
       }
     };
-    
+
     // Scroll immediately
     scrollToTop();
-    
+
     // Also scroll after DOM update to ensure it works
     requestAnimationFrame(() => {
       scrollToTop();
@@ -515,17 +515,17 @@ export const Register = () => {
           className="p-2 rounded-full hover:bg-gray-700 transition-colors"
           title="Go to Home"
         >
-          <FaHome className="text-2xl" style={{color: '#bec8fa'}} />
+          <FaHome className="text-2xl" style={{ color: '#bec8fa' }} />
         </button>
       </div>
-      
+
       <div className="form-container-wrapper w-full mt-12 min-h-screen">
         <Image src={"/register.png"} alt="Register" width={500} height={300} className="min-h-full" />
 
         <form onSubmit={handleSubmit} noValidate>
           <h2 className="!bg-gradient-to-r !from-blue-500 !to-purple-600 !bg-clip-text !text-transparent">Register</h2>
           <p>{stepDescriptions[step - 1]}</p>
-          
+
           <div className="pagination">
             <DotSlideBtn setStep={setStep} step={step} slide={1} disabled={!accessibleSteps.includes(1)} />
             <DotSlideBtn setStep={setStep} step={step} slide={2} disabled={!accessibleSteps.includes(2)} />
@@ -536,38 +536,38 @@ export const Register = () => {
           <div className="form-input-wrapper">
             {/* Step 1 */}
             <Step step={step} slide={1}>
-             {inputs[0].step_1.map((v, i)=>(
-              <div className="floating-label-group" key={i}>
-                {v.input}
-                <label htmlFor={v.name}>{v.label}</label>
-                <p className="error-text h-6">{errors[v.name] || ""}</p>
-              </div>
-             ))}
+              {inputs[0].step_1.map((v, i) => (
+                <div className="floating-label-group" key={i}>
+                  {v.input}
+                  <label htmlFor={v.name}>{v.label}</label>
+                  <p className="error-text h-6">{errors[v.name] || ""}</p>
+                </div>
+              ))}
               <NextSlide onClick={handleNextClick} setStep={setStep} disabled={!isStepValid} />
             </Step>
 
             {/* Step 2 */}
             <Step step={step} slide={2}>
-             {inputs[0].step_2.map((v, i)=>(
-              <div className="floating-label-group" key={i}>
-                {v.input}
-                {v.name !== "username" && <label htmlFor={v.name}>{v.label}</label>}
-                <p className="error-text h-6">{errors[v.name] || ""}</p>
-                {/* Username specific messages */}
-                {v.name === "username" && (
-                  <>
-                    {usernameStatus === "valid" && (
-                      <div className="text-xs text-green-400 mt-1">
-                        ✓ Username is available
+              {inputs[0].step_2.map((v, i) => (
+                <div className="floating-label-group" key={i}>
+                  {v.input}
+                  {v.name !== "username" && <label htmlFor={v.name}>{v.label}</label>}
+                  <p className="error-text h-6">{errors[v.name] || ""}</p>
+                  {/* Username specific messages */}
+                  {v.name === "username" && (
+                    <>
+                      {usernameStatus === "valid" && (
+                        <div className="text-xs text-green-400 mt-1">
+                          ✓ Username is available
+                        </div>
+                      )}
+                      <div className="text-xs text-slate-500 mt-1">
+                        • Must be between 3-15 characters • Only letters, numbers, and underscores • Must be unique
                       </div>
-                    )}
-                    <div className="text-xs text-slate-500 mt-1">
-                      • Must be between 3-15 characters • Only letters, numbers, and underscores • Must be unique
-                    </div>
-                  </>
-                )}
-              </div>
-             ))}
+                    </>
+                  )}
+                </div>
+              ))}
               <div className="floating-label-group">
                 <CountrySelect onSelectCountry={getLocation} />
                 <input type="hidden" name="country" value={country} />
@@ -578,69 +578,69 @@ export const Register = () => {
 
             {/* Step 3 */}
             <Step step={step} slide={3}>
-             {inputs[0].step_3.map((v, i)=>(
-              <div className="floating-label-group" key={i}>
-                {v.input}
-                <label htmlFor={v.name}>{v.label}</label>
-                <p className="error-text h-6">{errors[v.name] || ""}</p>
-              </div>
-             ))}
-              
-              <Agree id="terms" toThe={<Link href="/auth/T_&_C" className='!text-blue-500'>the Terms & Conditions.</Link>} agree={agreedTerms} setAgree={()=> setAgreedTerms(prev=> !prev)} />
-              < Agree id="privacy" toThe={<Link href={"/auth/privacy-policy"} className='!text-blue-500'>Privacy Policy</Link>} agree={agreedPrivacy} setAgree={()=> setAgreedPrivacy(prev=> !prev)} />
-              
+              {inputs[0].step_3.map((v, i) => (
+                <div className="floating-label-group" key={i}>
+                  {v.input}
+                  <label htmlFor={v.name}>{v.label}</label>
+                  <p className="error-text h-6">{errors[v.name] || ""}</p>
+                </div>
+              ))}
+
+              <Agree id="terms" toThe={<Link href="/auth/T_&_C" className='!text-blue-500'>the Terms & Conditions.</Link>} agree={agreedTerms} setAgree={() => setAgreedTerms(prev => !prev)} />
+              < Agree id="privacy" toThe={<Link href={"/auth/privacy-policy"} className='!text-blue-500'>Privacy Policy</Link>} agree={agreedPrivacy} setAgree={() => setAgreedPrivacy(prev => !prev)} />
+
               <NextSlide onClick={handleNextClick} setStep={setStep} disabled={!isStepValid} />
             </Step>
 
             {/* Step 4 - Secret Phrase */}
-         <Step step={step} slide={4}>
-            <div className="secret-phrase-container max-h-[60vh] overflow-y-auto">
-              <h3 className="text-center mb-4 !bg-gradient-to-r !from-blue-500 !to-purple-600 !bg-clip-text !text-transparent">Save Your Recovery Phrase</h3>
-              
-              <div className="phrase-grid">
-                {secretPhrase.map((word, index) => (
-                  <div className="phrase-item" key={index}>
-                    <span className="phrase-word">{word}</span>
-                  </div>
-                ))}
-              </div>
-              
-              <div className="phrase-warning">
-                <p>
-                  <span style={{ color: '#ff4d4d', fontSize: '16px' }}>⚠️ IMPORTANT</span><br />
-                  <span style={{ color: '#ff4d4d', fontWeight: 'bold' }}>Save Your Recovery Phrase</span><br />
-                  <span style={{ color: '#ffffff' }}>
-                    This phrase is the only way to recover your account. If you lose it, we cannot help you.
-                  </span><br />
-                  <span style={{ color: '#ffffff' }}>→ Keep it safe.</span><br />
-                  <span style={{ color: '#ffffff' }}>× Never share it with anyone.</span>
-                </p>
-              </div>
-              
-              <div className="phrase-actions">
-                <button type="button" onClick={generateNewPhrase} className="phrase-btn secondary">🔄 Generate</button>
-                <button type="button" onClick={copyToClipboard} className="phrase-btn secondary">{copied ? "✓ Copied!" : "📋 Copy"}</button>
-                <button type="button" onClick={downloadPhrase} className="phrase-btn secondary">📥 Download</button>
-              </div>
-              
-              <div className="saved-confirmation">
-                <label className="saved-checkbox">
-                  <input type="checkbox" checked={saved} onChange={() => setSaved(!saved)} />
-                  <span>I have saved my recovery phrase securely</span>
-                </label>
-              </div>
+            <Step step={step} slide={4}>
+              <div className="secret-phrase-container max-h-[60vh] overflow-y-auto">
+                <h3 className="text-center mb-4 !bg-gradient-to-r !from-blue-500 !to-purple-600 !bg-clip-text !text-transparent">Save Your Recovery Phrase</h3>
 
-              <button type="submit" className="btn flex items-center justify-center mx-auto !bg-gradient-to-r !from-blue-500 !to-purple-600" disabled={loading || !saved || !agreedTerms || !agreedPrivacy}>
-                {loading ? <p style={{color: "white"}} className="flex items-center justify-center gap-3 text-white"><BtnLoader /> Please wait...</p> : "Register" }
-              </button>
-            </div>
-          </Step>
+                <div className="phrase-grid">
+                  {secretPhrase.map((word, index) => (
+                    <div className="phrase-item" key={index}>
+                      <span className="phrase-word">{word}</span>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="phrase-warning">
+                  <p>
+                    <span style={{ color: '#ff4d4d', fontSize: '16px' }}>⚠️ IMPORTANT</span><br />
+                    <span style={{ color: '#ff4d4d', fontWeight: 'bold' }}>Save Your Recovery Phrase</span><br />
+                    <span style={{ color: '#ffffff' }}>
+                      This phrase is the only way to recover your account. If you lose it, we cannot help you.
+                    </span><br />
+                    <span style={{ color: '#ffffff' }}>→ Keep it safe.</span><br />
+                    <span style={{ color: '#ffffff' }}>× Never share it with anyone.</span>
+                  </p>
+                </div>
+
+                <div className="phrase-actions">
+                  <button type="button" onClick={generateNewPhrase} className="phrase-btn secondary">🔄 Generate</button>
+                  <button type="button" onClick={copyToClipboard} className="phrase-btn secondary">{copied ? "✓ Copied!" : "📋 Copy"}</button>
+                  <button type="button" onClick={downloadPhrase} className="phrase-btn secondary">📥 Download</button>
+                </div>
+
+                <div className="saved-confirmation">
+                  <label className="saved-checkbox">
+                    <input type="checkbox" checked={saved} onChange={() => setSaved(!saved)} />
+                    <span>I have saved my recovery phrase securely</span>
+                  </label>
+                </div>
+
+                <button type="submit" className="btn flex items-center justify-center mx-auto !bg-gradient-to-r !from-blue-500 !to-purple-600" disabled={loading || !saved || !agreedTerms || !agreedPrivacy}>
+                  {loading ? <p style={{ color: "white" }} className="flex items-center justify-center gap-3 text-white"><BtnLoader /> Please wait...</p> : "Register"}
+                </button>
+              </div>
+            </Step>
           </div>
 
-           {/* Login link is now outside the steps, visible on all of them */}
-           <p className="mt-4 text-center">
-                I already have an account <Link href="/auth/login" className="!text-blue-500">Login</Link>
-           </p>
+          {/* Login link is now outside the steps, visible on all of them */}
+          <p className="mt-4 text-center">
+            I already have an account <Link href="/auth/login" className="!text-blue-500">Login</Link>
+          </p>
 
         </form>
       </div>

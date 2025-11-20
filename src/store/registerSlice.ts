@@ -56,12 +56,12 @@ const initialState: RegisterState = {
 export const registernewUser = createAsyncThunk(
   "register/registernewUser",
   async (data) => {
-    console.log({data})
+    console.log({ data })
     try {
       // Use the URL from config to support both development and production
       let response = await axios.post(`${URL}/register`, data);
       return response.data;
-    } catch (err : any) {
+    } catch (err: any) {
       console.log(err.message);
       throw err.response.data.message;
     }
@@ -82,7 +82,7 @@ export const verifyemail = createAsyncThunk(
 
 export const registercomplete = createAsyncThunk(
   "register/registercomplete",
-  async (data : any) => {
+  async (data: any) => {
     try {
       let infomfomation;
       let link;
@@ -244,7 +244,7 @@ const registerSlice = createSlice({
       .addCase(registernewUser.fulfilled, (state, action) => {
         state.status = "succeeded";
         state.error = action.payload.message;
-        
+
         // Registration successful - DO NOT auto-login
         // User must log in manually after registration
         // Do not store tokens or set logedin to true
@@ -290,7 +290,7 @@ const registerSlice = createSlice({
             userID: action.payload.userId,
             refreshtoken: action.payload.token,
             accesstoken: action.payload.accessToken,
-            
+
             // Personal information
             firstname: action.payload.user?.firstname,
             lastname: action.payload.user?.lastname,
@@ -301,31 +301,31 @@ const registerSlice = createSlice({
             age: action.payload.user?.age,
             country: action.payload.user?.country,
             dob: action.payload.user?.dob,
-            
+
             // Financial information
             balance: action.payload.user?.balance,
             withdrawbalance: action.payload.user?.withdrawbalance,
             coinBalance: action.payload.user?.coinBalance,
             earnings: action.payload.user?.earnings,
             pending: action.payload.user?.pending,
-            
+
             // Creator information
             creator_verified: action.payload.user?.creator_verified,
             creator_portfolio: action.payload.user?.creator_portfolio,
             creator_portfolio_id: action.payload.user?.creator_portfolio_id,
             Creator_Application_status: action.payload.user?.Creator_Application_status,
-            
+
             // Social information
             followers: action.payload.user?.followers,
             following: action.payload.user?.following,
-            
+
             // VIP information
             isVip: action.payload.isVip || false,
             vipStartDate: action.payload.vipStartDate || null,
             vipEndDate: action.payload.vipEndDate || null,
             vipAutoRenewal: action.payload.user?.vipAutoRenewal,
             vipCelebrationViewed: action.payload.user?.vipCelebrationViewed,
-            
+
             // Account information
             active: action.payload.user?.active,
             admin: action.payload.user?.admin,
@@ -333,7 +333,7 @@ const registerSlice = createSlice({
             createdAt: action.payload.user?.createdAt,
             updatedAt: action.payload.user?.updatedAt
           };
-          
+
           localStorage.setItem("login", JSON.stringify(userDataToStore));
           console.log("✅ [Redux] All user data saved to localStorage:", userDataToStore);
         } catch (error) {
