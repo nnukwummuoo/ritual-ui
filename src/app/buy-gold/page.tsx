@@ -8,7 +8,7 @@ import { useSelector } from "react-redux";
 import { toast } from "material-react-toastify";
 import { golds } from "@/data/intresttypes";
 import { createWeb3Payment, checkWeb3PaymentStatus, cancelWeb3Payment, verifyTransactionHash } from "@/api/web3payment";
-import {RootState} from "@/store/store"
+import { RootState } from "@/store/store"
 import { Copy, Check } from "lucide-react";
 
 // Icons for tags
@@ -21,7 +21,7 @@ const tagIcons: Record<string, React.ReactNode> = {
 };
 
 const Topup: React.FC = () => {
-  const [currencyValue, setCurrencyValue] = useState<number>(0);
+  const [selectedPackId, setSelectedPackId] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
   const [paymentMethod] = useState<'web3'>('web3');
   const [web3Payment, setWeb3Payment] = useState<any>(null);
@@ -43,7 +43,7 @@ const Topup: React.FC = () => {
           const payment = JSON.parse(savedPayment);
           const now = new Date().getTime();
           const expiryTime = new Date(payment.expiresAt).getTime();
-          
+
           if (now < expiryTime) {
             // Payment is still valid
             setWeb3Payment(payment);
@@ -78,15 +78,15 @@ const Topup: React.FC = () => {
   // Countdown timer effect
   useEffect(() => {
     let interval: NodeJS.Timeout;
-    
+
     if (web3Payment?.expiresAt && timeLeft > 0) {
       interval = setInterval(() => {
         const now = new Date().getTime();
         const expiryTime = new Date(web3Payment.expiresAt).getTime();
         const remaining = Math.max(0, Math.floor((expiryTime - now) / 1000));
-        
+
         setTimeLeft(remaining);
-        
+
         if (remaining === 0) {
           // Payment expired
           setWeb3Payment(null);
@@ -96,7 +96,7 @@ const Topup: React.FC = () => {
         }
       }, 1000);
     }
-    
+
     return () => {
       if (interval) clearInterval(interval);
     };
@@ -107,7 +107,7 @@ const Topup: React.FC = () => {
       toast.error("Please log in to purchase gold", { autoClose: 2000 });
       return;
     }
-    if (!currencyValue) {
+    if (!selectedPackId) {
       toast.error("Please select a gold pack", { autoClose: 2000 });
       return;
     }
@@ -117,12 +117,12 @@ const Topup: React.FC = () => {
     }
     try {
       setLoading(true);
-      const selectedGold = golds.find((gold) => Number(gold.value) === currencyValue);
+      const selectedGold = golds.find((gold) => gold.id === selectedPackId);
       const amount = Number((selectedGold?.amount || "0").replace(/[^0-9.]/g, ""));
-      
+
       console.log("Selected gold pack:", selectedGold);
       console.log("Amount to pay:", amount);
-      
+
       if (isNaN(amount) || amount <= 0) {
         toast.error("Invalid gold pack amount", { autoClose: 2000 });
         return;
@@ -132,17 +132,17 @@ const Topup: React.FC = () => {
       const res = await createWeb3Payment({
         amount,
         userId,
-        order_description: `Gold Pack Purchase: ${currencyValue} Gold`
+        order_description: `Gold Pack Purchase: ${selectedGold?.value} Gold`
       });
-      
+
       setWeb3Payment(res);
-      
+
       // Initialize countdown timer
       const now = new Date().getTime();
       const expiryTime = new Date(res.expiresAt).getTime();
       const remaining = Math.max(0, Math.floor((expiryTime - now) / 1000));
       setTimeLeft(remaining);
-      
+
       toast.success("Web3 payment created! Send USDT and paste your transaction hash.", { autoClose: 5000 });
     } catch (error) {
       console.error("Payment error details:", error);
@@ -156,21 +156,21 @@ const Topup: React.FC = () => {
     if (!web3Payment?.orderId) {
       return;
     }
-    
+
     console.log(`🔍 [FRONTEND] Starting status check for order ID: ${web3Payment.orderId}`);
     console.log(`🔍 [FRONTEND] Current payment data:`, web3Payment);
-    
+
     try {
       setCheckingStatus(true);
       console.log(`📡 [FRONTEND] Calling API: checkWeb3PaymentStatus(${web3Payment.orderId})`);
-      
+
       const status = await checkWeb3PaymentStatus(web3Payment.orderId);
-      
-     
+
+
       if (status.status === 'confirmed') {
         toast.success("Payment confirmed! Your gold has been added to your account.", { autoClose: 5000 });
         setWeb3Payment(null);
-        setCurrencyValue(0);
+        setSelectedPackId("");
         setTxHash("");
         setTimeLeft(0);
         localStorage.removeItem('web3_payment');
@@ -188,13 +188,13 @@ const Topup: React.FC = () => {
 
   const cancelTransaction = async () => {
     if (!web3Payment?.orderId) return;
-    
+
     try {
       setLoading(true);
       await cancelWeb3Payment(web3Payment.orderId);
       toast.success("Transaction cancelled successfully", { autoClose: 3000 });
       setWeb3Payment(null);
-      setCurrencyValue(0);
+      setSelectedPackId("");
       setTxHash("");
       setTimeLeft(0);
       localStorage.removeItem('web3_payment');
@@ -231,20 +231,20 @@ const Topup: React.FC = () => {
       toast.error("Please enter your transaction hash", { autoClose: 2000 });
       return;
     }
-    
+
     try {
       setVerifyingTx(true);
       console.log(`🔍 [FRONTEND] Verifying transaction hash: ${txHash}`);
-      
+
       const result = await verifyTransactionHash(web3Payment.orderId, txHash.trim());
-      
+
       console.log(`✅ [FRONTEND] Transaction verified:`, result);
-      
+
       if (result.status === 'confirmed') {
         toast.success("Payment confirmed! Your gold has been added to your account.", { autoClose: 5000 });
         setWeb3Payment(null);
         setTxHash("");
-        setCurrencyValue(0);
+        setSelectedPackId("");
         setTimeLeft(0);
         localStorage.removeItem('web3_payment');
       } else {
@@ -260,7 +260,7 @@ const Topup: React.FC = () => {
   };
 
   // Table data from golds array
-  const tableRows = golds.filter((gold) => gold.tag !== 'Test Pack').map((gold) => (
+  const tableRows = golds.map((gold) => (
     <tr key={gold.value} className="border-b border-[#323544] last:border-b-0">
       <td className="py-2 px-2 text-center text-sm sm:text-base border-r border-[#323544] whitespace-nowrap">
         {gold.value}
@@ -334,14 +334,14 @@ const Topup: React.FC = () => {
           <select
             required
             className="block bg-[#23243c] text-white rounded-lg px-3 py-2 sm:px-4 sm:py-3 w-full appearance-none border border-[#23243c] focus:outline-none focus:ring-2 focus:ring-[#FFD682] font-medium text-sm sm:text-base"
-            value={currencyValue || ""}
-            onChange={(e) => setCurrencyValue(Number(e.target.value))}
+            value={selectedPackId}
+            onChange={(e) => setSelectedPackId(e.target.value)}
           >
             <option value="" disabled>
               Choose Gold Pack
             </option>
-            {golds.filter((value) => value.tag !== 'Test Pack').map((value) => (
-              <option key={value.value} value={value.value}>
+            {golds.map((value) => (
+              <option key={value.id} value={value.id}>
                 {value.value} Gold / ${value.amount.replace(/[^0-9.]/g, "")}
               </option>
             ))}
@@ -349,11 +349,10 @@ const Topup: React.FC = () => {
 
           {!web3Payment ? (
             <button
-              className={`w-full h-10 sm:h-12 rounded-lg font-bold text-base sm:text-lg ${
-                loading
-                  ? "bg-[#FFD682]/60 text-[#b6b7c7] cursor-not-allowed"
-                  : "bg-[#FFD682] text-[#15182a] hover:bg-[#ffe7ac] active:bg-[#ffd682]"
-              } shadow transition-all`}
+              className={`w-full h-10 sm:h-12 rounded-lg font-bold text-base sm:text-lg ${loading
+                ? "bg-[#FFD682]/60 text-[#b6b7c7] cursor-not-allowed"
+                : "bg-[#FFD682] text-[#15182a] hover:bg-[#ffe7ac] active:bg-[#ffd682]"
+                } shadow transition-all`}
               onClick={pay}
               disabled={loading}
             >
@@ -389,7 +388,7 @@ const Topup: React.FC = () => {
                   </div>
                 )}
               </div>
-              
+
               {/* Payment Summary */}
               <div className="bg-[#1a1c2f] rounded-lg p-4 mb-4">
                 <div className="grid grid-cols-2 gap-4 text-sm">

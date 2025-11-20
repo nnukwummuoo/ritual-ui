@@ -879,7 +879,7 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, isOpen, onClose
                         ${((user.earnings || 0) * 0.04).toFixed(2)}
                       </p>
                     </div>
-                    <div>
+                    {/* <div>
                       <label className="text-gray-300 text-sm">Coin Balance</label>
                       {isEditing ? (
                         <input
@@ -891,7 +891,7 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, isOpen, onClose
                       ) : (
                         <p className="text-white">{user.coinBalance || 0} coins</p>
                       )}
-                    </div>
+                    </div> */}
                     
                     {/* Withdrawal Logic - Only based on earnings */}
                     {(() => {

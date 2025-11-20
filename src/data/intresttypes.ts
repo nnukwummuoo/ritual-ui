@@ -74,35 +74,46 @@ interface golds {
 //     }
 // ]
 export const golds = [
- 
   {
+    id: "pack_1000",
     amount: "$65.99",
     value: "1000",
     price: `${1000 + 37}`,
     tag: "Best Value",
   },
   {
+    id: "pack_400",
     amount: "$35.99",
     value: "400",
     price: `${400 + 10}`,
     tag: "Most Popular",
   },
   {
+    id: "pack_200",
     amount: "$19.99",
     value: "200",
     price: `${200 + 5}`,
     tag: "Hot Choice",
   },
   {
+    id: "pack_100",
     amount: "$9.99",
     value: "100",
     price: `${100}`,
     tag: "Casual Fan",
   },
   {
+    id: "pack_50",
     amount: "$5.99",
     value: "50",
     price: `${50}`,
+  },
+  {
+    id: "pack_test_100",
+    amount: "$1.00",
+    value: "99",
+    price: "99",
+    tag: "Test Pack",
   },
 ];
 

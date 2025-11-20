@@ -31,7 +31,7 @@ const FilterModal: React.FC<FilterModalProps> = ({
   filteredCount,
   initialFilters,
 }) => {
-  const [sortBy, setSortBy] = useState(initialFilters?.sortBy || "New Models");
+  const [sortBy, setSortBy] = useState(initialFilters?.sortBy || "");
   const [gender, setGender] = useState<string | null>(initialFilters?.gender || null);
   const [region, setRegion] = useState<string | null>(initialFilters?.region || null);
   const [ageMin, setAgeMin] = useState<number | null>(initialFilters?.ageMin || null);
@@ -53,7 +53,7 @@ const FilterModal: React.FC<FilterModalProps> = ({
   };
 
   const handleClearAll = () => {
-    setSortBy("New Models");
+    setSortBy("");
     setGender(null);
     setRegion(null);
     setAgeMin(null);
@@ -81,7 +81,7 @@ const FilterModal: React.FC<FilterModalProps> = ({
   ];
 
   const sortOptions = [
-    { label: "New Models", value: "New Models" },
+    { label: "New Creators", value: "New Creators" },
     { label: "Most Views", value: "Most Views" },
     { label: "Most Request", value: "Most Request" },
   ];
@@ -138,7 +138,14 @@ const FilterModal: React.FC<FilterModalProps> = ({
                       name="sortBy"
                       value={option.value}
                       checked={sortBy === option.value}
-                      onChange={(e) => setSortBy(e.target.value)}
+                      onClick={() => {
+                        if (sortBy === option.value) {
+                          setSortBy("");
+                        } else {
+                          setSortBy(option.value);
+                        }
+                      }}
+                      onChange={() => { }} // Handled by onClick for toggle behavior
                       className="w-4 h-4 text-blue-600"
                     />
                     <span className="text-gray-200">{option.label}</span>
@@ -266,11 +273,11 @@ const FilterModal: React.FC<FilterModalProps> = ({
         </div>
 
         {/* Search Result Summary */}
-        <div className="px-4 py-2 bg-gray-800 border-t border-gray-700">
+        {/* <div className="px-4 py-2 bg-gray-800 border-t border-gray-700">
           <p className="text-sm text-gray-300">
             Search result: {filteredCount} Live out of {totalCreators}
           </p>
-        </div>
+        </div> */}
 
         {/* Action Buttons */}
         <div className="px-4 py-3 bg-gray-800 border-t border-gray-700 flex gap-3">
@@ -284,7 +291,7 @@ const FilterModal: React.FC<FilterModalProps> = ({
             onClick={handleShowModels}
             className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors"
           >
-            SHOW MODELS
+            SHOW CREATORS
           </button>
         </div>
       </div>

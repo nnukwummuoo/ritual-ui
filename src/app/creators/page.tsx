@@ -69,14 +69,6 @@ export default function CreatorPage() {
     { label: "Fan date", value: "fan date" },
   ];
 
-  const regionButtonData = [
-    { label: "All Regions", value: "All" },
-    { label: "Asia", value: "Asia" },
-    { label: "Europe", value: "Europe" },
-    { label: "Africa", value: "Africa" },
-    { label: "Americas", value: "Americas" },
-    { label: "Oceania", value: "Oceania" },
-  ];
 
   const toggleModal = () => setShowCountries((prev) => !prev);
   const handleCategorybutton = (value: string) => {
