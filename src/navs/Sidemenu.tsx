@@ -19,7 +19,7 @@ const Sidemenu = () => {
   // 🔒 CRITICAL: This component ALWAYS uses current user data
   // It is NEVER affected by viewing other users' profiles
   // The side menu should always show the current logged-in user's information
-  
+
   const [minimize, setMinimize] = useState(false);
   const userId = useUserId();
   const router = useRouter();
@@ -30,20 +30,20 @@ const Sidemenu = () => {
   // ALWAYS use current user profile from Redux (NEVER viewing profile)
   // This ensures side menu is NEVER affected by viewing other users' profiles
   const profile = useSelector((state: RootState) => state.profile);
-  
+
   // Get current user ID to ensure we're using the right profile
   const reduxUserId = useSelector((state: RootState) => state.register.userID);
-  
+
   // Fallback to localStorage if Redux doesn't have the user ID
   const [currentUserId, setCurrentUserId] = React.useState(reduxUserId || '');
-  
+
   // Get VIP status from VIP store (more reliable)
   const vipStatus = useSelector((state: RootState) => state.vip.vipStatus);
   const isVip = vipStatus?.isVip || false;
   const vipStartDate = vipStatus?.vipStartDate;
   const vipEndDate = vipStatus?.vipEndDate;
-  
-  
+
+
   // Get user ID from localStorage if Redux doesn't have it
   React.useEffect(() => {
     if (!reduxUserId && typeof window !== 'undefined') {
@@ -53,7 +53,7 @@ const Sidemenu = () => {
           const data = JSON.parse(raw);
           if (data?.userID) {
             setCurrentUserId(data.userID);
-       
+
           }
         }
       } catch (error) {
@@ -65,7 +65,7 @@ const Sidemenu = () => {
   }, [reduxUserId]);
 
   // VIP status is now loaded from login data in register state
-  
+
   // Click outside to close menu functionality
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -82,13 +82,13 @@ const Sidemenu = () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [open, handleMenubar]);
-  
+
   // 🔒 CRITICAL: Ensure current user profile is always loaded
   // This prevents the side menu from showing "User" fallback
   // MUST be called before any early returns to maintain hook order
   React.useEffect(() => {
     if (currentUserId && (!profile.firstname || profile.status === "idle")) {
-      
+
       // Get token from localStorage or Redux
       let token: string | undefined;
       try {
@@ -100,7 +100,7 @@ const Sidemenu = () => {
       } catch (error) {
         console.error("Error getting token for side menu:", error);
       }
-      
+
       if (token) {
         dispatch(getprofile({ userid: currentUserId, token }));
         // Also check VIP status
@@ -113,10 +113,10 @@ const Sidemenu = () => {
   React.useEffect(() => {
     const isEdge = navigator.userAgent.includes('Edg');
     const isCurrentUserProfile = profile.userId === currentUserId;
-    
+
     if (isEdge && currentUserId && (!profile.firstname || !isCurrentUserProfile)) {
-    
-      
+
+
       // Force reload profile for Edge browser
       let token: string | undefined;
       try {
@@ -128,7 +128,7 @@ const Sidemenu = () => {
       } catch (error) {
         console.error("Error getting token for Edge fallback:", error);
       }
-      
+
       if (token) {
         // Add a small delay for Edge browser
         setTimeout(() => {
@@ -137,7 +137,7 @@ const Sidemenu = () => {
       }
     }
   }, [currentUserId, profile.firstname, profile.userId, dispatch]);
-  
+
   // ⛔ Don't render until current user profile exists and has actual data
   if (!profile || Object.keys(profile).length === 0 || !profile.firstname) {
     return null; // nothing until current user profile is ready with real data
@@ -147,7 +147,7 @@ const Sidemenu = () => {
   // These values are ALWAYS from the current logged-in user, never from viewing profiles
   // Only use profile data if it belongs to the current user
   const isCurrentUserProfile = profile.userId === currentUserId;
-  
+
 
   // Enhanced fallback mechanism for cross-browser compatibility
   let firstname = "User";
@@ -155,7 +155,7 @@ const Sidemenu = () => {
   let gold_balance = 0;
   let pending_balance = 0;
   let admin = false;
-  
+
   if (isCurrentUserProfile && profile?.firstname) {
     firstname = profile.firstname;
     lastname = profile.lastname || "";
@@ -190,58 +190,58 @@ const Sidemenu = () => {
 
   // Debug logging to track what's happening
 
-   
 
 
 
 
 
 
-//creator button dynmic condition
+
+  //creator button dynmic condition
 
 
   // MODEL BUTTON LOGIC
- // MODEL BUTTON LOGIC
+  // MODEL BUTTON LOGIC
 
 
 
-//  url={`/creators/${profile?.creator_portfolio_id||profile?.creator_portfolio_id}`}
+  //  url={`/creators/${profile?.creator_portfolio_id||profile?.creator_portfolio_id}`}
 
   // MODEL BUTTON LOGIC - ALWAYS uses current user's creator data
   // This ensures the creator button reflects the current user's creator status
   const getCreatorButton = () => {
     // 1️⃣ Current user already has a creator → go to their creator profile
     if (profile.creator_portfolio_id) {
-    return (
-      <MenuIconImg
-        src="/icons/icons8-creator.png"
-        name="My Portfolio"
-       url={`/creators/${profile.creator_portfolio_id}`}
-      // url="/creator/create"
-      />
-    );
-  }
+      return (
+        <MenuIconImg
+          src="/icons/icons8-creator.png"
+          name="My Portfolio"
+          url={`/creators/${profile.creator_portfolio_id}`}
+        // url="/creator/create"
+        />
+      );
+    }
 
     // 2️⃣ Current user applied/verified but hasn't created a creator yet → go to create creator
     if (profile.creator_verified) {
-    return (
-      <MenuIconImg
-        src="/icons/icons8-plus.png" 
-        name="Create Portfolio"
-        url="/creator/create"
-      />
-    );
-  }
+      return (
+        <MenuIconImg
+          src="/icons/icons8-plus.png"
+          name="Create Portfolio"
+          url="/creator/create"
+        />
+      );
+    }
 
     // 3️⃣ Default → current user hasn't applied yet → show Become a creator
     return (
-    <MenuIconImg
-      src="/icons/icons-become-a-creator.png"
-      name="Become a creator"
-      url="/be-a-creator"
-    />
-  );
-};
+      <MenuIconImg
+        src="/icons/icons-become-a-creator.png"
+        name="Become a creator"
+        url="/be-a-creator"
+      />
+    );
+  };
 
 
 
@@ -253,7 +253,7 @@ const Sidemenu = () => {
           onClick={handleMenubar}
           className={`${
             open ? "show" : "hide"
-          } sm:block menu-width origin-top-right mr mt pt px-2 py-4 h-fit bg-gray-900 text-white fixed rounded-l-lg rounded-r-2xl z-[100]`}
+            } sm:block menu-width origin-top-right mr mt pt px-2 py-4 h-fit bg-gray-900 text-white fixed rounded-l-lg rounded-r-2xl z-[100]`}
         >
           <div className="absolute -top-3 right-0 w-fit cls-btn">
             <OpenMobileMenuBtn />
@@ -263,7 +263,7 @@ const Sidemenu = () => {
             <div
               className={`${
                 minimize ? "minimize" : "maximize"
-              } mt-4 transition-all duration-500 flex flex-col items-start ml-1 mr-1 p-2 divider relative overflow-hidden`}
+                } mt-4 transition-all duration-500 flex flex-col items-start ml-1 mr-1 p-2 divider relative overflow-hidden`}
             >
               <button
                 onClick={() => setMinimize(!minimize)}
@@ -299,7 +299,7 @@ const Sidemenu = () => {
                   <FaCoins /> <span>Get More Golds</span>
                 </button>
 
-                <button 
+                <button
                   className="cstm-boder w-full rounded-lg py-3 text-sm font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent bg-inherit flex gap-2 items-center justify-center transition-transform duration-300 hover:scale-105"
                   onClick={() => router.push("/vip")}
                 >
@@ -349,7 +349,20 @@ const Sidemenu = () => {
               />
 
               <div
-                onClick={handleLogout}
+                onClick={async () => {
+                  try {
+                    localStorage.clear();
+                    // Attempt the logout
+                    await handleLogout();
+                  } catch (error) {
+                    console.error(error);
+                  } finally {
+                    // This runs 100% of the time, successful logout or not
+                    if (typeof window !== 'undefined') {
+                      window.location.reload();
+                    }
+                  }
+                }}
                 className="flex flex-col items-center group cursor-pointer"
               >
                 <img
