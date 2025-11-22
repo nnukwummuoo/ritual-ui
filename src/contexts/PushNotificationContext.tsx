@@ -44,11 +44,11 @@ export const PushNotificationProvider: React.FC<PushNotificationProviderProps> =
 
   const reduxUserid = useSelector((state: RootState) => state.register.userID);
   const reduxIsLoggedIn = useSelector((state: RootState) => state.register.logedin);
-  
+
   // Fallback to localStorage if Redux state is empty (hydration issue)
   const [localUserid, setLocalUserid] = useState<string>('');
   const [localIsLoggedIn, setLocalIsLoggedIn] = useState<boolean>(false);
-  
+
   // Use Redux data if available, otherwise use localStorage
   const userid = reduxUserid || localUserid;
   const isLoggedIn = reduxIsLoggedIn || localIsLoggedIn;
@@ -99,14 +99,29 @@ export const PushNotificationProvider: React.FC<PushNotificationProviderProps> =
           const currentPermission = await pushNotificationService.requestPermission();
           setPermission(currentPermission);
 
-          // If permission is granted, automatically subscribe
-          if (currentPermission === 'granted' && userid) {
+          // CRITICAL FIX: Check user's saved preference before auto-subscribing
+          const userPreference = localStorage.getItem(`push_notifications_${userid}`);
+          const userDisabledNotifications = userPreference === 'disabled';
+
+          // Only auto-subscribe if permission granted AND user hasn't disabled AND userid exists
+          if (currentPermission === 'granted' && userid && !userDisabledNotifications) {
             const subscribed = await pushNotificationService.subscribe(userid);
             setIsSubscribed(subscribed);
+
+            // Save preference if auto-subscribed successfully
+            if (subscribed) {
+              localStorage.setItem(`push_notifications_${userid}`, 'enabled');
+            }
           } else {
             // Check if already subscribed
             const subscribed = await pushNotificationService.isSubscribed();
             setIsSubscribed(subscribed);
+
+            // If user disabled but is somehow still subscribed, unsubscribe them
+            if (subscribed && userDisabledNotifications) {
+              await pushNotificationService.unsubscribe(userid);
+              setIsSubscribed(false);
+            }
           }
         }
       } catch (err) {
@@ -135,10 +150,14 @@ export const PushNotificationProvider: React.FC<PushNotificationProviderProps> =
       setError(null);
 
       const success = await pushNotificationService.subscribe(userid);
-      
+
       if (success) {
         setIsSubscribed(true);
         setPermission('granted');
+
+        // Save user's preference to localStorage
+        localStorage.setItem(`push_notifications_${userid}`, 'enabled');
+
         return true;
       } else {
         setError('Failed to subscribe to push notifications');
@@ -165,9 +184,13 @@ export const PushNotificationProvider: React.FC<PushNotificationProviderProps> =
       setError(null);
 
       const success = await pushNotificationService.unsubscribe(userid);
-      
+
       if (success) {
         setIsSubscribed(false);
+
+        // Save user's preference to localStorage        
+        localStorage.setItem(`push_notifications_${userid}`, 'disabled');
+
         return true;
       } else {
         setError('Failed to unsubscribe from push notifications');

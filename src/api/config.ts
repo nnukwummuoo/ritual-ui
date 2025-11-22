@@ -12,13 +12,21 @@ export const URL = (() => {
       ? "http://localhost:3100"
       : process.env.NEXT_PUBLIC_API || "";
   }
-  
+
   // Client-side - check environment
   if (process.env.NODE_ENV === "development") {
-    // Development - use localhost
+    // Auto-detect network vs localhost access
+    const hostname = window.location.hostname;
+
+    // If accessing via network IP, use network backend
+    if (hostname === "10.216.161.157") {
+      return "http://10.216.161.157:3100";
+    }
+
+    // Otherwise use localhost backend
     return "http://localhost:3100";
   }
-  
+
   // Production - use production backend
   return process.env.NEXT_PUBLIC_API || "";
 })();

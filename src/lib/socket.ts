@@ -9,20 +9,20 @@ const attachSocketEvents = (socketInstance: ReturnType<typeof io>) => {
   socketInstance.on("connect", () => {
     // Connected to server
   });
-  
+
   socketInstance.on("disconnect", () => {
     // Disconnected from server
   });
-  
+
   socketInstance.on("reconnect", () => {
     // Reconnected to server
   });
-  
+
   socketInstance.on("reconnect_error", (err) => {
     console.error("❌ [Socket] Reconnection error:", err.message);
     console.error("❌ [Socket] Error details:", err);
   });
-  
+
   socketInstance.on("reconnect_failed", () => {
     console.error("❌ [Socket] Reconnection failed - giving up");
   });
@@ -110,22 +110,22 @@ export const removeTypingListeners = () => {
  */
 export const getSocket = () => {
   if (typeof window === "undefined") return null;
-  
+
   // If already connecting, return existing socket or null
   if (isConnecting && socket) {
     return socket;
   }
-  
+
   if (!socket) {
     isConnecting = true;
     try {
       // Smart configuration: use local server if available, fallback to production
       let socketUrl: string;
-      
+
       // Check if accessing via network IP first
-      if (window.location.hostname === '10.245.95.157') {
+      if (window.location.hostname === '10.216.161.157') {
         // Network access - use network backend (backend listens on 0.0.0.0)
-        socketUrl = "http://10.245.95.157:3100";
+      socketUrl = "http://10.216.161.157:3100"
       } else if (process.env.NODE_ENV === "development") {
         // Development: always use local server
         socketUrl = "http://localhost:3100";
@@ -142,7 +142,7 @@ export const getSocket = () => {
           socketUrl = process.env.NEXT_PUBLIC_API || "";
         }
       }
-      
+
       socket = io(socketUrl, {
         withCredentials: true,
         autoConnect: true,
@@ -156,30 +156,30 @@ export const getSocket = () => {
         upgrade: true, // Allow transport upgrades
         rememberUpgrade: true, // Remember successful transport
       });
-      
+
       // Attach event listeners
       attachSocketEvents(socket);
-      
+
       // Reset connecting flag when connected
       socket.on("connect", () => {
         isConnecting = false;
       });
-      
+
       // Handle connection errors with fallback
       socket.on("connect_error", (err) => {
         console.error("❌ [Socket] Connection error:", err.message);
         console.error("❌ [Socket] Error details:", err);
         console.error("❌ [Socket] Attempted URL:", socketUrl);
-        
+
         // If connecting to network server failed, try localhost as fallback
         if (socketUrl === "http://10.245.95.157:3100") {
           console.log("🔄 [Socket] Network server not available, trying localhost...");
-          
+
           // Disconnect current socket
           if (socket) {
             socket.disconnect();
           }
-          
+
           // Create new socket with localhost URL
           socket = io("http://localhost:3100", {
             withCredentials: true,
@@ -189,23 +189,23 @@ export const getSocket = () => {
             reconnectionDelay: 1000,
             transports: ["websocket", "polling"]
           });
-          
+
           // Re-attach event listeners
           attachSocketEvents(socket);
         }
         // If connecting to local server failed and we're in production build on localhost,
         // try connecting to production server as fallback
-        else if (socketUrl === "http://localhost:3100" && 
-            process.env.NODE_ENV === "production" && 
-            (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
-          
+        else if (socketUrl === "http://localhost:3100" &&
+          process.env.NODE_ENV === "production" &&
+          (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+
           console.log("🔄 [Socket] Local server not available, trying production server...");
-          
+
           // Disconnect current socket
           if (socket) {
             socket.disconnect();
           }
-          
+
           // Create new socket with production URL
           socket = io(process.env.NEXT_PUBLIC_API || "", {
             withCredentials: true,
@@ -215,19 +215,19 @@ export const getSocket = () => {
             reconnectionDelay: 1000,
             transports: ["websocket", "polling"]
           });
-          
+
           // Re-attach event listeners
           attachSocketEvents(socket);
         }
       });
-      
+
     } catch (error) {
       console.error("[Socket] Error creating socket connection:", error);
       isConnecting = false;
       return null;
     }
   }
-  
+
   return socket;
 };
 

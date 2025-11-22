@@ -108,13 +108,6 @@ export const golds = [
     value: "50",
     price: `${50}`,
   },
-  {
-    id: "pack_test_100",
-    amount: "$1.00",
-    value: "99",
-    price: "99",
-    tag: "Test Pack",
-  },
 ];
 
 export const PAY_API =
