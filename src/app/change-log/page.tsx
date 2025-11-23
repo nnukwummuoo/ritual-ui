@@ -9,10 +9,10 @@ const changelog = [
     updates: [
       { type: "current", text: "Fan Call - Connect 1-on-1 via secure video call. Creators earn per minute, fans get real-time connection." },
       { type: "current", text: "Fan Meet - Meet verified fans in person with transport fare (pamasahe) paid in advance. Safe, secure, and scheduled." },
-      { type: "current", text: "Fan Date - Set up fun, paid dates. Creators set their availability, fans request, everyone wins." },
-      { type: "current", text: "VIP Accounts - Premium fan features like a crown badge, priority support, and extra attention from creators." },
-      { type: "current", text: "Messaging - Private in-app chat lets fans and creators talk freely — no charges. Fans can also send gold gifts during chats to show appreciation or get extra attention." },
-      { type: "current", text: "Gold Wallet - Use gold coins to pay for anything: shows, send gifts, dates. Fans buy gold, creators earn it." },
+      { type: "current", text: "Fan Date - Set up fun, exclusive dates. Creators set their availability, fans request and cover all cost, everyone wins." },
+      { type: "current", text: "VIP Accounts - Premium fan features like a lion badge, priority support, and extra attention from creators." },
+      { type: "current", text: "Messaging - Private in-app chat lets fans and creators talk freely — no charges." },
+      { type: "current", text: "Gold Wallet - Use gold coins to pay for anything: calls, dates. Fans buy gold, creators earn it." },
     ],
   },
   {
@@ -21,7 +21,7 @@ const changelog = [
     updates: [
       { type: "coming", text: "Smart Discovery - We're adding AI-powered recommendations to help fans find their ideal creator instantly." },
       { type: "coming", text: "Creator Rankings - Top-performing and most-loved creators will appear on trending pages for even more visibility." },
-      { type: "coming", text: "Ad Revenue Sharing - As Mmeko grows, we'll share part of our ad revenue with verified, active creators — like YouTube and Facerequest do. The more content you post and fans you attract, the more you earn — even passively." },
+      { type: "coming", text: "Ad Revenue Sharing - As Mmeko grows, we'll share part of our ad revenue with verified, active creators — like YouTube and Facebook do. The more content you post and fans you attract, the more you earn — even passively." },
     ],
   },
 ];
