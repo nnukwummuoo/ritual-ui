@@ -45,12 +45,12 @@ const UnauthenticatedPromoModal: React.FC = () => {
                 <div className="pr-8">
                     {/* Headline */}
                     <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 mb-4 leading-tight">
-                        Talk to real Filipina VIP creators
+                        Talk privately with Filipina VIP creators
                     </h2>
 
                     {/* Sub-headline */}
                     <p className="text-white text-lg mb-8 leading-relaxed">
-                        Get <span className="font-bold text-green-400">₹400 FREE</span> + <span className="font-bold text-purple-400">VIP status</span> for your first fan call — limited to the first <span className="font-bold text-yellow-400">50 fans</span>.
+                        Get <span className="font-bold text-green-400">FREE CREDIT</span> + <span className="font-bold text-purple-400">EXCLUSIVE ACCESS</span> for your first fan call — limited to the first <span className="font-bold text-yellow-400">50 fans</span>.
                     </p>
 
                     {/* CTA Button */}
@@ -58,7 +58,7 @@ const UnauthenticatedPromoModal: React.FC = () => {
                         onClick={handleClaimOffer}
                         className="w-full bg-gradient-to-r from-blue-500 via-purple-600 to-pink-600 text-white px-6 py-4 rounded-xl hover:from-blue-600 hover:via-purple-700 hover:to-pink-700 transition-all duration-300 font-bold text-lg shadow-lg hover:shadow-purple-500/50 transform hover:scale-105"
                     >
-                        Claim Free ₹400
+                        Start My VIP Call
                     </button>
 
                     {/* Optional: Small text at bottom */}
