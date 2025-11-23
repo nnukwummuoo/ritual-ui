@@ -8,6 +8,7 @@ import Navbar from "@/components/navbar";
 import BottomNavBar from "@/components/bottom-navbar";
 import ShouldRenderPopUp from "@/components/ShouldRenderPopUp";
 import CreatorCards from "@/components/home/CreatorCards";
+import UnauthenticatedPromoModal from "@/components/UnauthenticatedPromoModal";
 import { FaSignInAlt } from "react-icons/fa";
 
 interface ConditionalLayoutProps {
@@ -155,6 +156,9 @@ export default function ConditionalLayout({ children, isAuthenticated }: Conditi
           <FaSignInAlt size={18} className="text-gray-900" />
         </button>
       )}
+
+      {/* Promo Modal - Only shown on home route for unauthenticated users */}
+      {!isAuthenticated && isHomeRoute && <UnauthenticatedPromoModal />}
 
       <div className={`flex-1 flex flex-col overflow-hidden transition-all duration-300 min-w-0 min-h-0 ${mounted && !showNavbar ? 'mt-0' : 'md:mt-0 mt-12'}`}>
         <div
