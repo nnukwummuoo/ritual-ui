@@ -50,7 +50,7 @@ const UnauthenticatedPromoModal: React.FC = () => {
 
                     {/* Sub-headline */}
                     <p className="text-white text-lg mb-8 leading-relaxed">
-                        <span className="font-bold text-green-400">NO PAYMENT,</span>  <span className="font-bold text-purple-400">NO CATCH</span>—it’s always free to chat. <span className="font-bold text-yellow-400">You’re welcome anytime</span>.
+                        <span className="font-bold text-green-400">NO PAYMENT,</span>  <span className="font-bold text-purple-400">NO CATCH</span>  it’s always free to chat. <span className="font-bold text-yellow-400">You’re welcome anytime</span>.
                     </p>
 
                     {/* CTA Button */}
@@ -63,7 +63,7 @@ const UnauthenticatedPromoModal: React.FC = () => {
 
                     {/* Optional: Small text at bottom */}
                     <p className="text-gray-400 text-xs mt-4 text-center">
-                        Limited time offer • New users only
+                        Always free  • No payment ever
                     </p>
                 </div>
             </div>
