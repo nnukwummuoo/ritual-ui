@@ -50,7 +50,7 @@ const UnauthenticatedPromoModal: React.FC = () => {
 
                     {/* Sub-headline */}
                     <p className="text-white text-lg mb-8 leading-relaxed">
-                        Get <span className="font-bold text-green-400">FREE CREDIT</span> + <span className="font-bold text-purple-400">EXCLUSIVE ACCESS</span> for your first fan call — limited to the first <span className="font-bold text-yellow-400">50 fans</span>.
+                        Get <span className="font-bold text-green-400">NO PAYMENT</span> + <span className="font-bold text-purple-400">NO CATCH</span> it’s always free to chat. <span className="font-bold text-yellow-400">You’re welcome anytime.</span>.
                     </p>
 
                     {/* CTA Button */}
@@ -58,7 +58,7 @@ const UnauthenticatedPromoModal: React.FC = () => {
                         onClick={handleClaimOffer}
                         className="w-full bg-gradient-to-r from-blue-500 via-purple-600 to-pink-600 text-white px-6 py-4 rounded-xl hover:from-blue-600 hover:via-purple-700 hover:to-pink-700 transition-all duration-300 font-bold text-lg shadow-lg hover:shadow-purple-500/50 transform hover:scale-105"
                     >
-                        Start My VIP Call
+                        Start My Free Chat
                     </button>
 
                     {/* Optional: Small text at bottom */}
