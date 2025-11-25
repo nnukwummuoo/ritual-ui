@@ -27,18 +27,6 @@ export function PopUp() {
     },
     {
       icon: (
-        <FaHandshake className="w-6 h-6 text-green-500 hover:scale-110 transition-all duration-300 ease-in-out" />
-      ),
-      text: "Meet fans, get paid without showing skin",
-    },
-    {
-      icon: (
-        <FaDollarSign className="w-6 h-6 text-yellow-500 hover:scale-110 transition-all duration-300 ease-in-out" />
-      ),
-      text: "Start earning from day 1 — no approval delays",
-    },
-    {
-      icon: (
         <FaBan className="w-6 h-6 text-red-500 hover:scale-110 transition-all duration-300 ease-in-out" />
       ),
       text: "No subscriptions. No nudity required",
@@ -49,91 +37,67 @@ export function PopUp() {
       ),
       text: "Set your own schedule — full control",
     },
-    {
-      icon: (
-        <FaPhone className="w-6 h-6 text-teal-500 hover:scale-110 transition-all duration-300 ease-in-out" />
-      ),
-      text: "Get paid for every Fan Call — no livestream pressure",
-    },
-    {
-      icon: (
-        <FaMapMarkerAlt className="w-6 h-6 text-pink-500 hover:scale-110 transition-all duration-300 ease-in-out" />
-      ),
-      text: "Fan Meet —  instant reward (fans cover transport)",
-    },
-    {
-      icon: (
-        <FaHeart className="w-6 h-6 text-rose-500 hover:scale-110 transition-all duration-300 ease-in-out" />
-      ),
-      text: "Fan Date — Your time, your rules — fans cover all costs",
-    },
-    {
-      icon: (
-        <FaGift className="w-6 h-6 text-orange-500 hover:scale-110 transition-all duration-300 ease-in-out" />
-      ),
-      text: "Keep 100% of your earnings forever",
-    },
     
     // CREATOR-FOCUSED POPUPS
     {
       icon: (
-        <div className="w-6 h-6 text-yellow-400 hover:scale-110 transition-all duration-300 ease-in-out">⚡</div>
+        <div className="w-6 h-6 text-yellow-400 hover:scale-110 transition-all duration-300 ease-in-out">❌</div>
       ),
-      text: "Your name. Your price. Your rules.",
+      text: "No scams • Real Asians and African VIP creators ",
     },
     {
       icon: (
-        <div className="w-6 h-6 text-blue-400 hover:scale-110 transition-all duration-300 ease-in-out">💎</div>
+        <div className="w-6 h-6 text-blue-400 hover:scale-110 transition-all duration-300 ease-in-out">🤖</div>
       ),
-      text: "No managers. No middlemen. Just you and your fans.",
+      text: "No bots • Only authentic connections",
     },
     {
       icon: (
-        <div className="w-6 h-6 text-red-400 hover:scale-110 transition-all duration-300 ease-in-out">🔥</div>
+        <div className="w-6 h-6 text-red-400 hover:scale-110 transition-all duration-300 ease-in-out">🪪</div>
       ),
-      text: "Build loyal fans — not followers.",
+      text: "No fraud • Real creators, real conversations",
     },
     {
       icon: (
         <div className="w-6 h-6 text-orange-400 hover:scale-110 transition-all duration-300 ease-in-out">🦁</div>
       ),
-      text: "Real creators don't chase. They attract.",
+      text: "Real creators don't chase • They attract",
     },
     {
       icon: (
-        <div className="w-6 h-6 text-green-400 hover:scale-110 transition-all duration-300 ease-in-out">🌍</div>
+        <div className="w-6 h-6 text-green-400 hover:scale-110 transition-all duration-300 ease-in-out">🛡️</div>
       ),
-      text: "Be local. Earn global.",
+      text: "No cuts • No fees • Just real connections",
     },
     {
       icon: (
-        <div className="w-6 h-6 text-purple-400 hover:scale-110 transition-all duration-300 ease-in-out">💬</div>
+        <div className="w-6 h-6 text-purple-400 hover:scale-110 transition-all duration-300 ease-in-out">🆓</div>
       ),
-      text: "Every chat is a chance — every fan is an investment.",
+      text: "No catch • Free chat, real creators",
     },
     {
       icon: (
-        <div className="w-6 h-6 text-pink-400 hover:scale-110 transition-all duration-300 ease-in-out">💰</div>
+        <div className="w-6 h-6 text-pink-400 hover:scale-110 transition-all duration-300 ease-in-out">🔒</div>
       ),
-      text: "You bring the vibe, we bring the system.",
+      text: "No fake profiles • Verified creators only",
     },
     {
       icon: (
-        <div className="w-6 h-6 text-teal-400 hover:scale-110 transition-all duration-300 ease-in-out">🕒</div>
+        <div className="w-6 h-6 text-teal-400 hover:scale-110 transition-all duration-300 ease-in-out">🎭</div>
       ),
-      text: "No waiting weeks — get paid when it's done.",
+      text: "No tricks • Respect for fans and creators",
     },
     {
       icon: (
         <div className="w-6 h-6 text-indigo-400 hover:scale-110 transition-all duration-300 ease-in-out">🧾</div>
       ),
-      text: "Transparent from start to finish. Always.",
+      text: "Transparent from start to finish. Always",
     },
     {
       icon: (
-        <div className="w-6 h-6 text-rose-400 hover:scale-110 transition-all duration-300 ease-in-out">💖</div>
+        <div className="w-6 h-6 text-rose-400 hover:scale-110 transition-all duration-300 ease-in-out">💬</div>
       ),
-      text: "They don't 'tip' you. They value you.",
+      text: "No walls • No pay to message",
     },
     
     // FAN-FOCUSED POPUPS
@@ -141,55 +105,55 @@ export function PopUp() {
       icon: (
         <div className="w-6 h-6 text-yellow-500 hover:scale-110 transition-all duration-300 ease-in-out">🥇</div>
       ),
-      text: "Meet who you admire — for real, not fantasy.",
+      text: "Meet who you admire — for real, not fantasy",
     },
     {
       icon: (
         <div className="w-6 h-6 text-blue-500 hover:scale-110 transition-all duration-300 ease-in-out">💬</div>
       ),
-      text: "One click, one connection, no fake promises.",
+      text: "One click, one connection, no fake promises",
     },
     {
       icon: (
         <div className="w-6 h-6 text-pink-500 hover:scale-110 transition-all duration-300 ease-in-out">🌸</div>
       ),
-      text: "Respect first. Connection next.",
+      text: "Respect first •  Connection next",
     },
     {
       icon: (
         <div className="w-6 h-6 text-green-500 hover:scale-110 transition-all duration-300 ease-in-out">⚡</div>
       ),
-      text: "Safe, verified, and real — always.",
+      text: "Safe, verified, and real — always",
     },
     {
       icon: (
-        <div className="w-6 h-6 text-red-500 hover:scale-110 transition-all duration-300 ease-in-out">🫶</div>
+        <div className="w-6 h-6 text-red-500 hover:scale-110 transition-all duration-300 ease-in-out">💬</div>
       ),
-      text: "Support your favorite creator — and actually see them win.",
+      text: "No payments • Free entry, creator dignity intact",
     },
     {
       icon: (
         <div className="w-6 h-6 text-teal-500 hover:scale-110 transition-all duration-300 ease-in-out">🦢</div>
       ),
-      text: "No pressure, just genuine connection.",
+      text: "No pressure, just genuine connection",
     },
     {
       icon: (
-        <div className="w-6 h-6 text-orange-500 hover:scale-110 transition-all duration-300 ease-in-out">✈</div>
+        <div className="w-6 h-6 text-orange-500 hover:scale-110 transition-all duration-300 ease-in-out">🛡️</div>
       ),
-      text: "Every meet is powered by your care — transport fare keeps it fair.",
+      text: "No spam • Safe space for creators and fans",
     },
     {
       icon: (
-        <div className="w-6 h-6 text-indigo-500 hover:scale-110 transition-all duration-300 ease-in-out">🧠</div>
+        <div className="w-6 h-6 text-indigo-500 hover:scale-110 transition-all duration-300 ease-in-out">🌿</div>
       ),
-      text: "Smart system. Human connection.",
+      text: "No pressure • Fans welcome, creators respected",
     },
     {
       icon: (
         <div className="w-6 h-6 text-amber-500 hover:scale-110 transition-all duration-300 ease-in-out">🏆</div>
       ),
-      text: "Be more than a viewer — be a fan that matters.",
+      text: "Be more than a viewer — be a fan that matters",
     },
   ];
 
