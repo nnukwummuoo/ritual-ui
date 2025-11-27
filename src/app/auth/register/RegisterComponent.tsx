@@ -365,9 +365,9 @@ export const Register = () => {
   // Step descriptions mapping
   const stepDescriptions = [
     "Your Beauty. Your Time. Your Rules.",
-    "No Stream. No Stress. Just Earnings.",
-    "Create. Connect. Cash Out.",
-    "Talk Less. Meet More."
+    "No Stress. Full Freedom. True Legacy.",
+    "Create. Connect. Claim.",
+    "Chat Free. Connect More."
   ];
 
   const inputs = [

@@ -284,7 +284,7 @@ export const Loginview = () => {
           <h1 className="text-white text-2xl font-bold">Creator Pledge</h1>
         </div>
         <p className="text-white text-sm leading-relaxed text-left">
-          This is not a livestream app. No begging. No pennies. No cuts • No fees • Just real connections. Fans choose you when they&apos;re ready. No pressure.
+          This is not a livestream app. No begging • No pennies • No cuts • No fees • Just real connections. Fans choose you when they&apos;re ready. No pressure.
         </p>
       </div>
 
