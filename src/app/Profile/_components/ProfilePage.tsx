@@ -40,7 +40,7 @@ import StarIcon from "@/icons/transparentstar.svg";
 
 import StarIcon2 from "@/icons/star.svg";
 
-import { MoreVertical, MoreHorizontal } from "lucide-react";
+import { MoreVertical, MoreHorizontal, BadgeCheck } from "lucide-react";
 
 import axios from "axios";
 
@@ -472,6 +472,7 @@ export const Profile = () => {
     lastname,
 
     username,
+    creator_verified,
 
   } = profileData;
 
@@ -1181,65 +1182,7 @@ export const Profile = () => {
 
   
 
-  // Mock data for development/testing when API fails
-
-  const mockPosts = React.useMemo(() => [
-
-    {
-
-      _id: 'mock1',
-
-      content: 'This is a sample post to show when the API is unavailable',
-
-      likes: Array(15),
-
-      comments: Array(5),
-
-      user: {
-
-        firstname: firstname || 'User',
-
-        lastname: lastname || '',
-
-        username: username || '@user',
-
-        photolink: photolink || avatarSrc || '/icons/profile.png'
-
-      },
-
-      createdAt: new Date().toISOString()
-
-    },
-
-    {
-
-      _id: 'mock2',
-
-      content: 'Another sample post with some image content',
-
-      postfilelink: ['/icons/mmekoDummy.png'],
-
-      likes: Array(32),
-
-      comments: Array(8),
-
-      user: {
-
-        firstname: firstname || 'User',
-
-        lastname: lastname || '',
-
-        username: username || '@user',
-
-        photolink: photolink || avatarSrc || '/icons/profile.png'
-
-      },
-
-      createdAt: new Date().toISOString()
-
-    }
-
-  ], [firstname, lastname, username]);
+ 
 
 
 
@@ -1491,8 +1434,7 @@ export const Profile = () => {
 
           userId === loggedInUserId) {
 
-          setUserPosts(mockPosts);
-
+      
         } else {
 
           setUserPosts([]);
@@ -1505,7 +1447,7 @@ export const Profile = () => {
 
     }
 
-  }, [token, mockPosts, loggedInUserId]);
+  }, [token, loggedInUserId]);
 
   
 
@@ -5507,10 +5449,10 @@ const PostModal = () => {
                 <div className="mt-3 ml-6 ">
 
                  
-
-                  <p className="text-blue-500">{username}</p>
-
-                
+                  <p className="text-blue-500 flex items-center gap-1">
+                    {username}
+                    {creator_verified && <BadgeCheck className="w-5 h-5 text-black" fill="white" />}
+                  </p>
 
                 
 

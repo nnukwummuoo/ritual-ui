@@ -51,6 +51,8 @@ interface User {
   createdAt?: string;
   updatedAt?: string;
   ipAddress?: string;
+  requestsMadeCount?: number;
+  requestsReceivedCount?: number;
 }
 
 
@@ -138,7 +140,7 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, isOpen, onClose
   const [loading, setLoading] = useState(false);
   const [followData, setFollowData] = useState<FollowData>({ followers: [], following: [] });
   const [loadingFollows, setLoadingFollows] = useState(false);
-  const [activeTab, setActiveTab] = useState<'followers' | 'following' | 'posts' | 'portfolio'>('followers');
+  const [activeTab, setActiveTab] = useState<'followers' | 'following' | 'posts' | 'portfolio' | 'requests'>('followers');
   const [showVipManager, setShowVipManager] = useState(false);
   const [vipDuration, setVipDuration] = useState<7 | 30>(30);
   const [grantingVip, setGrantingVip] = useState(false);
@@ -151,6 +153,8 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, isOpen, onClose
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState("");
+  const [userRequests, setUserRequests] = useState<any[]>([]);
+  const [loadingRequests, setLoadingRequests] = useState(false);
   const token = useSelector((s: RootState) => s.register.refreshtoken);
 
   const fetchUserFollows = async (userId: string) => {
@@ -179,7 +183,7 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, isOpen, onClose
 
   const fetchUserPosts = useCallback(async (userId: string) => {
     if (!token) return;
-    
+
     setLoadingPosts(true);
     try {
       const response = await fetch(`${URL}/getalluserpost`, {
@@ -208,7 +212,7 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, isOpen, onClose
 
   const fetchCreatorPortfolio = useCallback(async (portfolioId: string) => {
     if (!token || !portfolioId) return;
-    
+
     setLoadingPortfolio(true);
     try {
       const response = await fetch(`${URL}/getcreatorbyportfolioid`, {
@@ -217,7 +221,7 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, isOpen, onClose
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
         },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           hostid: portfolioId,
           userid: user?._id || "",
           token: token
@@ -241,10 +245,41 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, isOpen, onClose
     }
   }, [token, user?._id]);
 
+  const fetchUserRequests = useCallback(async (userId: string) => {
+    if (!token) return;
+
+    setLoadingRequests(true);
+    try {
+      const response = await fetch(`${URL}/getallfanrequests`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ userid: userId })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setUserRequests(data.requests || []);
+      } else {
+        console.error('Failed to fetch user requests');
+        toast.error("Failed to fetch user requests");
+      }
+    } catch (error) {
+      console.error('Error fetching user requests:', error);
+      toast.error("Failed to fetch user requests");
+    } finally {
+      setLoadingRequests(false);
+    }
+  }, [token]);
+
+
   useEffect(() => {
     if (user) {
       setEditedUser({ ...user });
       fetchUserFollows(user._id);
+      fetchUserRequests(user._id);
       if (activeTab === 'posts') {
         fetchUserPosts(user._id);
       }
@@ -252,7 +287,7 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, isOpen, onClose
         fetchCreatorPortfolio(user.creator_portfolio_id);
       }
     }
-  }, [user, activeTab, fetchUserPosts, fetchCreatorPortfolio]);
+  }, [user, activeTab, fetchUserPosts, fetchCreatorPortfolio, fetchUserRequests]);
 
   const handleDeletePost = async (postId: string) => {
     if (!window.confirm("Are you sure you want to delete this post? This action cannot be undone.")) {
@@ -343,7 +378,7 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, isOpen, onClose
 
   const handleDeletePortfolio = async () => {
     if (!user?.creator_portfolio_id) return;
-    
+
     if (!window.confirm("Are you sure you want to delete this creator portfolio? This action cannot be undone and will refund all pending requests.")) {
       return;
     }
@@ -371,9 +406,9 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, isOpen, onClose
         // Update user state to reflect portfolio deletion
         setCreatorPortfolio(null);
         // Update the user in parent component
-        await onUpdateUser(user._id, { 
-          creator_portfolio: false, 
-          creator_portfolio_id: "" 
+        await onUpdateUser(user._id, {
+          creator_portfolio: false,
+          creator_portfolio_id: ""
         });
       } else {
         const errorData = await response.json();
@@ -407,7 +442,7 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, isOpen, onClose
     try {
       const now = new Date();
       let time: Date;
-      
+
       if (typeof timestamp === 'number') {
         time = new Date(timestamp < 10000000000 ? timestamp * 1000 : timestamp);
       } else if (typeof timestamp === 'string') {
@@ -420,13 +455,13 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, isOpen, onClose
       } else {
         time = new Date(timestamp);
       }
-      
+
       if (isNaN(time.getTime())) {
         return 'recently';
       }
-      
+
       const diffInSeconds = Math.floor((now.getTime() - time.getTime()) / 1000);
-      
+
       if (diffInSeconds < 60) return 'just now';
       const diffInMinutes = Math.floor(diffInSeconds / 60);
       if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
@@ -484,12 +519,12 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, isOpen, onClose
     useEffect(() => {
       // Show controls initially
       setShowControls(true);
-      
+
       // Set timer to hide controls
       const initialTimer = setTimeout(() => {
         setShowControls(false);
       }, 3000);
-      
+
       return () => {
         if (initialTimer) clearTimeout(initialTimer);
         if (controlsTimerRef.current) clearTimeout(controlsTimerRef.current);
@@ -502,9 +537,9 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, isOpen, onClose
         {!isVideoLoaded && (
           <VideoSkeleton />
         )}
-        
+
         {/* Video with controls that auto-hide */}
-        <div 
+        <div
           className={`relative w-full h-full ${!isVideoLoaded ? 'opacity-0 absolute top-0 left-0' : 'opacity-100 transition-opacity duration-300'}`}
           onMouseMove={() => {
             // Show controls and reset the timer when mouse moves
@@ -559,11 +594,11 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, isOpen, onClose
               }
             }}
           />
-          
+
           {/* Volume Button - Shows only when showControls is true */}
           {showControls && (
             <div className="absolute bottom-3 right-3 z-10 transition-opacity duration-300 opacity-100">
-              <button 
+              <button
                 onClick={(e) => {
                   e.stopPropagation();
                   toggleMute();
@@ -592,11 +627,11 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, isOpen, onClose
               </button>
             </div>
           )}
-          
+
           {/* Center Play/Pause Button - Shows when controls are visible OR when autoplay is blocked */}
           {(showControls || autoPlayBlocked) && (
             <div className="absolute inset-0 flex items-center justify-center transition-opacity duration-300 opacity-100">
-              <div 
+              <div
                 onClick={(e) => {
                   e.stopPropagation();
                   togglePlay();
@@ -674,7 +709,7 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, isOpen, onClose
 
   const handleGrantVip = async () => {
     if (!user) return;
-    
+
     setGrantingVip(true);
     try {
       // Calculate VIP dates based on duration
@@ -692,9 +727,9 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, isOpen, onClose
 
       // Use onUpdateUser which handles the API call and state updates
       await onUpdateUser(user._id, vipUpdates);
-      
+
       toast.success(`VIP granted successfully for ${vipDuration} days with auto-renewal enabled`);
-      
+
       // Update local edited user state
       setEditedUser({ ...editedUser, ...vipUpdates });
       setShowVipManager(false);
@@ -892,12 +927,12 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, isOpen, onClose
                         <p className="text-white">{user.coinBalance || 0} coins</p>
                       )}
                     </div> */}
-                    
+
                     {/* Withdrawal Logic - Only based on earnings */}
                     {(() => {
                       const earningsUsd = (user.earnings || 0) * 0.04;
                       const isWithdrawable = earningsUsd >= 50;
-                      
+
                       return (
                         <>
                           <div>
@@ -911,7 +946,7 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, isOpen, onClose
                           {!isWithdrawable && (
                             <div className="bg-red-900/20 border border-red-500/30 rounded-lg p-3">
                               <p className="text-red-300 text-sm">
-                                <strong>Note:</strong> Withdrawal requires earnings of at least $50. 
+                                <strong>Note:</strong> Withdrawal requires earnings of at least $50.
                                 Current earnings: ${earningsUsd.toFixed(2)}
                               </p>
                             </div>
@@ -990,7 +1025,7 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, isOpen, onClose
                   </button>
                 )}
               </div>
-              
+
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
                   <label className="text-gray-300 text-sm">VIP Status:</label>
@@ -998,7 +1033,7 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, isOpen, onClose
                     {user.isVip ? "VIP Active" : "Not VIP"}
                   </span>
                 </div>
-                
+
                 {user.isVip && (
                   <>
                     <div>
@@ -1060,7 +1095,7 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, isOpen, onClose
                       </div>
                       <div className="bg-blue-900/20 border border-blue-500/30 rounded-lg p-3">
                         <p className="text-blue-300 text-sm">
-                          <strong>Note:</strong> VIP will be granted with auto-renewal enabled. 
+                          <strong>Note:</strong> VIP will be granted with auto-renewal enabled.
                           The user will have VIP benefits for {vipDuration} days.
                         </p>
                       </div>
@@ -1156,559 +1191,697 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, isOpen, onClose
               </div>
             </div>
 
-             {/* Profile Photo */}
-             <div className="bg-gray-800 p-4 rounded-lg">
-               <h3 className="text-lg font-semibold text-yellow-500 mb-4">Profile Photo</h3>
-               <div className="flex justify-center">
-                 {(() => {
-                   const profileImage = user.photolink;
-                   const imageSource = getImageSource(profileImage || "", 'profile');
-                   const initials = `${user.firstname?.[0] || ''}${user.lastname?.[0] || ''}`.toUpperCase();
-                   
-                   if (profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined") {
-                     return (
-                       <div className="relative w-32 h-32 rounded-full overflow-hidden bg-gray-600 flex items-center justify-center">
-                         <img
-                           src={imageSource.src}
-                           alt="Profile"
-                           className="w-full h-full object-cover"
-                           onError={(e) => {
-                             const target = e.currentTarget as HTMLImageElement;
-                             target.style.display = 'none';
-                             const nextElement = target.nextElementSibling as HTMLElement;
-                             if (nextElement) nextElement.style.display = 'flex';
-                           }}
-                         />
-                         <div className="absolute inset-0 bg-gray-600 flex items-center justify-center text-white text-2xl font-bold" style={{ display: 'none' }}>
-                           {initials || '?'}
-                         </div>
-                       </div>
-                     );
-                   }
-                   
-                   return (
-                     <div className="w-32 h-32 rounded-full bg-gray-600 flex items-center justify-center">
-                       <span className="text-gray-400 text-lg">{initials || 'No Photo'}</span>
-                     </div>
-                   );
-                 })()}
-               </div>
-             </div>
+            {/* Profile Photo */}
+            <div className="bg-gray-800 p-4 rounded-lg">
+              <h3 className="text-lg font-semibold text-yellow-500 mb-4">Profile Photo</h3>
+              <div className="flex justify-center">
+                {(() => {
+                  const profileImage = user.photolink;
+                  const imageSource = getImageSource(profileImage || "", 'profile');
+                  const initials = `${user.firstname?.[0] || ''}${user.lastname?.[0] || ''}`.toUpperCase();
 
-             {/* Followers, Following, Posts, and Portfolio */}
-             <div className="bg-gray-800 p-4 rounded-lg md:col-span-2">
-               <h3 className="text-lg font-semibold text-yellow-500 mb-4">
-                 {activeTab === 'posts' ? 'User Posts' : 
-                  activeTab === 'portfolio' ? 'Creator Portfolio' : 
-                  'Followers & Following'}
-               </h3>
-               
-               {/* Tab Navigation */}
-               <div className="flex gap-2 mb-4 flex-wrap">
-                 <button
-                   onClick={() => setActiveTab('followers')}
-                   className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                     activeTab === 'followers'
-                       ? 'bg-yellow-500 text-black'
-                       : 'bg-gray-700 text-white hover:bg-gray-600'
-                   }`}
-                 >
-                   Followers ({followData.followers.length})
-                 </button>
-                 <button
-                   onClick={() => setActiveTab('following')}
-                   className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                     activeTab === 'following'
-                       ? 'bg-yellow-500 text-black'
-                       : 'bg-gray-700 text-white hover:bg-gray-600'
-                   }`}
-                 >
-                   Following ({followData.following.length})
-                 </button>
-                 <button
-                   onClick={() => {
-                     setActiveTab('posts');
-                     if (user && userPosts.length === 0) {
-                       fetchUserPosts(user._id);
-                     }
-                   }}
-                   className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                     activeTab === 'posts'
-                       ? 'bg-yellow-500 text-black'
-                       : 'bg-gray-700 text-white hover:bg-gray-600'
-                   }`}
-                 >
-                   Posts ({userPosts.length})
-                 </button>
-                 {user.creator_portfolio_id && (
-                   <button
-                     onClick={() => {
-                       setActiveTab('portfolio');
-                       if (user && user.creator_portfolio_id && !creatorPortfolio) {
-                         fetchCreatorPortfolio(user.creator_portfolio_id);
-                       }
-                     }}
-                     className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                       activeTab === 'portfolio'
-                         ? 'bg-yellow-500 text-black'
-                         : 'bg-gray-700 text-white hover:bg-gray-600'
-                     }`}
-                   >
-                     Portfolio
-                   </button>
-                 )}
-               </div>
+                  if (profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined") {
+                    return (
+                      <div className="relative w-32 h-32 rounded-full overflow-hidden bg-gray-600 flex items-center justify-center">
+                        <img
+                          src={imageSource.src}
+                          alt="Profile"
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            const target = e.currentTarget as HTMLImageElement;
+                            target.style.display = 'none';
+                            const nextElement = target.nextElementSibling as HTMLElement;
+                            if (nextElement) nextElement.style.display = 'flex';
+                          }}
+                        />
+                        <div className="absolute inset-0 bg-gray-600 flex items-center justify-center text-white text-2xl font-bold" style={{ display: 'none' }}>
+                          {initials || '?'}
+                        </div>
+                      </div>
+                    );
+                  }
 
-               {/* Content */}
-               {activeTab === 'portfolio' ? (
-                 <div className="max-h-[600px] overflow-y-auto">
-                   {loadingPortfolio ? (
-                     <div className="flex justify-center items-center py-8">
-                       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-yellow-500"></div>
-                       <span className="ml-2 text-white">Loading portfolio...</span>
-                     </div>
-                   ) : !creatorPortfolio ? (
-                     <div className="text-center py-8">
-                       <p className="text-gray-400">No portfolio found</p>
-                     </div>
-                   ) : (
-                     <div className="space-y-4">
-                       {/* Portfolio Header */}
-                       <div className="bg-gray-700 rounded-lg p-4">
-                         <div className="flex justify-between items-start mb-4">
-                           <div>
-                             <h4 className="text-xl font-bold text-white mb-2">{creatorPortfolio.name}</h4>
-                             <p className="text-gray-300 text-sm">{creatorPortfolio.username || user.username || "N/A"}</p>
-                             <div className="flex gap-2 mt-2">
-                               <span className={`px-2 py-1 rounded text-xs ${creatorPortfolio.verify ? 'bg-green-500' : 'bg-yellow-500'}`}>
-                                 {creatorPortfolio.verify ? 'Verified' : 'Not Verified'}
-                               </span>
-                               <span className={`px-2 py-1 rounded text-xs ${creatorPortfolio.active ? 'bg-green-500' : 'bg-gray-500'}`}>
-                                 {creatorPortfolio.active ? 'Online' : 'Offline'}
-                               </span>
-                               <span className="px-2 py-1 rounded text-xs bg-blue-500">
-                                 {creatorPortfolio.hosttype || 'Fan meet'}
-                               </span>
-                             </div>
-                           </div>
-                           <button
-                             onClick={handleDeletePortfolio}
-                             className="bg-red-500 text-white px-4 py-2 rounded text-sm hover:bg-red-600"
-                           >
-                             Delete Portfolio
-                           </button>
-                         </div>
-                       </div>
+                  return (
+                    <div className="w-32 h-32 rounded-full bg-gray-600 flex items-center justify-center">
+                      <span className="text-gray-400 text-lg">{initials || 'No Photo'}</span>
+                    </div>
+                  );
+                })()}
+              </div>
+            </div>
 
-                       {/* Portfolio Images */}
-                       {(() => {
-                         // Handle both new creatorfiles structure and legacy photolink
-                         const images = (() => {
-                           // Check if portfolio has creatorfiles array (new structure)
-                           if (Array.isArray(creatorPortfolio.creatorfiles) && creatorPortfolio.creatorfiles.length > 0) {
-                             return creatorPortfolio.creatorfiles
-                               .map((f) => f?.creatorfilelink)
-                               .filter((url): url is string => url !== undefined && typeof url === 'string' && url.trim() !== '');
-                           }
-                           // Fallback to legacy photolink
-                           if (Array.isArray(creatorPortfolio.photolink)) {
-                             return creatorPortfolio.photolink.filter((url: string) => url && url.trim());
-                           }
-                           if (typeof creatorPortfolio.photolink === 'string') {
-                             return creatorPortfolio.photolink.split(',').filter((url: string) => url.trim());
-                           }
-                           return [];
-                         })();
-                         
-                         if (images.length === 0) {
-                           return (
-                             <div className="bg-gray-700 rounded-lg p-4 text-center">
-                               <p className="text-gray-400">No images available</p>
-                             </div>
-                           );
-                         }
+            {/* Request Analysis */}
+            <div className="bg-gray-800 p-4 rounded-lg">
+              <h3 className="text-lg font-semibold text-yellow-500 mb-4">Request Analysis</h3>
+              {(() => {
+                const total = userRequests.length;
 
-                         const currentImage = images[currentImageIndex] || images[0];
-                         const imageSrc = getImageSource(currentImage, 'post').src;
+                // Overall Status Counts
+                const accepted = userRequests.filter(r => r.status === 'accepted').length;
+                const declined = userRequests.filter(r => r.status === 'declined').length;
+                const expired = userRequests.filter(r => r.status === 'expired').length;
+                const completed = userRequests.filter(r => r.status === 'completed').length;
 
-                         return (
-                           <div className="bg-gray-700 rounded-lg p-4">
-                             <div className="relative w-full h-[300px] overflow-hidden rounded-md mb-4">
-                               <img
-                                 src={imageSrc}
-                                 alt={`Portfolio image ${currentImageIndex + 1}`}
-                                 className="w-full h-full object-cover cursor-pointer hover:opacity-90 transition-opacity"
-                                 onClick={() => openImageModal(imageSrc)}
-                                 onError={(e) => {
-                                   const target = e.currentTarget as HTMLImageElement;
-                                   target.style.display = 'none';
-                                 }}
-                               />
-                               
-                               {/* Navigation arrows */}
-                               {images.length > 1 && (
-                                 <>
-                                   <button
-                                     onClick={(e) => {
-                                       e.stopPropagation();
-                                       setCurrentImageIndex((prev) => 
-                                         prev === 0 ? images.length - 1 : prev - 1
-                                       );
-                                     }}
-                                     className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-70 transition-all"
-                                   >
-                                     ←
-                                   </button>
-                                   <button
-                                     onClick={(e) => {
-                                       e.stopPropagation();
-                                       setCurrentImageIndex((prev) => 
-                                         prev === images.length - 1 ? 0 : prev + 1
-                                       );
-                                     }}
-                                     className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-70 transition-all"
-                                   >
-                                     →
-                                   </button>
-                                 </>
-                               )}
-                               
-                               {/* Image counter */}
-                               {images.length > 1 && (
-                                 <div className="absolute bottom-2 right-2 bg-black bg-opacity-50 text-white px-2 py-1 rounded text-sm">
-                                   {currentImageIndex + 1} / {images.length}
-                                 </div>
-                               )}
-                             </div>
-                           </div>
-                         );
-                       })()}
+                // Creator Actions
+                const creatorAccepted = userRequests.filter(r => r.type === 'creator' && r.status === 'accepted').length;
+                const creatorDeclined = userRequests.filter(r => r.type === 'creator' && r.status === 'declined').length;
 
-                       {/* Portfolio Details */}
-                       <div className="bg-gray-700 rounded-lg p-4">
-                         <h4 className="text-lg font-semibold text-yellow-500 mb-4">Portfolio Details</h4>
-                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                           <div className="space-y-2">
-                             <div className="flex justify-between">
-                               <span className="text-gray-300">Age:</span>
-                               <span className="text-white">{creatorPortfolio.age || "N/A"}</span>
-                             </div>
-                             <div className="flex justify-between">
-                               <span className="text-gray-300">Location:</span>
-                               <span className="text-white">{creatorPortfolio.location || "N/A"}</span>
-                             </div>
-                             <div className="flex justify-between">
-                               <span className="text-gray-300">Gender:</span>
-                               <span className="text-white capitalize">{creatorPortfolio.gender || "N/A"}</span>
-                             </div>
-                             <div className="flex justify-between">
-                               <span className="text-gray-300">Height:</span>
-                               <span className="text-white">{creatorPortfolio.height || "N/A"}</span>
-                             </div>
-                             <div className="flex justify-between">
-                               <span className="text-gray-300">Weight:</span>
-                               <span className="text-white">{creatorPortfolio.weight || "N/A"}</span>
-                             </div>
-                             <div className="flex justify-between">
-                               <span className="text-gray-300">Body Type:</span>
-                               <span className="text-white">{creatorPortfolio.bodytype || "N/A"}</span>
-                             </div>
-                           </div>
-                           <div className="space-y-2">
-                             <div className="flex justify-between">
-                               <span className="text-gray-300">Price:</span>
-                               <span className="text-yellow-400 font-bold">{creatorPortfolio.price || "N/A"}</span>
-                             </div>
-                             <div className="flex justify-between">
-                               <span className="text-gray-300">Duration:</span>
-                               <span className="text-white">{creatorPortfolio.duration || "N/A"} min</span>
-                             </div>
-                             <div className="flex justify-between">
-                               <span className="text-gray-300">Smoke:</span>
-                               <span className={`font-semibold ${creatorPortfolio.smoke === 'Yes' ? 'text-red-400' : 'text-green-400'}`}>
-                                 {creatorPortfolio.smoke || "N/A"}
-                               </span>
-                             </div>
-                             <div className="flex justify-between">
-                               <span className="text-gray-300">Drink:</span>
-                               <span className={`font-semibold ${creatorPortfolio.drink === 'Yes' ? 'text-red-400' : 'text-green-400'}`}>
-                                 {creatorPortfolio.drink || "N/A"}
-                               </span>
-                             </div>
-                             <div className="flex justify-between">
-                               <span className="text-gray-300">Views:</span>
-                               <span className="text-white">{creatorPortfolio.views || 0}</span>
-                             </div>
-                             <div className="flex justify-between">
-                               <span className="text-gray-300">Host Type:</span>
-                               <span className="text-white">{creatorPortfolio.hosttype || "N/A"}</span>
-                             </div>
-                           </div>
-                         </div>
+                return (
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center bg-gray-700 p-3 rounded-lg">
+                      <span className="text-gray-300 font-medium">Total Requests</span>
+                      <span className="text-yellow-400 font-bold text-xl">{total}</span>
+                    </div>
 
-                         {/* Interests */}
-                         {creatorPortfolio.interestedin && (
-                           <div className="mt-4">
-                             <h5 className="text-gray-300 mb-2">Interested In:</h5>
-                             <div className="flex flex-wrap gap-2">
-                               {creatorPortfolio.interestedin.split(" ").map((interest: string, index: number) => (
-                                 <span key={index} className="px-2 py-1 bg-purple-600 text-white rounded-full text-xs">
-                                   {interest}
-                                 </span>
-                               ))}
-                             </div>
-                           </div>
-                         )}
+                    {/* Overall Status Breakdown */}
+                    <div className="bg-gray-700 p-3 rounded-lg">
+                      <p className="text-gray-400 text-xs uppercase tracking-wider mb-3">Overall Status</p>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="flex justify-between items-center bg-gray-800 p-2 rounded">
+                          <span className="text-green-400 text-sm">Accepted</span>
+                          <span className="text-white font-bold">{accepted}</span>
+                        </div>
+                        <div className="flex justify-between items-center bg-gray-800 p-2 rounded">
+                          <span className="text-red-400 text-sm">Declined</span>
+                          <span className="text-white font-bold">{declined}</span>
+                        </div>
+                        <div className="flex justify-between items-center bg-gray-800 p-2 rounded">
+                          <span className="text-gray-400 text-sm">Expired</span>
+                          <span className="text-white font-bold">{expired}</span>
+                        </div>
+                        <div className="flex justify-between items-center bg-gray-800 p-2 rounded">
+                          <span className="text-blue-400 text-sm">Completed</span>
+                          <span className="text-white font-bold">{completed}</span>
+                        </div>
+                      </div>
+                    </div>
 
-                         {/* Availability */}
-                         {(creatorPortfolio.timeava || creatorPortfolio.daysava) && (
-                           <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-                             {creatorPortfolio.timeava && (
-                               <div>
-                                 <h5 className="text-gray-300 mb-2">Time Available:</h5>
-                                 <p className="text-white">{creatorPortfolio.timeava}</p>
-                               </div>
-                             )}
-                             {creatorPortfolio.daysava && (
-                               <div>
-                                 <h5 className="text-gray-300 mb-2">Days Available:</h5>
-                                 <p className="text-white">{creatorPortfolio.daysava}</p>
-                               </div>
-                             )}
-                           </div>
-                         )}
+                    {/* Creator Actions */}
+                    <div className="bg-gray-700 p-3 rounded-lg">
+                      <p className="text-gray-400 text-xs uppercase tracking-wider mb-3">Creator Actions</p>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="bg-gray-800 p-2 rounded text-center">
+                          <span className="block text-green-400 font-bold text-lg">{creatorAccepted}</span>
+                          <span className="text-gray-400 text-xs">Accepted</span>
+                        </div>
+                        <div className="bg-gray-800 p-2 rounded text-center">
+                          <span className="block text-red-400 font-bold text-lg">{creatorDeclined}</span>
+                          <span className="text-gray-400 text-xs">Declined</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
 
-                         {/* Description */}
-                         {creatorPortfolio.description && (
-                           <div className="mt-4">
-                             <h5 className="text-gray-300 mb-2">Description:</h5>
-                             <p className="text-white whitespace-pre-wrap">{creatorPortfolio.description}</p>
-                           </div>
-                         )}
-                       </div>
-                     </div>
-                   )}
-                 </div>
-               ) : activeTab === 'posts' ? (
-                 <div className="max-h-[600px] overflow-y-auto">
-                   {loadingPosts ? (
-                     <div className="flex justify-center items-center py-8">
-                       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-yellow-500"></div>
-                       <span className="ml-2 text-white">Loading posts...</span>
-                     </div>
-                   ) : userPosts.length === 0 ? (
-                     <div className="text-center py-8">
-                       <p className="text-gray-400">No posts found</p>
-                     </div>
-                   ) : (
-                     <div className="space-y-4">
-                       {userPosts.map((post) => {
-                         const postId = post._id || post.postid || post.id || "";
-                         if (!postId) return null;
-                         const isEditing = editingPostId === postId;
-                         const postType = post?.posttype || post?.type || "text";
-                         const mediaRef = post?.postfilelink || post?.postfilepublicid || "";
-                         const imageSource = getImageSource(mediaRef, 'post');
-                         const src = imageSource.src;
-                         
-                         return (
-                           <div key={postId} className="bg-gray-700 rounded-lg p-4">
-                             {/* Post Header */}
-                             <div className="flex items-center justify-between mb-3">
-                               <div className="flex items-center gap-3">
-                                 <div className="relative w-10 h-10 rounded-full overflow-hidden bg-gray-600 flex items-center justify-center">
-                                   {(() => {
-                                     const profileImage = user.photolink;
-                                     const initials = `${user.firstname?.[0] || ''}${user.lastname?.[0] || ''}`.toUpperCase();
-                                     
-                                     if (profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined") {
-                                       const profileImageSource = getImageSource(profileImage, 'profile');
-                                       return (
-                                         <img
-                                           src={profileImageSource.src}
-                                           alt="Profile"
-                                           className="w-full h-full object-cover"
-                                           onError={(e) => {
-                                             const target = e.currentTarget as HTMLImageElement;
-                                             target.style.display = 'none';
-                                             const nextElement = target.nextElementSibling as HTMLElement;
-                                             if (nextElement) nextElement.style.display = 'flex';
-                                           }}
-                                         />
-                                       );
-                                     }
-                                     
-                                     return (
-                                       <div className="w-full h-full flex items-center justify-center text-white text-sm font-bold">
-                                         {initials || '?'}
-                                       </div>
-                                     );
-                                   })()}
-                                 </div>
-                                 <div>
-                                   <p className="text-white font-medium">{user.firstname} {user.lastname}</p>
-                                   <p className="text-gray-400 text-xs">
-                                     {formatRelativeTime(post.createdAt || post.posttime || post.created_at || Date.now())}
-                                   </p>
-                                 </div>
-                               </div>
-                               <div className="flex gap-2">
-                                 {isEditing ? (
-                                   <>
-                                     <button
-                                       onClick={() => handleEditPost(postId)}
-                                       className="bg-green-500 text-white px-3 py-1 rounded text-xs hover:bg-green-600"
-                                     >
-                                       Save
-                                     </button>
-                                     <button
-                                       onClick={() => {
-                                         setEditingPostId(null);
-                                         setEditingPostContent("");
-                                       }}
-                                       className="bg-gray-500 text-white px-3 py-1 rounded text-xs hover:bg-gray-600"
-                                     >
-                                       Cancel
-                                     </button>
-                                   </>
-                                 ) : (
-                                   <>
-                                     <button
-                                       onClick={() => {
-                                         setEditingPostId(postId);
-                                         setEditingPostContent(post.content || "");
-                                       }}
-                                       className="bg-blue-500 text-white px-3 py-1 rounded text-xs hover:bg-blue-600"
-                                     >
-                                       Edit
-                                     </button>
-                                     <button
-                                       onClick={() => handleDeletePost(postId)}
-                                       className="bg-red-500 text-white px-3 py-1 rounded text-xs hover:bg-red-600"
-                                     >
-                                       Delete
-                                     </button>
-                                   </>
-                                 )}
-                               </div>
-                             </div>
+            {/* Followers, Following, Posts, and Portfolio */}
+            <div className="bg-gray-800 p-4 rounded-lg md:col-span-2">
+              <h3 className="text-lg font-semibold text-yellow-500 mb-4">
+                {activeTab === 'posts' ? 'User Posts' :
+                  activeTab === 'portfolio' ? 'Creator Portfolio' :
+                    'Followers & Following'}
+              </h3>
 
-                             {/* Post Content */}
-                             {isEditing ? (
-                               <textarea
-                                 value={editingPostContent}
-                                 onChange={(e) => setEditingPostContent(e.target.value)}
-                                 className="w-full bg-gray-800 text-white p-3 rounded mb-3 min-h-[100px]"
-                                 placeholder="Post content..."
-                               />
-                             ) : (
-                               post.content && (
-                                 <p className="text-white mb-3 whitespace-pre-wrap">{post.content}</p>
-                               )
-                             )}
+              {/* Tab Navigation */}
+              <div className="flex gap-2 mb-4 flex-wrap">
+                <button
+                  onClick={() => setActiveTab('followers')}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === 'followers'
+                    ? 'bg-yellow-500 text-black'
+                    : 'bg-gray-700 text-white hover:bg-gray-600'
+                    }`}
+                >
+                  Followers ({followData.followers.length})
+                </button>
+                <button
+                  onClick={() => setActiveTab('following')}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === 'following'
+                    ? 'bg-yellow-500 text-black'
+                    : 'bg-gray-700 text-white hover:bg-gray-600'
+                    }`}
+                >
+                  Following ({followData.following.length})
+                </button>
+                <button
+                  onClick={() => {
+                    setActiveTab('posts');
+                    if (user && userPosts.length === 0) {
+                      fetchUserPosts(user._id);
+                    }
+                  }}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === 'posts'
+                    ? 'bg-yellow-500 text-black'
+                    : 'bg-gray-700 text-white hover:bg-gray-600'
+                    }`}
+                >
+                  Posts ({userPosts.length})
+                </button>
+                <button
+                  onClick={() => {
+                    setActiveTab('requests');
+                    if (user && userRequests.length === 0) {
+                      fetchUserRequests(user._id);
+                    }
+                  }}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === 'requests'
+                    ? 'bg-yellow-500 text-black'
+                    : 'bg-gray-700 text-white hover:bg-gray-600'
+                    }`}
+                >
+                  Requests {userRequests.length > 0 ? `(${userRequests.length})` : ''}
+                </button>
+                {user.creator_portfolio_id && (
+                  <button
+                    onClick={() => {
+                      setActiveTab('portfolio');
+                      if (user && user.creator_portfolio_id && !creatorPortfolio) {
+                        fetchCreatorPortfolio(user.creator_portfolio_id);
+                      }
+                    }}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === 'portfolio'
+                      ? 'bg-yellow-500 text-black'
+                      : 'bg-gray-700 text-white hover:bg-gray-600'
+                      }`}
+                  >
+                    Portfolio
+                  </button>
+                )}
+              </div>
 
-                             {/* Post Media */}
-                             {postType === "image" && src && !isEditing && (
-                               <div className="w-full max-h-[400px] rounded overflow-hidden mb-3">
-                                 <img
-                                   src={src}
-                                   alt={post.content || "Post image"}
-                                   className="w-full h-auto object-contain cursor-pointer hover:opacity-90 transition-opacity"
-                                   onError={(e) => {
-                                     const target = e.currentTarget as HTMLImageElement;
-                                     target.style.display = 'none';
-                                   }}
-                                 />
-                               </div>
-                             )}
+              {/* Content */}
+              {activeTab === 'portfolio' ? (
+                <div className="max-h-[600px] overflow-y-auto">
+                  {loadingPortfolio ? (
+                    <div className="flex justify-center items-center py-8">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-yellow-500"></div>
+                      <span className="ml-2 text-white">Loading portfolio...</span>
+                    </div>
+                  ) : !creatorPortfolio ? (
+                    <div className="text-center py-8">
+                      <p className="text-gray-400">No portfolio found</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {/* Portfolio Header */}
+                      <div className="bg-gray-700 rounded-lg p-4">
+                        <div className="flex justify-between items-start mb-4">
+                          <div>
+                            <h4 className="text-xl font-bold text-white mb-2">{creatorPortfolio.name}</h4>
+                            <p className="text-gray-300 text-sm">{creatorPortfolio.username || user.username || "N/A"}</p>
+                            <div className="flex gap-2 mt-2">
+                              <span className={`px-2 py-1 rounded text-xs ${creatorPortfolio.verify ? 'bg-green-500' : 'bg-yellow-500'}`}>
+                                {creatorPortfolio.verify ? 'Verified' : 'Not Verified'}
+                              </span>
+                              <span className={`px-2 py-1 rounded text-xs ${creatorPortfolio.active ? 'bg-green-500' : 'bg-gray-500'}`}>
+                                {creatorPortfolio.active ? 'Online' : 'Offline'}
+                              </span>
+                              <span className="px-2 py-1 rounded text-xs bg-blue-500">
+                                {creatorPortfolio.hosttype || 'Fan meet'}
+                              </span>
+                            </div>
+                          </div>
+                          <button
+                            onClick={handleDeletePortfolio}
+                            className="bg-red-500 text-white px-4 py-2 rounded text-sm hover:bg-red-600"
+                          >
+                            Delete Portfolio
+                          </button>
+                        </div>
+                      </div>
 
-                             {postType === "video" && src && !isEditing && (
-                               <div className="w-full mb-3">
-                                 <VideoComponent
-                                   post={post}
-                                   src={src}
-                                   pathUrlPrimary={mediaRef ? `${API_BASE}/api/image/view/${encodeURIComponent(mediaRef)}` : undefined}
-                                   queryUrlFallback={mediaRef ? `${PROD_BASE}/api/image/view?publicId=${encodeURIComponent(mediaRef)}` : undefined}
-                                   pathUrlFallback={mediaRef ? `${PROD_BASE}/api/image/view/${encodeURIComponent(mediaRef)}` : undefined}
-                                 />
-                               </div>
-                             )}
+                      {/* Portfolio Images */}
+                      {(() => {
+                        // Handle both new creatorfiles structure and legacy photolink
+                        const images = (() => {
+                          // Check if portfolio has creatorfiles array (new structure)
+                          if (Array.isArray(creatorPortfolio.creatorfiles) && creatorPortfolio.creatorfiles.length > 0) {
+                            return creatorPortfolio.creatorfiles
+                              .map((f) => f?.creatorfilelink)
+                              .filter((url): url is string => url !== undefined && typeof url === 'string' && url.trim() !== '');
+                          }
+                          // Fallback to legacy photolink
+                          if (Array.isArray(creatorPortfolio.photolink)) {
+                            return creatorPortfolio.photolink.filter((url: string) => url && url.trim());
+                          }
+                          if (typeof creatorPortfolio.photolink === 'string') {
+                            return creatorPortfolio.photolink.split(',').filter((url: string) => url.trim());
+                          }
+                          return [];
+                        })();
 
-                             {/* Post Type Badge */}
-                             <div className="flex items-center gap-2 mt-2">
-                               <span className="px-2 py-1 rounded text-xs bg-gray-600 text-gray-300">
-                                 {postType === "image" ? "Image" : postType === "video" ? "Video" : "Text"}
-                               </span>
-                             </div>
-                           </div>
-                         );
-                       })}
-                     </div>
-                   )}
-                 </div>
-               ) : (
-                 <div className="max-h-64 overflow-y-auto">
-                   {loadingFollows ? (
-                     <div className="flex justify-center items-center py-8">
-                       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-yellow-500"></div>
-                       <span className="ml-2 text-white">Loading...</span>
-                     </div>
-                   ) : (
-                     <div className="space-y-3">
-                       {(activeTab === 'followers' ? followData.followers : followData.following).map((follower) => (
-                         <div key={follower.id} className="flex items-center p-3 bg-gray-700 rounded-lg">
-                           <div className="flex items-center space-x-3">
-                             <div className="relative w-10 h-10 rounded-full overflow-hidden bg-gray-600 flex items-center justify-center">
-                               {follower.image && follower.image.trim() && follower.image !== "null" && follower.image !== "undefined" ? (
-                                 <img
-                                   src={getImageSource(follower.image, 'profile').src}
-                                   alt="Profile"
-                                   className="w-full h-full object-cover"
-                                   onError={(e) => {
-                                     const target = e.currentTarget as HTMLImageElement;
-                                     target.style.display = 'none';
-                                     const nextElement = target.nextElementSibling as HTMLElement;
-                                     if (nextElement) nextElement.style.display = 'flex';
-                                   }}
-                                 />
-                               ) : null}
-                               <div className="absolute inset-0 bg-gray-600 flex items-center justify-center text-white text-sm font-bold" style={{ display: follower.image && follower.image.trim() && follower.image !== "null" && follower.image !== "undefined" ? 'none' : 'flex' }}>
-                                 {follower.name.split(' ').map(n => n[0]).join('').toUpperCase() || '?'}
-                               </div>
-                             </div>
-                             <div>
-                               <p className="text-white font-medium">{follower.name}</p>
-                               <p className="text-gray-400 text-sm">{follower.email}</p>
-                               <div className="flex gap-2 mt-1">
-                                 <span className={`px-2 py-1 rounded text-xs ${follower.creator_verified ? 'bg-blue-500' : 'bg-gray-500'}`}>
-                                   {follower.creator_verified ? 'Creator' : 'Fan'}
-                                 </span>
-                                 {follower.isVip && (
-                                   <span className="px-2 py-1 rounded text-xs bg-yellow-500">VIP</span>
-                                 )}
-                                 <span className="px-2 py-1 rounded text-xs bg-gray-600">
-                                   {follower.gender}
-                                 </span>
-                               </div>
-                             </div>
-                           </div>
-                         </div>
-                       ))}
-                       
-                       {(activeTab === 'followers' ? followData.followers : followData.following).length === 0 && (
-                         <div className="text-center py-8">
-                           <p className="text-gray-400">
-                             No {activeTab} found
-                           </p>
-                         </div>
-                       )}
-                     </div>
-                   )}
-                 </div>
-               )}
-             </div>
+                        if (images.length === 0) {
+                          return (
+                            <div className="bg-gray-700 rounded-lg p-4 text-center">
+                              <p className="text-gray-400">No images available</p>
+                            </div>
+                          );
+                        }
 
-           </div>
+                        const currentImage = images[currentImageIndex] || images[0];
+                        const imageSrc = getImageSource(currentImage, 'post').src;
+
+                        return (
+                          <div className="bg-gray-700 rounded-lg p-4">
+                            <div className="relative w-full h-[300px] overflow-hidden rounded-md mb-4">
+                              <img
+                                src={imageSrc}
+                                alt={`Portfolio image ${currentImageIndex + 1}`}
+                                className="w-full h-full object-cover cursor-pointer hover:opacity-90 transition-opacity"
+                                onClick={() => openImageModal(imageSrc)}
+                                onError={(e) => {
+                                  const target = e.currentTarget as HTMLImageElement;
+                                  target.style.display = 'none';
+                                }}
+                              />
+
+                              {/* Navigation arrows */}
+                              {images.length > 1 && (
+                                <>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setCurrentImageIndex((prev) =>
+                                        prev === 0 ? images.length - 1 : prev - 1
+                                      );
+                                    }}
+                                    className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-70 transition-all"
+                                  >
+                                    ←
+                                  </button>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setCurrentImageIndex((prev) =>
+                                        prev === images.length - 1 ? 0 : prev + 1
+                                      );
+                                    }}
+                                    className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-70 transition-all"
+                                  >
+                                    →
+                                  </button>
+                                </>
+                              )}
+
+                              {/* Image counter */}
+                              {images.length > 1 && (
+                                <div className="absolute bottom-2 right-2 bg-black bg-opacity-50 text-white px-2 py-1 rounded text-sm">
+                                  {currentImageIndex + 1} / {images.length}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })()}
+
+                      {/* Portfolio Details */}
+                      <div className="bg-gray-700 rounded-lg p-4">
+                        <h4 className="text-lg font-semibold text-yellow-500 mb-4">Portfolio Details</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <div className="flex justify-between">
+                              <span className="text-gray-300">Age:</span>
+                              <span className="text-white">{creatorPortfolio.age || "N/A"}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-300">Location:</span>
+                              <span className="text-white">{creatorPortfolio.location || "N/A"}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-300">Gender:</span>
+                              <span className="text-white capitalize">{creatorPortfolio.gender || "N/A"}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-300">Height:</span>
+                              <span className="text-white">{creatorPortfolio.height || "N/A"}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-300">Weight:</span>
+                              <span className="text-white">{creatorPortfolio.weight || "N/A"}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-300">Body Type:</span>
+                              <span className="text-white">{creatorPortfolio.bodytype || "N/A"}</span>
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            <div className="flex justify-between">
+                              <span className="text-gray-300">Price:</span>
+                              <span className="text-yellow-400 font-bold">{creatorPortfolio.price || "N/A"}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-300">Duration:</span>
+                              <span className="text-white">{creatorPortfolio.duration || "N/A"} min</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-300">Smoke:</span>
+                              <span className={`font-semibold ${creatorPortfolio.smoke === 'Yes' ? 'text-red-400' : 'text-green-400'}`}>
+                                {creatorPortfolio.smoke || "N/A"}
+                              </span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-300">Drink:</span>
+                              <span className={`font-semibold ${creatorPortfolio.drink === 'Yes' ? 'text-red-400' : 'text-green-400'}`}>
+                                {creatorPortfolio.drink || "N/A"}
+                              </span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-300">Views:</span>
+                              <span className="text-white">{creatorPortfolio.views || 0}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-300">Host Type:</span>
+                              <span className="text-white">{creatorPortfolio.hosttype || "N/A"}</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Interests */}
+                        {creatorPortfolio.interestedin && (
+                          <div className="mt-4">
+                            <h5 className="text-gray-300 mb-2">Interested In:</h5>
+                            <div className="flex flex-wrap gap-2">
+                              {creatorPortfolio.interestedin.split(" ").map((interest: string, index: number) => (
+                                <span key={index} className="px-2 py-1 bg-purple-600 text-white rounded-full text-xs">
+                                  {interest}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Availability */}
+                        {(creatorPortfolio.timeava || creatorPortfolio.daysava) && (
+                          <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {creatorPortfolio.timeava && (
+                              <div>
+                                <h5 className="text-gray-300 mb-2">Time Available:</h5>
+                                <p className="text-white">{creatorPortfolio.timeava}</p>
+                              </div>
+                            )}
+                            {creatorPortfolio.daysava && (
+                              <div>
+                                <h5 className="text-gray-300 mb-2">Days Available:</h5>
+                                <p className="text-white">{creatorPortfolio.daysava}</p>
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Description */}
+                        {creatorPortfolio.description && (
+                          <div className="mt-4">
+                            <h5 className="text-gray-300 mb-2">Description:</h5>
+                            <p className="text-white whitespace-pre-wrap">{creatorPortfolio.description}</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : activeTab === 'posts' ? (
+                <div className="max-h-[600px] overflow-y-auto">
+                  {loadingPosts ? (
+                    <div className="flex justify-center items-center py-8">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-yellow-500"></div>
+                      <span className="ml-2 text-white">Loading posts...</span>
+                    </div>
+                  ) : userPosts.length === 0 ? (
+                    <div className="text-center py-8">
+                      <p className="text-gray-400">No posts found</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {userPosts.map((post) => {
+                        const postId = post._id || post.postid || post.id || "";
+                        if (!postId) return null;
+                        const isEditing = editingPostId === postId;
+                        const postType = post?.posttype || post?.type || "text";
+                        const mediaRef = post?.postfilelink || post?.postfilepublicid || "";
+                        const imageSource = getImageSource(mediaRef, 'post');
+                        const src = imageSource.src;
+
+                        return (
+                          <div key={postId} className="bg-gray-700 rounded-lg p-4">
+                            {/* Post Header */}
+                            <div className="flex items-center justify-between mb-3">
+                              <div className="flex items-center gap-3">
+                                <div className="relative w-10 h-10 rounded-full overflow-hidden bg-gray-600 flex items-center justify-center">
+                                  {user.photolink && user.photolink.trim() && user.photolink !== "null" && user.photolink !== "undefined" ? (
+                                    <img
+                                      src={getImageSource(user.photolink, 'profile').src}
+                                      alt="Profile"
+                                      className="w-full h-full object-cover"
+                                      onError={(e) => {
+                                        const target = e.currentTarget as HTMLImageElement;
+                                        target.style.display = 'none';
+                                        const nextElement = target.nextElementSibling as HTMLElement;
+                                        if (nextElement) nextElement.style.display = 'flex';
+                                      }}
+                                    />
+                                  ) : null}
+                                  <div className="absolute inset-0 bg-gray-600 flex items-center justify-center text-white text-sm font-bold" style={{ display: user.photolink && user.photolink.trim() && user.photolink !== "null" && user.photolink !== "undefined" ? 'none' : 'flex' }}>
+                                    {`${user.firstname[0]}${user.lastname[0]}`.toUpperCase()}
+                                  </div>
+                                </div>
+                                <div>
+                                  <p className="text-white font-medium">{`${user.firstname} ${user.lastname}`}</p>
+                                  <p className="text-gray-400 text-sm">{formatRelativeTime(post.createdAt || post.posttime || post.created_at || "")}</p>
+                                </div>
+                              </div>
+                              {!isEditing && (
+                                <div className="flex gap-2">
+                                  <button
+                                    onClick={() => {
+                                      setEditingPostId(postId);
+                                      setEditingPostContent(post.content || "");
+                                    }}
+                                    className="px-3 py-1 bg-blue-500 text-white rounded text-sm hover:bg-blue-600"
+                                  >
+                                    Edit
+                                  </button>
+                                  <button
+                                    onClick={() => handleDeletePost(postId)}
+                                    className="px-3 py-1 bg-red-500 text-white rounded text-sm hover:bg-red-600"
+                                  >
+                                    Delete
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Post Content */}
+                            {isEditing ? (
+                              <textarea
+                                value={editingPostContent}
+                                onChange={(e) => setEditingPostContent(e.target.value)}
+                                className="w-full bg-gray-800 text-white p-3 rounded mb-3 min-h-[100px]"
+                                placeholder="Post content..."
+                              />
+                            ) : (
+                              post.content && (
+                                <p className="text-white mb-3 whitespace-pre-wrap">{post.content}</p>
+                              )
+                            )}
+
+                            {/* Post Media */}
+                            {postType === "image" && src && !isEditing && (
+                              <div className="w-full max-h-[400px] rounded overflow-hidden mb-3">
+                                <img
+                                  src={src}
+                                  alt={post.content || "Post image"}
+                                  className="w-full h-auto object-contain cursor-pointer hover:opacity-90 transition-opacity"
+                                  onError={(e) => {
+                                    const target = e.currentTarget as HTMLImageElement;
+                                    target.style.display = 'none';
+                                  }}
+                                />
+                              </div>
+                            )}
+
+                            {postType === "video" && src && !isEditing && (
+                              <div className="w-full mb-3">
+                                <VideoComponent
+                                  post={post}
+                                  src={src}
+                                  pathUrlPrimary={mediaRef ? `${API_BASE}/api/image/view/${encodeURIComponent(mediaRef)}` : undefined}
+                                  queryUrlFallback={mediaRef ? `${PROD_BASE}/api/image/view?publicId=${encodeURIComponent(mediaRef)}` : undefined}
+                                  pathUrlFallback={mediaRef ? `${PROD_BASE}/api/image/view/${encodeURIComponent(mediaRef)}` : undefined}
+                                />
+                              </div>
+                            )}
+
+                            {/* Post Type Badge */}
+                            <div className="flex items-center gap-2 mt-2">
+                              <span className="px-2 py-1 rounded text-xs bg-gray-600 text-gray-300">
+                                {postType === "image" ? "Image" : postType === "video" ? "Video" : "Text"}
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              ) : activeTab === 'requests' ? (
+                <div className="max-h-[600px] overflow-y-auto">
+                  {loadingRequests ? (
+                    <div className="flex justify-center items-center py-8">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-yellow-500"></div>
+                      <span className="ml-2 text-white">Loading requests...</span>
+                    </div>
+                  ) : userRequests.length === 0 ? (
+                    <div className="text-center py-8">
+                      <p className="text-gray-400">No requests found</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {userRequests.map((request) => (
+                        <div key={request.id} className="bg-gray-700 rounded-lg p-4">
+                          <div className="flex items-start justify-between mb-3">
+                            <div className="flex items-start gap-3 flex-1">
+                              {/* User Avatar */}
+                              <div className="relative w-12 h-12 rounded-full overflow-hidden bg-gray-600 flex items-center justify-center flex-shrink-0">
+                                {request.otherUser?.photolink && request.otherUser.photolink !== '/picture-1.jfif' ? (
+                                  <img
+                                    src={getImageSource(request.otherUser.photolink, 'profile').src}
+                                    alt="Profile"
+                                    className="w-full h-full object-cover"
+                                    onError={(e) => {
+                                      const target = e.currentTarget as HTMLImageElement;
+                                      target.style.display = 'none';
+                                      const nextElement = target.nextElementSibling as HTMLElement;
+                                      if (nextElement) nextElement.style.display = 'flex';
+                                    }}
+                                  />
+                                ) : null}
+                                <div className="absolute inset-0 bg-gray-600 flex items-center justify-center text-white text-sm font-bold" style={{ display: request.otherUser?.photolink && request.otherUser.photolink !== '/picture-1.jfif' ? 'none' : 'flex' }}>
+                                  {request.otherUser?.name ? request.otherUser.name.split(' ').map((n: string) => n[0]).join('').toUpperCase() : '?'}
+                                </div>
+                              </div>
+
+                              {/* Request Details */}
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <p className="text-white font-medium truncate">{request.otherUser?.name || 'Unknown User'}</p>
+                                  <span className={`px-2 py-1 rounded text-xs flex-shrink-0 ${request.type === 'creator' ? 'bg-purple-500' : 'bg-blue-500'}`}>
+                                    {request.type === 'creator' ? 'As Creator' : 'As Fan'}
+                                  </span>
+                                  {request.otherUser?.isVip && (
+                                    <span className="px-2 py-1 rounded text-xs bg-yellow-500 flex-shrink-0">VIP</span>
+                                  )}
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-2 text-sm">
+                                  <div>
+                                    <span className="text-gray-400">Type:</span>
+                                    <span className="text-white ml-2">{request.hosttype || 'N/A'}</span>
+                                  </div>
+                                  <div>
+                                    <span className="text-gray-400">Price:</span>
+                                    <span className="text-white ml-2">{request.price || '0'} Gold</span>
+                                  </div>
+                                  <div>
+                                    <span className="text-gray-400">Date:</span>
+                                    <span className="text-white ml-2">{request.date || 'N/A'}</span>
+                                  </div>
+                                  <div>
+                                    <span className="text-gray-400">Time:</span>
+                                    <span className="text-white ml-2">{request.time || 'N/A'}</span>
+                                  </div>
+                                  {request.place && (
+                                    <div className="col-span-2">
+                                      <span className="text-gray-400">Place:</span>
+                                      <span className="text-white ml-2">{request.place}</span>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Status Badge */}
+                            <div className="flex flex-col items-end gap-2 flex-shrink-0">
+                              <span className={`px-3 py-1 rounded text-xs font-medium ${request.status === 'accepted' ? 'bg-green-500 text-white' :
+                                request.status === 'request' ? 'bg-yellow-500 text-black' :
+                                  request.status === 'declined' ? 'bg-red-500 text-white' :
+                                    request.status === 'expired' ? 'bg-gray-500 text-white' :
+                                      'bg-gray-600 text-white'
+                                }`}>
+                                {request.status?.toUpperCase() || 'UNKNOWN'}
+                              </span>
+                              {request.timeRemaining && request.timeRemaining !== 'Expired' && (
+                                <span className="text-xs text-gray-300">{request.timeRemaining}</span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="max-h-64 overflow-y-auto">
+                  {loadingFollows ? (
+                    <div className="flex justify-center items-center py-8">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-yellow-500"></div>
+                      <span className="ml-2 text-white">Loading...</span>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {(activeTab === 'followers' ? followData.followers : followData.following).map((follower) => (
+                        <div key={follower.id} className="flex items-center p-3 bg-gray-700 rounded-lg">
+                          <div className="flex items-center space-x-3">
+                            <div className="relative w-10 h-10 rounded-full overflow-hidden bg-gray-600 flex items-center justify-center">
+                              {follower.image && follower.image.trim() && follower.image !== "null" && follower.image !== "undefined" ? (
+                                <img
+                                  src={getImageSource(follower.image, 'profile').src}
+                                  alt="Profile"
+                                  className="w-full h-full object-cover"
+                                  onError={(e) => {
+                                    const target = e.currentTarget as HTMLImageElement;
+                                    target.style.display = 'none';
+                                    const nextElement = target.nextElementSibling as HTMLElement;
+                                    if (nextElement) nextElement.style.display = 'flex';
+                                  }}
+                                />
+                              ) : null}
+                              <div className="absolute inset-0 bg-gray-600 flex items-center justify-center text-white text-sm font-bold" style={{ display: follower.image && follower.image.trim() && follower.image !== "null" && follower.image !== "undefined" ? 'none' : 'flex' }}>
+                                {follower.name.split(' ').map(n => n[0]).join('').toUpperCase() || '?'}
+                              </div>
+                            </div>
+                            <div>
+                              <p className="text-white font-medium">{follower.name}</p>
+                              <p className="text-gray-400 text-sm">{follower.email}</p>
+                              <div className="flex gap-2 mt-1">
+                                <span className={`px-2 py-1 rounded text-xs ${follower.creator_verified ? 'bg-blue-500' : 'bg-gray-500'}`}>
+                                  {follower.creator_verified ? 'Creator' : 'Fan'}
+                                </span>
+                                {follower.isVip && (
+                                  <span className="px-2 py-1 rounded text-xs bg-yellow-500">VIP</span>
+                                )}
+                                <span className="px-2 py-1 rounded text-xs bg-gray-600">
+                                  {follower.gender}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+
+                      {(activeTab === 'followers' ? followData.followers : followData.following).length === 0 && (
+                        <div className="text-center py-8">
+                          <p className="text-gray-400">
+                            No {activeTab} found
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+          </div>
         </div>
 
         {/* Image Modal for Portfolio */}
@@ -1783,7 +1956,7 @@ export default function Users(): JSX.Element {
   const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
   const [showUserSelector, setShowUserSelector] = useState(false);
   const [userSearchText, setUserSearchText] = useState("");
-  
+
   // Notifications state
   const [notifications, setNotifications] = useState<NotificationCampaign[]>([]);
   const [loadingNotifications, setLoadingNotifications] = useState(false);
@@ -1792,7 +1965,7 @@ export default function Users(): JSX.Element {
   const [editMessage, setEditMessage] = useState("");
   const [editHasLearnMore, setEditHasLearnMore] = useState(false);
   const [editLearnMoreUrl, setEditLearnMoreUrl] = useState("");
-  
+
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [usersPerPage] = useState(20);
@@ -1836,7 +2009,7 @@ export default function Users(): JSX.Element {
             })
           );
         }
-      } catch {}
+      } catch { }
     }
 
     if (usersStatus === "idle") {
@@ -1888,7 +2061,7 @@ export default function Users(): JSX.Element {
   useEffect(() => {
     const totalPages = Math.ceil(alluser_list.length / usersPerPage);
     setTotalPages(totalPages);
-    
+
     const startIndex = (currentPage - 1) * usersPerPage;
     const endIndex = startIndex + usersPerPage;
     const paginated = alluser_list.slice(startIndex, endIndex);
@@ -1910,207 +2083,206 @@ export default function Users(): JSX.Element {
         </div>
       );
     }
-    
+
     if (alluser_list.length > 0) {
-        return (
-          <div className="w-full h-full flex flex-col">
-            <div className="flex-1 overflow-auto">
-              <table className="w-full bg-gray-800 rounded-lg overflow-hidden">
-                <thead className="bg-gray-700">
-                  <tr>
-                    <th className="px-4 py-3 text-left text-yellow-500 font-semibold">Photo</th>
-                    <th className="px-4 py-3 text-left text-yellow-500 font-semibold">Name</th>
-                    <th className="px-4 py-3 text-left text-yellow-500 font-semibold">Username</th>
-                    <th className="px-4 py-3 text-left text-yellow-500 font-semibold">Gender</th>
-                    <th className="px-4 py-3 text-left text-yellow-500 font-semibold">Country</th>
-                    <th className="px-4 py-3 text-left text-yellow-500 font-semibold">Balance</th>
-                    <th className="px-4 py-3 text-left text-yellow-500 font-semibold">Earnings</th>
-                    <th className="px-4 py-3 text-left text-yellow-500 font-semibold">IP Address</th>
-                    <th className="px-4 py-3 text-left text-yellow-500 font-semibold">Status</th>
-                    <th className="px-4 py-3 text-left text-yellow-500 font-semibold">Ban Status</th>
-                    <th className="px-4 py-3 text-left text-yellow-500 font-semibold">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {paginatedUsers.map((user) => (
-                    <tr key={user._id} className="border-b border-gray-700 hover:bg-gray-700">
-                      <td className="px-4 py-3">
-                        {(() => {
-                          const profileImage = user.photolink;
-                          const imageSource = getImageSource(profileImage || "", 'profile');
-                          const initials = `${user.firstname?.[0] || ''}${user.lastname?.[0] || ''}`.toUpperCase();
-                          
-                          if (profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined") {
-                            return (
-                              <div className="relative w-10 h-10 rounded-full overflow-hidden bg-gray-600 flex items-center justify-center">
-                                <img
-                                  src={imageSource.src}
-                                  alt="Profile"
-                                  className="w-full h-full object-cover"
-                                  onError={(e) => {
-                                    const target = e.currentTarget as HTMLImageElement;
-                                    target.style.display = 'none';
-                                    const nextElement = target.nextElementSibling as HTMLElement;
-                                    if (nextElement) nextElement.style.display = 'flex';
-                                  }}
-                                />
-                                <div className="absolute inset-0 bg-gray-600 flex items-center justify-center text-white text-sm font-bold" style={{ display: 'none' }}>
-                                  {initials || '?'}
-                                </div>
-                              </div>
-                            );
-                          }
-                          
+      return (
+        <div className="w-full h-full flex flex-col">
+          <div className="flex-1 overflow-auto">
+            <table className="w-full bg-gray-800 rounded-lg overflow-hidden">
+              <thead className="bg-gray-700">
+                <tr>
+                  <th className="px-4 py-3 text-left text-yellow-500 font-semibold">Photo</th>
+                  <th className="px-4 py-3 text-left text-yellow-500 font-semibold">Name</th>
+                  <th className="px-4 py-3 text-left text-yellow-500 font-semibold">Username</th>
+                  <th className="px-4 py-3 text-left text-yellow-500 font-semibold">Gender</th>
+                  <th className="px-4 py-3 text-left text-yellow-500 font-semibold">Country</th>
+                  <th className="px-4 py-3 text-left text-yellow-500 font-semibold">Balance</th>
+                  <th className="px-4 py-3 text-left text-yellow-500 font-semibold">Earnings</th>
+                  <th className="px-4 py-3 text-left text-yellow-500 font-semibold">IP Address</th>
+                  <th className="px-4 py-3 text-left text-yellow-500 font-semibold">Status</th>
+                  <th className="px-4 py-3 text-left text-yellow-500 font-semibold">Ban Status</th>
+                  <th className="px-4 py-3 text-left text-yellow-500 font-semibold">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {paginatedUsers.map((user) => (
+                  <tr key={user._id} className="border-b border-gray-700 hover:bg-gray-700">
+                    <td className="px-4 py-3">
+                      {(() => {
+                        const profileImage = user.photolink;
+                        const imageSource = getImageSource(profileImage || "", 'profile');
+                        const initials = `${user.firstname?.[0] || ''}${user.lastname?.[0] || ''}`.toUpperCase();
+
+                        if (profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined") {
                           return (
-                            <div className="w-10 h-10 rounded-full bg-gray-600 flex items-center justify-center text-white text-sm font-bold">
-                              {initials || '?'}
+                            <div className="relative w-10 h-10 rounded-full overflow-hidden bg-gray-600 flex items-center justify-center">
+                              <img
+                                src={imageSource.src}
+                                alt="Profile"
+                                className="w-full h-full object-cover"
+                                onError={(e) => {
+                                  const target = e.currentTarget as HTMLImageElement;
+                                  target.style.display = 'none';
+                                  const nextElement = target.nextElementSibling as HTMLElement;
+                                  if (nextElement) nextElement.style.display = 'flex';
+                                }}
+                              />
+                              <div className="absolute inset-0 bg-gray-600 flex items-center justify-center text-white text-sm font-bold" style={{ display: 'none' }}>
+                                {initials || '?'}
+                              </div>
                             </div>
                           );
-                        })()}
-                      </td>
-                      <td className="px-4 py-3 text-white">
-                        {user.firstname} {user.lastname}
-                      </td>
-                      <td className="px-4 py-3 text-white">
-                        {user.username || "N/A"}
-                      </td>
-                      <td className="px-4 py-3 text-white capitalize">{user.gender}</td>
-                      <td className="px-4 py-3 text-white">{user.country}</td>
-                      <td className="px-4 py-3 text-white">{user.balance || "0"}</td>
-                      <td className="px-4 py-3 text-white">{user.earnings || "0"}</td>
-                      <td className="px-4 py-3">
-                        <div className="text-white text-sm font-mono">
-                          {user.ipAddress || "Unknown"}
-                        </div>
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex flex-col gap-1">
+                        }
+
+                        return (
+                          <div className="w-10 h-10 rounded-full bg-gray-600 flex items-center justify-center text-white text-sm font-bold">
+                            {initials || '?'}
+                          </div>
+                        );
+                      })()}
+                    </td>
+                    <td className="px-4 py-3 text-white">
+                      {user.firstname} {user.lastname}
+                    </td>
+                    <td className="px-4 py-3 text-white">
+                      {user.username || "N/A"}
+                    </td>
+                    <td className="px-4 py-3 text-white capitalize">{user.gender}</td>
+                    <td className="px-4 py-3 text-white">{user.country}</td>
+                    <td className="px-4 py-3 text-white">{user.balance || "0"}</td>
+                    <td className="px-4 py-3 text-white">{user.earnings || "0"}</td>
+                    <td className="px-4 py-3">
+                      <div className="text-white text-sm font-mono">
+                        {user.ipAddress || "Unknown"}
+                      </div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex flex-col gap-1">
                         {!user.creator_verified && (
-                            <span className="px-2 py-1 rounded text-xs bg-green-800">Fan</span>
-                          )}
-                          {user.isVip && (
-                            <span className="px-2 py-1 rounded text-xs bg-yellow-500">VIP</span>
-                          )}
-                          {user.creator_verified && (
-                            <span className="px-2 py-1 rounded text-xs bg-blue-500">Creator</span>
-                          )}
-                        </div>
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex flex-col gap-1">
-                          {user.banned ? (
-                            <span className="px-2 py-1 rounded text-xs bg-red-500">Banned</span>
-                          ) : (
-                            <span className="px-2 py-1 rounded text-xs bg-green-500">Active</span>
-                          )}
-                          {user.banned && user.banReason && (
-                            <span className="px-1 py-0.5 rounded text-xs bg-red-800 text-xs" title={user.banReason}>
-                              {user.banReason.length > 20 ? user.banReason.substring(0, 20) + '...' : user.banReason}
-                            </span>
-                          )}
-                        </div>
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex gap-2">
+                          <span className="px-2 py-1 rounded text-xs bg-green-800">Fan</span>
+                        )}
+                        {user.isVip && (
+                          <span className="px-2 py-1 rounded text-xs bg-yellow-500">VIP</span>
+                        )}
+                        {user.creator_verified && (
+                          <span className="px-2 py-1 rounded text-xs bg-blue-500">Creator</span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex flex-col gap-1">
+                        {user.banned ? (
+                          <span className="px-2 py-1 rounded text-xs bg-red-500">Banned</span>
+                        ) : (
+                          <span className="px-2 py-1 rounded text-xs bg-green-500">Active</span>
+                        )}
+                        {user.banned && user.banReason && (
+                          <span className="px-1 py-0.5 rounded text-xs bg-red-800 text-xs" title={user.banReason}>
+                            {user.banReason.length > 20 ? user.banReason.substring(0, 20) + '...' : user.banReason}
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => handleViewUser(user)}
+                          className="bg-blue-500 text-white px-3 py-1 rounded text-xs hover:bg-blue-600"
+                        >
+                          View
+                        </button>
+                        {user.banned ? (
                           <button
-                            onClick={() => handleViewUser(user)}
-                            className="bg-blue-500 text-white px-3 py-1 rounded text-xs hover:bg-blue-600"
+                            onClick={() => handleUnbanUser(user._id)}
+                            className="bg-green-500 text-white px-3 py-1 rounded text-xs hover:bg-green-600"
                           >
-                            View
+                            Unban
                           </button>
-                          {user.banned ? (
-                            <button
-                              onClick={() => handleUnbanUser(user._id)}
-                              className="bg-green-500 text-white px-3 py-1 rounded text-xs hover:bg-green-600"
-                            >
-                              Unban
-                            </button>
-                          ) : (
-                            <button
-                              onClick={() => handleBanUser(user._id)}
-                              className="bg-red-500 text-white px-3 py-1 rounded text-xs hover:bg-red-600"
-                            >
-                              Ban
-                            </button>
-                          )}
+                        ) : (
                           <button
-                            onClick={() => handleDeleteUser(user._id)}
-                            className="bg-gray-500 text-white px-3 py-1 rounded text-xs hover:bg-gray-600"
+                            onClick={() => handleBanUser(user._id)}
+                            className="bg-red-500 text-white px-3 py-1 rounded text-xs hover:bg-red-600"
                           >
-                            Delete
+                            Ban
                           </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            
-            {/* Pagination Controls - Fixed at bottom */}
-            {totalPages > 1 && (
-              <div className="flex justify-center items-center mt-4 space-x-2 bg-gray-800 p-4 rounded-lg">
-                <button
-                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                  disabled={currentPage === 1}
-                  className="px-3 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Previous
-                </button>
-                
-                <div className="flex space-x-1">
-                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                    let pageNum;
-                    if (totalPages <= 5) {
-                      pageNum = i + 1;
-                    } else if (currentPage <= 3) {
-                      pageNum = i + 1;
-                    } else if (currentPage >= totalPages - 2) {
-                      pageNum = totalPages - 4 + i;
-                    } else {
-                      pageNum = currentPage - 2 + i;
-                    }
-                    
-                    return (
-                      <button
-                        key={pageNum}
-                        onClick={() => setCurrentPage(pageNum)}
-                        className={`px-3 py-2 rounded-lg ${
-                          currentPage === pageNum
-                            ? 'bg-yellow-500 text-black font-bold'
-                            : 'bg-gray-700 text-white hover:bg-gray-600'
+                        )}
+                        <button
+                          onClick={() => handleDeleteUser(user._id)}
+                          className="bg-gray-500 text-white px-3 py-1 rounded text-xs hover:bg-gray-600"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Pagination Controls - Fixed at bottom */}
+          {totalPages > 1 && (
+            <div className="flex justify-center items-center mt-4 space-x-2 bg-gray-800 p-4 rounded-lg">
+              <button
+                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+                className="px-3 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Previous
+              </button>
+
+              <div className="flex space-x-1">
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  let pageNum;
+                  if (totalPages <= 5) {
+                    pageNum = i + 1;
+                  } else if (currentPage <= 3) {
+                    pageNum = i + 1;
+                  } else if (currentPage >= totalPages - 2) {
+                    pageNum = totalPages - 4 + i;
+                  } else {
+                    pageNum = currentPage - 2 + i;
+                  }
+
+                  return (
+                    <button
+                      key={pageNum}
+                      onClick={() => setCurrentPage(pageNum)}
+                      className={`px-3 py-2 rounded-lg ${currentPage === pageNum
+                        ? 'bg-yellow-500 text-black font-bold'
+                        : 'bg-gray-700 text-white hover:bg-gray-600'
                         }`}
-                      >
-                        {pageNum}
-                      </button>
-                    );
-                  })}
-                </div>
-                
-                <button
-                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                  disabled={currentPage === totalPages}
-                  className="px-3 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Next
-                </button>
+                    >
+                      {pageNum}
+                    </button>
+                  );
+                })}
               </div>
-            )}
-            
-            {/* Pagination Info */}
-            <div className="text-center mt-2 text-gray-400 text-sm">
-              Showing {((currentPage - 1) * usersPerPage) + 1} to {Math.min(currentPage * usersPerPage, alluser_list.length)} of {alluser_list.length} users
+
+              <button
+                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                disabled={currentPage === totalPages}
+                className="px-3 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Next
+              </button>
             </div>
+          )}
+
+          {/* Pagination Info */}
+          <div className="text-center mt-2 text-gray-400 text-sm">
+            Showing {((currentPage - 1) * usersPerPage) + 1} to {Math.min(currentPage * usersPerPage, alluser_list.length)} of {alluser_list.length} users
           </div>
-        );
-      } else {
-        return (
-          <div className="w-full h-full flex items-center justify-center">
-            <p className="text-yellow-500 text-lg">No registered users yet!!!</p>
-          </div>
-        );
-      }
+        </div>
+      );
+    } else {
+      return (
+        <div className="w-full h-full flex items-center justify-center">
+          <p className="text-yellow-500 text-lg">No registered users yet!!!</p>
+        </div>
+      );
     }
+  }
 
 
   const handleDeleteUser = async (userId: string) => {
@@ -2130,11 +2302,11 @@ export default function Users(): JSX.Element {
         if (response.ok) {
           const data = await response.json();
           toast.success(data.message || "User deleted successfully", { autoClose: 2000 });
-          
+
           // Remove user from local state immediately
           setuser_list(prev => prev.filter(user => user._id !== userId));
           setalluser_list(prev => prev.filter(user => user._id !== userId));
-          
+
           // Close modal if the deleted user was selected
           if (selectedUser && selectedUser._id === userId) {
             setIsModalOpen(false);
@@ -2169,15 +2341,15 @@ export default function Users(): JSX.Element {
       if (response.ok) {
         const data = await response.json();
         toast.success(data.message || "User updated successfully");
-        
+
         // Update user in local state
-        setuser_list(prev => prev.map(user => 
+        setuser_list(prev => prev.map(user =>
           user._id === userId ? { ...user, ...updates } : user
         ));
-        setalluser_list(prev => prev.map(user => 
+        setalluser_list(prev => prev.map(user =>
           user._id === userId ? { ...user, ...updates } : user
         ));
-        
+
         // Update the selected user in the modal
         if (selectedUser) {
           setSelectedUser({ ...selectedUser, ...updates });
@@ -2218,20 +2390,20 @@ export default function Users(): JSX.Element {
       if (response.ok) {
         const data = await response.json();
         toast.success(data.message || "User banned successfully", { autoClose: 2000 });
-        
+
         // Update user in local state
-        setuser_list(prev => prev.map(user => 
+        setuser_list(prev => prev.map(user =>
           user._id === userId ? { ...user, banned: true, banReason: reason || "Violation of terms of service", bannedAt: new Date().toISOString() } : user
         ));
-        setalluser_list(prev => prev.map(user => 
+        setalluser_list(prev => prev.map(user =>
           user._id === userId ? { ...user, banned: true, banReason: reason || "Violation of terms of service", bannedAt: new Date().toISOString() } : user
         ));
-        
+
         // Update the selected user in the modal if it's the same user
         if (selectedUser && selectedUser._id === userId) {
           setSelectedUser({ ...selectedUser, banned: true, banReason: reason || "Violation of terms of service", bannedAt: new Date().toISOString() });
         }
-        
+
         // Check if current user was banned (immediate logout)
         await checkUserBanStatus();
       } else {
@@ -2262,15 +2434,15 @@ export default function Users(): JSX.Element {
       if (response.ok) {
         const data = await response.json();
         toast.success(data.message || "User unbanned successfully", { autoClose: 2000 });
-        
+
         // Update user in local state
-        setuser_list(prev => prev.map(user => 
+        setuser_list(prev => prev.map(user =>
           user._id === userId ? { ...user, banned: false, banReason: "", bannedAt: undefined } : user
         ));
-        setalluser_list(prev => prev.map(user => 
+        setalluser_list(prev => prev.map(user =>
           user._id === userId ? { ...user, banned: false, banReason: "", bannedAt: undefined } : user
         ));
-        
+
         // Update the selected user in the modal if it's the same user
         if (selectedUser && selectedUser._id === userId) {
           setSelectedUser({ ...selectedUser, banned: false, banReason: "", bannedAt: undefined });
@@ -2295,7 +2467,7 @@ export default function Users(): JSX.Element {
       toast.error("Please enter a message");
       return;
     }
-    
+
     // Validate specific users selection
     if (notificationGender === "specific" && selectedUserIds.length === 0) {
       toast.error("Please select at least one user");
@@ -2320,8 +2492,8 @@ export default function Users(): JSX.Element {
         hasLearnMore: hasLearnMore,
         learnMoreUrl: hasLearnMore ? learnMoreUrl : null,
         // If specific users are selected, use targetUserIds; otherwise use targetGender
-        ...(notificationGender === "specific" 
-          ? { targetUserIds: selectedUserIds, targetGender: "all" } 
+        ...(notificationGender === "specific"
+          ? { targetUserIds: selectedUserIds, targetGender: "all" }
           : { targetGender: notificationGender })
       };
 
@@ -2344,7 +2516,7 @@ export default function Users(): JSX.Element {
         setHasLearnMore(false);
         setLearnMoreUrl("");
         setSelectedUserIds([]);
-        
+
         // Refresh notifications if on notifications tab
         if (activeTab === "notifications") {
           fetchNotifications();
@@ -2371,7 +2543,7 @@ export default function Users(): JSX.Element {
 
   const handleSaveEdit = async () => {
     if (!editingNotification) return;
-    
+
     if (!editTitle.trim()) {
       toast.error("Please enter a title");
       return;
@@ -2442,8 +2614,8 @@ export default function Users(): JSX.Element {
   };
 
   const toggleUserSelection = (userId: string) => {
-    setSelectedUserIds(prev => 
-      prev.includes(userId) 
+    setSelectedUserIds(prev =>
+      prev.includes(userId)
         ? prev.filter(id => id !== userId)
         : [...prev, userId]
     );
@@ -2495,11 +2667,11 @@ export default function Users(): JSX.Element {
                           {campaign.isActive ? 'Active' : 'Inactive'}
                         </span>
                         <span className="px-2 py-1 rounded bg-blue-500 text-white">
-                          Target: {campaign.targetGender === 'all' ? 'All Users' : 
+                          Target: {campaign.targetGender === 'all' ? 'All Users' :
                             campaign.targetGender === 'creators' ? 'Creators' :
-                            campaign.targetGender === 'male' ? 'Male' :
-                            campaign.targetGender === 'female' ? 'Female' :
-                            campaign.targetGender === 'specific' || campaign.isSpecificUsers ? 'Specific Users' : 'All Users'}
+                              campaign.targetGender === 'male' ? 'Male' :
+                                campaign.targetGender === 'female' ? 'Female' :
+                                  campaign.targetGender === 'specific' || campaign.isSpecificUsers ? 'Specific Users' : 'All Users'}
                         </span>
                         <span className="px-2 py-1 rounded bg-purple-500 text-white">
                           Sent to: {campaign.totalSent} users
@@ -2534,7 +2706,7 @@ export default function Users(): JSX.Element {
                       </button>
                     </div>
                   </div>
-                  
+
                   {campaign.hasLearnMore && campaign.learnMoreUrl && (
                     <div className="mt-3 p-3 bg-gray-700 rounded">
                       <p className="text-gray-300 text-sm">
@@ -2579,21 +2751,19 @@ export default function Users(): JSX.Element {
       <div className="flex gap-2 p-4 border-b border-gray-700">
         <button
           onClick={() => setActiveTab("users")}
-          className={`px-6 py-2 rounded-lg font-medium transition-colors ${
-            activeTab === "users"
-              ? 'bg-yellow-500 text-black'
-              : 'bg-gray-700 text-white hover:bg-gray-600'
-          }`}
+          className={`px-6 py-2 rounded-lg font-medium transition-colors ${activeTab === "users"
+            ? 'bg-yellow-500 text-black'
+            : 'bg-gray-700 text-white hover:bg-gray-600'
+            }`}
         >
           Users
         </button>
         <button
           onClick={() => setActiveTab("notifications")}
-          className={`px-6 py-2 rounded-lg font-medium transition-colors ${
-            activeTab === "notifications"
-              ? 'bg-yellow-500 text-black'
-              : 'bg-gray-700 text-white hover:bg-gray-600'
-          }`}
+          className={`px-6 py-2 rounded-lg font-medium transition-colors ${activeTab === "notifications"
+            ? 'bg-yellow-500 text-black'
+            : 'bg-gray-700 text-white hover:bg-gray-600'
+            }`}
         >
           Notifications
         </button>
@@ -2602,162 +2772,162 @@ export default function Users(): JSX.Element {
       {activeTab === "users" && !loading && display && (
         <div className="w-full h-full flex flex-col">
           <div className="w-full flex flex-col gap-3 p-4 mb-4">
-              {/* Search */}
-              <div className="flex flex-wrap items-center gap-2 mt-3">
-                <label className="text-white mr-2 text-sm font-bold">
-                  Search by Name or Username
+            {/* Search */}
+            <div className="flex flex-wrap items-center gap-2 mt-3">
+              <label className="text-white mr-2 text-sm font-bold">
+                Search by Name or Username
+              </label>
+              <input
+                type="text"
+                className="rounded-lg bg-slate-400 placeholder:text-slate-600 placeholder:text-xs mr-1 pl-2 placeholder:text-center h-10 w-full md:w-[28rem] lg:w-[34rem]"
+                placeholder="search by name or username"
+                onInput={(e) => {
+                  const val = e.currentTarget.value;
+                  if (val) {
+                    set_search_text(val);
+                    const valLower = val.toLowerCase().trim();
+                    const filtered = user_list.filter((value) => {
+                      const name = `${value.firstname} ${value.lastname}`;
+                      const name1 = `${value.lastname} ${value.firstname}`;
+                      const username = value.username || "";
+                      return (
+                        value.firstname.toLowerCase().trim() === valLower ||
+                        value.lastname.toLowerCase().trim() === valLower ||
+                        name.toLowerCase().includes(valLower) ||
+                        name1.toLowerCase().includes(valLower) ||
+                        username.toLowerCase().includes(valLower)
+                      );
+                    });
+                    setalluser_list(filtered.length ? filtered : user_list);
+                    setCurrentPage(1); // Reset to first page when searching
+                  } else {
+                    setalluser_list(user_list);
+                    setCurrentPage(1); // Reset to first page when clearing search
+                  }
+                }}
+              />
+              <button
+                className="bg-yellow-500 w-fit h-fit rounded-full p-2"
+                onClick={() => {
+                  if (search_text) {
+                    const searchTextLower = search_text.toLowerCase().trim();
+                    const filtered = user_list.filter((value) => {
+                      const name = `${value.firstname} ${value.lastname}`;
+                      const name1 = `${value.lastname} ${value.firstname}`;
+                      const username = value.username || "";
+                      return (
+                        value.firstname.toLowerCase().trim() === searchTextLower ||
+                        value.lastname.toLowerCase().trim() === searchTextLower ||
+                        name.toLowerCase().includes(searchTextLower) ||
+                        name1.toLowerCase().includes(searchTextLower) ||
+                        username.toLowerCase().includes(searchTextLower)
+                      );
+                    });
+                    setalluser_list(filtered.length ? filtered : user_list);
+                    setCurrentPage(1); // Reset to first page when searching
+                  }
+                }}
+              >
+                <img alt="searchIcon" src={searchIcon.src} />
+              </button>
+            </div>
+
+            {/* Gender Filter */}
+            <div className="flex items-center flex-wrap gap-3 ">
+              <label className="text-white mr-2 text-sm font-bold">
+                Filter by Gender:
+              </label>
+              <div className="flex items-center gap-2">
+                <label className="text-white text-xs mt-1 font-bold">
+                  Male
                 </label>
                 <input
-                  type="text"
-                  className="rounded-lg bg-slate-400 placeholder:text-slate-600 placeholder:text-xs mr-1 pl-2 placeholder:text-center h-10 w-full md:w-[28rem] lg:w-[34rem]"
-                  placeholder="search by name or username"
-                  onInput={(e) => {
-                    const val = e.currentTarget.value;
-                    if (val) {
-                      set_search_text(val);
-                      const valLower = val.toLowerCase().trim();
-                      const filtered = user_list.filter((value) => {
-                        const name = `${value.firstname} ${value.lastname}`;
-                        const name1 = `${value.lastname} ${value.firstname}`;
-                        const username = value.username || "";
-                        return (
-                          value.firstname.toLowerCase().trim() === valLower ||
-                          value.lastname.toLowerCase().trim() === valLower ||
-                          name.toLowerCase().includes(valLower) ||
-                          name1.toLowerCase().includes(valLower) ||
-                          username.toLowerCase().includes(valLower)
-                        );
-                      });
-                      setalluser_list(filtered.length ? filtered : user_list);
-                      setCurrentPage(1); // Reset to first page when searching
-                    } else {
-                      setalluser_list(user_list);
-                      setCurrentPage(1); // Reset to first page when clearing search
-                    }
+                  type="radio"
+                  className=" mr-2 mt-1"
+                  checked={male_click}
+                  name="genderFilter"
+                  onChange={(e) => {
+                    if (!e.target.checked) return;
+                    setfemale_click(false);
+                    setmale_click(true);
+                    setshowall_click(false);
+                    const filtered = user_list.filter(
+                      (v) => v.gender.toLowerCase().trim() === "male"
+                    );
+                    setalluser_list(filtered.length ? filtered : user_list);
+                    setCurrentPage(1); // Reset to first page when filtering
                   }}
                 />
-                <button
-                  className="bg-yellow-500 w-fit h-fit rounded-full p-2"
-                  onClick={() => {
-                    if (search_text) {
-                      const searchTextLower = search_text.toLowerCase().trim();
-                      const filtered = user_list.filter((value) => {
-                        const name = `${value.firstname} ${value.lastname}`;
-                        const name1 = `${value.lastname} ${value.firstname}`;
-                        const username = value.username || "";
-                        return (
-                          value.firstname.toLowerCase().trim() === searchTextLower ||
-                          value.lastname.toLowerCase().trim() === searchTextLower ||
-                          name.toLowerCase().includes(searchTextLower) ||
-                          name1.toLowerCase().includes(searchTextLower) ||
-                          username.toLowerCase().includes(searchTextLower)
-                        );
-                      });
-                      setalluser_list(filtered.length ? filtered : user_list);
-                      setCurrentPage(1); // Reset to first page when searching
-                    }
-                  }}
-                >
-                  <img alt="searchIcon" src={searchIcon.src} />
-                </button>
-              </div>
-
-              {/* Gender Filter */}
-              <div className="flex items-center flex-wrap gap-3 ">
-                <label className="text-white mr-2 text-sm font-bold">
-                  Filter by Gender:
+                <label className="text-white text-xs mt-1 font-bold">
+                  Female
                 </label>
-                <div className="flex items-center gap-2">
-                  <label className="text-white text-xs mt-1 font-bold">
-                    Male
-                  </label>
-                  <input
-                    type="radio"
-                    className=" mr-2 mt-1"
-                    checked={male_click}
-                    name="genderFilter"
-                    onChange={(e) => {
-                      if (!e.target.checked) return;
-                      setfemale_click(false);
-                      setmale_click(true);
-                      setshowall_click(false);
-                      const filtered = user_list.filter(
-                        (v) => v.gender.toLowerCase().trim() === "male"
-                      );
-                      setalluser_list(filtered.length ? filtered : user_list);
-                      setCurrentPage(1); // Reset to first page when filtering
-                    }}
-                  />
-                  <label className="text-white text-xs mt-1 font-bold">
-                    Female
-                  </label>
-                  <input
-                    type="radio"
-                    className="mt-1"
-                    checked={female_click}
-                    name="genderFilter"
-                    onChange={(e) => {
-                      if (!e.target.checked) return;
-                      setmale_click(false);
-                      setfemale_click(true);
-                      setshowall_click(false);
-                      const filtered = user_list.filter(
-                        (v) => v.gender.toLowerCase().trim() === "female"
-                      );
-                      setalluser_list(filtered.length ? filtered : user_list);
-                      setCurrentPage(1); // Reset to first page when filtering
-                    }}
-                  />
-                  <label className="text-white text-xs ml-2 mt-1 font-bold">
-                    Show all
-                  </label>
-                  <input
-                    type="radio"
-                    className="mt-1 "
-                    checked={showall_click}
-                    name="genderFilter"
-                    onChange={(e) => {
-                      if (!e.target.checked) return;
-                      setmale_click(false);
-                      setfemale_click(false);
-                      setshowall_click(true);
-                      setalluser_list(user_list);
-                      setCurrentPage(1); // Reset to first page when showing all
-                    }}
-                  />
-                </div>
-              </div>
-
-              {/* Notification Controls */}
-              <div className="flex items-center gap-4">
-                <button
-                  className="text-white flex bg-blue-500 p-2 rounded-full shadow shadow-white hover:bg-blue-400 active:bg-blue-300"
-                  onClick={() => setShowNotificationModal(true)}
-                >
-                  <label className="text-white text-sm font-bold mr-2">
-                    Send Notification to Users
-                  </label>
-                  <img alt="sendicon" src={sendIcon.src} />
-                </button>
-                
-                
-                <div className="text-white text-sm">
-                  Total Users: <span className="text-yellow-500 font-bold">{alluser_list.length}</span>
-                  {totalPages > 1 && (
-                    <span className="ml-2 text-gray-400">
-                      (Page {currentPage} of {totalPages})
-                    </span>
-                  )}
-                </div>
+                <input
+                  type="radio"
+                  className="mt-1"
+                  checked={female_click}
+                  name="genderFilter"
+                  onChange={(e) => {
+                    if (!e.target.checked) return;
+                    setmale_click(false);
+                    setfemale_click(true);
+                    setshowall_click(false);
+                    const filtered = user_list.filter(
+                      (v) => v.gender.toLowerCase().trim() === "female"
+                    );
+                    setalluser_list(filtered.length ? filtered : user_list);
+                    setCurrentPage(1); // Reset to first page when filtering
+                  }}
+                />
+                <label className="text-white text-xs ml-2 mt-1 font-bold">
+                  Show all
+                </label>
+                <input
+                  type="radio"
+                  className="mt-1 "
+                  checked={showall_click}
+                  name="genderFilter"
+                  onChange={(e) => {
+                    if (!e.target.checked) return;
+                    setmale_click(false);
+                    setfemale_click(false);
+                    setshowall_click(true);
+                    setalluser_list(user_list);
+                    setCurrentPage(1); // Reset to first page when showing all
+                  }}
+                />
               </div>
             </div>
-            
-            {/* Table Container with full height and scrolling */}
-            <div className="flex-1 overflow-hidden">
-              {diplay_users()}
+
+            {/* Notification Controls */}
+            <div className="flex items-center gap-4">
+              <button
+                className="text-white flex bg-blue-500 p-2 rounded-full shadow shadow-white hover:bg-blue-400 active:bg-blue-300"
+                onClick={() => setShowNotificationModal(true)}
+              >
+                <label className="text-white text-sm font-bold mr-2">
+                  Send Notification to Users
+                </label>
+                <img alt="sendicon" src={sendIcon.src} />
+              </button>
+
+
+              <div className="text-white text-sm">
+                Total Users: <span className="text-yellow-500 font-bold">{alluser_list.length}</span>
+                {totalPages > 1 && (
+                  <span className="ml-2 text-gray-400">
+                    (Page {currentPage} of {totalPages})
+                  </span>
+                )}
+              </div>
             </div>
           </div>
-        )}
+
+          {/* Table Container with full height and scrolling */}
+          <div className="flex-1 overflow-hidden">
+            {diplay_users()}
+          </div>
+        </div>
+      )}
 
       {/* Show loading state when loading */}
       {activeTab === "users" && loading && (
@@ -2787,7 +2957,7 @@ export default function Users(): JSX.Element {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-gray-900 rounded-lg max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto">
             <h3 className="text-xl font-bold text-yellow-500 mb-4">Edit Notification</h3>
-            
+
             <div className="mb-4">
               <label className="text-white text-sm font-bold mb-2 block">Title *</label>
               <input
@@ -2864,7 +3034,7 @@ export default function Users(): JSX.Element {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-gray-900 rounded-lg max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
             <h3 className="text-xl font-bold text-yellow-500 mb-4">Send Admin Notification</h3>
-            
+
             <div className="mb-4">
               <label className="text-white text-sm font-bold mb-2 block">Target Audience</label>
               <div className="grid grid-cols-2 gap-2">
@@ -2943,8 +3113,8 @@ export default function Users(): JSX.Element {
                   <div>
                     <label className="text-white text-sm font-bold block mb-1">Select Users</label>
                     <p className="text-gray-400 text-xs">
-                      {selectedUserIds.length > 0 
-                        ? `${selectedUserIds.length} user(s) selected` 
+                      {selectedUserIds.length > 0
+                        ? `${selectedUserIds.length} user(s) selected`
                         : "No users selected"}
                     </p>
                   </div>
@@ -2976,7 +3146,7 @@ export default function Users(): JSX.Element {
                     </button>
                   </div>
                 </div>
-                
+
                 {selectedUserIds.length > 0 && (
                   <div className="mb-3 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
                     <p className="text-yellow-400 text-xs font-semibold mb-2">
@@ -3059,11 +3229,10 @@ export default function Users(): JSX.Element {
                               return (
                                 <label
                                   key={user._id}
-                                  className={`flex items-center gap-3 p-2 rounded cursor-pointer transition-colors ${
-                                    isSelected 
-                                      ? 'bg-yellow-500/20 border border-yellow-500/50' 
-                                      : 'hover:bg-gray-700'
-                                  }`}
+                                  className={`flex items-center gap-3 p-2 rounded cursor-pointer transition-colors ${isSelected
+                                    ? 'bg-yellow-500/20 border border-yellow-500/50'
+                                    : 'hover:bg-gray-700'
+                                    }`}
                                 >
                                   <input
                                     type="checkbox"
@@ -3076,7 +3245,7 @@ export default function Users(): JSX.Element {
                                       const profileImage = user.photolink;
                                       const imageSource = getImageSource(profileImage || "", 'profile');
                                       const initials = `${user.firstname?.[0] || ''}${user.lastname?.[0] || ''}`.toUpperCase();
-                                      
+
                                       return (
                                         <div className="relative w-10 h-10 rounded-full overflow-hidden bg-gray-600 flex items-center justify-center flex-shrink-0">
                                           {profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined" ? (

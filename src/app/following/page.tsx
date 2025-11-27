@@ -196,6 +196,8 @@ const FollowingPage: React.FC = () => {
                 isVip={(user as any).isVip || false}
                 vipStartDate={(user as any).vipStartDate}
                 vipEndDate={(user as any).vipEndDate}
+                
+                  isVerified={(user as any).isVerified || false}
               />
             </div>
           ))}
@@ -234,6 +236,7 @@ const FollowingPage: React.FC = () => {
                   isVip={(user as any).isVip || false}
                   vipStartDate={(user as any).vipStartDate}
                   vipEndDate={(user as any).vipEndDate}
+                  isVerified={(user as any).isVerified || false}
                 />
               </div>
             );
@@ -289,6 +292,8 @@ const FollowingPage: React.FC = () => {
                 isVip={user.isVip || false}
                 vipStartDate={user.vipStartDate}
                 vipEndDate={user.vipEndDate}
+                
+                  isVerified={(user as any).isVerified || false}
               />
             </div>
           ))}

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import React, {  useEffect } from "react";
+import React, { useEffect } from "react";
 import PacmanLoader from "react-spinners/RingLoader";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -49,7 +49,7 @@ const Earnings: React.FC = () => {
       {/* Gold Card */}
       <div className="bg-gray-800 rounded-lg px-4 py-3 mb-3">
         <div className="flex justify-between">
-            <button
+          <button
             className="text-sm text-blue-400 font-semibold focus:outline-none cursor-pointer"
             onClick={() => window.history.back()}
             type="button"
@@ -63,7 +63,7 @@ const Earnings: React.FC = () => {
             height={16}
             className="cursor-pointer"
           />
-          </div>
+        </div>
         <div className="flex items-center mt-2">
           <Image
             src="/icons/icons8.png"

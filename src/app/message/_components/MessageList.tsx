@@ -7,11 +7,12 @@ import { getmessagenotication, getmsgnitify } from "@/store/messageSlice";
 import { getViewingProfile } from "@/store/viewingProfile";
 import type { RootState } from "@/store/store";
 import Image from "next/image";
-import { MessageCircle } from "lucide-react";
+import { MessageCircle, BadgeCheck } from "lucide-react";
 import { getSocket, joinUserRoom, leaveUserRoom, onUserOnline, onUserOffline, removeTypingListeners } from "@/lib/socket";
 import { useOnlineStatus } from "@/contexts/OnlineStatusContext";
 import VIPBadge from "@/components/VIPBadge";
 import { getImageSource } from "@/lib/imageUtils";
+
 
 interface MessageItem {
   fromid: string;
@@ -30,6 +31,7 @@ interface MessageItem {
   isVip?: boolean;
   vipStartDate?: string;
   vipEndDate?: string;
+  isVerified?: boolean; // Add verification status
 }
 
 export const MessageList = () => {
@@ -43,14 +45,14 @@ export const MessageList = () => {
   const [loading, setLoading] = useState(true);
   const [profilePictures, setProfilePictures] = useState<Record<string, string>>({});
   const [searchQuery, setSearchQuery] = useState("");
-  
+
   // Use global online status context
   const { isUserOnline } = useOnlineStatus();
 
   // Get userid from localStorage if not in Redux (same pattern as Chat.tsx)
   const [localUserid, setLocalUserid] = React.useState("");
   const [localIsLoggedIn, setLocalIsLoggedIn] = React.useState(false);
-  
+
   const userid = reduxUserid || localUserid;
   const isLoggedIn = reduxIsLoggedIn || localIsLoggedIn;
 
@@ -62,7 +64,7 @@ export const MessageList = () => {
         const raw = localStorage.getItem("login");
         if (raw) {
           const data = JSON.parse(raw);
-          
+
           // Set user ID if not in Redux
           if (!reduxUserid && data?.userID) {
             setLocalUserid(data.userID);
@@ -105,6 +107,7 @@ export const MessageList = () => {
     }
   }, [msgnotifystatus, mymessagenotifystatus, recentmsg]);
 
+
   // Socket connection for real-time updates
   useEffect(() => {
     if (!isLoggedIn || !userid) {
@@ -120,22 +123,22 @@ export const MessageList = () => {
     socket.emit("online", userid);
 
     // Listen for new messages to update unread counts
-    const handleLiveChat = (data: { 
-      data: { 
-        fromid: string; 
-        toid: string; 
-        content: string; 
-        date: string; 
-        coin: boolean; 
-        files?: string[]; 
-        fileCount?: number; 
-      }; 
-      name: string; 
-      photolink: string; 
+    const handleLiveChat = (data: {
+      data: {
+        fromid: string;
+        toid: string;
+        content: string;
+        date: string;
+        coin: boolean;
+        files?: string[];
+        fileCount?: number;
+      };
+      name: string;
+      photolink: string;
     }) => {
       // Check if this message is for the current user
       if (data.data.toid === userid) {
-        
+
         // Refresh the message list to get updated unread counts
         // @ts-expect-error - Redux dispatch type issue
         dispatch(getmsgnitify({ userid }));
@@ -216,7 +219,7 @@ export const MessageList = () => {
 
   // Listen for viewingProfile updates and store profile pictures
   const viewingProfile = useSelector((state: RootState) => state.viewingProfile);
-  
+
   useEffect(() => {
     if (viewingProfile.status === "succeeded" && viewingProfile.userId) {
       if (viewingProfile.photolink && viewingProfile.photolink.trim() !== "" && viewingProfile.photolink !== "null" && viewingProfile.photolink !== "undefined") {
@@ -235,7 +238,7 @@ export const MessageList = () => {
     const diffInMinutes = diffInSeconds / 60;
     const diffInHours = diffInMinutes / 60;
     const diffInDays = diffInHours / 24;
-    
+
     if (diffInSeconds < 60) {
       return "Just now";
     } else if (diffInMinutes < 60) {
@@ -253,11 +256,11 @@ export const MessageList = () => {
   // Generate random background color for user initials
   const getRandomColor = (name: string) => {
     const colors = [
-      'bg-red-500', 'bg-blue-500', 'bg-green-500', 'bg-yellow-500', 
+      'bg-red-500', 'bg-blue-500', 'bg-green-500', 'bg-yellow-500',
       'bg-purple-500', 'bg-pink-500', 'bg-indigo-500', 'bg-teal-500',
       'bg-orange-500', 'bg-cyan-500', 'bg-lime-500', 'bg-amber-500'
     ];
-    
+
     // Use name to generate consistent color for same user
     let hash = 0;
     for (let i = 0; i < name.length; i++) {
@@ -287,54 +290,86 @@ export const MessageList = () => {
   };
 
   // Filter and sort messages based on search query and VIP priority
-  const filteredAndSortedMessages = React.useMemo(() => {
+  // const filteredAndSortedMessages = React.useMemo(() => {
+  //   if (!recentmsg) return [];
+
+  //   // First filter based on search query
+  //   const filtered = recentmsg.filter((message: MessageItem) => {
+  //     if (!searchQuery.trim()) return true;
+
+  //     const searchLower = searchQuery.toLowerCase();
+  //     const fullName = message.firstname && message.lastname ? `${message.firstname} ${message.lastname}`.trim() : message.name;
+  //     const nameMatch = fullName.toLowerCase().includes(searchLower);
+  //     const firstNameMatch = message.firstname?.toLowerCase().includes(searchLower) || false;
+  //     const lastNameMatch = message.lastname?.toLowerCase().includes(searchLower) || false;
+  //     const contentMatch = message.content.toLowerCase().includes(searchLower);
+
+  //     return nameMatch || firstNameMatch || lastNameMatch || contentMatch;
+  //   });
+
+  //   // Then sort: VIP users with unread messages first, then by date
+  //   return filtered.sort((a: MessageItem, b: MessageItem) => {
+  //     // Check if user has unread messages
+  //     const aUnreadCount = a.messagecount || a.unreadCount || 0;
+  //     const aHasUnread = a.unread || aUnreadCount > 0;
+  //     const bUnreadCount = b.messagecount || b.unreadCount || 0;
+  //     const bHasUnread = b.unread || bUnreadCount > 0;
+
+  //     // Priority 1: VIP users with unread messages
+  //     if (a.isVip && aHasUnread && !(b.isVip && bHasUnread)) {
+  //       return -1;
+  //     }
+  //     if (b.isVip && bHasUnread && !(a.isVip && aHasUnread)) {
+  //       return 1;
+  //     }
+
+  //     // Priority 2: Non-VIP users with unread messages
+  //     if (aHasUnread && !bHasUnread && !a.isVip) {
+  //       return -1;
+  //     }
+  //     if (bHasUnread && !aHasUnread && !b.isVip) {
+  //       return 1;
+  //     }
+
+  //     // Priority 3: Sort by date (most recent first)
+  //     const aDate = new Date(Number(a.date)).getTime();
+  //     const bDate = new Date(Number(b.date)).getTime();
+  //     return bDate - aDate;
+  //   });
+  // }, [recentmsg, searchQuery]);
+ const filteredAndSortedMessages = React.useMemo(() => {
     if (!recentmsg) return [];
-    
+
     // First filter based on search query
     const filtered = recentmsg.filter((message: MessageItem) => {
       if (!searchQuery.trim()) return true;
-      
+
       const searchLower = searchQuery.toLowerCase();
       const fullName = message.firstname && message.lastname ? `${message.firstname} ${message.lastname}`.trim() : message.name;
       const nameMatch = fullName.toLowerCase().includes(searchLower);
       const firstNameMatch = message.firstname?.toLowerCase().includes(searchLower) || false;
       const lastNameMatch = message.lastname?.toLowerCase().includes(searchLower) || false;
       const contentMatch = message.content.toLowerCase().includes(searchLower);
-      
+
       return nameMatch || firstNameMatch || lastNameMatch || contentMatch;
     });
 
-    // Then sort: VIP users with unread messages first, then by date
+    // Then sort: VIP users first, then by most recent date
     return filtered.sort((a: MessageItem, b: MessageItem) => {
-      // Check if user has unread messages
-      const aUnreadCount = a.messagecount || a.unreadCount || 0;
-      const aHasUnread = a.unread || aUnreadCount > 0;
-      const bUnreadCount = b.messagecount || b.unreadCount || 0;
-      const bHasUnread = b.unread || bUnreadCount > 0;
-
-      // Priority 1: VIP users with unread messages
-      if (a.isVip && aHasUnread && !(b.isVip && bHasUnread)) {
+      // Priority 1: VIP users come first
+      if (a.isVip && !b.isVip) {
         return -1;
       }
-      if (b.isVip && bHasUnread && !(a.isVip && aHasUnread)) {
+      if (b.isVip && !a.isVip) {
         return 1;
       }
 
-      // Priority 2: Non-VIP users with unread messages
-      if (aHasUnread && !bHasUnread && !a.isVip) {
-        return -1;
-      }
-      if (bHasUnread && !aHasUnread && !b.isVip) {
-        return 1;
-      }
-
-      // Priority 3: Sort by date (most recent first)
+      // Priority 2: Sort by date (most recent first) for both VIP and non-VIP
       const aDate = new Date(Number(a.date)).getTime();
       const bDate = new Date(Number(b.date)).getTime();
       return bDate - aDate;
     });
   }, [recentmsg, searchQuery]);
-
   if (!isLoggedIn || !userid) {
     return (
       <div className="flex flex-col items-center justify-center py-12">
@@ -399,100 +434,104 @@ export const MessageList = () => {
         </div>
       ) : (
         filteredAndSortedMessages.map((message: MessageItem, index: number) => {
-        // Get the other user ID and their profile picture
-        const otherUserId = message.fromid === userid ? message.toid : message.fromid;
-        const userProfilePicture = profilePictures[otherUserId];
-        
-        
-        return (
-        <div
-          key={index}
-          onClick={() => handleMessageClick(message.fromid, message.toid)}
-          className="flex items-center gap-3 p-3 hover:bg-gray-800/50 rounded-lg cursor-pointer transition-colors"
-        >
-          {/* Avatar */}
-          <div className="relative">
-            <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-700">
-              {userProfilePicture && 
-               userProfilePicture.trim() !== "" && 
-               userProfilePicture !== "null" && 
-               userProfilePicture !== "undefined" &&
-               userProfilePicture !== null &&
-               userProfilePicture !== undefined &&
-               userProfilePicture.length > 0 ? (
-                <Image
-                  src={getImageSource(userProfilePicture, 'profile').src}
-                  alt={message.name}
-                  width={48}
-                  height={48}
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement;
-                    target.onerror = null;
-                    target.src = "/icons/icons8-profile_user.png";
-                  }}
-                />
-              ) : (
-                <div className={`w-full h-full flex items-center justify-center text-white font-semibold ${getRandomColor(message.firstname && message.lastname ? `${message.firstname} ${message.lastname}`.trim() : message.name)}`}>
-                  {getUserInitials(message.firstname && message.lastname ? `${message.firstname} ${message.lastname}`.trim() : message.name)}
+          // Get the other user ID and their profile picture
+          const otherUserId = message.fromid === userid ? message.toid : message.fromid;
+          const userProfilePicture = profilePictures[otherUserId];
+
+      
+
+          return (
+            <div
+              key={index}
+              onClick={() => handleMessageClick(message.fromid, message.toid)}
+              className="flex items-center gap-3 p-3 hover:bg-gray-800/50 rounded-lg cursor-pointer transition-colors"
+            >
+              {/* Avatar */}
+              <div className="relative">
+                <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-700">
+                  {userProfilePicture &&
+                    userProfilePicture.trim() !== "" &&
+                    userProfilePicture !== "null" &&
+                    userProfilePicture !== "undefined" &&
+                    userProfilePicture !== null &&
+                    userProfilePicture !== undefined &&
+                    userProfilePicture.length > 0 ? (
+                    <Image
+                      src={getImageSource(userProfilePicture, 'profile').src}
+                      alt={message.name}
+                      width={48}
+                      height={48}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.onerror = null;
+                        target.src = "/icons/icons8-profile_user.png";
+                      }}
+                    />
+                  ) : (
+                    <div className={`w-full h-full flex items-center justify-center text-white font-semibold ${getRandomColor(message.firstname && message.lastname ? `${message.firstname} ${message.lastname}`.trim() : message.name)}`}>
+                      {getUserInitials(message.firstname && message.lastname ? `${message.firstname} ${message.lastname}`.trim() : message.name)}
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-            {/* Online indicator */}
-            {isUserOnline(otherUserId) && (
-              <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-gray-900 rounded-full"></div>
-            )}
-            {/* VIP Badge */}
-            {message.isVip && (
-              <VIPBadge size="xl" className="absolute -top-5 -right-5" isVip={message.isVip} vipEndDate={message.vipEndDate} />
-            )}
-          </div>
-
-          {/* Message content */}
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center justify-between">
-              <h3 className="font-semibold text-white truncate">
-                {message.firstname && message.lastname ? `${message.firstname} ${message.lastname}`.trim() : message.name}
-              </h3>
-              <div className="flex items-center gap-1 text-xs text-gray-400">
-              
-                <span>{formatTime(message.date)}</span>
+                {/* Online indicator */}
+                {isUserOnline(otherUserId) && (
+                  <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-gray-900 rounded-full"></div>
+                )}
+                {/* VIP Badge */}
+                {message.isVip && (
+                  <VIPBadge size="xl" className="absolute -top-5 -right-5" isVip={message.isVip} vipEndDate={message.vipEndDate} />
+                )}
               </div>
-            </div>
-            
-            <p className="text-sm text-gray-300 truncate mt-1">
-              {message.content}
-            </p>
-          </div>
 
-          {/* Unread count or indicator */}
-          {(() => {
-            // Check for unread count in multiple possible fields
-            const unreadCount = message.messagecount || message.unreadCount || 0;
-            const hasUnread = message.unread || unreadCount > 0;
-            
-            
-            // Show unread indicator based on actual data
-            if (hasUnread && unreadCount > 0) {
-              return (
-                <div className="flex-shrink-0">
-                  <div className="w-6 h-6 bg-blue-600 text-white text-xs rounded-full flex items-center justify-center font-semibold">
-                    {unreadCount > 9 ? '9+' : unreadCount}
+              {/* Message content */}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-semibold text-white truncate flex items-center gap-1">
+                    {message.firstname && message.lastname ? `${message.firstname} ${message.lastname}`.trim() : message.name}
+                    {message.isVerified && (
+                      <BadgeCheck size={17} className="text-black inline flex-shrink-0" fill="white" />
+                    )}
+                  </h3>
+                  <div className="flex items-center gap-1 text-xs text-gray-400">
+
+                    <span>{formatTime(message.date)}</span>
                   </div>
                 </div>
-              );
-            } else if (hasUnread) {
-              // Show a small dot indicator for messages that are unread but don't have a count
-              return (
-                <div className="flex-shrink-0">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                </div>
-              );
-            }
-            return null;
-          })()}
-        </div>
-        );
+
+                <p className="text-sm text-gray-300 truncate mt-1">
+                  {message.content}
+                </p>
+              </div>
+
+              {/* Unread count or indicator */}
+              {(() => {
+                // Check for unread count in multiple possible fields
+                const unreadCount = message.messagecount || message.unreadCount || 0;
+                const hasUnread = message.unread || unreadCount > 0;
+
+
+                // Show unread indicator based on actual data
+                if (hasUnread && unreadCount > 0) {
+                  return (
+                    <div className="flex-shrink-0">
+                      <div className="w-6 h-6 bg-blue-600 text-white text-xs rounded-full flex items-center justify-center font-semibold">
+                        {unreadCount > 9 ? '9+' : unreadCount}
+                      </div>
+                    </div>
+                  );
+                } else if (hasUnread) {
+                  // Show a small dot indicator for messages that are unread but don't have a count
+                  return (
+                    <div className="flex-shrink-0">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                    </div>
+                  );
+                }
+                return null;
+              })()}
+            </div>
+          );
         })
       )}
     </div>

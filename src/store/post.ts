@@ -98,6 +98,7 @@ export const getallpost = createAsyncThunk("post/getallpost", async (data: any) 
   try {
     // Get posts
     let response = await axios.post(`${URL}/getallpost`, data);
+
     const posts = response.data.post || [];
 
     // For each post, get its likes
@@ -114,6 +115,7 @@ export const getallpost = createAsyncThunk("post/getallpost", async (data: any) 
             likedBy: likeResponse.data.likedBy
           };
         }
+         console.log(post)
         return post;
       } catch (err) {
         console.error(`Error fetching likes for post ${post._id}:`, err);
@@ -157,7 +159,7 @@ export const fetchposts = async (page = 1) => {
     // Backend already returns posts with likes and comments via aggregation
     // No need for additional API calls - use the data directly!
     const posts = response.data.post || [];
-
+    console.log(posts)
     return {
       ...response.data,
       post: posts
