@@ -9,6 +9,7 @@ import { getSocket } from "@/lib/socket";
 import VIPBadge from "@/components/VIPBadge";
 import { toast } from "material-react-toastify";
 import { getImageSource } from "@/lib/imageUtils";
+import { BadgeCheck } from "lucide-react";
 
 interface FollowerCardProps {
   image: string;
@@ -18,13 +19,39 @@ interface FollowerCardProps {
   isVip?: boolean;
   vipStartDate?: string;
   vipEndDate?: string;
+  isVerified?: boolean;
 }
 
-const FollowerCard: React.FC<FollowerCardProps> = ({ image, name, creator_portfolio_id, userId, isVip = false, vipStartDate, vipEndDate }) => {
+const FollowerCard: React.FC<FollowerCardProps> = ({ image, name, creator_portfolio_id, userId, isVip = false, vipStartDate, vipEndDate, isVerified }) => {
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
-  const currentUserId = useSelector((state: RootState) => state.register.userID);
+
+  // Get currentUserId from Redux, with localStorage fallback
+  const reduxUserId = useSelector((state: RootState) => state.register.userID);
+  const [currentUserId, setCurrentUserId] = React.useState<string | undefined>(reduxUserId);
+
   const token = useSelector((state: RootState) => state.register.refreshtoken);
+
+  // Fallback: Get userId from localStorage if not in Redux
+  useEffect(() => {
+    if (!reduxUserId) {
+      try {
+        const loginData = localStorage.getItem('login');
+        if (loginData) {
+          const parsedData = JSON.parse(loginData);
+          const localUserId = parsedData.userID || parsedData.userid || parsedData.id;
+          if (localUserId) {
+            setCurrentUserId(localUserId);
+            console.log("[FollowerCard] Retrieved userId from localStorage:", localUserId);
+          }
+        }
+      } catch (error) {
+        console.error("[FollowerCard] Error retrieving userId from localStorage:", error);
+      }
+    } else {
+      setCurrentUserId(reduxUserId);
+    }
+  }, [reduxUserId]);
   const followingList = useSelector((state: RootState) => {
     interface FollowData {
       following?: Array<{ id: string }>;
@@ -39,7 +66,7 @@ const FollowerCard: React.FC<FollowerCardProps> = ({ image, name, creator_portfo
   const [isFollowing, setIsFollowing] = React.useState(false);
   const [isProcessing, setIsProcessing] = React.useState(false);
   // VIP status is now passed as props from the API data
-  
+
   const hasImage = Boolean(image && image.trim());
   const initials = React.useMemo(() => {
     const parts = (name || "").trim().split(/\s+/);
@@ -47,17 +74,17 @@ const FollowerCard: React.FC<FollowerCardProps> = ({ image, name, creator_portfo
     const second = parts[1]?.[0] ?? "";
     return (first + second).toUpperCase() || "?";
   }, [name]);
-  
+
   // Memoize the following check logic to prevent infinite loops
   const checkFollowingState = useCallback(() => {
     if (!userId) return;
-    
+
     // Check if we're in the Following tab
     const followingTab = document.querySelector('.following-tab');
     const thisCard = document.querySelector(`[data-userid="${userId}"]`);
-    
+
     if (!thisCard) return; // Component not mounted yet
-    
+
     // Check if parent has data-followed="true" attribute
     const parentElement = thisCard.closest('.following-user');
     if (parentElement?.getAttribute('data-followed') === 'true') {
@@ -65,7 +92,7 @@ const FollowerCard: React.FC<FollowerCardProps> = ({ image, name, creator_portfo
       thisCard.setAttribute('data-following', 'true');
       return;
     }
-    
+
     // If this component is rendered in the Following tab, it must be a followed user
     const isInFollowingTab = followingTab?.contains(thisCard);
     if (isInFollowingTab) {
@@ -73,7 +100,7 @@ const FollowerCard: React.FC<FollowerCardProps> = ({ image, name, creator_portfo
       thisCard.setAttribute('data-following', 'true');
       return;
     }
-    
+
     // If we already know from Redux state that we're following this user
     if (followingList.includes(userId)) {
       setIsFollowing(true);
@@ -90,11 +117,11 @@ const FollowerCard: React.FC<FollowerCardProps> = ({ image, name, creator_portfo
   }, [checkFollowingState]);
 
   // VIP status is now passed as props from the API data, no need to check individually
-  
+
   // Setup socket for real-time follow/unfollow updates
   useEffect(() => {
     if (!currentUserId) return;
-    
+
     // Try to get socket connection
     const socket = getSocket();
     if (!socket) {
@@ -104,19 +131,19 @@ const FollowerCard: React.FC<FollowerCardProps> = ({ image, name, creator_portfo
           dispatch(getfollow({ userid: currentUserId, token }));
         }
       }, 10000);
-      
+
       return () => clearInterval(intervalId);
     }
-    
+
     // Listen for follow/unfollow events
     const handleFollowUpdate = () => {
       if (currentUserId) {
         dispatch(getfollow({ userid: currentUserId, token }));
       }
     };
-    
+
     socket.on('follow_update', handleFollowUpdate);
-    
+
     return () => {
       socket.off('follow_update', handleFollowUpdate);
     };
@@ -132,22 +159,30 @@ const FollowerCard: React.FC<FollowerCardProps> = ({ image, name, creator_portfo
 
   const handleMessageClick = (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent navigation when clicking message button
-    
+
     if (!userId) {
       return;
     }
-    
+
     // Navigate to message page with the user
     router.push(`/message/${userId}`);
   };
 
   const handleFollowToggle = async (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent navigation when clicking follow button
-    
+
+    console.log("[FollowerCard] Follow button clicked!", {
+      userId,
+      currentUserId,
+      isFollowing,
+      isProcessing
+    });
+
     if (!userId || !currentUserId) {
+      console.log("[FollowerCard] Missing userId or currentUserId");
       return;
     }
-    
+
     // Get token from localStorage if not in Redux state
     let authToken = token;
     if (!authToken) {
@@ -161,38 +196,38 @@ const FollowerCard: React.FC<FollowerCardProps> = ({ image, name, creator_portfo
         console.error("[FollowerCard] Error retrieving token from localStorage:", error);
       }
     }
-    
+
     if (!authToken) {
       alert("Please log in to follow/unfollow users");
       return;
     }
-    
+
     if (isProcessing) {
       return;
     }
-    
+
     setIsProcessing(true);
     try {
       // Perform follow/unfollow action
       if (isFollowing) {
         try {
-          await dispatch(unfollow({ 
-            userid: userId, 
-            followerid: currentUserId, 
-            token: authToken 
+          await dispatch(unfollow({
+            userid: userId,
+            followerid: currentUserId,
+            token: authToken
           })).unwrap();
-          
+
           // Update local state
           setIsFollowing(false);
           // Remove from localStorage
           // No need to remove from localStorage - database is the source of truth
-          
+
           // Update data attribute for DOM queries
           const element = document.querySelector(`[data-userid="${userId}"]`);
           if (element) {
             element.setAttribute('data-following', 'false');
           }
-          
+
           // Show success toast
           toast.success("Unfollowed successfully!");
         } catch (error: unknown) {
@@ -206,22 +241,24 @@ const FollowerCard: React.FC<FollowerCardProps> = ({ image, name, creator_portfo
         }
       } else {
         try {
-          await dispatch(follow({ 
-            userid: userId, 
-            followerid: currentUserId, 
-            token: authToken 
+          console.log("[FollowerCard] Dispatching follow action...", { userId, currentUserId });
+
+          await dispatch(follow({
+            userid: userId,
+            followerid: currentUserId,
+            token: authToken
           })).unwrap();
-          
+
           // Update local state
           setIsFollowing(true);
           // No need to persist to localStorage - database is the source of truth
-          
+
           // Update data attribute for DOM queries
           const element = document.querySelector(`[data-userid="${userId}"]`);
           if (element) {
             element.setAttribute('data-following', 'true');
           }
-          
+
           // Show success toast
           toast.success("Followed successfully!");
         } catch (error: unknown) {
@@ -232,18 +269,18 @@ const FollowerCard: React.FC<FollowerCardProps> = ({ image, name, creator_portfo
           } else if (typeof error === 'object' && error !== null) {
             // Try to extract message from response data if available
             const errorObj = error as Record<string, unknown>;
-            errorMessage = 
-              (errorObj.message as string) || 
-              ((errorObj.response as Record<string, unknown>)?.data as Record<string, unknown>)?.message as string || 
+            errorMessage =
+              (errorObj.message as string) ||
+              ((errorObj.response as Record<string, unknown>)?.data as Record<string, unknown>)?.message as string ||
               JSON.stringify(error);
           } else {
             errorMessage = String(error);
           }
-          
+
           // Always update UI state to Following if there's any error
           // This is safer since most errors are due to "already followed"
           setIsFollowing(true);
-          
+
           // If the error is specifically "already followed", log it
           if (errorMessage.includes("already followed")) {
             // User is already followed, UI state updated
@@ -253,7 +290,7 @@ const FollowerCard: React.FC<FollowerCardProps> = ({ image, name, creator_portfo
           }
         }
       }
-      
+
       // Try to emit socket event to notify other users
       try {
         const socket = getSocket();
@@ -267,10 +304,10 @@ const FollowerCard: React.FC<FollowerCardProps> = ({ image, name, creator_portfo
       } catch {
         // Socket error - continue with normal flow
       }
-      
+
       // Always refresh followers/following lists regardless of socket status
       dispatch(getfollow({ userid: currentUserId, token: authToken }));
-      
+
     } catch (error: unknown) {
       // Handle empty error objects or objects without message property
       let errorMessage = "";
@@ -279,18 +316,18 @@ const FollowerCard: React.FC<FollowerCardProps> = ({ image, name, creator_portfo
       } else if (typeof error === 'object' && error !== null) {
         // Try to extract message from response data if available
         const errorObj = error as Record<string, unknown>;
-        errorMessage = 
-              (errorObj.message as string) || 
-              ((errorObj.response as Record<string, unknown>)?.data as Record<string, unknown>)?.message as string ||
-              JSON.stringify(error);
+        errorMessage =
+          (errorObj.message as string) ||
+          ((errorObj.response as Record<string, unknown>)?.data as Record<string, unknown>)?.message as string ||
+          JSON.stringify(error);
       } else {
         errorMessage = String(error);
       }
-      
+
       // For follow errors (which are most common), assume it's "already followed"
       if (!isFollowing || errorMessage.includes("already followed")) {
         setIsFollowing(true);
-        
+
         // Update DOM attributes to reflect the followed state
         const element = document.querySelector(`[data-userid="${userId}"]`);
         if (element) {
@@ -298,7 +335,7 @@ const FollowerCard: React.FC<FollowerCardProps> = ({ image, name, creator_portfo
         }
       } else if (errorMessage.includes("not following")) {
         setIsFollowing(false);
-        
+
         // Update DOM attributes to reflect the unfollowed state
         const element = document.querySelector(`[data-userid="${userId}"]`);
         if (element) {
@@ -314,7 +351,7 @@ const FollowerCard: React.FC<FollowerCardProps> = ({ image, name, creator_portfo
   };
 
   return (
-    <div 
+    <div
       className="flex items-center gap-3 w-full px-2 py-3 mb-3 rounded-lg hover:bg-gray-800/30 cursor-pointer transition-colors"
       onClick={handleProfileClick}
       data-userid={userId}
@@ -328,7 +365,7 @@ const FollowerCard: React.FC<FollowerCardProps> = ({ image, name, creator_portfo
             // Use getImageSource to handle Storj URLs properly (same as ProfilePage.tsx and EditProfile)
             const imageSource = getImageSource(image, 'profile');
             const imageSrc = imageSource.src;
-            
+
             return (
               <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-700 flex items-center justify-center">
                 <img
@@ -360,13 +397,20 @@ const FollowerCard: React.FC<FollowerCardProps> = ({ image, name, creator_portfo
               {initials}
             </div>
           )}
-          
+
           {/* VIP Lion Badge */}
           <VIPBadge size="xl" className="absolute -top-5 -right-5" isVip={isVip} vipEndDate={vipEndDate} />
         </div>
         {/* Name - flexible, truncates when long */}
         <div className="flex flex-col gap-1 min-w-0 flex-1 overflow-hidden">
-          <div className="text-white font-semibold truncate" title={name}>{name}</div>
+          <div className="text-white font-semibold truncate flex items-center gap-1" title={name}>
+            {name}
+            {(() => {
+              return isVerified && (
+                <span><BadgeCheck size={17} className="text-black inline" fill="white" /></span>
+              );
+            })()}
+          </div>
         </div>
       </div>
 
@@ -376,11 +420,10 @@ const FollowerCard: React.FC<FollowerCardProps> = ({ image, name, creator_portfo
           <button
             onClick={isFollowing ? handleMessageClick : handleFollowToggle}
             disabled={isProcessing}
-            className={`px-4 py-2 rounded-full text-sm font-medium transition-colors whitespace-nowrap ${
-              isFollowing
-                ? "bg-green-600 hover:bg-green-700 text-white"
-                : "bg-blue-600 hover:bg-blue-700 text-white"
-            } ${isProcessing ? "opacity-70 cursor-not-allowed" : ""}`}
+            className={`px-4 py-2 rounded-full text-sm font-medium transition-colors whitespace-nowrap ${isFollowing
+              ? "bg-green-600 hover:bg-green-700 text-white"
+              : "bg-blue-600 hover:bg-blue-700 text-white"
+              } ${isProcessing ? "opacity-70 cursor-not-allowed" : ""}`}
           >
             {isProcessing ? "..." : isFollowing ? "Message" : "Follow"}
           </button>

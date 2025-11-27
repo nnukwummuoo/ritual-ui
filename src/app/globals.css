@@ -12,7 +12,8 @@
     --background: #0a0a0a;
   }
 }
-html{
+
+html {
   -webkit-text-size-adjust: 100%;
   tab-size: 4;
   overflow: hidden;
@@ -32,7 +33,7 @@ body {
     overflow: auto;
     height: auto;
   }
-  
+
   body {
     overflow: auto;
     height: auto;
@@ -45,16 +46,17 @@ body.message-route {
   height: 100vh;
 }
 
-.bg-img{
+.bg-img {
   background-image: url("/register.png");
 }
 
-.scrollbar{
+.scrollbar {
   scrollbar-width: thin;
   scrollbar-color: var(--secondary) var(--secondary);
   /* overflow: hidden; */
   box-sizing: border-box;
-  &:hover{
+
+  &:hover {
     scrollbar-color: #192050 var(--secondary);
   }
 }
@@ -65,23 +67,24 @@ body.message-route {
     overflow-y: scroll;
   }
 }
+
 /* .hide-scroll{
   scrollbar-color: #192050 var(--secondary);
   overflow-y: scroll;
 } */
-button{
-    font-family: inherit;
-    font-feature-settings: inherit;
-    font-variation-settings: inherit;
-    font-size: 100%;
-    font-weight: inherit;
-    line-height: inherit;
-    letter-spacing: inherit;
-    margin: 0;
-    padding: 0;
+button {
+  font-family: inherit;
+  font-feature-settings: inherit;
+  font-variation-settings: inherit;
+  font-size: 100%;
+  font-weight: inherit;
+  line-height: inherit;
+  letter-spacing: inherit;
+  margin: 0;
+  padding: 0;
 }
 
-.cstm-height{
+.cstm-height {
   height: calc(100vh - 140px);
   /* background: #000; */
 }
@@ -123,4 +126,55 @@ body .Toastify__toast-body {
 
 .navbar-visible {
   transform: translateY(0) !important;
+}
+
+@keyframes wiggle-periodic {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  1% {
+    transform: rotate(-5deg);
+  }
+
+  2% {
+    transform: rotate(5deg);
+  }
+
+  3% {
+    transform: rotate(-5deg);
+  }
+
+  4% {
+    transform: rotate(5deg);
+  }
+
+  5% {
+    transform: rotate(-5deg);
+  }
+
+  6% {
+    transform: rotate(5deg);
+  }
+
+  7% {
+    transform: rotate(-3deg);
+  }
+
+  8% {
+    transform: rotate(3deg);
+  }
+
+  9% {
+    transform: rotate(0deg);
+  }
+
+  10%,
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+.animate-wiggle-periodic {
+  animation: wiggle-periodic 10s ease-in-out infinite;
 }

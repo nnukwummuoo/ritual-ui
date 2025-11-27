@@ -27,6 +27,7 @@ const Topup: React.FC = () => {
   const [web3Payment, setWeb3Payment] = useState<any>(null);
   const [checkingStatus, setCheckingStatus] = useState<boolean>(false);
   const [copiedWallet, setCopiedWallet] = useState<boolean>(false);
+  const [copiedOrderId, setCopiedOrderId] = useState<boolean>(false);
   const [txHash, setTxHash] = useState<string>("");
   const [verifyingTx, setVerifyingTx] = useState<boolean>(false);
   const [timeLeft, setTimeLeft] = useState<number>(0);
@@ -219,6 +220,19 @@ const Topup: React.FC = () => {
     }
   };
 
+  const copyOrderId = async () => {
+    if (web3Payment?.orderId) {
+      try {
+        await navigator.clipboard.writeText(web3Payment.orderId);
+        setCopiedOrderId(true);
+        toast.success("Order ID copied!", { autoClose: 2000 });
+        setTimeout(() => setCopiedOrderId(false), 2000);
+      } catch (error) {
+        toast.error("Failed to copy Order ID", { autoClose: 2000 });
+      }
+    }
+  };
+
   // Format countdown timer
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
@@ -400,6 +414,25 @@ const Topup: React.FC = () => {
                     <span className="text-gray-400">Network:</span>
                     <div className="text-white font-semibold">{web3Payment.network}</div>
                   </div>
+                </div>
+              </div>
+
+              {/* Order ID Section */}
+              <div className="mb-3">
+                <label className="block text-xs font-medium text-gray-400 mb-1">
+                  Order ID:
+                </label>
+                <div className="flex items-center gap-2 p-2 bg-[#1a1c2f] rounded-lg border border-[#323544]">
+                  <div className="flex-1 font-mono text-xs text-white break-all">
+                    {web3Payment.orderId}
+                  </div>
+                  <button
+                    onClick={copyOrderId}
+                    className="flex items-center gap-1 px-2 py-1 bg-[#FFD682] text-[#15182a] rounded-md text-xs font-medium hover:bg-[#ffe7ac] transition-all"
+                  >
+                    {copiedOrderId ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+                    {copiedOrderId ? "Copied!" : "Copy"}
+                  </button>
                 </div>
               </div>
 

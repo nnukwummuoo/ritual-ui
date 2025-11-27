@@ -155,6 +155,7 @@ const Sidemenu = () => {
   let gold_balance = 0;
   let pending_balance = 0;
   let admin = false;
+  let verified = false;
 
   if (isCurrentUserProfile && profile?.firstname) {
     firstname = profile.firstname;
@@ -162,6 +163,7 @@ const Sidemenu = () => {
     gold_balance = Number(profile.balance) || 0;
     pending_balance = Number(profile.pending) || 0;
     admin = profile.admin || false;
+    verified = profile.creator_verified || false;
   } else {
     // Try to get data from localStorage as fallback for Edge browser issues
     try {
@@ -251,8 +253,7 @@ const Sidemenu = () => {
         <nav
           ref={menuRef}
           onClick={handleMenubar}
-          className={`${
-            open ? "show" : "hide"
+          className={`${open ? "show" : "hide"
             } sm:block menu-width origin-top-right mr mt pt px-2 py-4 h-fit bg-gray-900 text-white fixed rounded-l-lg rounded-r-2xl z-[100]`}
         >
           <div className="absolute -top-3 right-0 w-fit cls-btn">
@@ -261,8 +262,7 @@ const Sidemenu = () => {
 
           <div className="overflow-hidden">
             <div
-              className={`${
-                minimize ? "minimize" : "maximize"
+              className={`${minimize ? "minimize" : "maximize"
                 } mt-4 transition-all duration-500 flex flex-col items-start ml-1 mr-1 p-2 divider relative overflow-hidden`}
             >
               <button
@@ -286,6 +286,7 @@ const Sidemenu = () => {
                     isVip={isVip || false}
                     vipEndDate={vipEndDate}
                     onClick={() => handleMenubar()}
+                    verified={verified}
                   />
                   {/* 🔒 SAFETY: This Profile component ALWAYS shows current user's data */}
                 </div>
@@ -306,10 +307,10 @@ const Sidemenu = () => {
                   <span>Upgrade Account</span>
                 </button>
               </div>
-            </div>
+            </div >
 
             {/* 🔒 ALL MENU ITEMS BELOW ALWAYS USE CURRENT USER DATA */}
-            <div className="grid-sys text-xs text-blue-100 mt-4">
+            < div className="grid-sys text-xs text-blue-100 mt-4" >
               {/* <MenuIconImg
                 src="/icons/icons8-customer.gif"
                 name="Profile"
@@ -334,13 +335,15 @@ const Sidemenu = () => {
                 url="/goldstat/history"
               />
 
-              {admin && (
-                <MenuIconImg
-                  src="/icons/icons8-admin.png"
-                  name="Admin"
-                  url="/mmeko/admin"
-                />
-              )}
+              {
+                admin && (
+                  <MenuIconImg
+                    src="/icons/icons8-admin.png"
+                    name="Admin"
+                    url="/mmeko/admin"
+                  />
+                )
+              }
 
               <MenuIconImg
                 src="/icons/icons8-gift.png"
@@ -374,11 +377,11 @@ const Sidemenu = () => {
                   Log Out
                 </p>
               </div>
-            </div>
-          </div>
-        </nav>
-      </div>
-    </div>
+            </div >
+          </div >
+        </nav >
+      </div >
+    </div >
   );
 };
 

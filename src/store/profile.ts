@@ -236,20 +236,69 @@ export const deleteblockedUsers = createAsyncThunk<{ message: string }, { userid
   }
 );
 
-export const deleteprofile = createAsyncThunk<any, void, { state: RootState }>(
-  "profile/deleteprofile",
-  async (_, { getState }) => {
-    const state = getState();
-    const userId = state.profile.userId;  // 👈 safely read from Redux
+// export const deleteprofile = createAsyncThunk<any, void, { state: RootState }>(
+//   "profile/deleteprofile",
+//   async (_, { getState }) => {
+//     const state = getState();
+//     const userId = state.profile.userId;  // 👈 safely read from Redux
 
-    const res = await axios.delete(
-      `${process.env.NEXT_PUBLIC_API}/deleteaccount`,
-      {
-        data: { userid: userId },
-        withCredentials: true,
+//     const res = await axios.delete(
+//       `${process.env.NEXT_PUBLIC_API}/deleteaccount`,
+//       {
+//         data: { userid: userId },
+//         withCredentials: true,
+//       }
+//     );
+//     return res.data;
+//   }
+// );
+
+export const deleteprofile = createAsyncThunk<
+  any,
+  void,
+  { state: RootState; rejectValue: { message: string } }
+>(
+  "profile/deleteprofile",
+  async (_, { getState, rejectWithValue }) => {
+    try {
+      const state = getState();
+      const userId = state.profile.userId;
+      const token = state.register.refreshtoken;
+
+      if (!userId) {
+        return rejectWithValue({ message: "User ID not found" });
       }
-    );
-    return res.data;
+
+      console.log("🗑️ [deleteprofile] Deleting account for userId:", userId);
+
+      const response = await axios.delete(
+        `${URL}/deleteaccount`,
+        {
+          data: { userid: userId },
+          headers: token ? {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          } : {
+            'Content-Type': 'application/json'
+          },
+          withCredentials: true,
+        }
+      );
+
+      console.log("✅ [deleteprofile] Account deleted successfully:", response.data);
+
+      return response.data;
+    } catch (err) {
+      console.error("❌ [deleteprofile] Error:", err);
+      
+      if (axios.isAxiosError(err)) {
+        const message = err.response?.data?.message || err.message || "Failed to delete account";
+        return rejectWithValue({ message });
+      }
+      
+      const message = getErrorMessage(err);
+      return rejectWithValue({ message });
+    }
   }
 );
 

@@ -1,3 +1,945 @@
+// /* eslint-disable @typescript-eslint/no-unused-vars */
+// /* eslint-disable @typescript-eslint/no-explicit-any */
+// "use client";
+
+// import React, { useEffect, useState, useMemo } from "react";
+// import { useRouter } from "next/navigation";
+// import { useDispatch, useSelector } from "react-redux";
+// import { get_my_history, get_transaction_history, get_monthly_history } from "@/store/goldstatSlice";
+// import { getprofile } from "@/store/profile";
+// import { getViews } from "@/store/creatorSlice";
+// import { RootState } from "@/store/store";
+// import { useAuth } from "@/lib/context/auth-context";
+// import PacmanLoader from "react-spinners/PacmanLoader";
+// import Image from "next/image";
+// import { URL } from "@/api/config";
+
+// interface Transaction {
+//   id: string;
+//   created_at: string;
+//   amount: string;
+//   description?: string;
+//   status?: "completed" | "pending" | "failed";
+// }
+
+// interface Analytics {
+//   coin: number;
+//   usd: number;
+//   request: number;
+//   earning: number;
+//   gift: number;
+//   like: number;
+//   followers: number;
+// }
+
+// const WithdrawRequestCard = ({ usd, onWithdrawClick }: { usd: number; onWithdrawClick: () => void }) => (
+//   <div className="bg-gray-800 text-white p-4 rounded-lg mb-3 w-full">
+//     <div className="flex justify-between items-center">
+//       <div>
+//         <p className="text-sm">Withdrawable Money</p>
+//         {usd >= 50 ? <p className="text-xl font-bold">${usd.toFixed(2)}</p> : <p className="text-xs">Available once balance ≥ $50</p>}
+//       </div>
+//       <button
+//         className={`transition-all text-white font-bold px-4 py-2 rounded-lg ${usd >= 50
+//             ? 'bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-500 hover:to-pink-400 cursor-pointer'
+//             : 'bg-gray-500 cursor-not-allowed opacity-50'
+//           }`}
+//         disabled={usd < 50}
+//         onClick={usd >= 50 ? onWithdrawClick : undefined}
+//       >
+//         {usd >= 50 ? 'Withdraw' : '$50 required for available balance'}
+//       </button>
+//     </div>
+//   </div>
+// );
+
+// const HistoryPage = () => {
+//   const router = useRouter();
+//   const dispatch = useDispatch();
+//   const { session } = useAuth();
+//   const [showPopup, setShowPopup] = useState(false);
+//   const [showWithdrawModal, setShowWithdrawModal] = useState(false);
+//   const [withdrawAmount, setWithdrawAmount] = useState('');
+//   const [withdrawError, setWithdrawError] = useState('');
+//   const [showPaymentModal, setShowPaymentModal] = useState(false);
+//   const [hasPaymentAccount, setHasPaymentAccount] = useState(false);
+//   const [checkingPaymentAccount, setCheckingPaymentAccount] = useState(false);
+//   const [showConfirmModal, setShowConfirmModal] = useState(false);
+//   const [paymentAccountDetails, setPaymentAccountDetails] = useState<any>(null);
+//   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+//   const [pendingWithdrawals, setPendingWithdrawals] = useState<any[]>([]);
+//   const [showSuccessModal, setShowSuccessModal] = useState(false);
+//   const [toastMessage, setToastMessage] = useState('');
+//   const [showToast, setShowToast] = useState(false);
+//   // Initialize with current month/year
+//   const now = new Date();
+//   const currentMonth = (now.getMonth() + 1).toString(); // 1-12
+//   const currentYear = now.getFullYear().toString();
+
+//   const [selectedMonth, setSelectedMonth] = useState<string>(currentMonth);
+//   const [selectedYear, setSelectedYear] = useState<string>(currentYear);
+//   const [monthlyHistory, setMonthlyHistory] = useState<any[]>([]);
+
+//   // Toast notification function
+//   const showToastNotification = (message: string) => {
+//     setToastMessage(message);
+//     setShowToast(true);
+//     setTimeout(() => {
+//       setShowToast(false);
+//     }, 4000);
+//   };
+
+//   // Check if user has payment account
+//   const checkPaymentAccount = async () => {
+//     if (!session?._id || !session?.token) return false;
+
+//     setCheckingPaymentAccount(true);
+//     try {
+//       const response = await fetch(`${URL}/addpayment/check-account/${session?._id}`, {
+//         headers: {
+//           Authorization: `Bearer ${session?.token}`,
+//         },
+//       });
+//       const data = await response.json();
+//       const hasAccount = response.ok && data.exists;
+//       setHasPaymentAccount(hasAccount);
+//       return hasAccount;
+//     } catch (error) {
+//       console.error('Error checking payment account:', error);
+//       setHasPaymentAccount(false);
+//       return false;
+//     } finally {
+//       setCheckingPaymentAccount(false);
+//     }
+//   };
+
+//   // Withdrawal validation and handlers
+//   const handleWithdrawClick = async () => {
+//     setWithdrawAmount('');
+//     setWithdrawError('');
+
+//     // Check if user has payment account first
+//     const hasAccount = await checkPaymentAccount();
+
+//     if (hasAccount) {
+//       // Get payment account details for confirmation
+//       try {
+//         const response = await fetch(`${URL}/addpayment/check-account/${session?._id}`, {
+//           headers: {
+//             Authorization: `Bearer ${session?.token}`,
+//           },
+//         });
+//         const accountData = await response.json();
+
+//         if (accountData.exists) {
+//           setPaymentAccountDetails(accountData.account);
+//           setShowConfirmModal(true);
+//         } else {
+//           setShowPaymentModal(true);
+//         }
+//       } catch (error) {
+//         console.error('Error fetching payment account:', error);
+//         setShowPaymentModal(true);
+//       }
+//     } else {
+//       setShowPaymentModal(true);
+//     }
+//   };
+
+//   const handleWithdrawAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+//     const value = e.target.value;
+//     setWithdrawAmount(value);
+//     setWithdrawError('');
+//   };
+
+//   const validateWithdrawAmount = (amount: string, maxAmount: number) => {
+//     const numAmount = parseFloat(amount);
+
+//     if (isNaN(numAmount) || numAmount <= 0) {
+//       return 'Please enter a valid amount';
+//     }
+
+//     if (numAmount < 50) {
+//       return 'Minimum withdrawal amount is $50';
+//     }
+
+//     if (numAmount > maxAmount) {
+//       return `Insufficient funds`;
+//     }
+
+//     return '';
+//   };
+
+//   const handleConfirmWithdraw = async () => {
+//     const maxAmount = analytics.earning * 0.04;
+//     const error = validateWithdrawAmount(withdrawAmount, maxAmount);
+
+//     if (error) {
+//       setWithdrawError(error);
+//       return;
+//     }
+
+//     if (!paymentAccountDetails) {
+//       alert('Payment account details not found. Please try again.');
+//       return;
+//     }
+
+//     try {
+//       // Submit withdrawal request
+//       const withdrawResponse = await fetch(`${URL}/withdraw-request`, {
+//         method: 'POST',
+//         headers: {
+//           'Content-Type': 'application/json',
+//           Authorization: `Bearer ${session?.token}`,
+//         },
+//         body: JSON.stringify({
+//           amount: parseFloat(withdrawAmount),
+//           credentials: {
+//             method: paymentAccountDetails.method,
+//             fullName: paymentAccountDetails.fullName,
+//             email: paymentAccountDetails.email,
+//             country: paymentAccountDetails.country,
+//             cryptoType: paymentAccountDetails.cryptoType,
+//             walletAddress: paymentAccountDetails.walletAddress,
+//           }
+//         })
+//       });
+
+//       const result = await withdrawResponse.json();
+
+//       if (withdrawResponse.ok) {
+//         setShowConfirmModal(false);
+//         setShowSuccessModal(true);
+//         setWithdrawAmount('');
+//         setWithdrawError('');
+//         // Refresh pending withdrawals by reloading the page data
+//         window.location.reload();
+//       } else {
+//         showToastNotification(result.message || 'Failed to submit withdrawal request');
+//       }
+//     } catch (error) {
+//       console.error('Error submitting withdrawal:', error);
+//       showToastNotification('Error submitting withdrawal request');
+//     }
+//   };
+
+//   // Delete payment account
+//   const handleDeleteAccount = async () => {
+//     if (!session?._id || !session?.token) return;
+
+//     try {
+//       const response = await fetch(`${URL}/addpayment/${session._id}`, {
+//         method: 'DELETE',
+//         headers: {
+//           Authorization: `Bearer ${session.token}`,
+//         },
+//       });
+
+//       if (response.ok) {
+//         alert('Payment account deleted successfully!');
+//         setShowDeleteConfirm(false);
+//         setHasPaymentAccount(false);
+//         setPaymentAccountDetails(null);
+//       } else {
+//         const result = await response.json();
+//         alert(result.message || 'Failed to delete payment account');
+//       }
+//     } catch (error) {
+//       console.error('Error deleting payment account:', error);
+//       alert('Error deleting payment account');
+//     }
+//   };
+
+//   const { history, loading, } = useSelector(
+//     (state: RootState) => state.goldstat
+//   ) as { history: any; transactions: Transaction[]; loading: boolean; error: string | null };
+
+//   const { earnings, creator_portfolio_id, creator_verified } = useSelector(
+//     (state: RootState) => state.profile
+//   );
+
+//   // Check if user is a creator - only creators have earnings
+//   const isCreator = creator_verified || !!creator_portfolio_id;
+
+//   // Calculate total current balance (not month-specific) - only for creators
+//   const totalCurrentBalance = isCreator ? (typeof earnings === 'number' ? earnings : parseFloat(earnings || '0') || 0) : 0;
+//   const totalCurrentBalanceUSD = totalCurrentBalance * 0.04;
+
+//   const [views, setViews] = useState(0);
+
+//   // Get analytics from history data or use profile data based on selected month
+//   // const analytics: Analytics = useMemo(() => {
+//   //   // If user is not a creator, return zeros for earnings
+//   //   if (!isCreator) {
+//   //     return {
+//   //       coin: 0,
+//   //       usd: 0,
+//   //       request: 0,
+//   //       earning: 0,
+//   //       gift: 0,
+//   //       like: 0,
+//   //       followers: 0,
+//   //     };
+//   //   }
+
+//   //   const targetMonth = parseInt(selectedMonth) - 1; // Convert to 0-11
+//   //   const targetYear = parseInt(selectedYear);
+
+//   //   const now = new Date();
+
+//   //   // Check if selected month is current month FIRST - if so, prefer history.history
+//   //   const isCurrentMonth = parseInt(selectedMonth) === (now.getMonth() + 1) && parseInt(selectedYear) === now.getFullYear();
+
+//   //   // Try to find data for selected month from monthlyHistory (for past months)
+//   //   if (monthlyHistory && monthlyHistory.length > 0) {
+//   //     const monthData = monthlyHistory.find((item: any) => {
+//   //       if (!item.month || !item.data) {
+//   //         return false;
+//   //       }
+
+//   //       try {
+//   //         // Parse month string (e.g., "January", "February", etc.)
+//   //         const monthNames = ["January", "February", "March", "April", "May", "June",
+//   //           "July", "August", "September", "October", "November", "December"];
+//   //         const monthIndex = monthNames.indexOf(item.month);
+
+//   //         if (monthIndex === targetMonth && item.data.year === targetYear) {
+//   //           return true;
+//   //         }
+//   //       } catch (error) {
+//   //         return false;
+//   //       }
+//   //       return false;
+//   //     });
+
+//   //     if (monthData && monthData.data) {
+//   //       // For current month, skip monthlyHistory and use history.history instead
+//   //       if (isCurrentMonth && history?.history) {
+//   //         // Will fall through to use history.history below
+//   //       } else {
+//   //         // For past months, use monthlyHistory data
+//   //         const transactions = monthData.data.earning || [];
+
+//   //         // Helper function to check if transaction is an earnings transaction (not balance transaction)
+//   //         const isEarningsTransaction = (details: string) => {
+//   //           if (!details) return false;
+//   //           const detailsLower = details.toLowerCase();
+
+//   //           // Include earnings-related transactions
+//   //           const isEarnings =
+//   //             details.includes("completed - payment received") ||
+//   //             details.includes("completed - payment transferred") ||
+//   //             details.includes("Fan call - payment received") ||
+//   //             details.includes("Fan call - payment for") ||
+//   //             details.includes("exclusive post sale") ||
+//   //             details.includes("exclusive post") ||
+//   //             details.includes("exclusive content sale") ||
+//   //             details.includes("exclusive content") ||
+//   //             details.includes("exclusive sale") ||
+//   //             detailsLower.includes("withdrawal") ||
+//   //             detailsLower.includes("withdraw") ||
+//   //             detailsLower.includes("earnings") ||
+//   //             details.includes("hosting service completed");
+
+//   //           // Exclude balance-related transactions
+//   //           const isBalance =
+//   //             details.includes("refund") ||
+//   //             details.includes("expired") ||
+//   //             details.includes("cancelled") ||
+//   //             details.includes("declined") ||
+//   //             details.includes("balance") ||
+//   //             details.includes("purchase") ||
+//   //             details.includes("top up") ||
+//   //             details.includes("top-up") ||
+//   //             details.includes("deposit");
+
+//   //           return isEarnings && !isBalance;
+//   //         };
+
+//   //         // Check transaction structure - transactions have: income, spend, date, userid, detail, id
+//   //         let requestCount = 0;
+//   //         let giftCount = 0;
+//   //         let likeCount = 0;
+//   //         let totalEarning = 0; // Calculate total earnings from transactions
+
+//   //         transactions.forEach((t: any) => {
+//   //           // The detail field contains the description (e.g., "completed - payment received")
+//   //           const detail = (t.detail || t.details || t.description || "");
+
+//   //           // Only count earnings transactions, not balance transactions
+//   //           if (!isEarningsTransaction(detail)) {
+//   //             return; // Skip balance transactions
+//   //           }
+
+//   //           // Calculate earnings: sum all income values (positive income means money earned)
+//   //           // Only count income from earnings transactions, not from purchases/refunds
+//   //           const income = parseFloat(t.income || "0");
+//   //           if (income > 0) {
+//   //             totalEarning += income;
+//   //           }
+
+//   //           const detailLower = detail.toLowerCase();
+//   //           if (detailLower.includes('request') || detailLower.includes('fan meet') || detailLower.includes('completed - payment received')) {
+//   //             requestCount++;
+//   //           }
+//   //           if (detailLower.includes('gift') || detailLower.includes('tip')) {
+//   //             giftCount++;
+//   //           }
+//   //           if (detailLower.includes('like')) {
+//   //             likeCount++;
+//   //           }
+//   //         });
+
+//   //         return {
+//   //           coin: parseFloat(monthData.total) || 0,
+//   //           usd: (parseFloat(monthData.total) || 0) * 0.04,
+//   //           request: requestCount,
+//   //           earning: totalEarning, // Use calculated earning from transactions
+//   //           gift: giftCount,
+//   //           like: likeCount,
+//   //           followers: 0, // This might need to come from a different source
+//   //         };
+//   //       }
+//   //     }
+//   //   }
+
+//   //   // IMPORTANT: For current month, ALWAYS use history.history data (it has actual counts)
+//   //   if (isCurrentMonth && history?.history) {
+//   //     const hasActivity =
+//   //       (history.history.earning !== "---" && history.history.earning !== "0" && history.history.earning !== 0) ||
+//   //       (history.history.request !== "0" && history.history.request !== 0) ||
+//   //       (history.history.gift !== "0" && history.history.gift !== 0) ||
+//   //       (history.history.like !== "0" && history.history.like !== 0) ||
+//   //       (history.history.followers !== "0" && history.history.followers !== 0);
+
+//   //     if (hasActivity) {
+//   //       // Parse string values to numbers, handling "---" and "0"
+//   //       const parseValue = (val: any) => {
+//   //         if (val === "---" || val === null || val === undefined) return 0;
+//   //         const parsed = typeof val === 'string' ? parseFloat(val) : val;
+//   //         return isNaN(parsed) ? 0 : parsed;
+//   //       };
+
+//   //       return {
+//   //         coin: parseValue(history.history.coin),
+//   //         usd: parseValue(history.history.usd),
+//   //         request: parseValue(history.history.request),
+//   //         earning: parseValue(history.history.earning), // Use earning from history.history
+//   //         gift: parseValue(history.history.gift),
+//   //         like: parseValue(history.history.like),
+//   //         followers: parseValue(history.history.followers),
+//   //       };
+//   //     }
+//   //   }
+
+//   //   // Return zeros if no data for selected month
+//   //   return {
+//   //     coin: 0,
+//   //     usd: 0,
+//   //     request: 0,
+//   //     earning: 0, // No earnings if no data
+//   //     gift: 0,
+//   //     like: 0,
+//   //     followers: 0,
+//   //   };
+//   // }, [history, selectedMonth, selectedYear, monthlyHistory, isCreator]);
+
+// // Get all transactions from Redux state
+//   const { transactions } = useSelector(
+//     (state: RootState) => state.goldstat
+//   ) as { transactions: Transaction[] };
+
+//   // Get analytics from history data or use profile data based on selected month
+//   const analytics: Analytics = useMemo(() => {
+//     // If user is not a creator, return zeros for earnings
+//     if (!isCreator) {
+//       return {
+//         coin: 0,
+//         usd: 0,
+//         request: 0,
+//         earning: 0,
+//         gift: 0,
+//         like: 0,
+//         followers: 0,
+//       };
+//     }
+
+//     const targetMonth = parseInt(selectedMonth) - 1; // Convert to 0-11
+//     const targetYear = parseInt(selectedYear);
+
+//     const now = new Date();
+//     const isCurrentMonth = parseInt(selectedMonth) === (now.getMonth() + 1) && parseInt(selectedYear) === now.getFullYear();
+
+//     // Helper function to check if transaction is an earnings transaction
+//     const isEarningsTransaction = (description: string) => {
+//       if (!description) return false;
+//       const descLower = description.toLowerCase();
+
+//       // Include earnings-related transactions
+//       const isEarnings =
+//         description.includes("payment received") ||
+//         description.includes("Fan call - payment received") ||
+//         description.includes("exclusive post sale") ||
+//         description.includes("exclusive content sale") ||
+//         description.includes("Fan meet completed - payment received") ||
+//         descLower.includes("received") && descLower.includes("coins") ||
+//         descLower.includes("received") && descLower.includes("golds");
+
+//       // Exclude spending/payment transactions
+//       const isSpending =
+//         description.includes("payment for") ||
+//         description.includes("payment transferred") ||
+//         description.includes("Purchased") ||
+//         descLower.includes("withdrawal") ||
+//         descLower.includes("withdraw");
+
+//       return isEarnings && !isSpending;
+//     };
+
+//     // Filter transactions for the selected month/year
+//     const monthTransactions = (transactions || []).filter((t: any) => {
+//       try {
+//         const transDate = new Date(t.created_at);
+//         return transDate.getMonth() === targetMonth && transDate.getFullYear() === targetYear;
+//       } catch {
+//         return false;
+//       }
+//     });
+
+//     // Calculate analytics from filtered transactions
+//     let requestCount = 0;
+//     let giftCount = 0;
+//     let likeCount = 0;
+//     let totalEarning = 0;
+
+//     monthTransactions.forEach((t: any) => {
+//       const description = t.description || '';
+//       const amount = parseFloat(t.amount || '0');
+
+//       // Only count positive amounts (earnings) from earning transactions
+//       if (amount > 0 && isEarningsTransaction(description)) {
+//         totalEarning += amount;
+
+//         const descLower = description.toLowerCase();
+//         if (descLower.includes('fan meet') || descLower.includes('fan call - payment received')) {
+//           requestCount++;
+//         }
+//         if (descLower.includes('gift') || descLower.includes('tip')) {
+//           giftCount++;
+//         }
+//         if (descLower.includes('like')) {
+//           likeCount++;
+//         }
+//       }
+//     });
+
+//     // For current month, try to use history.history data if available and has better info
+//     if (isCurrentMonth && history?.history) {
+//       const parseValue = (val: any) => {
+//         if (val === "---" || val === null || val === undefined) return 0;
+//         const parsed = typeof val === 'string' ? parseFloat(val) : val;
+//         return isNaN(parsed) ? 0 : parsed;
+//       };
+
+//       const historyEarning = parseValue(history.history.earning);
+//       const historyRequest = parseValue(history.history.request);
+//       const historyFollowers = parseValue(history.history.followers);
+
+//       // Use history data if it has values, otherwise use calculated values
+//       return {
+//         coin: historyEarning > 0 ? parseValue(history.history.coin) : totalEarning,
+//         usd: historyEarning > 0 ? parseValue(history.history.usd) : totalEarning * 0.04,
+//         request: historyRequest > 0 ? historyRequest : requestCount,
+//         earning: historyEarning > 0 ? historyEarning : totalEarning,
+//         gift: giftCount,
+//         like: likeCount,
+//         followers: historyFollowers,
+//       };
+//     }
+
+//     // For past months or when no history data, return calculated values
+//     return {
+//       coin: totalEarning,
+//       usd: totalEarning * 0.04,
+//       request: requestCount,
+//       earning: totalEarning,
+//       gift: giftCount,
+//       like: likeCount,
+//       followers: 0,
+//     };
+//   }, [history, selectedMonth, selectedYear, transactions, isCreator]);
+
+//   useEffect(() => {
+//     const fetchPendingWithdrawals = async () => {
+//       if (!session?._id || !session?.token) return;
+
+//       try {
+//         const response = await fetch(`${URL}/withdraw-request/all/${session._id}`, {
+//           headers: {
+//             Authorization: `Bearer ${session.token}`,
+//           },
+//         });
+
+//         if (response.ok) {
+//           const data = await response.json();
+
+//           // Filter only pending requests
+//           const pending = data.requests?.filter((req: any) => req.status === 'pending') || [];
+//           setPendingWithdrawals(pending);
+//         }
+//       } catch (error) {
+//         console.error('Error fetching pending withdrawals:', error);
+//       }
+//     };
+
+//     const fetchMonthlyHistory = async () => {
+//       if (!session?._id || !session?.token) return;
+
+//       try {
+//         const result = await dispatch(get_monthly_history({ userId: session._id, token: session.token }) as any);
+//         if (result.payload && result.payload.Month) {
+//           setMonthlyHistory(result.payload.Month);
+//         }
+//       } catch (error) {
+//         console.error('Error fetching monthly history:', error);
+//       }
+//     };
+
+//     if (session?._id && session?.token) {
+//       dispatch(get_my_history({ userId: session._id, token: session.token }) as any);
+//       dispatch(get_transaction_history({ userId: session._id, token: session.token }) as any);
+//       dispatch(getprofile({ userid: session._id, token: session.token }) as any);
+//       fetchPendingWithdrawals();
+//       fetchMonthlyHistory();
+//     }
+//   }, [dispatch, session]);
+
+//   // Separate useEffect for views - same as creator page
+//   useEffect(() => {
+//     const fetchViews = async () => {
+//       if (!session?._id || !session?.token) {
+//         return;
+//       }
+
+//       // Get creator ID from profile data (same as creator page)
+//       const portfolioId = creator_portfolio_id || session._id; // use profile creator_portfolio_id or fallback to session ID
+
+
+//       const data = {
+//         creator_portfolio_id: portfolioId,
+//         userId: session._id,
+//         token: session.token,
+//       };
+//       const response = await dispatch(getViews(data) as any);
+
+
+//       try {
+//         const payload = response?.payload?.response;
+
+
+//         if (!payload) {
+//           setViews(0);
+//           return;
+//         }
+
+//         // Ensure payload is a valid JSON string
+//         const parsed = typeof payload === "string" ? JSON.parse(payload) : payload;
+
+//         setViews(parsed?.views ?? 0);
+
+//       } catch {
+//         setViews(0);
+//       }
+//     };
+
+//     fetchViews();
+//   }, [session, dispatch, creator_portfolio_id]);
+
+//   return (
+//     <div className="w-full max-w-md sm:max-w-lg lg:ml-36 min-h-screen py-8 px-6 text-white">
+//       <style jsx>{`
+//         @keyframes slide-in {
+//           from {
+//             transform: translateX(100%);
+//             opacity: 0;
+//           }
+//           to {
+//             transform: translateX(0);
+//             opacity: 1;
+//           }
+//         }
+//         .animate-slide-in {
+//           animation: slide-in 0.3s ease-out;
+//         }
+//       `}</style>
+//       {loading && (
+//         <div className="flex flex-col items-center mt-16">
+//           <PacmanLoader color="#fff" size={35} />
+//           <p className="text-sm mt-2">Loading...</p>
+//         </div>
+//       )}
+
+//       {/* Gold Card - Always show total current balance, not month-specific */}
+//       <div className="bg-gray-800 rounded-lg px-4 py-3 mb-3">
+//         <div className="flex justify-between">
+//           <button
+//             className="text-sm text-blue-400 font-semibold focus:outline-none cursor-pointer"
+//             onClick={() => router.push("/goldstat/earnings")}
+//             type="button"
+//           >
+//             Gold &gt;
+//           </button>
+//           <Image
+//             src="/icons/help.svg"
+//             alt="help"
+//             width={16}
+//             height={16}
+//             className="cursor-pointer"
+//             onClick={() => setShowPopup(true)}
+//           />
+//         </div>
+//         <div className="flex items-center mt-2">
+//           <button
+//             type="button"
+//             onClick={() => router.push("/goldstat/earnings")}
+//             className="focus:outline-none hover:scale-105 transition-transform"
+//           >
+//             <Image
+//               src="/icons/icons8.png"
+//               alt="gold"
+//               width={32}
+//               height={32}
+//               className="mr-1"
+//             />
+//           </button>
+//           <p className="text-lg font-bold">{totalCurrentBalance}</p>
+//         </div>
+//         <p className="text-sm">= ${totalCurrentBalanceUSD.toFixed(2)}</p>
+//       </div>
+
+
+
+//       {/* Withdraw Request - Always show total current balance, not month-specific */}
+//       <WithdrawRequestCard usd={totalCurrentBalanceUSD} onWithdrawClick={handleWithdrawClick} />
+
+//       {/* Account Analytics - Only show if there's current month activity */}
+//       {/* Note: Monthly analytics reset at the start of each new month */}
+//       {analytics.request > 0 || analytics.gift > 0 || analytics.like > 0 || analytics.followers > 0 ? (
+//         <div className="bg-gray-800 rounded-lg px-4 py-3 mb-3">
+//           <div className="flex justify-between items-center mb-3">
+//             <p className="font-semibold text-sm">Account analytics</p>
+//             <div className="flex items-center gap-2">
+//               {/* Month Selector */}
+//               <select
+//                 value={selectedMonth}
+//                 onChange={(e) => setSelectedMonth(e.target.value)}
+//                 className="bg-gray-700 text-white text-xs px-2 py-1 rounded border border-gray-600 focus:outline-none focus:ring-1 focus:ring-yellow-500"
+//               >
+//                 <option value="1">January</option>
+//                 <option value="2">February</option>
+//                 <option value="3">March</option>
+//                 <option value="4">April</option>
+//                 <option value="5">May</option>
+//                 <option value="6">June</option>
+//                 <option value="7">July</option>
+//                 <option value="8">August</option>
+//                 <option value="9">September</option>
+//                 <option value="10">October</option>
+//                 <option value="11">November</option>
+//                 <option value="12">December</option>
+//               </select>
+//               {/* Year Selector */}
+//               <select
+//                 value={selectedYear}
+//                 onChange={(e) => setSelectedYear(e.target.value)}
+//                 className="bg-gray-700 text-white text-xs px-2 py-1 rounded border border-gray-600 focus:outline-none focus:ring-1 focus:ring-yellow-500"
+//               >
+//                 {Array.from({ length: 5 }, (_, i) => {
+//                   const year = new Date().getFullYear() - i;
+//                   return (
+//                     <option key={year} value={year.toString()}>
+//                       {year}
+//                     </option>
+//                   );
+//                 })}
+//               </select>
+//             </div>
+//           </div>
+//           <div className="grid grid-cols-2 gap-2 text-sm">
+//             <div className="bg-slate-600 rounded-lg p-2 flex flex-col">
+//               <p>Fan Request</p>
+//               <p className="text-xl font-bold">{analytics.request}</p>
+//             </div>
+//             <div className="bg-indigo-600 rounded-lg p-2 flex flex-col">
+//               <p>Earnings</p>
+//               <p className="text-xl font-bold">$ {(analytics.earning * 0.04).toFixed(2)}</p>
+//             </div>
+//             <div className="bg-emerald-600 rounded-lg p-2 flex flex-col">
+//               <p>Portfolio views</p>
+//               <p className="text-xl font-bold">{views}</p>
+//             </div>
+//             <div className="bg-pink-600 rounded-lg p-2 flex flex-col">
+//               <p>New Fans</p>
+//               <p className="text-xl font-bold">{analytics.followers}</p>
+//             </div>
+//           </div>
+//         </div>
+//       ) : (
+//         <div className="bg-gray-800 rounded-lg px-4 py-3 mb-3">
+//           <div className="flex justify-between items-center mb-3">
+//             <p className="font-semibold text-sm">Account analytics</p>
+//             <div className="flex items-center gap-2">
+//               {/* Month Selector */}
+//               <select
+//                 value={selectedMonth}
+//                 onChange={(e) => setSelectedMonth(e.target.value)}
+//                 className="bg-gray-700 text-white text-xs px-2 py-1 rounded border border-gray-600 focus:outline-none focus:ring-1 focus:ring-yellow-500"
+//               >
+//                 <option value="1">January</option>
+//                 <option value="2">February</option>
+//                 <option value="3">March</option>
+//                 <option value="4">April</option>
+//                 <option value="5">May</option>
+//                 <option value="6">June</option>
+//                 <option value="7">July</option>
+//                 <option value="8">August</option>
+//                 <option value="9">September</option>
+//                 <option value="10">October</option>
+//                 <option value="11">November</option>
+//                 <option value="12">December</option>
+//               </select>
+//               {/* Year Selector */}
+//               <select
+//                 value={selectedYear}
+//                 onChange={(e) => setSelectedYear(e.target.value)}
+//                 className="bg-gray-700 text-white text-xs px-2 py-1 rounded border border-gray-600 focus:outline-none focus:ring-1 focus:ring-yellow-500"
+//               >
+//                 {Array.from({ length: 5 }, (_, i) => {
+//                   const year = new Date().getFullYear() - i;
+//                   return (
+//                     <option key={year} value={year.toString()}>
+//                       {year}
+//                     </option>
+//                   );
+//                 })}
+//               </select>
+//             </div>
+//           </div>
+//           <div className="text-center text-gray-400">
+//             <p className="text-sm">No activity for {new Date(parseInt(selectedYear), parseInt(selectedMonth) - 1).toLocaleString('default', { month: 'long', year: 'numeric' })}</p>
+//             <p className="text-xs mt-1">Complete fan meets to see your earnings here</p>
+//           </div>
+//         </div>
+//       )}
+
+//       {/* Pending Withdrawals Section */}
+//       {pendingWithdrawals.length > 0 && (
+//         <div className="bg-gray-800 rounded-lg px-4 py-3 mb-3">
+//           <div className="flex justify-between mb-3">
+//             <p className="font-semibold text-sm">Pending Withdrawals</p>
+//             <p className="text-xs text-yellow-400">{pendingWithdrawals.length} request{pendingWithdrawals.length !== 1 ? 's' : ''}</p>
+//           </div>
+//           <div className="space-y-2">
+//             {pendingWithdrawals.map((request, index) => (
+//               <div key={request._id || index} className="bg-gray-700 rounded-lg p-3">
+//                 <div className="flex justify-between items-center">
+//                   <div>
+//                     <p className="text-sm font-medium">${request.amount}</p>
+//                     <p className="text-xs text-gray-400">
+//                       {(() => {
+//                         try {
+//                           // Check both createdAt and requestedAt fields
+//                           const dateField = request.createdAt || request.requestedAt;
+//                           if (!dateField) return 'Date not available';
+//                           const date = new Date(dateField);
+//                           return isNaN(date.getTime()) ? 'Invalid date' : date.toLocaleDateString();
+//                         } catch (error) {
+//                           return 'Date not available';
+//                         }
+//                       })()}
+//                     </p>
+//                   </div>
+//                   <div className="text-right">
+//                     <span className="inline-block bg-yellow-600 text-yellow-100 text-xs px-2 py-1 rounded-full">
+//                       Pending
+//                     </span>
+//                     <p className="text-xs text-gray-400 mt-1">
+//                       {(() => {
+//                         const cryptoType = request.credentials?.cryptoType;
+//                         if (!cryptoType) return 'Crypto';
+
+//                         // Convert USDT_BEP20 to USDT (BEP20)
+//                         if (cryptoType.includes('_')) {
+//                           const [currency, network] = cryptoType.split('_');
+//                           return `${currency} (${network})`;
+//                         }
+
+//                         return cryptoType;
+//                       })()}
+//                     </p>
+//                   </div>
+//                 </div>
+//               </div>
+//             ))}
+//           </div>
+//         </div>
+//       )}
+
+//       {/* Payment Account Modal - Redirect to separate page */}
+//       {showPaymentModal && (
+//         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+//           <div className="bg-gray-800 p-6 rounded-lg shadow-lg w-full max-w-md mx-4">
+//             <div className="flex justify-between items-center mb-4">
+//               <h2 className="text-xl font-bold text-white">Add Payment Account</h2>
+//               <button
+//                 onClick={() => setShowPaymentModal(false)}
+//                 className="text-gray-400 hover:text-white"
+//               >
+//                 ✕
+//               </button>
+//             </div>
+//             <p className="text-gray-300 mb-4">
+//               You need to add your payment account details before you can withdraw funds.
+//             </p>
+//             <div className="space-y-3">
+//               <button
+//                 onClick={() => {
+//                   setShowPaymentModal(false);
+//                   router.push('/goldstat/payment-account?return=withdrawal');
+//                 }}
+//                 className="w-full bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-500 hover:to-pink-400 transition-all text-white font-bold px-6 py-3 rounded-lg"
+//               >
+//                 Go to Payment Account Page
+//               </button>
+//               <button
+//                 onClick={() => setShowPaymentModal(false)}
+//                 className="w-full bg-gray-600 hover:bg-gray-700 text-white font-medium px-6 py-3 rounded-lg"
+//               >
+//                 Cancel
+//               </button>
+//             </div>
+//           </div>
+//         </div>
+//       )}
+
+//       {/* Confirmation Modal */}
+//       {showConfirmModal && (
+//         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+//           <div className="bg-gray-800 p-8 rounded-lg shadow-lg text-center w-96">
+//             <h2 className="text-2xl font-bold mb-4 text-white">Confirm Withdrawal</h2>
+
+//             {/* Payment Account Details */}
+//             {paymentAccountDetails && (
+//               <div className="bg-gray-700 p-4 rounded-lg mb-4 text-left">
+//                 <div className="flex justify-between items-center mb-2">
+//                   <h3 className="text-lg font-semibold text-white">Payment Details</h3>
+//                   <button
+//                     onClick={() => setShowDeleteConfirm(true)}
+//                     className="text-red-400 hover:text-red-300 text-sm"
+//                   >
+//                     Delete Account
+//                   </button>
+//                 </div>
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
@@ -39,12 +981,11 @@ const WithdrawRequestCard = ({ usd, onWithdrawClick }: { usd: number; onWithdraw
         <p className="text-sm">Withdrawable Money</p>
         {usd >= 50 ? <p className="text-xl font-bold">${usd.toFixed(2)}</p> : <p className="text-xs">Available once balance ≥ $50</p>}
       </div>
-      <button 
-        className={`transition-all text-white font-bold px-4 py-2 rounded-lg ${
-          usd >= 50 
-            ? 'bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-500 hover:to-pink-400 cursor-pointer' 
+      <button
+        className={`transition-all text-white font-bold px-4 py-2 rounded-lg ${usd >= 50
+            ? 'bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-500 hover:to-pink-400 cursor-pointer'
             : 'bg-gray-500 cursor-not-allowed opacity-50'
-        }`}
+          }`}
         disabled={usd < 50}
         onClick={usd >= 50 ? onWithdrawClick : undefined}
       >
@@ -72,11 +1013,12 @@ const HistoryPage = () => {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [showToast, setShowToast] = useState(false);
+  
   // Initialize with current month/year
   const now = new Date();
   const currentMonth = (now.getMonth() + 1).toString(); // 1-12
   const currentYear = now.getFullYear().toString();
-  
+
   const [selectedMonth, setSelectedMonth] = useState<string>(currentMonth);
   const [selectedYear, setSelectedYear] = useState<string>(currentYear);
   const [monthlyHistory, setMonthlyHistory] = useState<any[]>([]);
@@ -93,7 +1035,7 @@ const HistoryPage = () => {
   // Check if user has payment account
   const checkPaymentAccount = async () => {
     if (!session?._id || !session?.token) return false;
-    
+
     setCheckingPaymentAccount(true);
     try {
       const response = await fetch(`${URL}/addpayment/check-account/${session?._id}`, {
@@ -118,10 +1060,10 @@ const HistoryPage = () => {
   const handleWithdrawClick = async () => {
     setWithdrawAmount('');
     setWithdrawError('');
-    
+
     // Check if user has payment account first
     const hasAccount = await checkPaymentAccount();
-    
+
     if (hasAccount) {
       // Get payment account details for confirmation
       try {
@@ -131,7 +1073,7 @@ const HistoryPage = () => {
           },
         });
         const accountData = await response.json();
-        
+
         if (accountData.exists) {
           setPaymentAccountDetails(accountData.account);
           setShowConfirmModal(true);
@@ -155,36 +1097,36 @@ const HistoryPage = () => {
 
   const validateWithdrawAmount = (amount: string, maxAmount: number) => {
     const numAmount = parseFloat(amount);
-    
+
     if (isNaN(numAmount) || numAmount <= 0) {
       return 'Please enter a valid amount';
     }
-    
+
     if (numAmount < 50) {
       return 'Minimum withdrawal amount is $50';
     }
-    
+
     if (numAmount > maxAmount) {
       return `Insufficient funds`;
     }
-    
+
     return '';
   };
 
   const handleConfirmWithdraw = async () => {
-    const maxAmount = analytics.earning * 0.04;
+    const maxAmount = totalCurrentBalanceUSD;
     const error = validateWithdrawAmount(withdrawAmount, maxAmount);
-    
+
     if (error) {
       setWithdrawError(error);
       return;
     }
-    
+
     if (!paymentAccountDetails) {
       alert('Payment account details not found. Please try again.');
       return;
     }
-    
+
     try {
       // Submit withdrawal request
       const withdrawResponse = await fetch(`${URL}/withdraw-request`, {
@@ -205,9 +1147,9 @@ const HistoryPage = () => {
           }
         })
       });
-      
+
       const result = await withdrawResponse.json();
-      
+
       if (withdrawResponse.ok) {
         setShowConfirmModal(false);
         setShowSuccessModal(true);
@@ -227,7 +1169,7 @@ const HistoryPage = () => {
   // Delete payment account
   const handleDeleteAccount = async () => {
     if (!session?._id || !session?.token) return;
-    
+
     try {
       const response = await fetch(`${URL}/addpayment/${session._id}`, {
         method: 'DELETE',
@@ -235,7 +1177,7 @@ const HistoryPage = () => {
           Authorization: `Bearer ${session.token}`,
         },
       });
-      
+
       if (response.ok) {
         alert('Payment account deleted successfully!');
         setShowDeleteConfirm(false);
@@ -251,24 +1193,24 @@ const HistoryPage = () => {
     }
   };
 
-  const { history,  loading, } = useSelector(
+  const { history, transactions, loading, earnings: monthlyEarnings } = useSelector(
     (state: RootState) => state.goldstat
-  ) as { history: any; transactions: Transaction[]; loading: boolean; error: string | null };
-  
-  const {  earnings, creator_portfolio_id, creator_verified } = useSelector(
+  ) as { history: any; transactions: Transaction[]; loading: boolean; error: string | null; earnings: any[] };
+
+  const { earnings, creator_portfolio_id, creator_verified } = useSelector(
     (state: RootState) => state.profile
   );
-  
+
   // Check if user is a creator - only creators have earnings
   const isCreator = creator_verified || !!creator_portfolio_id;
-  
+
   // Calculate total current balance (not month-specific) - only for creators
   const totalCurrentBalance = isCreator ? (typeof earnings === 'number' ? earnings : parseFloat(earnings || '0') || 0) : 0;
   const totalCurrentBalanceUSD = totalCurrentBalance * 0.04;
-  
+
   const [views, setViews] = useState(0);
 
-  // Get analytics from history data or use profile data based on selected month
+  // Get analytics from transactions based on selected month
   const analytics: Analytics = useMemo(() => {
     // If user is not a creator, return zeros for earnings
     if (!isCreator) {
@@ -282,185 +1224,164 @@ const HistoryPage = () => {
         followers: 0,
       };
     }
-    
+
     const targetMonth = parseInt(selectedMonth) - 1; // Convert to 0-11
     const targetYear = parseInt(selectedYear);
-    
     const now = new Date();
-    
-    // Check if selected month is current month FIRST - if so, prefer history.history
     const isCurrentMonth = parseInt(selectedMonth) === (now.getMonth() + 1) && parseInt(selectedYear) === now.getFullYear();
-    
-    // Try to find data for selected month from monthlyHistory (for past months)
-    if (monthlyHistory && monthlyHistory.length > 0) {
-      const monthData = monthlyHistory.find((item: any) => {
-        if (!item.month || !item.data) {
-          return false;
+
+    console.log('=== ANALYTICS DEBUG ===');
+    console.log('Selected Month:', selectedMonth, 'Year:', selectedYear);
+    console.log('Target Month (0-indexed):', targetMonth, 'Year:', targetYear);
+    console.log('Is Current Month:', isCurrentMonth);
+    console.log('Total Transactions:', transactions?.length || 0);
+
+    // Helper function to check if transaction is an earnings transaction
+    const isEarningsTransaction = (description: string) => {
+      if (!description) return false;
+      const descLower = description.toLowerCase();
+
+      // Include earnings-related transactions
+      const isEarnings =
+        description.includes("payment received") ||
+        description.includes("Fan call - payment received") ||
+        description.includes("Fan meet completed - payment received") ||
+        description.includes("exclusive post sale") ||
+        description.includes("exclusive content sale") ||
+        (descLower.includes("received") && (descLower.includes("coins") || descLower.includes("golds")));
+
+      // Exclude spending/payment transactions
+      const isSpending =
+        description.includes("payment for") ||
+        description.includes("payment transferred") ||
+        description.includes("Purchased") ||
+        descLower.includes("withdrawal") ||
+        descLower.includes("withdraw");
+
+      return isEarnings && !isSpending;
+    };
+
+    // Filter transactions for the selected month/year
+    const monthTransactions = (transactions || []).filter((t: any) => {
+      try {
+        const transDate = new Date(t.created_at);
+        const transMonth = transDate.getMonth();
+        const transYear = transDate.getFullYear();
+        const matches = transMonth === targetMonth && transYear === targetYear;
+        
+        if (matches) {
+          console.log('Matched Transaction:', {
+            date: t.created_at,
+            amount: t.amount,
+            description: t.description
+          });
         }
         
-        try {
-          // Parse month string (e.g., "January", "February", etc.)
-          const monthNames = ["January", "February", "March", "April", "May", "June",
-            "July", "August", "September", "October", "November", "December"];
-          const monthIndex = monthNames.indexOf(item.month);
-          
-          if (monthIndex === targetMonth && item.data.year === targetYear) {
-            return true;
-          }
-        } catch (error) {
-          return false;
-        }
+        return matches;
+      } catch (error) {
+        console.error('Error parsing date:', t.created_at, error);
         return false;
+      }
+    });
+
+    console.log('Filtered Month Transactions:', monthTransactions.length);
+
+    // Calculate analytics from filtered transactions
+    let requestCount = 0;
+    let giftCount = 0;
+    let likeCount = 0;
+    let totalEarning = 0;
+
+    monthTransactions.forEach((t: any) => {
+      const description = t.description || '';
+      const amount = parseFloat(t.amount || '0');
+
+      console.log('Processing:', {
+        description,
+        amount,
+        isEarning: isEarningsTransaction(description)
       });
-      
-      if (monthData && monthData.data) {
-        // For current month, skip monthlyHistory and use history.history instead
-        if (isCurrentMonth && history?.history) {
-          // Will fall through to use history.history below
-        } else {
-          // For past months, use monthlyHistory data
-          const transactions = monthData.data.earning || [];
-          
-          // Helper function to check if transaction is an earnings transaction (not balance transaction)
-          const isEarningsTransaction = (details: string) => {
-            if (!details) return false;
-            const detailsLower = details.toLowerCase();
-            
-            // Include earnings-related transactions
-            const isEarnings = 
-              details.includes("completed - payment received") ||
-              details.includes("completed - payment transferred") ||
-              details.includes("Fan call - payment received") ||
-              details.includes("Fan call - payment for") ||
-              details.includes("exclusive post sale") ||
-              details.includes("exclusive post") ||
-              details.includes("exclusive content sale") ||
-              details.includes("exclusive content") ||
-              details.includes("exclusive sale") ||
-              detailsLower.includes("withdrawal") ||
-              detailsLower.includes("withdraw") ||
-              detailsLower.includes("earnings") ||
-              details.includes("hosting service completed");
-            
-            // Exclude balance-related transactions
-            const isBalance = 
-              details.includes("refund") ||
-              details.includes("expired") ||
-              details.includes("cancelled") ||
-              details.includes("declined") ||
-              details.includes("balance") ||
-              details.includes("purchase") ||
-              details.includes("top up") ||
-              details.includes("top-up") ||
-              details.includes("deposit");
-            
-            return isEarnings && !isBalance;
-          };
-          
-          // Check transaction structure - transactions have: income, spend, date, userid, detail, id
-          let requestCount = 0;
-          let giftCount = 0;
-          let likeCount = 0;
-          let totalEarning = 0; // Calculate total earnings from transactions
-          
-          transactions.forEach((t: any) => {
-            // The detail field contains the description (e.g., "completed - payment received")
-            const detail = (t.detail || t.details || t.description || "");
-            
-            // Only count earnings transactions, not balance transactions
-            if (!isEarningsTransaction(detail)) {
-              return; // Skip balance transactions
-            }
-            
-            // Calculate earnings: sum all income values (positive income means money earned)
-            // Only count income from earnings transactions, not from purchases/refunds
-            const income = parseFloat(t.income || "0");
-            if (income > 0) {
-              totalEarning += income;
-            }
-            
-            const detailLower = detail.toLowerCase();
-            if (detailLower.includes('request') || detailLower.includes('fan meet') || detailLower.includes('completed - payment received')) {
-              requestCount++;
-            }
-            if (detailLower.includes('gift') || detailLower.includes('tip')) {
-              giftCount++;
-            }
-            if (detailLower.includes('like')) {
-              likeCount++;
-            }
-          });
-          
-          return {
-            coin: parseFloat(monthData.total) || 0,
-            usd: (parseFloat(monthData.total) || 0) * 0.04,
-            request: requestCount,
-            earning: totalEarning, // Use calculated earning from transactions
-            gift: giftCount,
-            like: likeCount,
-            followers: 0, // This might need to come from a different source
-          };
+
+      // Only count positive amounts (earnings) from earning transactions
+      if (amount > 0 && isEarningsTransaction(description)) {
+        totalEarning += amount;
+        console.log('Added to earnings:', amount, 'New Total:', totalEarning);
+
+        const descLower = description.toLowerCase();
+        if (descLower.includes('fan meet') || descLower.includes('fan call - payment received')) {
+          requestCount++;
+        }
+        if (descLower.includes('gift') || descLower.includes('tip')) {
+          giftCount++;
+        }
+        if (descLower.includes('like')) {
+          likeCount++;
         }
       }
-    }
-    
-    // IMPORTANT: For current month, ALWAYS use history.history data (it has actual counts)
-    if (isCurrentMonth && history?.history) {
-      const hasActivity = 
-        (history.history.earning !== "---" && history.history.earning !== "0" && history.history.earning !== 0) ||
-        (history.history.request !== "0" && history.history.request !== 0) ||
-        (history.history.gift !== "0" && history.history.gift !== 0) ||
-        (history.history.like !== "0" && history.history.like !== 0) ||
-        (history.history.followers !== "0" && history.history.followers !== 0);
+    });
+
+    console.log('Final Calculated Earnings:', totalEarning);
+    console.log('Request Count:', requestCount);
+
+    // For current month with transaction data, always use calculated values from transactions
+    // Only use history.history for followers count if available
+    if (isCurrentMonth && totalEarning > 0) {
+      let followersCount = 0;
       
-      if (hasActivity) {
-        // Parse string values to numbers, handling "---" and "0"
+      if (history?.history) {
         const parseValue = (val: any) => {
           if (val === "---" || val === null || val === undefined) return 0;
           const parsed = typeof val === 'string' ? parseFloat(val) : val;
           return isNaN(parsed) ? 0 : parsed;
         };
+        followersCount = parseValue(history.history.followers);
         
-        return {
-          coin: parseValue(history.history.coin),
-          usd: parseValue(history.history.usd),
-          request: parseValue(history.history.request),
-          earning: parseValue(history.history.earning), // Use earning from history.history
-          gift: parseValue(history.history.gift),
-          like: parseValue(history.history.like),
-          followers: parseValue(history.history.followers),
-        };
+        console.log('Using calculated earnings with history followers:', followersCount);
       }
+
+      const result = {
+        coin: totalEarning,
+        usd: totalEarning * 0.04,
+        request: requestCount,
+        earning: totalEarning,
+        gift: giftCount,
+        like: likeCount,
+        followers: followersCount,
+      };
+      console.log('Returning Calculated Result (Current Month):', result);
+      console.log('=== END DEBUG ===\n');
+      return result;
     }
-    
-    // Return zeros if no data for selected month
-    return {
-      coin: 0,
-      usd: 0,
-      request: 0,
-      earning: 0, // No earnings if no data
-      gift: 0,
-      like: 0,
+
+    // For past months or when no transaction data, return calculated values
+    const result = {
+      coin: totalEarning,
+      usd: totalEarning * 0.04,
+      request: requestCount,
+      earning: totalEarning,
+      gift: giftCount,
+      like: likeCount,
       followers: 0,
     };
-  }, [history, selectedMonth, selectedYear, monthlyHistory, isCreator]);
-
-
+    console.log('Returning Calculated Result:', result);
+    console.log('=== END DEBUG ===\n');
+    return result;
+  }, [history, selectedMonth, selectedYear, transactions, isCreator]);
 
   useEffect(() => {
     const fetchPendingWithdrawals = async () => {
       if (!session?._id || !session?.token) return;
-      
+
       try {
         const response = await fetch(`${URL}/withdraw-request/all/${session._id}`, {
           headers: {
             Authorization: `Bearer ${session.token}`,
           },
         });
-        
+
         if (response.ok) {
           const data = await response.json();
-          
+
           // Filter only pending requests
           const pending = data.requests?.filter((req: any) => req.status === 'pending') || [];
           setPendingWithdrawals(pending);
@@ -472,7 +1393,7 @@ const HistoryPage = () => {
 
     const fetchMonthlyHistory = async () => {
       if (!session?._id || !session?.token) return;
-      
+
       try {
         const result = await dispatch(get_monthly_history({ userId: session._id, token: session.token }) as any);
         if (result.payload && result.payload.Month) {
@@ -498,23 +1419,20 @@ const HistoryPage = () => {
       if (!session?._id || !session?.token) {
         return;
       }
-      
+
       // Get creator ID from profile data (same as creator page)
       const portfolioId = creator_portfolio_id || session._id; // use profile creator_portfolio_id or fallback to session ID
-      
-      
+
       const data = {
         creator_portfolio_id: portfolioId,
         userId: session._id,
         token: session.token,
       };
       const response = await dispatch(getViews(data) as any);
-     
 
       try {
         const payload = response?.payload?.response;
-     
-        
+
         if (!payload) {
           setViews(0);
           return;
@@ -524,12 +1442,12 @@ const HistoryPage = () => {
         const parsed = typeof payload === "string" ? JSON.parse(payload) : payload;
 
         setViews(parsed?.views ?? 0);
-       
-      } catch  {
+
+      } catch {
         setViews(0);
       }
     };
-    
+
     fetchViews();
   }, [session, dispatch, creator_portfolio_id]);
 
@@ -595,120 +1513,117 @@ const HistoryPage = () => {
         <p className="text-sm">= ${totalCurrentBalanceUSD.toFixed(2)}</p>
       </div>
 
-     
-
       {/* Withdraw Request - Always show total current balance, not month-specific */}
       <WithdrawRequestCard usd={totalCurrentBalanceUSD} onWithdrawClick={handleWithdrawClick} />
 
-       {/* Account Analytics - Only show if there's current month activity */}
-       {/* Note: Monthly analytics reset at the start of each new month */}
-       {analytics.request > 0 || analytics.gift > 0 || analytics.like > 0 || analytics.followers > 0 ? (
-      <div className="bg-gray-800 rounded-lg px-4 py-3 mb-3">
-        <div className="flex justify-between items-center mb-3">
-          <p className="font-semibold text-sm">Account analytics</p>
-          <div className="flex items-center gap-2">
-            {/* Month Selector */}
-            <select
-              value={selectedMonth}
-              onChange={(e) => setSelectedMonth(e.target.value)}
-              className="bg-gray-700 text-white text-xs px-2 py-1 rounded border border-gray-600 focus:outline-none focus:ring-1 focus:ring-yellow-500"
-            >
-              <option value="1">January</option>
-              <option value="2">February</option>
-              <option value="3">March</option>
-              <option value="4">April</option>
-              <option value="5">May</option>
-              <option value="6">June</option>
-              <option value="7">July</option>
-              <option value="8">August</option>
-              <option value="9">September</option>
-              <option value="10">October</option>
-              <option value="11">November</option>
-              <option value="12">December</option>
-            </select>
-            {/* Year Selector */}
-            <select
-              value={selectedYear}
-              onChange={(e) => setSelectedYear(e.target.value)}
-              className="bg-gray-700 text-white text-xs px-2 py-1 rounded border border-gray-600 focus:outline-none focus:ring-1 focus:ring-yellow-500"
-            >
-              {Array.from({ length: 5 }, (_, i) => {
-                const year = new Date().getFullYear() - i;
-                return (
-                  <option key={year} value={year.toString()}>
-                    {year}
-                  </option>
-                );
-              })}
-            </select>
+      {/* Account Analytics - Show for selected month */}
+      {analytics.request > 0 || analytics.gift > 0 || analytics.like > 0 || analytics.followers > 0 || analytics.earning > 0 ? (
+        <div className="bg-gray-800 rounded-lg px-4 py-3 mb-3">
+          <div className="flex justify-between items-center mb-3">
+            <p className="font-semibold text-sm">Account analytics</p>
+            <div className="flex items-center gap-2">
+              {/* Month Selector */}
+              <select
+                value={selectedMonth}
+                onChange={(e) => setSelectedMonth(e.target.value)}
+                className="bg-gray-700 text-white text-xs px-2 py-1 rounded border border-gray-600 focus:outline-none focus:ring-1 focus:ring-yellow-500"
+              >
+                <option value="1">January</option>
+                <option value="2">February</option>
+                <option value="3">March</option>
+                <option value="4">April</option>
+                <option value="5">May</option>
+                <option value="6">June</option>
+                <option value="7">July</option>
+                <option value="8">August</option>
+                <option value="9">September</option>
+                <option value="10">October</option>
+                <option value="11">November</option>
+                <option value="12">December</option>
+              </select>
+              {/* Year Selector */}
+              <select
+                value={selectedYear}
+                onChange={(e) => setSelectedYear(e.target.value)}
+                className="bg-gray-700 text-white text-xs px-2 py-1 rounded border border-gray-600 focus:outline-none focus:ring-1 focus:ring-yellow-500"
+              >
+                {Array.from({ length: 5 }, (_, i) => {
+                  const year = new Date().getFullYear() - i;
+                  return (
+                    <option key={year} value={year.toString()}>
+                      {year}
+                    </option>
+                  );
+                })}
+              </select>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-2 text-sm">
+            <div className="bg-slate-600 rounded-lg p-2 flex flex-col">
+              <p>Fan Request</p>
+              <p className="text-xl font-bold">{analytics.request}</p>
+            </div>
+            <div className="bg-indigo-600 rounded-lg p-2 flex flex-col">
+              <p>Earnings</p>
+              <p className="text-xl font-bold">$ {(analytics.earning * 0.04).toFixed(2)}</p>
+            </div>
+            <div className="bg-emerald-600 rounded-lg p-2 flex flex-col">
+              <p>Portfolio views</p>
+              <p className="text-xl font-bold">{views}</p>
+            </div>
+            <div className="bg-pink-600 rounded-lg p-2 flex flex-col">
+              <p>New Fans</p>
+              <p className="text-xl font-bold">{analytics.followers}</p>
+            </div>
           </div>
         </div>
-        <div className="grid grid-cols-2 gap-2 text-sm">
-          <div className="bg-slate-600 rounded-lg p-2 flex flex-col">
-               <p>Fan Request</p>
-            <p className="text-xl font-bold">{analytics.request}</p>
+      ) : (
+        <div className="bg-gray-800 rounded-lg px-4 py-3 mb-3">
+          <div className="flex justify-between items-center mb-3">
+            <p className="font-semibold text-sm">Account analytics</p>
+            <div className="flex items-center gap-2">
+              {/* Month Selector */}
+              <select
+                value={selectedMonth}
+                onChange={(e) => setSelectedMonth(e.target.value)}
+                className="bg-gray-700 text-white text-xs px-2 py-1 rounded border border-gray-600 focus:outline-none focus:ring-1 focus:ring-yellow-500"
+              >
+                <option value="1">January</option>
+                <option value="2">February</option>
+                <option value="3">March</option>
+                <option value="4">April</option>
+                <option value="5">May</option>
+                <option value="6">June</option>
+                <option value="7">July</option>
+                <option value="8">August</option>
+                <option value="9">September</option>
+                <option value="10">October</option>
+                <option value="11">November</option>
+                <option value="12">December</option>
+              </select>
+              {/* Year Selector */}
+              <select
+                value={selectedYear}
+                onChange={(e) => setSelectedYear(e.target.value)}
+                className="bg-gray-700 text-white text-xs px-2 py-1 rounded border border-gray-600 focus:outline-none focus:ring-1 focus:ring-yellow-500"
+              >
+                {Array.from({ length: 5 }, (_, i) => {
+                  const year = new Date().getFullYear() - i;
+                  return (
+                    <option key={year} value={year.toString()}>
+                      {year}
+                    </option>
+                  );
+                })}
+              </select>
+            </div>
           </div>
-          <div className="bg-indigo-600 rounded-lg p-2 flex flex-col">
-            <p>Earnings</p>
-               <p className="text-xl font-bold">$ {(analytics.earning * 0.04).toFixed(2)}</p>
-          </div>
-          <div className="bg-emerald-600 rounded-lg p-2 flex flex-col">
-               <p>Portfolio views</p>
-               <p className="text-xl font-bold">{views}</p>
-          </div>
-          <div className="bg-pink-600 rounded-lg p-2 flex flex-col">
-               <p>New Fans</p>
-               <p className="text-xl font-bold">{analytics.followers}</p>
+          <div className="text-center text-gray-400">
+            <p className="text-sm">No activity for {new Date(parseInt(selectedYear), parseInt(selectedMonth) - 1).toLocaleString('default', { month: 'long', year: 'numeric' })}</p>
+            <p className="text-xs mt-1">Complete fan meets to see your earnings here</p>
           </div>
         </div>
-      </div>
-       ) : (
-         <div className="bg-gray-800 rounded-lg px-4 py-3 mb-3">
-           <div className="flex justify-between items-center mb-3">
-             <p className="font-semibold text-sm">Account analytics</p>
-             <div className="flex items-center gap-2">
-               {/* Month Selector */}
-               <select
-                 value={selectedMonth}
-                 onChange={(e) => setSelectedMonth(e.target.value)}
-                 className="bg-gray-700 text-white text-xs px-2 py-1 rounded border border-gray-600 focus:outline-none focus:ring-1 focus:ring-yellow-500"
-               >
-                 <option value="1">January</option>
-                 <option value="2">February</option>
-                 <option value="3">March</option>
-                 <option value="4">April</option>
-                 <option value="5">May</option>
-                 <option value="6">June</option>
-                 <option value="7">July</option>
-                 <option value="8">August</option>
-                 <option value="9">September</option>
-                 <option value="10">October</option>
-                 <option value="11">November</option>
-                 <option value="12">December</option>
-               </select>
-               {/* Year Selector */}
-               <select
-                 value={selectedYear}
-                 onChange={(e) => setSelectedYear(e.target.value)}
-                 className="bg-gray-700 text-white text-xs px-2 py-1 rounded border border-gray-600 focus:outline-none focus:ring-1 focus:ring-yellow-500"
-               >
-                 {Array.from({ length: 5 }, (_, i) => {
-                   const year = new Date().getFullYear() - i;
-                   return (
-                     <option key={year} value={year.toString()}>
-                       {year}
-                     </option>
-                   );
-                 })}
-               </select>
-             </div>
-           </div>
-           <div className="text-center text-gray-400">
-             <p className="text-sm">No activity for {new Date(parseInt(selectedYear), parseInt(selectedMonth) - 1).toLocaleString('default', { month: 'long', year: 'numeric' })}</p>
-             <p className="text-xs mt-1">Complete fan meets to see your earnings here</p>
-           </div>
-         </div>
-       )}
+      )}
 
       {/* Pending Withdrawals Section */}
       {pendingWithdrawals.length > 0 && (
@@ -745,13 +1660,13 @@ const HistoryPage = () => {
                       {(() => {
                         const cryptoType = request.credentials?.cryptoType;
                         if (!cryptoType) return 'Crypto';
-                        
+
                         // Convert USDT_BEP20 to USDT (BEP20)
                         if (cryptoType.includes('_')) {
                           const [currency, network] = cryptoType.split('_');
                           return `${currency} (${network})`;
                         }
-                        
+
                         return cryptoType;
                       })()}
                     </p>
@@ -805,7 +1720,7 @@ const HistoryPage = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-gray-800 p-8 rounded-lg shadow-lg text-center w-96">
             <h2 className="text-2xl font-bold mb-4 text-white">Confirm Withdrawal</h2>
-            
+
             {/* Payment Account Details */}
             {paymentAccountDetails && (
               <div className="bg-gray-700 p-4 rounded-lg mb-4 text-left">
@@ -824,24 +1739,24 @@ const HistoryPage = () => {
                 <p className="text-sm text-gray-300"><strong>Crypto:</strong> {(() => {
                   const cryptoType = paymentAccountDetails.cryptoType;
                   if (!cryptoType) return 'Crypto';
-                  
+
                   // Convert USDT_BEP20 to USDT (BEP20)
                   if (cryptoType.includes('_')) {
                     const [currency, network] = cryptoType.split('_');
                     return `${currency} (${network})`;
                   }
-                  
+
                   return cryptoType;
                 })()}</p>
                 <p className="text-sm text-gray-300 break-all"><strong>Wallet:</strong> {paymentAccountDetails.walletAddress}</p>
               </div>
             )}
-            
+
             <p className="text-gray-300 mb-4">
-              Available: ${(analytics.earning * 0.04).toFixed(2)}<br/>
+              Available: ${totalCurrentBalanceUSD.toFixed(2)}<br />
               Min: $50
             </p>
-            
+
             <div className="mb-4">
               <input
                 type="number"
@@ -850,13 +1765,13 @@ const HistoryPage = () => {
                 placeholder="Enter amount"
                 className="w-full px-4 py-3 rounded-lg bg-gray-700 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500"
                 min="50"
-                max={analytics.earning * 0.04}
+                max={totalCurrentBalanceUSD}
                 step="0.01"
               />
               {withdrawError && (
                 <p className="text-red-400 text-sm mt-2">{withdrawError}</p>
-        )}
-      </div>
+              )}
+            </div>
 
             <div className="flex gap-4">
               <button
@@ -888,7 +1803,7 @@ const HistoryPage = () => {
             <p className="text-gray-300 mb-6">
               Are you sure you want to delete your payment account? You&apos;ll all need to add it again to make withdrawals.
             </p>
-            
+
             <div className="flex gap-4">
               <button
                 className="bg-red-600 hover:bg-red-700 text-white font-bold px-6 py-3 rounded-lg flex-1"
@@ -917,7 +1832,7 @@ const HistoryPage = () => {
             <h2 className="text-2xl font-bold mb-4 text-white">Instruction</h2>
             <p className="text-white mb-6 text-lg">1 gold = $0.04 </p>
             <p className="text-white mb-6 text-lg">You can make withdrawals manually and the corresponding amount
-               will be credited to your USDT (BEP20) wallet within 72 hours </p>
+              will be credited to your USDT (BEP20) wallet within 72 hours </p>
             <button
               className="bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-500 hover:to-pink-400 transition-all text-white font-bold px-6 py-3 rounded-lg"
               onClick={() => setShowPopup(false)}

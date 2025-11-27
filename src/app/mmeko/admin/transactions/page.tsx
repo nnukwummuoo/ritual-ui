@@ -2,8 +2,9 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import { toast } from "material-react-toastify";
-import { Search, Filter, Eye, CheckCircle, XCircle, Clock, AlertCircle } from "lucide-react";
+import { Search, Filter, Eye, CheckCircle, XCircle, Clock, AlertCircle, Check } from "lucide-react";
 import { getTransactions } from "@/api/adminTransactions";
+import { verifyTransactionHash } from "@/api/web3payment";
 
 interface Transaction {
   _id: string;
@@ -31,6 +32,12 @@ const TransactionsPage = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
 
+  // Verification states
+  const [showVerifyModal, setShowVerifyModal] = useState(false);
+  const [verifyOrderId, setVerifyOrderId] = useState("");
+  const [verifyTxHash, setVerifyTxHash] = useState("");
+  const [verifying, setVerifying] = useState(false);
+
 
   // Fetch transactions
   const fetchTransactions = useCallback(async () => {
@@ -44,11 +51,11 @@ const TransactionsPage = () => {
         sortBy,
         sortOrder
       });
-      
+
       setTransactions(data.transactions || []);
       setTotalPages(data.pagination?.totalPages || 1);
     } catch {
-      toast.error("Failed to load transactions");
+      console.log("Failed to load transactions");
     } finally {
       setLoading(false);
     }
@@ -62,15 +69,15 @@ const TransactionsPage = () => {
   const filteredTransactions = transactions
     .filter(transaction => {
       const matchesSearch = transaction.orderId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           transaction.userId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           (transaction.username?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
-                           transaction.description.toLowerCase().includes(searchTerm.toLowerCase());
+        transaction.userId.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (transaction.username?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
+        transaction.description.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesStatus = statusFilter === "all" || transaction.status === statusFilter;
       return matchesSearch && matchesStatus;
     })
     .sort((a, b) => {
       let aValue, bValue;
-      
+
       switch (sortBy) {
         case "amount":
           aValue = a.amount;
@@ -126,8 +133,8 @@ const TransactionsPage = () => {
   // Format currency
   const formatCurrency = (amount: number, currency: string) => {
     // Format crypto types with underscores to use parentheses
-    const formattedCurrency = currency.includes('_') 
-      ? currency.replace('_', ' (') + ')' 
+    const formattedCurrency = currency.includes('_')
+      ? currency.replace('_', ' (') + ')'
       : currency;
     return `${amount.toFixed(2)} ${formattedCurrency}`;
   };
@@ -135,6 +142,48 @@ const TransactionsPage = () => {
   // Format date
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleString();
+  };
+
+  // Open verify modal with pre-filled order ID
+  const openVerifyModal = (orderId: string) => {
+    setVerifyOrderId(orderId);
+    setVerifyTxHash("");
+    setShowVerifyModal(true);
+  };
+
+  // Handle transaction verification
+  const handleVerifyTransaction = async () => {
+    if (!verifyOrderId.trim() || !verifyTxHash.trim()) {
+      toast.error("Please enter both Order ID and Transaction Hash");
+      return;
+    }
+
+    try {
+      setVerifying(true);
+      console.log(`🔍 [ADMIN] Verifying transaction: orderId=${verifyOrderId}, txHash=${verifyTxHash}`);
+
+      const result = await verifyTransactionHash(verifyOrderId.trim(), verifyTxHash.trim());
+
+      console.log(`✅ [ADMIN] Verification result:`, result);
+
+      if (result.status === 'confirmed') {
+        toast.success(`Transaction verified successfully! Order: ${result.orderId}, Amount: ${result.amount} USDT`);
+        // Clear inputs and close modal
+        setVerifyOrderId("");
+        setVerifyTxHash("");
+        setShowVerifyModal(false);
+        // Refresh transaction list
+        await fetchTransactions();
+      } else {
+        toast.info(`Transaction status: ${result.status}`);
+      }
+    } catch (error) {
+      console.error("❌ [ADMIN] Verification error:", error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      toast.error(`Verification failed: ${errorMessage}`);
+    } finally {
+      setVerifying(false);
+    }
   };
 
 
@@ -263,13 +312,24 @@ const TransactionsPage = () => {
                           {formatDate(transaction.createdAt)}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                          <button
-                            onClick={() => setSelectedTransaction(transaction)}
-                            className="text-blue-400 hover:text-blue-300 flex items-center gap-1"
-                          >
-                            <Eye className="w-4 h-4" />
-                            View
-                          </button>
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => setSelectedTransaction(transaction)}
+                              className="text-blue-400 hover:text-blue-300 flex items-center gap-1"
+                            >
+                              <Eye className="w-4 h-4" />
+                              View
+                            </button>
+                            {(transaction.status === 'waiting' || transaction.status === 'cancelled') && (
+                              <button
+                                onClick={() => openVerifyModal(transaction.orderId)}
+                                className="text-green-400 hover:text-green-300 flex items-center gap-1"
+                              >
+                                <Check className="w-4 h-4" />
+                                Verify
+                              </button>
+                            )}
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -343,7 +403,7 @@ const TransactionsPage = () => {
                     <XCircle className="w-6 h-6" />
                   </button>
                 </div>
-                
+
                 <div className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
@@ -357,7 +417,7 @@ const TransactionsPage = () => {
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-300 mb-1">User ID</label>
@@ -368,19 +428,19 @@ const TransactionsPage = () => {
                       <p className="text-sm text-white break-words">{selectedTransaction.username || 'N/A'}</p>
                     </div>
                   </div>
-                  
+
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-1">Amount</label>
                     <p className="text-sm text-white break-words">
                       {formatCurrency(selectedTransaction.amount, selectedTransaction.payCurrency)}
                     </p>
                   </div>
-                  
+
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-1">Description</label>
                     <p className="text-sm text-white break-words whitespace-pre-wrap">{selectedTransaction.description}</p>
                   </div>
-                  
+
                   {selectedTransaction.txData && (
                     <div>
                       <label className="block text-sm font-medium text-gray-300 mb-1">Transaction Data</label>
@@ -389,7 +449,7 @@ const TransactionsPage = () => {
                       </pre>
                     </div>
                   )}
-                  
+
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-300 mb-1">Created</label>
@@ -399,6 +459,91 @@ const TransactionsPage = () => {
                       <label className="block text-sm font-medium text-gray-300 mb-1">Updated</label>
                       <p className="text-sm text-white break-words">{formatDate(selectedTransaction.updatedAt)}</p>
                     </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Verification Modal */}
+        {showVerifyModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 overflow-y-auto h-full w-full z-50">
+            <div className="relative top-20 mx-auto p-5 border border-gray-700 w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-gray-800">
+              <div className="mt-3">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-medium text-white flex items-center gap-2">
+                    <Check className="w-5 h-5 text-green-400" />
+                    Verify Transaction
+                  </h3>
+                  <button
+                    onClick={() => setShowVerifyModal(false)}
+                    className="text-gray-400 hover:text-white"
+                  >
+                    <XCircle className="w-6 h-6" />
+                  </button>
+                </div>
+
+                <div className="space-y-4">
+                  {/* Order ID (Read-only) */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Order ID
+                    </label>
+                    <input
+                      type="text"
+                      value={verifyOrderId}
+                      readOnly
+                      className="w-full px-4 py-2 bg-gray-900 border border-gray-600 text-gray-400 rounded-lg font-mono text-sm cursor-not-allowed"
+                    />
+                  </div>
+
+                  {/* Transaction Hash Input */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Transaction Hash
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="0x..."
+                      value={verifyTxHash}
+                      onChange={(e) => setVerifyTxHash(e.target.value)}
+                      className="w-full px-4 py-2 bg-gray-700 border border-gray-600 text-white placeholder-gray-400 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent font-mono text-sm"
+                    />
+                  </div>
+
+                  {/* Info Notice */}
+                  <div className="p-3 bg-blue-900/20 border border-blue-800/30 rounded-lg">
+                    <p className="text-xs text-blue-300">
+                      💡 <strong>How it works:</strong> Enter the transaction hash provided by the user. The system will verify it on the blockchain and update the transaction status if valid.
+                    </p>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => setShowVerifyModal(false)}
+                      className="flex-1 py-2 px-4 bg-gray-600 text-white rounded-lg font-medium hover:bg-gray-700 transition-all"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleVerifyTransaction}
+                      disabled={verifying || !verifyTxHash.trim()}
+                      className="flex-1 py-2 px-4 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    >
+                      {verifying ? (
+                        <>
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                          Verifying...
+                        </>
+                      ) : (
+                        <>
+                          <Check className="w-4 h-4" />
+                          Verify Transaction
+                        </>
+                      )}
+                    </button>
                   </div>
                 </div>
               </div>

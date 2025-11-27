@@ -19,7 +19,7 @@ import { toast } from "material-react-toastify";
 import { URL as API_URL } from "@/api/config";
 import axios from "axios";
 import Image from "next/image";
-import { X, Paperclip, Send, File, Download } from "lucide-react";
+import { X, Paperclip, Send, File, Download, BadgeCheck } from "lucide-react";
 import VIPBadge from "@/components/VIPBadge";
 import { checkVipCelebration, markVipCelebrationViewed } from "@/api/vipCelebration";
 import { getImageSource } from "@/lib/imageUtils";
@@ -44,34 +44,34 @@ export const Chat = () => {
 
   const params = useParams<{ creator_portfolio_id: string }>();
   const creator_portfolio_id = params?.creator_portfolio_id;
-  
+
   // Fallback: Extract user ID from URL pathname if params fail
   const [fallbackUserId, setFallbackUserId] = React.useState<string>("");
-  
+
   React.useEffect(() => {
     if (typeof window !== 'undefined') {
       const pathname = window.location.pathname;
       const pathSegments = pathname.split('/');
       const messageIndex = pathSegments.indexOf('message');
-      
+
       if (messageIndex !== -1 && pathSegments[messageIndex + 1]) {
         const extractedUserId = pathSegments[messageIndex + 1];
         setFallbackUserId(extractedUserId);
       }
     }
   }, []);
-  
+
   // Use fallback if params are not available
   const finalCreatorPortfolioId = creator_portfolio_id || fallbackUserId;
-  
+
 
   const router = useRouter();
 
   // Get userid from localStorage if not in Redux (same pattern as ProfilePage)
   const [localUserid, setLocalUserid] = React.useState("");
-  
+
   const reduxUserId = useSelector((state: RootState) => state.register.userID);
-  
+
   const loggedInUserId = reduxUserId || localUserid;
 
 
@@ -79,7 +79,8 @@ export const Chat = () => {
   const [chatusername, setchatusername] = useState("");
   const [chatfirstname, setfirstname] = useState("");
   const [chatlastname, setlastname] = useState("");
-  
+  const [chatVerified, setChatVerified] = useState(false);
+
 
   const [Chatphoto, set_Chatphoto] = useState("/icons/icons8-profile_user.png");
   const [ChatphotoError, setChatphotoError] = useState(false);
@@ -87,11 +88,11 @@ export const Chat = () => {
   // Generate random background color for user initials
   const getRandomColor = (name: string) => {
     const colors = [
-      'bg-red-500', 'bg-blue-500', 'bg-green-500', 'bg-yellow-500', 
+      'bg-red-500', 'bg-blue-500', 'bg-green-500', 'bg-yellow-500',
       'bg-purple-500', 'bg-pink-500', 'bg-indigo-500', 'bg-teal-500',
       'bg-orange-500', 'bg-cyan-500', 'bg-lime-500', 'bg-amber-500'
     ];
-    
+
     // Use name to generate consistent color for same user
     let hash = 0;
     for (let i = 0; i < name.length; i++) {
@@ -123,7 +124,7 @@ export const Chat = () => {
   const FilePreview = ({ fileUrl, fileName }: { fileUrl: string; fileName?: string }) => {
     const [isLoading, setIsLoading] = useState(true);
     const [hasError, setHasError] = useState(false);
-    
+
     // Auto-timeout to prevent infinite loading
     React.useEffect(() => {
       const timeout = setTimeout(() => {
@@ -131,34 +132,34 @@ export const Chat = () => {
           setIsLoading(false);
         }
       }, 5000); // 5 second timeout
-      
+
       return () => clearTimeout(timeout);
     }, [isLoading, fileUrl]);
-    
-    
+
+
     // Determine file type based on file extension or URL pattern
     const getFileType = (url: string, name?: string) => {
       const fileName = name || url;
       const extension = fileName.split('.').pop()?.toLowerCase();
-      
+
       // Check for common image extensions
       const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg'];
       if (imageExtensions.includes(extension || '')) {
         return 'image';
       }
-      
+
       // Check for common video extensions
       const videoExtensions = ['mp4', 'avi', 'mov', 'wmv', 'flv', 'webm', 'mkv'];
       if (videoExtensions.includes(extension || '')) {
         return 'video';
       }
-      
+
       // Check for common document extensions
       const documentExtensions = ['pdf', 'doc', 'docx', 'txt', 'rtf', 'odt'];
       if (documentExtensions.includes(extension || '')) {
         return 'document';
       }
-      
+
       // If no extension or unknown, try to determine from URL pattern
       if (url.includes('image') || url.includes('photo') || url.includes('img')) {
         return 'image';
@@ -166,36 +167,36 @@ export const Chat = () => {
       if (url.includes('video') || url.includes('movie') || url.includes('vid')) {
         return 'video';
       }
-      
+
       // Default to image for unknown types (most file uploads are images)
       return 'image';
     };
-    
+
     const fileType = getFileType(fileUrl, fileName);
     const isImage = fileType === 'image';
     const isVideo = fileType === 'video';
     const isDocument = fileType === 'document';
-    
-    
+
+
     // Use bucket detection for Storj URLs
     const imageSource = getImageSource(fileUrl, 'message');
     const fullUrl = imageSource.src;
-    
+
     // Keep fallback URLs for error handling
     const pathUrlPrimary = fileUrl ? `${API_URL}/api/image/view/${encodeURIComponent(fileUrl)}` : "";
     const queryUrlFallback = fileUrl ? `${process.env.NEXT_PUBLIC_API || ""}/api/image/view?publicId=${encodeURIComponent(fileUrl)}` : "";
     const pathUrlFallback = fileUrl ? `${process.env.NEXT_PUBLIC_API || ""}/api/image/view/${encodeURIComponent(fileUrl)}` : "";
-    
-    
+
+
     const handleLoad = () => {
       setIsLoading(false);
     };
-    
+
     const handleError = () => {
       setIsLoading(false);
       setHasError(true);
     };
-    
+
     if (hasError) {
       return (
         <div className="flex items-center gap-2 p-3 bg-gray-700 rounded-lg">
@@ -207,7 +208,7 @@ export const Chat = () => {
         </div>
       );
     }
-    
+
     return (
       <div className="relative">
         {isLoading && (
@@ -215,7 +216,7 @@ export const Chat = () => {
             <div className="w-8 h-8 border-2 border-gray-500 border-t-transparent rounded-full animate-spin"></div>
           </div>
         )}
-        
+
         {isImage && (
           <div className="relative cursor-pointer" onClick={() => setSelectedFileModal({ fileUrl, fileName, type: 'image' })}>
             <Image
@@ -227,7 +228,7 @@ export const Chat = () => {
               onLoad={handleLoad}
               onError={(e) => {
                 const img = e.currentTarget as HTMLImageElement & { dataset: any };
-                
+
                 if (!img.dataset.fallback1 && pathUrlPrimary) {
                   img.dataset.fallback1 = "1";
                   img.src = pathUrlPrimary;
@@ -248,7 +249,7 @@ export const Chat = () => {
             />
           </div>
         )}
-        
+
         {isVideo && (
           <div className="relative cursor-pointer" onClick={() => setSelectedFileModal({ fileUrl, fileName, type: 'video' })}>
             <video
@@ -282,7 +283,7 @@ export const Chat = () => {
             />
           </div>
         )}
-        
+
         {isDocument && (
           <div className="flex items-center gap-3 p-3 bg-gray-700 rounded-lg">
             <File className="w-6 h-6 text-blue-400" />
@@ -301,7 +302,7 @@ export const Chat = () => {
             </a>
           </div>
         )}
-        
+
         {!isImage && !isVideo && !isDocument && (
           <div className="flex items-center gap-3 p-3 bg-gray-700 rounded-lg">
             <Paperclip className="w-5 h-5 text-gray-400" />
@@ -326,7 +327,7 @@ export const Chat = () => {
 
   const [text, settext] = useState("");
   const [loading, setLoading] = useState(true);
-  
+
   const [isTyping, setIsTyping] = useState(false);
   const [otherUserTyping, setOtherUserTyping] = useState(false);
   const [typingTimeout, setTypingTimeout] = useState<NodeJS.Timeout | null>(null);
@@ -350,13 +351,13 @@ export const Chat = () => {
     vipEndDate?: string;
   }>>([]);
   // Removed Redux dependencies - using direct API calls instead
-  
+
   // Get viewing profile data for the target user
   const viewingProfile = useSelector((state: RootState) => state.viewingProfile);
-  
+
   // Get VIP status from Redux
   const vipStatus = useSelector((state: RootState) => state.vip.vipStatus);
-  
+
   // File upload states
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
@@ -366,10 +367,10 @@ export const Chat = () => {
     type: string;
   }>>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  
+
   // Flag to prevent message clearing during file operations
   const isFileOperationInProgress = useRef(false);
-  
+
   // Flag to prevent multiple simultaneous message fetches
   const isFetchingMessages = useRef(false);
 
@@ -395,7 +396,7 @@ export const Chat = () => {
       // Force immediate scroll for mobile
       const element = msgListref.current;
       element.scrollTop = element.scrollHeight;
-      
+
       // Also try smooth scroll as fallback
       setTimeout(() => {
         element.scrollTo({
@@ -423,7 +424,7 @@ export const Chat = () => {
   // Check if VIP celebration should be shown (database-based)
   const checkVipCelebrationStatus = React.useCallback(async (userId: string, viewerId: string) => {
     if (!userId || !viewerId) return false;
-    
+
     try {
       const token = (() => {
         try {
@@ -451,7 +452,7 @@ export const Chat = () => {
   // Mark VIP celebration as viewed (database-based)
   const markVipCelebrationAsViewed = React.useCallback(async (userId: string, viewerId: string) => {
     if (!userId || !viewerId) return;
-    
+
     try {
       const token = (() => {
         try {
@@ -481,7 +482,7 @@ export const Chat = () => {
         const raw = localStorage.getItem("login");
         if (raw) {
           const data = JSON.parse(raw);
-          
+
           // Set user ID if not in Redux
           if (!reduxUserId && data?.userID) {
             setLocalUserid(data.userID);
@@ -509,14 +510,14 @@ export const Chat = () => {
 
     try {
       const targetUserId = decodeURIComponent(finalCreatorPortfolioId);
-      
+
       // Validate the decoded user ID
       if (!targetUserId || targetUserId === 'undefined' || targetUserId === 'null' || targetUserId.length < 10) {
         toast.error("Invalid user ID. Please try again.");
         setLoading(false);
         return;
       }
-      
+
       const token = (() => {
         try {
           const raw = localStorage.getItem("login");
@@ -562,9 +563,9 @@ export const Chat = () => {
         statusText: error.response?.statusText,
         data: error.response?.data
       });
-      
+
       setLoading(false);
-      
+
       if (error.response?.status === 403) {
         toast.error("Access denied. Please check your login status.");
       } else if (error.response?.status === 401) {
@@ -611,12 +612,12 @@ export const Chat = () => {
     }
 
     const targetUserId = decodeURIComponent(finalCreatorPortfolioId);
-    
+
     // Validate the decoded user ID
     if (!targetUserId || targetUserId === 'undefined' || targetUserId === 'null' || targetUserId.length < 10) {
       return;
     }
-    
+
     // Get token from localStorage or Redux
     const token = (() => {
       try {
@@ -637,19 +638,20 @@ export const Chat = () => {
       setfirstname("");
       setlastname("");
       set_Chatphoto("/icons/icons8-profile_user.png");
+      setChatVerified(false);
       setChatphotoError(false);
-      
+
       // Clear messages to prevent showing old messages
       setmessage([]);
-      
+
       // Clear VIP celebration state
       setShowVipCelebration(false);
       setVipCelebrationShown(false);
       setCelebrationChecked(false);
-      
+
       // Clear Redux viewing profile state to force fresh fetch
       dispatch({ type: 'viewingProfile/clearViewingProfile' });
-      
+
       // @ts-expect-error - Redux dispatch type issue
       dispatch(getViewingProfile({ userid: targetUserId, token }));
     }
@@ -660,12 +662,13 @@ export const Chat = () => {
     if (viewingProfile.status === "succeeded" && viewingProfile.userId && finalCreatorPortfolioId) {
       // CRITICAL: Only update if the viewingProfile.userId matches the current finalCreatorPortfolioId
       const currentTargetUserId = decodeURIComponent(finalCreatorPortfolioId);
-      
+
       if (viewingProfile.userId === currentTargetUserId) {
         setfirstname(viewingProfile.firstname || "");
         setlastname(viewingProfile.lastname || "");
         setchatusername(viewingProfile.username || "");
-        
+        setChatVerified(viewingProfile.creator_verified || false);
+
         // Ensure we have a valid photo link
         const photoLink = (viewingProfile as any).photolink;
         if (photoLink && photoLink.trim() !== "" && photoLink !== "null" && photoLink !== "undefined") {
@@ -673,7 +676,7 @@ export const Chat = () => {
         } else {
           set_Chatphoto("/icons/icons8-profile_user.png");
         }
-        
+
         // Fetch VIP status for the chat partner
         if (viewingProfile.userId && viewingProfile.userId.length >= 10) {
           dispatch(checkVipStatus(viewingProfile.userId) as any);
@@ -691,20 +694,20 @@ export const Chat = () => {
       if (vipStatus?.isVip && viewingProfile.status === "succeeded" && viewingProfile.userId && loggedInUserId && !celebrationChecked && finalCreatorPortfolioId) {
         // CRITICAL: Only check celebration if the VIP user matches the current chat user
         const currentTargetUserId = decodeURIComponent(finalCreatorPortfolioId);
-        
+
         if (viewingProfile.userId === currentTargetUserId) {
           setCelebrationChecked(true);
-          
+
           try {
             const shouldShow = await checkVipCelebrationStatus(viewingProfile.userId, loggedInUserId);
-            
+
             if (shouldShow) {
               setShowVipCelebration(true);
               setVipCelebrationShown(true);
-              
+
               // Mark as viewed in database
               await markVipCelebrationAsViewed(viewingProfile.userId, loggedInUserId);
-              
+
               // Hide the celebration after 5 seconds
               setTimeout(() => {
                 setShowVipCelebration(false);
@@ -736,6 +739,7 @@ export const Chat = () => {
       setfirstname("");
       setlastname("");
       set_Chatphoto("/icons/icons8-profile_user.png");
+      setChatVerified(false);
       setChatphotoError(false);
       setmessage([]);
       setShowVipCelebration(false);
@@ -749,7 +753,7 @@ export const Chat = () => {
     if (finalCreatorPortfolioId && viewingProfile.status === "succeeded" && viewingProfile.userId) {
       // CRITICAL: Only update if the viewingProfile.userId matches the current finalCreatorPortfolioId
       const currentTargetUserId = decodeURIComponent(finalCreatorPortfolioId);
-      
+
       if (viewingProfile.userId === currentTargetUserId) {
         setChatphotoError(false); // Reset error state for new profile
         const photoLink = (viewingProfile as any).photolink;
@@ -767,7 +771,7 @@ export const Chat = () => {
     const fallbackTimeout = setTimeout(() => {
       // Only set loading to false if we have real user data
       if (chatusername || chatfirstname) {
-      setLoading(false);
+        setLoading(false);
       }
       // If no real data, keep loading state active
     }, 8000); // Increased to 8 seconds to give profile fetch more time
@@ -794,21 +798,21 @@ export const Chat = () => {
     }
 
     // Check if this is actually a new user (not just a re-render)
-    const isNewUser = prevCreatorPortfolioId.current !== finalCreatorPortfolioId || 
-                     prevLoggedInUserId.current !== loggedInUserId;
-    
+    const isNewUser = prevCreatorPortfolioId.current !== finalCreatorPortfolioId ||
+      prevLoggedInUserId.current !== loggedInUserId;
+
     // Don't clear messages if we're in the middle of file operations
     if (isNewUser && !isFileOperationInProgress.current && !isFetchingMessages.current) {
       // Update refs to current values
       prevCreatorPortfolioId.current = finalCreatorPortfolioId;
       prevLoggedInUserId.current = loggedInUserId;
-      
-      // Only clear messages and fetch when actually changing users
-    setmessage([]);
-    setLoading(true);
 
-    // Use direct API call instead of Redux
-    fetchMessagesDirectly();
+      // Only clear messages and fetch when actually changing users
+      setmessage([]);
+      setLoading(true);
+
+      // Use direct API call instead of Redux
+      fetchMessagesDirectly();
     } else if (isNewUser && (isFileOperationInProgress.current || isFetchingMessages.current)) {
       // Update refs to current values
       prevCreatorPortfolioId.current = finalCreatorPortfolioId;
@@ -825,7 +829,7 @@ export const Chat = () => {
           scrollToBottomMobile();
         }, 150);
       });
-      
+
       // Additional scroll for mobile browsers that need extra time
       setTimeout(() => {
         scrollToBottomMobile();
@@ -841,18 +845,17 @@ export const Chat = () => {
           {message.map((value, index: number) => {
             const isUser = value.id === loggedInUserId;
             const messageTime = new Date(Number(value.date)).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            
+
             if (value.coin) {
               return (
                 <div key={index} className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-4 w-full`}>
-                  <div className={`w-1/2 px-4 py-3 rounded-2xl ${
-                    isUser 
-                      ? ' bg-gray-800 text-white rounded-br-md' 
+                  <div className={`w-1/2 px-4 py-3 rounded-2xl ${isUser
+                      ? ' bg-gray-800 text-white rounded-br-md'
                       : ' bg-gray-800/50 text-white rounded-bl-md border border-blue-700/30'
-                  }`}>
+                    }`}>
                     <div className="flex items-center gap-2">
                       <svg className="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
                       </svg>
                       <span className="font-semibold">{isUser ? 'You sent' : `${value.name} sent`}</span>
                       {/* VIP Badge for message sender */}
@@ -869,20 +872,19 @@ export const Chat = () => {
             } else {
               return (
                 <div key={index} className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-4 w-full`}>
-                  <div className={`w-1/2 px-4 py-3 rounded-2xl ${
-                    isUser 
-                      ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-br-md shadow-lg shadow-blue-500/30' 
+                  <div className={`w-1/2 px-4 py-3 rounded-2xl ${isUser
+                      ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-br-md shadow-lg shadow-blue-500/30'
                       : ' bg-gray-800/50 text-white rounded-bl-md border border-blue-700/30 shadow-lg shadow-blue-700/10'
-                  }`}>
+                    }`}>
                     {/* VIP Badge for message sender */}
                     {!isUser && value.isVip && (
                       <div className="flex justify-end items-center gap-2 mb-2">
-                          <VIPBadge size="md" isVip={value.isVip} vipEndDate={value.vipEndDate} />
+                        <VIPBadge size="md" isVip={value.isVip} vipEndDate={value.vipEndDate} />
                         <span className="text-xs py-1 px-2 rounded-full bg-gradient-to-b tracking-wider font-semibold from-[#fb8402] to-[#ad4d01] text-white">VIP</span>
                       </div>
                     )}
                     <p className="text-sm">{value.content}</p>
-                    
+
                     {/* Display files if any */}
                     {value.files && value.files.length > 0 && (
                       <div className="mt-2 space-y-2">
@@ -895,7 +897,7 @@ export const Chat = () => {
                         ))}
                       </div>
                     )}
-                    
+
                     <div className="flex items-center justify-between mt-1">
                       <p className="text-xs opacity-70">{messageTime}</p>
                       {/* Message status indicator for sent messages */}
@@ -928,7 +930,7 @@ export const Chat = () => {
                               <svg className="w-3 h-3 text-red-400" fill="currentColor" viewBox="0 0 20 20">
                                 <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
                               </svg>
-                              <button 
+                              <button
                                 onClick={() => {
                                   // Update status to sending and retry
                                   setmessage((prevMessages) => {
@@ -956,7 +958,7 @@ export const Chat = () => {
               );
             }
           })}
-          
+
           {/* Typing indicator */}
           {otherUserTyping && (
             <div className="flex justify-start mb-4 w-full">
@@ -993,10 +995,10 @@ export const Chat = () => {
     if (!loggedInUserId) {
       return;
     }
-    
+
     // Only fetch messages once when component first loads
     if (!isFetchingMessages.current && message.length === 0) {
-    fetchMessagesDirectly();
+      fetchMessagesDirectly();
     }
   }, [finalCreatorPortfolioId, loggedInUserId, fetchMessagesDirectly, message.length]); // Added dependencies but with guards
 
@@ -1004,60 +1006,60 @@ export const Chat = () => {
   // Socket connection and real-time message handling
   useEffect(() => {
     const socket = getSocket();
-    
+
     if (!socket) {
       return;
     }
-    
+
     if (!loggedInUserId) {
       return;
     }
 
     // Connect user to socket
     socket.emit("online", loggedInUserId);
-    
+
     // Join user room for typing events
     socket.emit("join_user_room", { userId: loggedInUserId });
 
     // Listen for new messages
 
-    const handleLiveChat = (data: { 
-      data: { 
-        fromid: string; 
-        toid: string; 
-        content: string; 
-        date: string; 
-        coin: boolean; 
-        files?: string[]; 
+    const handleLiveChat = (data: {
+      data: {
+        fromid: string;
+        toid: string;
+        content: string;
+        date: string;
+        coin: boolean;
+        files?: string[];
         fileCount?: number;
         isVip?: boolean;
         vipStartDate?: string;
         vipEndDate?: string;
-      }; 
-      name: string; 
-      photolink: string; 
+      };
+      name: string;
+      photolink: string;
     }) => {
       if (!finalCreatorPortfolioId) {
         return;
       }
 
       const decodedCreator_portfolio_id = decodeURIComponent(finalCreatorPortfolioId);
-      
+
       // Since we now pass only the target user ID, we don't need to split by comma
       const targetUserId = decodedCreator_portfolio_id;
-      
+
       // Validate the decoded user ID
       if (!targetUserId || targetUserId === 'undefined' || targetUserId === 'null' || targetUserId.length < 10) {
         console.error("❌ [CHAT] Invalid targetUserId in socket handler:", targetUserId);
         return;
       }
-      
+
       // Check if this message is between the current user and target user
       const isFromTargetToCurrent = (data.data.fromid === targetUserId && data.data.toid === loggedInUserId);
       const isFromCurrentToTarget = (data.data.fromid === loggedInUserId && data.data.toid === targetUserId);
-      
+
       if (isFromTargetToCurrent || isFromCurrentToTarget) {
-        
+
         const info = {
 
           name: data.name,
@@ -1074,15 +1076,15 @@ export const Chat = () => {
           vipStartDate: data.data.vipStartDate,
           vipEndDate: data.data.vipEndDate
         };
-        
+
         // Check if this is a message from the current user (optimistic update)
         if (data.data.fromid === loggedInUserId) {
           setmessage((prevMessages) => {
             return prevMessages.map((msg) => {
               // Find the message by content and date (since we don't have the exact tempId)
-              if (msg.id === data.data.fromid && 
-                  msg.content === data.data.content && 
-                  msg.status === 'sending') {
+              if (msg.id === data.data.fromid &&
+                msg.content === data.data.content &&
+                msg.status === 'sending') {
                 return { ...msg, status: 'delivered' as const };
               }
               return msg;
@@ -1093,15 +1095,15 @@ export const Chat = () => {
           // This is a message from the other user, add it normally
           setmessage((prevMessages) => {
             // Check if message already exists to prevent duplicates
-            const messageExists = prevMessages.some(msg => 
-              msg.messageId === info.messageId || 
+            const messageExists = prevMessages.some(msg =>
+              msg.messageId === info.messageId ||
               (msg.content === info.content && msg.date === info.date && msg.id === info.id)
             );
-            
+
             if (messageExists) {
               return prevMessages;
             }
-            
+
             return [...prevMessages, info];
           });
           // Scroll to bottom when new message is added
@@ -1137,7 +1139,7 @@ export const Chat = () => {
     return () => {
       // Leave user room
       socket.emit("leave_user_room", { userId: loggedInUserId });
-      
+
       socket.off("LiveChat", handleLiveChat);
       socket.off('typing_start', handleTypingStart);
       socket.off('typing_stop', handleTypingStop);
@@ -1267,7 +1269,7 @@ export const Chat = () => {
   const validateFile = (file: File): { valid: boolean; error?: string } => {
     const maxImageSize = 5 * 1024 * 1024; // 5MB
     const maxVideoSize = 10 * 1024 * 1024; // 10MB
-    
+
     if (file.type.startsWith('image/')) {
       if (file.size > maxImageSize) {
         return { valid: false, error: 'Image size must be less than 5MB' };
@@ -1279,7 +1281,7 @@ export const Chat = () => {
     } else {
       return { valid: false, error: 'Only images and videos are allowed' };
     }
-    
+
     return { valid: true };
   };
 
@@ -1307,7 +1309,7 @@ export const Chat = () => {
 
     if (validFiles.length > 0) {
       setSelectedFiles(prev => [...prev, ...validFiles]);
-      
+
       // Create previews
       validFiles.forEach(file => {
         const reader = new FileReader();
@@ -1320,7 +1322,7 @@ export const Chat = () => {
         };
         reader.readAsDataURL(file);
       });
-      
+
       // Ensure messages are preserved - force a re-render to maintain state
       setTimeout(() => {
         // Clear the flag after file selection is complete
@@ -1341,10 +1343,10 @@ export const Chat = () => {
   const removeFile = (index: number) => {
     // Set flag to prevent message clearing during file operations
     isFileOperationInProgress.current = true;
-    
+
     setSelectedFiles(prev => prev.filter((_, i) => i !== index));
     setPreviewFiles(prev => prev.filter((_, i) => i !== index));
-    
+
     // Clear the flag after file removal is complete
     setTimeout(() => {
       isFileOperationInProgress.current = false;
@@ -1391,7 +1393,7 @@ export const Chat = () => {
     }
 
     const decodedCreator_portfolio_id = decodeURIComponent(finalCreatorPortfolioId);
-    
+
     // Since we now pass only the target user ID, we don't need to split by comma
     const targetUserId = decodedCreator_portfolio_id;
 
@@ -1440,11 +1442,11 @@ export const Chat = () => {
 
     try {
       let fileUrls: string[] = [];
-      
+
       // Upload files if any
       if (selectedFiles.length > 0) {
         try {
-        fileUrls = await uploadFiles(selectedFiles);
+          fileUrls = await uploadFiles(selectedFiles);
         } catch (uploadError) {
           console.error("File upload failed:", uploadError);
           toast.error("File upload failed. Sending message without files.");
@@ -1467,7 +1469,7 @@ export const Chat = () => {
 
       // Emit message through socket
       const socket = getSocket();
-      
+
       if (socket) {
         socket.emit("message", content);
       } else {
@@ -1483,41 +1485,41 @@ export const Chat = () => {
         });
         return;
       }
-      
+
       // Update the optimistic message with final content and files
       setmessage((prevMessages) => {
         return prevMessages.map((msg) => {
           if (msg.tempId === tempId) {
             return {
               ...msg,
-        content: content.content,
-        files: fileUrls,
-        fileCount: fileUrls.length,
-        messageId: `${content.fromid}-${content.date}`,
+              content: content.content,
+              files: fileUrls,
+              fileCount: fileUrls.length,
+              messageId: `${content.fromid}-${content.date}`,
               date: content.date
             };
           }
           return msg;
         });
       });
-      
+
       // Scroll to bottom after sending message
       requestAnimationFrame(() => {
         setTimeout(() => {
           scrollToBottomMobile();
         }, 100);
       });
-      
+
       settext("");
       setSelectedFiles([]);
       setPreviewFiles([]);
-      
+
       toast.success("Message sent!");
-      
+
     } catch (error) {
       console.error("Error sending message:", error);
       toast.error('Failed to send message');
-      
+
       // Update the optimistic message status to failed
       setmessage((prevMessages) => {
         return prevMessages.map((msg) => {
@@ -1600,7 +1602,7 @@ export const Chat = () => {
       setfirstname("");
       setlastname("");
       set_Chatphoto("/icons/icons8-profile_user.png");
-      
+
       // Clear Redux viewing profile state
       dispatch({ type: 'viewingProfile/clearViewingProfile' });
     };
@@ -1614,7 +1616,7 @@ export const Chat = () => {
         <div className="text-center">
           <p className="text-red-400 text-lg mb-2">Invalid Chat</p>
           <p className="text-gray-400 text-sm">No user ID provided. Please try again.</p>
-          <button 
+          <button
             onClick={() => router.back()}
             className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
           >
@@ -1646,7 +1648,7 @@ export const Chat = () => {
         <div className="text-center">
           <p className="text-red-400 text-lg mb-2">Invalid Chat</p>
           <p className="text-gray-400 text-sm">The user ID is invalid. Please try again.</p>
-          <button 
+          <button
             onClick={() => router.back()}
             className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
           >
@@ -1659,7 +1661,7 @@ export const Chat = () => {
 
 
   return (
-    <div className="h-screen w-full flex flex-col fixed inset-0" style={{ 
+    <div className="h-screen w-full flex flex-col fixed inset-0" style={{
       WebkitOverflowScrolling: 'touch',
       overscrollBehavior: 'contain',
       touchAction: 'pan-y',
@@ -1690,7 +1692,7 @@ export const Chat = () => {
       <div className=" bg-gray-800 backdrop-blur-sm border-b border-blue-700/30 p-3 sm:p-4 sticky top-0 z-50 flex-shrink-0">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <button 
+            <button
               onClick={() => router.back()}
               className="p-2 hover: bg-gray-800/50 rounded-full transition-colors"
             >
@@ -1698,10 +1700,10 @@ export const Chat = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
             </button>
-            
+
             <div className="flex items-center gap-3">
               {/* Profile Picture */}
-              <div 
+              <div
                 className="relative cursor-pointer hover:opacity-80 transition-opacity"
                 onClick={() => {
                   if (finalCreatorPortfolioId) {
@@ -1734,9 +1736,9 @@ export const Chat = () => {
                   <VIPBadge size="xl" className="absolute -top-3 -right-5" isVip={vipStatus.isVip} vipEndDate={vipStatus.vipEndDate} />
                 )}
               </div>
-              
+
               {/* User Name */}
-              <div 
+              <div
                 className="cursor-pointer hover:opacity-80 transition-opacity"
                 onClick={() => {
                   if (finalCreatorPortfolioId) {
@@ -1747,8 +1749,9 @@ export const Chat = () => {
                 {loading || (!chatusername && !chatfirstname) ? (
                   <div className="h-5 bg-gray-600 animate-pulse rounded w-24"></div>
                 ) : (
-                  <p className="font-bold text-white text-lg">
-                    {chatfirstname && chatlastname ? `${chatfirstname} ${chatlastname}`.trim() : chatusername}
+                  <p className="font-bold text-white text-lg flex items-center gap-1">
+                    {chatfirstname ? `${chatfirstname}`.trim() : chatusername}
+                    {chatVerified && <BadgeCheck size={17} fill="white" className="text-black" />}
                   </p>
                 )}
                 <div className="flex items-center gap-2">
@@ -1773,7 +1776,7 @@ export const Chat = () => {
               </div>
             </div>
           </div>
-          
+
           <div className="flex items-center gap-2">
             <DropdownMenu />
           </div>
@@ -1781,7 +1784,7 @@ export const Chat = () => {
       </div>
 
       {/* Messages Area - Clean Design */}
-      <div ref={msgListref} className="flex-1 overflow-y-auto p-3 sm:p-4 bg-transparent" style={{ 
+      <div ref={msgListref} className="flex-1 overflow-y-auto p-3 sm:p-4 bg-transparent" style={{
         WebkitOverflowScrolling: 'touch',
         overscrollBehavior: 'contain',
         scrollBehavior: 'smooth',
@@ -1842,54 +1845,54 @@ export const Chat = () => {
               </button>
             </div>
             <div className="flex flex-wrap gap-2 sm:gap-3">
-            {previewFiles.map((preview, index) => (
-              <div key={index} className="relative">
-                {preview.type === 'image' && (
+              {previewFiles.map((preview, index) => (
+                <div key={index} className="relative">
+                  {preview.type === 'image' && (
                     <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden border border-gray-600">
-                    <Image
-                      src={preview.preview as string}
-                      alt="Preview"
-                      width={80}
-                      height={80}
-                      className="w-full h-full object-cover"
-                    />
-                    <button
-                      onClick={() => removeFile(index)}
+                      <Image
+                        src={preview.preview as string}
+                        alt="Preview"
+                        width={80}
+                        height={80}
+                        className="w-full h-full object-cover"
+                      />
+                      <button
+                        onClick={() => removeFile(index)}
                         className="absolute -top-1 -right-1 w-5 h-5 sm:w-6 sm:h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600 transition-colors"
-                    >
-                      <X className="w-3 h-3" />
-                    </button>
-                  </div>
-                )}
-                {preview.type === 'video' && (
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  )}
+                  {preview.type === 'video' && (
                     <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden bg-gray-700 flex items-center justify-center border border-gray-600">
-                    <video
-                      src={preview.preview as string}
-                      className="w-full h-full object-cover"
-                      muted
-                    />
-                    <button
-                      onClick={() => removeFile(index)}
+                      <video
+                        src={preview.preview as string}
+                        className="w-full h-full object-cover"
+                        muted
+                      />
+                      <button
+                        onClick={() => removeFile(index)}
                         className="absolute -top-1 -right-1 w-5 h-5 sm:w-6 sm:h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600 transition-colors"
-                    >
-                      <X className="w-3 h-3" />
-                    </button>
-                  </div>
-                )}
-                {preview.type === 'file' && (
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  )}
+                  {preview.type === 'file' && (
                     <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-lg bg-gray-700 flex flex-col items-center justify-center border border-gray-600 p-1">
                       <Paperclip className="w-4 h-4 sm:w-6 sm:h-6 text-gray-400" />
                       <span className="text-xs text-gray-300 truncate max-w-12 sm:max-w-16 text-center">{preview.file.name}</span>
-                    <button
-                      onClick={() => removeFile(index)}
+                      <button
+                        onClick={() => removeFile(index)}
                         className="absolute -top-1 -right-1 w-5 h-5 sm:w-6 sm:h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600 transition-colors"
-                    >
-                      <X className="w-3 h-3" />
-                    </button>
-                  </div>
-                )}
-              </div>
-            ))}
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -1908,7 +1911,7 @@ export const Chat = () => {
           accept="image/*,video/*,.pdf,.doc,.docx,.txt"
           className="hidden"
         />
-        
+
         <button
           onClick={() => fileInputRef.current?.click()}
           className="flex-shrink-0 p-3  bg-gray-800 hover: bg-gray-800 text-white rounded-full transition-colors"
@@ -1923,25 +1926,25 @@ export const Chat = () => {
             placeholder="Type a message..."
             onChange={(e) => {
               settext(e.target.value);
-              
+
               // Handle typing indicators
               if (e.target.value.trim() && loggedInUserId && finalCreatorPortfolioId && finalCreatorPortfolioId.length >= 10) {
                 if (!isTyping) {
                   setIsTyping(true);
                   startTyping(loggedInUserId, finalCreatorPortfolioId);
                 }
-                
+
                 // Clear existing timeout
                 if (typingTimeout) {
                   clearTimeout(typingTimeout);
                 }
-                
+
                 // Set new timeout to stop typing after 2 seconds of inactivity
                 const timeout = setTimeout(() => {
                   setIsTyping(false);
                   stopTyping(loggedInUserId, finalCreatorPortfolioId);
                 }, 2000);
-                
+
                 setTypingTimeout(timeout);
               } else if (!e.target.value.trim() && isTyping && finalCreatorPortfolioId) {
                 setIsTyping(false);
@@ -1961,8 +1964,8 @@ export const Chat = () => {
           />
         </div>
 
-        <button 
-          onClick={() => send_chat(text)} 
+        <button
+          onClick={() => send_chat(text)}
           disabled={(!text.trim() && selectedFiles.length === 0) || uploading}
           className="flex-shrink-0 p-3  bg-gray-800 hover: bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-full transition-colors"
         >
@@ -1985,7 +1988,7 @@ export const Chat = () => {
             >
               <X className="w-6 h-6" />
             </button>
-            
+
             {/* File Content */}
             <div className="relative w-full h-full flex items-center justify-center">
               {selectedFileModal.type === 'image' && (
@@ -1999,7 +2002,7 @@ export const Chat = () => {
                     const pathUrlPrimary = selectedFileModal.fileUrl ? `${API_URL}/api/image/view/${encodeURIComponent(selectedFileModal.fileUrl)}` : "";
                     const queryUrlFallback = selectedFileModal.fileUrl ? `${process.env.NEXT_PUBLIC_API || ""}/api/image/view?publicId=${encodeURIComponent(selectedFileModal.fileUrl)}` : "";
                     const pathUrlFallback = selectedFileModal.fileUrl ? `${process.env.NEXT_PUBLIC_API || ""}/api/image/view/${encodeURIComponent(selectedFileModal.fileUrl)}` : "";
-                    
+
                     if (!img.dataset.fallback1 && pathUrlPrimary) {
                       img.dataset.fallback1 = "1";
                       img.src = pathUrlPrimary;
@@ -2018,7 +2021,7 @@ export const Chat = () => {
                   }}
                 />
               )}
-              
+
               {selectedFileModal.type === 'video' && (
                 <video
                   src={getImageSource(selectedFileModal.fileUrl, 'message').src}
@@ -2030,7 +2033,7 @@ export const Chat = () => {
                     const pathUrlPrimary = selectedFileModal.fileUrl ? `${API_URL}/api/image/view/${encodeURIComponent(selectedFileModal.fileUrl)}` : "";
                     const queryUrlFallback = selectedFileModal.fileUrl ? `${process.env.NEXT_PUBLIC_API || ""}/api/image/view?publicId=${encodeURIComponent(selectedFileModal.fileUrl)}` : "";
                     const pathUrlFallback = selectedFileModal.fileUrl ? `${process.env.NEXT_PUBLIC_API || ""}/api/image/view/${encodeURIComponent(selectedFileModal.fileUrl)}` : "";
-                    
+
                     if (!video.dataset.fallback1 && pathUrlPrimary) {
                       video.dataset.fallback1 = "1";
                       video.src = pathUrlPrimary;

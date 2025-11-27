@@ -35,9 +35,7 @@ const DropdownMenu = () => {
             const userId = data?.userID || data?.userid || data?.id;
             if (userId) {
               setLocalUserid(userId);
-              console.log("🔍 [DROPDOWN] UserID from localStorage:", userId);
-              console.log("🔍 [DROPDOWN] Available keys in localStorage:", Object.keys(data));
-            }
+           }
           }
         }
       } catch (error) {

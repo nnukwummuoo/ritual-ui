@@ -66,6 +66,7 @@ export const getalluser = createAsyncThunk("admin/getalluser",async (data:any)=>
     try{
         // First attempt: use provided data
         let response = await axios.post(`${URL}/getallusers`,data)
+        console.log(response.data)
         return response.data
     }catch(err:any){
         // If server errors (e.g., local API expects empty body), retry with {}

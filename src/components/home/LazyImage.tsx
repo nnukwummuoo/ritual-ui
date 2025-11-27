@@ -45,8 +45,8 @@ const LazyImage: React.FC<LazyImageProps> = ({
         });
       },
       {
-        rootMargin: '100px', // Start loading when image is 100px away from viewport
-        threshold: 0.1
+        rootMargin: '1000px', // Start loading when image is 1000px away from viewport (aggressive preload)
+        threshold: 0.01
       }
     );
 
@@ -80,7 +80,7 @@ const LazyImage: React.FC<LazyImageProps> = ({
 
   // Skeleton placeholder
   const SkeletonPlaceholder = () => (
-    <div 
+    <div
       className={`bg-gray-700 animate-pulse rounded ${className}`}
       style={{ width, height }}
     >
