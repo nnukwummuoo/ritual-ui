@@ -45,7 +45,7 @@ const UnauthenticatedPromoModal: React.FC = () => {
                 <div className="pr-8">
                     {/* Headline */}
                     <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 mb-4 leading-tight">
-                        Chat privately with real Filipina VIP creators 
+                        Chat privately with real VIP creators 
                     </h2>
 
                     {/* Sub-headline */}
