@@ -54,7 +54,7 @@ import PostActions from "@/components/home/PostActions";
 
 import { useVideoAutoPlay } from "@/hooks/useVideoAutoPlayNew";
 
-import { toast } from "material-react-toastify";
+import { toast } from "react-toastify";
 
 import { postlike } from "@/store/like";
 
@@ -98,7 +98,7 @@ const formatRelativeTime = (timestamp: string | number | Date): string => {
 
     let time: Date;
 
-    
+
 
     // Handle different timestamp formats
 
@@ -126,7 +126,7 @@ const formatRelativeTime = (timestamp: string | number | Date): string => {
 
     }
 
-    
+
 
     if (isNaN(time.getTime())) {
 
@@ -166,7 +166,7 @@ const formatRelativeTime = (timestamp: string | number | Date): string => {
 
       }
 
-      
+
 
       if (isNaN(time.getTime())) {
 
@@ -176,11 +176,11 @@ const formatRelativeTime = (timestamp: string | number | Date): string => {
 
     }
 
-    
+
 
     const diffInSeconds = Math.floor((now.getTime() - time.getTime()) / 1000);
 
-    
+
 
     if (diffInSeconds < 0) {
 
@@ -324,9 +324,9 @@ export const Profile = () => {
 
   const dispatch = useDispatch<AppDispatch>();
 
- // const fileRef = useRef<HTMLInputElement | null>(null);
+  // const fileRef = useRef<HTMLInputElement | null>(null);
 
-  
+
 
   // State for user posts
 
@@ -334,7 +334,7 @@ export const Profile = () => {
 
   const [isLoadingPosts, setIsLoadingPosts] = useState(false);
 
-  
+
 
   // State for exclusive posts
 
@@ -346,7 +346,7 @@ export const Profile = () => {
 
   const [showPostModal, setShowPostModal] = useState(false);
 
-  
+
 
   // State for exclusive post modal
 
@@ -354,7 +354,7 @@ export const Profile = () => {
 
   const [clickedExclusivePostId, setClickedExclusivePostId] = useState<string | null>(null);
 
-  
+
 
   // State for editing exclusive post
 
@@ -374,55 +374,55 @@ export const Profile = () => {
 
   const [avatarSrc, setAvatarSrc] = useState<string | undefined>(undefined);
 
-   const [clickedPostId, setClickedPostId] = useState<string | null>(null);
+  const [clickedPostId, setClickedPostId] = useState<string | null>(null);
 
   // Get current user profile data (for side menu and current user info)
 
   const currentUserProfile = useSelector((s: RootState) => s.profile);
 
-  
+
 
   // Get viewing profile data (for the profile being viewed)
 
   const viewingProfile = useSelector((s: RootState) => s.viewingProfile);
 
-  
+
 
   // Get VIP status from Redux
 
   const vipStatus = useSelector((s: RootState) => s.vip.vipStatus);
 
-  
+
 
   // Get ratings from Redux
 
   const { ratings, ratings_stats, totalRatings, averageRating, ratingCounts } = useSelector((s: RootState) => s.profile);
 
-  
+
 
   // Get fan ratings from Redux
 
   const { fanRatings, fanRatings_stats, totalFanRatings, averageFanRating, fanRatingCounts } = useSelector((s: RootState) => s.profile);
 
-  
 
-  
+
+
 
   const [showProfilePictureModal, setShowProfilePictureModal] = useState(false);
 
-  
+
 
   // VIP status state for the profile owner (the user whose profile is being viewed)
 
   const [profileOwnerVipStatus, setProfileOwnerVipStatus] = useState<boolean>(false);
 
-  
+
 
   // VIP celebration animation state
 
   const [showVipCelebration, setShowVipCelebration] = useState(false);
 
-  
+
 
 
   // VIP celebration tracking state
@@ -431,7 +431,7 @@ export const Profile = () => {
 
   const [celebrationChecked, setCelebrationChecked] = useState(false);
 
-  
+
 
   // State for exclusive post purchase
 
@@ -453,7 +453,7 @@ export const Profile = () => {
 
   const viewingUserId = (params as any)?.userid as string;
 
-  
+
 
   // Determine which profile data to use based on whether we're viewing our own profile
 
@@ -461,7 +461,7 @@ export const Profile = () => {
 
   const profileData = isViewingOwnProfile ? currentUserProfile : viewingProfile;
 
-  
+
 
   const {
 
@@ -476,7 +476,7 @@ export const Profile = () => {
 
   } = profileData;
 
-  
+
 
   // Access properties that might not exist on both types
 
@@ -484,7 +484,7 @@ export const Profile = () => {
 
   const photolink = (profileData as any).photolink || "";
 
-  
+
 
   const error = useSelector((s: RootState) => s.profile.error);
 
@@ -494,7 +494,7 @@ export const Profile = () => {
 
   const reduxToken = useSelector((s: RootState) => s.register.refreshtoken);
 
-  
+
 
   // Get userid and token from localStorage if not in Redux
 
@@ -502,7 +502,7 @@ export const Profile = () => {
 
   const [localToken, setLocalToken] = React.useState("");
 
-  
+
 
   const loggedInUserId = reduxUserId || localUserid;
 
@@ -534,7 +534,7 @@ export const Profile = () => {
 
   const viewingAllUsersData = useSelector((state: RootState) => state.viewingProfile.getAllUsers_data as any);
 
-  
+
 
   // Use conditional logic to select the right data
 
@@ -548,13 +548,13 @@ export const Profile = () => {
 
   const getAllUsers_data = isViewingOwnProfile ? currentAllUsersData : viewingAllUsersData;
 
-  
+
 
   const userid = useSelector((state: RootState) => state.register.userID);
 
   const { postuserid } = useParams();
 
-  
+
 
   // Load userid and token from localStorage if not in Redux
 
@@ -570,7 +570,7 @@ export const Profile = () => {
 
           const data = JSON.parse(raw);
 
-          
+
 
           // Set user ID if not in Redux
 
@@ -580,7 +580,7 @@ export const Profile = () => {
 
           }
 
-          
+
 
           // Set token if not in Redux
 
@@ -602,13 +602,13 @@ export const Profile = () => {
 
   }, [reduxUserId, reduxToken]);
 
-  
+
 
   // Use postuserid from URL params as the target user ID (the profile we're viewing)
 
   const targetUserId = viewingUserId || postuserid || userid || localUserid;
 
-  
+
 
   // URL params and auth info ready
 
@@ -646,7 +646,7 @@ export const Profile = () => {
 
     if (!userId || !viewerId || !token) return false;
 
-    
+
 
     try {
 
@@ -672,7 +672,7 @@ export const Profile = () => {
 
     if (!userId || !viewerId || !token) return;
 
-    
+
 
     try {
 
@@ -708,13 +708,13 @@ export const Profile = () => {
 
         setCelebrationChecked(true);
 
-        
+
 
         try {
 
           const shouldShow = await checkVipCelebrationStatus(viewingUserId, loggedInUserId);
 
-          
+
 
           if (shouldShow) {
 
@@ -722,13 +722,13 @@ export const Profile = () => {
 
             setVipCelebrationShown(true);
 
-            
+
 
             // Mark as viewed in database
 
             await markVipCelebrationAsViewed(viewingUserId, loggedInUserId);
 
-            
+
 
             // Hide the celebration after 5 seconds
 
@@ -764,7 +764,7 @@ export const Profile = () => {
 
     if (!viewingUserId) return;
 
-    
+
 
     // Read token from Redux first, then fall back to localStorage
 
@@ -818,17 +818,17 @@ export const Profile = () => {
 
         }
 
-      } catch {}
+      } catch { }
 
     }
 
-    
+
 
     // Clear viewing profile first
 
     dispatch(clearViewingProfile());
 
-    
+
 
     // If viewing own profile, use current user profile, otherwise fetch viewing profile
 
@@ -916,11 +916,11 @@ export const Profile = () => {
 
     const profileStatus = isViewingOwnProfile ? currentUserProfile.status : viewingProfile.status;
 
-    
+
 
     if (profileStatus === "succeeded") {
 
-      
+
 
       // Fetch follower data and all users if not already loaded
 
@@ -932,7 +932,7 @@ export const Profile = () => {
 
           dispatch(getfollow({ userid: String(targetUserId), token }));
 
-        dispatch(getAllUsers({ token, userid: String(targetUserId) }));
+          dispatch(getAllUsers({ token, userid: String(targetUserId) }));
 
         } else {
 
@@ -944,7 +944,7 @@ export const Profile = () => {
 
       }
 
-      
+
 
       cantfandc();
 
@@ -970,7 +970,7 @@ export const Profile = () => {
 
   }, [getfollow_data]);
 
-  
+
 
   const apiFollowing = React.useMemo(() => {
 
@@ -978,7 +978,7 @@ export const Profile = () => {
 
   }, [getfollow_data]);
 
-  
+
 
   // Use useMemo to prevent unnecessary re-renders
 
@@ -988,11 +988,11 @@ export const Profile = () => {
 
   }, [getAllUsers_data]);
 
-  
+
 
   // Track stats data
 
-  
+
 
   // Calculate follower/following counts and total likes
 
@@ -1004,7 +1004,7 @@ export const Profile = () => {
 
     let followingCount = apiFollowing.length;
 
-    
+
 
     // Calculate total likes from all user posts
 
@@ -1014,7 +1014,7 @@ export const Profile = () => {
 
     }, 0);
 
-    
+
 
     // Fallback to profile data if API data is not available
 
@@ -1030,11 +1030,11 @@ export const Profile = () => {
 
     }
 
-    
 
-    return { 
 
-      followersCount, 
+    return {
+
+      followersCount,
 
       followingCount,
 
@@ -1094,7 +1094,7 @@ export const Profile = () => {
 
   }, [followingList, loggedInUserId, targetUserId]);
 
-  
+
 
   // Setup socket for real-time follow/unfollow updates
 
@@ -1102,7 +1102,7 @@ export const Profile = () => {
 
     if (!loggedInUserId || !targetUserId) return;
 
-    
+
 
     // Try to get socket connection
 
@@ -1130,13 +1130,13 @@ export const Profile = () => {
 
       }, 10000);
 
-      
+
 
       return () => clearInterval(intervalId);
 
     }
 
-    
+
 
     // Listen for follow/unfollow events
 
@@ -1166,11 +1166,11 @@ export const Profile = () => {
 
     };
 
-    
+
 
     socket.on('follow_update', handleFollowUpdate);
 
-    
+
 
     return () => {
 
@@ -1180,9 +1180,9 @@ export const Profile = () => {
 
   }, [loggedInUserId, targetUserId, token, dispatch, isViewingOwnProfile]);
 
-  
 
- 
+
+
 
 
 
@@ -1196,35 +1196,35 @@ export const Profile = () => {
 
     }
 
-    
+
 
     setIsLoadingPosts(true);
 
-    
+
 
     try {
 
       // Use the URL constant from config for backend requests
 
-      const response = await axios.post(`${API_URL}/getalluserpost`, 
+      const response = await axios.post(`${API_URL}/getalluserpost`,
 
-        { 
+        {
 
           userid: userId,
 
           sort: 'newest' // Request posts sorted by newest first
 
-        }, 
+        },
 
-        { 
+        {
 
-              headers: { 
+          headers: {
 
-                'Content-Type': 'application/json',
+            'Content-Type': 'application/json',
 
-                'Authorization': `Bearer ${token}`
+            'Authorization': `Bearer ${token}`
 
-              },
+          },
 
           timeout: 10000
 
@@ -1232,15 +1232,15 @@ export const Profile = () => {
 
       );
 
-      
 
-      
+
+
 
       // Extract posts from response - handle different response formats
 
       let posts = [];
 
-      
+
 
       if (response.data) {
 
@@ -1282,7 +1282,7 @@ export const Profile = () => {
 
           });
 
-          
+
 
           // Get comments for this post
 
@@ -1292,7 +1292,7 @@ export const Profile = () => {
 
           });
 
-          
+
 
           // Enrich comments with user information
 
@@ -1306,11 +1306,11 @@ export const Profile = () => {
 
           }
 
-          
+
 
           const postData = { ...post };
 
-          
+
 
           if (likeResponse.data.ok) {
 
@@ -1320,7 +1320,7 @@ export const Profile = () => {
 
           }
 
-          
+
 
           if (commentResponse.data.ok) {
 
@@ -1332,7 +1332,7 @@ export const Profile = () => {
 
           }
 
-          
+
 
           return postData;
 
@@ -1358,13 +1358,13 @@ export const Profile = () => {
 
       }));
 
-      
+
 
       // Use the posts with likes and comments instead of original posts
 
       posts = postsWithLikesAndComments;
 
-      
+
 
       // Filter posts to ensure they belong to the specific user and count total likes
 
@@ -1376,7 +1376,7 @@ export const Profile = () => {
 
         const belongsToUser = String(postUserId) === String(userId);
 
-        
+
 
         if (belongsToUser) {
 
@@ -1384,7 +1384,7 @@ export const Profile = () => {
 
           let totalLikes = 0;
 
-          
+
 
           // Try different possible structures where likes might be stored
 
@@ -1402,44 +1402,44 @@ export const Profile = () => {
 
           }
 
-          
+
 
           // Attach the total likes count to the post
 
           post.totalLikes = totalLikes;
 
-          
+
 
         }
 
-        
+
 
         return belongsToUser;
 
       });
 
-      
+
 
       setUserPosts(filteredPosts);
 
-   
+
 
     } catch (error) {
 
       // Only use mock data for current user in development
 
-        if (typeof window !== 'undefined' && 
+      if (typeof window !== 'undefined' &&
 
-            window.location.hostname === 'localhost' && 
+        window.location.hostname === 'localhost' &&
 
-          userId === loggedInUserId) {
+        userId === loggedInUserId) {
 
-      
-        } else {
 
-          setUserPosts([]);
+      } else {
 
-        }
+        setUserPosts([]);
+
+      }
 
     } finally {
 
@@ -1449,7 +1449,7 @@ export const Profile = () => {
 
   }, [token, loggedInUserId]);
 
-  
+
 
   // Fetch exclusive posts
 
@@ -1459,7 +1459,7 @@ export const Profile = () => {
 
     if (!loggedInUserId || !token || !postId) return false;
 
-    
+
 
     try {
 
@@ -1477,7 +1477,7 @@ export const Profile = () => {
 
       });
 
-      
+
 
       if (response.data?.ok && response.data?.purchased) {
 
@@ -1511,7 +1511,7 @@ export const Profile = () => {
 
     if (!loggedInUserId || !token) return;
 
-    
+
 
     try {
 
@@ -1525,21 +1525,21 @@ export const Profile = () => {
 
       });
 
-      
+
 
       if (response.data?.ok) {
 
         // Try user.balance first, then profile.balance, then coinBalance
 
-        const balance = response.data?.user?.balance || 
+        const balance = response.data?.user?.balance ||
 
-                       response.data?.profile?.balance || 
+          response.data?.profile?.balance ||
 
-                       response.data?.user?.coinBalance || 
+          response.data?.user?.coinBalance ||
 
-                       response.data?.profile?.coinBalance || 
+          response.data?.profile?.coinBalance ||
 
-                       "0";
+          "0";
 
         setUserBalance(parseFloat(balance) || 0);
 
@@ -1561,26 +1561,26 @@ export const Profile = () => {
     if (e) {
       e.stopPropagation();
     }
-    
+
     if (!loggedInUserId || !token || !post) return;
 
-    
+
 
     const postId = post._id || post.postid || post.id;
 
     const postPrice = parseFloat(post.price) || 0;
 
-    
+
 
     // Check balance first (don't await to prevent blocking UI)
     fetchUserBalance().then(() => {
       // Balance will be checked in the modal
     });
-    
-    // Show confirmation modal immediately
-      setPurchasePost(post);
 
-      setShowPurchaseModal(true);
+    // Show confirmation modal immediately
+    setPurchasePost(post);
+
+    setShowPurchaseModal(true);
 
   }, [loggedInUserId, token, fetchUserBalance]);
 
@@ -1593,21 +1593,21 @@ export const Profile = () => {
 
     }
 
-    
+
 
     setIsLoadingExclusivePosts(true);
 
-    
+
 
     try {
 
-      const response = await axios.post(`${API_URL}/getallExclusivePosts`, 
+      const response = await axios.post(`${API_URL}/getallExclusivePosts`,
 
-        { userid: userId }, 
+        { userid: userId },
 
-        { 
+        {
 
-          headers: { 
+          headers: {
 
             'Content-Type': 'application/json',
 
@@ -1643,7 +1643,7 @@ export const Profile = () => {
 
       });
 
-      
+
 
       let posts = [];
 
@@ -1653,7 +1653,7 @@ export const Profile = () => {
 
       }
 
-      
+
 
       // Filter posts to ensure they belong to the specific user
 
@@ -1665,11 +1665,11 @@ export const Profile = () => {
 
       });
 
-      
+
 
       setExclusivePosts(filteredPosts);
 
-      
+
       // Check purchased status for all posts if user is logged in and not viewing own profile
       if (loggedInUserId && loggedInUserId !== userId && filteredPosts.length > 0) {
         const purchaseChecks = filteredPosts.map(async (post: any) => {
@@ -1682,7 +1682,7 @@ export const Profile = () => {
               }, {
                 headers: { Authorization: `Bearer ${token}` }
               });
-              
+
               if (purchaseResponse.data?.ok && purchaseResponse.data?.purchased) {
                 setPurchasedPostIds(prev => new Set([...prev, String(postId)]));
               }
@@ -1691,7 +1691,7 @@ export const Profile = () => {
             }
           }
         });
-        
+
         await Promise.all(purchaseChecks);
       }
     } catch (error: any) {
@@ -1730,19 +1730,19 @@ export const Profile = () => {
 
     if (!purchasePost || !loggedInUserId || !token || isPurchasing) return;
 
-    
+
 
     const postId = purchasePost._id || purchasePost.postid || purchasePost.id;
 
     const postPrice = parseFloat(purchasePost.price) || 0;
 
-    
+
 
     try {
 
       setIsPurchasing(true);
 
-      
+
 
       const response = await axios.post(`${API_URL}/purchaseExclusivePost`, {
 
@@ -1756,7 +1756,7 @@ export const Profile = () => {
 
       });
 
-      
+
 
       if (response.data?.ok) {
 
@@ -1816,7 +1816,7 @@ export const Profile = () => {
 
   }, [purchasePost, loggedInUserId, token, isPurchasing, targetUserId, fetchExclusivePosts]);
 
-  
+
 
   // Clear posts when switching users to prevent showing wrong posts
 
@@ -1858,7 +1858,7 @@ export const Profile = () => {
 
         fetchExclusivePosts(String(targetUserId));
 
-        
+
 
         // Always fetch fan ratings (creator-to-fan) for all users
 
@@ -1866,7 +1866,7 @@ export const Profile = () => {
 
       }, 500);
 
-      
+
 
       return () => clearTimeout(timer);
 
@@ -1898,33 +1898,33 @@ export const Profile = () => {
 
       const creatorId = (profileData as any)?.creator_portfolio_id || targetUserId;
 
-      
+
 
       // Fetch creator ratings (fan-to-creator) if this is a creator profile
 
       if ((
 
-          (profileData as any).creator === true ||
+        (profileData as any).creator === true ||
 
-          (profileData as any).creator_portfolio_id ||
+        (profileData as any).creator_portfolio_id ||
 
-          (profileData as any).creatorname ||
+        (profileData as any).creatorname ||
 
-          (profileData as any).creator_verified === true
+        (profileData as any).creator_verified === true
 
-        )) {
+      )) {
 
-          // Check if we've already fetched for this creator to prevent duplicate calls
+        // Check if we've already fetched for this creator to prevent duplicate calls
 
-          if (!fetchedCreatorsRef.current.has(creatorId)) {
+        if (!fetchedCreatorsRef.current.has(creatorId)) {
 
-            fetchedCreatorsRef.current.add(creatorId);
+          fetchedCreatorsRef.current.add(creatorId);
 
-            dispatch(getAllUserRatings({ userId: creatorId, token }));
-
-          }
+          dispatch(getAllUserRatings({ userId: creatorId, token }));
 
         }
+
+      }
 
     }
 
@@ -1952,7 +1952,7 @@ export const Profile = () => {
 
     }
 
-    
+
 
     // Get token from localStorage if not in Redux state (EXACT same as following page)
 
@@ -1980,7 +1980,7 @@ export const Profile = () => {
 
     }
 
-    
+
 
     if (!authToken) {
 
@@ -1990,11 +1990,11 @@ export const Profile = () => {
 
     }
 
-    
+
 
     setIsProcessing(true);
 
-    
+
 
     try {
 
@@ -2004,23 +2004,23 @@ export const Profile = () => {
 
         try {
 
-          await dispatch(unfollow({ 
+          await dispatch(unfollow({
 
             userid: Array.isArray(targetUserId) ? targetUserId.join(',') : targetUserId,
 
-            followerid: loggedInUserId, 
+            followerid: loggedInUserId,
 
-            token: authToken 
+            token: authToken
 
           })).unwrap();
 
-          
+
 
           // Update local state
 
           setisFollowing(false);
 
-          
+
 
           // Show success toast
 
@@ -2060,13 +2060,13 @@ export const Profile = () => {
 
 
 
-          
+
 
           // Update local state
 
           setisFollowing(true);
 
-          
+
 
           // Show success toast
 
@@ -2088,11 +2088,11 @@ export const Profile = () => {
 
             const errorObj = error as Record<string, unknown>;
 
-            errorMessage = 
+            errorMessage =
 
-              (errorObj.message as string) || 
+              (errorObj.message as string) ||
 
-              ((errorObj.response as Record<string, unknown>)?.data as Record<string, unknown>)?.message as string || 
+              ((errorObj.response as Record<string, unknown>)?.data as Record<string, unknown>)?.message as string ||
 
               JSON.stringify(error);
 
@@ -2102,7 +2102,7 @@ export const Profile = () => {
 
           }
 
-          
+
 
           // If the error is "already followed", update UI to show Following
 
@@ -2124,7 +2124,7 @@ export const Profile = () => {
 
       }
 
-      
+
 
       // Try to emit socket event to notify other users (EXACT same as following page)
 
@@ -2152,13 +2152,13 @@ export const Profile = () => {
 
       }
 
-      
+
 
       // Always refresh followers/following lists regardless of socket status (EXACT same as following page)
 
       dispatch(getfollow({ userid: loggedInUserId, token: authToken }));
 
-      
+
 
     } catch (error: unknown) {
 
@@ -2176,13 +2176,13 @@ export const Profile = () => {
 
         const errorObj = error as Record<string, unknown>;
 
-        errorMessage = 
+        errorMessage =
 
-              (errorObj.message as string) || 
+          (errorObj.message as string) ||
 
-              ((errorObj.response as Record<string, unknown>)?.data as Record<string, unknown>)?.message as string ||
+          ((errorObj.response as Record<string, unknown>)?.data as Record<string, unknown>)?.message as string ||
 
-              JSON.stringify(error);
+          JSON.stringify(error);
 
       } else {
 
@@ -2190,7 +2190,7 @@ export const Profile = () => {
 
       }
 
-      
+
 
       // For follow errors (which are most common), assume it's "already followed"
 
@@ -2198,7 +2198,7 @@ export const Profile = () => {
 
         setisFollowing(true);
 
-        
+
 
         // Update DOM attributes to reflect the followed state
 
@@ -2214,7 +2214,7 @@ export const Profile = () => {
 
         setisFollowing(false);
 
-        
+
 
         // Update DOM attributes to reflect the unfollowed state
 
@@ -2242,7 +2242,7 @@ export const Profile = () => {
 
   };
 
-  
+
 
   const cantfandc = () => {
 
@@ -2314,7 +2314,7 @@ export const Profile = () => {
 
       "";
 
-    
+
 
     const asString = typeof mediaRef === "string" ? mediaRef : (mediaRef?.publicId || mediaRef?.public_id || mediaRef?.url || "");
 
@@ -2326,7 +2326,7 @@ export const Profile = () => {
 
     const isUrl = isHttpUrl || isBlobUrl || isDataUrl;
 
-    
+
 
     // Use bucket detection for Storj URLs
 
@@ -2334,7 +2334,7 @@ export const Profile = () => {
 
     const src = imageSource.src;
 
-    
+
 
     // Keep fallback URLs for error handling
 
@@ -2372,343 +2372,343 @@ export const Profile = () => {
 
   // Post modal component
 
-//   const PostModal = () => {
+  //   const PostModal = () => {
 
-//     if (!selectedPost) return null;
+  //     if (!selectedPost) return null;
 
 
 
-//     const { src, postType } = getMediaSource(selectedPost);
+  //     const { src, postType } = getMediaSource(selectedPost);
 
 
 
-//     return (
+  //     return (
 
-//       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75 p-4">
+  //       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75 p-4">
 
-//         <div className="bg-gray-900 rounded-lg max-w-3xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+  //         <div className="bg-gray-900 rounded-lg max-w-3xl w-full max-h-[90vh] overflow-hidden flex flex-col">
 
-//           {/* Header */}
+  //           {/* Header */}
 
-//           <div className="p-4 border-b border-gray-800 flex justify-between items-center">
+  //           <div className="p-4 border-b border-gray-800 flex justify-between items-center">
 
-//             <div className="flex items-center gap-3">
+  //             <div className="flex items-center gap-3">
 
-//               <div className="w-10 h-10 rounded-full bg-gray-700 overflow-hidden">
+  //               <div className="w-10 h-10 rounded-full bg-gray-700 overflow-hidden">
 
-//                 {selectedPost.user?.photolink ? (
+  //                 {selectedPost.user?.photolink ? (
 
-//                   <Image 
+  //                   <Image 
 
-//                     src={selectedPost.user.photolink} 
+  //                     src={selectedPost.user.photolink} 
 
-//                     alt="Profile" 
+  //                     alt="Profile" 
 
-//                     width={40} 
+  //                     width={40} 
 
-//                     height={40} 
+  //                     height={40} 
 
-//                     className="object-cover w-full h-full"
+  //                     className="object-cover w-full h-full"
 
-//                   />
+  //                   />
 
-//                 ) : (
+  //                 ) : (
 
-//                   <div className="w-full h-full bg-gray-600 flex items-center justify-center text-gray-400">
+  //                   <div className="w-full h-full bg-gray-600 flex items-center justify-center text-gray-400">
 
-//                     {selectedPost.user?.firstname?.charAt(0) || '?'}
+  //                     {selectedPost.user?.firstname?.charAt(0) || '?'}
 
-//                   </div>
+  //                   </div>
 
-//                 )}
+  //                 )}
 
-//               </div>
+  //               </div>
 
-//               <div>
+  //               <div>
 
-//                 <p className="font-medium">{selectedPost.user?.firstname} {selectedPost.user?.lastname}</p>
+  //                 <p className="font-medium">{selectedPost.user?.firstname} {selectedPost.user?.lastname}</p>
 
-//                 <p className="text-xs text-gray-400">{selectedPost.user?.username}</p>
+  //                 <p className="text-xs text-gray-400">{selectedPost.user?.username}</p>
 
-//               </div>
+  //               </div>
 
-//             </div>
+  //             </div>
 
-//             <button 
+  //             <button 
 
-//               onClick={() => setShowPostModal(false)}
+  //               onClick={() => setShowPostModal(false)}
 
-//               className="text-gray-400 hover:text-white"
+  //               className="text-gray-400 hover:text-white"
 
-//             >
+  //             >
 
-//               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+  //               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 
-//                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+  //                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
 
-//               </svg>
+  //               </svg>
 
-//             </button>
+  //             </button>
 
-//           </div>
+  //           </div>
 
-          
 
-//           {/* Content */}
 
-//           <div className="flex-1 overflow-auto">
+  //           {/* Content */}
 
-//             {/* Media display with proper fallbacks */}
+  //           <div className="flex-1 overflow-auto">
 
-//             {postType === "image" && src && (
+  //             {/* Media display with proper fallbacks */}
 
-//               <div className="relative aspect-square bg-black">
+  //             {postType === "image" && src && (
 
-//                 <img
+  //               <div className="relative aspect-square bg-black">
 
-//                   src={src}
+  //                 <img
 
-//                   alt={selectedPost?.content || "post image"}
+  //                   src={src}
 
-//                   className="w-full h-full object-contain"
+  //                   alt={selectedPost?.content || "post image"}
 
-//                   onError={(e) => {
+  //                   className="w-full h-full object-contain"
 
-//                     const img = e.currentTarget as HTMLImageElement & { dataset: any };
+  //                   onError={(e) => {
 
-//                     const { pathUrlPrimary, queryUrlFallback, pathUrlFallback } = getMediaSource(selectedPost);
+  //                     const img = e.currentTarget as HTMLImageElement & { dataset: any };
 
-                    
+  //                     const { pathUrlPrimary, queryUrlFallback, pathUrlFallback } = getMediaSource(selectedPost);
 
-//                     // First fallback: switch to path URL on same base
 
-//                     if (!img.dataset.fallback1 && pathUrlPrimary) {
 
-//                       img.dataset.fallback1 = "1";
+  //                     // First fallback: switch to path URL on same base
 
-//                       img.src = pathUrlPrimary;
+  //                     if (!img.dataset.fallback1 && pathUrlPrimary) {
 
-//                       return;
+  //                       img.dataset.fallback1 = "1";
 
-//                     }
+  //                       img.src = pathUrlPrimary;
 
-//                     // Second fallback: try query on PROD base
+  //                       return;
 
-//                     if (!img.dataset.fallback2 && queryUrlFallback) {
+  //                     }
 
-//                       img.dataset.fallback2 = "1";
+  //                     // Second fallback: try query on PROD base
 
-//                       img.src = queryUrlFallback;
+  //                     if (!img.dataset.fallback2 && queryUrlFallback) {
 
-//                       return;
+  //                       img.dataset.fallback2 = "1";
 
-//                     }
+  //                       img.src = queryUrlFallback;
 
-//                     // Final fallback: try path on PROD base
+  //                       return;
 
-//                     if (!img.dataset.fallback3 && pathUrlFallback) {
+  //                     }
 
-//                       img.dataset.fallback3 = "1";
+  //                     // Final fallback: try path on PROD base
 
-//                       img.src = pathUrlFallback;
+  //                     if (!img.dataset.fallback3 && pathUrlFallback) {
 
-//                     }
+  //                       img.dataset.fallback3 = "1";
 
-//                   }}
+  //                       img.src = pathUrlFallback;
 
-//                 />
+  //                     }
 
-//               </div>
+  //                   }}
 
-//             )}
+  //                 />
 
-            
+  //               </div>
 
-//             {postType === "video" && src && (
+  //             )}
 
-//               <div className="relative aspect-square bg-black">
 
-//                 <video
 
-//                   src={src}
+  //             {postType === "video" && src && (
 
-//                   controls
+  //               <div className="relative aspect-square bg-black">
 
-//                   className="w-full h-full object-contain"
+  //                 <video
 
-//                   onError={(e) => {
+  //                   src={src}
 
-//                     const video = e.currentTarget as HTMLVideoElement & { dataset: any };
+  //                   controls
 
-//                     const { pathUrlPrimary, queryUrlFallback, pathUrlFallback } = getMediaSource(selectedPost);
+  //                   className="w-full h-full object-contain"
 
-                    
+  //                   onError={(e) => {
 
-//                     // First fallback: switch to path URL on same base
+  //                     const video = e.currentTarget as HTMLVideoElement & { dataset: any };
 
-//                     if (!video.dataset.fallback1 && pathUrlPrimary) {
+  //                     const { pathUrlPrimary, queryUrlFallback, pathUrlFallback } = getMediaSource(selectedPost);
 
-//                       video.dataset.fallback1 = "1";
 
-//                       video.src = pathUrlPrimary;
 
-//                       video.load();
+  //                     // First fallback: switch to path URL on same base
 
-//                       return;
+  //                     if (!video.dataset.fallback1 && pathUrlPrimary) {
 
-//                     }
+  //                       video.dataset.fallback1 = "1";
 
-//                     // Second fallback: try query on PROD base
+  //                       video.src = pathUrlPrimary;
 
-//                     if (!video.dataset.fallback2 && queryUrlFallback) {
+  //                       video.load();
 
-//                       video.dataset.fallback2 = "1";
+  //                       return;
 
-//                       video.src = queryUrlFallback;
+  //                     }
 
-//                       video.load();
+  //                     // Second fallback: try query on PROD base
 
-//                       return;
+  //                     if (!video.dataset.fallback2 && queryUrlFallback) {
 
-//                     }
+  //                       video.dataset.fallback2 = "1";
 
-//                     // Final fallback: try path on PROD base
+  //                       video.src = queryUrlFallback;
 
-//                     if (!video.dataset.fallback3 && pathUrlFallback) {
+  //                       video.load();
 
-//                       video.dataset.fallback3 = "1";
+  //                       return;
 
-//                       video.src = pathUrlFallback;
+  //                     }
 
-//                       video.load();
+  //                     // Final fallback: try path on PROD base
 
-//                     }
+  //                     if (!video.dataset.fallback3 && pathUrlFallback) {
 
-//                   }}
+  //                       video.dataset.fallback3 = "1";
 
-//                 />
+  //                       video.src = pathUrlFallback;
 
-//               </div>
+  //                       video.load();
 
-//             )}
+  //                     }
 
-            
+  //                   }}
 
-//             {/* Post content */}
+  //                 />
 
-//             <div className="p-4">
+  //               </div>
 
-//               <p className="mb-4">{selectedPost.content}</p>
+  //             )}
 
-              
 
-//               {/* Stats */}
 
-// {/* Use Post Action Here */}
+  //             {/* Post content */}
 
-//               {/* <div className="flex items-center gap-4 text-sm text-gray-400">
+  //             <div className="p-4">
 
-//                 <div className="flex items-center gap-1">
+  //               <p className="mb-4">{selectedPost.content}</p>
 
-//                   <Heart  className="w-4 h-4" />
 
-//                   <span>{formatNumber(selectedPost.totalLikes || selectedPost.likeCount || selectedPost.likes?.length || 0)}</span>
 
-//                 </div>
+  //               {/* Stats */}
 
-//                 <div className="flex items-center gap-1">
+  // {/* Use Post Action Here */}
 
-//                   <MessageCircle className="w-4 h-4" />
+  //               {/* <div className="flex items-center gap-4 text-sm text-gray-400">
 
-//                   <span>{formatNumber(selectedPost.comments?.length || 0)} comments</span>
+  //                 <div className="flex items-center gap-1">
 
-//                 </div>
+  //                   <Heart  className="w-4 h-4" />
 
-//               </div> */}
+  //                   <span>{formatNumber(selectedPost.totalLikes || selectedPost.likeCount || selectedPost.likes?.length || 0)}</span>
 
-//             </div>
+  //                 </div>
 
-//           </div>
+  //                 <div className="flex items-center gap-1">
 
-//         </div>
+  //                   <MessageCircle className="w-4 h-4" />
 
-//       </div>
+  //                   <span>{formatNumber(selectedPost.comments?.length || 0)} comments</span>
 
-//     );
+  //                 </div>
 
-//   };
+  //               </div> */}
 
+  //             </div>
 
+  //           </div>
 
-   // Video Component for profile modal - using the same approach as FirstPost and RemainingPosts
+  //         </div>
 
-   const VideoComponent = React.memo(function VideoComponent({ post, src, pathUrlPrimary, queryUrlFallback, pathUrlFallback, isFirstVideo = false }: {
+  //       </div>
 
-     post: any;
+  //     );
 
-     src: string;
+  //   };
 
-     pathUrlPrimary?: string;
 
-     queryUrlFallback?: string;
 
-     pathUrlFallback?: string;
+  // Video Component for profile modal - using the same approach as FirstPost and RemainingPosts
 
-     isFirstVideo?: boolean;
+  const VideoComponent = React.memo(function VideoComponent({ post, src, pathUrlPrimary, queryUrlFallback, pathUrlFallback, isFirstVideo = false }: {
 
-   }) {
+    post: any;
 
-     // Use useVideoAutoPlay hook but disable auto-play for profile modal
+    src: string;
 
-     const { videoRef, isPlaying, isVisible, autoPlayBlocked, togglePlay, toggleMute, isMuted } = useVideoAutoPlay({
+    pathUrlPrimary?: string;
 
-       autoPlay: false, // Disable auto-play for profile modal
+    queryUrlFallback?: string;
 
-       muted: true,
+    pathUrlFallback?: string;
 
-       loop: true,
+    isFirstVideo?: boolean;
 
-       postId: post?._id || post?.postid || post?.id || `profile-post-${Math.random()}`
+  }) {
 
-     });
+    // Use useVideoAutoPlay hook but disable auto-play for profile modal
 
-     
+    const { videoRef, isPlaying, isVisible, autoPlayBlocked, togglePlay, toggleMute, isMuted } = useVideoAutoPlay({
 
-     // State and ref for auto-hiding video controls (same as FirstPost/RemainingPosts)
+      autoPlay: false, // Disable auto-play for profile modal
 
-     const [showControls, setShowControls] = React.useState(false);
+      muted: true,
 
-     const [isVideoLoaded, setIsVideoLoaded] = React.useState(false);
+      loop: true,
 
-     const controlsTimerRef = React.useRef<NodeJS.Timeout | null>(null);
+      postId: post?._id || post?.postid || post?.id || `profile-post-${Math.random()}`
 
-     
+    });
 
-     // Clear timeout when component unmounts
 
-     React.useEffect(() => {
 
-       // Show controls initially when the video loads (for profile modal)
+    // State and ref for auto-hiding video controls (same as FirstPost/RemainingPosts)
 
-       setShowControls(true);
+    const [showControls, setShowControls] = React.useState(false);
 
-       
+    const [isVideoLoaded, setIsVideoLoaded] = React.useState(false);
 
-       // Don't auto-hide controls initially since videos don't auto-play
+    const controlsTimerRef = React.useRef<NodeJS.Timeout | null>(null);
 
-       // Controls will hide after user interaction
 
-       
 
-       return () => {
+    // Clear timeout when component unmounts
 
-         // Clean up all timeouts on unmount
+    React.useEffect(() => {
 
-         if (controlsTimerRef.current) clearTimeout(controlsTimerRef.current);
+      // Show controls initially when the video loads (for profile modal)
 
-       };
+      setShowControls(true);
 
-     }, []);
+
+
+      // Don't auto-hide controls initially since videos don't auto-play
+
+      // Controls will hide after user interaction
+
+
+
+      return () => {
+
+        // Clean up all timeouts on unmount
+
+        if (controlsTimerRef.current) clearTimeout(controlsTimerRef.current);
+
+      };
+
+    }, []);
 
 
 
@@ -2716,594 +2716,444 @@ export const Profile = () => {
 
       <div className="relative w-full h-[400px] rounded overflow-hidden">
 
-         {/* Video skeleton - show while video is loading */}
+        {/* Video skeleton - show while video is loading */}
 
-         {!isVideoLoaded && (
+        {!isVideoLoaded && (
 
-           <div className="absolute inset-0 w-full h-full bg-gray-800 animate-pulse flex items-center justify-center">
+          <div className="absolute inset-0 w-full h-full bg-gray-800 animate-pulse flex items-center justify-center">
 
-             <div className="w-16 h-16 bg-gray-600 rounded-full flex items-center justify-center">
+            <div className="w-16 h-16 bg-gray-600 rounded-full flex items-center justify-center">
 
-               <svg className="w-8 h-8 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+              <svg className="w-8 h-8 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
 
-                 <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                <polygon points="5 3 19 12 5 21 5 3"></polygon>
 
-               </svg>
+              </svg>
 
-             </div>
+            </div>
 
-           </div>
+          </div>
 
-         )}
+        )}
 
-         
 
-         {/* Video with controls that auto-hide */}
 
-         <div 
+        {/* Video with controls that auto-hide */}
 
-           className={`relative w-full h-full ${!isVideoLoaded ? 'opacity-0 absolute top-0 left-0' : 'opacity-100 transition-opacity duration-300'}`}
+        <div
 
-           onMouseMove={() => {
+          className={`relative w-full h-full ${!isVideoLoaded ? 'opacity-0 absolute top-0 left-0' : 'opacity-100 transition-opacity duration-300'}`}
 
-             // Show controls and reset the timer when mouse moves
+          onMouseMove={() => {
 
-             setShowControls(true);
+            // Show controls and reset the timer when mouse moves
 
-             if (controlsTimerRef.current) {
+            setShowControls(true);
 
-               clearTimeout(controlsTimerRef.current);
+            if (controlsTimerRef.current) {
 
-             }
+              clearTimeout(controlsTimerRef.current);
 
-             controlsTimerRef.current = setTimeout(() => {
+            }
 
-               setShowControls(false);
+            controlsTimerRef.current = setTimeout(() => {
 
-             }, 3000);
+              setShowControls(false);
 
-           }}
+            }, 3000);
 
-           onClick={() => {
+          }}
 
-             // Show controls and toggle play when clicking
+          onClick={() => {
 
-             setShowControls(true);
+            // Show controls and toggle play when clicking
 
-             togglePlay();
+            setShowControls(true);
 
-             if (controlsTimerRef.current) {
+            togglePlay();
 
-               clearTimeout(controlsTimerRef.current);
+            if (controlsTimerRef.current) {
 
-             }
+              clearTimeout(controlsTimerRef.current);
 
-             controlsTimerRef.current = setTimeout(() => {
+            }
 
-               setShowControls(false);
+            controlsTimerRef.current = setTimeout(() => {
 
-             }, 3000);
+              setShowControls(false);
 
-           }}
+            }, 3000);
 
-         >
+          }}
 
-           <video
+        >
 
-             ref={videoRef}
+          <video
 
-             src={src}
+            ref={videoRef}
 
-             muted
+            src={src}
 
-             loop
+            muted
 
-             playsInline
+            loop
 
-             className="w-full h-[400px] object-cover rounded cursor-pointer"
+            playsInline
 
-             onLoadedData={(e) => {
-               const video = e.currentTarget as HTMLVideoElement;
-               // Check if video is actually loaded
-               if (video.readyState >= 2) {
-                 setIsVideoLoaded(true);
-               }
-             }}
-             onCanPlay={() => {
-               setIsVideoLoaded(true);
-             }}
-             onLoadedMetadata={() => {
-               setIsVideoLoaded(true);
+            className="w-full h-[400px] object-cover rounded cursor-pointer"
 
-             }}
+            onLoadedData={(e) => {
+              const video = e.currentTarget as HTMLVideoElement;
+              // Check if video is actually loaded
+              if (video.readyState >= 2) {
+                setIsVideoLoaded(true);
+              }
+            }}
+            onCanPlay={() => {
+              setIsVideoLoaded(true);
+            }}
+            onLoadedMetadata={() => {
+              setIsVideoLoaded(true);
 
-             onError={(e) => {
+            }}
 
-               const video = e.currentTarget as HTMLVideoElement & { dataset: any };
+            onError={(e) => {
 
-               if (!video.dataset.fallback1 && pathUrlPrimary) {
+              const video = e.currentTarget as HTMLVideoElement & { dataset: any };
 
-                 video.dataset.fallback1 = "1";
+              if (!video.dataset.fallback1 && pathUrlPrimary) {
 
-                 video.src = pathUrlPrimary;
+                video.dataset.fallback1 = "1";
 
-                 video.load();
+                video.src = pathUrlPrimary;
 
-                 return;
+                video.load();
 
-               }
+                return;
 
-               if (!video.dataset.fallback2 && queryUrlFallback) {
+              }
 
-                 video.dataset.fallback2 = "1";
+              if (!video.dataset.fallback2 && queryUrlFallback) {
 
-                 video.src = queryUrlFallback;
+                video.dataset.fallback2 = "1";
 
-                 video.load();
+                video.src = queryUrlFallback;
 
-                 return;
+                video.load();
 
-               }
+                return;
 
-               if (!video.dataset.fallback3 && pathUrlFallback) {
+              }
 
-                 video.dataset.fallback3 = "1";
+              if (!video.dataset.fallback3 && pathUrlFallback) {
 
-                 video.src = pathUrlFallback;
+                video.dataset.fallback3 = "1";
 
-                 video.load();
+                video.src = pathUrlFallback;
 
-               }
+                video.load();
 
-             }}
+              }
 
-           />
+            }}
 
-           
+          />
 
-           {/* Volume Button - Shows only when showControls is true */}
 
-           {showControls && (
 
-             <div className="absolute bottom-3 right-3 z-10 transition-opacity duration-300 opacity-100">
+          {/* Volume Button - Shows only when showControls is true */}
 
-               <button 
+          {showControls && (
 
-                 onClick={(e) => {
+            <div className="absolute bottom-3 right-3 z-10 transition-opacity duration-300 opacity-100">
 
-                   e.stopPropagation();
+              <button
 
-                   toggleMute();
+                onClick={(e) => {
 
-                   // Reset auto-hide timer when interacting with controls
+                  e.stopPropagation();
 
-                   if (controlsTimerRef.current) {
+                  toggleMute();
 
-                     clearTimeout(controlsTimerRef.current);
+                  // Reset auto-hide timer when interacting with controls
 
-                   }
+                  if (controlsTimerRef.current) {
 
-                   controlsTimerRef.current = setTimeout(() => {
+                    clearTimeout(controlsTimerRef.current);
 
-                     setShowControls(false);
+                  }
 
-                   }, 3000);
+                  controlsTimerRef.current = setTimeout(() => {
 
-                 }} 
+                    setShowControls(false);
 
-                 className="bg-black bg-opacity-70 rounded-full p-2.5 hover:bg-opacity-90 transition-all hover:scale-110"
+                  }, 3000);
 
-                 aria-label={isMuted ? "Unmute video" : "Mute video"}
+                }}
 
-               >
+                className="bg-black bg-opacity-70 rounded-full p-2.5 hover:bg-opacity-90 transition-all hover:scale-110"
 
-                 {isMuted ? (
+                aria-label={isMuted ? "Unmute video" : "Mute video"}
 
-                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              >
 
-                     <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                {isMuted ? (
 
-                     <line x1="23" y1="9" x2="17" y2="15"></line>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
 
-                     <line x1="17" y1="9" x2="23" y2="15"></line>
+                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
 
-                   </svg>
+                    <line x1="23" y1="9" x2="17" y2="15"></line>
 
-                 ) : (
+                    <line x1="17" y1="9" x2="23" y2="15"></line>
 
-                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  </svg>
 
-                     <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                ) : (
 
-                     <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
 
-                   </svg>
+                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
 
-                 )}
+                    <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
 
-               </button>
+                  </svg>
 
-             </div>
+                )}
 
-           )}
+              </button>
 
-           
+            </div>
 
-           {/* Center Play/Pause Button - Always show initially since videos don't auto-play */}
+          )}
 
-           {(showControls || autoPlayBlocked || !isPlaying) && (
 
-             <div className="absolute inset-0 flex items-center justify-center transition-opacity duration-300 opacity-100">
 
-               <div 
+          {/* Center Play/Pause Button - Always show initially since videos don't auto-play */}
 
-                 onClick={(e) => {
+          {(showControls || autoPlayBlocked || !isPlaying) && (
 
-                   e.stopPropagation();
+            <div className="absolute inset-0 flex items-center justify-center transition-opacity duration-300 opacity-100">
 
-                   togglePlay();
+              <div
 
-                   // Reset auto-hide timer when interacting with controls
+                onClick={(e) => {
 
-                   if (controlsTimerRef.current) {
+                  e.stopPropagation();
 
-                     clearTimeout(controlsTimerRef.current);
+                  togglePlay();
 
-                   }
+                  // Reset auto-hide timer when interacting with controls
 
-                   controlsTimerRef.current = setTimeout(() => {
+                  if (controlsTimerRef.current) {
 
-                     setShowControls(false);
+                    clearTimeout(controlsTimerRef.current);
 
-                   }, 3000);
+                  }
 
-                 }}
+                  controlsTimerRef.current = setTimeout(() => {
 
-                 className={`bg-black bg-opacity-70 rounded-full p-5 hover:bg-opacity-90 hover:scale-110 cursor-pointer transition-all ${
+                    setShowControls(false);
 
-                   autoPlayBlocked ? 'animate-pulse' : ''
+                  }, 3000);
 
-                 }`}
+                }}
 
-               >
+                className={`bg-black bg-opacity-70 rounded-full p-5 hover:bg-opacity-90 hover:scale-110 cursor-pointer transition-all ${autoPlayBlocked ? 'animate-pulse' : ''
 
-                 {isPlaying ? (
+                  }`}
 
-                   <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              >
 
-                     <rect x="6" y="4" width="4" height="16"></rect>
+                {isPlaying ? (
 
-                     <rect x="14" y="4" width="4" height="16"></rect>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
 
-                   </svg>
+                    <rect x="6" y="4" width="4" height="16"></rect>
 
-                 ) : (
+                    <rect x="14" y="4" width="4" height="16"></rect>
 
-                   <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  </svg>
 
-                     <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                ) : (
 
-                   </svg>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
 
-                 )}
+                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
 
-               </div>
+                  </svg>
 
-               {autoPlayBlocked && (
+                )}
 
-                 <div className="absolute bottom-16 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-75 text-white text-xs px-2 py-1 rounded">
+              </div>
 
-                   Click to play
+              {autoPlayBlocked && (
 
-                 </div>
+                <div className="absolute bottom-16 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-75 text-white text-xs px-2 py-1 rounded">
 
-               )}
+                  Click to play
 
-             </div>
+                </div>
 
-           )}
+              )}
 
-         </div>
+            </div>
 
-       </div>
+          )}
 
-     );
+        </div>
 
-   });
+      </div>
 
+    );
 
+  });
 
-// Post Modal component - Full screen modal showing all posts using RemainingPosts
 
-const PostModal = () => {
 
-  // State for managing UI state for all posts in the modal
+  // Post Modal component - Full screen modal showing all posts using RemainingPosts
 
-  const [modalUi, setModalUi] = React.useState<Record<string, any>>({});
+  const PostModal = () => {
 
-  const scrollContainerRef = React.useRef<HTMLDivElement>(null);
+    // State for managing UI state for all posts in the modal
 
-  // State for full-screen image viewer
+    const [modalUi, setModalUi] = React.useState<Record<string, any>>({});
 
-  const [fullScreenImage, setFullScreenImage] = React.useState<string | null>(null);
+    const scrollContainerRef = React.useRef<HTMLDivElement>(null);
 
+    // State for full-screen image viewer
 
+    const [fullScreenImage, setFullScreenImage] = React.useState<string | null>(null);
 
-  // Handle Escape key to close full-screen image
 
-  React.useEffect(() => {
 
-    const handleEscape = (e: KeyboardEvent) => {
+    // Handle Escape key to close full-screen image
 
-      if (e.key === 'Escape' && fullScreenImage) {
+    React.useEffect(() => {
+
+      const handleEscape = (e: KeyboardEvent) => {
+
+        if (e.key === 'Escape' && fullScreenImage) {
+
+          setFullScreenImage(null);
+
+        }
+
+      };
+
+
+
+      if (fullScreenImage) {
+
+        window.addEventListener('keydown', handleEscape);
+
+        // Prevent body scroll when full-screen image is open
+
+        document.body.style.overflow = 'hidden';
+
+      } else {
+
+        document.body.style.overflow = '';
+
+      }
+
+
+
+      return () => {
+
+        window.removeEventListener('keydown', handleEscape);
+
+        document.body.style.overflow = '';
+
+      };
+
+    }, [fullScreenImage]);
+
+
+
+    // Scroll to clicked post when modal opens
+
+    React.useEffect(() => {
+
+      if (clickedPostId && scrollContainerRef.current && showPostModal) {
+
+        // Small delay to ensure DOM is ready
+
+        const timer = setTimeout(() => {
+
+          const postElement = scrollContainerRef.current?.querySelector(`[data-post-id="${clickedPostId}"]`);
+
+          if (postElement) {
+
+            // Scroll to the post with smooth behavior
+
+            postElement.scrollIntoView({
+
+              behavior: 'smooth',
+
+              block: 'start',
+
+              inline: 'nearest'
+
+            });
+
+          }
+
+        }, 100);
+
+
+
+        return () => clearTimeout(timer);
+
+      }
+
+    }, [clickedPostId, showPostModal]);
+
+
+
+    // Reset clicked post ID and close full-screen image when modal closes
+
+    React.useEffect(() => {
+
+      if (!showPostModal) {
+
+        setClickedPostId(null);
 
         setFullScreenImage(null);
 
       }
 
-    };
+    }, [showPostModal]);
 
 
 
-    if (fullScreenImage) {
+    if (!userPosts || userPosts.length === 0) return null;
 
-      window.addEventListener('keydown', handleEscape);
 
-      // Prevent body scroll when full-screen image is open
 
-      document.body.style.overflow = 'hidden';
+    return (
 
-    } else {
+      <div className="fixed inset-0 z-[100] bg-gray-900">
 
-      document.body.style.overflow = '';
+        {/* Header */}
 
-    }
-
-
-
-    return () => {
-
-      window.removeEventListener('keydown', handleEscape);
-
-      document.body.style.overflow = '';
-
-    };
-
-  }, [fullScreenImage]);
-
-
-
-  // Scroll to clicked post when modal opens
-
-  React.useEffect(() => {
-
-    if (clickedPostId && scrollContainerRef.current && showPostModal) {
-
-      // Small delay to ensure DOM is ready
-
-      const timer = setTimeout(() => {
-
-        const postElement = scrollContainerRef.current?.querySelector(`[data-post-id="${clickedPostId}"]`);
-
-        if (postElement) {
-
-          // Scroll to the post with smooth behavior
-
-          postElement.scrollIntoView({ 
-
-            behavior: 'smooth', 
-
-            block: 'start',
-
-            inline: 'nearest'
-
-          });
-
-        }
-
-      }, 100);
-
-      
-
-      return () => clearTimeout(timer);
-
-    }
-
-  }, [clickedPostId, showPostModal]);
-
-
-
-  // Reset clicked post ID and close full-screen image when modal closes
-
-  React.useEffect(() => {
-
-    if (!showPostModal) {
-
-      setClickedPostId(null);
-
-      setFullScreenImage(null);
-
-    }
-
-  }, [showPostModal]);
-
-
-
-  if (!userPosts || userPosts.length === 0) return null;
-
-
-
-  return (
-
-    <div className="fixed inset-0 z-[100] bg-gray-900">
-
-      {/* Header */}
-
-      <div className="sticky top-0 z-10 bg-gray-900 border-b border-gray-800 p-4 flex justify-between items-center">
-
-        <div className="flex items-center gap-3">
-
-          <div className="relative w-10 h-10 rounded-full overflow-hidden bg-gray-700">
-
-            {(() => {
-
-              const profileImage = isViewingOwnProfile ? photolink : profileData?.photolink;
-
-              const userName = isViewingOwnProfile ? `${firstname} ${lastname}`.trim() : 
-
-                `${profileData?.firstname || ""} ${profileData?.lastname || ""}`.trim();
-
-              const initials = userName.split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2) || "?";
-
-              
-
-              if (profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined") {
-
-                const imageSource = getImageSource(profileImage, 'profile');
-
-                return (
-
-                  <Image 
-
-                    src={imageSource.src} 
-
-                    alt="Profile" 
-
-                    width={40} 
-
-                    height={40} 
-
-                    className="object-cover w-full h-full"
-
-                  />
-
-                );
-
-              }
-
-              
-
-              return (
-
-                <div className="w-full h-full bg-gray-600 flex items-center justify-center text-white text-sm font-semibold">
-
-                  {initials}
-
-                </div>
-
-              );
-
-            })()}
-
-          </div>
-
-          <div>
-
-            <h2 className="text-white font-semibold text-lg">
-
-              {isViewingOwnProfile ? `${firstname} ${lastname}`.trim() : 
-
-                `${profileData?.firstname || ""} ${profileData?.lastname || ""}`.trim()}
-
-            </h2>
-
-            <p className="text-gray-400 text-sm">
-
-              {userPosts.length} {userPosts.length === 1 ? 'post' : 'posts'}
-
-            </p>
-
-          </div>
-
-        </div>
-
-        <button 
-
-          onClick={() => setShowPostModal(false)}
-
-          className="text-gray-400 hover:text-white transition-colors p-2"
-
-        >
-
-          <X className="w-6 h-6" />
-
-        </button>
-
-      </div>
-
-      
-
-      {/* Posts Content */}
-
-       <div ref={scrollContainerRef} className="h-[calc(100vh-80px)] overflow-y-auto">
-
-        <div className="max-w-2xl mx-auto p-4 space-y-6">
-
-          {userPosts.map((post, index) => {
-
-            const { src, postType } = getMediaSource(post);
-
-            
-
-            // Generate fallback URLs for video error handling
-
-            const mediaRef = post?.postfilelink || post?.postphoto || post?.postvideo || post?.postlink || 
-
-                            post?.postFile || post?.file || post?.proxy_view || post?.file_link || 
-
-                            post?.media || post?.image || post?.video || post?.thumblink || 
-
-                            post?.postfilepublicid || post?.publicId || post?.public_id || 
-
-                            post?.imageId || "";
-
-            const asString = typeof mediaRef === "string" ? mediaRef : (mediaRef?.publicId || mediaRef?.public_id || mediaRef?.url || "");
-
-            
-
-            const queryUrlPrimary = asString ? `${API_URL}/api/image/view?publicId=${encodeURIComponent(asString)}` : "";
-
-            const pathUrlPrimary = asString ? `${API_URL}/api/image/view/${encodeURIComponent(asString)}` : "";
-
-            const queryUrlFallback = asString ? `${process.env.NEXT_PUBLIC_API || ""}/api/image/view?publicId=${encodeURIComponent(asString)}` : "";
-
-            const pathUrlFallback = asString ? `${process.env.NEXT_PUBLIC_API || ""}/api/image/view/${encodeURIComponent(asString)}` : "";
-
-
-
-  return (
-
-               <div 
-
-                 key={post._id || post.postid || index} 
-
-                 data-post-id={post._id || post.postid || post.id}
-
-                 className="mx-auto max-w-[30rem] w-full bg-gray-800 rounded-md p-3"
-
-               >
-
-                {/* Post Header */}
-
-                <div className="flex items-center justify-between mb-3">
+        <div className="sticky top-0 z-10 bg-gray-900 border-b border-gray-800 p-4 flex justify-between items-center">
 
           <div className="flex items-center gap-3">
 
-                    <div className="relative">
-
-                      <div className="size-10 rounded-full overflow-hidden bg-gray-700">
+            <div className="relative w-10 h-10 rounded-full overflow-hidden bg-gray-700">
 
               {(() => {
 
-                          const profileImage = isViewingOwnProfile ? photolink : profileData?.photolink;
+                const profileImage = isViewingOwnProfile ? photolink : profileData?.photolink;
 
-                          const userName = isViewingOwnProfile ? `${firstname} ${lastname}`.trim() : 
+                const userName = isViewingOwnProfile ? `${firstname} ${lastname}`.trim() :
 
-                            `${profileData?.firstname || ""} ${profileData?.lastname || ""}`.trim();
+                  `${profileData?.firstname || ""} ${profileData?.lastname || ""}`.trim();
 
                 const initials = userName.split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2) || "?";
 
-                
+
 
                 if (profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined") {
 
@@ -3311,15 +3161,15 @@ const PostModal = () => {
 
                   return (
 
-                    <Image 
+                    <Image
 
-                      src={imageSource.src} 
+                      src={imageSource.src}
 
-                      alt="Profile" 
+                      alt="Profile"
 
-                                      width={40}
+                      width={40}
 
-                                      height={40}
+                      height={40}
 
                       className="object-cover w-full h-full"
 
@@ -3329,11 +3179,11 @@ const PostModal = () => {
 
                 }
 
-                
+
 
                 return (
 
-                            <div className="w-full h-full bg-gray-600 flex items-center justify-center text-white text-sm font-semibold">
+                  <div className="w-full h-full bg-gray-600 flex items-center justify-center text-white text-sm font-semibold">
 
                     {initials}
 
@@ -3343,139 +3193,591 @@ const PostModal = () => {
 
               })()}
 
-              </div>
-
             </div>
 
-                          <div className="flex-1">
+            <div>
 
-                      <p className="font-medium text-white">
+              <h2 className="text-white font-semibold text-lg">
 
-                        {isViewingOwnProfile ? `${firstname} ${lastname}`.trim() : 
+                {isViewingOwnProfile ? `${firstname} ${lastname}`.trim() :
 
-                          `${profileData?.firstname || ""} ${profileData?.lastname || ""}`.trim()}
+                  `${profileData?.firstname || ""} ${profileData?.lastname || ""}`.trim()}
 
-                      </p>
+              </h2>
 
-                      <span className="text-gray-400 text-sm">
+              <p className="text-gray-400 text-sm">
 
-                        {isViewingOwnProfile ? username : profileData?.username || ""}
+                {userPosts.length} {userPosts.length === 1 ? 'post' : 'posts'}
 
-                    </span>
-
-              </div>
+              </p>
 
             </div>
 
           </div>
 
+          <button
 
+            onClick={() => setShowPostModal(false)}
 
-                {/* Post Timestamp */}
+            className="text-gray-400 hover:text-white transition-colors p-2"
 
-                {post?.createdAt && (
+          >
 
-                  <p className="my-3 text-gray-400 text-sm cursor-pointer">
+            <X className="w-6 h-6" />
 
-                    {(() => {
-
-                      const formatted = formatRelativeTime(post.createdAt);
-
-                      if (formatted === 'Invalid time' || formatted === 'Unknown time') {
-
-                        return 'recently';
-
-                      }
-
-                      return formatted;
-
-                    })()}
-
-                  </p>
-
-                )}
-
-
-
-                {/* Post Content */}
-
-                {post?.content && (
-
-                  <div className="my-2">
-
-                    <p className="text-white">{post.content}</p>
+          </button>
 
         </div>
 
-                )}
 
-        
 
-                {/* Post Media */}
+        {/* Posts Content */}
 
-          {postType === "image" && src && (
+        <div ref={scrollContainerRef} className="h-[calc(100vh-80px)] overflow-y-auto">
 
-                  <div className="w-full max-h-[400px] relative rounded overflow-hidden">
+          <div className="max-w-2xl mx-auto p-4 space-y-6">
+
+            {userPosts.map((post, index) => {
+
+              const { src, postType } = getMediaSource(post);
+
+
+
+              // Generate fallback URLs for video error handling
+
+              const mediaRef = post?.postfilelink || post?.postphoto || post?.postvideo || post?.postlink ||
+
+                post?.postFile || post?.file || post?.proxy_view || post?.file_link ||
+
+                post?.media || post?.image || post?.video || post?.thumblink ||
+
+                post?.postfilepublicid || post?.publicId || post?.public_id ||
+
+                post?.imageId || "";
+
+              const asString = typeof mediaRef === "string" ? mediaRef : (mediaRef?.publicId || mediaRef?.public_id || mediaRef?.url || "");
+
+
+
+              const queryUrlPrimary = asString ? `${API_URL}/api/image/view?publicId=${encodeURIComponent(asString)}` : "";
+
+              const pathUrlPrimary = asString ? `${API_URL}/api/image/view/${encodeURIComponent(asString)}` : "";
+
+              const queryUrlFallback = asString ? `${process.env.NEXT_PUBLIC_API || ""}/api/image/view?publicId=${encodeURIComponent(asString)}` : "";
+
+              const pathUrlFallback = asString ? `${process.env.NEXT_PUBLIC_API || ""}/api/image/view/${encodeURIComponent(asString)}` : "";
+
+
+
+              return (
+
+                <div
+
+                  key={post._id || post.postid || index}
+
+                  data-post-id={post._id || post.postid || post.id}
+
+                  className="mx-auto max-w-[30rem] w-full bg-gray-800 rounded-md p-3"
+
+                >
+
+                  {/* Post Header */}
+
+                  <div className="flex items-center justify-between mb-3">
+
+                    <div className="flex items-center gap-3">
+
+                      <div className="relative">
+
+                        <div className="size-10 rounded-full overflow-hidden bg-gray-700">
+
+                          {(() => {
+
+                            const profileImage = isViewingOwnProfile ? photolink : profileData?.photolink;
+
+                            const userName = isViewingOwnProfile ? `${firstname} ${lastname}`.trim() :
+
+                              `${profileData?.firstname || ""} ${profileData?.lastname || ""}`.trim();
+
+                            const initials = userName.split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2) || "?";
+
+
+
+                            if (profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined") {
+
+                              const imageSource = getImageSource(profileImage, 'profile');
+
+                              return (
 
                                 <Image
 
-                src={src}
+                                  src={imageSource.src}
 
-                      alt={post?.content || "post image"}
+                                  alt="Profile"
 
-                      width={800}
+                                  width={40}
 
-                      height={400}
+                                  height={40}
 
-                      className="w-full h-auto object-contain cursor-pointer hover:opacity-90 transition-opacity duration-200"
+                                  className="object-cover w-full h-full"
 
-                      onClick={() => {
+                                />
 
-                        // Get the full image source with fallbacks
+                              );
 
-                        const { pathUrlPrimary, queryUrlFallback, pathUrlFallback } = getMediaSource(post);
+                            }
 
-                        const imageSrc = src || pathUrlPrimary || queryUrlFallback || pathUrlFallback || '';
 
-                        if (imageSrc) {
 
-                          setFullScreenImage(imageSrc);
+                            return (
+
+                              <div className="w-full h-full bg-gray-600 flex items-center justify-center text-white text-sm font-semibold">
+
+                                {initials}
+
+                              </div>
+
+                            );
+
+                          })()}
+
+                        </div>
+
+                      </div>
+
+                      <div className="flex-1">
+
+                        <p className="font-medium text-white">
+
+                          {isViewingOwnProfile ? `${firstname} ${lastname}`.trim() :
+
+                            `${profileData?.firstname || ""} ${profileData?.lastname || ""}`.trim()}
+
+                        </p>
+
+                        <span className="text-gray-400 text-sm">
+
+                          {isViewingOwnProfile ? username : profileData?.username || ""}
+
+                        </span>
+
+                      </div>
+
+                    </div>
+
+                  </div>
+
+
+
+                  {/* Post Timestamp */}
+
+                  {post?.createdAt && (
+
+                    <p className="my-3 text-gray-400 text-sm cursor-pointer">
+
+                      {(() => {
+
+                        const formatted = formatRelativeTime(post.createdAt);
+
+                        if (formatted === 'Invalid time' || formatted === 'Unknown time') {
+
+                          return 'recently';
 
                         }
 
-                      }}
+                        return formatted;
+
+                      })()}
+
+                    </p>
+
+                  )}
+
+
+
+                  {/* Post Content */}
+
+                  {post?.content && (
+
+                    <div className="my-2">
+
+                      <p className="text-white">{post.content}</p>
+
+                    </div>
+
+                  )}
+
+
+
+                  {/* Post Media */}
+
+                  {postType === "image" && src && (
+
+                    <div className="w-full max-h-[400px] relative rounded overflow-hidden">
+
+                      <Image
+
+                        src={src}
+
+                        alt={post?.content || "post image"}
+
+                        width={800}
+
+                        height={400}
+
+                        className="w-full h-auto object-contain cursor-pointer hover:opacity-90 transition-opacity duration-200"
+
+                        onClick={() => {
+
+                          // Get the full image source with fallbacks
+
+                          const { pathUrlPrimary, queryUrlFallback, pathUrlFallback } = getMediaSource(post);
+
+                          const imageSrc = src || pathUrlPrimary || queryUrlFallback || pathUrlFallback || '';
+
+                          if (imageSrc) {
+
+                            setFullScreenImage(imageSrc);
+
+                          }
+
+                        }}
+
+                        onError={(e) => {
+
+                          const img = e.currentTarget as HTMLImageElement & { dataset: any };
+
+                          const { pathUrlPrimary, queryUrlFallback, pathUrlFallback } = getMediaSource(post);
+
+                          if (!img.dataset.fallback1 && pathUrlPrimary) {
+
+                            img.dataset.fallback1 = "1";
+
+                            img.src = pathUrlPrimary;
+
+                            return;
+
+                          }
+
+                          if (!img.dataset.fallback2 && queryUrlFallback) {
+
+                            img.dataset.fallback2 = "1";
+
+                            img.src = queryUrlFallback;
+
+                            return;
+
+                          }
+
+                          if (!img.dataset.fallback3 && pathUrlFallback) {
+
+                            img.dataset.fallback3 = "1";
+
+                            img.src = pathUrlFallback;
+
+                          }
+
+                        }}
+
+                      />
+
+                    </div>
+
+                  )}
+
+
+
+                  {postType === "video" && (
+
+                    (() => {
+
+                      // For videos, use the direct URL from postfilelink (like RemainingPosts does)
+
+                      const mediaRef = post?.postfilelink || post?.postphoto || post?.postvideo || post?.postlink ||
+
+                        post?.postFile || post?.file || post?.proxy_view || post?.file_link ||
+
+                        post?.media || post?.image || post?.video || post?.thumblink ||
+
+                        post?.postfilepublicid || post?.publicId || post?.public_id ||
+
+                        post?.imageId || "";
+
+                      const asString = typeof mediaRef === "string" ? mediaRef : (mediaRef?.publicId || mediaRef?.public_id || mediaRef?.url || "");
+
+                      const isHttpUrl = typeof asString === "string" && /^https?:\/\//i.test(asString);
+
+                      const isBlobUrl = typeof asString === "string" && /^blob:/i.test(asString);
+
+                      const isDataUrl = typeof asString === "string" && /^data:/i.test(asString);
+
+                      const isUrl = isHttpUrl || isBlobUrl || isDataUrl;
+
+
+
+                      // Use getImageSource for all videos (same as RemainingPosts)
+
+                      const imageSource = getImageSource(asString, 'post');
+
+                      const videoSrc = imageSource.src;
+
+
+
+                      // Only render if we have a valid video source
+
+                      if (!videoSrc) {
+
+                        return <div className="w-full h-[400px] bg-gray-800 rounded flex items-center justify-center text-white">No video source</div>;
+
+                      }
+
+
+
+                      return (
+
+                        <VideoComponent
+
+                          post={post}
+
+                          src={videoSrc}
+
+                          pathUrlPrimary={pathUrlPrimary}
+
+                          queryUrlFallback={queryUrlFallback}
+
+                          pathUrlFallback={pathUrlFallback}
+
+                        />
+
+                      );
+
+                    })()
+
+                  )}
+
+
+
+                  {/* Post Actions */}
+
+                  <PostActions
+
+                    className="mt-3 border-t border-gray-700 pt-2"
+
+                    starred={false}
+
+                    liked={false}
+
+                    likeCount={post.likeCount || post.likes?.length || 0}
+
+                    commentCount={post.commentCount || post.comments?.length || 0}
+
+                    post={post}
+
+                    onStar={() => { }}
+
+                    onLike={async () => {
+
+                      const uid = String(loggedInUserId || localUserid || "");
+
+                      const postId = post._id || post.postid || post.id;
+
+
+
+                      if (!postId || !token) {
+
+                        toast.error("Please login to like posts");
+
+                        return;
+
+                      }
+
+
+
+                      try {
+
+                        await dispatch(postlike({
+
+                          userid: uid,
+
+                          postid: postId,
+
+                          token: token
+
+                        } as any)).unwrap();
+
+
+
+                        toast.success("Post liked!");
+
+                        // Refresh posts
+
+                        fetchUserPosts(String(targetUserId));
+
+                      } catch (err) {
+
+                        toast.error("Failed to like post");
+
+                      }
+
+                    }}
+
+                    onComment={() => {
+
+                      // Simple comment toggle for modal
+
+                      const postId = post._id || post.postid || post.id;
+
+                      setModalUi(prev => ({
+
+                        ...prev,
+
+                        [postId]: {
+
+                          ...prev[postId],
+
+                          open: !prev[postId]?.open
+
+                        }
+
+                      }));
+
+                    }}
+
+                  />
+
+
+
+                  {/* Comments Section */}
+
+                  {modalUi[post._id || post.postid || post.id]?.open && (
+
+                    <div className="mt-2 border-t border-gray-700 pt-2">
+
+                      <div className="space-y-2">
+
+                        <p className="text-sm text-gray-500">Comments feature coming soon...</p>
+
+                      </div>
+
+                    </div>
+
+                  )}
+
+                </div>
+
+              );
+
+            })}
+
+          </div>
+
+        </div>
+
+
+
+        {/* Full-Screen Image Viewer */}
+
+        {fullScreenImage && (
+
+          <div
+
+            className="fixed inset-0 z-[10000] bg-black bg-opacity-95 flex items-center justify-center p-4"
+
+            onClick={() => setFullScreenImage(null)}
+
+            style={{ zIndex: 10000 }}
+
+          >
+
+            {/* Close Button - Top Right */}
+
+            <button
+
+              onClick={(e) => {
+
+                e.stopPropagation();
+
+                setFullScreenImage(null);
+
+              }}
+
+              className="absolute top-4 right-4 z-10 p-3 bg-black bg-opacity-50 hover:bg-opacity-70 rounded-full text-white transition-all duration-200 hover:scale-110"
+
+              aria-label="Close full screen image"
+
+            >
+
+              <X className="w-6 h-6" />
+
+            </button>
+
+
+
+            {/* Full-Screen Image */}
+
+            <div
+
+              className="relative max-w-full max-h-full w-full h-full flex items-center justify-center"
+
+              onClick={(e) => e.stopPropagation()}
+
+            >
+
+              <img
+
+                src={fullScreenImage}
+
+                alt="Full screen post image"
+
+                className="max-w-full max-h-full object-contain"
 
                 onError={(e) => {
 
+                  // Try fallbacks if main image fails
+
                   const img = e.currentTarget as HTMLImageElement & { dataset: any };
 
-                        const { pathUrlPrimary, queryUrlFallback, pathUrlFallback } = getMediaSource(post);
+                  const currentPost = userPosts.find(p => {
 
-                  if (!img.dataset.fallback1 && pathUrlPrimary) {
+                    const { src } = getMediaSource(p);
 
-                    img.dataset.fallback1 = "1";
+                    return src === fullScreenImage;
 
-                    img.src = pathUrlPrimary;
+                  });
 
-                    return;
 
-                  }
 
-                  if (!img.dataset.fallback2 && queryUrlFallback) {
+                  if (currentPost) {
 
-                    img.dataset.fallback2 = "1";
+                    const { pathUrlPrimary, queryUrlFallback, pathUrlFallback } = getMediaSource(currentPost);
 
-                    img.src = queryUrlFallback;
+                    if (!img.dataset.fallback1 && pathUrlPrimary && pathUrlPrimary !== fullScreenImage) {
 
-                    return;
+                      img.dataset.fallback1 = "1";
 
-                  }
+                      img.src = pathUrlPrimary;
 
-                  if (!img.dataset.fallback3 && pathUrlFallback) {
+                      return;
 
-                    img.dataset.fallback3 = "1";
+                    }
 
-                    img.src = pathUrlFallback;
+                    if (!img.dataset.fallback2 && queryUrlFallback && queryUrlFallback !== fullScreenImage) {
+
+                      img.dataset.fallback2 = "1";
+
+                      img.src = queryUrlFallback;
+
+                      return;
+
+                    }
+
+                    if (!img.dataset.fallback3 && pathUrlFallback && pathUrlFallback !== fullScreenImage) {
+
+                      img.dataset.fallback3 = "1";
+
+                      img.src = pathUrlFallback;
+
+                    }
 
                   }
 
@@ -3485,319 +3787,15 @@ const PostModal = () => {
 
             </div>
 
-          )}
+          </div>
 
-          
-
-                {postType === "video" && (
-
-                  (() => {
-
-                    // For videos, use the direct URL from postfilelink (like RemainingPosts does)
-
-                    const mediaRef = post?.postfilelink || post?.postphoto || post?.postvideo || post?.postlink || 
-
-                                    post?.postFile || post?.file || post?.proxy_view || post?.file_link || 
-
-                                    post?.media || post?.image || post?.video || post?.thumblink || 
-
-                                    post?.postfilepublicid || post?.publicId || post?.public_id || 
-
-                                    post?.imageId || "";
-
-                    const asString = typeof mediaRef === "string" ? mediaRef : (mediaRef?.publicId || mediaRef?.public_id || mediaRef?.url || "");
-
-                    const isHttpUrl = typeof asString === "string" && /^https?:\/\//i.test(asString);
-
-                    const isBlobUrl = typeof asString === "string" && /^blob:/i.test(asString);
-
-                    const isDataUrl = typeof asString === "string" && /^data:/i.test(asString);
-
-                    const isUrl = isHttpUrl || isBlobUrl || isDataUrl;
-
-                    
-
-                    // Use getImageSource for all videos (same as RemainingPosts)
-
-                    const imageSource = getImageSource(asString, 'post');
-
-                    const videoSrc = imageSource.src;
-
-                    
-
-                    // Only render if we have a valid video source
-
-                    if (!videoSrc) {
-
-                      return <div className="w-full h-[400px] bg-gray-800 rounded flex items-center justify-center text-white">No video source</div>;
-
-                            }
-
-                            
-
-                                  return (
-
-                 <VideoComponent
-
-                   post={post}
-
-                   src={videoSrc}
-
-                   pathUrlPrimary={pathUrlPrimary}
-
-                   queryUrlFallback={queryUrlFallback}
-
-                   pathUrlFallback={pathUrlFallback}
-
-                 />
-
-                    );
-
-                  })()
-
-                )}
-
-
-
-                {/* Post Actions */}
-
-                <PostActions
-
-                  className="mt-3 border-t border-gray-700 pt-2"
-
-                  starred={false}
-
-                  liked={false}
-
-                  likeCount={post.likeCount || post.likes?.length || 0}
-
-                  commentCount={post.commentCount || post.comments?.length || 0}
-
-                  post={post}
-
-                  onStar={() => {}}
-
-                  onLike={async () => {
-
-                    const uid = String(loggedInUserId || localUserid || "");
-
-                    const postId = post._id || post.postid || post.id;
-
-                    
-
-                    if (!postId || !token) {
-
-                      toast.error("Please login to like posts");
-
-                      return;
-
-                    }
-
-
-
-                    try {
-
-                      await dispatch(postlike({
-
-                        userid: uid,
-
-                        postid: postId,
-
-                        token: token
-
-                      } as any)).unwrap();
-
-                      
-
-                      toast.success("Post liked!");
-
-                      // Refresh posts
-
-                      fetchUserPosts(String(targetUserId));
-
-                    } catch (err) {
-
-                      toast.error("Failed to like post");
-
-                    }
-
-                  }}
-
-                  onComment={() => {
-
-                    // Simple comment toggle for modal
-
-                    const postId = post._id || post.postid || post.id;
-
-                    setModalUi(prev => ({
-
-                          ...prev,
-
-                      [postId]: {
-
-                        ...prev[postId],
-
-                        open: !prev[postId]?.open
-
-                      }
-
-                    }));
-
-                  }}
-
-                />
-
-
-
-                {/* Comments Section */}
-
-                {modalUi[post._id || post.postid || post.id]?.open && (
-
-                  <div className="mt-2 border-t border-gray-700 pt-2">
-
-                    <div className="space-y-2">
-
-                      <p className="text-sm text-gray-500">Comments feature coming soon...</p>
-
-                    </div>
-
-                  </div>
-
-                )}
-
-              </div>
-
-            );
-
-          })}
-
-        </div>
+        )}
 
       </div>
 
+    );
 
-
-      {/* Full-Screen Image Viewer */}
-
-      {fullScreenImage && (
-
-        <div 
-
-          className="fixed inset-0 z-[10000] bg-black bg-opacity-95 flex items-center justify-center p-4"
-
-          onClick={() => setFullScreenImage(null)}
-
-          style={{ zIndex: 10000 }}
-
-        >
-
-          {/* Close Button - Top Right */}
-
-          <button
-
-            onClick={(e) => {
-
-              e.stopPropagation();
-
-              setFullScreenImage(null);
-
-            }}
-
-            className="absolute top-4 right-4 z-10 p-3 bg-black bg-opacity-50 hover:bg-opacity-70 rounded-full text-white transition-all duration-200 hover:scale-110"
-
-            aria-label="Close full screen image"
-
-          >
-
-            <X className="w-6 h-6" />
-
-          </button>
-
-
-
-          {/* Full-Screen Image */}
-
-          <div 
-
-            className="relative max-w-full max-h-full w-full h-full flex items-center justify-center"
-
-            onClick={(e) => e.stopPropagation()}
-
-          >
-
-            <img
-
-              src={fullScreenImage}
-
-              alt="Full screen post image"
-
-              className="max-w-full max-h-full object-contain"
-
-              onError={(e) => {
-
-                // Try fallbacks if main image fails
-
-                const img = e.currentTarget as HTMLImageElement & { dataset: any };
-
-                const currentPost = userPosts.find(p => {
-
-                  const { src } = getMediaSource(p);
-
-                  return src === fullScreenImage;
-
-                });
-
-                
-
-                if (currentPost) {
-
-                  const { pathUrlPrimary, queryUrlFallback, pathUrlFallback } = getMediaSource(currentPost);
-
-                  if (!img.dataset.fallback1 && pathUrlPrimary && pathUrlPrimary !== fullScreenImage) {
-
-                    img.dataset.fallback1 = "1";
-
-                    img.src = pathUrlPrimary;
-
-                    return;
-
-                  }
-
-                  if (!img.dataset.fallback2 && queryUrlFallback && queryUrlFallback !== fullScreenImage) {
-
-                    img.dataset.fallback2 = "1";
-
-                    img.src = queryUrlFallback;
-
-                    return;
-
-                  }
-
-                  if (!img.dataset.fallback3 && pathUrlFallback && pathUrlFallback !== fullScreenImage) {
-
-                    img.dataset.fallback3 = "1";
-
-                    img.src = pathUrlFallback;
-
-                  }
-
-                }
-
-              }}
-
-            />
-
-          </div>
-
-        </div>
-
-      )}
-
-    </div>
-
-  );
-
-};
+  };
 
 
 
@@ -3811,7 +3809,7 @@ const PostModal = () => {
 
     return (
 
-      <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black bg-opacity-90 p-4" style={{zIndex: 9999}}>
+      <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black bg-opacity-90 p-4" style={{ zIndex: 9999 }}>
 
         <div className="relative max-w-4xl w-full max-h-[90vh] flex flex-col">
 
@@ -3829,7 +3827,7 @@ const PostModal = () => {
 
           </button>
 
-          
+
 
           {/* Profile Picture */}
 
@@ -3837,93 +3835,93 @@ const PostModal = () => {
 
             <div className="relative w-full max-w-md h-96 flex items-center justify-center">
 
-                {(() => {
+              {(() => {
 
-                  const profileImage = photolink || avatarSrc;
+                const profileImage = photolink || avatarSrc;
 
-                  const userName = `${firstname || ""} ${lastname || ""}`.trim();
+                const userName = `${firstname || ""} ${lastname || ""}`.trim();
 
-                  const initials = userName.split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2) || "?";
+                const initials = userName.split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2) || "?";
 
-                  
 
-                  
 
-                  if (profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined") {
 
-                    // Check if it's a base64 image
 
-                    const isBase64 = profileImage.startsWith('data:image/');
+                if (profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined") {
 
-                    
+                  // Check if it's a base64 image
 
-                    if (isBase64) {
+                  const isBase64 = profileImage.startsWith('data:image/');
 
-                      return (
 
-                        <img
 
-                          alt="Profile Picture"
+                  if (isBase64) {
 
-                          src={profileImage}
+                    return (
 
-                          className="max-w-full max-h-full object-contain rounded-lg"
+                      <img
 
-                        />
+                        alt="Profile Picture"
 
-                      );
+                        src={profileImage}
 
-                    } else {
+                        className="max-w-full max-h-full object-contain rounded-lg"
 
-                      const imageSource = getImageSource(profileImage, 'profile');
+                      />
 
-                      return (
+                    );
 
-                        <Image
+                  } else {
 
-                          alt="Profile Picture"
+                    const imageSource = getImageSource(profileImage, 'profile');
 
-                          src={imageSource.src}
+                    return (
 
-                          width={400}
+                      <Image
 
-                          height={400}
+                        alt="Profile Picture"
 
-                          className="object-contain rounded-lg"
+                        src={imageSource.src}
 
-                        />
+                        width={400}
 
-                      );
+                        height={400}
 
-                    }
+                        className="object-contain rounded-lg"
+
+                      />
+
+                    );
 
                   }
 
-                  
+                }
 
-                  return (
 
-                    <div className="w-full h-full rounded-lg bg-gray-600 flex items-center justify-center text-white text-6xl font-bold">
 
-                      {initials}
+                return (
 
-                    </div>
+                  <div className="w-full h-full rounded-lg bg-gray-600 flex items-center justify-center text-white text-6xl font-bold">
 
-                  );
+                    {initials}
 
-                })()}
+                  </div>
 
-                
+                );
 
-                {/* VIP Lion Badge */}
+              })()}
 
-                {profileOwnerVipStatus && <VIPBadge size="xxl" className="absolute top-2 right-2" isVip={profileOwnerVipStatus} vipEndDate={vipStatus?.vipEndDate} />}
+
+
+              {/* VIP Lion Badge */}
+
+              {profileOwnerVipStatus && <VIPBadge size="xxl" className="absolute top-2 right-2" isVip={profileOwnerVipStatus} vipEndDate={vipStatus?.vipEndDate} />}
 
             </div>
 
           </div>
 
-          
+
 
           {/* User Info */}
 
@@ -4021,9 +4019,9 @@ const PostModal = () => {
 
           if (postElement) {
 
-            postElement.scrollIntoView({ 
+            postElement.scrollIntoView({
 
-              behavior: 'smooth', 
+              behavior: 'smooth',
 
               block: 'start',
 
@@ -4035,7 +4033,7 @@ const PostModal = () => {
 
         }, 100);
 
-        
+
 
         return () => clearTimeout(timer);
 
@@ -4111,7 +4109,7 @@ const PostModal = () => {
     // Handle delete exclusive post
     const handleDeletePost = React.useCallback(async (post: any) => {
       const postId = post._id || post.postid || post.id;
-      
+
       if (!postId || !token) {
         toast.error("Unable to delete post. Please log in and try again.");
         return;
@@ -4179,7 +4177,7 @@ const PostModal = () => {
             const pId = p._id || p.postid || p.id;
             return String(pId) !== String(postId);
           }));
-          
+
           // Refresh the exclusive posts list to ensure consistency
           if (targetUserId) {
             // Small delay to ensure backend has processed the deletion
@@ -4192,7 +4190,7 @@ const PostModal = () => {
         }
       } catch (error: any) {
         console.error("Error deleting exclusive post:", error);
-        
+
         // Provide more detailed error messages
         if (error.response) {
           const errorMessage = error.response.data?.message || error.response.statusText || "Failed to delete post";
@@ -4213,7 +4211,7 @@ const PostModal = () => {
       if (!postId) return;
 
       const postUrl = `${window.location.origin}/Profile/${viewingUserId}?exclusive=${postId}`;
-      
+
       closeAllDropdowns();
 
       try {
@@ -4272,628 +4270,652 @@ const PostModal = () => {
     return (
 
       <>
-      <div className="fixed inset-0 z-[100] bg-gray-900">
+        <div className="fixed inset-0 z-[100] bg-gray-900">
 
-        {/* Header */}
+          {/* Header */}
 
-        <div className="sticky top-0 z-10 bg-gray-900 border-b border-gray-800 p-4 flex justify-between items-center">
+          <div className="sticky top-0 z-10 bg-gray-900 border-b border-gray-800 p-4 flex justify-between items-center">
 
-          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3">
 
-            <div className="relative w-10 h-10 rounded-full overflow-hidden bg-gray-700">
+              <div className="relative w-10 h-10 rounded-full overflow-hidden bg-gray-700">
 
-              {(() => {
+                {(() => {
 
-                const profileImage = isViewingOwnProfile ? photolink : profileData?.photolink;
+                  const profileImage = isViewingOwnProfile ? photolink : profileData?.photolink;
 
-                const userName = isViewingOwnProfile ? `${firstname} ${lastname}`.trim() : 
+                  const userName = isViewingOwnProfile ? `${firstname} ${lastname}`.trim() :
 
-                  `${profileData?.firstname || ""} ${profileData?.lastname || ""}`.trim();
+                    `${profileData?.firstname || ""} ${profileData?.lastname || ""}`.trim();
 
-                const initials = userName.split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2) || "?";
+                  const initials = userName.split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2) || "?";
 
-                
 
-                if (profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined") {
 
-                  const imageSource = getImageSource(profileImage, 'profile');
+                  if (profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined") {
+
+                    const imageSource = getImageSource(profileImage, 'profile');
+
+                    return (
+
+                      <Image
+
+                        src={imageSource.src}
+
+                        alt="Profile"
+
+                        width={40}
+
+                        height={40}
+
+                        className="object-cover w-full h-full"
+
+                      />
+
+                    );
+
+                  }
+
+
 
                   return (
 
-                    <Image 
+                    <div className="w-full h-full bg-gray-600 flex items-center justify-center text-white text-sm font-semibold">
 
-                      src={imageSource.src} 
+                      {initials}
 
-                      alt="Profile" 
-
-                      width={40} 
-
-                      height={40} 
-
-                      className="object-cover w-full h-full"
-
-                    />
+                    </div>
 
                   );
 
-                }
+                })()}
 
-                
+              </div>
 
-                return (
+              <div>
 
-                  <div className="w-full h-full bg-gray-600 flex items-center justify-center text-white text-sm font-semibold">
+                <h2 className="text-white font-semibold text-lg">
 
-                    {initials}
+                  {isViewingOwnProfile ? `${firstname} ${lastname}`.trim() :
 
-                  </div>
+                    `${profileData?.firstname || ""} ${profileData?.lastname || ""}`.trim()}
 
-                );
+                </h2>
 
-              })()}
+                <p className="text-gray-400 text-sm">
 
-            </div>
+                  {exclusivePosts.length} {exclusivePosts.length === 1 ? 'exclusive post' : 'exclusive posts'}
 
-            <div>
+                </p>
 
-              <h2 className="text-white font-semibold text-lg">
-
-                {isViewingOwnProfile ? `${firstname} ${lastname}`.trim() : 
-
-                  `${profileData?.firstname || ""} ${profileData?.lastname || ""}`.trim()}
-
-              </h2>
-
-              <p className="text-gray-400 text-sm">
-
-                {exclusivePosts.length} {exclusivePosts.length === 1 ? 'exclusive post' : 'exclusive posts'}
-
-              </p>
+              </div>
 
             </div>
+
+            <button
+
+              onClick={() => setShowExclusivePostModal(false)}
+
+              className="text-gray-400 hover:text-white transition-colors p-2"
+
+            >
+
+              <X className="w-6 h-6" />
+
+            </button>
 
           </div>
 
-          <button 
 
-            onClick={() => setShowExclusivePostModal(false)}
 
-            className="text-gray-400 hover:text-white transition-colors p-2"
+          {/* Posts Content */}
 
-          >
+          <div ref={scrollContainerRef} className="h-[calc(100vh-80px)] overflow-y-auto">
 
-            <X className="w-6 h-6" />
+            <div className="max-w-2xl mx-auto p-4 space-y-6">
 
-          </button>
+              {exclusivePosts.map((post, index) => {
 
-        </div>
+                const postId = post._id || post.postid || post.id;
+                const { src, postType, asString, pathUrlPrimary, queryUrlFallback, pathUrlFallback } = getMediaSource(post);
+                const postUserId = post.userid || post.user?.userid || post.user?._id;
 
-        
+                const isPostOwner = String(postUserId) === String(loggedInUserId || localUserid);
 
-        {/* Posts Content */}
+                const isPurchased = purchasedPostIds.has(String(postId));
 
-        <div ref={scrollContainerRef} className="h-[calc(100vh-80px)] overflow-y-auto">
+                const canView = isPostOwner || isPurchased;
 
-          <div className="max-w-2xl mx-auto p-4 space-y-6">
 
-            {exclusivePosts.map((post, index) => {
+                // Get or initialize loading state for this post
+                if (!imageLoadingStatesRef.current.has(String(postId))) {
+                  imageLoadingStatesRef.current.set(String(postId), { loading: true, error: false });
+                }
+                const imageState = imageLoadingStatesRef.current.get(String(postId)) || { loading: true, error: false };
+                const isImageLoading = imageState.loading;
+                const imageError = imageState.error;
 
-              const postId = post._id || post.postid || post.id;
-              const { src, postType, asString, pathUrlPrimary, queryUrlFallback, pathUrlFallback } = getMediaSource(post);
-              const postUserId = post.userid || post.user?.userid || post.user?._id;
 
-              const isPostOwner = String(postUserId) === String(loggedInUserId || localUserid);
+                return (
 
-              const isPurchased = purchasedPostIds.has(String(postId));
+                  <div
 
-              const canView = isPostOwner || isPurchased;
+                    key={post._id || post.postid || index}
 
-              
-              // Get or initialize loading state for this post
-              if (!imageLoadingStatesRef.current.has(String(postId))) {
-                imageLoadingStatesRef.current.set(String(postId), { loading: true, error: false });
-              }
-              const imageState = imageLoadingStatesRef.current.get(String(postId)) || { loading: true, error: false };
-              const isImageLoading = imageState.loading;
-              const imageError = imageState.error;
-              
+                    data-post-id={post._id || post.postid || post.id}
 
-              return (
+                    className="mx-auto max-w-[30rem] w-full bg-gray-800 rounded-md p-3"
 
-                <div 
+                  >
 
-                  key={post._id || post.postid || index} 
+                    {/* Post Header with Edit Button */}
 
-                  data-post-id={post._id || post.postid || post.id}
+                    <div className="flex items-center justify-between mb-3">
 
-                  className="mx-auto max-w-[30rem] w-full bg-gray-800 rounded-md p-3"
+                      <div className="flex items-center gap-3">
 
-                >
+                        <div className="relative">
 
-                  {/* Post Header with Edit Button */}
+                          <div className="size-10 rounded-full overflow-hidden bg-gray-700">
 
-                  <div className="flex items-center justify-between mb-3">
+                            {(() => {
 
-                    <div className="flex items-center gap-3">
+                              const profileImage = isViewingOwnProfile ? photolink : profileData?.photolink;
 
-                      <div className="relative">
+                              const userName = isViewingOwnProfile ? `${firstname} ${lastname}`.trim() :
 
-                        <div className="size-10 rounded-full overflow-hidden bg-gray-700">
+                                `${profileData?.firstname || ""} ${profileData?.lastname || ""}`.trim();
 
-                          {(() => {
+                              const initials = userName.split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2) || "?";
 
-                            const profileImage = isViewingOwnProfile ? photolink : profileData?.photolink;
 
-                            const userName = isViewingOwnProfile ? `${firstname} ${lastname}`.trim() : 
 
-                              `${profileData?.firstname || ""} ${profileData?.lastname || ""}`.trim();
+                              if (profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined") {
 
-                            const initials = userName.split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2) || "?";
+                                const imageSource = getImageSource(profileImage, 'profile');
 
-                            
+                                return (
 
-                            if (profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined") {
+                                  <Image
 
-                              const imageSource = getImageSource(profileImage, 'profile');
+                                    src={imageSource.src}
+
+                                    alt="Profile"
+
+                                    width={40}
+
+                                    height={40}
+
+                                    className="object-cover w-full h-full"
+
+                                  />
+
+                                );
+
+                              }
+
+
 
                               return (
 
-                                <Image 
+                                <div className="w-full h-full bg-gray-600 flex items-center justify-center text-white text-sm font-semibold">
 
-                                  src={imageSource.src} 
+                                  {initials}
 
-                                  alt="Profile" 
-
-                                  width={40}
-
-                                  height={40}
-
-                                  className="object-cover w-full h-full"
-
-                                />
+                                </div>
 
                               );
 
+                            })()}
+
+                          </div>
+
+                        </div>
+
+                        <div className="flex-1">
+
+                          <p className="font-medium text-white">
+
+                            {isViewingOwnProfile ? `${firstname} ${lastname}`.trim() :
+
+                              `${profileData?.firstname || ""} ${profileData?.lastname || ""}`.trim()}
+
+                          </p>
+
+                          <span className="text-gray-400 text-sm">
+
+                            {isViewingOwnProfile ? username : profileData?.username || ""}
+
+                          </span>
+
+                        </div>
+
+                      </div>
+
+                    </div>
+
+
+
+                    {/* Price Badge */}
+
+                    {post.price && (
+
+                      <div className="mb-2 inline-flex items-center gap-1 bg-white text-gray-900 px-2 py-1 rounded text-xs font-semibold shadow-lg">
+
+                        <span>🪙</span>
+
+                        {parseFloat(post.price).toFixed(2)}
+
+                      </div>
+
+                    )}
+
+
+
+                    {/* Post Content */}
+
+                    {post?.content && (
+
+                      <div className="my-2">
+
+                        <p className="text-white">{post.content}</p>
+
+                      </div>
+
+                    )}
+
+
+
+                    {/* Post Media - Similar to PostModal */}
+
+                    {postType === "image" && src && (
+
+                      <div className="w-full max-h-[480px] relative rounded overflow-hidden bg-gray-800">
+                        {/* Skeleton loader while image is loading */}
+                        {isImageLoading && !imageError && (
+                          <div className="absolute inset-0 flex items-center justify-center bg-gray-800 animate-pulse z-10">
+                            <SkeletonTheme baseColor="#202020" highlightColor="#444">
+                              <Skeleton height="100%" width="100%" className="rounded" />
+                            </SkeletonTheme>
+                          </div>
+                        )}
+                        <img
+                          key={`modal-exclusive-img-${postId}`}
+                          src={src}
+
+                          alt={post?.content || "exclusive post image"}
+
+                          className={`w-full h-auto object-contain transition-opacity duration-200 ${isImageLoading ? 'opacity-0 absolute inset-0' : 'opacity-100 relative'} ${canView ? 'cursor-pointer hover:opacity-90' : 'cursor-pointer blur-sm brightness-50'}`}
+                          onLoad={(e) => {
+                            const img = e.currentTarget as HTMLImageElement;
+                            // Always update loading state when onLoad fires
+                            imageLoadingStatesRef.current.set(String(postId), { loading: false, error: false });
+                            // Force re-render by updating a dummy state
+                            setModalUi(prev => ({ ...prev }));
+                          }}
+                          onLoadStart={() => {
+                            // Ensure loading state is set when image starts loading
+                            imageLoadingStatesRef.current.set(String(postId), { loading: true, error: false });
+                            setModalUi(prev => ({ ...prev }));
+                          }}
+                          ref={(img) => {
+                            // Check if image is already loaded (for cached images) - this runs after render
+                            if (img && img.complete && img.naturalHeight !== 0) {
+                              const currentState = imageLoadingStatesRef.current.get(String(postId));
+                              if (currentState?.loading) {
+                                imageLoadingStatesRef.current.set(String(postId), { loading: false, error: false });
+                                setModalUi(prev => ({ ...prev }));
+                              }
                             }
+                          }}
+                          onClick={(e) => {
+                            if (!canView) {
+                              e.stopPropagation();
+                              // Trigger purchase flow
+                              handlePurchasePost(post, e);
+                              return;
+                            }
+                            // For viewable images, allow full-screen view
+                            e.preventDefault();
+                            e.stopPropagation();
+                            // Use the processed src first, then fallbacks
+                            // The src from getMediaSource should already be processed by getImageSource
+                            let imageSrc = src;
 
-                            
-
-                            return (
-
-                              <div className="w-full h-full bg-gray-600 flex items-center justify-center text-white text-sm font-semibold">
-
-                                {initials}
-
-                              </div>
-
+                            // Check if src is a valid URL format
+                            const isValidUrl = imageSrc && (
+                              imageSrc.startsWith('http://') ||
+                              imageSrc.startsWith('https://') ||
+                              imageSrc.startsWith('/') ||
+                              imageSrc.startsWith('blob:') ||
+                              imageSrc.startsWith('data:')
                             );
 
-                          })()}
-
-                        </div>
-
-                      </div>
-
-                      <div className="flex-1">
-
-                        <p className="font-medium text-white">
-
-                          {isViewingOwnProfile ? `${firstname} ${lastname}`.trim() : 
-
-                            `${profileData?.firstname || ""} ${profileData?.lastname || ""}`.trim()}
-
-                        </p>
-
-                        <span className="text-gray-400 text-sm">
-
-                          {isViewingOwnProfile ? username : profileData?.username || ""}
-
-                        </span>
-
-                      </div>
-
-                    </div>
-
-                  </div>
-
-
-
-                  {/* Price Badge */}
-
-                  {post.price && (
-
-                    <div className="mb-2 inline-flex items-center gap-1 bg-white text-gray-900 px-2 py-1 rounded text-xs font-semibold shadow-lg">
-
-                      <span>🪙</span>
-
-                      {parseFloat(post.price).toFixed(2)}
-
-                    </div>
-
-                  )}
-
-
-
-                  {/* Post Content */}
-
-                  {post?.content && (
-
-                    <div className="my-2">
-
-                      <p className="text-white">{post.content}</p>
-
-                    </div>
-
-                  )}
-
-          
-
-                  {/* Post Media - Similar to PostModal */}
-
-                  {postType === "image" && src && (
-
-                    <div className="w-full max-h-[480px] relative rounded overflow-hidden bg-gray-800">
-                      {/* Skeleton loader while image is loading */}
-                      {isImageLoading && !imageError && (
-                        <div className="absolute inset-0 flex items-center justify-center bg-gray-800 animate-pulse z-10">
-                          <SkeletonTheme baseColor="#202020" highlightColor="#444">
-                            <Skeleton height="100%" width="100%" className="rounded" />
-                          </SkeletonTheme>
-                        </div>
-                      )}
-                      <img
-                        key={`modal-exclusive-img-${postId}`}
-                        src={src}
-
-                        alt={post?.content || "exclusive post image"}
-
-                        className={`w-full h-auto object-contain transition-opacity duration-200 ${isImageLoading ? 'opacity-0 absolute inset-0' : 'opacity-100 relative'} ${canView ? 'cursor-pointer hover:opacity-90' : 'cursor-pointer blur-sm brightness-50'}`}
-                        onLoad={(e) => {
-                          const img = e.currentTarget as HTMLImageElement;
-                          // Always update loading state when onLoad fires
-                          imageLoadingStatesRef.current.set(String(postId), { loading: false, error: false });
-                          // Force re-render by updating a dummy state
-                          setModalUi(prev => ({ ...prev }));
-                        }}
-                        onLoadStart={() => {
-                          // Ensure loading state is set when image starts loading
-                          imageLoadingStatesRef.current.set(String(postId), { loading: true, error: false });
-                          setModalUi(prev => ({ ...prev }));
-                        }}
-                        ref={(img) => {
-                          // Check if image is already loaded (for cached images) - this runs after render
-                          if (img && img.complete && img.naturalHeight !== 0) {
-                            const currentState = imageLoadingStatesRef.current.get(String(postId));
-                            if (currentState?.loading) {
-                              imageLoadingStatesRef.current.set(String(postId), { loading: false, error: false });
-                              setModalUi(prev => ({ ...prev }));
+                            // If src is not a valid URL, use the fallback URLs
+                            if (!isValidUrl) {
+                              imageSrc = pathUrlPrimary || queryUrlFallback || pathUrlFallback || src || '';
                             }
-                          }
-                        }}
-                        onClick={(e) => {
-                          if (!canView) {
-                            e.stopPropagation();
-                            // Trigger purchase flow
-                            handlePurchasePost(post, e);
-                            return;
-                          }
-                          // For viewable images, allow full-screen view
-                          e.preventDefault();
-                          e.stopPropagation();
-                          // Use the processed src first, then fallbacks
-                          // The src from getMediaSource should already be processed by getImageSource
-                          let imageSrc = src;
-                          
-                          // Check if src is a valid URL format
-                          const isValidUrl = imageSrc && (
-                            imageSrc.startsWith('http://') || 
-                            imageSrc.startsWith('https://') || 
-                            imageSrc.startsWith('/') || 
-                            imageSrc.startsWith('blob:') || 
-                            imageSrc.startsWith('data:')
-                          );
-                          
-                          // If src is not a valid URL, use the fallback URLs
-                          if (!isValidUrl) {
-                            imageSrc = pathUrlPrimary || queryUrlFallback || pathUrlFallback || src || '';
-                          }
-                          
-                          console.log("Image clicked, setting full-screen:", { 
-                            imageSrc, 
-                            src, 
-                            isValidUrl,
-                            pathUrlPrimary, 
-                            queryUrlFallback, 
-                            pathUrlFallback, 
-                            canView, 
-                            postId 
-                          });
-                          
+
+                            console.log("Image clicked, setting full-screen:", {
+                              imageSrc,
+                              src,
+                              isValidUrl,
+                              pathUrlPrimary,
+                              queryUrlFallback,
+                              pathUrlFallback,
+                              canView,
+                              postId
+                            });
+
                             if (imageSrc) {
 
                               setFullScreenImage(imageSrc);
 
-                            // Store the original media reference for fallback handling
-                            setFullScreenImageOriginal(asString || '');
-                          } else {
+                              // Store the original media reference for fallback handling
+                              setFullScreenImageOriginal(asString || '');
+                            } else {
 
-                            console.warn("No image source available for full-screen view");
-                          }
+                              console.warn("No image source available for full-screen view");
+                            }
 
-                        }}
-
-                        onError={(e) => {
-
-                          const img = e.currentTarget as HTMLImageElement & { dataset: any };
-
-                          if (!img.dataset.fallback1 && pathUrlPrimary) {
-
-                            img.dataset.fallback1 = "1";
-
-                            img.src = pathUrlPrimary;
-
-                            return;
-
-                          }
-
-                          if (!img.dataset.fallback2 && queryUrlFallback) {
-
-                            img.dataset.fallback2 = "1";
-
-                            img.src = queryUrlFallback;
-
-                            return;
-
-                          }
-
-                          if (!img.dataset.fallback3 && pathUrlFallback) {
-
-                            img.dataset.fallback3 = "1";
-
-                            img.src = pathUrlFallback;
-
-                            return;
-                          }
-
-                          // If all fallbacks fail, show error state
-                          imageLoadingStatesRef.current.set(String(postId), { loading: false, error: true });
-                          setModalUi(prev => ({ ...prev }));
-                        }}
-
-                      />
-
-                      {/* Lock overlay for visitors - clickable to purchase */}
-
-                      {!canView && (
-
-                        <div 
-
-                          className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center cursor-pointer hover:bg-opacity-50 transition-opacity z-10"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handlePurchasePost(post, e);
                           }}
-                        >
 
-                          <div className="text-center">
+                          onError={(e) => {
 
-                            <Lock className="w-8 h-8 text-white mx-auto mb-2" />
+                            const img = e.currentTarget as HTMLImageElement & { dataset: any };
 
-                            <p className="text-white text-sm font-semibold">Click to unlock</p>
+                            if (!img.dataset.fallback1 && pathUrlPrimary) {
 
-                            {post.price && (
+                              img.dataset.fallback1 = "1";
 
-                              <p className="text-yellow-400 mt-1 text-xs font-semibold flex items-center justify-center gap-1">
+                              img.src = pathUrlPrimary;
 
-                                <span>🪙</span>
+                              return;
 
-                                {parseFloat(post.price).toFixed(2)}
+                            }
 
-                              </p>
+                            if (!img.dataset.fallback2 && queryUrlFallback) {
 
-                            )}
+                              img.dataset.fallback2 = "1";
 
-                          </div>
+                              img.src = queryUrlFallback;
 
-                        </div>
+                              return;
 
-                      )}
+                            }
 
-                    </div>
+                            if (!img.dataset.fallback3 && pathUrlFallback) {
 
-                  )}
+                              img.dataset.fallback3 = "1";
 
-                  
+                              img.src = pathUrlFallback;
 
-                  {postType === "video" && src && (
+                              return;
+                            }
 
-                    <div className="relative">
-
-                      {/* VideoComponent has its own built-in skeleton loader */}
-                      <div 
-
-                        className={canView ? '' : 'pointer-events-none'}
-
-                        onClick={(e) => {
-
-                          if (!canView) {
-
-                            e.stopPropagation();
-
-                            handlePurchasePost(post);
-
-                          }
-
-                        }}
-
-                      >
-
-                        <VideoComponent
-
-                          post={post}
-
-                          src={src}
-
-                          pathUrlPrimary={getMediaSource(post).pathUrlPrimary}
-
-                          queryUrlFallback={getMediaSource(post).queryUrlFallback}
-
-                          pathUrlFallback={getMediaSource(post).pathUrlFallback}
+                            // If all fallbacks fail, show error state
+                            imageLoadingStatesRef.current.set(String(postId), { loading: false, error: true });
+                            setModalUi(prev => ({ ...prev }));
+                          }}
 
                         />
 
-                      </div>
+                        {/* Lock overlay for visitors - clickable to purchase */}
 
-                      {/* Lock overlay for visitors - clickable to purchase */}
+                        {!canView && (
 
-                      {!canView && (
+                          <div
 
-                        <div 
+                            className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center cursor-pointer hover:bg-opacity-50 transition-opacity z-10"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handlePurchasePost(post, e);
+                            }}
+                          >
 
-                          className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center rounded cursor-pointer hover:bg-opacity-50 transition-opacity z-10"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handlePurchasePost(post, e);
-                          }}
-                        >
+                            <div className="text-center">
 
-                          <div className="text-center">
+                              <Lock className="w-8 h-8 text-white mx-auto mb-2" />
 
-                            <Lock className="w-8 h-8 text-white mx-auto mb-2" />
+                              <p className="text-white text-sm font-semibold">Click to unlock</p>
 
-                            <p className="text-white text-sm font-semibold">Click to unlock</p>
+                              {post.price && (
 
-                            {post.price && (
+                                <p className="text-yellow-400 mt-1 text-xs font-semibold flex items-center justify-center gap-1">
 
-                              <p className="text-yellow-400 mt-1 text-xs font-semibold flex items-center justify-center gap-1">
+                                  <span>🪙</span>
 
-                                <span>🪙</span>
+                                  {parseFloat(post.price).toFixed(2)}
 
-                                {parseFloat(post.price).toFixed(2)}
+                                </p>
 
-                              </p>
+                              )}
 
-                            )}
+                            </div>
 
                           </div>
 
-                        </div>
+                        )}
 
-                      )}
+                      </div>
 
-                    </div>
-
-                  )}
+                    )}
 
 
 
-                  {/* Post Actions */}
+                    {postType === "video" && src && (
 
-                  <div className="mt-3 border-t border-gray-700 pt-2 flex items-center justify-between">
+                      <div className="relative">
 
-                    <div className="flex-1 flex items-center gap-2">
-                      {/* Like Button */}
-                      <button
-                        type="button"
-                        className="flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-700/50 transition-colors duration-200 text-gray-400 hover:text-gray-200"
-                        onClick={async () => {
-                          const uid = String(loggedInUserId || localUserid || "");
-                          const postId = post._id || post.postid || post.id;
-                          
-                          if (!postId || !token) {
-                            toast.error("Please login to like posts");
-                            return;
-                          }
-
-                          try {
-                            await dispatch(postlike({
-                              userid: uid,
-                              postid: postId,
-                              token: token
-                            } as any)).unwrap();
-                            
-                            toast.success("Post liked!");
-                            fetchExclusivePosts(String(targetUserId));
-                          } catch (err) {
-                            toast.error("Failed to like post");
-                          }
-                        }}
-                      >
-                        <Heart className="w-5 h-5" />
-                        <span className="text-sm tabular-nums">{post.likeCount || post.likes?.length || 0}</span>
-                      </button>
-
-                      {/* Comment Button */}
-                      <button
-                        type="button"
-                        className="flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-700/50 transition-colors duration-200 text-gray-400 hover:text-gray-200"
-                        onClick={() => {
-                          const postId = post._id || post.postid || post.id;
-                          setModalUi(prev => ({
-                            ...prev,
-                            [postId]: {
-                              ...prev[postId],
-                              open: !prev[postId]?.open
-                            }
-                          }));
-                        }}
-                      >
-                        <MessageCircle className="w-5 h-5" />
-                        <span className="text-sm tabular-nums">{post.commentCount || post.comments?.length || 0}</span>
-                      </button>
-                    </div>
-
-                    {/* Dropdown Menu - Show for everyone, but Edit/Delete only for owner */}
-
-                    <div className="relative exclusive-post-dropdown ml-2">
-
-                      <button
-
-                        onClick={(e) => {
-
-                          e.stopPropagation();
-
-                          toggleDropdown(String(postId));
-
-                        }}
-
-                        className="text-gray-400 hover:text-white transition-colors p-2"
-
-                        title="More options"
-
-                      >
-
-                        <MoreHorizontal className="w-5 h-5" />
-
-                      </button>
-
-                      {openDropdowns.has(String(postId)) && (
-
+                        {/* VideoComponent has its own built-in skeleton loader */}
                         <div
 
-                          className="absolute right-0 bottom-full mb-2 w-48 rounded-md shadow-lg bg-gray-800 ring-1 ring-gray-600 ring-opacity-5 focus:outline-none z-50"
+                          className={canView ? '' : 'pointer-events-none'}
 
-                          role="menu"
+                          onClick={(e) => {
 
-                          aria-orientation="vertical"
+                            if (!canView) {
 
-                          onClick={(e) => e.stopPropagation()}
+                              e.stopPropagation();
+
+                              handlePurchasePost(post);
+
+                            }
+
+                          }}
 
                         >
 
-                          <div className="py-1" role="none">
+                          <VideoComponent
 
-                            {/* Edit - Only show for post owner */}
-                            {isPostOwner && (
+                            post={post}
+
+                            src={src}
+
+                            pathUrlPrimary={getMediaSource(post).pathUrlPrimary}
+
+                            queryUrlFallback={getMediaSource(post).queryUrlFallback}
+
+                            pathUrlFallback={getMediaSource(post).pathUrlFallback}
+
+                          />
+
+                        </div>
+
+                        {/* Lock overlay for visitors - clickable to purchase */}
+
+                        {!canView && (
+
+                          <div
+
+                            className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center rounded cursor-pointer hover:bg-opacity-50 transition-opacity z-10"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handlePurchasePost(post, e);
+                            }}
+                          >
+
+                            <div className="text-center">
+
+                              <Lock className="w-8 h-8 text-white mx-auto mb-2" />
+
+                              <p className="text-white text-sm font-semibold">Click to unlock</p>
+
+                              {post.price && (
+
+                                <p className="text-yellow-400 mt-1 text-xs font-semibold flex items-center justify-center gap-1">
+
+                                  <span>🪙</span>
+
+                                  {parseFloat(post.price).toFixed(2)}
+
+                                </p>
+
+                              )}
+
+                            </div>
+
+                          </div>
+
+                        )}
+
+                      </div>
+
+                    )}
+
+
+
+                    {/* Post Actions */}
+
+                    <div className="mt-3 border-t border-gray-700 pt-2 flex items-center justify-between">
+
+                      <div className="flex-1 flex items-center gap-2">
+                        {/* Like Button */}
+                        <button
+                          type="button"
+                          className="flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-700/50 transition-colors duration-200 text-gray-400 hover:text-gray-200"
+                          onClick={async () => {
+                            const uid = String(loggedInUserId || localUserid || "");
+                            const postId = post._id || post.postid || post.id;
+
+                            if (!postId || !token) {
+                              toast.error("Please login to like posts");
+                              return;
+                            }
+
+                            try {
+                              await dispatch(postlike({
+                                userid: uid,
+                                postid: postId,
+                                token: token
+                              } as any)).unwrap();
+
+                              toast.success("Post liked!");
+                              fetchExclusivePosts(String(targetUserId));
+                            } catch (err) {
+                              toast.error("Failed to like post");
+                            }
+                          }}
+                        >
+                          <Heart className="w-5 h-5" />
+                          <span className="text-sm tabular-nums">{post.likeCount || post.likes?.length || 0}</span>
+                        </button>
+
+                        {/* Comment Button */}
+                        <button
+                          type="button"
+                          className="flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-700/50 transition-colors duration-200 text-gray-400 hover:text-gray-200"
+                          onClick={() => {
+                            const postId = post._id || post.postid || post.id;
+                            setModalUi(prev => ({
+                              ...prev,
+                              [postId]: {
+                                ...prev[postId],
+                                open: !prev[postId]?.open
+                              }
+                            }));
+                          }}
+                        >
+                          <MessageCircle className="w-5 h-5" />
+                          <span className="text-sm tabular-nums">{post.commentCount || post.comments?.length || 0}</span>
+                        </button>
+                      </div>
+
+                      {/* Dropdown Menu - Show for everyone, but Edit/Delete only for owner */}
+
+                      <div className="relative exclusive-post-dropdown ml-2">
+
+                        <button
+
+                          onClick={(e) => {
+
+                            e.stopPropagation();
+
+                            toggleDropdown(String(postId));
+
+                          }}
+
+                          className="text-gray-400 hover:text-white transition-colors p-2"
+
+                          title="More options"
+
+                        >
+
+                          <MoreHorizontal className="w-5 h-5" />
+
+                        </button>
+
+                        {openDropdowns.has(String(postId)) && (
+
+                          <div
+
+                            className="absolute right-0 bottom-full mb-2 w-48 rounded-md shadow-lg bg-gray-800 ring-1 ring-gray-600 ring-opacity-5 focus:outline-none z-50"
+
+                            role="menu"
+
+                            aria-orientation="vertical"
+
+                            onClick={(e) => e.stopPropagation()}
+
+                          >
+
+                            <div className="py-1" role="none">
+
+                              {/* Edit - Only show for post owner */}
+                              {isPostOwner && (
+                                <button
+
+                                  onClick={(e) => {
+
+                                    e.stopPropagation();
+
+                                    closeAllDropdowns();
+
+                                    handleEditPost(post);
+
+                                  }}
+
+                                  className="text-white block w-full text-left px-4 py-2 text-sm hover:bg-gray-700 transition-colors flex items-center gap-2"
+
+                                  role="menuitem"
+
+                                >
+
+                                  <BiPencil className="w-4 h-4" />
+
+                                  Edit
+
+                                </button>
+                              )}
+
+                              {/* Share - Show for everyone */}
                               <button
 
                                 onClick={(e) => {
 
                                   e.stopPropagation();
 
-                                  closeAllDropdowns();
-
-                                  handleEditPost(post);
+                                  handleSharePost(post);
 
                                 }}
 
@@ -4903,140 +4925,116 @@ const PostModal = () => {
 
                               >
 
-                                <BiPencil className="w-4 h-4" />
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 
-                                Edit
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
 
-                              </button>
-                            )}
+                                </svg>
 
-                            {/* Share - Show for everyone */}
-                            <button
-
-                              onClick={(e) => {
-
-                                e.stopPropagation();
-
-                                handleSharePost(post);
-
-                              }}
-
-                              className="text-white block w-full text-left px-4 py-2 text-sm hover:bg-gray-700 transition-colors flex items-center gap-2"
-
-                              role="menuitem"
-
-                            >
-
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-
-                              </svg>
-
-                              Share
-
-                            </button>
-
-                            {/* Delete - Only show for post owner */}
-                            {isPostOwner && (
-                              <button
-
-                                onClick={(e) => {
-
-                                  e.stopPropagation();
-
-                                  handleDeletePost(post);
-
-                                }}
-
-                                disabled={deletingPostId === String(postId)}
-
-                                className="text-red-400 block w-full text-left px-4 py-2 text-sm hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-
-                                role="menuitem"
-
-                              >
-
-                                {deletingPostId === String(postId) ? (
-
-                                  <div className="flex items-center gap-2">
-
-                                    <div className="w-3 h-3 border border-red-400 border-t-transparent rounded-full animate-spin"></div>
-
-                                    Deleting...
-
-                                  </div>
-
-                                ) : (
-
-                                  <>
-
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-
-                                    </svg>
-
-                                    Delete
-
-                                  </>
-
-                                )}
+                                Share
 
                               </button>
-                            )}
+
+                              {/* Delete - Only show for post owner */}
+                              {isPostOwner && (
+                                <button
+
+                                  onClick={(e) => {
+
+                                    e.stopPropagation();
+
+                                    handleDeletePost(post);
+
+                                  }}
+
+                                  disabled={deletingPostId === String(postId)}
+
+                                  className="text-red-400 block w-full text-left px-4 py-2 text-sm hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+
+                                  role="menuitem"
+
+                                >
+
+                                  {deletingPostId === String(postId) ? (
+
+                                    <div className="flex items-center gap-2">
+
+                                      <div className="w-3 h-3 border border-red-400 border-t-transparent rounded-full animate-spin"></div>
+
+                                      Deleting...
+
+                                    </div>
+
+                                  ) : (
+
+                                    <>
+
+                                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+
+                                      </svg>
+
+                                      Delete
+
+                                    </>
+
+                                  )}
+
+                                </button>
+                              )}
+
+                            </div>
 
                           </div>
 
-                        </div>
-
-                      )}
-
-                    </div>
-
-                  </div>
-
-
-
-                  {/* Comments Section */}
-
-                  {modalUi[post._id || post.postid || post.id]?.open && (
-
-                    <div className="mt-2 border-t border-gray-700 pt-2">
-
-                      <div className="space-y-2">
-
-                        <p className="text-sm text-gray-500">Comments feature coming soon...</p>
+                        )}
 
                       </div>
 
                     </div>
 
-                  )}
 
-                </div>
 
-              );
+                    {/* Comments Section */}
 
-            })}
+                    {modalUi[post._id || post.postid || post.id]?.open && (
+
+                      <div className="mt-2 border-t border-gray-700 pt-2">
+
+                        <div className="space-y-2">
+
+                          <p className="text-sm text-gray-500">Comments feature coming soon...</p>
+
+                        </div>
+
+                      </div>
+
+                    )}
+
+                  </div>
+
+                );
+
+              })}
+
+            </div>
 
           </div>
 
+
+
         </div>
 
-
-
-      </div>
-      
-      {/* Full-Screen Image Viewer - Outside modal for proper z-index */}
+        {/* Full-Screen Image Viewer - Outside modal for proper z-index */}
         {fullScreenImage && (
 
-          <div 
+          <div
 
-          className="fixed inset-0 z-[99999] bg-black bg-opacity-95 flex items-center justify-center p-4"
+            className="fixed inset-0 z-[99999] bg-black bg-opacity-95 flex items-center justify-center p-4"
             onClick={() => setFullScreenImage(null)}
 
-          style={{ zIndex: 99999 }}
+            style={{ zIndex: 99999 }}
           >
 
             <button
@@ -5051,14 +5049,14 @@ const PostModal = () => {
 
               className="absolute top-4 right-4 z-10 p-3 bg-black bg-opacity-50 hover:bg-opacity-70 rounded-full text-white transition-all duration-200 hover:scale-110"
 
-            aria-label="Close full screen image"
+              aria-label="Close full screen image"
             >
 
               <X className="w-6 h-6" />
 
             </button>
 
-            <div 
+            <div
 
               className="relative max-w-full max-h-full w-full h-full flex items-center justify-center"
 
@@ -5066,81 +5064,81 @@ const PostModal = () => {
 
             >
 
-            {/* Skeleton loader for full-screen image */}
-            <div className="fullscreen-skeleton absolute inset-0 flex items-center justify-center bg-gray-900 animate-pulse">
-              <SkeletonTheme baseColor="#202020" highlightColor="#444">
-                <Skeleton height="80vh" width="80vw" className="rounded" />
-              </SkeletonTheme>
-            </div>
-            <img
-              src={fullScreenImage || ''}
+              {/* Skeleton loader for full-screen image */}
+              <div className="fullscreen-skeleton absolute inset-0 flex items-center justify-center bg-gray-900 animate-pulse">
+                <SkeletonTheme baseColor="#202020" highlightColor="#444">
+                  <Skeleton height="80vh" width="80vw" className="rounded" />
+                </SkeletonTheme>
+              </div>
+              <img
+                src={fullScreenImage || ''}
                 alt="Full screen post image"
 
-              className="max-w-full max-h-full object-contain relative z-10"
-              onLoad={(e) => {
-                // Hide skeleton when image loads
-                const skeleton = (e.currentTarget as HTMLElement).parentElement?.querySelector('.fullscreen-skeleton');
-                if (skeleton) {
-                  (skeleton as HTMLElement).style.display = 'none';
-                }
-                console.log("Full-screen image loaded successfully:", fullScreenImage);
-              }}
-              onError={(e) => {
-                const img = e.currentTarget as HTMLImageElement & { dataset: any };
-                const originalRef = fullScreenImageOriginal || fullScreenImage;
-                
-                // If current URL is path-based and failed, try query parameter format
-                if (fullScreenImage && fullScreenImage.includes('/api/image/view/') && !fullScreenImage.includes('?publicId=')) {
-                  if (!img.dataset.fallback1) {
-                    img.dataset.fallback1 = "1";
-                    // Extract the filename from the path URL
-                    const filename = fullScreenImage.split('/api/image/view/')[1];
-                    const queryUrl = `${API_URL}/api/image/view?publicId=${encodeURIComponent(filename)}`;
-                    console.log("Path format failed, trying query format:", queryUrl);
-                    img.src = queryUrl;
-                    return;
+                className="max-w-full max-h-full object-contain relative z-10"
+                onLoad={(e) => {
+                  // Hide skeleton when image loads
+                  const skeleton = (e.currentTarget as HTMLElement).parentElement?.querySelector('.fullscreen-skeleton');
+                  if (skeleton) {
+                    (skeleton as HTMLElement).style.display = 'none';
                   }
-                }
-                
-                // If current URL is query-based and failed, try path format
-                if (fullScreenImage && fullScreenImage.includes('?publicId=')) {
-                  if (!img.dataset.fallback2) {
-                    img.dataset.fallback2 = "1";
-                    // Extract the publicId from the query URL
-                    const urlParams = new URLSearchParams(fullScreenImage.split('?')[1]);
-                    const publicId = urlParams.get('publicId');
-                    if (publicId) {
-                      const pathUrl = `${API_URL}/api/image/view/${encodeURIComponent(publicId)}`;
-                      console.log("Query format failed, trying path format:", pathUrl);
+                  console.log("Full-screen image loaded successfully:", fullScreenImage);
+                }}
+                onError={(e) => {
+                  const img = e.currentTarget as HTMLImageElement & { dataset: any };
+                  const originalRef = fullScreenImageOriginal || fullScreenImage;
+
+                  // If current URL is path-based and failed, try query parameter format
+                  if (fullScreenImage && fullScreenImage.includes('/api/image/view/') && !fullScreenImage.includes('?publicId=')) {
+                    if (!img.dataset.fallback1) {
+                      img.dataset.fallback1 = "1";
+                      // Extract the filename from the path URL
+                      const filename = fullScreenImage.split('/api/image/view/')[1];
+                      const queryUrl = `${API_URL}/api/image/view?publicId=${encodeURIComponent(filename)}`;
+                      console.log("Path format failed, trying query format:", queryUrl);
+                      img.src = queryUrl;
+                      return;
+                    }
+                  }
+
+                  // If current URL is query-based and failed, try path format
+                  if (fullScreenImage && fullScreenImage.includes('?publicId=')) {
+                    if (!img.dataset.fallback2) {
+                      img.dataset.fallback2 = "1";
+                      // Extract the publicId from the query URL
+                      const urlParams = new URLSearchParams(fullScreenImage.split('?')[1]);
+                      const publicId = urlParams.get('publicId');
+                      if (publicId) {
+                        const pathUrl = `${API_URL}/api/image/view/${encodeURIComponent(publicId)}`;
+                        console.log("Query format failed, trying path format:", pathUrl);
+                        img.src = pathUrl;
+                        return;
+                      }
+                    }
+                  }
+
+                  // If it's just a filename, try both formats
+                  if (originalRef && !originalRef.startsWith('http') && !originalRef.startsWith('/') && !originalRef.startsWith('blob:') && !originalRef.startsWith('data:')) {
+                    if (!img.dataset.fallback3) {
+                      img.dataset.fallback3 = "1";
+                      const queryUrl = `${API_URL}/api/image/view?publicId=${encodeURIComponent(originalRef)}`;
+                      console.log("Trying query format from filename:", queryUrl);
+                      img.src = queryUrl;
+                      return;
+                    }
+
+                    if (!img.dataset.fallback4) {
+                      img.dataset.fallback4 = "1";
+                      const pathUrl = `${API_URL}/api/image/view/${encodeURIComponent(originalRef)}`;
+                      console.log("Trying path format from filename:", pathUrl);
                       img.src = pathUrl;
                       return;
                     }
                   }
-                }
-                
-                // If it's just a filename, try both formats
-                if (originalRef && !originalRef.startsWith('http') && !originalRef.startsWith('/') && !originalRef.startsWith('blob:') && !originalRef.startsWith('data:')) {
-                  if (!img.dataset.fallback3) {
-                    img.dataset.fallback3 = "1";
-                    const queryUrl = `${API_URL}/api/image/view?publicId=${encodeURIComponent(originalRef)}`;
-                    console.log("Trying query format from filename:", queryUrl);
-                    img.src = queryUrl;
-                    return;
-                  }
-                  
-                  if (!img.dataset.fallback4) {
-                    img.dataset.fallback4 = "1";
-                    const pathUrl = `${API_URL}/api/image/view/${encodeURIComponent(originalRef)}`;
-                    console.log("Trying path format from filename:", pathUrl);
-                    img.src = pathUrl;
-                    return;
-                  }
-                }
-                
-                // Only log error if all fallback attempts have been exhausted
-                console.error("All fallback attempts failed for image:", { fullScreenImage, originalRef });
-                img.style.display = 'none';
-              }}
+
+                  // Only log error if all fallback attempts have been exhausted
+                  console.error("All fallback attempts failed for image:", { fullScreenImage, originalRef });
+                  img.style.display = 'none';
+                }}
               />
 
             </div>
@@ -5194,7 +5192,7 @@ const PostModal = () => {
 
       )}
 
-      
+
 
       {/* Post Modal */}
 
@@ -5312,13 +5310,13 @@ const PostModal = () => {
 
               <div className="relative w-full ">
 
-               
 
-              <div className=" w-max absolute -top-5 right-0 px-4">
+
+                <div className=" w-max absolute -top-5 right-0 px-4">
 
                   <div className="flex items-center justify-between">
 
-                    
+
 
                     <DropdownMenu userId={viewingUserId} isOwnProfile={viewingUserId === loggedInUserId} />
 
@@ -5334,11 +5332,11 @@ const PostModal = () => {
 
                       <div className="relative">
 
-                        <div 
+                        <div
 
-                        onClick={() => setShowProfilePictureModal(true)}
+                          onClick={() => setShowProfilePictureModal(true)}
 
-                        className="w-24 h-24 rounded-full p-1 bg-gradient-to-r from-blue-500 to-purple-600 cursor-pointer hover:scale-105 transition-transform">
+                          className="w-24 h-24 rounded-full p-1 bg-gradient-to-r from-blue-500 to-purple-600 cursor-pointer hover:scale-105 transition-transform">
 
                           {(() => {
 
@@ -5348,7 +5346,7 @@ const PostModal = () => {
 
                             const initials = userName.split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2) || "?";
 
-                            
+
 
                             if (profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined") {
 
@@ -5374,7 +5372,7 @@ const PostModal = () => {
 
                             }
 
-                            
+
 
                             return (
 
@@ -5390,49 +5388,49 @@ const PostModal = () => {
 
                         </div>
 
-                        
+
 
                         {/* VIP Lion Badge */}
 
-                          {(() => {
+                        {(() => {
 
-                            return profileOwnerVipStatus && <VIPBadge size="xxl" className="absolute -top-8 -right-8 pointer-events-none" isVip={profileOwnerVipStatus} vipEndDate={vipStatus?.vipEndDate} />;
+                          return profileOwnerVipStatus && <VIPBadge size="xxl" className="absolute -top-8 -right-8 pointer-events-none" isVip={profileOwnerVipStatus} vipEndDate={vipStatus?.vipEndDate} />;
 
-                          })()}
+                        })()}
 
                       </div>
 
                     </div>
 
-                      <div className="flex flex-col items-start pl-7 gap-2 w-2/3">
+                    <div className="flex flex-col items-start pl-7 gap-2 w-2/3">
 
                       <p className="pt-2 text-xl font-bold text-slate-200">
 
-                          {firstname} {lastname}
+                        {firstname} {lastname}
 
-                  </p>
+                      </p>
 
-                  <div className="flex justify-start gap-4 w-full">
+                      <div className="flex justify-start gap-4 w-full">
 
-                  <p className="font-bold text-lg text-slate-400 flex flex-col items-center">
+                        <p className="font-bold text-lg text-slate-400 flex flex-col items-center">
 
-                      {formatter.format(profileStats.totalLikes)}{" "}
+                          {formatter.format(profileStats.totalLikes)}{" "}
 
-                      <span className="font-semibold tracking-wider text-[15px]">Likes</span>
+                          <span className="font-semibold tracking-wider text-[15px]">Likes</span>
 
-                    </p>
+                        </p>
 
-         <p className="font-bold text-lg text-slate-400 flex flex-col items-center">
+                        <p className="font-bold text-lg text-slate-400 flex flex-col items-center">
 
-           {profileStats.followersCount} <span className="font-semibold tracking-wider text-[15px]">Fans</span>
+                          {profileStats.followersCount} <span className="font-semibold tracking-wider text-[15px]">Fans</span>
 
-         </p>
+                        </p>
 
-         <p className="font-bold text-lg text-slate-400 flex flex-col items-center">
+                        <p className="font-bold text-lg text-slate-400 flex flex-col items-center">
 
-           {profileStats.followingCount} <span className="font-semibold tracking-wider text-[15px]">Following</span>
+                          {profileStats.followingCount} <span className="font-semibold tracking-wider text-[15px]">Following</span>
 
-         </p>
+                        </p>
 
                       </div>
 
@@ -5448,13 +5446,13 @@ const PostModal = () => {
 
                 <div className="mt-3 ml-6 ">
 
-                 
+
                   <p className="text-blue-500 flex items-center gap-1">
                     {username}
                     {creator_verified && <BadgeCheck className="w-5 h-5 text-black" fill="white" />}
                   </p>
 
-                
+
 
                   {(profile as any).creator_portfolio && (
 
@@ -5470,7 +5468,7 @@ const PostModal = () => {
 
                   )}
 
-              {/* Bio */}
+                  {/* Bio */}
 
                   <div className="w-full overflow-x-hidden   mt-2">
 
@@ -5478,7 +5476,7 @@ const PostModal = () => {
 
                   </div>
 
-              <div className="w-full -ml-2 flex items-center justify-center">
+                  <div className="w-full -ml-2 flex items-center justify-center">
 
                     {viewingUserId !== loggedInUserId ? (
 
@@ -5508,7 +5506,7 @@ const PostModal = () => {
 
                         </button>
 
-                        
+
 
                         {/* Fan Meet Button - Only show if user has a creator portfolio */}
 
@@ -5517,12 +5515,12 @@ const PostModal = () => {
                           // Check for creator portfolio - must have creator_portfolio === true AND non-empty creator_portfolio_id
                           // When portfolio is deleted, creator_portfolio is set to false and creator_portfolio_id is set to ""
                           // Also check 'creator' field as fallback (legacy field from getprofile.js)
-                          const creatorPortfolioFlag = (profileData as any)?.creator_portfolio === true || 
-                                                       (profileData as any)?.creator === true;
+                          const creatorPortfolioFlag = (profileData as any)?.creator_portfolio === true ||
+                            (profileData as any)?.creator === true;
                           const creatorPortfolioId = (profileData as any)?.creator_portfolio_id;
-                          
-                          const hasCreatorPortfolio = profileData && creatorPortfolioFlag && 
-                            creatorPortfolioId && 
+
+                          const hasCreatorPortfolio = profileData && creatorPortfolioFlag &&
+                            creatorPortfolioId &&
                             String(creatorPortfolioId).trim() !== "";
 
                           // Don't show button if user doesn't have a portfolio
@@ -5534,10 +5532,10 @@ const PostModal = () => {
                           const hostType = (profileData as any)?.hosttype || "Fan meet";
 
                           // Get the actual creator ID from profile data
-                          const creator_portfolio_id = (profileData as any)?.creator_portfolio_id || 
-                                                       (profileData as any)?.creator_id ||
-                                                       (profileData as any)?._id || // Fallback to profile ID
-                                                       viewingUserId; // Last resort fallback
+                          const creator_portfolio_id = (profileData as any)?.creator_portfolio_id ||
+                            (profileData as any)?.creator_id ||
+                            (profileData as any)?._id || // Fallback to profile ID
+                            viewingUserId; // Last resort fallback
 
                           return (
                             <button
@@ -5553,7 +5551,7 @@ const PostModal = () => {
 
                         })()}
 
-                        
+
 
                         {/* Follow Button */}
 
@@ -5565,15 +5563,13 @@ const PostModal = () => {
 
                           disabled={isProcessing}
 
-                          className={`flex-1 flex justify-center gap-x-1 items-center py-1.5 px-3 rounded-lg cursor-pointer transition-all duration-200 ${
+                          className={`flex-1 flex justify-center gap-x-1 items-center py-1.5 px-3 rounded-lg cursor-pointer transition-all duration-200 ${isFollowing
 
-                            isFollowing 
-
-                              ? "bg-gradient-to-r !from-blue-700 !to-purple-800" 
+                              ? "bg-gradient-to-r !from-blue-700 !to-purple-800"
 
                               : "bg-gradient-to-r !from-blue-500 !to-purple-600"
 
-                          } ${isProcessing ? "opacity-70 cursor-not-allowed" : "hover:scale-105"}`}
+                            } ${isProcessing ? "opacity-70 cursor-not-allowed" : "hover:scale-105"}`}
 
                         >
 
@@ -5595,13 +5591,13 @@ const PostModal = () => {
 
                           <span className="font-medium">
 
-                            {isProcessing 
+                            {isProcessing
 
-                              ? "..." 
+                              ? "..."
 
-                              : isFollowing === true 
+                              : isFollowing === true
 
-                                ? "Following" 
+                                ? "Following"
 
                                 : "Follow"
 
@@ -5637,13 +5633,13 @@ const PostModal = () => {
 
               </div>
 
-                    </div>
+            </div>
 
           )}
 
-                    </div>
+        </div>
 
-                  </div>
+      </div>
 
       <div className="mx-4 sm:max-w-xl">
 
@@ -5669,7 +5665,7 @@ const PostModal = () => {
 
               content: (
 
-              <div>
+                <div>
 
                   {/* 🔒 SAFETY: Only show posts belonging to the specific user being viewed */}
 
@@ -5691,7 +5687,7 @@ const PostModal = () => {
 
                       ))}
 
-                  </div>
+                    </div>
 
                   ) : userPosts.length === 0 ? (
 
@@ -5711,7 +5707,7 @@ const PostModal = () => {
 
                           <p className="text-sm mb-2">Share your first post with your fans</p>
 
-                          <button 
+                          <button
 
                             onClick={() => router.push('/upload')}
 
@@ -5737,227 +5733,227 @@ const PostModal = () => {
 
                     <div className="grid grid-cols-3 gap-1 md:gap-2">
 
-  {userPosts.map((post) => {
+                      {userPosts.map((post) => {
 
-    const { src, postType, pathUrlPrimary, queryUrlFallback, pathUrlFallback } = getMediaSource(post);
+                        const { src, postType, pathUrlPrimary, queryUrlFallback, pathUrlFallback } = getMediaSource(post);
 
-    
 
-    return (
 
-      <div
+                        return (
 
-        key={post._id}
+                          <div
 
-        className="relative aspect-square group cursor-pointer rounded-sm overflow-hidden bg-black"
+                            key={post._id}
 
-        onClick={() => { 
+                            className="relative aspect-square group cursor-pointer rounded-sm overflow-hidden bg-black"
 
-           const postId = post._id || post.postid || post.id;
+                            onClick={() => {
 
-           setClickedPostId(postId);
+                              const postId = post._id || post.postid || post.id;
 
-          setShowPostModal(true); 
+                              setClickedPostId(postId);
 
-        }}
+                              setShowPostModal(true);
 
-      >
+                            }}
 
-        {/* Image Post */}
+                          >
 
-        {postType === "image" && src && (
+                            {/* Image Post */}
 
-          <img
+                            {postType === "image" && src && (
 
-            src={src}
+                              <img
 
-            alt={post?.content || "post image"}
+                                src={src}
 
-            className="absolute inset-0 w-full h-full object-cover"
+                                alt={post?.content || "post image"}
 
-            onError={(e) => {
+                                className="absolute inset-0 w-full h-full object-cover"
 
-              const img = e.currentTarget as HTMLImageElement & { dataset: any };
+                                onError={(e) => {
 
-              // First fallback: switch to path URL on same base
+                                  const img = e.currentTarget as HTMLImageElement & { dataset: any };
 
-              if (!img.dataset.fallback1 && pathUrlPrimary) {
+                                  // First fallback: switch to path URL on same base
 
-                img.dataset.fallback1 = "1";
+                                  if (!img.dataset.fallback1 && pathUrlPrimary) {
 
-                img.src = pathUrlPrimary;
+                                    img.dataset.fallback1 = "1";
 
-                return;
+                                    img.src = pathUrlPrimary;
 
-              }
+                                    return;
 
-              // Second fallback: try query on PROD base
+                                  }
 
-              if (!img.dataset.fallback2 && queryUrlFallback) {
+                                  // Second fallback: try query on PROD base
 
-                img.dataset.fallback2 = "1";
+                                  if (!img.dataset.fallback2 && queryUrlFallback) {
 
-                img.src = queryUrlFallback;
+                                    img.dataset.fallback2 = "1";
 
-                return;
+                                    img.src = queryUrlFallback;
 
-              }
+                                    return;
 
-              // Final fallback: try path on PROD base
+                                  }
 
-              if (!img.dataset.fallback3 && pathUrlFallback) {
+                                  // Final fallback: try path on PROD base
 
-                img.dataset.fallback3 = "1";
+                                  if (!img.dataset.fallback3 && pathUrlFallback) {
 
-                img.src = pathUrlFallback;
+                                    img.dataset.fallback3 = "1";
 
-              }
+                                    img.src = pathUrlFallback;
 
-            }}
+                                  }
 
-          />
+                                }}
 
-        )}
+                              />
 
-        
+                            )}
 
-        {/* Video Post */}
 
-        {postType === "video" && src && (
 
-          <div className="absolute inset-0 w-full h-full flex items-center justify-center bg-gray-900">
+                            {/* Video Post */}
 
-            <video
+                            {postType === "video" && src && (
 
-              src={src}
+                              <div className="absolute inset-0 w-full h-full flex items-center justify-center bg-gray-900">
 
-              className="absolute inset-0 w-full h-full object-cover"
+                                <video
 
-              muted
+                                  src={src}
 
-              onError={(e) => {
+                                  className="absolute inset-0 w-full h-full object-cover"
 
-                const video = e.currentTarget as HTMLVideoElement & { dataset: any };
+                                  muted
 
-                // First fallback: switch to path URL on same base
+                                  onError={(e) => {
 
-                if (!video.dataset.fallback1 && pathUrlPrimary) {
+                                    const video = e.currentTarget as HTMLVideoElement & { dataset: any };
 
-                  video.dataset.fallback1 = "1";
+                                    // First fallback: switch to path URL on same base
 
-                  video.src = pathUrlPrimary;
+                                    if (!video.dataset.fallback1 && pathUrlPrimary) {
 
-                  video.load();
+                                      video.dataset.fallback1 = "1";
 
-                  return;
+                                      video.src = pathUrlPrimary;
 
-                }
+                                      video.load();
 
-                // Second fallback: try query on PROD base
+                                      return;
 
-                if (!video.dataset.fallback2 && queryUrlFallback) {
+                                    }
 
-                  video.dataset.fallback2 = "1";
+                                    // Second fallback: try query on PROD base
 
-                  video.src = queryUrlFallback;
+                                    if (!video.dataset.fallback2 && queryUrlFallback) {
 
-                  video.load();
+                                      video.dataset.fallback2 = "1";
 
-                  return;
+                                      video.src = queryUrlFallback;
 
-                }
+                                      video.load();
 
-                // Final fallback: try path on PROD base
+                                      return;
 
-                if (!video.dataset.fallback3 && pathUrlFallback) {
+                                    }
 
-                  video.dataset.fallback3 = "1";
+                                    // Final fallback: try path on PROD base
 
-                  video.src = pathUrlFallback;
+                                    if (!video.dataset.fallback3 && pathUrlFallback) {
 
-                  video.load();
+                                      video.dataset.fallback3 = "1";
 
-                }
+                                      video.src = pathUrlFallback;
 
-              }}
+                                      video.load();
 
-            />
+                                    }
 
-            <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30">
+                                  }}
 
-              <svg className="w-12 h-12 text-white opacity-80" fill="currentColor" viewBox="0 0 24 24">
+                                />
 
-                <path d="M8 5v14l11-7z"/>
+                                <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30">
 
-              </svg>
+                                  <svg className="w-12 h-12 text-white opacity-80" fill="currentColor" viewBox="0 0 24 24">
 
-            </div>
+                                    <path d="M8 5v14l11-7z" />
 
-          </div>
+                                  </svg>
 
-        )}
+                                </div>
 
-        
+                              </div>
 
-        {/* Text Post or No Media */}
+                            )}
 
-        {(!src || postType === "text") && (
 
-          <div className="absolute inset-0 flex items-center justify-center p-2">
 
-            <span className="text-center text-white text-base font-semibold line-clamp-2">{post.content}</span>
+                            {/* Text Post or No Media */}
 
-          </div>
+                            {(!src || postType === "text") && (
 
-        )}
+                              <div className="absolute inset-0 flex items-center justify-center p-2">
 
-        
+                                <span className="text-center text-white text-base font-semibold line-clamp-2">{post.content}</span>
 
-        {/* Hover overlay */}
+                              </div>
 
-        <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-20 transition-opacity" />
+                            )}
 
-        
 
-        {/* Content overlay */}
 
-        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                            {/* Hover overlay */}
 
-          <div className="text-white text-center p-2">
+                            <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-20 transition-opacity" />
 
-            <div className="flex items-center justify-center gap-4 mb-2">
 
-              <div className="flex items-center gap-1">
 
-                <Heart className="w-4 h-4" />
+                            {/* Content overlay */}
 
-                <span className="text-sm">{formatNumber(post.totalLikes || post.likeCount || post.likes?.length || 0)}</span>
+                            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
 
-              </div>
+                              <div className="text-white text-center p-2">
 
-              <div className="flex items-center gap-1">
+                                <div className="flex items-center justify-center gap-4 mb-2">
 
-                <MessageCircle className="w-4 h-4" />
+                                  <div className="flex items-center gap-1">
 
-                <span className="text-sm">{formatNumber(post.commentCount || post.comments?.length || 0)}</span>
+                                    <Heart className="w-4 h-4" />
 
-              </div>
+                                    <span className="text-sm">{formatNumber(post.totalLikes || post.likeCount || post.likes?.length || 0)}</span>
 
-            </div>
+                                  </div>
 
-            <p className="text-xs line-clamp-2">{post.content}</p>
+                                  <div className="flex items-center gap-1">
 
-          </div>
+                                    <MessageCircle className="w-4 h-4" />
 
-        </div>
+                                    <span className="text-sm">{formatNumber(post.commentCount || post.comments?.length || 0)}</span>
 
-      </div>
+                                  </div>
 
-    );
+                                </div>
 
-  })}
+                                <p className="text-xs line-clamp-2">{post.content}</p>
 
-</div>
+                              </div>
+
+                            </div>
+
+                          </div>
+
+                        );
+
+                      })}
+
+                    </div>
 
                   )}
 
@@ -6035,7 +6031,7 @@ const PostModal = () => {
 
                       )}
 
-                      
+
 
                       {/* Exclusive Posts */}
 
@@ -6050,7 +6046,7 @@ const PostModal = () => {
 
                         const isPurchased = purchasedPostIds.has(String(postId));
                         const canView = isPostOwner || isPurchased;
-                        
+
 
                         return (
 
@@ -6059,13 +6055,13 @@ const PostModal = () => {
                             key={`exclusive-post-${post._id || post.postid || post.id}`}
                             className="relative aspect-square group cursor-pointer rounded-sm overflow-hidden bg-black"
 
-                            onClick={(e) => { 
+                            onClick={(e) => {
                               e.stopPropagation();
                               const postId = post._id || post.postid || post.id;
 
                               setClickedExclusivePostId(postId);
 
-                              setShowExclusivePostModal(true); 
+                              setShowExclusivePostModal(true);
 
                             }}
 
@@ -6135,7 +6131,7 @@ const PostModal = () => {
 
                             )}
 
-                            
+
 
                             {/* Video Post */}
 
@@ -6206,7 +6202,7 @@ const PostModal = () => {
                                   <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 pointer-events-none">
                                     <svg className="w-12 h-12 text-white opacity-80" fill="currentColor" viewBox="0 0 24 24">
 
-                                      <path d="M8 5v14l11-7z"/>
+                                      <path d="M8 5v14l11-7z" />
 
                                     </svg>
 
@@ -6218,7 +6214,7 @@ const PostModal = () => {
 
                             )}
 
-                            
+
 
                             {/* Text Post or No Media */}
 
@@ -6232,7 +6228,7 @@ const PostModal = () => {
 
                             )}
 
-                            
+
 
                             {/* Price Badge - Always visible */}
 
@@ -6248,7 +6244,7 @@ const PostModal = () => {
 
                             )}
 
-                            
+
 
                             {/* Hover overlay - for owners and purchasers */}
                             {canView && (
@@ -6256,7 +6252,7 @@ const PostModal = () => {
 
                                 <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-20 transition-opacity" />
 
-                                
+
 
                                 {/* Content overlay */}
 
@@ -6306,7 +6302,7 @@ const PostModal = () => {
 
                             )}
 
-                            
+
 
                             {/* Lock icon overlay for visitors on hover - only show if not purchased */}
                             {!canView && (
@@ -6342,7 +6338,7 @@ const PostModal = () => {
 
                       })}
 
-                      
+
 
                       {/* Empty state - only show if no posts and user is not verified or not viewing own profile */}
 
@@ -6422,21 +6418,21 @@ const PostModal = () => {
 
                                 return (
 
-                                <svg 
+                                  <svg
 
-                                  key={i} 
+                                    key={i}
 
-                                    className={`w-5 h-5 ${i < Math.floor(combinedAverage) ? "text-yellow-400" : "text-gray-600"}`} 
+                                    className={`w-5 h-5 ${i < Math.floor(combinedAverage) ? "text-yellow-400" : "text-gray-600"}`}
 
-                                  fill="currentColor" 
+                                    fill="currentColor"
 
-                                  viewBox="0 0 20 20"
+                                    viewBox="0 0 20 20"
 
-                                >
+                                  >
 
-                                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
 
-                                </svg>
+                                  </svg>
 
                                 );
 
@@ -6512,9 +6508,9 @@ const PostModal = () => {
 
                     <div className="space-y-4">
 
-                      
 
-                      
+
+
 
                       {/* Fan-to-Creator Ratings */}
 
@@ -6526,127 +6522,127 @@ const PostModal = () => {
 
                           {review.fanIsVip && (
 
-                            <VIPBadge 
+                            <VIPBadge
 
-                              size="lg" 
+                              size="lg"
 
                               className="absolute top-3 left-9 z-[1]"
 
-                              isVip={review.fanIsVip} 
+                              isVip={review.fanIsVip}
 
-                              vipEndDate={review.fanVipEndDate} 
+                              vipEndDate={review.fanVipEndDate}
 
                             />
 
                           )}
 
-                        <div className="flex items-center mb-3">
+                          <div className="flex items-center mb-3">
 
-                          <div className="relative w-10 h-10 rounded-full overflow-hidden mr-3 bg-gradient-to-r from-blue-500 to-purple-600 p-0.5 ">
+                            <div className="relative w-10 h-10 rounded-full overflow-hidden mr-3 bg-gradient-to-r from-blue-500 to-purple-600 p-0.5 ">
 
-                            <div className="w-full h-full rounded-full overflow-hidden bg-black">
+                              <div className="w-full h-full rounded-full overflow-hidden bg-black">
 
-                              {(() => {
+                                {(() => {
 
-                                const profileImage = review.fanPhoto;
+                                  const profileImage = review.fanPhoto;
 
-                                const userName = review.fanName;
+                                  const userName = review.fanName;
 
-                                const initials = userName.split(/\s+/).map((n: string) => n[0]).join('').toUpperCase().slice(0, 2) || "?";
+                                  const initials = userName.split(/\s+/).map((n: string) => n[0]).join('').toUpperCase().slice(0, 2) || "?";
 
-                                
 
-                                if (profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined") {
+
+                                  if (profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined") {
+
+                                    return (
+
+                                      <Image
+
+                                        src={profileImage}
+
+                                        alt={review.fanName}
+
+                                        width={40}
+
+                                        height={40}
+
+                                        className="w-full h-full object-cover"
+
+                                      />
+
+                                    );
+
+                                  }
+
+
 
                                   return (
 
-                                    <Image 
+                                    <div className="w-full h-full bg-gray-600 flex items-center justify-center text-white text-sm font-semibold">
 
-                                      src={profileImage} 
+                                      {initials}
 
-                                      alt={review.fanName} 
-
-                                      width={40} 
-
-                                      height={40} 
-
-                                      className="w-full h-full object-cover"
-
-                                    />
+                                    </div>
 
                                   );
 
-                                }
+                                })()}
 
-                                
-
-                                return (
-
-                                  <div className="w-full h-full bg-gray-600 flex items-center justify-center text-white text-sm font-semibold">
-
-                                    {initials}
-
-                                  </div>
-
-                                );
-
-                              })()}
+                              </div>
 
                             </div>
 
-                          </div>
+                            <div className="flex-1">
 
-                          <div className="flex-1">
+                              <div className="flex items-center gap-2">
 
-                            <div className="flex items-center gap-2">
+                                {review.fanUsername && (
 
-                              {review.fanUsername && (
+                                  <p className="text-gray-400 text-sm">{review.fanUsername}</p>
 
-                                <p className="text-gray-400 text-sm">{review.fanUsername}</p>
-
-                              )}
+                                )}
 
                                 <span className="text-xs bg-blue-600 text-white px-2 py-1 rounded">Fan</span>
 
-                            </div>
+                              </div>
 
-                            <div className="flex items-center gap-1 mt-1">
+                              <div className="flex items-center gap-1 mt-1">
 
-                              {[...Array(5)].map((_, i) => (
+                                {[...Array(5)].map((_, i) => (
 
-                                <svg 
+                                  <svg
 
-                                  key={i} 
+                                    key={i}
 
-                                  className={`w-4 h-4 ${i < review.rating ? "text-yellow-400" : "text-gray-600"}`} 
+                                    className={`w-4 h-4 ${i < review.rating ? "text-yellow-400" : "text-gray-600"}`}
 
-                                  fill="currentColor" 
+                                    fill="currentColor"
 
-                                  viewBox="0 0 20 20"
+                                    viewBox="0 0 20 20"
 
-                                >
+                                  >
 
-                                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
 
-                                </svg>
+                                  </svg>
 
-                              ))}
+                                ))}
 
-                              <span className="text-gray-400 text-xs flex items-center gap-1 ml-2">
+                                <span className="text-gray-400 text-xs flex items-center gap-1 ml-2">
 
-                                {review.hostType} • {new Date(review.createdAt).toLocaleDateString()}
+                                  {review.hostType} • {new Date(review.createdAt).toLocaleDateString()}
 
-                              </span>
+                                </span>
+
+                              </div>
 
                             </div>
 
                           </div>
 
+                          <p className="text-gray-300">{review.feedback}</p>
+
                         </div>
-
-                        <p className="text-gray-300">{review.feedback}</p>
-
-                      </div>
 
                       ))}
 
@@ -6662,15 +6658,15 @@ const PostModal = () => {
 
                           {rating.creatorIsVip && (
 
-                            <VIPBadge 
+                            <VIPBadge
 
-                              size="lg" 
+                              size="lg"
 
-                              className="absolute top-2 left-9 z-[1]" 
+                              className="absolute top-2 left-9 z-[1]"
 
-                              isVip={rating.creatorIsVip} 
+                              isVip={rating.creatorIsVip}
 
-                              vipEndDate={rating.creatorVipEndDate} 
+                              vipEndDate={rating.creatorVipEndDate}
 
                             />
 
@@ -6690,21 +6686,21 @@ const PostModal = () => {
 
                                   const initials = userName.split(/\s+/).map((n: string) => n[0]).join('').toUpperCase().slice(0, 2) || "?";
 
-                                  
+
 
                                   if (profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined") {
 
                                     return (
 
-                                      <Image 
+                                      <Image
 
-                                        src={profileImage} 
+                                        src={profileImage}
 
-                                        alt={rating.creatorName} 
+                                        alt={rating.creatorName}
 
-                                        width={40} 
+                                        width={40}
 
-                                        height={40} 
+                                        height={40}
 
                                         className="w-full h-full object-cover"
 
@@ -6714,7 +6710,7 @@ const PostModal = () => {
 
                                   }
 
-                                  
+
 
                                   return (
 
@@ -6750,13 +6746,13 @@ const PostModal = () => {
 
                                 {[...Array(5)].map((_, i) => (
 
-                                  <svg 
+                                  <svg
 
-                                    key={i} 
+                                    key={i}
 
-                                    className={`w-4 h-4 ${i < rating.rating ? "text-yellow-400" : "text-gray-600"}`} 
+                                    className={`w-4 h-4 ${i < rating.rating ? "text-yellow-400" : "text-gray-600"}`}
 
-                                    fill="currentColor" 
+                                    fill="currentColor"
 
                                     viewBox="0 0 20 20"
 
@@ -6802,7 +6798,7 @@ const PostModal = () => {
 
       </div>
 
-      
+
 
       {/* Purchase Confirmation Modal */}
 
@@ -6836,7 +6832,7 @@ const PostModal = () => {
 
             </div>
 
-            
+
 
             <div className="space-y-4">
 
@@ -6854,7 +6850,7 @@ const PostModal = () => {
 
               </div>
 
-              
+
 
               {userBalance < parseFloat(purchasePost.price || 0) ? (
 
@@ -6966,7 +6962,7 @@ const PostModal = () => {
 
       )}
 
-      
+
 
       {/* Edit Exclusive Post Modal */}
 
@@ -7008,7 +7004,7 @@ const PostModal = () => {
 
             </div>
 
-            
+
 
             <div className="p-6 space-y-6">
 
@@ -7058,7 +7054,7 @@ const PostModal = () => {
 
               )}
 
-              
+
 
               {/* File Upload Area - Optional (only if user wants to change media) */}
 
@@ -7196,7 +7192,7 @@ const PostModal = () => {
 
               </div>
 
-              
+
 
               {/* Content/Description Input */}
 
@@ -7224,7 +7220,7 @@ const PostModal = () => {
 
               </div>
 
-              
+
 
               {/* Price Input */}
 
@@ -7260,7 +7256,7 @@ const PostModal = () => {
 
               </div>
 
-              
+
 
               {/* Submit Button */}
 
@@ -7304,11 +7300,11 @@ const PostModal = () => {
 
                     }
 
-                    
+
 
                     setIsUpdatingExclusive(true);
 
-                    
+
 
                     try {
 
@@ -7316,7 +7312,7 @@ const PostModal = () => {
 
                       const authToken = token;
 
-                      
+
 
                       if (!userid || !editingExclusivePost?._id) {
 
@@ -7328,7 +7324,7 @@ const PostModal = () => {
 
                       }
 
-                      
+
 
                       // Create FormData
 
@@ -7352,7 +7348,7 @@ const PostModal = () => {
 
                       }));
 
-                      
+
 
                       // Update post
 
@@ -7368,7 +7364,7 @@ const PostModal = () => {
 
                       });
 
-                      
+
 
                       if (response.data.ok) {
 

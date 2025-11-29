@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import Image from "next/image";
-import { toast } from "material-react-toastify";
+import { toast } from "react-toastify";
 import { IoChevronBack, IoChevronForward } from "react-icons/io5";
 import PacmanLoader from "react-spinners/PacmanLoader";
 
@@ -321,7 +321,7 @@ export const RequestDetailsForm: React.FC<RequestDetailsFormProps> = ({
              {/* Legend */}
              <div className="flex flex-wrap gap-4 text-xs mb-4">
                <div className="flex items-center gap-2">
-                 <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                 <div className="w-3 h-3 bg-red-500 rounded-full"></div>
                  <span className="text-gray-300">Today</span>
                </div>
                <div className="flex items-center gap-2">

@@ -4,7 +4,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { getSocket } from "@/lib/socket";
-import { toast } from "material-react-toastify";
+import { toast } from "react-toastify";
 import { URL as API_URL } from "@/api/config";
 import axios from "axios";
 import Image from "next/image";

@@ -13,6 +13,8 @@ import ReduxHydrator from "@/components/ReduxHydrator";
 import ScrollToTopAdvanced from "@/components/ScrollToTopAdvanced";
 import GlobalVisitorTracker from "@/components/GlobalVisitorTracker";
 import { ContentFilterProvider } from "@/lib/context/content-filter-context";
+import ReferralTracker from "@/components/ReferralTracker";
+
 
 const inter = Inter({
   weight: ["100", "300", "400", "500", "700"],
@@ -78,6 +80,7 @@ export default async function RootLayout({
                 debug={process.env.NODE_ENV === "development"}
               />
               <GlobalVisitorTracker />
+              <ReferralTracker />
               <ConditionalLayoutWrapper ssrAuth={isAuthenticated}>
                 {children}
               </ConditionalLayoutWrapper>

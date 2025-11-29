@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
-import { toast } from "material-react-toastify";
+import { toast } from "react-toastify";
 import { Search, Filter, Eye, CheckCircle, XCircle, Clock, AlertCircle, Check } from "lucide-react";
 import { getTransactions } from "@/api/adminTransactions";
 import { verifyTransactionHash } from "@/api/web3payment";

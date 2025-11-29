@@ -12,7 +12,7 @@ import VIPBadge from "@/components/VIPBadge";
 import { URL as API_BASE } from "@/api/config";
 const PROD_BASE = process.env.NEXT_PUBLIC_API || "";
 import PostActions from "./PostActions";
-import { toast } from "material-react-toastify";
+import { toast } from "react-toastify";
 import Image from "next/image";
 import { getImageSource } from "@/lib/imageUtils";
 import LazyImage from "./LazyImage";
@@ -367,6 +367,7 @@ const LazyPost: React.FC<LazyPostProps> = ({
   const [isVisible, setIsVisible] = useState(false);
   const [hasLoaded, setHasLoaded] = useState(false);
   const [isInView, setIsInView] = useState(false);
+  const [shouldAnimate, setShouldAnimate] = useState(false);
   const [isVideoLoaded, setIsVideoLoaded] = useState(false);
   const postRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
@@ -389,6 +390,11 @@ const LazyPost: React.FC<LazyPostProps> = ({
             // Load immediately without delay for aggressive preloading
             setIsVisible(true);
             setHasLoaded(true);
+
+            // Wait 4 seconds before starting animation
+            setTimeout(() => {
+              setShouldAnimate(true);
+            }, 4000);
           }
         });
       },
@@ -654,7 +660,7 @@ const LazyPost: React.FC<LazyPostProps> = ({
             <div className="flex items-end gap-1">
               <button
                 onClick={() => router.push(`/creators/${post?.user?.creator_portfolio_id}`)}
-                className={`text-white px-2 bg-gradient-to-r from-orange-500 to-red-600 cursor-pointer text-sm py-1 rounded ${isInView ? 'animate-wiggle-periodic' : ''}`}>
+                className={`text-white px-2 bg-gradient-to-r from-orange-500 to-red-600 cursor-pointer text-sm py-1 rounded ${shouldAnimate ? 'animate-wiggle-periodic' : ''}`}>
                 {post?.user?.hosttype}
               </button>
             </div>)}
@@ -1009,7 +1015,7 @@ const LazyPost: React.FC<LazyPostProps> = ({
                                 {(() => {
                                   const isVerified = c?.isVerified;
                                   return isVerified && (
-                                    <span> <BadgeCheck size={17} className="text-black inline ml-1" fill="white"/> </span>
+                                    <span> <BadgeCheck size={17} className="text-black inline ml-1" fill="white" /> </span>
                                   );
                                 })()}
                               </span>

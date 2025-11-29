@@ -3,7 +3,7 @@ import React, { useState, JSX } from "react";
 import { FaRegEyeSlash } from "react-icons/fa";
 import { IoEyeOutline } from "react-icons/io5";
 import { FaAngleLeft } from "react-icons/fa";
-import { ToastContainer, toast } from "material-react-toastify";
+import { ToastContainer, toast } from "react-toastify";
 import PacmanLoader from "react-spinners/ClockLoader";
 import { useRouter } from "next/navigation";
 import { changePassword } from "@/lib/service/changePassword"; // Import the updated changePassword function

@@ -4,7 +4,7 @@ import React, { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useDispatch } from "react-redux";
 import { logout } from "@/store/registerSlice";
-import { ToastContainer } from "material-react-toastify";
+import { ToastContainer } from "react-toastify";
 import "material-react-toastify/dist/ReactToastify.css";
 
 export default function BannedPage() {

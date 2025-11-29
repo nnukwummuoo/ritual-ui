@@ -3,7 +3,7 @@ import { URL } from "@/api/config";
 import axios, { AxiosRequestConfig } from "axios";
 import { CreatePostArgs, CreatePostData, PostState, Like, Post } from "@/types/post";
 import backend from "@/api/backendApi";
-import { toast } from "material-react-toastify";
+import { toast } from "react-toastify";
 import { postlike } from "./like";
 
 export const createpost = createAsyncThunk("post/createpost", async (data: CreatePostData) => {

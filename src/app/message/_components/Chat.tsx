@@ -15,7 +15,7 @@ import { checkVipStatus } from "@/store/vip";
 import type { RootState } from "@/store/store";
 import { getSocket, startTyping, stopTyping } from "@/lib/socket";
 import { useOnlineStatus } from "@/contexts/OnlineStatusContext";
-import { toast } from "material-react-toastify";
+import { toast } from "react-toastify";
 import { URL as API_URL } from "@/api/config";
 import axios from "axios";
 import Image from "next/image";

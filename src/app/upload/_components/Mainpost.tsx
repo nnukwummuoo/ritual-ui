@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
 import React, { useState, useEffect } from "react";
-import { toast } from "material-react-toastify";
+import { toast } from "react-toastify";
 // import { useDispatch, useSelector } from "react-redux";
 // import { createpost } from "../../app/features/post/post";
 // import { PostImage } from "./postImage";

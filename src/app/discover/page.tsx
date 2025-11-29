@@ -15,7 +15,7 @@ import { postlike } from "@/store/like";
 import { getpostcomment, postcomment } from "@/store/comment";
 import { follow as followThunk, unfollow as unfollowThunk, getfollow } from "@/store/profile";
 import PostActions from "@/components/home/PostActions";
-import { toast } from "material-react-toastify";
+import { toast } from "react-toastify";
 import { useVideoAutoPlay } from "@/hooks/useVideoAutoPlayNew";
 import ExpandableText from "@/components/ExpandableText";
 import { generateInitials } from "@/utils/generateInitials";

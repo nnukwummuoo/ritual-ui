@@ -11,7 +11,7 @@ import {
 } from "react-icons/io5";
 import dynamic from "next/dynamic";
 import Swal from "sweetalert2";
-import { ToastContainer, toast } from "material-react-toastify";
+import { ToastContainer, toast } from "react-toastify";
 import { useAuthToken } from "@/lib/hooks/useAuthToken";
 import 'material-react-toastify/dist/ReactToastify.css';
 import { URL } from "@/api/config"; // adjust this path to match your setup

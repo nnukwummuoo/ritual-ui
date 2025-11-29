@@ -37,7 +37,7 @@ const EditProfile: React.FC = () => {
   // Get user ID from route parameter
   const params = useParams();
   const routeUserId = params?.userid as string;
-  
+
   // Get authentication data from Redux
   // const isLoggedIn = useSelector((state: RootState) => state.register.logedin); // Unused for now
   const loggedInUserId = useSelector((state: RootState) => state.register.userID);
@@ -154,8 +154,8 @@ const EditProfile: React.FC = () => {
   // Check authorization
   useEffect(() => {
     // Helper function to get token and user data from localStorage if not in Redux
-  // eslint-disable-next-line react-hooks/exhaustive-deps, @typescript-eslint/no-unused-vars
-  const getLocalStorageData = () => {
+    // eslint-disable-next-line react-hooks/exhaustive-deps, @typescript-eslint/no-unused-vars
+    const getLocalStorageData = () => {
       try {
         const raw = localStorage.getItem("login");
         if (raw) {
@@ -191,7 +191,7 @@ const EditProfile: React.FC = () => {
     };
 
     const effectiveUserId = loggedInUserId || getLocalUserId();
-    
+
     // Check if user is authorized to edit this profile
     if (routeUserId && effectiveUserId) {
       if (routeUserId === effectiveUserId) {
@@ -226,7 +226,7 @@ const EditProfile: React.FC = () => {
     }
     return { token: "", userID: "", rawData: null };
   };
-  
+
   // Get auth token from cookie if available
   const getCookieToken = () => {
     const cookies = document.cookie.split(';');
@@ -241,70 +241,70 @@ const EditProfile: React.FC = () => {
     }
     return "";
   };
-  
+
   // Debug the actual token value to check its format
   const debugToken = () => {
     try {
       if (typeof window !== 'undefined' && window.localStorage) {
         const raw = localStorage.getItem("login");
-      if (raw) {
-        const data = JSON.parse(raw);
-        if (data?.accesstoken) {
-          console.log("Token structure check:", {
-            tokenType: typeof data.accesstoken,
-            tokenLength: data.accesstoken.length,
-            firstChars: data.accesstoken.substring(0, 10) + '...',
-            isJWT: data.accesstoken.split('.').length === 3,
-            hasBearer: data.accesstoken.startsWith('Bearer ')
-          });
-          
-          // Decode the JWT token to see its contents (without verification)
-          try {
-            const tokenParts = data.accesstoken.split('.');
-            if (tokenParts.length === 3) {
-              const header = JSON.parse(atob(tokenParts[0]));
-              const payload = JSON.parse(atob(tokenParts[1]));
-              console.log("JWT token contents:", {
-                header,
-                payload,
-                hasUserInfo: !!payload.UserInfo,
-                userId: payload.UserInfo?.userId,
-                username: payload.UserInfo?.username,
-                exp: payload.exp ? new Date(payload.exp * 1000).toISOString() : 'none'
-              });
+        if (raw) {
+          const data = JSON.parse(raw);
+          if (data?.accesstoken) {
+            console.log("Token structure check:", {
+              tokenType: typeof data.accesstoken,
+              tokenLength: data.accesstoken.length,
+              firstChars: data.accesstoken.substring(0, 10) + '...',
+              isJWT: data.accesstoken.split('.').length === 3,
+              hasBearer: data.accesstoken.startsWith('Bearer ')
+            });
+
+            // Decode the JWT token to see its contents (without verification)
+            try {
+              const tokenParts = data.accesstoken.split('.');
+              if (tokenParts.length === 3) {
+                const header = JSON.parse(atob(tokenParts[0]));
+                const payload = JSON.parse(atob(tokenParts[1]));
+                console.log("JWT token contents:", {
+                  header,
+                  payload,
+                  hasUserInfo: !!payload.UserInfo,
+                  userId: payload.UserInfo?.userId,
+                  username: payload.UserInfo?.username,
+                  exp: payload.exp ? new Date(payload.exp * 1000).toISOString() : 'none'
+                });
+              }
+            } catch (decodeError) {
+              console.error("Error decoding JWT token:", decodeError);
             }
-          } catch (decodeError) {
-            console.error("Error decoding JWT token:", decodeError);
           }
         }
-      }
       }
     } catch (e) {
       console.error("Error checking token format:", e);
     }
   };
-  
+
   // Call the debug function
   debugToken();
-  
+
   // Function to fetch user profile data directly without JWT authentication
   const fetchProfileDirectly = async (userId: string) => {
     try {
       console.log("Attempting to fetch profile directly without JWT...");
-      
+
       // Try the getprofile endpoint which might not require JWT
       try {
-        const response = await axios.post(`${API_URL}/getprofile`, { 
-          userid: userId 
+        const response = await axios.post(`${API_URL}/getprofile`, {
+          userid: userId
         });
-        
+
         if (response.status === 200 && response.data) {
           console.log("Direct profile fetch succeeded:", {
             status: response.status,
             hasData: !!response.data,
             dataKeys: response.data ? Object.keys(response.data) : []
           });
-          
+
           // Log the actual data structure for debugging
           console.log("📊 [EditProfile] Direct API response data:", {
             hasProfile: !!response.data.profile,
@@ -314,7 +314,7 @@ const EditProfile: React.FC = () => {
             username: response.data.profile?.username,
             bio: response.data.profile?.bio
           });
-          
+
           // If we got profile data, use it to populate the form
           if (response.data) {
             // Check if data is nested in a profile object
@@ -326,11 +326,11 @@ const EditProfile: React.FC = () => {
               photoLink: profileData.photoLink || "NONE",
               photoID: profileData.photoID || "NONE"
             });
-            
+
             // Set profile image if available - check both camelCase and lowercase versions
             const imageLink = profileData.photolink || profileData.photoLink;
             const imageID = profileData.photoID || profileData.PhotoID;
-            
+
             if (imageLink && imageLink.trim() && imageLink !== "null" && imageLink !== "undefined") {
               console.log("✅ [EditProfile] Direct fetch - Setting profile image:", {
                 imageLink: imageLink,
@@ -350,38 +350,38 @@ const EditProfile: React.FC = () => {
                 currentProfileimg: profileimg
               });
             }
-            
+
             // Set form values
             if (profileData.firstname) {
               setFirstnamepl(profileData.firstname);
               setFirstname(profileData.firstname);
             }
-            
+
             if (profileData.lastname) {
               setLastnamepl(profileData.lastname);
               setLastname(profileData.lastname);
             }
-            
+
             if (profileData.country || profileData.state) {
               const locationValue = profileData.country || profileData.state;
               setCountrypl(locationValue);
               setCountry(locationValue);
             }
-            
+
             if (profileData.bio || profileData.details) {
               setBiopl(profileData.bio || profileData.details);
               setBio(profileData.bio || profileData.details);
             }
-            
+
             if (profileData.username) {
               // Remove @ prefix if it exists when loading from database
-              const cleanUsername = profileData.username.startsWith('@') 
-                ? profileData.username.substring(1) 
+              const cleanUsername = profileData.username.startsWith('@')
+                ? profileData.username.substring(1)
                 : profileData.username;
               setUsernamepl(cleanUsername);
               setUsername(cleanUsername);
             }
-            
+
             // Show the form
             setLoading(false);
             setShowEdit(true);
@@ -394,23 +394,23 @@ const EditProfile: React.FC = () => {
           console.log("Direct profile fetch with getprofile failed:", error.response?.status, error.response?.data);
         }
       }
-      
+
       // Try a direct call to the controller without middleware
       try {
-        const response = await axios.post(`${API_URL}/api/profile/direct`, { 
-          userid: userId 
+        const response = await axios.post(`${API_URL}/api/profile/direct`, {
+          userid: userId
         });
-        
+
         if (response.status === 200 && response.data) {
           console.log("Direct API call succeeded:", {
             status: response.status,
             hasData: !!response.data,
             dataKeys: response.data ? Object.keys(response.data) : []
           });
-          
+
           // Process response data similar to above
           // ...
-          
+
           return true;
         }
       } catch (error) {
@@ -418,16 +418,16 @@ const EditProfile: React.FC = () => {
           console.log("Direct API call failed:", error.response?.status, error.response?.data);
         }
       }
-      
+
       return false;
     } catch (e) {
       console.error("Error in direct profile fetch:", e);
       return false;
     }
   };
-  
+
   // We'll call this function in the useEffect below
-  
+
   // Try to verify authentication directly with the API
   const [directAuthVerified, setDirectAuthVerified] = useState(false);
 
@@ -437,28 +437,28 @@ const EditProfile: React.FC = () => {
         // Get data from all possible sources
         const localData = getLocalStorageData();
         const effectiveUserId = loggedInUserId || localData.userID || routeUserId;
-        
+
         if (!effectiveUserId) {
           console.log("No user ID available for verification");
           return;
         }
-        
+
         console.log("Trying direct API auth verification for user:", effectiveUserId);
-        
+
         // Try direct fetch without JWT
         const directSuccess = await fetchProfileDirectly(effectiveUserId);
-        
+
         if (!directSuccess) {
           // If direct fetch fails, try JWT method
           try {
             const cookieToken = getCookieToken();
             // Get raw token from available sources
             const rawTokenSource = token || localData.token || cookieToken;
-            
+
             if (rawTokenSource) {
               // Remove Bearer prefix if it exists
               const effectiveToken = rawTokenSource.startsWith('Bearer ') ? rawTokenSource.substring(7) : rawTokenSource;
-              
+
               // Create a complete auth payload
               const directAuthPayload = {
                 userid: effectiveUserId,
@@ -468,67 +468,67 @@ const EditProfile: React.FC = () => {
                 refreshtoken: localData.rawData?.refreshtoken || "",
                 hasToken: true
               };
-              
+
               // Set up headers with the token for JWT authentication
               const cleanToken = effectiveToken.startsWith('Bearer ') ? effectiveToken.substring(7) : effectiveToken;
               const authToken = `Bearer ${cleanToken}`;
-              
+
               const headers = {
                 'Authorization': authToken,
                 'Content-Type': 'application/json'
               };
-              
+
               console.log("Trying JWT authentication as fallback");
-              
+
               const response = await axios.post(`${API_URL}/useredit`, directAuthPayload, { headers });
-              
+
               if (response.status === 200 && response.data.ok !== false) {
                 console.log("JWT authentication succeeded");
                 setDirectAuthVerified(true);
-                
+
                 // If we got profile data, use it to populate the form
                 if (response.data.data) {
                   console.log("Using data from JWT verification to populate form");
                   const profileData = response.data.data;
-                  
+
                   // Set profile image if available
                   if (profileData.photolink) {
                     setProfileimg(profileData.photolink);
                     setDeletePhotolink(profileData.photolink);
                     setDeletePhotoID(profileData.photoID);
                   }
-                  
+
                   // Set form values
                   if (profileData.firstname) {
                     setFirstnamepl(profileData.firstname);
                     setFirstname(profileData.firstname);
                   }
-                  
+
                   if (profileData.lastname) {
                     setLastnamepl(profileData.lastname);
                     setLastname(profileData.lastname);
                   }
-                  
+
                   if (profileData.country || profileData.state) {
                     const locationValue = profileData.country || profileData.state;
                     setCountrypl(locationValue);
                     setCountry(locationValue);
                   }
-                  
+
                   if (profileData.bio) {
                     setBiopl(profileData.bio);
                     setBio(profileData.bio);
                   }
-                  
+
                   if (profileData.username) {
                     // Remove @ prefix if it exists when loading from database
-                    const cleanUsername = profileData.username.startsWith('@') 
-                      ? profileData.username.substring(1) 
+                    const cleanUsername = profileData.username.startsWith('@')
+                      ? profileData.username.substring(1)
                       : profileData.username;
                     setUsernamepl(cleanUsername);
                     setUsername(cleanUsername);
                   }
-                  
+
                   // Show the form
                   setLoading(false);
                   setShowEdit(true);
@@ -537,10 +537,10 @@ const EditProfile: React.FC = () => {
             }
           } catch (jwtError) {
             console.log("JWT authentication failed too", jwtError instanceof Error ? jwtError.message : "unknown error");
-            
+
             // Show the form anyway with localStorage data
-      setLoading(false);
-      setShowEdit(true);
+            setLoading(false);
+            setShowEdit(true);
 
             // Try to get user data from localStorage as fallback
             try {
@@ -552,40 +552,40 @@ const EditProfile: React.FC = () => {
                   hasLastname: !!data.lastname,
                   hasCountry: !!(data.country || data.State)
                 });
-                
+
                 // Set form values from localStorage
                 if (data.firstname) {
                   setFirstnamepl(data.firstname);
                   setFirstname(data.firstname);
                 }
-                
+
                 if (data.lastname) {
                   setLastnamepl(data.lastname);
                   setLastname(data.lastname);
                 }
-                
+
                 if (data.country || data.State) {
                   const locationValue = data.country || data.State;
                   setCountrypl(locationValue);
                   setCountry(locationValue);
                 }
-                
+
                 // Profile picture may not be in localStorage
-        if (data.photolink) {
-          setProfileimg(data.photolink);
+                if (data.photolink) {
+                  setProfileimg(data.photolink);
                 }
-                
+
                 // Bio may not be in localStorage
                 if (data.bio) {
                   setBiopl(data.bio);
                   setBio(data.bio);
                 }
-                
+
                 // Username may not be in localStorage
                 if (data.username) {
                   // Remove @ prefix if it exists when loading from localStorage
-                  const cleanUsername = data.username.startsWith('@') 
-                    ? data.username.substring(1) 
+                  const cleanUsername = data.username.startsWith('@')
+                    ? data.username.substring(1)
                     : data.username;
                   setUsernamepl(cleanUsername);
                   setUsername(cleanUsername);
@@ -598,18 +598,18 @@ const EditProfile: React.FC = () => {
         }
       } catch (error) {
         console.log("Direct API auth verification failed:", error);
-        
+
         // Show the form anyway
         setLoading(false);
         setShowEdit(true);
       }
     };
-    
+
     if (isAuthorized && !directAuthVerified) {
       verifyAuthDirectly();
     }
   }, [isAuthorized, token, loggedInUserId, routeUserId, directAuthVerified]);
-  
+
   // Reset fetch state when routeUserId changes (user navigates to different profile or returns to edit page)
   useEffect(() => {
     console.log("🔄 [EditProfile] Route user ID changed, resetting fetch state:", routeUserId);
@@ -624,37 +624,37 @@ const EditProfile: React.FC = () => {
       console.log("⏭️ [EditProfile] Skipping fetch - already fetched");
       return;
     }
-    
+
     // Get data from all possible sources
     const localData = getLocalStorageData();
     const cookieToken = getCookieToken();
-    
+
     // Try all possible token sources
     const effectiveToken = token || localData.token || cookieToken;
-    
-    console.log("🔑 [EditProfile] Token sources:", { 
-      reduxToken: token ? "exists" : "missing", 
+
+    console.log("🔑 [EditProfile] Token sources:", {
+      reduxToken: token ? "exists" : "missing",
       localStorageToken: localData.token ? "exists" : "missing",
       cookieToken: cookieToken ? "exists" : "missing"
     });
-    
+
     // Log the actual token (first few characters) for debugging
     if (effectiveToken) {
       console.log("🔑 [EditProfile] Token preview:", effectiveToken.substring(0, 10) + "...");
     }
-    
+
     // Only fetch if we have the required data, are authorized, and either direct auth is verified or we haven't tried yet
     if (routeUserId && effectiveToken && isAuthorized && !apiRequestTracker.getEditRequested && (directAuthVerified || !dataFetchedRef.current)) {
       console.log("🚀 [EditProfile] Starting profile data fetch...");
       apiRequestTracker.getEditRequested = true;
       dataFetchedRef.current = true;
-      
+
       console.log("Fetching profile data for editing:", { userid: routeUserId, hasToken: !!effectiveToken });
-      
+
       // Create a more complete authentication payload
       // Make sure we're using the raw token without Bearer prefix
       const cleanToken = effectiveToken.startsWith('Bearer ') ? effectiveToken.substring(7) : effectiveToken;
-      
+
       const authPayload = {
         userid: routeUserId,
         token: cleanToken,
@@ -663,7 +663,7 @@ const EditProfile: React.FC = () => {
         refreshtoken: localData.rawData?.refreshtoken || "",
         userID: localData.userID || loggedInUserId || routeUserId
       };
-      
+
       // Log the auth payload with token info but not the actual tokens
       console.log("Sending auth payload:", {
         userid: authPayload.userid,
@@ -673,7 +673,7 @@ const EditProfile: React.FC = () => {
         accesstoken: authPayload.accesstoken ? "exists" : "missing",
         refreshtoken: authPayload.refreshtoken ? "exists" : "missing"
       });
-      
+
       // Make sure we're sending the actual token values in the request
       const finalAuthPayload = {
         ...authPayload,
@@ -682,11 +682,11 @@ const EditProfile: React.FC = () => {
         accesstoken: authPayload.accesstoken,
         refreshtoken: authPayload.refreshtoken,
       };
-      
+
       dispatch(
         getEdit(finalAuthPayload) as unknown as AnyAction
       );
-      
+
       // Add a timeout to prevent infinite loading
       const timer = setTimeout(() => {
         if (loading) {
@@ -694,7 +694,7 @@ const EditProfile: React.FC = () => {
           setShowEdit(true);
         }
       }, 5000);
-      
+
       return () => clearTimeout(timer);
     }
   }, [routeUserId, token, isAuthorized, dispatch, loading, directAuthVerified, loggedInUserId]);
@@ -707,14 +707,14 @@ const EditProfile: React.FC = () => {
       setTimeout(() => {
         dispatch(comprofilechangeStatus("idle") as unknown as AnyAction);
       }, 300);
-      
+
       setLoading(false);
       setShowEdit(true);
 
       // Populate form with fetched data
       if (data) {
         console.log("✅ [EditProfile] Successfully fetched profile data:", data);
-        
+
         // Extract the actual profile data from the nested structure
         const profileData = data.data || data;
         console.log("📊 [EditProfile] Extracted profile data:", {
@@ -728,7 +728,7 @@ const EditProfile: React.FC = () => {
           photoID: profileData.photoID || "NONE",
           allKeys: Object.keys(profileData)
         });
-        
+
         // Set profile image if available - only update if we have a photolink to prevent overwriting with empty values
         if (profileData.photolink && profileData.photolink.trim() && profileData.photolink !== "null" && profileData.photolink !== "undefined") {
           console.log("✅ [EditProfile] Setting profile image from getEdit:", {
@@ -755,33 +755,33 @@ const EditProfile: React.FC = () => {
             currentProfileimg: profileimg
           });
         }
-        
+
         // Set form placeholders with current values
         if (profileData.firstname) {
           setFirstnamepl(profileData.firstname);
           setFirstname(profileData.firstname); // Also set the actual input value
         }
-        
+
         if (profileData.lastname) {
           setLastnamepl(profileData.lastname);
           setLastname(profileData.lastname); // Also set the actual input value
         }
-        
+
         if (profileData.country || profileData.state) {
           const locationValue = profileData.country || profileData.state;
           setCountrypl(locationValue);
           setCountry(locationValue); // Also set the actual input value
         }
-        
+
         if (profileData.bio) {
           setBiopl(profileData.bio);
           setBio(profileData.bio); // Also set the actual input value
         }
-        
+
         if (profileData.username) {
           // Remove @ prefix if it exists when loading from database
-          const cleanUsername = profileData.username.startsWith('@') 
-            ? profileData.username.substring(1) 
+          const cleanUsername = profileData.username.startsWith('@')
+            ? profileData.username.substring(1)
             : profileData.username;
           setUsernamepl(cleanUsername);
           setUsername(cleanUsername); // Also set the actual input value
@@ -792,20 +792,20 @@ const EditProfile: React.FC = () => {
     // Handle failed profile data fetch
     if (getedit_stats === "failed") {
       apiRequestTracker.resetGetEditRequested(); // Allow retry
-      
+
       setTimeout(() => {
         dispatch(comprofilechangeStatus("idle") as unknown as AnyAction);
       }, 300);
-      
+
       console.log("Edit profile data fetch failed:", getedit_message);
-      
+
       // Show form anyway and populate with data from localStorage
       setLoading(false);
       setShowEdit(true);
-      
+
       // Show error but don't block the form
       setErrorMessage("Using local data. Server error: " + getedit_message);
-      
+
       // Try to get user data from localStorage as fallback
       try {
         const raw = localStorage.getItem("login");
@@ -816,40 +816,40 @@ const EditProfile: React.FC = () => {
             hasLastname: !!localData.lastname,
             hasCountry: !!(localData.country || localData.State)
           });
-          
+
           // Set form values from localStorage
           if (localData.firstname) {
             setFirstnamepl(localData.firstname);
             setFirstname(localData.firstname);
           }
-          
+
           if (localData.lastname) {
             setLastnamepl(localData.lastname);
             setLastname(localData.lastname);
           }
-          
+
           if (localData.country || localData.State) {
             const locationValue = localData.country || localData.State;
             setCountrypl(locationValue);
             setCountry(locationValue);
           }
-          
+
           // Profile picture may not be in localStorage
           if (localData.photolink) {
             setProfileimg(localData.photolink);
           }
-          
+
           // Bio may not be in localStorage
           if (localData.bio) {
             setBiopl(localData.bio);
             setBio(localData.bio);
           }
-          
+
           // Username may not be in localStorage
           if (localData.username) {
             // Remove @ prefix if it exists when loading from localStorage
-            const cleanUsername = localData.username.startsWith('@') 
-              ? localData.username.substring(1) 
+            const cleanUsername = localData.username.startsWith('@')
+              ? localData.username.substring(1)
               : localData.username;
             setUsernamepl(cleanUsername);
             setUsername(cleanUsername);
@@ -871,11 +871,11 @@ const EditProfile: React.FC = () => {
         updatePhoto: updatePhoto ? "file provided" : "no file",
         deletePhotolink: deletePhotolink || "none"
       });
-      
+
       setTimeout(() => {
         dispatch(comprofilechangeStatus("idle") as unknown as AnyAction);
       }, 300);
-      
+
       setLoading(false);
       setSuccessMessage("Profile updated successfully!");
 
@@ -893,13 +893,13 @@ const EditProfile: React.FC = () => {
       setTimeout(() => {
         dispatch(comprofilechangeStatus("idle") as unknown as AnyAction);
       }, 300);
-      
+
       setLoading(false);
       setShowEdit(true);
-      
+
       // Provide better error messages based on the error type
       let errorMessage = "Failed to update profile: " + updateEdit_message;
-      
+
       if (updateEdit_message.includes("session has expired") || updateEdit_message.includes("token Expire")) {
         errorMessage = "Your session has expired. Please log in again to update your profile.";
         // Optionally redirect to login after a delay
@@ -911,7 +911,7 @@ const EditProfile: React.FC = () => {
       } else if (updateEdit_message.includes("Invalid profile data")) {
         errorMessage = "Please check your information and try again.";
       }
-      
+
       setErrorMessage(errorMessage);
       console.log("Profile update failed:", updateEdit_message);
     }
@@ -919,120 +919,120 @@ const EditProfile: React.FC = () => {
 
   // Handle form submission
   const updateButton = async () => {
-    
-      // Only validate username if user has entered one
-      // if (username && username.length >= 3) {
-      //   // Check username format first
-      //   const usernameRegex = /^[a-z0-9_]{3,15}$/;
-      //   if (!usernameRegex.test(username)) {
-      //     setErrorMessage("Username must be 3-15 characters, lowercase letters, numbers, and underscores only");
-      //     return;
-      //   }
 
-      //   // Check if username validation is still in progress
-      //   if (isCheckingUsername) {
-      //     setErrorMessage("Please wait for username validation to complete");
-      //     return;
-      //   }
+    // Only validate username if user has entered one
+    // if (username && username.length >= 3) {
+    //   // Check username format first
+    //   const usernameRegex = /^[a-z0-9_]{3,15}$/;
+    //   if (!usernameRegex.test(username)) {
+    //     setErrorMessage("Username must be 3-15 characters, lowercase letters, numbers, and underscores only");
+    //     return;
+    //   }
 
-      //   // Check if username is invalid
-      //   if (usernameStatus === "invalid") {
-      //     setErrorMessage("Please choose a different username");
-      //     return;
-      //   }
+    //   // Check if username validation is still in progress
+    //   if (isCheckingUsername) {
+    //     setErrorMessage("Please wait for username validation to complete");
+    //     return;
+    //   }
 
-      //   // Check if username validation hasn't been completed yet
-      //   if (usernameStatus === "") {
-      //     setErrorMessage("Please wait for username validation to complete");
-      //     return;
-      //   }
-      // }
+    //   // Check if username is invalid
+    //   if (usernameStatus === "invalid") {
+    //     setErrorMessage("Please choose a different username");
+    //     return;
+    //   }
 
-      setLoading(true);
-      setShowEdit(false);
-      setErrorMessage("");
+    //   // Check if username validation hasn't been completed yet
+    //   if (usernameStatus === "") {
+    //     setErrorMessage("Please wait for username validation to complete");
+    //     return;
+    //   }
+    // }
 
-      // Get tokens from the helper functions defined at component level
-      const localData = getLocalStorageData();
-      const cookieToken = getCookieToken();
-      
-      // Try all possible token sources
-      const effectiveToken = token || localData.token || cookieToken;
+    setLoading(true);
+    setShowEdit(false);
+    setErrorMessage("");
 
-      // Create a more complete authentication payload
-      const changedProfileData = {
-        userid: routeUserId, // Use the route user ID
-        token: effectiveToken,
-        hasToken: true, // Ensure this flag is set
-        accesstoken: localData.rawData?.accesstoken || "",
-        refreshtoken: localData.rawData?.refreshtoken || "",
-        userID: localData.userID || loggedInUserId || routeUserId,
-        
-        // Profile data - only include fields that have been changed
-        // Only send deletePhotolink and deletePhotoID if user is uploading a new photo
-        // This ensures the current photo is preserved if user only changes other fields
-        ...(updatePhoto && deletePhotolink && { deletePhotolink }),
-        ...(updatePhoto && deletePhotoID && { deletePhotoID }),
-        ...(updatePhoto && { updatePhoto }),
-        ...(firstname && { firstname }),
-        ...(lastname && { lastname }),
-        ...(country && { state: country, country }),
-        ...(bio && { bio }),
-        // Always send username if it exists (user entered one) or if placeholder exists (keep current)
-        ...((username || usernamepl) && { username: `@${username || usernamepl}` }), // Add @ prefix when saving
-      };
+    // Get tokens from the helper functions defined at component level
+    const localData = getLocalStorageData();
+    const cookieToken = getCookieToken();
 
-      // Log the profile update payload (without actual token values)
-      console.log("🔍 [EditProfile] Form values being sent:", {
-        bioValue: bio,
-        bioPlaceholder: biopl,
-        usernameValue: username,
-        usernamePlaceholder: usernamepl,
-        bioFinal: bio || biopl,
-        usernameFinal: username || usernamepl,
-        bioIsEmpty: !bio,
-        usernameIsEmpty: !username,
-        bioLength: bio?.length || 0,
-        usernameLength: username?.length || 0
-      });
-      
-      console.log("Sending profile update payload:", {
-        userid: changedProfileData.userid,
-        userID: changedProfileData.userID,
-        hasToken: changedProfileData.hasToken,
-        token: changedProfileData.token ? "exists" : "missing",
-        accesstoken: changedProfileData.accesstoken ? "exists" : "missing",
-        refreshtoken: changedProfileData.refreshtoken ? "exists" : "missing",
-        updatePhoto: changedProfileData.updatePhoto ? "exists" : "missing",
-        updatePhotoType: changedProfileData.updatePhoto ? typeof changedProfileData.updatePhoto : "none",
-        updatePhotoSize: changedProfileData.updatePhoto instanceof File ? changedProfileData.updatePhoto.size : "not a file",
-        firstname: changedProfileData.firstname,
-        lastname: changedProfileData.lastname,
-        bio: changedProfileData.bio,
-        username: changedProfileData.username,
-        state: changedProfileData.state
-      });
-      
-      // Make sure we're sending the actual token values in the request
-      const finalProfileData = {
-        ...changedProfileData,
-        // Make sure the token is actually sent, not just a flag
-        token: changedProfileData.token,
-        accesstoken: changedProfileData.accesstoken,
-        refreshtoken: changedProfileData.refreshtoken
-      };
+    // Try all possible token sources
+    const effectiveToken = token || localData.token || cookieToken;
 
-      // Send update request
-      dispatch(updateEdit(finalProfileData) as unknown as AnyAction);
-   
+    // Create a more complete authentication payload
+    const changedProfileData = {
+      userid: routeUserId, // Use the route user ID
+      token: effectiveToken,
+      hasToken: true, // Ensure this flag is set
+      accesstoken: localData.rawData?.accesstoken || "",
+      refreshtoken: localData.rawData?.refreshtoken || "",
+      userID: localData.userID || loggedInUserId || routeUserId,
+
+      // Profile data - only include fields that have been changed
+      // Only send deletePhotolink and deletePhotoID if user is uploading a new photo
+      // This ensures the current photo is preserved if user only changes other fields
+      ...(updatePhoto && deletePhotolink && { deletePhotolink }),
+      ...(updatePhoto && deletePhotoID && { deletePhotoID }),
+      ...(updatePhoto && { updatePhoto }),
+      ...(firstname && { firstname }),
+      ...(lastname && { lastname }),
+      ...(country && { state: country, country }),
+      ...(bio && { bio }),
+      // Always send username if it exists (user entered one) or if placeholder exists (keep current)
+      ...((username || usernamepl) && { username: `@${username || usernamepl}` }), // Add @ prefix when saving
+    };
+
+    // Log the profile update payload (without actual token values)
+    console.log("🔍 [EditProfile] Form values being sent:", {
+      bioValue: bio,
+      bioPlaceholder: biopl,
+      usernameValue: username,
+      usernamePlaceholder: usernamepl,
+      bioFinal: bio || biopl,
+      usernameFinal: username || usernamepl,
+      bioIsEmpty: !bio,
+      usernameIsEmpty: !username,
+      bioLength: bio?.length || 0,
+      usernameLength: username?.length || 0
+    });
+
+    console.log("Sending profile update payload:", {
+      userid: changedProfileData.userid,
+      userID: changedProfileData.userID,
+      hasToken: changedProfileData.hasToken,
+      token: changedProfileData.token ? "exists" : "missing",
+      accesstoken: changedProfileData.accesstoken ? "exists" : "missing",
+      refreshtoken: changedProfileData.refreshtoken ? "exists" : "missing",
+      updatePhoto: changedProfileData.updatePhoto ? "exists" : "missing",
+      updatePhotoType: changedProfileData.updatePhoto ? typeof changedProfileData.updatePhoto : "none",
+      updatePhotoSize: changedProfileData.updatePhoto instanceof File ? changedProfileData.updatePhoto.size : "not a file",
+      firstname: changedProfileData.firstname,
+      lastname: changedProfileData.lastname,
+      bio: changedProfileData.bio,
+      username: changedProfileData.username,
+      state: changedProfileData.state
+    });
+
+    // Make sure we're sending the actual token values in the request
+    const finalProfileData = {
+      ...changedProfileData,
+      // Make sure the token is actually sent, not just a flag
+      token: changedProfileData.token,
+      accesstoken: changedProfileData.accesstoken,
+      refreshtoken: changedProfileData.refreshtoken
+    };
+
+    // Send update request
+    dispatch(updateEdit(finalProfileData) as unknown as AnyAction);
+
   };
 
   return (
     <div className="w-screen sm:w-11/12 md:w-10/12 lg:w-9/12 xl:w-11/12 mx-auto md:mr-auto md:ml-0">
       <div className="chat_nav ">
-        <Gennavigation click={click} setclick={setclick}  />
+        <Gennavigation click={click} setclick={setclick} />
       </div>
-      <HeaderBackNav title=""  />
+      <HeaderBackNav title="" />
 
       <div className="md:w-3/5 md:mx-auto">
         <div className="w-full h-full flex flex-col items-center md:w-3/4 mt-4 sm:mt-3 md:mr-auto md:ml-0">
@@ -1045,7 +1045,7 @@ const EditProfile: React.FC = () => {
               <div className="bg-red-600 bg-opacity-20 border border-red-500 text-red-400 px-4 py-3 rounded-lg">
                 <p>{errorMessage}</p>
               </div>
-              <button 
+              <button
                 className="mt-4 bg-gray-700 hover:bg-gray-600 text-white text-sm py-2 px-4 rounded-md"
                 onClick={() => router.push(`/Profile/${routeUserId}`)}
               >
@@ -1053,7 +1053,7 @@ const EditProfile: React.FC = () => {
               </button>
             </div>
           )}
-          
+
           {loading && isAuthorized && (
             <div className="flex flex-col items-center mt-16 w-full" id="edit-profile-loader" data-loading="true">
               <PacmanLoader
@@ -1064,10 +1064,10 @@ const EditProfile: React.FC = () => {
                 data-testid="loader"
               />
               <p className="text-white text-xs mt-2">Loading profile data...</p>
-             
+
             </div>
           )}
-          
+
           {successMessage && (
             <div className="flex flex-col items-center mt-8 w-full">
               <div className="bg-green-600 bg-opacity-20 border border-green-500 text-green-400 px-4 py-3 rounded-lg flex items-center">
@@ -1079,7 +1079,7 @@ const EditProfile: React.FC = () => {
               <p className="text-gray-400 text-sm mt-2">Redirecting to your profile...</p>
             </div>
           )}
-          
+
           {errorMessage && isAuthorized && showEdit && (
             <div className="w-full max-w-md mx-auto mt-4 mb-2">
               <div className="bg-red-600 bg-opacity-20 border border-red-500 text-red-400 px-4 py-2 rounded-lg text-sm">
@@ -1099,13 +1099,13 @@ const EditProfile: React.FC = () => {
                         const profileImage = profileimg;
                         const userName = `${firstname || ""} ${lastname || ""}`.trim();
                         const initials = userName.split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2) || "?";
-                        
+
                         // Show image if we have a valid URL and it hasn't failed to load
                         if (profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined" && profileImage !== profileIcon.src && !imageLoadFailed) {
                           // Use getImageSource to handle Storj URLs properly (same as ProfilePage.tsx)
                           const imageSource = getImageSource(profileImage, 'profile');
                           const imageSrc = imageSource.src;
-                          
+
                           console.log("🖼️ [EditProfile] Rendering profile image:", {
                             originalUrl: profileImage,
                             processedSrc: imageSrc,
@@ -1114,7 +1114,7 @@ const EditProfile: React.FC = () => {
                             willRender: true,
                             imageLoadFailed: imageLoadFailed
                           });
-                          
+
                           // Use regular img tag with processed URL from getImageSource
                           return (
                             <img
@@ -1167,9 +1167,9 @@ const EditProfile: React.FC = () => {
                                   setImageLoadFailed(false);
                                 }
                               }}
-                              style={{ 
-                                width: '100%', 
-                                height: '100%', 
+                              style={{
+                                width: '100%',
+                                height: '100%',
                                 objectFit: 'cover',
                                 borderRadius: '50%',
                                 display: 'block'
@@ -1186,7 +1186,7 @@ const EditProfile: React.FC = () => {
                             profileImageValue: profileImage
                           });
                         }
-                        
+
                         // Show initials as fallback
                         return (
                           <div className="w-full h-full flex items-center justify-center text-white text-3xl font-bold bg-gray-600">
@@ -1195,13 +1195,13 @@ const EditProfile: React.FC = () => {
                         );
                       })()}
                     </div>
-                </div>
+                  </div>
 
                   {/* Overlay with camera icon */}
-                  <div 
+                  <div
                     className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-full opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity"
-                  onClick={() => ref.current?.click()}
-                >
+                    onClick={() => ref.current?.click()}
+                  >
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -1216,27 +1216,27 @@ const EditProfile: React.FC = () => {
                       try {
                         setLoading(true);
                         setErrorMessage("");
-                        
+
                         // Get user data for the API call
                         const localData = getLocalStorageData();
                         const effectiveUserId = loggedInUserId || localData.userID || routeUserId;
-                        
+
                         // Immediately update UI
                         setProfileimg(profileIcon.src);
                         setUpdatePhoto(undefined);
                         setDeletePhotolink(profileimg);
-                        
+
                         // Call API to delete profile picture immediately
                         const deleteResponse = await axios.post(`${API_URL}/editprofile`, {
                           userid: effectiveUserId,
                           deletePhotolink: profileimg,
                           deletePhotoID: deletePhotoID
                         });
-                        
+
                         if (deleteResponse.data.ok) {
                           console.log("Profile picture deleted from database successfully");
                           setSuccessMessage("Profile picture deleted successfully!");
-                          
+
                           // Clear the delete fields since deletion is complete
                           setDeletePhotolink(undefined);
                           setDeletePhotoID(undefined);
@@ -1246,7 +1246,7 @@ const EditProfile: React.FC = () => {
                       } catch (error) {
                         console.error("Error deleting profile picture:", error);
                         setErrorMessage("Failed to delete profile picture. Please try again.");
-                        
+
                         // Revert UI changes if deletion failed
                         setProfileimg(profileimg);
                       } finally {
@@ -1276,7 +1276,7 @@ const EditProfile: React.FC = () => {
                         setErrorMessage("File size must be less than 5MB");
                         return;
                       }
-                      
+
                       setProfileimg(URL.createObjectURL(e.target.files[0]));
                       setUpdatePhoto(e.target.files[0]);
                       setErrorMessage(""); // Clear any previous errors
@@ -1296,9 +1296,9 @@ const EditProfile: React.FC = () => {
                     placeholder={firstnamepl}
                     value={firstname}
                     onChange={(e) => {
-                                const cleanValue = e.currentTarget.value.replace(/[^a-zA-Z0-9_]/g, '');
-                                setFirstname(cleanValue);
-                            }}
+                      const cleanValue = e.currentTarget.value.replace(/[^a-zA-Z0-9_]/g, '');
+                      setFirstname(cleanValue);
+                    }}
                     maxLength={9}
                   />
                   <div className="text-xs text-right mt-1 text-slate-400">
@@ -1314,10 +1314,10 @@ const EditProfile: React.FC = () => {
                     className="rounded-lg bg-slate-600 text-slate-100 p-2 placeholder:text-slate-500 placeholder:font-normal placeholder:text-sm"
                     placeholder={lastnamepl}
                     value={lastname}
-                     onChange={(e) => {
-                                const cleanValue = e.currentTarget.value.replace(/[^a-zA-Z0-9_]/g, '');
-                                setLastname(cleanValue);
-                            }}
+                    onChange={(e) => {
+                      const cleanValue = e.currentTarget.value.replace(/[^a-zA-Z0-9_]/g, '');
+                      setLastname(cleanValue);
+                    }}
                     maxLength={9}
                   />
                   <div className="text-xs text-right mt-1 text-slate-400">
@@ -1332,11 +1332,10 @@ const EditProfile: React.FC = () => {
                     {/* <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 text-sm">@</span> */}
                     <input
                       type="text"
-                      className={`rounded-lg bg-slate-600 text-slate-100 p-2 pl-8 pr-10 placeholder:text-slate-500 placeholder:font-normal placeholder:text-sm w-full transition-colors ${
-                        usernameStatus === "valid" ? 'border border-green-500' : 
-                        usernameStatus === "invalid" ? 'border border-red-500' : 
-                        usernameStatus === "checking" ? 'border border-yellow-500' : ''
-                      }`}
+                      className={`rounded-lg bg-slate-600 text-slate-100 p-2 pl-8 pr-10 placeholder:text-slate-500 placeholder:font-normal placeholder:text-sm w-full transition-colors ${usernameStatus === "valid" ? 'border border-green-500' :
+                          usernameStatus === "invalid" ? 'border border-red-500' :
+                            usernameStatus === "checking" ? 'border border-yellow-500' : ''
+                        }`}
                       placeholder="username"
                       value={username}
                       onChange={async (e) => {
@@ -1344,12 +1343,12 @@ const EditProfile: React.FC = () => {
                         // Remove spaces, periods, convert to lowercase, and remove @ if user types it
                         const cleanValue = value.replace(/\s/g, '').replace(/\./g, '').toLowerCase().replace('@', '');
                         setUsername(cleanValue);
-                        
+
                         // Reset status when user starts typing
                         setUsernameStatus("");
                         setUsernameValid(false);
                         setUsernameError("");
-                        
+
                         // Check uniqueness after a short delay
                         if (cleanValue.length >= 3) {
                           setTimeout(() => {
@@ -1430,20 +1429,20 @@ const EditProfile: React.FC = () => {
 
                 {/* Buttons */}
                 <div className="space-y-3">
-                <button
+                  <button
                     className={`bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 transition-colors text-white font-medium py-3 px-4 rounded-lg w-full text-center disabled:opacity-50 `}
-                  onClick={updateButton}
-                >
+                    onClick={updateButton}
+                  >
                     save changes
                   </button>
-                  
+
                   <button
                     className="bg-transparent border border-gray-600 text-gray-300 hover:bg-gray-800 transition-colors font-medium py-2 px-4 rounded-lg w-full text-center disabled:opacity-50"
                     onClick={() => router.push(`/Profile/${routeUserId}`)}
                     disabled={loading}
                   >
                     Cancel
-                </button>
+                  </button>
                 </div>
               </div>
             </div>

@@ -9,7 +9,7 @@ import Image from "next/image";
 import Skeleton, { SkeletonTheme } from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 import { getImageSource } from "@/lib/imageUtils";
-import { toast } from "material-react-toastify";
+import { toast } from "react-toastify";
 
 const AboutPage = () => {
   const params = useParams();

@@ -5,7 +5,7 @@ import React, { useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "@/store/store";
 import { upgradeToVip, checkVipStatus, clearVipError, cancelVip } from "@/store/vip";
-import { toast } from "material-react-toastify";
+import { toast } from "react-toastify";
 import { URL as API_URL } from "@/api/config";
 import { useRouter } from "next/navigation";
 

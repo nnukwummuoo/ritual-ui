@@ -12,13 +12,16 @@ import Agree from "./_components/AgreeBtn";
 import { register } from "@/lib/service/register";
 import { useRouter } from "next/navigation";
 import BtnLoader from "@/constants/BtnLoader";
-import { toast } from "material-react-toastify";
+import { toast } from "react-toastify";
 import { useDispatch } from "react-redux";
 import { registernewUser } from "@/store/registerSlice";
 import type { AppDispatch } from "@/store/store";
 import axios from "axios";
 import { URL as API_URL } from "@/api/config";
 import { FaHome } from "react-icons/fa";
+import Cookies from "js-cookie";
+import { useDeviceFingerprint } from "@/hooks/useDeviceFingerprint";
+
 
 // Word list for generating a mnemonic phrase (unchanged)
 const wordList = [
@@ -79,6 +82,7 @@ export const Register = () => {
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
   const containerRef = React.useRef<HTMLDivElement>(null);
+  const deviceId = useDeviceFingerprint();
 
   // State for form validation errors
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
@@ -325,7 +329,23 @@ export const Register = () => {
       }
     }
 
-    const payload = { ...formValues, age: calculateAge(formValues.dob).toString(), country, secretPhrase };
+    // 🎁 Get referral code from cookie
+    const REFERRAL_COOKIE_KEY = 'referral_code';
+    const referralCode = Cookies.get(REFERRAL_COOKIE_KEY) || null;
+
+    if (!deviceId) {
+      toast.error("System check failed. Please refresh and try again.", { style: { backgroundColor: "#111" } });
+      return;
+    }
+
+    const payload = {
+      ...formValues,
+      age: calculateAge(formValues.dob).toString(),
+      country,
+      secretPhrase,
+      referralCode, // Include referral code in payload
+      deviceId, // Include device fingerprint
+    };
 
     try {
       setLoading(true);
@@ -334,6 +354,13 @@ export const Register = () => {
       if (registernewUser.fulfilled.match(resultAction)) {
         // Registration successful - redirect to login page
         // User must log in manually after registration
+
+        // 🎁 Clear the referral cookie after successful registration
+        if (referralCode) {
+          Cookies.remove(REFERRAL_COOKIE_KEY);
+          console.log('✅ Referral code cleared after successful registration');
+        }
+
         toast.success("Registration successful! Please log in to continue.", { style: { backgroundColor: "#111", zIndex: 9999 } });
         // Redirect to login page after a short delay
         setTimeout(() => {

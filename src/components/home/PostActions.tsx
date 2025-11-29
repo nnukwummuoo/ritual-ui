@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import { useUserId } from "@/lib/hooks/useUserId";
-import { toast } from "material-react-toastify";
+import { toast } from "react-toastify";
 import { useRouter } from 'next/navigation';
 import { deletesinglepost } from "@/store/post";
 import Image from "next/image";

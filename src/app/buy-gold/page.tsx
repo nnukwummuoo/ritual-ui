@@ -5,7 +5,7 @@
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { useSelector } from "react-redux";
-import { toast } from "material-react-toastify";
+import { toast } from "react-toastify";
 import { golds } from "@/data/intresttypes";
 import { createWeb3Payment, checkWeb3PaymentStatus, cancelWeb3Payment, verifyTransactionHash } from "@/api/web3payment";
 import { RootState } from "@/store/store"

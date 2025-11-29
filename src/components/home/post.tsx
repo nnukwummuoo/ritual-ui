@@ -14,7 +14,7 @@ import { URL as API_BASE } from "@/api/config";
 const PROD_BASE = process.env.NEXT_PUBLIC_API || "";
 import PostSkeleton from "../PostSkeleton";
 import PostActions from "./PostActions";
-import { toast } from "material-react-toastify";
+import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { getImageSource } from "@/lib/imageUtils";
