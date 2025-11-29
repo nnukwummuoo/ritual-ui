@@ -1,22 +1,23 @@
 'use client';
 
 import React, { useState, useEffect } from "react";
-import { 
-    IoDocumentTextOutline, 
-    IoShieldCheckmarkOutline, 
-    IoCashOutline, 
-    IoPeopleOutline, 
-    IoGridOutline,
-    IoHomeOutline,
-    IoChatbubbleOutline,
-    IoAnalyticsOutline,
-    IoServerOutline,
-    IoCardOutline,
-    IoBarChartOutline,
+import {
+  IoDocumentTextOutline,
+  IoShieldCheckmarkOutline,
+  IoCashOutline,
+  IoPeopleOutline,
+  IoGridOutline,
+  IoHomeOutline,
+  IoChatbubbleOutline,
+  IoAnalyticsOutline,
+  IoServerOutline,
+  IoCardOutline,
+  IoBarChartOutline,
+  IoGiftOutline,
 } from "react-icons/io5";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "@/store/store";
-import { adminnotify } from "@/store/admin"; 
+import { adminnotify } from "@/store/admin";
 import { getdocument } from "@/store/creatorSlice";
 import axios from "axios";
 import { URL } from "@/api/config";
@@ -34,6 +35,7 @@ import WebsiteAnalyticsPage from "./website-analytics/page";
 import BackupManagement from "./backup/page";
 import TransactionsPage from "./transactions/page";
 import RevenuePage from "./revenue/page";
+import ReferralAnalysisPage from "./referral-analysis/page";
 import PushNotificationToggle from "@/components/PushNotificationToggle";
 
 const AdminPage = () => {
@@ -48,13 +50,13 @@ const AdminPage = () => {
   const notifyme = useSelector((s: RootState) => s.admin.notifyme);
   const notifycount = useSelector((s: RootState) => s.admin.notifycount);
   const docCount = useSelector(
-  (state: RootState) =>
-    state.creator.documents.filter((doc: { verify?: string }) => !doc.verify || doc.verify === "pending").length
-);
+    (state: RootState) =>
+      state.creator.documents.filter((doc: { verify?: string }) => !doc.verify || doc.verify === "pending").length
+  );
 
   // State for pending withdrawal requests count
   const [pendingWithdrawalsCount, setPendingWithdrawalsCount] = useState(0);
-  
+
   // State for support chat count
   const [supportChatCount, setSupportChatCount] = useState(0);
 
@@ -145,6 +147,11 @@ const AdminPage = () => {
       component: <WebsiteAnalyticsPage />,
     },
     {
+      name: "Referral Analysis",
+      icon: <IoGiftOutline size={22} />,
+      component: <ReferralAnalysisPage />,
+    },
+    {
       name: "Support Chat",
       icon: <IoChatbubbleOutline size={22} />,
       component: <AdminSupportChat />,
@@ -219,10 +226,9 @@ const AdminPage = () => {
                 key={item.name}
                 onClick={() => setActiveView(item.name)}
                 className={`flex items-center justify-center md:justify-start gap-0 md:gap-4 px-0 md:px-4 py-3 rounded-lg cursor-pointer transition-all duration-200
-                  ${
-                    activeView === item.name
-                      ? "bg-indigo-600 text-white"
-                      : "hover:bg-gray-700 text-gray-400 hover:text-white"
+                  ${activeView === item.name
+                    ? "bg-indigo-600 text-white"
+                    : "hover:bg-gray-700 text-gray-400 hover:text-white"
                   }`}
               >
                 {item.icon}

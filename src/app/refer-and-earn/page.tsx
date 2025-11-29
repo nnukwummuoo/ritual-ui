@@ -6,7 +6,7 @@ import type { RootState } from '@/store/store';
 import axios from 'axios';
 import { URL as API_URL } from '@/api/config';
 import { toast } from 'material-react-toastify';
-import { FaCopy, FaGift, FaShareAlt, FaUsers, FaRocket, FaChevronDown, FaChevronUp } from 'react-icons/fa';
+import { FaCopy, FaGift, FaShareAlt, FaUsers, FaRocket, FaChevronDown, FaChevronUp, FaSync } from 'react-icons/fa';
 import Link from 'next/link';
 
 interface Referral {
@@ -16,6 +16,10 @@ interface Referral {
     status: string;
     rewardAmount: number;
     rewardType: string;
+    milestoneCompleted?: boolean;
+    milestoneFailed?: boolean;
+    milestoneReward?: number;
+    progress?: any; // Detailed progress object from backend
 }
 
 interface ReferralData {
@@ -47,6 +51,7 @@ export default function ReferAndEarnPage() {
 
     const [showTransferModal, setShowTransferModal] = useState(false);
     const [transferring, setTransferring] = useState(false);
+    const [isRefreshing, setIsRefreshing] = useState(false);
 
     // Initialize user data from Redux or localStorage
     useEffect(() => {
@@ -76,12 +81,6 @@ export default function ReferAndEarnPage() {
             setToken(finalToken || '');
             setIsLoggedIn(!!finalUserId && (!!finalToken || finalLoggedIn)); // Ensure we have ID and (token or logged in flag)
             setIsInitialized(true);
-
-            console.log('🔍 User data initialized:', {
-                userId: finalUserId ? `${finalUserId.substring(0, 8)}...` : 'none',
-                hasToken: !!finalToken,
-                isLoggedIn: !!finalUserId
-            });
         };
 
         initializeAuth();
@@ -92,54 +91,53 @@ export default function ReferAndEarnPage() {
         setCanShare(typeof navigator !== 'undefined' && !!navigator.share);
     }, []);
 
-    // Fetch referral info
-    useEffect(() => {
-        // Wait for initialization
-        if (!isInitialized) return;
-
-        if (!isLoggedIn || !userId || !token) {
-            console.log('⚠️ Cannot fetch referral info - Missing auth data:', { isLoggedIn, hasUserId: !!userId, hasToken: !!token });
+    const fetchReferralInfo = async () => {
+        if (!userId || !token) {
+            console.log('⚠️ Cannot fetch referral info - Missing auth data');
             setLoading(false);
             return;
         }
 
-        const fetchReferralInfo = async () => {
-            try {
-                // Keep loading true or set it true if we want to show spinner during refetch
-                // setLoading(true); 
+        try {
+            setIsRefreshing(true);
+            console.log('🚀 Fetching referral info for user:', userId.substring(0, 8) + '...');
+            const response = await axios.get(`${API_URL}/api/referral`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
 
-                console.log('🚀 Fetching referral info for user:', userId.substring(0, 8) + '...');
-                const response = await axios.get(`${API_URL}/api/referral`, {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                });
+            console.log('✅ Referral info response:', response.data);
 
-                console.log('✅ Referral info response:', response.data);
-
-                if (response.data.ok) {
-                    setReferralData(response.data.data);
-                    setError('');
-                } else {
-                    setError(response.data.message || 'Failed to load referral data');
-                }
-            } catch (error: any) {
-                console.error('❌ Error fetching referral info:', error);
-                const errorMsg = error.response?.data?.message || error.message || 'Failed to load referral information';
-                setError(errorMsg);
-
-                // Only show toast for real errors, not just 404s if handled gracefully
-                if (error.response?.status !== 404) {
-                    toast.error(errorMsg, {
-                        style: { backgroundColor: '#111' },
-                    });
-                }
-            } finally {
-                setLoading(false);
+            if (response.data.ok) {
+                setReferralData(response.data.data);
+                setError('');
+            } else {
+                setError(response.data.message || 'Failed to load referral data');
             }
-        };
+        } catch (error: any) {
+            console.error('❌ Error fetching referral info:', error);
+            const errorMsg = error.response?.data?.message || error.message || 'Failed to load referral information';
+            setError(errorMsg);
 
-        fetchReferralInfo();
+            if (error.response?.status !== 404) {
+                toast.error(errorMsg, {
+                    style: { backgroundColor: '#111' },
+                });
+            }
+        } finally {
+            setLoading(false);
+            setIsRefreshing(false);
+        }
+    };
+
+    // Fetch referral info on init
+    useEffect(() => {
+        if (isInitialized && isLoggedIn) {
+            fetchReferralInfo();
+        } else if (isInitialized && !isLoggedIn) {
+            setLoading(false);
+        }
     }, [isInitialized, isLoggedIn, userId, token]);
 
     const referralLink = referralData?.referralCode
@@ -245,7 +243,7 @@ export default function ReferAndEarnPage() {
     const currentBalance = referralData ? (referralData.rewardBalance !== undefined ? referralData.rewardBalance : (referralData.referralCount * 1.7)) : 0;
 
     return (
-        <div className="min-h-screen bg-black text-white flex flex-col items-center pt-12 px-4 relative">
+        <div className="min-h-screen bg-gray-900 text-white flex flex-col items-center pt-12 px-4 relative">
             <div className="w-full max-w-md flex flex-col items-center">
 
                 {/* Rocket Icon */}
@@ -363,13 +361,68 @@ export default function ReferAndEarnPage() {
                             </div>
                         </div>
                     ) : (
-                        <div className="space-y-3">
-                            {['$0.068', '$0.40', '$0.60', '$1'].map((amount, index) => (
-                                <div key={index} className="bg-gray-900 p-4 rounded-xl flex justify-between items-center border border-gray-800">
-                                    <span className="text-gray-300 font-medium">Reward {index + 1}</span>
-                                    <span className="text-blue-400 font-bold text-lg">{amount}</span>
+                        <div className="space-y-4">
+                            {/* Rewards Header */}
+                            <div className="text-center mb-6">
+                                <h3 className="text-xl font-bold text-white mb-2">
+                                    To receive your reward, invite a friend who isn't on mmeko yet
+                                </h3>
+                                <p className="text-gray-400 text-sm">
+                                    Invite rewards are available within the next <span className="text-blue-400 font-semibold">7 days</span>.
+                                </p>
+                            </div>
+
+                            {/* Reward Tiers */}
+                            <div className="space-y-3">
+                                {/* Tier 1 */}
+                                <div className="bg-gray-900 p-4 rounded-xl border border-gray-800">
+                                    <div className="flex items-center gap-4">
+                                        <div className="text-3xl">💰</div>
+                                        <div className="flex-1">
+                                            {/* <div className="flex items-baseline gap-2 mb-1">
+                                                <span className="text-blue-400 font-bold text-xl">$0.068</span>
+                                            </div> */}
+                                            <p className="text-gray-300 text-sm">
+                                                when your friend uses your invite code
+                                            </p>
+                                        </div>
+                                    </div>
                                 </div>
-                            ))}
+
+                                {/* Tier 2 */}
+                                <div className="bg-gray-900 p-4 rounded-xl border border-gray-800">
+                                    <div className="flex items-center gap-4">
+                                        <div className="text-3xl">💰</div>
+                                        <div className="flex-1">
+                                            {/* <div className="flex items-baseline gap-2 mb-1">
+                                                <span className="text-blue-400 font-bold text-xl">$0.40</span>
+                                            </div> */}
+                                            <p className="text-gray-300 text-sm">
+                                                when your friend explores mmeko for 7 days
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Bonus Tier: 7-Day Challenge */}
+                                {/* <div className="bg-gradient-to-r from-yellow-900/30 to-orange-900/30 p-4 rounded-xl border-2 border-yellow-600/50">
+                                    <div className="flex items-center gap-4">
+                                        <div className="text-3xl">🎁</div>
+                                        <div className="flex-1">
+                                            <div className="flex items-baseline gap-2 mb-2">
+                                                <span className="text-yellow-400 font-bold text-xl">💰25 GOLD</span>
+                                                <span className="px-2 py-0.5 bg-yellow-600 text-white text-xs rounded-full font-bold">BONUS</span>
+                                            </div>
+                                            <p className="text-gray-200 text-sm font-medium">
+                                                when your friend spends <span className="text-yellow-300 font-bold">120 minutes daily</span> for <span className="text-yellow-300 font-bold">7 consecutive days</span>
+                                            </p>
+                                            <p className="text-gray-400 text-xs mt-1">
+                                                ⏱️ 2 hours/day × 7 days = 25 gold reward!
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div> */}
+                            </div>
                         </div>
                     )}
                 </div>
@@ -377,22 +430,102 @@ export default function ReferAndEarnPage() {
                 {/* Optional: Referral List */}
                 {referralData && referralData.referrals.length > 0 && (
                     <div className="w-full mt-12">
-                        <h3 className="text-lg font-bold text-gray-400 mb-4">Recent Referrals</h3>
-                        <div className="space-y-2">
-                            {(showAll ? referralData.referrals : referralData.referrals.slice(0, 1)).map((referral) => (
-                                <div key={referral.id} className="bg-gray-900 p-3 rounded-lg flex justify-between items-center text-sm">
-                                    <span className="text-gray-300">{referral.username}</span>
-                                    <span className="text-green-400">Completed</span>
-                                </div>
-                            ))}
+                        <div className="flex justify-between items-center mb-4">
+                            <h3 className="text-lg font-bold text-gray-400">Recent Referrals</h3>
+                            <button
+                                onClick={fetchReferralInfo}
+                                disabled={isRefreshing}
+                                className="flex items-center gap-2 text-sm text-blue-400 hover:text-blue-300 transition-colors"
+                            >
+                                <FaSync className={isRefreshing ? "animate-spin" : ""} />
+                                Refresh Status
+                            </button>
                         </div>
 
-                        {referralData.referrals.length > 1 && (
+                        <div className="space-y-3">
+                            {(showAll ? referralData.referrals : referralData.referrals.slice(0, 3)).map((referral) => {
+                                const progress = referral.progress;
+                                const isCompleted = referral.milestoneCompleted || progress?.milestoneCompleted;
+                                const isFailed = referral.milestoneFailed || progress?.milestoneFailed;
+
+                                return (
+                                    <div key={referral.id} className="bg-gray-900 p-4 rounded-xl border border-gray-800">
+                                        <div className="flex justify-between items-start mb-2">
+                                            <div>
+                                                <span className="text-white font-medium block">{referral.username}</span>
+                                                <span className="text-xs text-gray-500">Joined {new Date(referral.joinedAt).toLocaleDateString()}</span>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                {isCompleted ? (
+                                                    <span className="text-green-400 text-xs font-bold bg-green-900/30 px-2 py-1 rounded-full">
+                                                        Challenge Completed
+                                                    </span>
+                                                ) : isFailed ? (
+                                                    <span className="text-red-400 text-xs font-bold bg-red-900/30 px-2 py-1 rounded-full">
+                                                        Challenge Ended
+                                                    </span>
+                                                ) : (
+                                                    <span className="text-blue-400 text-xs font-bold bg-blue-900/30 px-2 py-1 rounded-full">
+                                                        In Progress
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        {/* Progress Section */}
+                                        {!isCompleted && !isFailed && progress && (
+                                            <div className="mt-3 bg-gray-800 rounded-lg p-3">
+                                                <div className="flex justify-between items-center mb-2">
+                                                    <span className="text-xs text-gray-400">Challenge Progress</span>
+                                                    <span className="text-xs text-yellow-400 font-bold">
+                                                        Day {progress.currentDayNumber || 1}/7
+                                                    </span>
+                                                </div>
+
+                                                <div className="grid grid-cols-2 gap-2 mb-3">
+                                                    <div className="bg-gray-700/50 p-2 rounded">
+                                                        <p className="text-[10px] text-gray-400">Days Completed</p>
+                                                        <p className="text-sm font-bold text-white">{progress.consecutiveDays}/7</p>
+                                                    </div>
+                                                    <div className="bg-gray-700/50 p-2 rounded">
+                                                        <p className="text-[10px] text-gray-400">Total Time</p>
+                                                        <p className="text-sm font-bold text-white">{progress.totalMinutesSpent || 0} mins</p>
+                                                    </div>
+                                                </div>
+
+                                                {progress.todayProgress ? (
+                                                    <div className="mt-2 border-t border-gray-700 pt-2">
+                                                        <div className="flex justify-between text-xs mb-1">
+                                                            <span className="text-gray-400">Today's Activity</span>
+                                                            <span className={progress.todayProgress.completed ? "text-green-400" : "text-blue-400"}>
+                                                                {progress.todayProgress.minutes}/120 mins
+                                                            </span>
+                                                        </div>
+                                                        <div className="w-full bg-gray-700 rounded-full h-1.5">
+                                                            <div
+                                                                className={`h-1.5 rounded-full transition-all duration-500 ${progress.todayProgress.completed ? "bg-green-500" : "bg-blue-500"}`}
+                                                                style={{ width: `${Math.min(100, (progress.todayProgress.minutes / 120) * 100)}%` }}
+                                                            ></div>
+                                                        </div>
+                                                    </div>
+                                                ) : (
+                                                    <p className="text-xs text-gray-500 mt-2">
+                                                        No activity recorded today yet.
+                                                    </p>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            })}
+                        </div>
+
+                        {referralData.referrals.length > 3 && (
                             <button
                                 onClick={() => setShowAll(!showAll)}
-                                className="w-full flex items-center justify-center mt-4 text-gray-500 hover:text-white transition-colors"
+                                className="w-full flex items-center justify-center mt-4 text-gray-500 hover:text-white transition-colors py-2"
                             >
-                                {showAll ? <FaChevronUp /> : <FaChevronDown />}
+                                {showAll ? <span className="flex items-center gap-2">Show Less <FaChevronUp /></span> : <span className="flex items-center gap-2">Show More <FaChevronDown /></span>}
                             </button>
                         )}
                     </div>
@@ -402,7 +535,7 @@ export default function ReferAndEarnPage() {
 
             {/* Transfer Confirmation Modal */}
             {showTransferModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-80 z-50 flex items-center justify-center p-4">
+                <div className="fixed inset-0 bg-gray-900 bg-opacity-80 z-50 flex items-center justify-center p-4">
                     <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 max-w-sm w-full shadow-2xl">
                         <h3 className="text-xl font-bold text-white mb-2">Confirm Transfer</h3>
                         <p className="text-gray-400 mb-6">
