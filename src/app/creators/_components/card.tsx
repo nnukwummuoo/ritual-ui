@@ -214,7 +214,7 @@ export const CreatorCard = ({
       {/* New Badge */}
       {isNew && (
         <div className="absolute top-0 right-0 m-2">
-          <span className="inline-flex items-center px-2.5 py-1.5 text-sm font-bold text-white bg-gradient-to-br from-blue-500 to-purple-600 shadow-2xl rounded-full">
+          <span className="inline-flex items-center px-1 py-0.5 text-xs font-semibold text-white bg-gradient-to-br from-blue-500 to-purple-600 shadow-2xl rounded-md">
             New
           </span>
         </div>

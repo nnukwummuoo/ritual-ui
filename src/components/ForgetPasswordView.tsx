@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import React, { useState } from "react";
-import { toast, ToastContainer } from "material-react-toastify";
+import { toast, ToastContainer } from "react-toastify";
 import Input from "./Input";
 import { forgetpass } from "@/lib/service/forgetpassword";
 import toastError from "./ToastError";

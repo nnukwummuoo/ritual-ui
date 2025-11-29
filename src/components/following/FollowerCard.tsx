@@ -7,7 +7,7 @@ import { follow, unfollow, getfollow } from "@/store/profile";
 import { checkVipStatus } from "@/store/vip";
 import { getSocket } from "@/lib/socket";
 import VIPBadge from "@/components/VIPBadge";
-import { toast } from "material-react-toastify";
+import { toast } from "react-toastify";
 import { getImageSource } from "@/lib/imageUtils";
 import { BadgeCheck } from "lucide-react";
 

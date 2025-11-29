@@ -12,7 +12,7 @@ import VIPBadge from "@/components/VIPBadge";
 import { URL as API_BASE } from "@/api/config";
 const PROD_BASE = process.env.NEXT_PUBLIC_API || "";
 import PostActions from "./PostActions";
-import { toast } from "material-react-toastify";
+import { toast } from "react-toastify";
 import Image from "next/image";
 import { getImageSource } from "@/lib/imageUtils";
 import { useVideoAutoPlay } from "@/hooks/useVideoAutoPlayNew";
@@ -171,6 +171,16 @@ const FirstPost: React.FC<FirstPostProps> = ({
 
   // State for animation - always true since FirstPost is always visible
   const [isInView] = React.useState(true);
+  const [shouldAnimate, setShouldAnimate] = React.useState(false);
+
+  // Wait 4 seconds after component mounts before starting animation
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      setShouldAnimate(true);
+    }, 4000); // 4 second delay
+
+    return () => clearTimeout(timer);
+  }, []);
 
   // State and ref for auto-hiding video controls
   const [showControls, setShowControls] = React.useState(false);
@@ -416,7 +426,7 @@ const FirstPost: React.FC<FirstPostProps> = ({
             <div className="flex items-end gap-1">
               <button
                 onClick={() => router.push(`/creators/${post?.user?.creator_portfolio_id}`)}
-                className={`text-white px-2 bg-gradient-to-r from-orange-500 to-red-600 cursor-pointer text-sm py-1 rounded ${isInView ? 'animate-wiggle-periodic' : ''}`}>
+                className={`text-white px-2 bg-gradient-to-r from-orange-500 to-red-600 cursor-pointer text-sm py-1 rounded ${shouldAnimate ? 'animate-wiggle-periodic' : ''}`}>
                 {post?.user?.hosttype}
               </button>
             </div>)}

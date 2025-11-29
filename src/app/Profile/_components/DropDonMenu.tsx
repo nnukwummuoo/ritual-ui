@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/store/store";
-import { toast } from "material-react-toastify";
+import { toast } from "react-toastify";
 import { URL as API_URL } from "@/api/config";
 import axios from "axios";
 // import { useCall } from "../../views/messageview/context";

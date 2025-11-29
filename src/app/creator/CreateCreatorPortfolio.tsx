@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import PacmanLoader from "react-spinners/PacmanLoader";
 import { useRouter } from "next/navigation";
-import { toast, ToastContainer } from "material-react-toastify";
+import { toast, ToastContainer } from "react-toastify";
 import CountrySelect from "@/components/CountrySelect/CountrySelect";
 import "material-react-toastify/dist/ReactToastify.css";
 import "@/styles/CreateCreatorPortfolio.css";

@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback, useRef, JSX } from "react";
 import searchIcon from "@/icons/searchicon.svg";
 import sendIcon from "@/icons/emailsendIcon.svg";
 import PacmanLoader from "react-spinners/RingLoader";
-import { ToastContainer, toast } from "material-react-toastify";
+import { ToastContainer, toast } from "react-toastify";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "@/store/store";
 import { getalluser } from "@/store/admin";
@@ -53,6 +53,10 @@ interface User {
   ipAddress?: string;
   requestsMadeCount?: number;
   requestsReceivedCount?: number;
+  referralCode?: string;
+  referredBy?: string;
+  referralCount?: number;
+  rewardBalance?: number;
 }
 
 
@@ -155,6 +159,8 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, isOpen, onClose
   const [selectedImage, setSelectedImage] = useState("");
   const [userRequests, setUserRequests] = useState<any[]>([]);
   const [loadingRequests, setLoadingRequests] = useState(false);
+  const [isEditingReferral, setIsEditingReferral] = useState(false);
+  const [editedRewardBalance, setEditedRewardBalance] = useState(0);
   const token = useSelector((s: RootState) => s.register.refreshtoken);
 
   const fetchUserFollows = async (userId: string) => {
@@ -1236,6 +1242,10 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, isOpen, onClose
               {(() => {
                 const total = userRequests.length;
 
+                // Requests Sent and Received
+                const requestsSent = userRequests.filter(r => r.type === 'fan').length;
+                const requestsReceived = userRequests.filter(r => r.type === 'creator').length;
+
                 // Overall Status Counts
                 const accepted = userRequests.filter(r => r.status === 'accepted').length;
                 const declined = userRequests.filter(r => r.status === 'declined').length;
@@ -1251,6 +1261,23 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, isOpen, onClose
                     <div className="flex justify-between items-center bg-gray-700 p-3 rounded-lg">
                       <span className="text-gray-300 font-medium">Total Requests</span>
                       <span className="text-yellow-400 font-bold text-xl">{total}</span>
+                    </div>
+
+                    {/* Requests Sent/Received Breakdown */}
+                    <div className="bg-gray-700 p-3 rounded-lg">
+                      <p className="text-gray-400 text-xs uppercase tracking-wider mb-3">Activity Breakdown</p>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="bg-gray-800 p-2 rounded text-center">
+                          <span className="block text-blue-400 font-bold text-lg">{requestsSent}</span>
+                          <span className="text-gray-400 text-xs">Requests Sent</span>
+                          <span className="block text-gray-500 text-xs mt-1">(As Fan)</span>
+                        </div>
+                        <div className="bg-gray-800 p-2 rounded text-center">
+                          <span className="block text-purple-400 font-bold text-lg">{requestsReceived}</span>
+                          <span className="text-gray-400 text-xs">Requests Received</span>
+                          <span className="block text-gray-500 text-xs mt-1">(As Creator)</span>
+                        </div>
+                      </div>
                     </div>
 
                     {/* Overall Status Breakdown */}
@@ -1293,6 +1320,103 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, isOpen, onClose
                   </div>
                 );
               })()}
+            </div>
+
+            {/* Referral Earnings */}
+            <div className="bg-gray-800 p-4 rounded-lg">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-semibold text-yellow-500">Referral Earnings</h3>
+                {!isEditingReferral ? (
+                  <button
+                    onClick={() => {
+                      setIsEditingReferral(true);
+                      setEditedRewardBalance(user?.rewardBalance || 0);
+                    }}
+                    className="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600"
+                  >
+                    Edit
+                  </button>
+                ) : (
+                  <div className="flex gap-2">
+                    <button
+                      onClick={async () => {
+                        try {
+                          await onUpdateUser(user._id, { rewardBalance: editedRewardBalance });
+                          setIsEditingReferral(false);
+                          toast.success("Reward balance updated successfully");
+                        } catch {
+                          toast.error("Failed to update reward balance");
+                        }
+                      }}
+                      className="bg-green-500 text-white px-3 py-1 rounded text-sm hover:bg-green-600"
+                    >
+                      Save
+                    </button>
+                    <button
+                      onClick={() => {
+                        setIsEditingReferral(false);
+                        setEditedRewardBalance(user?.rewardBalance || 0);
+                      }}
+                      className="bg-gray-500 text-white px-3 py-1 rounded text-sm hover:bg-gray-600"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              <div className="space-y-4">
+                {/* Total Referrals */}
+                <div className="flex justify-between items-center bg-gray-700 p-3 rounded-lg">
+                  <span className="text-gray-300 font-medium">Total Referrals</span>
+                  <span className="text-yellow-400 font-bold text-xl">{user?.referralCount || 0}</span>
+                </div>
+
+                {/* Total Earnings Calculation */}
+                <div className="bg-gray-700 p-3 rounded-lg">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-gray-300 font-medium">Total Earnings</span>
+                    <span className="text-green-400 font-bold text-xl">
+                      {((user?.referralCount || 0) * 1.7).toFixed(2)} Gold
+                    </span>
+                  </div>
+                  <p className="text-gray-500 text-xs">
+                    Calculated as: {user?.referralCount || 0} referrals × 1.7 gold
+                  </p>
+                </div>
+
+                {/* Current Reward Balance */}
+                <div className="bg-gray-700 p-3 rounded-lg">
+                  <label className="text-gray-300 text-sm font-medium block mb-2">
+                    Current Reward Balance
+                  </label>
+                  {isEditingReferral ? (
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={editedRewardBalance}
+                      onChange={(e) => setEditedRewardBalance(parseFloat(e.target.value) || 0)}
+                      className="w-full bg-gray-800 text-white p-2 rounded border border-gray-600 focus:border-yellow-500 focus:outline-none"
+                      placeholder="Enter reward balance"
+                    />
+                  ) : (
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-400">Balance:</span>
+                      <span className="text-yellow-400 font-bold text-lg">
+                        {(user?.rewardBalance || 0).toFixed(2)} Gold
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Info Box */}
+                <div className="bg-blue-900/20 border border-blue-500/30 rounded-lg p-3">
+                  <p className="text-blue-300 text-xs">
+                    <strong>Note:</strong> Users earn 1.7 gold for each successful referral.
+                    The reward balance can be transferred to their main earning wallet.
+                  </p>
+                </div>
+              </div>
             </div>
 
             {/* Followers, Following, Posts, and Portfolio */}

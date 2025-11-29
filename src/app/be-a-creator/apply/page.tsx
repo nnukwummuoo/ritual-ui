@@ -14,7 +14,7 @@ import { formVerificationConstants } from "@/constants/formVerificationConstants
 import HeaderBackNav from "@/navs/HeaderBackNav";
 import { useRouter } from "next/navigation";
 import { RootState, AppDispatch } from "@/store/store";
-import { toast, ToastContainer } from "material-react-toastify";
+import { toast, ToastContainer } from "react-toastify";
 import { checkApplicationStatus } from "@/store/profile";
 import { useAuth } from "@/lib/context/auth-context";
 import { useAuthToken } from "@/lib/hooks/useAuthToken";

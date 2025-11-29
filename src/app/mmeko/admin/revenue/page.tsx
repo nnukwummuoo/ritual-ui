@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, useMemo } from "react";
-import { toast } from "material-react-toastify";
+import { toast } from "react-toastify";
 import { URL } from "@/api/config";
 import { useAuthToken } from "@/lib/hooks/useAuthToken";
 import { golds } from "@/data/intresttypes";

@@ -12,7 +12,7 @@ import VIPBadge from "@/components/VIPBadge";
 import { URL as API_BASE } from "@/api/config";
 const PROD_BASE = process.env.NEXT_PUBLIC_API || "";
 import PostActions from "./PostActions";
-import { toast } from "material-react-toastify";
+import { toast } from "react-toastify";
 import Image from "next/image";
 import { getImageSource } from "@/lib/imageUtils";
 import { useVideoAutoPlay } from "@/hooks/useVideoAutoPlayNew";
