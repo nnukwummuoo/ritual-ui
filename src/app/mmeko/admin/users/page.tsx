@@ -991,10 +991,24 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, isOpen, onClose
                   )}
                 </div> */}
                 <div className="flex items-center gap-2">
-                  <label className="text-gray-300 text-sm">Admin:</label>
-                  <span className={`px-2 py-1 rounded text-xs ${user.admin ? "bg-purple-500" : "bg-gray-500"}`}>
-                    {user.admin ? "Admin" : "User"}
-                  </span>
+                  <label className="text-gray-300 text-sm">Admin Role:</label>
+                  {isEditing ? (
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="checkbox"
+                        checked={editedUser.admin || false}
+                        onChange={(e) => setEditedUser({ ...editedUser, admin: e.target.checked })}
+                        className="w-4 h-4"
+                      />
+                      <span className="text-gray-400 text-xs">
+                        {editedUser.admin ? "Grant admin privileges" : "Revoke admin privileges"}
+                      </span>
+                    </div>
+                  ) : (
+                    <span className={`px-2 py-1 rounded text-xs ${user.admin ? "bg-purple-500" : "bg-gray-500"}`}>
+                      {user.admin ? "Admin" : "User"}
+                    </span>
+                  )}
                 </div>
                 <div className="flex items-center gap-2">
                   <label className="text-gray-300 text-sm">Creator Verified:</label>
@@ -2065,6 +2079,7 @@ export default function Users(): JSX.Element {
   const [activeTab, setActiveTab] = useState<"users" | "notifications">("users");
   const [male_click, setmale_click] = useState(false);
   const [female_click, setfemale_click] = useState(false);
+  const [admin_click, setadmin_click] = useState(false);
   const [showall_click, setshowall_click] = useState(false);
   const [alluser_list, setalluser_list] = useState<User[]>([]);
   const [user_list, setuser_list] = useState<User[]>([]);
@@ -2959,7 +2974,7 @@ export default function Users(): JSX.Element {
             {/* Gender Filter */}
             <div className="flex items-center flex-wrap gap-3 ">
               <label className="text-white mr-2 text-sm font-bold">
-                Filter by Gender:
+                Filter Users:
               </label>
               <div className="flex items-center gap-2">
                 <label className="text-white text-xs mt-1 font-bold">
@@ -2974,6 +2989,7 @@ export default function Users(): JSX.Element {
                     if (!e.target.checked) return;
                     setfemale_click(false);
                     setmale_click(true);
+                    setadmin_click(false);
                     setshowall_click(false);
                     const filtered = user_list.filter(
                       (v) => v.gender.toLowerCase().trim() === "male"
@@ -2994,11 +3010,33 @@ export default function Users(): JSX.Element {
                     if (!e.target.checked) return;
                     setmale_click(false);
                     setfemale_click(true);
+                    setadmin_click(false);
                     setshowall_click(false);
                     const filtered = user_list.filter(
                       (v) => v.gender.toLowerCase().trim() === "female"
                     );
                     setalluser_list(filtered.length ? filtered : user_list);
+                    setCurrentPage(1); // Reset to first page when filtering
+                  }}
+                />
+                <label className="text-white text-xs ml-2 mt-1 font-bold">
+                  Admin
+                </label>
+                <input
+                  type="radio"
+                  className="mt-1 ml-1"
+                  checked={admin_click}
+                  name="genderFilter"
+                  onChange={(e) => {
+                    if (!e.target.checked) return;
+                    setmale_click(false);
+                    setfemale_click(false);
+                    setadmin_click(true);
+                    setshowall_click(false);
+                    const filtered = user_list.filter(
+                      (v) => v.admin === true
+                    );
+                    setalluser_list(filtered.length ? filtered : []);
                     setCurrentPage(1); // Reset to first page when filtering
                   }}
                 />
@@ -3014,6 +3052,7 @@ export default function Users(): JSX.Element {
                     if (!e.target.checked) return;
                     setmale_click(false);
                     setfemale_click(false);
+                    setadmin_click(false);
                     setshowall_click(true);
                     setalluser_list(user_list);
                     setCurrentPage(1); // Reset to first page when showing all
