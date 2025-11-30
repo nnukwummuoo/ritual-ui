@@ -1215,71 +1215,70 @@ export default function CreatorPage() {
 
 
 
-const renderCreators = () => {
-  if (loading) {
-    return (
-      <SkeletonTheme baseColor="#202020" highlightColor="#444">
-        <div className="w-full p-4 space-y-4">
-          <div className="grid grid-cols-2 gap-2 mt-4 mb-12 md:grid-cols-3">
-            {Array(8)
-              .fill(0)
-              .map((_, index) => (
-                <div
-                  key={index}
-                  className="relative overflow-hidden rounded"
-                >
-                  <Skeleton
-                    width="100%"
-                    height={256}
-                    className="rounded h-64 sm:h-80 md:h-96"
-                  />
-                  <div className="absolute bottom-1 left-1 space-y-1">
-                    <Skeleton width={60} height={20} className="rounded-lg" />
-                    <Skeleton width={80} height={20} className="rounded-lg" />
-                    <Skeleton width={50} height={20} className="rounded-lg" />
+  const renderCreators = () => {
+    if (loading) {
+      return (
+        <SkeletonTheme baseColor="#202020" highlightColor="#444">
+          <div className="w-full p-4 space-y-4">
+            <div className="grid grid-cols-2 gap-2 mt-4 mb-12 md:grid-cols-3">
+              {Array(8)
+                .fill(0)
+                .map((_, index) => (
+                  <div
+                    key={index}
+                    className="relative overflow-hidden rounded"
+                  >
+                    <Skeleton
+                      width="100%"
+                      height={256}
+                      className="rounded h-64 sm:h-80 md:h-96"
+                    />
+                    <div className="absolute bottom-1 left-1 space-y-1">
+                      <Skeleton width={60} height={20} className="rounded-lg" />
+                      <Skeleton width={80} height={20} className="rounded-lg" />
+                      <Skeleton width={50} height={20} className="rounded-lg" />
+                    </div>
                   </div>
-                </div>
-              ))}
-          </div>
-        </div>
-      </SkeletonTheme>
-    );
-  }
-
-  if (!list.length) {
-    return (
-      <div className="mt-6 text-sm text-slate-400">
-        {user?.session?._id ? "No portfolio yet." : "No creators found."}
-      </div>
-    );
-  }
-
-  if (!sortedList.length && list.length > 0) {
-    return (
-      <div className="mt-6 text-sm text-slate-400">
-        No creators found for {categoryButton !== "All" ? `"${categoryButton}" category` : ""} {regionFilter && regionFilter !== "All" ? `in "${regionFilter}" region` : ""}.
-      </div>
-    );
-  }
-
-  return (
-    <ul className="grid grid-cols-2 gap-2 mt-4 mb-12 md:grid-cols-3">
-      {/* CRITICAL FIX: Use paginatedList instead of sortedList */}
-      {paginatedList.map((value: CreatorCardProps) => (
-        <li key={value.creator_portfolio_id || Math.random().toString(36)} className="relative">
-          <CreatorCard {...value} />
-          {/* VIP Badge - positioned at page level on top of verified creators */}
-          {value.isVip && (
-            <div className="absolute -top-1 left-20 ">
-              <VIPBadge size="xxl" isVip={value.isVip} vipEndDate={value.vipEndDate} />
+                ))}
             </div>
-          )}
-        </li>
-      ))}
-    </ul>
-  );
-};
+          </div>
+        </SkeletonTheme>
+      );
+    }
 
+    if (!list.length) {
+      return (
+        <div className="mt-6 text-sm text-slate-400">
+          {user?.session?._id ? "No portfolio yet." : "No creators found."}
+        </div>
+      );
+    }
+
+    if (!sortedList.length && list.length > 0) {
+      return (
+        <div className="mt-6 text-sm text-slate-400">
+          No creators found for {categoryButton !== "All" ? `"${categoryButton}" category` : ""} {regionFilter && regionFilter !== "All" ? `in "${regionFilter}" region` : ""}.
+        </div>
+      );
+    }
+
+    return (
+      <ul className="grid grid-cols-2 gap-2 mt-4 mb-12 md:grid-cols-3">
+        {/* CRITICAL FIX: Use paginatedList instead of sortedList */}
+        {paginatedList.map((value: CreatorCardProps) => (
+          <li key={value.creator_portfolio_id || Math.random().toString(36)} className="relative">
+            <CreatorCard {...value} />
+            {/* VIP Badge - positioned at page level on top of verified creators */}
+            {value.isVip && (
+              <div className="absolute -top-1 left-20 ">
+                <VIPBadge size="xxl" isVip={value.isVip} vipEndDate={value.vipEndDate} />
+              </div>
+            )}
+          </li>
+        ))}
+      </ul>
+    );
+  };
 
 
 
@@ -1315,17 +1314,17 @@ const renderCreators = () => {
         />
 
         <div className="pb-11">
-  {renderCreators()}
-  
-  {/* Pagination Controls */}
-  {!loading && sortedList.length > 0 && (
-    <Pagination
-      currentPage={currentPage}
-      totalPages={totalPages}
-      onPageChange={(page) => setCurrentPage(page)}
-    />
-  )}
-</div>
+          {renderCreators()}
+
+          {/* Pagination Controls */}
+          {!loading && sortedList.length > 0 && (
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={(page) => setCurrentPage(page)}
+            />
+          )}
+        </div>
       </div>
 
       {/* Filter Modal */}
@@ -1337,6 +1336,7 @@ const renderCreators = () => {
         totalCreators={myCreators.length}
         filteredCount={filteredList.length}
         initialFilters={filterState}
+        creators={myCreators}
       />
 
       <Modal

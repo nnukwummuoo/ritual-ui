@@ -8,7 +8,7 @@ import { getNotifications, markNotificationsSeen } from "@/store/profile";
 import { RootState, AppDispatch } from "@/store/store";
 import { useAuth } from "@/lib/context/auth-context";
 import PacmanLoader from "react-spinners/RingLoader";
-import { CheckCircle, XCircle, Clock, Star, Phone, Heart, Handshake, MessageCircle, Shield, ShoppingCart   } from "lucide-react";
+import { CheckCircle, XCircle, Clock, Star, Phone, Heart, Handshake, MessageCircle, Shield, ShoppingCart,Wallet } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { useNotificationIndicator } from "@/hooks/useNotificationIndicator";
@@ -18,7 +18,7 @@ const formatRelativeTime = (timestamp: string | number | Date): string => {
   try {
     const now = new Date();
     let time: Date;
-    
+
     // Handle different timestamp formats
     if (typeof timestamp === 'number') {
       // If it's a number, check if it's in seconds or milliseconds
@@ -36,7 +36,7 @@ const formatRelativeTime = (timestamp: string | number | Date): string => {
     } else {
       time = new Date(timestamp);
     }
-    
+
     // Check if the date is valid
     if (isNaN(time.getTime())) {
       // Try alternative parsing methods for invalid timestamps
@@ -62,16 +62,16 @@ const formatRelativeTime = (timestamp: string | number | Date): string => {
       } else {
         return 'recently'; // Fallback for other types
       }
-      
+
       // Final check after alternative parsing
       if (isNaN(time.getTime())) {
         return 'recently';
       }
     }
-    
+
     // Check if the timestamp is in the future (more than 1 hour ahead)
     const diffInSeconds = Math.floor((now.getTime() - time.getTime()) / 1000);
-    
+
     // If the timestamp is in the future, show a different message
     if (diffInSeconds < 0) {
       const futureDiff = Math.abs(diffInSeconds);
@@ -129,10 +129,10 @@ export const Allview = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { session } = useAuth();
   const token = session?.token;
-  
+
   // Get user ID from localStorage
   const [userID, setUserID] = useState<string>('');
-  
+
   useEffect(() => {
     const userData = localStorage.getItem('user');
     if (userData) {
@@ -145,7 +145,7 @@ export const Allview = () => {
     (state: RootState) => state.profile
   );
   const userId = useSelector((state: RootState) => state.profile.userId);
-  
+
   // Get notification indicator data
   const { hasUnread, unreadCount, totalCount } = useNotificationIndicator();
 
@@ -210,7 +210,7 @@ export const Allview = () => {
           </div>
         </div>
       </div>
-      
+
       {notifications.map((note: any) => {
         const message = note.message.toLowerCase();
 
@@ -237,37 +237,35 @@ export const Allview = () => {
         } else if (message.includes("message")) {
           title = "Message Notification";
         }
-         else if (message.includes("purchased")) {
+        else if (message.includes("purchased")) {
           title = "Purchase Notification";
         }
         // } else if (message.includes("request") || message.includes("request")) {
         //   title = "Request Notification";
         // }
-         else if (message.includes("missed") && message.includes("call")) {
+        else if (message.includes("missed") && message.includes("call")) {
           title = "Missed Fan Call";
         } else if (message.includes("fan meet")) {
           title = "Fan Meet Request";
-         }
-        //  else if (message.includes("accept") || message.includes("decline") || message.includes("cancel") || message.includes("complete")) {
-        //   title = "Activity Update";
-        // }
+        }
         else if (message.includes("fan date")) {
           title = "Fan Date Request";
-        }else if (message.includes("fan call") || message.includes("Fan Call")) {
+        } else if (message.includes("fan call") || message.includes("Fan Call")) {
           title = "Fan Call Request";
         } else if (message.includes("rating") || message.includes("star")) {
           title = "Rating Notification";
+        } else if (message.includes("rating") || message.includes("withdrawal")) {
+          title = "Withdrawal Notification";
         }
 
         return (
           <div
             key={note._id}
             className={`relative bg-[#0B0F1A]/70 backdrop-blur-xl border shadow-lg 
-                       rounded-2xl p-6 w-full max-w-md text-white transition hover:border-slate-700 ${
-                         !note.seen 
-                           ? 'border-blue-500 bg-blue-500/5' 
-                           : 'border-slate-800'
-                       }`}
+                       rounded-2xl p-6 w-full max-w-md text-white transition hover:border-slate-700 ${!note.seen
+                ? 'border-blue-500 bg-blue-500/5'
+                : 'border-slate-800'
+              }`}
           >
             {/* Unread indicator */}
             {!note.seen && (
@@ -321,17 +319,17 @@ export const Allview = () => {
                     <Image src="/icons/following.png" alt="Users" width={28} height={28} />
                   </div>
                 )}
-                {title !== "Admin Notification" && title !== "Rating Notification" && title !== "Missed Fan Call" && title !== "Fan Date Request" && title !== "Fan Meet Request" && title !== "Fan Call Request" && title !== "Like Notification" && title !== "Message Notification" && title !== "Follow Notification" && title !== "Unfollow Notification" && title !== "Purchase Notification" && status === "approved" && (
+                {title !== "Admin Notification" && title !== "Rating Notification" && title !== "Missed Fan Call" && title !== "Fan Date Request" && title !== "Fan Meet Request" && title !== "Fan Call Request" && title !== "Like Notification" && title !== "Message Notification" && title !== "Follow Notification" && title !== "Unfollow Notification" && title !== "Purchase Notification" && title !== "Withdrawal Notification" && status === "approved" && (
                   <div className="bg-green-500/10 p-1 rounded-full">
                     <CheckCircle className="text-green-500 w-5 h-5" />
                   </div>
                 )}
-                {title !== "Admin Notification" && title !== "Rating Notification" && title !== "Missed Fan Call" && title !== "Fan Date Request" && title !== "Fan Meet Request" && title !== "Fan Call Request" && title !== "Like Notification" && title !== "Message Notification" && title !== "Follow Notification" && title !== "Unfollow Notification" && status === "rejected" && (
+                {title !== "Admin Notification" && title !== "Rating Notification" && title !== "Missed Fan Call" && title !== "Fan Date Request" && title !== "Fan Meet Request" && title !== "Fan Call Request" && title !== "Like Notification" && title !== "Message Notification" && title !== "Follow Notification" && title !== "Unfollow Notification" && title !== "Purchase Notification" && title !== "Withdrawal Notification" && status === "rejected" && (
                   <div className="bg-red-500/10 p-1 rounded-full">
                     <XCircle className="text-red-500 w-5 h-5" />
                   </div>
                 )}
-                {title !== "Admin Notification" && title !== "Rating Notification" && title !== "Missed Fan Call" && title !== "Fan Date Request" && title !== "Fan Meet Request" && title !== "Fan Call Request" && title !== "Like Notification" && title !== "Message Notification" && title !== "Follow Notification" && title !== "Unfollow Notification" && title !== "Purchase Notification" && status === "pending" && (
+                {title !== "Admin Notification" && title !== "Rating Notification" && title !== "Missed Fan Call" && title !== "Fan Date Request" && title !== "Fan Meet Request" && title !== "Fan Call Request" && title !== "Like Notification" && title !== "Message Notification" && title !== "Follow Notification" && title !== "Unfollow Notification" && title !== "Purchase Notification" && title !== "Withdrawal Notification" && status === "pending" && (
                   <div className="bg-yellow-500/10 p-1 rounded-full">
                     <Clock className="text-yellow-500 w-5 h-5" />
                   </div>
@@ -339,6 +337,11 @@ export const Allview = () => {
                 {title === "Purchase Notification" && (
                   <div className="bg-green-500/10 p-1 rounded-full">
                     <ShoppingCart className="text-green-500 w-5 h-5" />
+                  </div>
+                )}
+                {title === "Withdrawal Notification" && (
+                  <div className="bg-green-500/10 p-1 rounded-full">
+                    <Wallet className="text-green-500 w-5 h-5" />
                   </div>
                 )}
                 <h2 className="text-base sm:text-lg font-semibold">
@@ -366,12 +369,12 @@ export const Allview = () => {
 
               {status === "rejected" && (
                 <div className="pt-2">
-                  <Link href="/be-a-creator/"> 
-                  <button
-                    className="px-4 py-2 border border-slate-700 hover:border-slate-500 
+                  <Link href="/be-a-creator/">
+                    <button
+                      className="px-4 py-2 border border-slate-700 hover:border-slate-500 
                               rounded-lg text-sm text-slate-200 transition">
-                    Reapply Later
-                  </button>
+                      Reapply Later
+                    </button>
                   </Link>
                 </div>
               )}

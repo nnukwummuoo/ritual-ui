@@ -11,6 +11,7 @@ interface FilterModalProps {
   totalCreators: number;
   filteredCount: number;
   initialFilters?: FilterState;
+  creators?: any[];
 }
 
 export interface FilterState {
@@ -30,12 +31,16 @@ const FilterModal: React.FC<FilterModalProps> = ({
   totalCreators,
   filteredCount,
   initialFilters,
+  creators = [],
 }) => {
   const [sortBy, setSortBy] = useState(initialFilters?.sortBy || "");
   const [gender, setGender] = useState<string | null>(initialFilters?.gender || null);
   const [region, setRegion] = useState<string | null>(initialFilters?.region || null);
   const [ageMin, setAgeMin] = useState<number | null>(initialFilters?.ageMin || null);
   const [ageMax, setAgeMax] = useState<number | null>(initialFilters?.ageMax || null);
+  const [searchQuery, setSearchQuery] = useState(initialFilters?.searchQuery || "");
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
   // Collapsible sections state
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
@@ -43,6 +48,7 @@ const FilterModal: React.FC<FilterModalProps> = ({
     gender: true,
     age: false,
     region: false,
+    search: true,
   });
 
   const toggleSection = (section: string) => {
@@ -58,6 +64,8 @@ const FilterModal: React.FC<FilterModalProps> = ({
     setRegion(null);
     setAgeMin(null);
     setAgeMax(null);
+    setSearchQuery("");
+    setSuggestions([]);
     onClear();
   };
 
@@ -68,9 +76,31 @@ const FilterModal: React.FC<FilterModalProps> = ({
       region,
       ageMin,
       ageMax,
-      searchQuery: "", // Keep for compatibility but always empty
+      searchQuery,
     });
     onClose();
+  };
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const query = e.target.value;
+    setSearchQuery(query);
+
+    if (query.length > 0) {
+      const filtered = creators
+        .map((c) => c.name || c.fullName || "")
+        .filter((name) => name.toLowerCase().includes(query.toLowerCase()))
+        .slice(0, 5); // Limit to 5 suggestions
+      setSuggestions(Array.from(new Set(filtered))); // Remove duplicates
+      setShowSuggestions(true);
+    } else {
+      setSuggestions([]);
+      setShowSuggestions(false);
+    }
+  };
+
+  const handleSuggestionClick = (name: string) => {
+    setSearchQuery(name);
+    setShowSuggestions(false);
   };
 
   const genderOptions = [
@@ -270,14 +300,46 @@ const FilterModal: React.FC<FilterModalProps> = ({
               </div>
             )}
           </div>
-        </div>
 
-        {/* Search Result Summary */}
-        {/* <div className="px-4 py-2 bg-gray-800 border-t border-gray-700">
-          <p className="text-sm text-gray-300">
-            Search result: {filteredCount} Live out of {totalCreators}
-          </p>
-        </div> */}
+          {/* SEARCH Section */}
+          <div className="mb-4">
+            <button
+              onClick={() => toggleSection("search")}
+              className="w-full flex items-center justify-between py-2 font-bold text-white"
+            >
+              <span>SEARCH</span>
+              {expandedSections.search ? (
+                <IoChevronDown className="w-5 h-5 text-white" />
+              ) : (
+                <IoChevronForward className="w-5 h-5 text-white" />
+              )}
+            </button>
+            {expandedSections.search && (
+              <div className="mt-2 relative">
+                <input
+                  type="text"
+                  placeholder="Search creators..."
+                  value={searchQuery}
+                  onChange={handleSearchChange}
+                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                {showSuggestions && suggestions.length > 0 && (
+                  <div className="absolute z-10 w-full mt-1 bg-gray-800 border border-gray-700 rounded shadow-lg max-h-40 overflow-y-auto">
+                    {suggestions.map((suggestion, index) => (
+                      <div
+                        key={index}
+                        onClick={() => handleSuggestionClick(suggestion)}
+                        className="px-3 py-2 text-gray-200 hover:bg-gray-700 cursor-pointer"
+                      >
+                        {suggestion}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
 
         {/* Action Buttons */}
         <div className="px-4 py-3 bg-gray-800 border-t border-gray-700 flex gap-3">
