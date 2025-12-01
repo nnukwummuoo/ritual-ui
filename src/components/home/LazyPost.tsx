@@ -563,14 +563,17 @@ const LazyPost: React.FC<LazyPostProps> = ({
   const uiLiked = uiState.liked ?? liked;
   const uiLikeCount = uiState.likeCount ?? likeCount;
   const uiOpen = !!uiState.open;
-  const uiComments = uiState.comments ?? [];
+  const uiComments = uiState.comments ?? commentsArr;
   const uiInput = uiState.input ?? "";
   const uiLoading = !!uiState.loadingComments;
   const uiSending = !!uiState.sending;
   const hasUiComments = Object.prototype.hasOwnProperty.call(uiState, 'comments');
   const uiCommentCount = uiState.commentCount;
   const displayCommentCount = hasUiComments ? (uiCommentCount ?? uiComments.length) : commentCount;
-  const uiIsFollowing = uiState.isFollowing ?? false;
+  const isFollowing = followingList.includes(
+    Array.isArray(postAuthorId) ? postAuthorId.join(',') : String(postAuthorId)
+  );
+  const uiIsFollowing = uiState.isFollowing ?? isFollowing;
 
   return (
     <div ref={postRef} className="mx-auto max-w-[30rem] w-full bg-gray-800 rounded-md p-3">
@@ -740,7 +743,7 @@ const LazyPost: React.FC<LazyPostProps> = ({
           const currentUiState = ui[localPid] || {};
           const currentlyFollowing = currentUiState.isFollowing ?? false;
 
-          setUi(prev => ({
+          setUi((prev: any) => ({
             ...prev,
             [localPid]: {
               ...prev[localPid],
@@ -770,7 +773,7 @@ const LazyPost: React.FC<LazyPostProps> = ({
             dispatch(getfollow({ userid: loggedInUserId, token }));
 
           } catch {
-            setUi(prev => ({
+            setUi((prev: any) => ({
               ...prev,
               [localPid]: {
                 ...prev[localPid],
@@ -819,7 +822,7 @@ const LazyPost: React.FC<LazyPostProps> = ({
             newCount: Math.max(0, currentCount + (nextLiked ? 1 : -1))
           });
 
-          setUi((prev) => ({
+          setUi((prev: any) => ({
             ...prev,
             [localPid]: {
               ...curr,
@@ -844,10 +847,10 @@ const LazyPost: React.FC<LazyPostProps> = ({
             toast.success(nextLiked ? "Post liked!" : "Post unliked!");
 
             // Refresh the post data to get updated like count from server
-            setTimeout(() => {
-              console.log('🔄 Refreshing feed after like...');
-              window.dispatchEvent(new CustomEvent('refreshfeed'));
-            }, 1000);
+            // setTimeout(() => {
+            //   console.log('🔄 Refreshing feed after like...');
+            //   window.dispatchEvent(new CustomEvent('refreshfeed'));
+            // }, 1000);
 
           } catch (error) {
             console.error('❌ Like request failed:', error);
@@ -855,7 +858,7 @@ const LazyPost: React.FC<LazyPostProps> = ({
               message: error instanceof Error ? error.message : 'Unknown error',
               stack: error instanceof Error ? error.stack : undefined
             });
-            setUi((prev) => ({
+            setUi((prev: any) => ({
               ...prev,
               [localPid]: {
                 ...prev[localPid],
@@ -876,7 +879,7 @@ const LazyPost: React.FC<LazyPostProps> = ({
           const currentUiState = ui[localPid] || {};
           const isCurrentlyOpen = currentUiState.open;
 
-          setUi((prev) => ({
+          setUi((prev: any) => ({
             ...prev,
             [localPid]: { ...(prev[localPid] || {}), open: !isCurrentlyOpen }
           }));
@@ -890,7 +893,7 @@ const LazyPost: React.FC<LazyPostProps> = ({
           const shouldFetch = !(curr && Array.isArray(curr.comments));
 
           if (shouldFetch) {
-            setUi((prev) => ({
+            setUi((prev: any) => ({
               ...prev,
               [localPid]: { ...(prev[localPid] || {}), loadingComments: true }
             }));
@@ -900,7 +903,7 @@ const LazyPost: React.FC<LazyPostProps> = ({
               .then((res: any) => {
                 const arr = (res && (res.comment || res.comments)) || [];
 
-                setUi((prev) => {
+                setUi((prev: any) => {
                   const currentState = prev[localPid] || {};
                   return {
                     ...prev,
@@ -917,9 +920,9 @@ const LazyPost: React.FC<LazyPostProps> = ({
                   };
                 });
               })
-              .catch((error) => {
+              .catch((error: any) => {
                 console.error('💬 Comments fetch error:', error);
-                setUi((prev) => ({
+                setUi((prev: any) => ({
                   ...prev,
                   [localPid]: { ...(prev[localPid] || {}), loadingComments: false }
                 }));
@@ -1059,7 +1062,7 @@ const LazyPost: React.FC<LazyPostProps> = ({
                     value={uiInput}
                     onChange={(e) => {
                       const v = e.target.value;
-                      setUi((prev) => ({
+                      setUi((prev: any) => ({
                         ...prev,
                         [pid]: { ...(prev[pid] || {}), input: v },
                       }));
@@ -1072,7 +1075,7 @@ const LazyPost: React.FC<LazyPostProps> = ({
                     onClick={() => {
                       const text = (ui[pid]?.input || '').trim();
                       if (!text) return;
-                      setUi((prev) => ({
+                      setUi((prev: any) => ({
                         ...prev,
                         [pid]: {
                           ...(prev[pid] || {}),
@@ -1108,7 +1111,7 @@ const LazyPost: React.FC<LazyPostProps> = ({
                               .unwrap()
                               .then((commentRes: any) => {
                                 const serverComments = (commentRes && (commentRes.comment || commentRes.comments)) || [];
-                                setUi((prev) => {
+                                setUi((prev: any) => {
                                   const currentState = prev[pid] || {};
                                   return {
                                     ...prev,
@@ -1126,20 +1129,20 @@ const LazyPost: React.FC<LazyPostProps> = ({
                                 });
                               })
                               .catch(() => {
-                                setUi((prev) => ({
+                                setUi((prev: any) => ({
                                   ...prev,
                                   [pid]: { ...(prev[pid] || {}), sending: false },
                                 }));
                               });
                           })
                           .catch(() => {
-                            setUi((prev) => ({
+                            setUi((prev: any) => ({
                               ...prev,
                               [pid]: { ...(prev[pid] || {}), sending: false },
                             }));
                           });
                       } else {
-                        setUi((prev) => ({
+                        setUi((prev: any) => ({
                           ...prev,
                           [pid]: { ...(prev[pid] || {}), sending: false },
                         }));

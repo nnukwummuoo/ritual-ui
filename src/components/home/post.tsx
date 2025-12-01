@@ -34,7 +34,7 @@ const formatRelativeTime = (timestamp: string | number | Date): string => {
   try {
     const now = new Date();
     let time: Date;
-    
+
     // Handle different timestamp formats
     if (typeof timestamp === 'number') {
       // If it's a number, check if it's in seconds or milliseconds
@@ -52,7 +52,7 @@ const formatRelativeTime = (timestamp: string | number | Date): string => {
     } else {
       time = new Date(timestamp);
     }
-    
+
     // Check if the date is valid
     if (isNaN(time.getTime())) {
       // Try alternative parsing methods for invalid timestamps
@@ -78,16 +78,16 @@ const formatRelativeTime = (timestamp: string | number | Date): string => {
       } else {
         return 'recently'; // Fallback for other types
       }
-      
+
       // Final check after alternative parsing
       if (isNaN(time.getTime())) {
         return 'recently';
       }
     }
-    
+
     // Check if the timestamp is in the future (more than 1 hour ahead)
     const diffInSeconds = Math.floor((now.getTime() - time.getTime()) / 1000);
-    
+
     // If the timestamp is in the future, show a different message
     if (diffInSeconds < 0) {
       const futureDiff = Math.abs(diffInSeconds);
@@ -146,18 +146,18 @@ export default function PostsCard() {
   const dispatch = useDispatch<AppDispatch>();
   const status = useSelector((s: RootState) => s.post.poststatus);
   const posts = useSelector((s: RootState) => s.post.allPost as any[]);
-  
+
   // Get authentication data from Redux (same as Profile component)
   const reduxUserId = useSelector((s: RootState) => s.register.userID);
   const reduxToken = useSelector((s: RootState) => s.register.refreshtoken);
-  
+
   // Local state for auth data (fallback to localStorage)
   const [localUserid, setLocalUserid] = React.useState("");
   const [localToken, setLocalToken] = React.useState("");
-  
+
   const loggedInUserId = reduxUserId || localUserid;
   const token = reduxToken || localToken;
-  
+
   const { firstname, lastname, username, photolink } = useSelector((s: RootState) => s.profile);
   const vipStatus = useSelector((s: RootState) => s.vip.vipStatus);
   const [selfId, setSelfId] = React.useState<string>("");
@@ -173,18 +173,18 @@ export default function PostsCard() {
   const [useVirtualization, setUseVirtualization] = React.useState(false); // Disabled by default
   const loadMoreRef = React.useRef<HTMLDivElement>(null); // Ref for intersection observer
   const [autoLoadEnabled, setAutoLoadEnabled] = React.useState(true); // Enable/disable auto-load
-  
+
   // Performance monitoring
-  const { 
-    metrics, 
-    isMonitoring, 
-    startRenderMeasure, 
-    endRenderMeasure, 
-    updatePostCount, 
-    updateLazyLoadCount, 
-    toggleMonitoring 
+  const {
+    metrics,
+    isMonitoring,
+    startRenderMeasure,
+    endRenderMeasure,
+    updatePostCount,
+    updateLazyLoadCount,
+    toggleMonitoring
   } = usePerformanceMonitor();
-  
+
   // Get current user's following list from Redux (same as Profile component)
   const followingList = useSelector((state: RootState) => {
     interface FollowData {
@@ -235,11 +235,11 @@ export default function PostsCard() {
         const raw = localStorage.getItem("login");
         if (raw) {
           const data = JSON.parse(raw);
-          
+
           if (!reduxUserId && data?.userID) {
             setLocalUserid(data.userID);
           }
-          
+
           if (!reduxToken && (data?.refreshtoken || data?.accesstoken)) {
             setLocalToken(data.refreshtoken || data.accesstoken);
           }
@@ -268,10 +268,10 @@ export default function PostsCard() {
   useEffect(() => {
     // Clear any existing video state from localStorage
     localStorage.removeItem('videoUserInteraction');
-    
+
     // Dispatch a custom event to reset video context
     window.dispatchEvent(new CustomEvent('resetVideoState'));
-    
+
     return () => {
       // Pause all videos when leaving the page
       window.dispatchEvent(new CustomEvent('pauseAllVideos'));
@@ -294,7 +294,7 @@ export default function PostsCard() {
 
     window.addEventListener('beforeunload', handleBeforeUnload);
     window.addEventListener('pageshow', handlePageShow);
-    
+
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
       window.removeEventListener('pageshow', handlePageShow);
@@ -304,13 +304,13 @@ export default function PostsCard() {
   // Remove localStorage UI state loading - start fresh each time
 
   // Define fetchFeed function first
-  const fetchFeed = React.useCallback(async (page = 1, append = false) => { 
+  const fetchFeed = React.useCallback(async (page = 1, append = false) => {
     try {
       setHasAttemptedFetch(true);
       if (append) {
         setLoadingMore(true);
       }
-      
+
       // Fetch posts from backend with pagination
       const resPosts = await fetchposts(page);
       if (resPosts?.post && Array.isArray(resPosts.post)) {
@@ -327,50 +327,21 @@ export default function PostsCard() {
         const enrichedPosts = basicPosts;
 
 
-        
-        // Update UI state for enriched posts with proper like/follow status
-        setUi(prev => {
-          const newState = { ...prev };
-          enrichedPosts.forEach((post: any) => {
-            const postId = post?.postid || post?.id || post?._id;
-            const postAuthorId = post?.userid || post?.userId || post?.ownerid || post?.ownerId || post?.authorId || post?.createdBy;
-            
-            if (postId) {
-              // Get existing state to preserve follow status
-              const existingState = prev[postId] || {};
-              
-              // Only update follow status if we have a valid followingList
-              let updatedIsFollowing = existingState.isFollowing;
-              if (followingList.length > 0) {
-                const isFollowingPostAuthor = followingList.includes(
-                  Array.isArray(postAuthorId) ? postAuthorId.join(',') : String(postAuthorId)
-                );
-                updatedIsFollowing = isFollowingPostAuthor;
-              }
-              
-              // Check if current user has liked this post
-              const likedByArr = Array.isArray(post.likedBy) ? post.likedBy : [];
-              const currentUserId = String(loggedInUserId || selfId || "");
-              const hasLiked = currentUserId && likedByArr.includes(currentUserId);
-              
-              newState[postId] = {
-                ...prev[postId],
-                likeCount: post.likeCount || 0,
-                liked: hasLiked, // Set based on actual like status
-                isFollowing: updatedIsFollowing, // Preserve existing or set based on follow status
-                commentCount: post.commentCount || post.comments?.length || 0,
-                comments: post.comments || []
-              };
-            }
-          });
-          return newState;
-        });
-        
+
+
+
         // Handle pagination - Store data directly in directPosts
         if (append && page > 1) {
           // Append to existing posts - use functional form to access current value
           setDirectPosts(prev => {
-            const newPosts = [...prev, ...enrichedPosts];
+            // Filter out duplicates based on post ID
+            const existingIds = new Set(prev.map((p: any) => p?.postid || p?.id || p?._id));
+            const uniqueEnrichedPosts = enrichedPosts.filter((p: any) => {
+              const id = p?.postid || p?.id || p?._id;
+              return !existingIds.has(id);
+            });
+
+            const newPosts = [...prev, ...uniqueEnrichedPosts];
             // Defer dispatch and setPostResolve to avoid updating during render
             queueMicrotask(() => {
               setPostResolve(newPosts);
@@ -386,18 +357,18 @@ export default function PostsCard() {
           setPostResolve(newPosts);
           dispatch(hydrateFromCache(newPosts));
         }
-        
+
         // Update pagination state
         setCurrentPage(page);
         setHasMorePosts(resPosts.pagination?.hasNextPage || false);
-        
+
         // Backend already returns posts with likes and comments via aggregation
         // No need for additional API calls - the data is already complete!
-        
+
         // Force a re-render by updating timeUpdate
         setTimeUpdate(prev => prev + 1);
       }
-    } catch(error) {
+    } catch (error) {
       console.error('Error fetching posts:', error);
     } finally {
       setLoadingMore(false);
@@ -418,12 +389,12 @@ export default function PostsCard() {
         try {
           const token = saved?.refreshtoken || saved?.accesstoken;
           if (lid && token) dispatch(getprofile({ userid: lid, token } as any));
-        } catch {}
+        } catch { }
       } else {
         setSelfId("");
       }
-    } catch {}
-    
+    } catch { }
+
     // Fetch fresh posts from backend
     fetchFeed();
   }, [dispatch, fetchFeed]);
@@ -437,52 +408,14 @@ export default function PostsCard() {
   }, [hasMorePosts, loadingMore, currentPage, fetchFeed]);
 
   useLayoutEffect(() => {
-    // Initialize UI state for existing posts with proper like/follow status
-    if (Array.isArray(posts) && posts.length > 0) {
-        setUi(prev => {
-          const newState = { ...prev };
-        posts.forEach((post: any) => { 
-            const postId = post?.postid || post?.id || post?._id;
-            const postAuthorId = post?.userid || post?.userId || post?.ownerid || post?.ownerId || post?.authorId || post?.createdBy;
-            
-            if (postId) {
-              // Get existing state to preserve follow status
-              const existingState = prev[postId] || {};
-              
-              // Only update follow status if we have a valid followingList
-              let updatedIsFollowing = existingState.isFollowing;
-              if (followingList.length > 0) {
-                const isFollowingPostAuthor = followingList.includes(
-                  Array.isArray(postAuthorId) ? postAuthorId.join(',') : String(postAuthorId)
-                );
-                updatedIsFollowing = isFollowingPostAuthor;
-              }
-            
-            // Check if current user has liked this post
-            const likedByArr = Array.isArray(post.likedBy) ? post.likedBy : [];
-            const currentUserId = String(loggedInUserId || selfId || "");
-            const hasLiked = currentUserId && likedByArr.includes(currentUserId);
-              
-              newState[postId] = {
-                ...prev[postId],
-                likeCount: post.likeCount || 0,
-              liked: hasLiked, // Set based on actual like status
-              isFollowing: updatedIsFollowing, // Preserve existing or set based on follow status
-                commentCount: post.commentCount || 0,
-                comments: post.comments || []
-              };
-            }
-          });
-          return newState;
-        });
-      }
-    
+
+
     const handleRefreshFeed = () => {
       fetchFeed();
     };
-    
+
     window.addEventListener('refreshfeed', handleRefreshFeed);
-    
+
     return () => {
       window.removeEventListener('refreshfeed', handleRefreshFeed);
     };
@@ -510,28 +443,28 @@ export default function PostsCard() {
 
     try {
       if (currentlyFollowing) {
-      await dispatch(unfollowThunk({ 
-        userid: Array.isArray(postAuthorId) ? postAuthorId.join(',') : postAuthorId,
-        followerid: loggedInUserId, 
-        token 
-      })).unwrap();
-      
-      // Show success toast
-      toast.success("Unfollowed successfully!");
+        await dispatch(unfollowThunk({
+          userid: Array.isArray(postAuthorId) ? postAuthorId.join(',') : postAuthorId,
+          followerid: loggedInUserId,
+          token
+        })).unwrap();
+
+        // Show success toast `
+        toast.success("Unfollowed successfully!");
       } else {
         await dispatch(followThunk({
           userid: Array.isArray(postAuthorId) ? postAuthorId.join(',') : postAuthorId,
           followerid: loggedInUserId,
           token
         })).unwrap();
-        
+
         // Show success toast
         toast.success("Followed successfully!");
       }
-      
+
       dispatch(getfollow({ userid: loggedInUserId, token }));
-      
-    } catch  {
+
+    } catch {
       setUi(prev => ({
         ...prev,
         [postId]: {
@@ -539,7 +472,7 @@ export default function PostsCard() {
           isFollowing: currentlyFollowing,
         },
       }));
-      
+
       // const errorMessage = error instanceof Error ? error.message : String(error);
       toast.error(`Failed to ${currentlyFollowing ? 'unfollow' : 'follow'}. Please try again.`);
     }
@@ -558,24 +491,24 @@ export default function PostsCard() {
     return postsToFilter.filter((post) => {
       // Get explicit post type from post data
       let postType: string = post?.posttype || post?.type || "";
-      
+
       // If no explicit type, determine from media fields
       if (!postType) {
         const mediaSrc = post?.postfilelink || post?.postphoto || post?.postvideo || post?.image || "";
-        
+
         // Check if it's a video
-        if (post?.postvideo || 
-            (typeof mediaSrc === "string" && (
-              mediaSrc.includes(".mp4") || 
-              mediaSrc.includes(".webm") || 
-              mediaSrc.includes(".mov")
-            ))) {
+        if (post?.postvideo ||
+          (typeof mediaSrc === "string" && (
+            mediaSrc.includes(".mp4") ||
+            mediaSrc.includes(".webm") ||
+            mediaSrc.includes(".mov")
+          ))) {
           postType = "video";
-        } 
+        }
         // Check if it has image/photo
         else if (post?.postphoto || post?.image || post?.postfilelink) {
           postType = "image";
-        } 
+        }
         // Otherwise it's text
         else {
           postType = "text";
