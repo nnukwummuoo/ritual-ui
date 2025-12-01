@@ -384,6 +384,7 @@ export const Mainpost = () => {
       <div className="space-y-3">
         <div className="flex flex-col items-start gap-3">
           <textarea
+           required
             className="w-full p-2 text-white bg-transparent border border-gray-600 rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder="What's hot?!"
             rows={3}
@@ -398,6 +399,7 @@ export const Mainpost = () => {
 
         <div className="flex justify-end">
           <button
+           disabled={loading || !postcontent.trim()}
             onClick={async () => {
               if (!userid || !token) {
                 toast.error('Please log in to post');
@@ -524,7 +526,6 @@ export const Mainpost = () => {
                 setLoading(false);
               }
             }}
-            disabled={loading}
             className="w-full py-2 font-semibold text-white transition bg-orange-600 rounded-lg hover:bg-orange-500 disabled:opacity-60 flex items-center justify-center gap-2"
           >
             {loading && (
@@ -637,6 +638,7 @@ export const Mainpost = () => {
                     </div>
 
               <textarea
+              required
                 className="w-full h-28 p-2 rounded-lg bg-[#2a2a2a] text-gray-200 placeholder-gray-400 resize-none focus:outline-none focus:ring-2 focus:ring-orange-500"
                 placeholder="What's on your mind? Use #hashtags to make your post discoverable"
                 value={postcontent}
@@ -648,7 +650,7 @@ export const Mainpost = () => {
             </div>
             <div className="flex items-center justify-end gap-3 p-4 border-t border-gray-700">
               <button
-                disabled={uploading || !imageFile}
+                disabled={loading || !postcontent.trim()}
                 className="w-full py-2 font-semibold text-white transition bg-green-600 hover:bg-green-500 rounded-lg disabled:opacity-60 flex items-center justify-center gap-2"
                 onClick={() => handleUploadStart('image')}
               >

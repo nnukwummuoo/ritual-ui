@@ -14,6 +14,7 @@ import {
   IoCardOutline,
   IoBarChartOutline,
   IoGiftOutline,
+  IoFingerPrintOutline,
 } from "react-icons/io5";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "@/store/store";
@@ -23,6 +24,7 @@ import axios from "axios";
 import { URL } from "@/api/config";
 import { useAuthToken } from "@/lib/hooks/useAuthToken";
 import { useRouter } from "next/navigation";
+import DeviceFingerprintStats from "../../../components/admin/DeviceFingerprintStats";
 
 // Your actual components are used here, no changes needed for them
 import AdminVerifyDocumentPage from "./creator-verification/page";
@@ -151,6 +153,11 @@ const AdminPage = () => {
       icon: <IoGiftOutline size={22} />,
       component: <ReferralAnalysisPage />,
     },
+    // {
+    //   name: "Device fingerprinting",
+    //   icon: <IoFingerPrintOutline size={22} />,
+    //   component: <DeviceFingerprintStats />,
+    // },
     {
       name: "Support Chat",
       icon: <IoChatbubbleOutline size={22} />,
