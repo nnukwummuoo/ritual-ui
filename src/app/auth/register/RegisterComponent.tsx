@@ -29,10 +29,10 @@ const wordList = [
   "chi", "aku", "obi", "mma", "nne", "nna", "nwa", "elu", "ala", "uzo", "ulo", "anu", "mmiri", "oku", "igwe", "osisi", "ite", "ugwu", "igweoma", "ike", "ife", "eze", "ada", "uzochi", "odogwu", "obioma", "nwanne", "okwu", "ego", "uto", "mmirioma", "nkume", "ugwuoma", "onyema", "olile", "ndidi", "obiomaeze", "chukwu", "onyinye", "okwuoma", "okike", "uwa", "nnamdi", "oge", "udo", "ihe", "isi", "aka", "ukwu", "anya",
 
   // Yoruba
-  "omo", "iya", "baba", "orun", "ile", "omi", "ina", "igi", "orunmila", "orunko", "ire", "ayo", "ife", "oro", "owon", "ojo", "orunke", "agbara", "ebi", "ireti", "ojooma", "ore", "ogo", "ala", "irele", "awon", "aseyori", "agbara nla", "otito", "ire gbogbo",
+  "omo", "iya", "baba", "orun", "ile", "omi", "ina", "igi", "orunmila", "orunko", "ire", "ayo", "ife", "oro", "owon", "ojo", "orunke", "agbara", "ebi", "ireti", "ojooma", "ore", "ogo", "ala", "irele", "awon", "aseyori", "alafia", "otito", "igboya",
 
   // Hausa
-  "uba", "uwa", "yaro", "yarinya", "ruwa", "wuta", "sama", "kasa", "gida", "hanya", "zuciya", "zuciyarmu", "sarki", "mace", "namiji", "gari", "rana", "dare", "lafiya", "arziki", "karfi", "hakuri", "gaskiya", "soyayya", "bege", "kyauta", "aboki", "farin ciki", "duniya", "lokaci",
+  "uba", "uwa", "yaro", "yarinya", "ruwa", "wuta", "sama", "kasa", "gida", "hanya", "zuciya", "zuciyarmu", "sarki", "mace", "namiji", "gari", "rana", "dare", "lafiya", "arziki", "karfi", "hakuri", "gaskiya", "soyayya", "bege", "kyauta", "aboki", "karfi", "duniya", "lokaci",
 
   // Ghana (Twi)
   "agya", "ena", "abofra", "nsuo", "ogya", "soro", "asaase", "ofie", "kwan", "akoma", "ohene", "obaa", "barima", "anadwo", "owia", "osrane", "adesua", "nkrabea", "nkwagye", "nokware", "aseda", "ahonya", "anigye", "animuonyam", "asomdwoe", "bere", "wiase",
