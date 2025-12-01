@@ -24,7 +24,7 @@ const formatRelativeTime = (timestamp: string | number | Date): string => {
   try {
     const now = new Date();
     let time: Date;
-    
+
     // Handle different timestamp formats
     if (typeof timestamp === 'number') {
       time = new Date(timestamp < 10000000000 ? timestamp * 1000 : timestamp);
@@ -38,7 +38,7 @@ const formatRelativeTime = (timestamp: string | number | Date): string => {
     } else {
       time = new Date(timestamp);
     }
-    
+
     if (isNaN(time.getTime())) {
       if (typeof timestamp === 'string') {
         const altTime = new Date(timestamp.replace(/[^\d]/g, ''));
@@ -58,14 +58,14 @@ const formatRelativeTime = (timestamp: string | number | Date): string => {
       } else {
         return 'recently';
       }
-      
+
       if (isNaN(time.getTime())) {
         return 'recently';
       }
     }
-    
+
     const diffInSeconds = Math.floor((now.getTime() - time.getTime()) / 1000);
-    
+
     if (diffInSeconds < 0) {
       const futureDiff = Math.abs(diffInSeconds);
       if (futureDiff < 3600) {
@@ -165,7 +165,7 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
   photolink
 }) => {
   const router = useRouter();
-  
+
   // Video component for individual posts
   const VideoComponent = ({ post, src, pathUrlPrimary, queryUrlFallback, pathUrlFallback }: {
     post: any;
@@ -180,22 +180,22 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
       loop: true,
       postId: post?._id || post?.postid || post?.id || `post-${Math.random()}`
     });
-    
+
     // State and ref for auto-hiding video controls
     const [showControls, setShowControls] = React.useState(false);
     const [isVideoLoaded, setIsVideoLoaded] = React.useState(false);
     const controlsTimerRef = React.useRef<NodeJS.Timeout | null>(null);
-    
+
     // Clear timeout when component unmounts
     React.useEffect(() => {
       // Show controls initially when the video loads
       setShowControls(true);
-      
+
       // Set timer to hide controls
       const initialTimer = setTimeout(() => {
         setShowControls(false);
       }, 3000);
-      
+
       return () => {
         // Clean up all timeouts on unmount
         if (initialTimer) clearTimeout(initialTimer);
@@ -209,9 +209,9 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
         {!isVideoLoaded && (
           <VideoSkeleton />
         )}
-        
+
         {/* Video with controls that auto-hide */}
-        <div 
+        <div
           className={`relative w-full h-full ${!isVideoLoaded ? 'opacity-0 absolute top-0 left-0' : 'opacity-100 transition-opacity duration-300'}`}
           onMouseMove={() => {
             // Show controls and reset the timer when mouse moves
@@ -266,11 +266,11 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
               }
             }}
           />
-          
+
           {/* Volume Button - Shows only when showControls is true */}
           {showControls && (
             <div className="absolute bottom-3 right-3 z-10 transition-opacity duration-300 opacity-100">
-              <button 
+              <button
                 onClick={(e) => {
                   e.stopPropagation();
                   toggleMute();
@@ -281,7 +281,7 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
                   controlsTimerRef.current = setTimeout(() => {
                     setShowControls(false);
                   }, 3000);
-                }} 
+                }}
                 className="bg-black bg-opacity-70 rounded-full p-2.5 hover:bg-opacity-90 transition-all hover:scale-110"
                 aria-label={isMuted ? "Unmute video" : "Mute video"}
               >
@@ -300,11 +300,11 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
               </button>
             </div>
           )}
-          
+
           {/* Center Play/Pause Button - Shows when controls are visible OR when autoplay is blocked */}
           {(showControls || autoPlayBlocked) && (
             <div className="absolute inset-0 flex items-center justify-center transition-opacity duration-300 opacity-100">
-              <div 
+              <div
                 onClick={(e) => {
                   e.stopPropagation();
                   togglePlay();
@@ -336,13 +336,13 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
           {(autoPlayBlocked || !hasUserInteracted) && !isPlaying && (
             <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30">
               <div className="text-center text-white">
-                 <div 
-                   onClick={(e) => {
-                     e.stopPropagation();
-                     togglePlay();
-                   }}
-                   className="bg-black bg-opacity-70 rounded-full p-6 hover:bg-opacity-90 hover:scale-110 cursor-pointer transition-all mb-4 mx-auto w-fit opacity-0"
-                 >
+                <div
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    togglePlay();
+                  }}
+                  className="bg-black bg-opacity-70 rounded-full p-6 hover:bg-opacity-90 hover:scale-110 cursor-pointer transition-all mb-4 mx-auto w-fit opacity-0"
+                >
                   <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                     <polygon points="5 3 19 12 5 21 5 3"></polygon>
                   </svg>
@@ -354,7 +354,7 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
       </div>
     );
   };
-  
+
   // Modal state for image viewing
   const [isModalOpen, setIsModalOpen] = React.useState(false);
   const [selectedImage, setSelectedImage] = React.useState("");
@@ -412,10 +412,10 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
         const isBlobUrl = typeof asString === "string" && /^blob:/i.test(asString);
         const isDataUrl = typeof asString === "string" && /^data:/i.test(asString);
         const isUrl = isHttpUrl || isBlobUrl || isDataUrl;
-        
+
         const imageSource = getImageSource(asString, 'post');
         const src = imageSource.src;
-        
+
         const queryUrlPrimary = asString ? `${API_BASE}/api/image/view?publicId=${encodeURIComponent(asString)}` : "";
         const pathUrlPrimary = asString ? `${API_BASE}/api/image/view/${encodeURIComponent(asString)}` : "";
         const queryUrlFallback = asString ? `${PROD_BASE}/api/image/view?publicId=${encodeURIComponent(asString)}` : "";
@@ -436,7 +436,7 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
           p?.postedBy?.username ||
           p?.postedBy?.name ||
           "User";
-        
+
         const postAuthorId = p?.userid || p?.userId || p?.ownerid || p?.ownerId || p?.authorId || p?.createdBy;
         const isSelf = (
           (loggedInUserId && postAuthorId && String(postAuthorId) === String(loggedInUserId)) ||
@@ -460,8 +460,8 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
         const commentsArr: any[] = Array.isArray(p?.comments)
           ? p?.comments
           : Array.isArray(p?.comment)
-          ? p?.comment
-          : [];
+            ? p?.comment
+            : [];
         const commentCount = Array.isArray(commentsArr)
           ? commentsArr.length
           : Number(p?.commentCount || p?.commentsCount || p?.comments || 0) || 0;
@@ -490,26 +490,26 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-3">
                 <div className="relative">
-                  <div 
-                    className="size-10 rounded-full overflow-hidden bg-gray-700 cursor-pointer hover:opacity-80 transition-opacity" 
+                  <div
+                    className="size-10 rounded-full overflow-hidden bg-gray-700 cursor-pointer hover:opacity-80 transition-opacity"
                     onClick={(e) => {
                       e.stopPropagation();
                       router.push(`/Profile/${postAuthorId}`);
                     }}
                   >
                     {(() => {
-                      const profileImage = isSelf ? photolink : 
-                        p?.user?.photolink || 
-                        p?.user?.photoLink || 
-                        p?.user?.profileImage || 
-                        p?.user?.avatar || 
+                      const profileImage = isSelf ? photolink :
+                        p?.user?.photolink ||
+                        p?.user?.photoLink ||
+                        p?.user?.profileImage ||
+                        p?.user?.avatar ||
                         p?.user?.image;
-                      
-                      const userName = isSelf ? `${firstname} ${lastname}`.trim() : 
+
+                      const userName = isSelf ? `${firstname} ${lastname}`.trim() :
                         `${p?.user?.firstname || ""} ${p?.user?.lastname || ""}`.trim();
-                      
+
                       const initials = userName.split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2) || "?";
-                      
+
                       if (profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined") {
                         const imageSource = getImageSource(profileImage, 'profile');
                         return (
@@ -528,7 +528,7 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
                           />
                         );
                       }
-                      
+
                       return (
                         <div className="w-full h-full flex items-center justify-center text-white text-sm font-semibold bg-gray-600">
                           {initials}
@@ -536,7 +536,7 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
                       );
                     })()}
                   </div>
-                  
+
                   {/* VIP Lion Badge - show if the post author is VIP */}
                   {(() => {
                     // Check if current user is VIP
@@ -552,15 +552,16 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
                     return null;
                   })()}
                 </div>
-                <div 
-                  className="flex-1 cursor-pointer" 
-               
+                <div
+                  className="flex-1 cursor-pointer"
+
                 >
-                  <p className="font-medium text-white" 
-                   onClick={(e) => {
-                e.stopPropagation();
-                router.push(`/Profile/${postAuthorId}`);}}
-                >{p?.user?.firstname} { p?.user?.lastname}</p>
+                  <p className="font-medium text-white"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      router.push(`/Profile/${postAuthorId}`);
+                    }}
+                  >{p?.user?.firstname} {p?.user?.lastname}</p>
                   <span className="text-gray-400 text-sm">{handleStr ? `${handleStr}` : ""}</span>
                 </div>
               </div>
@@ -577,16 +578,16 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
                 })()}
               </p>
             )}
-            
+
             {p?.content && (
-              <ExpandableText 
+              <ExpandableText
                 text={p.content}
                 maxLength={100}
                 className="my-2"
-               
+
               />
             )}
-            
+
             {postType == "image" && src && (
               <div className="w-full max-h-[400px] relative rounded overflow-hidden">
                 <Image
@@ -621,7 +622,7 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
                 />
               </div>
             )}
-            
+
             {postType == "video" && src && (
               <VideoComponent
                 post={p}
@@ -631,7 +632,7 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
                 pathUrlFallback={pathUrlFallback}
               />
             )}
-            
+
             <PostActions
               className="mt-3 border-t border-gray-700 pt-2"
               starred={uiIsFollowing}
@@ -642,7 +643,7 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
               onStar={async () => {
                 const postAuthorId = p?.userid || p?.userId || p?.ownerid || p?.ownerId || p?.authorId || p?.createdBy;
                 const localPid = p?.postid || p?.id || p?._id;
-                
+
                 if (!loggedInUserId || !postAuthorId || !token) {
                   toast.error("Please log in to follow users");
                   return;
@@ -661,12 +662,12 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
 
                 try {
                   if (currentlyFollowing) {
-                    await dispatch(unfollowThunk({ 
+                    await dispatch(unfollowThunk({
                       userid: Array.isArray(postAuthorId) ? postAuthorId.join(',') : postAuthorId,
-                      followerid: loggedInUserId, 
-                      token 
+                      followerid: loggedInUserId,
+                      token
                     })).unwrap();
-                    
+
                     toast.success("Unfollowed successfully!");
                   } else {
                     await dispatch(followThunk({
@@ -674,12 +675,12 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
                       followerid: loggedInUserId,
                       token
                     })).unwrap();
-                    
+
                     toast.success("Followed successfully!");
                   }
-                  
+
                   dispatch(getfollow({ userid: loggedInUserId, token }));
-                  
+
                 } catch {
                   setUi(prev => ({
                     ...prev,
@@ -688,7 +689,7 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
                       isFollowing: currentlyFollowing,
                     },
                   }));
-                  
+
                   toast.error(`Failed to ${currentlyFollowing ? 'unfollow' : 'follow'}. Please try again.`);
                 }
               }}
@@ -702,34 +703,34 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
                   currentLiked: liked,
                   currentLikeCount: likeCount
                 });
-                
+
                 const uid = String(loggedInUserId || selfId || "");
                 const localPid = p?.postid || p?.id || p?._id;
-                
+
                 console.log('🔍 Like validation:', {
                   uid,
                   localPid,
                   hasToken: !!token,
                   validationPassed: !!(localPid && token)
                 });
-                
+
                 if (!localPid || !token) {
                   console.error('❌ Like validation failed - missing postId or token');
                   toast.error("Please login to like posts");
                   return;
                 }
-                
+
                 const curr = ui[localPid] || {};
                 const nextLiked = !(curr.liked ?? liked);
                 const currentCount = curr.likeCount ?? likeCount;
-                
+
                 console.log('🎯 Like action:', {
                   currentLiked: curr.liked ?? liked,
                   nextLiked,
                   currentCount,
                   newCount: Math.max(0, currentCount + (nextLiked ? 1 : -1))
                 });
-                
+
                 setUi((prev) => ({
                   ...prev,
                   [localPid]: {
@@ -745,21 +746,17 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
                     postid: localPid,
                     token: token
                   };
-                  
+
                   console.log('🚀 Sending like request to backend:', likeData);
                   console.log('📡 API URL:', `${process.env.NEXT_PUBLIC_API || ""}/like`);
-                  
+
                   const result = await dispatch(postlike(likeData as any)).unwrap();
-                  
+
                   console.log('✅ Like request successful:', result);
                   toast.success(nextLiked ? "Post liked!" : "Post unliked!");
-                  
-                  // Refresh the post data to get updated like count from server
-                  setTimeout(() => {
-                    console.log('🔄 Refreshing feed after like...');
-                    window.dispatchEvent(new CustomEvent('refreshfeed'));
-                  }, 1000);
-                  
+
+                  // No need to refresh feed - rely on optimistic update to avoid race condition
+
                 } catch (error) {
                   console.error('❌ Like request failed:', error);
                   console.error('❌ Error details:', {
@@ -777,62 +774,62 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
                   toast.error("Failed to update like. Please try again.");
                 }
               }}
-    onComment={() => {
-      // console.log('💬 COMMENT BUTTON CLICKED - RemainingPosts');
-      const localPid = p?.postid || p?.id || p?._id;
-      // console.log('💬 Comment post ID:', localPid);
-      
-      if (!localPid) {
-        // console.error('❌ No post ID found for comments');
-        return;
-      }
-      
-      const currentUiState = ui[localPid] || {};
-      const isCurrentlyOpen = currentUiState.open;
-      
-      // console.log('💬 Current comment state:', {
-      //   isCurrentlyOpen,
-      //   hasComments: !!(currentUiState.comments && currentUiState.comments.length > 0),
-      //   commentCount: currentUiState.commentCount,
-      //   loadingComments: currentUiState.loadingComments
-      // });
-      
-      setUi((prev) => ({
-        ...prev,
-        [localPid]: { ...(prev[localPid] || {}), open: !isCurrentlyOpen }
-      }));
-      
-      const curr = ui[localPid];
-      
-      if (curr && Array.isArray(curr.comments) && curr.comments.length > 0) {
-        // console.log('💬 Comments already loaded, not fetching again');
-        return;
-      }
-      
-      const shouldFetch = !(curr && Array.isArray(curr.comments));
-      // console.log('💬 Should fetch comments:', shouldFetch);
-      
-      if (shouldFetch) {
-        // console.log('💬 Fetching comments for post:', localPid);
-        setUi((prev) => ({
-          ...prev,
-          [localPid]: { ...(prev[localPid] || {}), loadingComments: true }
-        }));
-                  
+              onComment={() => {
+                // console.log('💬 COMMENT BUTTON CLICKED - RemainingPosts');
+                const localPid = p?.postid || p?.id || p?._id;
+                // console.log('💬 Comment post ID:', localPid);
+
+                if (!localPid) {
+                  // console.error('❌ No post ID found for comments');
+                  return;
+                }
+
+                const currentUiState = ui[localPid] || {};
+                const isCurrentlyOpen = currentUiState.open;
+
+                // console.log('💬 Current comment state:', {
+                //   isCurrentlyOpen,
+                //   hasComments: !!(currentUiState.comments && currentUiState.comments.length > 0),
+                //   commentCount: currentUiState.commentCount,
+                //   loadingComments: currentUiState.loadingComments
+                // });
+
+                setUi((prev) => ({
+                  ...prev,
+                  [localPid]: { ...(prev[localPid] || {}), open: !isCurrentlyOpen }
+                }));
+
+                const curr = ui[localPid];
+
+                if (curr && Array.isArray(curr.comments) && curr.comments.length > 0) {
+                  // console.log('💬 Comments already loaded, not fetching again');
+                  return;
+                }
+
+                const shouldFetch = !(curr && Array.isArray(curr.comments));
+                // console.log('💬 Should fetch comments:', shouldFetch);
+
+                if (shouldFetch) {
+                  // console.log('💬 Fetching comments for post:', localPid);
+                  setUi((prev) => ({
+                    ...prev,
+                    [localPid]: { ...(prev[localPid] || {}), loadingComments: true }
+                  }));
+
                   (dispatch(getpostcomment({ postid: localPid } as any)) as any)
                     .unwrap()
                     .then((res: any) => {
                       // console.log('💬 Comments fetch response:', res);
                       const arr = (res && (res.comment || res.comments)) || [];
                       // console.log('💬 Processed comments array:', arr);
-                      
+
                       setUi((prev) => {
                         const currentState = prev[localPid] || {};
                         return {
                           ...prev,
-                          [localPid]: { 
-                            ...currentState, 
-                            comments: arr, 
+                          [localPid]: {
+                            ...currentState,
+                            comments: arr,
                             loadingComments: false,
                             commentCount: arr.length,
                             // Explicitly preserve like and follow state
@@ -853,7 +850,7 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
                 }
               }}
             />
-            
+
             {uiOpen && (
               <div className="mt-2 border-t border-gray-700 pt-2">
                 {uiLoading ? (
@@ -865,132 +862,132 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
                         .sort((a: any, b: any) => {
                           const aIsVip = a?.isVip && a?.vipEndDate && new Date(a.vipEndDate) > new Date();
                           const bIsVip = b?.isVip && b?.vipEndDate && new Date(b.vipEndDate) > new Date();
-                          
+
                           if (aIsVip && !bIsVip) return -1;
                           if (bIsVip && !aIsVip) return 1;
-                          
+
                           const aTime = a?.commenttime || a?.date || a?.createdAt || 0;
                           const bTime = b?.commenttime || b?.date || b?.createdAt || 0;
                           return bTime - aTime;
                         })
                         .map((c: any, i: number) => {
-                          
+
                           return (
-                        <div key={i} className="text-sm text-gray-200 flex items-start gap-2 relative">
-                          <div className="relative flex-shrink-0 w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center text-xs overflow-hidden">
-                            {(() => {
-                              const profileImage = c?.commentuserphoto || c?.photo || c?.photolink || c?.photoLink || c?.profileImage || c?.avatar || c?.image;
-                              
-                              if (profileImage && profileImage.trim() && profileImage !== 'null' && profileImage !== 'undefined') {
-                                const imageSource = getImageSource(profileImage, 'profile');
-                                return (
-                                  <img
-                                    alt="Profile picture"
-                                    src={imageSource.src}
-                                    className="object-cover w-full h-full rounded-full"
-                                    onError={(e) => {
-                                      const target = e.currentTarget as HTMLImageElement;
-                                      target.style.display = 'none';
-                                      const parent = target.parentElement;
-                                      if (parent) {
-                                        const fallbackDiv = document.createElement('div');
-                                        fallbackDiv.className = 'w-full h-full rounded-full bg-gray-600 flex items-center justify-center text-xs text-white font-medium';
-                                        // Generate initials from firstname/lastname, fallback to username
-                                        let initialsText = c?.initials;
-                                        if (!initialsText) {
-                                          const firstName = c?.firstname || '';
-                                          const lastName = c?.lastname || '';
-                                          if (firstName || lastName) {
-                                            const nameParts = [firstName, lastName].filter(Boolean);
-                                            initialsText = nameParts.map(n => n[0]).join('').toUpperCase().slice(0, 2) || '?';
-                                          } else {
-                                            initialsText = (c?.commentusername || c?.username || 'U').charAt(0).toUpperCase();
+                            <div key={i} className="text-sm text-gray-200 flex items-start gap-2 relative">
+                              <div className="relative flex-shrink-0 w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center text-xs overflow-hidden">
+                                {(() => {
+                                  const profileImage = c?.commentuserphoto || c?.photo || c?.photolink || c?.photoLink || c?.profileImage || c?.avatar || c?.image;
+
+                                  if (profileImage && profileImage.trim() && profileImage !== 'null' && profileImage !== 'undefined') {
+                                    const imageSource = getImageSource(profileImage, 'profile');
+                                    return (
+                                      <img
+                                        alt="Profile picture"
+                                        src={imageSource.src}
+                                        className="object-cover w-full h-full rounded-full"
+                                        onError={(e) => {
+                                          const target = e.currentTarget as HTMLImageElement;
+                                          target.style.display = 'none';
+                                          const parent = target.parentElement;
+                                          if (parent) {
+                                            const fallbackDiv = document.createElement('div');
+                                            fallbackDiv.className = 'w-full h-full rounded-full bg-gray-600 flex items-center justify-center text-xs text-white font-medium';
+                                            // Generate initials from firstname/lastname, fallback to username
+                                            let initialsText = c?.initials;
+                                            if (!initialsText) {
+                                              const firstName = c?.firstname || '';
+                                              const lastName = c?.lastname || '';
+                                              if (firstName || lastName) {
+                                                const nameParts = [firstName, lastName].filter(Boolean);
+                                                initialsText = nameParts.map(n => n[0]).join('').toUpperCase().slice(0, 2) || '?';
+                                              } else {
+                                                initialsText = (c?.commentusername || c?.username || 'U').charAt(0).toUpperCase();
+                                              }
+                                            }
+                                            fallbackDiv.textContent = initialsText;
+                                            parent.appendChild(fallbackDiv);
                                           }
+                                        }}
+                                      />
+                                    );
+                                  }
+
+                                  // Show initials as fallback when no profile image
+                                  return (
+                                    <div className="w-full h-full rounded-full bg-gray-600 flex items-center justify-center text-xs text-white font-medium">
+                                      {(() => {
+                                        // Prioritize server-provided initials
+                                        if (c?.initials) return c.initials;
+
+                                        // Generate from firstname and lastname if available
+                                        const firstName = c?.firstname || '';
+                                        const lastName = c?.lastname || '';
+                                        if (firstName || lastName) {
+                                          const nameParts = [firstName, lastName].filter(Boolean);
+                                          return nameParts.map(n => n[0]).join('').toUpperCase().slice(0, 2) || '?';
                                         }
-                                        fallbackDiv.textContent = initialsText;
-                                        parent.appendChild(fallbackDiv);
-                                      }
-                                    }}
-                                  />
+
+                                        // Fallback to username if names not available
+                                        return (c?.commentusername || c?.username || 'U').charAt(0).toUpperCase();
+                                      })()}
+                                    </div>
+                                  );
+                                })()}
+                              </div>
+
+                              {(() => {
+                                const isVipActive = c?.isVip && c?.vipEndDate && new Date(c.vipEndDate) > new Date();
+                                return isVipActive && (
+                                  <VIPBadge size="lg" className="absolute -top-3 left-3 z-10" isVip={c.isVip} vipEndDate={c.vipEndDate} />
                                 );
-                              }
-                              
-                              // Show initials as fallback when no profile image
-                              return (
-                                <div className="w-full h-full rounded-full bg-gray-600 flex items-center justify-center text-xs text-white font-medium">
-                                  {(() => {
-                                    // Prioritize server-provided initials
-                                    if (c?.initials) return c.initials;
-                                    
-                                    // Generate from firstname and lastname if available
-                                    const firstName = c?.firstname || '';
-                                    const lastName = c?.lastname || '';
-                                    if (firstName || lastName) {
-                                      const nameParts = [firstName, lastName].filter(Boolean);
-                                      return nameParts.map(n => n[0]).join('').toUpperCase().slice(0, 2) || '?';
-                                    }
-                                    
-                                    // Fallback to username if names not available
-                                    return (c?.commentusername || c?.username || 'U').charAt(0).toUpperCase();
-                                  })()}
+                              })()}
+                              <div className="flex-1">
+                                <div className="flex items-center justify-between">
+                                  <span className="font-medium text-gray-300">
+                                    {(() => {
+                                      const combinedName = [c?.firstname, c?.lastname].filter(Boolean).join(" ");
+                                      return combinedName ||
+                                        c?.commentusername ||
+                                        c?.fullname ||
+                                        c?.fullName ||
+                                        c?.name ||
+                                        c?.username ||
+                                        c?.username ||
+                                        c?.author ||
+                                        'User';
+                                    })()}
+                                  </span>
+                                  <span className="text-xs text-gray-500">
+                                    {(() => {
+                                      const timestamp = c?.commenttime ||
+                                        c?.date ||
+                                        c?.createdAt ||
+                                        c?.created_at ||
+                                        c?.timestamp ||
+                                        c?.time ||
+                                        c?.postedAt ||
+                                        c?.posted_at;
+
+                                      if (!timestamp) {
+                                        return 'Unknown time';
+                                      }
+
+                                      const formatted = formatRelativeTime(timestamp);
+
+                                      if (formatted === 'Invalid time' || formatted === 'Unknown time') {
+                                        return 'recently';
+                                      }
+
+                                      return formatted;
+                                    })()}
+                                  </span>
                                 </div>
-                              );
-                            })()}
-                          </div>
-                          
-                          {(() => {
-                            const isVipActive = c?.isVip && c?.vipEndDate && new Date(c.vipEndDate) > new Date();
-                            return isVipActive && (
-                              <VIPBadge size="lg" className="absolute -top-3 left-3 z-10" isVip={c.isVip} vipEndDate={c.vipEndDate} />
-                            );
-                          })()}
-                          <div className="flex-1">
-                            <div className="flex items-center justify-between">
-                              <span className="font-medium text-gray-300">
-                                {(() => {
-                                  const combinedName = [c?.firstname, c?.lastname].filter(Boolean).join(" ");
-                                  return combinedName ||
-                                    c?.commentusername ||
-                                    c?.fullname ||
-                                    c?.fullName ||
-                                    c?.name ||
-                                    c?.username ||
-                                    c?.username ||
-                                    c?.author ||
-                                    'User';
-                                })()}
-                              </span>
-                              <span className="text-xs text-gray-500">
-                                {(() => {
-                                  const timestamp = c?.commenttime || 
-                                                  c?.date || 
-                                                  c?.createdAt || 
-                                                  c?.created_at || 
-                                                  c?.timestamp || 
-                                                  c?.time || 
-                                                  c?.postedAt || 
-                                                  c?.posted_at;
-                                  
-                                  if (!timestamp) {
-                                    return 'Unknown time';
-                                  }
-                                  
-                                  const formatted = formatRelativeTime(timestamp);
-                                  
-                                  if (formatted === 'Invalid time' || formatted === 'Unknown time') {
-                                    return 'recently';
-                                  }
-                                  
-                                  return formatted;
-                                })()}
-                              </span>
+                                <div className="text-gray-200 mt-1">
+                                  {c?.content || c?.comment || String(c)}
+                                </div>
+                              </div>
                             </div>
-                            <div className="text-gray-200 mt-1">
-                              {c?.content || c?.comment || String(c)}
-                            </div>
-                          </div>
-                        </div>
-                      );
+                          );
                         })
                     ) : (
                       <p className="text-sm text-gray-500">No comments yet.</p>
@@ -1021,9 +1018,9 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
                               sending: true,
                               comments: [
                                 ...((prev[pid]?.comments as any[]) || []),
-                                { 
-                                  content: text, 
-                                  comment: text, 
+                                {
+                                  content: text,
+                                  comment: text,
                                   username: [firstname, lastname].filter(Boolean).join(' ') || username || 'you',
                                   commentusername: [firstname, lastname].filter(Boolean).join(' ') || username || 'you',
                                   commentuserphoto: photolink || '',
