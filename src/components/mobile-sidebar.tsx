@@ -94,7 +94,7 @@ export default function MobileSidebar() {
     },
     {
       route: "/refer-and-earn",
-      name: "Refer and Earn",
+      name: "Refer & Earn",
       icon: <FaUserPlus size={25} />,
     },
     // {

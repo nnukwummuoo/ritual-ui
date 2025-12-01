@@ -21,7 +21,7 @@ const changelog = [
     updates: [
       { type: "coming", text: "Smart Discovery - We're adding AI-powered recommendations to help fans find their ideal creator instantly." },
       { type: "coming", text: "Creator Rankings - Top-performing and most-loved creators will appear on trending pages for even more visibility." },
-      { type: "coming", text: "Ad Revenue Sharing - As Mmeko grows, we'll share part of our ad revenue with verified, active creators — like YouTube and Facebook do. The more content you post and fans you attract, the more you earn — even passively." },
+      { type: "coming", text: "Ad Revenue Sharing - Because Mmeko is built on creators, we believe in sharing value directly. In the future, all ad revenue will be split 50/50 with Creators. This ensures that as Mmeko grows, your earnings grow with it. Without creators, there is no Mmeko — and this model honors that truth.  " },
     ],
   },
 ];
