@@ -26,7 +26,7 @@ const cardStates = {
 // Remove old ratings array - we'll use the new 5-star system
 const getCreatorContent = (hostType: string, hasRating: boolean = false) => {
   const typeText = hostType || "Fan Meet"; // Default to "Fan Meet" if not provided
-  
+
   // Special handling for Fan Call
   const getAcceptedContent = () => {
     if (typeText.toLowerCase() === "fan call") {
@@ -54,7 +54,7 @@ const getCreatorContent = (hostType: string, hasRating: boolean = false) => {
       body: "The experience has been completed successfully."
     };
   };
-  
+
   return {
     accepted: getAcceptedContent(),
     completed: getCompletedContent(),
@@ -78,7 +78,7 @@ const getCreatorContent = (hostType: string, hasRating: boolean = false) => {
 };
 const getFanContent = (price: number, hostType: string, hasRating: boolean = false) => {
   const typeText = hostType || "Fan Meet"; // Default to "Fan Meet" if not provided
-  
+
   // Special handling for Fan Call
   const getAcceptedContent = () => {
     if (typeText.toLowerCase() === "fan call") {
@@ -106,7 +106,7 @@ const getFanContent = (price: number, hostType: string, hasRating: boolean = fal
       body: "How do you rate your experience?"
     };
   };
-  
+
   return {
     accepted: getAcceptedContent(),
     completed: getCompletedContent(),
@@ -132,22 +132,22 @@ const getFanContent = (price: number, hostType: string, hasRating: boolean = fal
 // Function to get the appropriate details title based on host type
 const getDetailsTitle = (hostType: string) => {
   const typeText = hostType || "Fan Meet";
-  
+
   // Map different host types to their appropriate detail titles
   const titleMap: Record<string, string> = {
     "fan call": "Call Details",
-    "fan meet": "Meet Details", 
+    "fan meet": "Meet Details",
     "fan date": "Date Details",
     "fan hangout": "Hangout Details",
     "fan chat": "Chat Details"
   };
-  
+
   // Check for exact matches first
   const lowerType = typeText.toLowerCase();
   if (titleMap[lowerType]) {
     return titleMap[lowerType];
   }
-  
+
   // Check for partial matches
   if (lowerType.includes("call")) {
     return "Call Details";
@@ -160,11 +160,11 @@ const getDetailsTitle = (hostType: string) => {
   } else if (lowerType.includes("chat")) {
     return "Chat Details";
   }
-  
+
   // Default fallback
   return `${typeText} Details`;
 };
-const statusArr = ["request", "expired", "completed", "accepted", "declined", "cancelled"] 
+const statusArr = ["request", "expired", "completed", "accepted", "declined", "cancelled"]
 
 // Helper function to generate initials from first name and last name
 const generateInitials = (firstName?: string, lastName?: string, fallbackName?: string) => {
@@ -178,19 +178,19 @@ const generateInitials = (firstName?: string, lastName?: string, fallbackName?: 
     const initials = `${cleanFirstName.charAt(0).toUpperCase()}${cleanLastName.charAt(0).toUpperCase()}`;
     return initials;
   }
-  
+
   // If we only have first name, use it
   if (cleanFirstName) {
     const initial = cleanFirstName.charAt(0).toUpperCase();
     return initial;
   }
-  
+
   // If we only have last name, use it
   if (cleanLastName) {
     const initial = cleanLastName.charAt(0).toUpperCase();
     return initial;
   }
-  
+
   // Fallback to the original logic using name/username
   if (cleanFallbackName) {
     const names = cleanFallbackName.split(' ').filter(name => name.trim().length > 0);
@@ -202,7 +202,7 @@ const generateInitials = (firstName?: string, lastName?: string, fallbackName?: 
       return initial;
     }
   }
-  
+
   return '?';
 };
 
@@ -214,38 +214,38 @@ interface FanMeetDetails {
 }
 
 interface CardProps {
-    exp: string;
-    children?: React.ReactNode;
-    type: "fan" | "creator";
-    titles?: string[];
-    name: string;
-    username?: string; // Add username prop
-    firstName?: string; // Add first name prop
-    lastName?: string; // Add last name prop
-    img: string;
-    originalPhotoLink?: string; // Original photolink URL (before processing with getImageSource)
-    status: "request" | "expired" | "completed" | "accepted" | "declined" | "cancelled";
-    requestId?: string;
-    price?: number;
-    details?: FanMeetDetails;
-    userid?: string;
-    creator_portfolio_id?: string;
-    targetUserId?: string; // Add target user ID for profile navigation
-    hosttype?: string;
-    isVip?: boolean;
-    vipEndDate?: string | null;
-    createdAt?: string; // Add creation timestamp for countdown
-    onStatusChange?: (requestId: string, newStatus: string) => void;
+  exp: string;
+  children?: React.ReactNode;
+  type: "fan" | "creator";
+  titles?: string[];
+  name: string;
+  username?: string; // Add username prop
+  firstName?: string; // Add first name prop
+  lastName?: string; // Add last name prop
+  img: string;
+  originalPhotoLink?: string; // Original photolink URL (before processing with getImageSource)
+  status: "request" | "expired" | "completed" | "accepted" | "declined" | "cancelled";
+  requestId?: string;
+  price?: number;
+  details?: FanMeetDetails;
+  userid?: string;
+  creator_portfolio_id?: string;
+  targetUserId?: string; // Add target user ID for profile navigation
+  hosttype?: string;
+  isVip?: boolean;
+  vipEndDate?: string | null;
+  createdAt?: string; // Add creation timestamp for countdown
+  onStatusChange?: (requestId: string, newStatus: string) => void;
 }
 
-export default function RequestCard({exp, img, originalPhotoLink, name, username, firstName, lastName, titles=["fan"], status, type="fan", requestId, price, details, userid, creator_portfolio_id, targetUserId, hosttype, isVip=false, vipEndDate=null, createdAt, onStatusChange}: CardProps) {
+export default function RequestCard({ exp, img, originalPhotoLink, name, username, firstName, lastName, titles = ["fan"], status, type = "fan", requestId, price, details, userid, creator_portfolio_id, targetUserId, hosttype, isVip = false, vipEndDate = null, createdAt, onStatusChange }: CardProps) {
   const [loading, setLoading] = useState(false);
   const [currentStatus, setCurrentStatus] = useState(status);
   const [timeLeft, setTimeLeft] = useState<string>("");
   const [isExpired, setIsExpired] = useState(false);
-  
+
   const [showDetails, setShowDetails] = useState(false);
-  
+
   // Function to handle opening details modal
   const handleShowDetails = () => {
     setShowDetails(true);
@@ -259,19 +259,19 @@ export default function RequestCard({exp, img, originalPhotoLink, name, username
   const [selectedRating, setSelectedRating] = useState(0);
   const [submittedRating, setSubmittedRating] = useState(0); // Track the submitted rating
   const [showFeedbackModal, setShowFeedbackModal] = useState(false); // For creator to view feedback
-  const [ratingData, setRatingData] = useState<{rating: number, feedback: string, fanName: string} | null>(null); // Store rating data for creator view
-  
+  const [ratingData, setRatingData] = useState<{ rating: number, feedback: string, fanName: string } | null>(null); // Store rating data for creator view
+
   // Creator rating state (creator rating fan)
   const [showFanRatingModal, setShowFanRatingModal] = useState(false);
   const [fanRatingLoading, setFanRatingLoading] = useState(false);
   const [selectedFanRating, setSelectedFanRating] = useState(0);
   const [submittedFanRating, setSubmittedFanRating] = useState(0); // Track the submitted fan rating
   const [showFanFeedbackModal, setShowFanFeedbackModal] = useState(false); // For fan to view feedback
-  const [fanRatingData, setFanRatingData] = useState<{rating: number, feedback: string, creatorName: string} | null>(null); // Store fan rating data for fan view
-  
+  const [fanRatingData, setFanRatingData] = useState<{ rating: number, feedback: string, creatorName: string } | null>(null); // Store fan rating data for fan view
+
   const router = useRouter();
   const { startVideoCall } = useVideoCall();
-  
+
   // Get current user ID from Redux state
   const currentUserId = useSelector((state: RootState) => state.profile.userId);
 
@@ -285,7 +285,7 @@ export default function RequestCard({exp, img, originalPhotoLink, name, username
     const now = new Date().getTime();
     const createdTime = new Date(createdAt).getTime();
     const isFanCall = hosttype?.toLowerCase() === "fan call";
-    
+
     // Set expiration time based on request type and status
     let expirationHours;
     if (currentStatus === "request") {
@@ -293,21 +293,21 @@ export default function RequestCard({exp, img, originalPhotoLink, name, username
       expirationHours = 24;
     } else if (currentStatus === "accepted") {
       // Accepted requests expire based on type
-      expirationHours = isFanCall ? 48 : 168; // 48h for Fan call, 7 days (168h) for others
+      expirationHours = isFanCall ? 96 : 168; // 96h for Fan call, 7 days (168h) for others
     } else {
       // For other statuses, don't show countdown
       return;
     }
-    
+
     const expirationTime = createdTime + (expirationHours * 60 * 60 * 1000);
     const timeDiff = expirationTime - now;
-    
- 
-    
+
+
+
     if (timeDiff <= 0) {
       setIsExpired(true);
       setTimeLeft("Expired");
-      
+
       // Update the card status to expired
       if (currentStatus !== "expired") {
         setCurrentStatus("expired");
@@ -315,12 +315,12 @@ export default function RequestCard({exp, img, originalPhotoLink, name, username
       }
       return;
     }
-    
+
     const hours = Math.floor(timeDiff / (1000 * 60 * 60));
     const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
     const days = Math.floor(hours / 24);
     const remainingHours = hours % 24;
-    
+
     let timeDisplay = "";
     if (isFanCall || currentStatus === "request") {
       timeDisplay = `${hours}h : ${minutes.toString().padStart(2, '0')}m`;
@@ -331,14 +331,14 @@ export default function RequestCard({exp, img, originalPhotoLink, name, username
         timeDisplay = `${remainingHours}h : ${minutes.toString().padStart(2, '0')}m`;
       }
     }
-    
+
     setTimeLeft(timeDisplay);
   }, [createdAt, currentStatus, hosttype, requestId, onStatusChange]);
 
   // Handle expiration
   const handleExpiration = useCallback(async () => {
     if (!isExpired || !requestId || currentStatus === "expired") return;
-    
+
     try {
       // Call API to expire the request and refund gold
       const response = await fetch(`${URL}/expire-request`, {
@@ -353,7 +353,7 @@ export default function RequestCard({exp, img, originalPhotoLink, name, username
           price
         })
       });
-      
+
       if (response.ok) {
         setCurrentStatus('expired');
         onStatusChange?.(requestId, 'expired');
@@ -363,7 +363,7 @@ export default function RequestCard({exp, img, originalPhotoLink, name, username
       console.error("Error expiring request:", error);
     }
   }, [isExpired, requestId, currentStatus, userid, creator_portfolio_id, price, onStatusChange]);
-  
+
   // Debug log for user ID sources
   useEffect(() => {
     let loginUserId = null;
@@ -376,7 +376,7 @@ export default function RequestCard({exp, img, originalPhotoLink, name, username
     } catch (error) {
       // Error parsing login data - continue with current userId
     }
-    
+
   }, [currentUserId, userid, creator_portfolio_id, type]);
 
 
@@ -407,7 +407,7 @@ export default function RequestCard({exp, img, originalPhotoLink, name, username
         const apiUrl = process.env.NODE_ENV === "development" ? "http://localhost:3100" : URL;
         const response = await fetch(`${apiUrl}/review/check/${requestId}/${userId}/fan-to-creator`);
         const data = await response.json();
-        
+
         if (data.ok && data.hasRated) {
           setSubmittedRating(data.rating);
         } else {
@@ -425,7 +425,7 @@ export default function RequestCard({exp, img, originalPhotoLink, name, username
         const apiUrl = process.env.NODE_ENV === "development" ? "http://localhost:3100" : URL;
         const response = await fetch(`${apiUrl}/review/check/${requestId}/${userid}/fan-to-creator`); // Use fan's userid
         const data = await response.json();
-        
+
         if (data.ok && data.hasRated) {
           setSubmittedRating(data.rating);
           setRatingData({
@@ -449,7 +449,7 @@ export default function RequestCard({exp, img, originalPhotoLink, name, username
         const apiUrl = process.env.NODE_ENV === "development" ? "http://localhost:3100" : URL;
         const fanRatingResponse = await fetch(`${apiUrl}/review/check/${requestId}/${userId}/creator-to-fan`);
         const fanRatingData = await fanRatingResponse.json();
-        
+
         if (fanRatingData.ok && fanRatingData.hasRated) {
           setSubmittedFanRating(fanRatingData.rating);
           setFanRatingData({
@@ -473,7 +473,7 @@ export default function RequestCard({exp, img, originalPhotoLink, name, username
         const apiUrl = process.env.NODE_ENV === "development" ? "http://localhost:3100" : URL;
         const fanRatingResponse = await fetch(`${apiUrl}/review/check/${requestId}/${creator_portfolio_id}/creator-to-fan`);
         const fanRatingData = await fanRatingResponse.json();
-        
+
         if (fanRatingData.ok && fanRatingData.hasRated) {
           setSubmittedFanRating(fanRatingData.rating);
           setFanRatingData({
@@ -503,24 +503,24 @@ export default function RequestCard({exp, img, originalPhotoLink, name, username
     if (!socket || !requestId) return;
 
     // Listen for fan meet request status updates
-    const handleFanRequestStatusUpdate = (data: { 
-      requestId: string; 
-      status: string; 
-      userid: string; 
+    const handleFanRequestStatusUpdate = (data: {
+      requestId: string;
+      status: string;
+      userid: string;
       creator_portfolio_id: string;
       message?: string;
     }) => {
       // Check if this update is for this specific request
       if (data.requestId === requestId) {
-        
+
         // Update local status
         setCurrentStatus(data.status as "request" | "expired" | "completed" | "accepted" | "declined" | "cancelled");
-        
+
         // Don't auto-show rating modal - let user click stars manually
-        
+
         // Notify parent component
         onStatusChange?.(data.requestId, data.status);
-        
+
         // Show toast notification
         if (data.message) {
           toast.info(data.message);
@@ -537,7 +537,7 @@ export default function RequestCard({exp, img, originalPhotoLink, name, username
             };
             return statusMessages[status as keyof typeof statusMessages];
           };
-          
+
           const message = getStatusMessage(data.status, hosttype);
           if (message) {
             toast.info(message);
@@ -548,13 +548,13 @@ export default function RequestCard({exp, img, originalPhotoLink, name, username
 
     // Listen for fan meet request updates
     socket.on('fan_request_status_update', handleFanRequestStatusUpdate);
-    
+
     // Listen for general request updates (fallback)
     socket.on('request_status_update', handleFanRequestStatusUpdate);
 
     // Cleanup listeners on unmount
     return () => {
-        socket.off('fan_request_status_update', handleFanRequestStatusUpdate);
+      socket.off('fan_request_status_update', handleFanRequestStatusUpdate);
       socket.off('request_status_update', handleFanRequestStatusUpdate);
     };
   }, [requestId, onStatusChange, hosttype]);
@@ -575,10 +575,10 @@ export default function RequestCard({exp, img, originalPhotoLink, name, username
   useEffect(() => {
     if (currentStatus === "accepted" || currentStatus === "request") {
       calculateTimeLeft();
-      
+
       // Update countdown every minute
       const interval = setInterval(calculateTimeLeft, 60000);
-      
+
       return () => clearInterval(interval);
     }
   }, [currentStatus, calculateTimeLeft]);
@@ -590,8 +590,8 @@ export default function RequestCard({exp, img, originalPhotoLink, name, username
     }
   }, [isExpired, handleExpiration]);
 
-  
-  
+
+
   const cardBorderVariance = type === "creator" ? "border-blue-500" : type === "fan" && ["accepted", "completed"].includes(currentStatus) ? "border-green-500" : "border-yellow-500"
   const cardTextVariance = type === "creator" ? "text-blue-500" : type === "fan" && ["accepted", "completed"].includes(currentStatus) ? "text-green-500" : "text-yellow-500"
 
@@ -617,7 +617,7 @@ export default function RequestCard({exp, img, originalPhotoLink, name, username
           time: details.time
         })
       });
-      
+
       if (response.ok) {
         setCurrentStatus('accepted');
         onStatusChange?.(requestId, 'accepted');
@@ -644,7 +644,7 @@ export default function RequestCard({exp, img, originalPhotoLink, name, username
         date: details.date,
         time: details.time
       };
-      
+
       const response = await fetch(`${URL}/declinerequest`, {
         method: 'PUT',
         headers: {
@@ -652,7 +652,7 @@ export default function RequestCard({exp, img, originalPhotoLink, name, username
         },
         body: JSON.stringify(requestBody)
       });
-      
+
       if (response.ok) {
         setCurrentStatus('declined');
         onStatusChange?.(requestId, 'declined');
@@ -670,47 +670,47 @@ export default function RequestCard({exp, img, originalPhotoLink, name, username
     }
   };
 
-    const handleCancel = async () => {
-      if (!requestId || !details || !userid || !creator_portfolio_id) {
-        toast.error('Missing required data for cancel request');
-        return;
-      }
-      setLoading(true);
-      try {
-        const requestBody = {
-          id: requestId,
-          userid: userid,
-          creator_portfolio_id: creator_portfolio_id
-        };
-        
-        const response = await fetch(`${URL}/cancelrequest`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(requestBody)
-        });
-        
-        if (response.ok) {
-          setCurrentStatus('cancelled');
-          onStatusChange?.(requestId, 'cancelled');
-          // Don't show toast here - the socket notification will handle it
-        } else {
-          const errorData = await response.json();
-          const serviceType = hosttype || "Fan request";
-          toast.error(errorData.message || `Failed to cancel ${serviceType.toLowerCase()} request`);
-        }
-      } catch {
+  const handleCancel = async () => {
+    if (!requestId || !details || !userid || !creator_portfolio_id) {
+      toast.error('Missing required data for cancel request');
+      return;
+    }
+    setLoading(true);
+    try {
+      const requestBody = {
+        id: requestId,
+        userid: userid,
+        creator_portfolio_id: creator_portfolio_id
+      };
+
+      const response = await fetch(`${URL}/cancelrequest`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody)
+      });
+
+      if (response.ok) {
+        setCurrentStatus('cancelled');
+        onStatusChange?.(requestId, 'cancelled');
+        // Don't show toast here - the socket notification will handle it
+      } else {
+        const errorData = await response.json();
         const serviceType = hosttype || "Fan request";
-        toast.error(`Error cancelling ${serviceType.toLowerCase()} request`);
-      } finally {
-        setLoading(false);
+        toast.error(errorData.message || `Failed to cancel ${serviceType.toLowerCase()} request`);
       }
-    };
+    } catch {
+      const serviceType = hosttype || "Fan request";
+      toast.error(`Error cancelling ${serviceType.toLowerCase()} request`);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleComplete = async () => {
     if (!requestId) return;
-    
+
     // If it's a Fan Call, start video call instead of completing
     if (hosttype === "Fan call") {
       if (creator_portfolio_id && (username || name)) {
@@ -721,12 +721,12 @@ export default function RequestCard({exp, img, originalPhotoLink, name, username
           : (img && img !== '/picture-1.jfif' && img !== '/default-image.png' && !img.includes('/api/image/view'))
             ? img // Use img if it's not a proxy URL and not default
             : undefined;
-        
+
         startVideoCall(creator_portfolio_id, username || name, price || 1, isVip, vipEndDate, firstName, lastName, photoUrl);
       }
       return;
     }
-    
+
     // For Fan Meet/Fan Date, complete the request
     setLoading(true);
     try {
@@ -741,11 +741,11 @@ export default function RequestCard({exp, img, originalPhotoLink, name, username
           creator_portfolio_id: creator_portfolio_id
         })
       });
-      
+
       if (response.ok) {
         setCurrentStatus('completed');
         onStatusChange?.(requestId, 'completed');
-        
+
         // Don't auto-show rating modal - let user click stars manually
         // Don't show toast here - the socket notification will handle it
       } else {
@@ -753,7 +753,7 @@ export default function RequestCard({exp, img, originalPhotoLink, name, username
         toast.error(`Failed to complete ${serviceType.toLowerCase()}`);
       }
     } catch {
-          const serviceType = hosttype || "Fan request";
+      const serviceType = hosttype || "Fan request";
       toast.error(`Error completing ${serviceType.toLowerCase()}`);
     } finally {
       setLoading(false);
@@ -764,7 +764,7 @@ export default function RequestCard({exp, img, originalPhotoLink, name, username
   const handleRatingSubmit = async (rating: number, feedback: string) => {
     // Get user ID from Redux state or localStorage as fallback
     let userId = currentUserId;
-    
+
     // Fallback to localStorage if Redux doesn't have it
     if (!userId && typeof window !== 'undefined') {
       try {
@@ -777,7 +777,7 @@ export default function RequestCard({exp, img, originalPhotoLink, name, username
         // Error parsing login data - continue with current userId
       }
     }
-    
+
 
     console.log('🔍 [handleRatingSubmit] Fan rating creator - checking IDs:', {
       requestId,
@@ -852,7 +852,7 @@ export default function RequestCard({exp, img, originalPhotoLink, name, username
 
     // Get user ID from Redux state or localStorage as fallback
     let userId = currentUserId;
-    
+
     // Fallback to localStorage if Redux doesn't have it
     if (!userId && typeof window !== 'undefined') {
       try {
@@ -867,11 +867,11 @@ export default function RequestCard({exp, img, originalPhotoLink, name, username
         // Error parsing login data - continue with current userId
       }
     }
-    
-;
-    
+
+    ;
+
     if (!requestId || !userId || !userid) {
-     
+
       toast.error("Missing required information for rating");
       return;
     }
@@ -891,7 +891,7 @@ export default function RequestCard({exp, img, originalPhotoLink, name, username
       // Force localhost for development
       const apiUrl = process.env.NODE_ENV === "development" ? "http://localhost:3100" : URL;
       console.log('🌐 [handleFanRatingSubmit] Using API URL:', apiUrl);
-      
+
       const response = await fetch(`${apiUrl}/review/submit`, {
         method: 'POST',
         headers: {
@@ -901,7 +901,7 @@ export default function RequestCard({exp, img, originalPhotoLink, name, username
       });
 
       console.log('📥 [handleFanRatingSubmit] Response status:', response.status);
-      
+
       if (response.ok) {
         const successData = await response.json();
         console.log('✅ [handleFanRatingSubmit] Success response:', successData);
@@ -945,16 +945,16 @@ export default function RequestCard({exp, img, originalPhotoLink, name, username
     <div className={`w-full flex flex-col gap-6 rounded-lg border-2 ${cardBorderVariance} p-4 mx-auto text-white bg-slate-800 overflow-visible`}>
       <div className={`flex justify-between items-start gap-4 ${cardTextVariance}`}>
         <div className="flex gap-4">
-          <div 
+          <div
             className={`size-16 relative rounded-full border-4 overflow-hidden ${cardBorderVariance} bg-gray-900 flex items-center justify-center cursor-pointer hover:opacity-80 transition-opacity`}
             onClick={handleProfileClick}
           >
             {img && img !== '/picture-1.jfif' && img !== '/default-image.png' && img.trim() !== '' ? (
-              <Image 
-                src={img} 
-                width={100} 
-                alt="picture" 
-                height={100} 
+              <Image
+                src={img}
+                width={100}
+                alt="picture"
+                height={100}
                 className='absolute top-0 left-0 size-full object-cover'
                 unoptimized
                 onError={(e) => {
@@ -990,7 +990,7 @@ export default function RequestCard({exp, img, originalPhotoLink, name, username
                 {generateInitials(firstName, lastName, username || name)}
               </div>
             )}
-            
+
           </div>
           <div className='text-sm'>
             <div className='flex items-center gap-2'>
@@ -998,7 +998,7 @@ export default function RequestCard({exp, img, originalPhotoLink, name, username
                 {username || name}
               </p>
             </div>
-            <div className='flex gap-1'>{titles?.map((title, i)=> i === titles.length -1 ? <p key={title}>{title}</p> : <p key={title}>{title} &#x2022; </p>)}</div>
+            <div className='flex gap-1'>{titles?.map((title, i) => i === titles.length - 1 ? <p key={title}>{title}</p> : <p key={title}>{title} &#x2022; </p>)}</div>
           </div>
         </div>
 
@@ -1008,10 +1008,10 @@ export default function RequestCard({exp, img, originalPhotoLink, name, username
       </div>
 
       <h3 className={`text-3xl md:text-4xl ${cardTextVariance}`}>{
-          type === "creator" ? (getCreatorContent(hosttype || "Fan Request", submittedRating > 0)[currentStatus]?.head || "Unknown Status") : (getFanContent(price || 0, hosttype || "Fan Request", submittedRating > 0)[currentStatus]?.head || "Unknown Status")
+        type === "creator" ? (getCreatorContent(hosttype || "Fan Request", submittedRating > 0)[currentStatus]?.head || "Unknown Status") : (getFanContent(price || 0, hosttype || "Fan Request", submittedRating > 0)[currentStatus]?.head || "Unknown Status")
       }</h3>
 
-      <p className="text-sm md:text-base">{ type === "creator" ? (getCreatorContent(hosttype || "Fan Request", submittedRating > 0)[currentStatus]?.body || "Status information not available") : (getFanContent(price || 0, hosttype || "Fan Request", submittedRating > 0)[currentStatus]?.body || "Status information not available") }</p>
+      <p className="text-sm md:text-base">{type === "creator" ? (getCreatorContent(hosttype || "Fan Request", submittedRating > 0)[currentStatus]?.body || "Status information not available") : (getFanContent(price || 0, hosttype || "Fan Request", submittedRating > 0)[currentStatus]?.body || "Status information not available")}</p>
 
       {/* Rating Stars - Show for fans when completed */}
       {type === "fan" && currentStatus === "completed" && (
@@ -1020,7 +1020,7 @@ export default function RequestCard({exp, img, originalPhotoLink, name, username
             {[1, 2, 3, 4, 5].map((star) => {
               const isFilled = star <= submittedRating;
               const isClickable = submittedRating === 0; // Only clickable if no rating submitted yet
-              
+
               return (
                 <button
                   key={star}
@@ -1031,14 +1031,12 @@ export default function RequestCard({exp, img, originalPhotoLink, name, username
                       setSelectedRating(star);
                     }
                   }}
-                  className={`text-4xl transition-colors focus:outline-none ${
-                    isClickable ? "hover:scale-110 cursor-pointer" : "cursor-default"
-                  }`}
+                  className={`text-4xl transition-colors focus:outline-none ${isClickable ? "hover:scale-110 cursor-pointer" : "cursor-default"
+                    }`}
                   disabled={!isClickable}
                 >
-                  <span className={`transition-colors ${
-                    isFilled ? "text-yellow-400" : "text-gray-400"
-                  } ${isClickable ? "hover:text-yellow-400" : ""}`}>
+                  <span className={`transition-colors ${isFilled ? "text-yellow-400" : "text-gray-400"
+                    } ${isClickable ? "hover:text-yellow-400" : ""}`}>
                     ★
                   </span>
                 </button>
@@ -1060,7 +1058,7 @@ export default function RequestCard({exp, img, originalPhotoLink, name, username
           <div className="flex justify-center gap-2">
             {[1, 2, 3, 4, 5].map((star) => {
               const isFilled = star <= submittedRating;
-              
+
               return (
                 <button
                   key={star}
@@ -1071,9 +1069,8 @@ export default function RequestCard({exp, img, originalPhotoLink, name, username
                   }}
                   className="text-4xl transition-colors focus:outline-none hover:scale-110 cursor-pointer"
                 >
-                  <span className={`transition-colors ${
-                    isFilled ? "text-yellow-400" : "text-gray-400"
-                  } hover:text-yellow-400`}>
+                  <span className={`transition-colors ${isFilled ? "text-yellow-400" : "text-gray-400"
+                    } hover:text-yellow-400`}>
                     ★
                   </span>
                 </button>
@@ -1094,7 +1091,7 @@ export default function RequestCard({exp, img, originalPhotoLink, name, username
             {[1, 2, 3, 4, 5].map((star) => {
               const isFilled = star <= submittedFanRating;
               const isClickable = submittedFanRating === 0; // Only clickable if no rating submitted yet
-              
+
               return (
                 <button
                   key={star}
@@ -1105,14 +1102,12 @@ export default function RequestCard({exp, img, originalPhotoLink, name, username
                       setSelectedFanRating(star);
                     }
                   }}
-                  className={`text-4xl transition-colors focus:outline-none ${
-                    isClickable ? "hover:scale-110 cursor-pointer" : "cursor-default"
-                  }`}
+                  className={`text-4xl transition-colors focus:outline-none ${isClickable ? "hover:scale-110 cursor-pointer" : "cursor-default"
+                    }`}
                   disabled={!isClickable}
                 >
-                  <span className={`transition-colors ${
-                    isFilled ? "text-yellow-400" : "text-gray-400"
-                  } ${isClickable ? "hover:text-yellow-400" : ""}`}>
+                  <span className={`transition-colors ${isFilled ? "text-yellow-400" : "text-gray-400"
+                    } ${isClickable ? "hover:text-yellow-400" : ""}`}>
                     ★
                   </span>
                 </button>
@@ -1134,7 +1129,7 @@ export default function RequestCard({exp, img, originalPhotoLink, name, username
           <div className="flex justify-center gap-2">
             {[1, 2, 3, 4, 5].map((star) => {
               const isFilled = star <= submittedFanRating;
-              
+
               return (
                 <button
                   key={star}
@@ -1145,9 +1140,8 @@ export default function RequestCard({exp, img, originalPhotoLink, name, username
                   }}
                   className="text-4xl transition-colors focus:outline-none hover:scale-110 cursor-pointer"
                 >
-                  <span className={`transition-colors ${
-                    isFilled ? "text-yellow-400" : "text-gray-400"
-                  } hover:text-yellow-400`}>
+                  <span className={`transition-colors ${isFilled ? "text-yellow-400" : "text-gray-400"
+                    } hover:text-yellow-400`}>
                     ★
                   </span>
                 </button>
@@ -1193,16 +1187,15 @@ export default function RequestCard({exp, img, originalPhotoLink, name, username
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999] p-4">
           <div className="bg-white rounded-lg p-6 max-w-md w-full">
             <h2 className="text-xl font-bold text-gray-800 mb-4">Rating & Feedback</h2>
-            
+
             <div className="mb-4">
               <p className="text-sm text-gray-600 mb-2">Rating from {ratingData.fanName}:</p>
               <div className="flex gap-1">
                 {[1, 2, 3, 4, 5].map((star) => (
                   <span
                     key={star}
-                    className={`text-2xl ${
-                      star <= ratingData.rating ? "text-yellow-400" : "text-gray-300"
-                    }`}
+                    className={`text-2xl ${star <= ratingData.rating ? "text-yellow-400" : "text-gray-300"
+                      }`}
                   >
                     ★
                   </span>
@@ -1237,16 +1230,15 @@ export default function RequestCard({exp, img, originalPhotoLink, name, username
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999] p-4">
           <div className="bg-white rounded-lg p-6 max-w-md w-full">
             <h2 className="text-xl font-bold text-gray-800 mb-4">Rating & Feedback</h2>
-            
+
             <div className="mb-4">
               <p className="text-sm text-gray-600 mb-2">Rating from {fanRatingData.creatorName}:</p>
               <div className="flex gap-1">
                 {[1, 2, 3, 4, 5].map((star) => (
                   <span
                     key={star}
-                    className={`text-2xl ${
-                      star <= fanRatingData.rating ? "text-yellow-400" : "text-gray-300"
-                    }`}
+                    className={`text-2xl ${star <= fanRatingData.rating ? "text-yellow-400" : "text-gray-300"
+                      }`}
                   >
                     ★
                   </span>
@@ -1277,72 +1269,72 @@ export default function RequestCard({exp, img, originalPhotoLink, name, username
       )}
 
       <div className={`flex flex-col gap-4 items-end`}>
-        { statusArr.slice(1).includes(currentStatus) ? (
-// keep this row horizontal and make buttons equal width
-<div className="flex w-full items-stretch gap-3">
-  <div className="flex-1 flex">
-    <div className="w-full border border-gray-600 text-gray-500 px-3 py-2 rounded-lg text-xs md:text-sm flex items-center justify-center">
-      {cardStates[currentStatus as keyof typeof cardStates]}
-    </div>
-  </div>
+        {statusArr.slice(1).includes(currentStatus) ? (
+          // keep this row horizontal and make buttons equal width
+          <div className="flex w-full items-stretch gap-3">
+            <div className="flex-1 flex">
+              <div className="w-full border border-gray-600 text-gray-500 px-3 py-2 rounded-lg text-xs md:text-sm flex items-center justify-center">
+                {cardStates[currentStatus as keyof typeof cardStates]}
+              </div>
+            </div>
 
-  <div className="flex-1">
-    { type === "creator" && currentStatus === "accepted" ? (
-      // Creator accepted → Chat Now + View details
-      <div className="flex gap-3">
-        <div className="flex-1">
-          <FanActionBtn 
-            label="Chat Now" 
-            className={fanActionClass} 
-            onClick={() => {
-              // Creator wants to message the fan
-              if (userid) {
-                router.push(`/message/${userid}`);
-              }
-            }}
-          />
-        </div>
-        <div className="flex-1">
-          <button className={fanActionClass} onClick={handleShowDetails}>View details</button>
-        </div>
-      </div>
-    ) : type === "fan" && currentStatus === "accepted" ? (
-      // Fan accepted → Mark complete/Start call + View details
-      <div className="flex gap-3">
-        <div className="flex-1">
-          <FanActionBtn 
-            label={hosttype === "Fan call" ? "Start call" : "Mark as complete"} 
-            className={fanActionClass} 
-            onClick={handleComplete} 
-            disabled={loading} 
-          />
-        </div>
-        <div className="flex-1">
-          <button className={fanActionClass} onClick={handleShowDetails}>View details</button>
-        </div>
-      </div>
-    ) : type === "creator" ? (
-      <FanActionBtn 
-        label="Chat Now" 
-        className={fanActionClass} 
-        onClick={() => {
-          // Creator wants to message the fan
-          if (userid) {
-            console.log('🔍 [RequestCard] Chat Now button clicked (single):', {
-              userid,
-              creator_portfolio_id,
-              currentUserId,
-              timestamp: new Date().toISOString()
-            });
-            router.push(`/message/${userid}`);
-          }
-        }}
-      />
-    ) : (
-      <FanActionBtn label="Renew request" className={fanActionClass} onClick={handleRenewRequest} />
-    )}
-  </div>
-</div>
+            <div className="flex-1">
+              {type === "creator" && currentStatus === "accepted" ? (
+                // Creator accepted → Chat Now + View details
+                <div className="flex gap-3">
+                  <div className="flex-1">
+                    <FanActionBtn
+                      label="Chat Now"
+                      className={fanActionClass}
+                      onClick={() => {
+                        // Creator wants to message the fan
+                        if (userid) {
+                          router.push(`/message/${userid}`);
+                        }
+                      }}
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <button className={fanActionClass} onClick={handleShowDetails}>View details</button>
+                  </div>
+                </div>
+              ) : type === "fan" && currentStatus === "accepted" ? (
+                // Fan accepted → Mark complete/Start call + View details
+                <div className="flex gap-3">
+                  <div className="flex-1">
+                    <FanActionBtn
+                      label={hosttype === "Fan call" ? "Start call" : "Mark as complete"}
+                      className={fanActionClass}
+                      onClick={handleComplete}
+                      disabled={loading}
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <button className={fanActionClass} onClick={handleShowDetails}>View details</button>
+                  </div>
+                </div>
+              ) : type === "creator" ? (
+                <FanActionBtn
+                  label="Chat Now"
+                  className={fanActionClass}
+                  onClick={() => {
+                    // Creator wants to message the fan
+                    if (userid) {
+                      console.log('🔍 [RequestCard] Chat Now button clicked (single):', {
+                        userid,
+                        creator_portfolio_id,
+                        currentUserId,
+                        timestamp: new Date().toISOString()
+                      });
+                      router.push(`/message/${userid}`);
+                    }
+                  }}
+                />
+              ) : (
+                <FanActionBtn label="Renew request" className={fanActionClass} onClick={handleRenewRequest} />
+              )}
+            </div>
+          </div>
 
         ) : (
           <>
@@ -1359,7 +1351,7 @@ export default function RequestCard({exp, img, originalPhotoLink, name, username
 
             {/* Action buttons row: Responsive layout for small screens */}
             <div className='w-full flex flex-row gap-2 sm:gap-4 items-center'>
-              { type === "creator" ? (
+              {type === "creator" ? (
                 // Creator: Accept | Decline | View details (responsive widths)
                 <>
                   <div className='flex-1 min-w-0'>
@@ -1390,9 +1382,9 @@ export default function RequestCard({exp, img, originalPhotoLink, name, username
 
       {/* Details Modal */}
       {showDetails && (
-        <DetailsModal 
-          details={details} 
-          onClose={() => setShowDetails(false)} 
+        <DetailsModal
+          details={details}
+          onClose={() => setShowDetails(false)}
           type={type}
           hosttype={hosttype}
           timeLeft={timeLeft}
@@ -1404,10 +1396,10 @@ export default function RequestCard({exp, img, originalPhotoLink, name, username
   );
 }
 
-function CreatorActionBtn({type, onClick, disabled}: {type: "accept" | "decline", onClick?: () => void, disabled?: boolean}){
+function CreatorActionBtn({ type, onClick, disabled }: { type: "accept" | "decline", onClick?: () => void, disabled?: boolean }) {
   // Use same base sizing so heights match - responsive padding and text
   const base = 'w-full px-3 sm:px-6 py-2 sm:py-3 rounded-lg transition-all duration-500 text-xs sm:text-sm text-white flex items-center justify-center';
-  return <button 
+  return <button
     className={`${base} ${type === "accept" ? "hover:bg-green-700 bg-green-600" : "hover:bg-red-700 bg-red-600"} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
     onClick={onClick}
     disabled={disabled}
@@ -1416,10 +1408,10 @@ function CreatorActionBtn({type, onClick, disabled}: {type: "accept" | "decline"
   </button>
 };
 
-function FanActionBtn({label, className, onClick, disabled}: {label: string, className?: string, onClick?: () => void, disabled?: boolean}){
+function FanActionBtn({ label, className, onClick, disabled }: { label: string, className?: string, onClick?: () => void, disabled?: boolean }) {
   // allow overriding/using shared class; default uses the same base so sizing is consistent
   const defaultClass = 'w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg transition-all duration-500 text-xs sm:text-sm flex items-center justify-center border border-gray-500 text-gray-300 hover:bg-slate-700 bg-transparent';
-  return <button 
+  return <button
     className={`${className ? className : defaultClass} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
     onClick={onClick}
     disabled={disabled}
@@ -1430,24 +1422,24 @@ function FanActionBtn({label, className, onClick, disabled}: {label: string, cla
 
 // Old Rating component removed - using new 5-star system
 
-function DetailsModal({ 
-  details, 
-  onClose, 
+function DetailsModal({
+  details,
+  onClose,
   type,
   hosttype,
   timeLeft,
   isExpired,
   currentStatus
-}: { 
-  details?: FanMeetDetails; 
-  onClose: () => void; 
+}: {
+  details?: FanMeetDetails;
+  onClose: () => void;
   type: "fan" | "creator";
   hosttype?: string;
   timeLeft?: string;
   isExpired?: boolean;
   currentStatus?: string;
 }) {
-  
+
   // Fallback countdown calculation for modal
   const getFallbackCountdown = () => {
     // This is a fallback - in real implementation, createdAt should be passed to modal
@@ -1460,7 +1452,7 @@ function DetailsModal({
         <div className="bg-white rounded-lg p-6 max-w-md w-full">
           <h2 className="text-xl font-bold text-gray-800 mb-4">{getDetailsTitle(hosttype || "Fan Meet")}</h2>
           <p className="text-gray-600 mb-4">Details not available</p>
-          <button 
+          <button
             onClick={onClose}
             className="w-full bg-gray-500 text-white py-2 px-4 rounded-lg hover:bg-gray-600 transition-colors"
           >
@@ -1474,10 +1466,10 @@ function DetailsModal({
   const formatDate = (dateString: string) => {
     try {
       const date = new Date(dateString);
-      return date.toLocaleDateString('en-US', { 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric' 
+      return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
       });
     } catch {
       return dateString;
@@ -1500,7 +1492,7 @@ function DetailsModal({
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
         <h2 className="text-xl font-bold text-gray-800 mb-6">{getDetailsTitle(hosttype || "Fan Meet")}</h2>
-        
+
         {/* Expiration Countdown - Only show for accepted requests */}
         {currentStatus === "accepted" && (
           <div className="mb-6 p-4 bg-gradient-to-r from-orange-50 to-red-50 border border-orange-200 rounded-lg">
@@ -1514,12 +1506,12 @@ function DetailsModal({
                 {isExpired && (
                   <p className="text-xs text-red-500 mt-1">Request has expired</p>
                 )}
-               
+
               </div>
             </div>
           </div>
         )}
-        
+
         {/* Date & Time */}
         <div className="flex items-start gap-3 mb-4">
           <IoCalendarOutline className="text-gray-600 text-xl mt-1" />
@@ -1573,7 +1565,7 @@ function DetailsModal({
             <div>
               <h3 className="font-semibold text-gray-800">Call Expiration</h3>
               <p className="text-gray-600 text-sm mt-1">
-                Call must start within 48 hours after acceptance or it will automatically expire.
+                Call must start within 96 hours after acceptance or it will automatically expire.
               </p>
             </div>
           </div>
@@ -1599,7 +1591,7 @@ function DetailsModal({
           </div>
         )}
 
-        <button 
+        <button
           onClick={onClose}
           className="w-full bg-blue-500 text-white py-3 px-4 rounded-lg hover:bg-blue-600 transition-colors font-semibold"
         >
