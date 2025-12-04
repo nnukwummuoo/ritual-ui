@@ -908,7 +908,7 @@ export const Profile = () => {
 
     }
 
-  }, [targetUserId, token, isViewingOwnProfile, dispatch]);
+  }, [targetUserId, token, isViewingOwnProfile, dispatch, loggedInUserId]);
 
 
 
@@ -940,6 +940,11 @@ export const Profile = () => {
 
           dispatch(getAllUsersForViewing({ token }));
 
+          // Also fetch the current logged-in user's following list for star icon
+          if (loggedInUserId) {
+            dispatch(getfollow({ userid: String(loggedInUserId), token }));
+          }
+
         }
 
       }
@@ -958,7 +963,7 @@ export const Profile = () => {
 
     }
 
-  }, [getprofilebyidstats, userid, postuserid]);
+  }, [getprofilebyidstats, userid, postuserid, loggedInUserId, token, dispatch, isViewingOwnProfile, targetUserId]);
 
 
 
@@ -1589,11 +1594,15 @@ export const Profile = () => {
 
     if (!userId || !token) {
 
+      console.log('[fetchExclusivePosts] Skipping - missing userId or token');
+
       return;
 
     }
 
 
+
+    console.log('[fetchExclusivePosts] Fetching exclusive posts for userId:', userId);
 
     setIsLoadingExclusivePosts(true);
 
@@ -1615,31 +1624,21 @@ export const Profile = () => {
 
           },
 
-          timeout: 10000
+          timeout: 20000
 
         }
 
-      ).catch((error) => {
+      );
 
-        // Log more details about the error for debugging
 
-        console.error("Error fetching exclusive posts - Full error:", {
 
-          message: error.message,
+      console.log('[fetchExclusivePosts] Response received:', {
 
-          status: error.response?.status,
+        ok: response.data?.ok,
 
-          statusText: error.response?.statusText,
+        postsCount: response.data?.posts?.length || 0,
 
-          url: error.config?.url,
-
-          method: error.config?.method,
-
-          data: error.response?.data
-
-        });
-
-        throw error;
+        message: response.data?.message
 
       });
 
@@ -1650,6 +1649,12 @@ export const Profile = () => {
       if (response.data && response.data.ok) {
 
         posts = response.data.posts || [];
+
+        console.log('[fetchExclusivePosts] Posts extracted:', posts.length);
+
+      } else {
+
+        console.warn('[fetchExclusivePosts] Response not OK:', response.data);
 
       }
 
@@ -1667,11 +1672,14 @@ export const Profile = () => {
 
 
 
+      console.log('[fetchExclusivePosts] Filtered posts:', filteredPosts.length);
+
       setExclusivePosts(filteredPosts);
 
 
       // Check purchased status for all posts if user is logged in and not viewing own profile
       if (loggedInUserId && loggedInUserId !== userId && filteredPosts.length > 0) {
+        console.log('[fetchExclusivePosts] Checking purchase status for', filteredPosts.length, 'posts');
         const purchaseChecks = filteredPosts.map(async (post: any) => {
           const postId = post._id || post.postid || post.id;
           if (postId) {
@@ -1692,24 +1700,34 @@ export const Profile = () => {
           }
         });
 
-        await Promise.all(purchaseChecks);
+        try {
+          await Promise.all(purchaseChecks);
+        } catch (e) {
+          console.error("Error in purchase checks:", e);
+        }
       }
     } catch (error: any) {
 
-      console.error("Error fetching exclusive posts:", error);
+      console.error("[fetchExclusivePosts] Error fetching exclusive posts:", error);
 
       // Log detailed error information
       if (error.response) {
-        console.error("Response error:", {
+        console.error("[fetchExclusivePosts] Response error:", {
           status: error.response.status,
           statusText: error.response.statusText,
           data: error.response.data,
-          url: error.config?.url
+          url: error.config?.url,
+          method: error.config?.method
         });
       } else if (error.request) {
-        console.error("Request error - no response received:", error.request);
+        console.error("[fetchExclusivePosts] Request error - no response received from server");
+        console.error("Request details:", {
+          url: `${API_URL}/getallExclusivePosts`,
+          method: 'POST',
+          userId: userId
+        });
       } else {
-        console.error("Error setting up request:", error.message);
+        console.error("[fetchExclusivePosts] Error setting up request:", error.message);
       }
 
       // Set empty array on error to prevent UI issues
@@ -2991,7 +3009,7 @@ export const Profile = () => {
 
                 <div className="absolute bottom-16 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-75 text-white text-xs px-2 py-1 rounded">
 
-                  Click to play
+               
 
                 </div>
 
@@ -3269,6 +3287,36 @@ export const Profile = () => {
 
 
 
+              // Extract post data for state management
+              const postId = post._id || post.postid || post.id;
+              const postAuthorId = post?.userid || post?.userId || post?.ownerid || post?.ownerId || post?.authorId || post?.createdBy;
+
+              // Determine if user has liked this post
+              const likeCount = Number(post?.likeCount || 0);
+              const likedByArr = Array.isArray(post?.likedBy) ? post.likedBy : [];
+              const idStr = (v: any) => (v == null ? undefined : String(v));
+              const selfIdStr = idStr(loggedInUserId) || idStr(localUserid);
+              const liked = !!(selfIdStr && likedByArr.includes(selfIdStr));
+
+              // Determine if user is following this post's author
+              const isFollowing = followingList.includes(
+                Array.isArray(postAuthorId) ? postAuthorId.join(',') : String(postAuthorId)
+              );
+
+              // Get UI state with fallbacks to actual data
+              const uiState = modalUi[postId] || {};
+              const uiLiked = uiState.liked ?? liked;
+              const uiLikeCount = uiState.likeCount ?? likeCount;
+              const uiIsFollowing = uiState.isFollowing ?? isFollowing;
+              const commentsArr: any[] = Array.isArray(post?.comments)
+                ? post?.comments
+                : Array.isArray(post?.comment)
+                  ? post?.comment
+                  : [];
+              const uiComments = uiState.comments ?? commentsArr;
+              const commentCount = commentsArr.length || Number(post?.commentCount || 0);
+              const uiCommentCount = uiState.commentCount ?? commentCount;
+
               return (
 
                 <div
@@ -3343,15 +3391,57 @@ export const Profile = () => {
 
                         </div>
 
+                        {/* VIP Badge for post author */}
+
+                        {(() => {
+
+                          // Check if current user (viewing own profile) is VIP
+
+                          if (isViewingOwnProfile && vipStatus?.isVip) {
+
+                            return <VIPBadge size="xl" className="absolute -top-5 -right-5" isVip={vipStatus.isVip} vipEndDate={vipStatus.vipEndDate} />;
+
+                          }
+
+
+
+                          // Check if profile owner (being viewed) is VIP
+
+                          if (!isViewingOwnProfile && profileOwnerVipStatus) {
+
+                            return <VIPBadge size="xl" className="absolute -top-5 -right-5" isVip={profileOwnerVipStatus} vipEndDate={vipStatus?.vipEndDate} />;
+
+                          }
+
+
+
+                          return null;
+
+                        })()}
+
                       </div>
 
                       <div className="flex-1">
 
-                        <p className="font-medium text-white">
+                        <p className="font-medium text-white flex items-center gap-1">
 
                           {isViewingOwnProfile ? `${firstname} ${lastname}`.trim() :
 
                             `${profileData?.firstname || ""} ${profileData?.lastname || ""}`.trim()}
+
+                          {/* Creator Verified Badge */}
+
+                          {(() => {
+
+                            const isVerified = isViewingOwnProfile ? creator_verified : profileData?.creator_verified;
+
+                            return isVerified && (
+
+                              <BadgeCheck size={17} fill="white" className="text-black" />
+
+                            );
+
+                          })()}
 
                         </p>
 
@@ -3563,23 +3653,123 @@ export const Profile = () => {
 
                     className="mt-3 border-t border-gray-700 pt-2"
 
-                    starred={false}
+                    starred={uiIsFollowing}
 
-                    liked={false}
+                    liked={uiLiked}
 
-                    likeCount={post.likeCount || post.likes?.length || 0}
+                    likeCount={uiLikeCount}
 
-                    commentCount={post.commentCount || post.comments?.length || 0}
+                    commentCount={uiCommentCount}
 
                     post={post}
 
-                    onStar={() => { }}
+                    onStar={async () => {
+
+                      if (!loggedInUserId || !postAuthorId || !token) {
+
+                        toast.error("Please log in to follow users");
+
+                        return;
+
+                      }
+
+
+
+                      const currentUiState = modalUi[postId] || {};
+
+                      const currentlyFollowing = currentUiState.isFollowing ?? isFollowing;
+
+
+
+                      // Optimistic UI update
+
+                      setModalUi(prev => ({
+
+                        ...prev,
+
+                        [postId]: {
+
+                          ...prev[postId],
+
+                          isFollowing: !currentlyFollowing,
+
+                        },
+
+                      }));
+
+
+
+                      try {
+
+                        if (currentlyFollowing) {
+
+                          await dispatch(unfollow({
+
+                            userid: Array.isArray(postAuthorId) ? postAuthorId.join(',') : postAuthorId,
+
+                            followerid: loggedInUserId,
+
+                            token
+
+                          })).unwrap();
+
+
+
+                          toast.success("Unfollowed successfully!");
+
+                        } else {
+
+                          await dispatch(follow({
+
+                            userid: Array.isArray(postAuthorId) ? postAuthorId.join(',') : postAuthorId,
+
+                            followerid: loggedInUserId,
+
+                            token
+
+                          })).unwrap();
+
+
+
+                          toast.success("Followed successfully!");
+
+                        }
+
+
+
+                        dispatch(getfollow({ userid: loggedInUserId, token }));
+
+
+
+                      } catch {
+
+                        // Revert optimistic update on error
+
+                        setModalUi(prev => ({
+
+                          ...prev,
+
+                          [postId]: {
+
+                            ...prev[postId],
+
+                            isFollowing: currentlyFollowing,
+
+                          },
+
+                        }));
+
+
+
+                        toast.error(`Failed to ${currentlyFollowing ? 'unfollow' : 'follow'}. Please try again.`);
+
+                      }
+
+                    }}
 
                     onLike={async () => {
 
                       const uid = String(loggedInUserId || localUserid || "");
-
-                      const postId = post._id || post.postid || post.id;
 
 
 
@@ -3590,6 +3780,34 @@ export const Profile = () => {
                         return;
 
                       }
+
+
+
+                      const curr = modalUi[postId] || {};
+
+                      const nextLiked = !(curr.liked ?? liked);
+
+                      const currentCount = curr.likeCount ?? likeCount;
+
+
+
+                      // Optimistic UI update
+
+                      setModalUi(prev => ({
+
+                        ...prev,
+
+                        [postId]: {
+
+                          ...curr,
+
+                          liked: nextLiked,
+
+                          likeCount: Math.max(0, currentCount + (nextLiked ? 1 : -1)),
+
+                        },
+
+                      }));
 
 
 
@@ -3607,15 +3825,33 @@ export const Profile = () => {
 
 
 
-                        toast.success("Post liked!");
+                        toast.success(nextLiked ? "Post liked!" : "Post unliked!");
 
-                        // Refresh posts
 
-                        fetchUserPosts(String(targetUserId));
 
                       } catch (err) {
 
-                        toast.error("Failed to like post");
+                        // Revert optimistic update on error
+
+                        setModalUi(prev => ({
+
+                          ...prev,
+
+                          [postId]: {
+
+                            ...prev[postId],
+
+                            liked: !nextLiked,
+
+                            likeCount: currentCount,
+
+                          },
+
+                        }));
+
+
+
+                        toast.error("Failed to update like. Please try again.");
 
                       }
 
@@ -3623,23 +3859,93 @@ export const Profile = () => {
 
                     onComment={() => {
 
-                      // Simple comment toggle for modal
+                      const currentUiState = modalUi[postId] || {};
 
-                      const postId = post._id || post.postid || post.id;
+                      const isCurrentlyOpen = currentUiState.open;
+
+
 
                       setModalUi(prev => ({
 
                         ...prev,
 
-                        [postId]: {
-
-                          ...prev[postId],
-
-                          open: !prev[postId]?.open
-
-                        }
+                        [postId]: { ...(prev[postId] || {}), open: !isCurrentlyOpen }
 
                       }));
+
+
+
+                      // Fetch comments if not already loaded
+
+                      const curr = modalUi[postId];
+
+                      if (curr && Array.isArray(curr.comments) && curr.comments.length > 0) {
+
+                        return;
+
+                      }
+
+
+
+                      const shouldFetch = !(curr && Array.isArray(curr.comments));
+
+
+
+                      if (shouldFetch) {
+
+                        setModalUi(prev => ({
+
+                          ...prev,
+
+                          [postId]: { ...(prev[postId] || {}), loadingComments: true }
+
+                        }));
+
+
+
+                        dispatch(getpostcomment({ postid: postId } as any)).unwrap()
+
+                          .then((res: any) => {
+
+                            const arr = (res && (res.comment || res.comments)) || [];
+
+
+
+                            setModalUi(prev => ({
+
+                              ...prev,
+
+                              [postId]: {
+
+                                ...(prev[postId] || {}),
+
+                                comments: arr,
+
+                                loadingComments: false,
+
+                                commentCount: arr.length,
+
+                              }
+
+                            }));
+
+                          })
+
+                          .catch((error: any) => {
+
+                            console.error('💬 Comments fetch error:', error);
+
+                            setModalUi(prev => ({
+
+                              ...prev,
+
+                              [postId]: { ...(prev[postId] || {}), loadingComments: false }
+
+                            }));
+
+                          });
+
+                      }
 
                     }}
 
@@ -3649,15 +3955,369 @@ export const Profile = () => {
 
                   {/* Comments Section */}
 
-                  {modalUi[post._id || post.postid || post.id]?.open && (
+                  {modalUi[postId]?.open && (
 
                     <div className="mt-2 border-t border-gray-700 pt-2">
 
-                      <div className="space-y-2">
+                      {modalUi[postId]?.loadingComments ? (
 
-                        <p className="text-sm text-gray-500">Comments feature coming soon...</p>
+                        <p className="text-sm text-gray-400">Loading comments…</p>
 
-                      </div>
+                      ) : (
+
+                        <div className="space-y-2">
+
+                          {uiComments && uiComments.length > 0 ? (
+
+                            uiComments.map((c: any, i: number) => (
+
+                              <div key={i} className="text-sm text-gray-200 flex items-start gap-2 relative">
+
+                                <div className="relative flex-shrink-0 w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center text-xs overflow-hidden">
+
+                                  {(() => {
+
+                                    const profileImage = c?.commentuserphoto || c?.photo || c?.photolink || c?.photoLink || c?.profileImage || c?.avatar || c?.image;
+
+
+
+                                    if (profileImage && profileImage.trim() && profileImage !== 'null' && profileImage !== 'undefined') {
+
+                                      const imageSource = getImageSource(profileImage, 'profile');
+
+                                      return (
+
+                                        <Image
+
+                                          src={imageSource.src}
+
+                                          alt="Profile picture"
+
+                                          width={32}
+
+                                          height={32}
+
+                                          className="object-cover w-full h-full rounded-full"
+
+                                        />
+
+                                      );
+
+                                    }
+
+
+
+                                    return (
+
+                                      <div className="w-full h-full rounded-full bg-gray-600 flex items-center justify-center text-xs text-white font-medium">
+
+                                        {(() => {
+
+                                          if (c?.initials) return c.initials;
+
+                                          const firstName = c?.firstname || '';
+
+                                          const lastName = c?.lastname || '';
+
+                                          if (firstName || lastName) {
+
+                                            const nameParts = [firstName, lastName].filter(Boolean);
+
+                                            return nameParts.map(n => n[0]).join('').toUpperCase().slice(0, 2) || '?';
+
+                                          }
+
+                                          return (c?.commentusername || c?.username || 'U').charAt(0).toUpperCase();
+
+                                        })()}
+
+                                      </div>
+
+                                    );
+
+                                  })()}
+
+                                </div>
+
+
+
+                                {/* VIP Badge for commenter */}
+
+                                {(() => {
+
+                                  const isVipActive = c?.isVip && c?.vipEndDate && new Date(c.vipEndDate) > new Date();
+
+                                  return isVipActive && (
+
+                                    <VIPBadge size="lg" className="absolute -top-3 left-3 z-10" isVip={c.isVip} vipEndDate={c.vipEndDate} />
+
+                                  );
+
+                                })()}
+
+
+
+                                <div className="flex-1">
+
+                                  <div className="flex items-center justify-between">
+
+                                    <span className="font-medium text-gray-300 flex items-center gap-1">
+
+                                      {(() => {
+
+                                        const combinedName = [c?.firstname, c?.lastname].filter(Boolean).join(" ");
+
+                                        return combinedName ||
+
+                                          c?.commentusername ||
+
+                                          c?.fullname ||
+
+                                          c?.fullName ||
+
+                                          c?.name ||
+
+                                          c?.username ||
+
+                                          c?.author ||
+
+                                          'User';
+
+                                      })()}
+
+                                      {/* Creator Verified Badge for commenter */}
+
+                                      {(() => {
+
+                                        const isVerified = c?.isVerified || c?.creator_verified;
+
+                                        return isVerified && (
+
+                                          <BadgeCheck size={17} className="text-black inline ml-1" fill="white" />
+
+                                        );
+
+                                      })()}
+
+                                    </span>
+
+                                    <span className="text-xs text-gray-500">
+
+                                      {formatRelativeTime(c?.commenttime || c?.createdAt || Date.now())}
+
+                                    </span>
+
+                                  </div>
+
+                                  <div className="text-gray-200 mt-1">
+
+                                    {c?.content || c?.comment || String(c)}
+
+                                  </div>
+
+                                </div>
+
+                              </div>
+
+                            ))
+
+                          ) : (
+
+                            <p className="text-sm text-gray-500">No comments yet.</p>
+
+                          )}
+
+                          <div className="flex items-center gap-2 pt-1">
+
+                            <input
+
+                              value={modalUi[postId]?.input || ""}
+
+                              onChange={(e) => {
+
+                                const v = e.target.value;
+
+                                setModalUi(prev => ({
+
+                                  ...prev,
+
+                                  [postId]: { ...(prev[postId] || {}), input: v },
+
+                                }));
+
+                              }}
+
+                              placeholder="Write a comment…"
+
+                              className="flex-1 bg-gray-900 border border-gray-700 rounded px-3 py-2 text-sm outline-none focus:border-gray-500"
+
+                            />
+
+                            <button
+
+                              disabled={!modalUi[postId]?.input?.trim() || modalUi[postId]?.sending}
+
+                              onClick={() => {
+
+                                const text = (modalUi[postId]?.input || '').trim();
+
+                                if (!text) return;
+
+
+
+                                // Optimistic comment add
+
+                                setModalUi(prev => ({
+
+                                  ...prev,
+
+                                  [postId]: {
+
+                                    ...(prev[postId] || {}),
+
+                                    input: "",
+
+                                    sending: true,
+
+                                    comments: [
+
+                                      ...((prev[postId]?.comments as any[]) || []),
+
+                                      {
+
+                                        content: text,
+
+                                        comment: text,
+
+                                        // Use current logged-in user's info, not profile owner's
+
+                                        username: `${currentUserProfile.firstname} ${currentUserProfile.lastname}`.trim() || currentUserProfile.username || 'you',
+
+                                        commentusername: `${currentUserProfile.firstname} ${currentUserProfile.lastname}`.trim() || currentUserProfile.username || 'you',
+
+                                        firstname: currentUserProfile.firstname || '',
+
+                                        lastname: currentUserProfile.lastname || '',
+
+                                        commentuserphoto: currentUserProfile.photolink || '',
+
+                                        photolink: currentUserProfile.photolink || '',
+
+                                        initials: generateInitials(currentUserProfile.firstname, currentUserProfile.lastname, currentUserProfile.username),
+
+                                        isVip: vipStatus?.isVip || false,
+
+                                        vipEndDate: vipStatus?.vipEndDate || null,
+
+                                        isVerified: currentUserProfile.creator_verified || false,
+
+                                        creator_verified: currentUserProfile.creator_verified || false,
+
+                                        createdAt: new Date().toISOString(),
+
+                                        commenttime: Date.now(),
+
+                                        temp: true,
+
+                                      },
+
+                                    ],
+
+                                    commentCount: ((prev[postId]?.comments as any[]) || []).length + 1,
+
+                                  },
+
+                                }));
+
+
+
+                                const uid = String(loggedInUserId || localUserid || "");
+
+                                if (uid && postId && token) {
+
+                                  dispatch(postcomment({ userid: uid, postid: postId, content: text, token: token } as any)).unwrap()
+
+                                    .then(() => {
+
+                                      dispatch(getpostcomment({ postid: postId } as any)).unwrap()
+
+                                        .then((commentRes: any) => {
+
+                                          const serverComments = (commentRes && (commentRes.comment || commentRes.comments)) || [];
+
+                                          setModalUi(prev => ({
+
+                                            ...prev,
+
+                                            [postId]: {
+
+                                              ...(prev[postId] || {}),
+
+                                              sending: false,
+
+                                              comments: serverComments,
+
+                                              commentCount: serverComments.length,
+
+                                            },
+
+                                          }));
+
+                                        })
+
+                                        .catch(() => {
+
+                                          setModalUi(prev => ({
+
+                                            ...prev,
+
+                                            [postId]: { ...(prev[postId] || {}), sending: false },
+
+                                          }));
+
+                                        });
+
+                                    })
+
+                                    .catch(() => {
+
+                                      setModalUi(prev => ({
+
+                                        ...prev,
+
+                                        [postId]: { ...(prev[postId] || {}), sending: false },
+
+                                      }));
+
+                                    });
+
+                                } else {
+
+                                  setModalUi(prev => ({
+
+                                    ...prev,
+
+                                    [postId]: { ...(prev[postId] || {}), sending: false },
+
+                                  }));
+
+                                }
+
+                              }}
+
+                              className="px-3 py-2 text-sm bg-gray-700 hover:bg-gray-600 rounded disabled:opacity-50"
+
+                            >
+
+                              Send
+
+                            </button>
+
+                          </div>
+
+                        </div>
+
+                      )}
 
                     </div>
 
@@ -5565,9 +6225,9 @@ export const Profile = () => {
 
                           className={`flex-1 flex justify-center gap-x-1 items-center py-1.5 px-3 rounded-lg cursor-pointer transition-all duration-200 ${isFollowing
 
-                              ? "bg-gradient-to-r !from-blue-700 !to-purple-800"
+                            ? "bg-gradient-to-r !from-blue-700 !to-purple-800"
 
-                              : "bg-gradient-to-r !from-blue-500 !to-purple-600"
+                            : "bg-gradient-to-r !from-blue-500 !to-purple-600"
 
                             } ${isProcessing ? "opacity-70 cursor-not-allowed" : "hover:scale-105"}`}
 

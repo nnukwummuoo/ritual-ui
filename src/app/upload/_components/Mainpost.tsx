@@ -171,7 +171,7 @@ export const Mainpost = () => {
           const pub = payload?.publicId || payload?.public_id || payload?.data?.publicId || payload?.data?.public_id;
           const url = payload?.url || payload?.secure_url || payload?.data?.url || payload?.data?.secure_url;
           toast.success('Post created', { autoClose: 600 });
-          
+
           // Reset form and close modal
           setShowImageModal(false);
           setImageFile(undefined);
@@ -181,7 +181,7 @@ export const Mainpost = () => {
           setpostcontent("");
           setUploading(false);
           setLoading(false);
-          
+
           // Refresh feed to ensure persistence immediately 
           try {
             await dispatch(getallpost({} as any)).unwrap();
@@ -189,7 +189,7 @@ export const Mainpost = () => {
             toast.error("Something Went Wrong");
             console.error(err);
           }
-          
+
           // Redirect to home
           setTimeout(() => router.push('/'), 100);
         })
@@ -231,12 +231,12 @@ export const Mainpost = () => {
                 handle: currentUsername || undefined,
               };
               const nextPosts = [localPost, ...(Array.isArray(posts) ? posts : [])];
-              try { localStorage.setItem('feedPosts', JSON.stringify(nextPosts)); } catch {}
+              try { localStorage.setItem('feedPosts', JSON.stringify(nextPosts)); } catch { }
               dispatch(hydrateFromCache(nextPosts as any));
               toast.success('Post created (local demo)', { autoClose: 800 });
               setTimeout(() => router.push('/'), 100);
               return;
-            } catch {}
+            } catch { }
           }
           toast.error(msg);
         });
@@ -249,7 +249,7 @@ export const Mainpost = () => {
       setLoading(false);
     }
   };
-  
+
 
   const handleVideoPost = async () => {
     if (!userid || !token || !videoFile) {
@@ -319,18 +319,18 @@ export const Mainpost = () => {
             toast.error("Something Went Wrong");
             console.error(err);
           }
-          
+
           // Redirect to home
           setTimeout(() => router.push('/'), 100);
         })
         .catch((e: any) => {
-        // 👇 This will show "You can only upload 5 videos per day."
-        const msg = e?.message || 'Failed to create post';
-        toast.error(msg); 
-        setVideoUploading(false);
-        setLoading(false);
-        setUploading(false);
-      });
+          // 👇 This will show "You can only upload 5 videos per day."
+          const msg = e?.message || 'Failed to create post';
+          toast.error(msg);
+          setVideoUploading(false);
+          setLoading(false);
+          setUploading(false);
+        });
     } catch (e: any) {
       const msg = e?.message || 'Failed to create post';
       toast.error(msg);
@@ -340,42 +340,42 @@ export const Mainpost = () => {
     }
   };
 
-          // fallback demo post if preview exists
-          // if (videoPreview) {
-          //   try {
-          //     const localPost: any = {
-          //       postid: Date.now(),
-          //       userid: userid || 'you',
-          //       content: videoCaption,
-          //       posttype: 'video',
-          //       video: videoPreview, // blob/object URL for demo
-          //       createdAt: new Date().toISOString(),
-          //       username: currentUsername || 'you',
-          //       name: currentName || currentUsername || 'You',
-          //       handle: currentUsername || undefined,
-          //     };
-          //     const nextPosts = [localPost, ...(Array.isArray(posts) ? posts : [])];
-          //     try { localStorage.setItem('feedPosts', JSON.stringify(nextPosts)); } catch {}
-          //     dispatch(hydrateFromCache(nextPosts as any));
-          //     toast.success('Post created (local demo)', { autoClose: 800 });
-          //     setTimeout(() => router.push('/'), 100);
-          //     return;
-          //   } catch {}
-          // }
+  // fallback demo post if preview exists
+  // if (videoPreview) {
+  //   try {
+  //     const localPost: any = {
+  //       postid: Date.now(),
+  //       userid: userid || 'you',
+  //       content: videoCaption,
+  //       posttype: 'video',
+  //       video: videoPreview, // blob/object URL for demo
+  //       createdAt: new Date().toISOString(),
+  //       username: currentUsername || 'you',
+  //       name: currentName || currentUsername || 'You',
+  //       handle: currentUsername || undefined,
+  //     };
+  //     const nextPosts = [localPost, ...(Array.isArray(posts) ? posts : [])];
+  //     try { localStorage.setItem('feedPosts', JSON.stringify(nextPosts)); } catch {}
+  //     dispatch(hydrateFromCache(nextPosts as any));
+  //     toast.success('Post created (local demo)', { autoClose: 800 });
+  //     setTimeout(() => router.push('/'), 100);
+  //     return;
+  //   } catch {}
+  // }
 
-          const handleImageSelected = async (file: File) => {
-          if (uploading) return;
-          try {
-            const url = URL.createObjectURL(file);
-            setImageFile(file);
-            setImagePreview(url);
-            setUploadedPublicId("");
-            setUploadedUrl("");
-          } catch (error) {
-            console.error("Image selection failed:", error);
-            toast.error("Failed to load image.");
-          }
-        };
+  const handleImageSelected = async (file: File) => {
+    if (uploading) return;
+    try {
+      const url = URL.createObjectURL(file);
+      setImageFile(file);
+      setImagePreview(url);
+      setUploadedPublicId("");
+      setUploadedUrl("");
+    } catch (error) {
+      console.error("Image selection failed:", error);
+      toast.error("Failed to load image.");
+    }
+  };
 
   return (
     <div className="bg-gray-900 text-white p-4 rounded-md space-y-5 max-w-4xl mx-auto border border-gray-700">
@@ -384,7 +384,7 @@ export const Mainpost = () => {
       <div className="space-y-3">
         <div className="flex flex-col items-start gap-3">
           <textarea
-           required
+            required
             className="w-full p-2 text-white bg-transparent border border-gray-600 rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder="What's hot?!"
             rows={3}
@@ -399,7 +399,7 @@ export const Mainpost = () => {
 
         <div className="flex justify-end">
           <button
-           disabled={loading || !postcontent.trim()}
+            disabled={loading || !postcontent.trim()}
             onClick={async () => {
               if (!userid || !token) {
                 toast.error('Please log in to post');
@@ -453,12 +453,12 @@ export const Mainpost = () => {
                     const pub = payload?.publicId || payload?.public_id || payload?.data?.publicId || payload?.data?.public_id;
                     const url = payload?.url || payload?.secure_url || payload?.data?.url || payload?.data?.secure_url;
                     toast.success('Post created', { autoClose: 600 });
-                    
+
                     // Reset form
                     setpostcontent("");
                     setUploading(false);
                     setLoading(false);
-                    
+
                     // Refresh feed to ensure persistence immediately 
                     try {
                       await dispatch(getallpost({} as any)).unwrap();
@@ -466,7 +466,7 @@ export const Mainpost = () => {
                       toast.error("Something Went Wrong");
                       console.error(err);
                     }
-                    
+
                     // Redirect to home
                     setTimeout(() => router.push('/'), 100);
                   })
@@ -508,12 +508,12 @@ export const Mainpost = () => {
                           handle: currentUsername || undefined,
                         };
                         const nextPosts = [localPost, ...(Array.isArray(posts) ? posts : [])];
-                        try { localStorage.setItem('feedPosts', JSON.stringify(nextPosts)); } catch {}
+                        try { localStorage.setItem('feedPosts', JSON.stringify(nextPosts)); } catch { }
                         dispatch(hydrateFromCache(nextPosts as any));
                         toast.success('Post created (local demo)', { autoClose: 800 });
                         setTimeout(() => router.push('/'), 100);
                         return;
-                      } catch {}
+                      } catch { }
                     }
                     toast.error(msg);
                   });
@@ -554,12 +554,13 @@ export const Mainpost = () => {
           openAsModal
           onOpenModal={() => setShowImageModal(true)}
         />
-        <div className="flex gap-3" />  
+        <div className="flex gap-3" />
       </div>
       {showImageModal && (
-        <div className="fixed inset-0  flex items-center justify-center bg-black/60" style={{zIndex:1000}}>
-          <div className="w-full max-w-lg mx-4 bg-[#0b0f1f] border border-gray-700 rounded-2xl shadow-2xl">
-            <div className="flex items-center justify-between p-4 border-b border-gray-700">
+        <div className="fixed inset-0 bg-black/60" style={{ zIndex: 1000 }}>
+          <div className="w-full h-full bg-[#0b0f1f] flex flex-col">
+            {/* Fixed Header */}
+            <div className="flex items-center justify-between p-4 border-b border-gray-700 flex-shrink-0">
               <button
                 onClick={() => {
                   setShowImageModal(false);
@@ -586,7 +587,8 @@ export const Mainpost = () => {
                 ✕
               </button>
             </div>
-            <div className="p-4 space-y-4">
+            {/* Scrollable Content */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-4">
               <div
                 className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-gray-600 rounded-xl hover:bg-gray-800 cursor-pointer"
                 onClick={() => {
@@ -623,23 +625,22 @@ export const Mainpost = () => {
               </div>
 
               <div
-                className="mt-2 border border-gray-700 rounded-xl h-64 flex items-center justify-center bg-[#0b1026]"
+                className="mt-2 border border-gray-700 rounded-xl min-h-[400px] flex items-center justify-center bg-[#0b1026]"
               >
                 {imagePreview && (
-                      <img
-                        src={imagePreview}
-                        alt="preview"
-                        className="max-h-64 max-w-full object-contain rounded-md"
-                        onError={(e) => {
-                          (e.currentTarget as HTMLImageElement).src = "/fallback.jpg"; // 👈 replace with your fallback asset
-                        }}
-                      />
-                    )}
-                    </div>
+                  <img
+                    src={imagePreview}
+                    alt="preview"
+                    className="max-w-full object-contain rounded-md"
+                    onError={(e) => {
+                      (e.currentTarget as HTMLImageElement).src = "/fallback.jpg"; // 👈 replace with your fallback asset
+                    }}
+                  />
+                )}
+              </div>
 
               <textarea
-              required
-                className="w-full h-28 p-2 rounded-lg bg-[#2a2a2a] text-gray-200 placeholder-gray-400 resize-none focus:outline-none focus:ring-2 focus:ring-orange-500"
+                className="w-full h-40 p-2 rounded-lg bg-[#2a2a2a] text-gray-200 placeholder-gray-400 resize-none focus:outline-none focus:ring-2 focus:ring-orange-500"
                 placeholder="What's on your mind? Use #hashtags to make your post discoverable"
                 value={postcontent}
                 onChange={(e) => setpostcontent(e.target.value)}
@@ -648,9 +649,10 @@ export const Mainpost = () => {
                 Tip: Add hashtags like #fun #lifestyle to help others discover your posts
               </p>
             </div>
-            <div className="flex items-center justify-end gap-3 p-4 border-t border-gray-700">
+            {/* Fixed Footer */}
+            <div className="flex items-center justify-end gap-3 p-4 border-t border-gray-700 flex-shrink-0">
               <button
-                disabled={loading || !postcontent.trim()}
+                disabled={loading}
                 className="w-full py-2 font-semibold text-white transition bg-green-600 hover:bg-green-500 rounded-lg disabled:opacity-60 flex items-center justify-center gap-2"
                 onClick={() => handleUploadStart('image')}
               >
@@ -669,9 +671,10 @@ export const Mainpost = () => {
 
       {/* Video Modal */}
       {showVideoModal && (
-        <div className="fixed inset-0  flex items-center justify-center bg-black/60" style={{zIndex:1000}}>
-          <div className="w-full max-w-lg mx-4 bg-[#0b0f1f] border border-gray-700 rounded-2xl shadow-2xl">
-            <div className="flex items-center justify-between p-4 border-b border-gray-700">
+        <div className="fixed inset-0 bg-black/60" style={{ zIndex: 1000 }}>
+          <div className="w-full h-full bg-[#0b0f1f] flex flex-col">
+            {/* Fixed Header */}
+            <div className="flex items-center justify-between p-4 border-b border-gray-700 flex-shrink-0">
               <button
                 onClick={() => {
                   setShowVideoModal(false);
@@ -702,7 +705,8 @@ export const Mainpost = () => {
                 ✕
               </button>
             </div>
-            <div className="p-4 space-y-4">
+            {/* Scrollable Content */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-4">
               <div
                 className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-gray-600 rounded-xl hover:bg-gray-800 cursor-pointer"
                 onClick={() => {
@@ -742,7 +746,7 @@ export const Mainpost = () => {
                 />
               </div>
 
-              <div className="mt-2 border border-gray-700 rounded-xl h-64 flex items-center justify-center bg-[#0b1026] overflow-hidden">
+              <div className="mt-2 border border-gray-700 rounded-xl min-h-[400px] flex items-center justify-center bg-[#0b1026] overflow-hidden">
                 {videoPreview ? (
                   <video src={videoPreview} controls className="w-full h-full object-contain" />
                 ) : (
@@ -751,7 +755,7 @@ export const Mainpost = () => {
               </div>
 
               <textarea
-                className="w-full h-28 p-2 rounded-lg bg-[#2a2a2a] text-gray-200 placeholder-gray-400 resize-none focus:outline-none focus:ring-2 focus:ring-orange-500"
+                className="w-full h-40 p-2 rounded-lg bg-[#2a2a2a] text-gray-200 placeholder-gray-400 resize-none focus:outline-none focus:ring-2 focus:ring-orange-500"
                 placeholder="What's on your mind? Use #hashtags to make your post discoverable"
                 value={videoCaption}
                 onChange={(e) => setVideoCaption(e.target.value)}
@@ -760,7 +764,8 @@ export const Mainpost = () => {
                 Tip: Add hashtags like #fun #lifestyle to help others discover your posts
               </p>
             </div>
-            <div className="flex items-center justify-end gap-3 p-4 border-t border-gray-700">
+            {/* Fixed Footer */}
+            <div className="flex items-center justify-end gap-3 p-4 border-t border-gray-700 flex-shrink-0">
               <button
                 disabled={videoUploading || !videoFile}
                 className="w-full py-2 font-semibold text-white transition bg-green-600 hover:bg-green-500 rounded-lg disabled:opacity-60 flex items-center justify-center gap-2"
@@ -777,7 +782,7 @@ export const Mainpost = () => {
             </div>
           </div>
         </div>
-     )}
+      )}
 
       {/* Video Upload Section */}
       <div
@@ -861,7 +866,7 @@ export const Mainpost = () => {
 function CleanupObjectUrl({ url }: { url: string }) {
   useEffect(() => {
     return () => {
-      try { URL.revokeObjectURL(url); } catch {}
+      try { URL.revokeObjectURL(url); } catch { }
     };
   }, [url]);
   return null;
