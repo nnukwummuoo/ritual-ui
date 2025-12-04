@@ -240,6 +240,18 @@ export default function ReferAndEarnPage() {
         );
     }
 
+    // Helper function to check if a referral is within the last 7 days
+    const isWithinSevenDays = (joinedAt: string): boolean => {
+        const joinedDate = new Date(joinedAt);
+        const now = new Date();
+        const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        return joinedDate >= sevenDaysAgo;
+    };
+
+    // Filter referrals to only include those from the last 7 days
+    const validReferrals = referralData?.referrals.filter(ref => isWithinSevenDays(ref.joinedAt)) || [];
+    const validReferralCount = validReferrals.length;
+
     const currentBalance = referralData ? (referralData.rewardBalance !== undefined ? referralData.rewardBalance : (referralData.referralCount * 1.7)) : 0;
 
     return (
@@ -314,8 +326,9 @@ export default function ReferAndEarnPage() {
                     <div className="bg-gray-900 rounded-2xl p-6 flex flex-col items-center justify-center text-center border border-gray-800">
                         <p className="text-gray-400 text-sm mb-1">Your referrals</p>
                         <p className="text-2xl font-bold text-white">
-                            {referralData?.referralCount || 0}
+                            {validReferralCount}
                         </p>
+                        <p className="text-xs text-gray-500 mt-1">Last 7 days</p>
                     </div>
                 </div>
 
@@ -428,10 +441,10 @@ export default function ReferAndEarnPage() {
                 </div>
 
                 {/* Optional: Referral List */}
-                {referralData && referralData.referrals.length > 0 && (
+                {validReferrals.length > 0 && (
                     <div className="w-full mt-12">
                         <div className="flex justify-between items-center mb-4">
-                            <h3 className="text-lg font-bold text-gray-400">Recent Referrals</h3>
+                            <h3 className="text-lg font-bold text-gray-400">Recent Referrals (Last 7 Days)</h3>
                             <button
                                 onClick={fetchReferralInfo}
                                 disabled={isRefreshing}
@@ -443,7 +456,7 @@ export default function ReferAndEarnPage() {
                         </div>
 
                         <div className="space-y-3">
-                            {(showAll ? referralData.referrals : referralData.referrals.slice(0, 3)).map((referral) => {
+                            {(showAll ? validReferrals : validReferrals.slice(0, 3)).map((referral) => {
                                 const progress = referral.progress;
                                 const isCompleted = referral.milestoneCompleted || progress?.milestoneCompleted;
                                 const isFailed = referral.milestoneFailed || progress?.milestoneFailed;
@@ -520,7 +533,7 @@ export default function ReferAndEarnPage() {
                             })}
                         </div>
 
-                        {referralData.referrals.length > 3 && (
+                        {validReferrals.length > 3 && (
                             <button
                                 onClick={() => setShowAll(!showAll)}
                                 className="w-full flex items-center justify-center mt-4 text-gray-500 hover:text-white transition-colors py-2"
