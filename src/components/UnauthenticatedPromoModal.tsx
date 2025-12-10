@@ -12,7 +12,7 @@ const UnauthenticatedPromoModal: React.FC = () => {
         // Show modal after a short delay for better UX
         const timer = setTimeout(() => {
             setIsOpen(true);
-        }, 1000);
+        }, 3000);
 
         return () => clearTimeout(timer);
     }, []);

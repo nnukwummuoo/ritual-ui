@@ -6,10 +6,10 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useAuthToken } from '@/lib/hooks/useAuthToken';
 import { URL } from '@/api/config';
 import { toast } from 'material-react-toastify';
-import { 
-  IoChatbubbleOutline, 
-  IoPersonOutline, 
-  IoTimeOutline, 
+import {
+  IoChatbubbleOutline,
+  IoPersonOutline,
+  IoTimeOutline,
   IoCheckmarkCircleOutline,
   IoCloseCircleOutline,
   IoRefreshOutline,
@@ -22,7 +22,7 @@ import { getSocket } from '@/lib/socket';
 import { getImageSource } from '@/lib/imageUtils';
 import VIPBadge from '@/components/VIPBadge';
 import axios from 'axios';
-import { Paperclip, X, Send, File, Download } from 'lucide-react';
+import { Paperclip, X, Send, File, Download, BadgeCheck } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 interface SupportChat {
@@ -35,6 +35,7 @@ interface SupportChat {
     email: string;
     isVip?: boolean;
     vipEndDate?: string;
+    isVerified?: boolean;
   };
   category: string;
   status: 'open' | 'pending' | 'closed';
@@ -47,6 +48,7 @@ interface SupportChat {
     isAdmin: boolean;
     isVip?: boolean;
     vipEndDate?: string;
+    isVerified?: boolean;
   }>;
   lastMessage: string;
   lastMessageDate: number;
@@ -62,6 +64,7 @@ interface ChatMessage {
   isAdmin: boolean;
   isVip?: boolean;
   vipEndDate?: string;
+  isVerified?: boolean;
   files?: string[];
 }
 
@@ -153,7 +156,7 @@ const AdminSupportChat = () => {
   const validateFile = (file: File): { valid: boolean; error?: string } => {
     const maxImageSize = 5 * 1024 * 1024; // 5MB
     const maxVideoSize = 10 * 1024 * 1024; // 10MB
-    
+
     if (file.type.startsWith('image/')) {
       if (file.size > maxImageSize) {
         return { valid: false, error: 'Image size must be less than 5MB' };
@@ -165,7 +168,7 @@ const AdminSupportChat = () => {
     } else {
       return { valid: false, error: 'Only images and videos are allowed' };
     }
-    
+
     return { valid: true };
   };
 
@@ -190,7 +193,7 @@ const AdminSupportChat = () => {
 
     if (validFiles.length > 0) {
       setSelectedFiles(prev => [...prev, ...validFiles]);
-      
+
       // Create previews
       validFiles.forEach(file => {
         const reader = new FileReader();
@@ -245,67 +248,67 @@ const AdminSupportChat = () => {
   const FilePreview = ({ fileUrl, fileName }: { fileUrl: string; fileName?: string }) => {
     const [isLoading, setIsLoading] = useState(true);
     const [hasError, setHasError] = useState(false);
-    
+
     React.useEffect(() => {
       const timeout = setTimeout(() => {
         if (isLoading) {
           setIsLoading(false);
         }
       }, 5000);
-      
+
       return () => clearTimeout(timeout);
     }, [isLoading, fileUrl]);
-    
+
     const getFileType = (url: string, name?: string) => {
       const fileName = name || url;
       const extension = fileName.split('.').pop()?.toLowerCase();
-      
+
       const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg'];
       if (imageExtensions.includes(extension || '')) {
         return 'image';
       }
-      
+
       const videoExtensions = ['mp4', 'avi', 'mov', 'wmv', 'flv', 'webm', 'mkv'];
       if (videoExtensions.includes(extension || '')) {
         return 'video';
       }
-      
+
       const documentExtensions = ['pdf', 'doc', 'docx', 'txt', 'rtf', 'odt'];
       if (documentExtensions.includes(extension || '')) {
         return 'document';
       }
-      
+
       if (url.includes('image') || url.includes('photo') || url.includes('img')) {
         return 'image';
       }
       if (url.includes('video') || url.includes('movie') || url.includes('vid')) {
         return 'video';
       }
-      
+
       return 'image';
     };
-    
+
     const fileType = getFileType(fileUrl, fileName);
     const isImage = fileType === 'image';
     const isVideo = fileType === 'video';
     const isDocument = fileType === 'document';
-    
+
     const imageSource = getImageSource(fileUrl, 'message');
     const fullUrl = imageSource.src;
-    
+
     const pathUrlPrimary = fileUrl ? `${URL}/api/image/view/${encodeURIComponent(fileUrl)}` : "";
     const queryUrlFallback = fileUrl ? `${process.env.NEXT_PUBLIC_API || ""}/api/image/view?publicId=${encodeURIComponent(fileUrl)}` : "";
     const pathUrlFallback = fileUrl ? `${process.env.NEXT_PUBLIC_API || ""}/api/image/view/${encodeURIComponent(fileUrl)}` : "";
-    
+
     const handleLoad = () => {
       setIsLoading(false);
     };
-    
+
     const handleError = () => {
       setIsLoading(false);
       setHasError(true);
     };
-    
+
     if (hasError) {
       return (
         <div className="flex items-center gap-2 p-3 bg-gray-700 rounded-lg">
@@ -317,7 +320,7 @@ const AdminSupportChat = () => {
         </div>
       );
     }
-    
+
     return (
       <div className="relative">
         {isLoading && (
@@ -325,7 +328,7 @@ const AdminSupportChat = () => {
             <div className="w-8 h-8 border-2 border-gray-500 border-t-transparent rounded-full animate-spin"></div>
           </div>
         )}
-        
+
         {isImage && (
           <div className="relative cursor-pointer" onClick={() => setSelectedFileModal({ fileUrl, fileName, type: 'image' })}>
             <Image
@@ -337,7 +340,7 @@ const AdminSupportChat = () => {
               onLoad={handleLoad}
               onError={(e) => {
                 const img = e.currentTarget as HTMLImageElement & { dataset: any };
-                
+
                 if (!img.dataset.fallback1 && pathUrlPrimary) {
                   img.dataset.fallback1 = "1";
                   img.src = pathUrlPrimary;
@@ -358,7 +361,7 @@ const AdminSupportChat = () => {
             />
           </div>
         )}
-        
+
         {isVideo && (
           <div className="relative cursor-pointer" onClick={() => setSelectedFileModal({ fileUrl, fileName, type: 'video' })}>
             <video
@@ -392,7 +395,7 @@ const AdminSupportChat = () => {
             />
           </div>
         )}
-        
+
         {isDocument && (
           <div className="flex items-center gap-3 p-3 bg-gray-700 rounded-lg">
             <File className="w-6 h-6 text-blue-400" />
@@ -411,7 +414,7 @@ const AdminSupportChat = () => {
             </a>
           </div>
         )}
-        
+
         {!isImage && !isVideo && !isDocument && (
           <div className="flex items-center gap-3 p-3 bg-gray-700 rounded-lg">
             <Paperclip className="w-5 h-5 text-gray-400" />
@@ -443,7 +446,7 @@ const AdminSupportChat = () => {
       setUploading(selectedFiles.length > 0);
 
       let fileUrls: string[] = [];
-      
+
       // Upload files if any
       if (selectedFiles.length > 0) {
         try {
@@ -546,7 +549,7 @@ const AdminSupportChat = () => {
     const handleNewSupportMessage = (data: any) => {
       // Refresh chat list to show new messages
       loadSupportChats();
-      
+
       // If the message is for the currently selected chat, reload messages
       if (selectedChat && data.chatId === selectedChat._id) {
         loadChatMessages(selectedChat._id);
@@ -573,10 +576,10 @@ const AdminSupportChat = () => {
       const userName = `${chat.userid.firstname} ${chat.userid.lastname}`.toLowerCase();
       const category = chat.category.toLowerCase();
       const search = searchTerm.toLowerCase();
-      
+
       const matchesSearch = userName.includes(search) || category.includes(search) || chat.lastMessage.toLowerCase().includes(search);
       const matchesCategory = !categoryFilter || chat.category === categoryFilter;
-      
+
       return matchesSearch && matchesCategory;
     });
 
@@ -594,7 +597,7 @@ const AdminSupportChat = () => {
       const statusPriority = { 'pending': 3, 'open': 2, 'closed': 1 };
       const aStatusPriority = statusPriority[a.status] || 0;
       const bStatusPriority = statusPriority[b.status] || 0;
-      
+
       if (aStatusPriority !== bStatusPriority) {
         return bStatusPriority - aStatusPriority;
       }
@@ -642,511 +645,524 @@ const AdminSupportChat = () => {
       <div className="flex-1 flex overflow-hidden">
         {/* Chat List Sidebar */}
         <div className={`${showChatView ? 'hidden md:flex' : 'flex'} w-full md:w-1/3 border-r border-gray-700 flex-col h-full`}>
-        {/* Header */}
-        <div className="p-3 md:p-4 border-b border-gray-700">
-          <h2 className="text-lg md:text-xl font-bold mb-3 md:mb-4">Support Chats</h2>
-          
-          {/* Search */}
-          <div className="relative mb-3 md:mb-4">
-            <IoSearchOutline className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-            <input
-              type="text"
-              placeholder="Search chats..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 text-sm md:text-base"
-            />
-          </div>
+          {/* Header */}
+          <div className="p-3 md:p-4 border-b border-gray-700">
+            <h2 className="text-lg md:text-xl font-bold mb-3 md:mb-4">Support Chats</h2>
 
-          {/* Status Filter */}
-          <div className="flex gap-1 md:gap-2 flex-wrap mb-3">
-            <button
-              onClick={() => setStatusFilter('')}
-              className={`px-2 md:px-3 py-1 rounded-full text-xs font-medium ${
-                statusFilter === '' ? 'bg-blue-500' : 'bg-gray-700'
-              }`}
-            >
-              All
-            </button>
-            <button
-              onClick={() => setStatusFilter('open')}
-              className={`px-2 md:px-3 py-1 rounded-full text-xs font-medium ${
-                statusFilter === 'open' ? 'bg-blue-500' : 'bg-gray-700'
-              }`}
-            >
-              Open
-            </button>
-            <button
-              onClick={() => setStatusFilter('pending')}
-              className={`px-2 md:px-3 py-1 rounded-full text-xs font-medium ${
-                statusFilter === 'pending' ? 'bg-yellow-500' : 'bg-gray-700'
-              }`}
-            >
-              Pending
-            </button>
-            <button
-              onClick={() => setStatusFilter('closed')}
-              className={`px-2 md:px-3 py-1 rounded-full text-xs font-medium ${
-                statusFilter === 'closed' ? 'bg-gray-500' : 'bg-gray-700'
-              }`}
-            >
-              Closed
-            </button>
-          </div>
+            {/* Search */}
+            <div className="relative mb-3 md:mb-4">
+              <IoSearchOutline className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <input
+                type="text"
+                placeholder="Search chats..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 text-sm md:text-base"
+              />
+            </div>
 
-          {/* Category Filter */}
-          <div className="overflow-x-auto">
-            <div className="flex gap-1 md:gap-2 min-w-max pb-1">
+            {/* Status Filter */}
+            <div className="flex gap-1 md:gap-2 flex-wrap mb-3">
               <button
-                onClick={() => setCategoryFilter('')}
-                className={`px-2 md:px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap flex-shrink-0 ${
-                  categoryFilter === '' ? 'bg-purple-500' : 'bg-gray-700'
-                }`}
-              >
-                All Categories
-              </button>
-              {uniqueCategories.map((category) => (
-                <button
-                  key={category}
-                  onClick={() => setCategoryFilter(category)}
-                  className={`px-2 md:px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap flex-shrink-0 ${
-                    categoryFilter === category ? 'bg-purple-500' : 'bg-gray-700'
+                onClick={() => setStatusFilter('')}
+                className={`px-2 md:px-3 py-1 rounded-full text-xs font-medium ${statusFilter === '' ? 'bg-blue-500' : 'bg-gray-700'
                   }`}
+              >
+                All
+              </button>
+              <button
+                onClick={() => setStatusFilter('open')}
+                className={`px-2 md:px-3 py-1 rounded-full text-xs font-medium ${statusFilter === 'open' ? 'bg-blue-500' : 'bg-gray-700'
+                  }`}
+              >
+                Open
+              </button>
+              <button
+                onClick={() => setStatusFilter('pending')}
+                className={`px-2 md:px-3 py-1 rounded-full text-xs font-medium ${statusFilter === 'pending' ? 'bg-yellow-500' : 'bg-gray-700'
+                  }`}
+              >
+                Pending
+              </button>
+              <button
+                onClick={() => setStatusFilter('closed')}
+                className={`px-2 md:px-3 py-1 rounded-full text-xs font-medium ${statusFilter === 'closed' ? 'bg-gray-500' : 'bg-gray-700'
+                  }`}
+              >
+                Closed
+              </button>
+            </div>
+
+            {/* Category Filter */}
+            <div className="overflow-x-auto">
+              <div className="flex gap-1 md:gap-2 min-w-max pb-1">
+                <button
+                  onClick={() => setCategoryFilter('')}
+                  className={`px-2 md:px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap flex-shrink-0 ${categoryFilter === '' ? 'bg-purple-500' : 'bg-gray-700'
+                    }`}
                 >
-                  {category}
+                  All Categories
                 </button>
-              ))}
+                {uniqueCategories.map((category) => (
+                  <button
+                    key={category}
+                    onClick={() => setCategoryFilter(category)}
+                    className={`px-2 md:px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap flex-shrink-0 ${categoryFilter === category ? 'bg-purple-500' : 'bg-gray-700'
+                      }`}
+                  >
+                    {category}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Chat List */}
-        <div className="flex-1 overflow-y-auto">
-          {loading ? (
-            <div className="flex items-center justify-center h-32">
-              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
-            </div>
-          ) : filteredAndSortedChats.length === 0 ? (
-            <div className="p-4 text-center text-gray-400">
-              No support chats found
-            </div>
-          ) : (
-            filteredAndSortedChats.map((chat) => (
-              <div
-                key={chat._id}
-                onClick={() => loadChatMessages(chat._id)}
-                className={`p-3 md:p-4 border-b border-gray-700 cursor-pointer hover:bg-gray-800 transition-colors ${
-                  selectedChat?._id === chat._id ? 'bg-gray-800' : ''
-                }`}
-              >
-                <div className="flex items-start gap-3">
-                  <div className="relative flex-shrink-0">
-                    <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-700">
-                      {chat.userid.photolink ? (
-                        <Image
-                          src={getImageSource(chat.userid.photolink, 'profile').src}
-                          alt={chat.userid.firstname}
-                          width={40}
-                          height={40}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-gray-600 text-white font-bold">
-                          {chat.userid.firstname.charAt(0)}
-                        </div>
-                      )}
-                    </div>
-                    
-                    {/* VIP Badge for chat list - positioned relative to parent container */}
-                    {chat.userid.isVip && (
-                      <VIPBadge 
-                        size="lg" 
-                        className="absolute -top-2 -right-2 z-50" 
-                        isVip={chat.userid.isVip} 
-                        vipEndDate={chat.userid.vipEndDate} 
-                      />
-                    )}
-                  </div>
-                  
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between mb-1">
-                      <h3 className="font-semibold text-white truncate text-sm md:text-base">
-                        {chat.userid.firstname} {chat.userid.lastname}
-                      </h3>
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium text-white ${getStatusColor(chat.status)}`}>
-                        {chat.status}
-                      </span>
-                    </div>
-                    
-                    <p className="text-xs md:text-sm text-gray-400 mb-1 truncate">
-                      {chat.category}
-                    </p>
-                    
-                    <p className="text-xs text-gray-500 truncate">
-                      {chat.lastMessage}
-                    </p>
-                    
-                    <p className="text-xs text-gray-500 mt-1">
-                      {new Date(chat.lastMessageDate).toLocaleString()}
-                    </p>
-                  </div>
-                </div>
+          {/* Chat List */}
+          <div className="flex-1 overflow-y-auto">
+            {loading ? (
+              <div className="flex items-center justify-center h-32">
+                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
               </div>
-            ))
-          )}
-        </div>
-      </div>
+            ) : filteredAndSortedChats.length === 0 ? (
+              <div className="p-4 text-center text-gray-400">
+                No support chats found
+              </div>
+            ) : (
+              filteredAndSortedChats.map((chat) => (
+                <div
+                  key={chat._id}
+                  onClick={() => loadChatMessages(chat._id)}
+                  className={`p-3 md:p-4 border-b border-gray-700 cursor-pointer hover:bg-gray-800 transition-colors ${selectedChat?._id === chat._id ? 'bg-gray-800' : ''
+                    }`}
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="relative flex-shrink-0">
+                      <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-700">
+                        {chat.userid.photolink ? (
+                          <Image
+                            src={getImageSource(chat.userid.photolink, 'profile').src}
+                            alt={chat.userid.firstname}
+                            width={40}
+                            height={40}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center bg-gray-600 text-white font-bold">
+                            {chat.userid.firstname.charAt(0)}
+                          </div>
+                        )}
+                      </div>
 
-      {/* Chat Messages */}
-      <div className={`${showChatView ? 'flex' : 'hidden md:flex'} flex-1 flex-col h-full overflow-hidden`}>
-        {selectedChat ? (
-          <>
-            {/* Chat Header */}
-            <div className="p-4 border-b border-gray-700 bg-gray-800 flex-shrink-0">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3 flex-1">
-                  {/* Back button for mobile */}
-                  <button
-                    onClick={goBackToList}
-                    className="md:hidden p-2 hover:bg-gray-700 rounded-lg transition-colors"
-                  >
-                    <IoArrowBackOutline className="w-5 h-5" />
-                  </button>
-                  
-                  <div className="relative">
-                    <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-700">
-                      {selectedChat.userid.photolink ? (
-                        <Image
-                          src={getImageSource(selectedChat.userid.photolink, 'profile').src}
-                          alt={selectedChat.userid.firstname}
-                          width={40}
-                          height={40}
-                          className="w-full h-full object-cover"
+                      {/* VIP Badge for chat list - positioned relative to parent container */}
+                      {chat.userid.isVip && (
+                        <VIPBadge
+                          size="lg"
+                          className="absolute -top-2 -right-2 z-50"
+                          isVip={chat.userid.isVip}
+                          vipEndDate={chat.userid.vipEndDate}
                         />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-gray-600 text-white font-bold">
-                          {selectedChat.userid.firstname.charAt(0)}
-                        </div>
                       )}
                     </div>
-                    
-                    {/* VIP Badge for chat header - positioned relative to parent container */}
-                    {selectedChat.userid.isVip && (
-                      <VIPBadge 
-                        size="lg" 
-                        className="absolute -top-2 -right-2 z-50" 
-                        isVip={selectedChat.userid.isVip} 
-                        vipEndDate={selectedChat.userid.vipEndDate} 
-                      />
-                    )}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-white truncate">
-                      {selectedChat.userid.firstname} {selectedChat.userid.lastname}
-                    </h3>
-                    <p className="text-sm text-gray-400 truncate">{selectedChat.category}</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-center gap-2">
-                  <span className={`px-3 py-1 rounded-full text-sm font-medium text-white ${getStatusColor(selectedChat.status)}`}>
-                    {selectedChat.status}
-                  </span>
-                  
-                  <div className="flex gap-1">
-                    <button
-                      onClick={() => updateChatStatus(selectedChat._id, 'open')}
-                      className="p-2 rounded-lg transition-colors hover:bg-gray-700"
-                      title="Mark as Open"
-                    >
-                      <IoChatbubbleOutline className="w-4 h-4 text-blue-400" />
-                    </button>
-                    <button
-                      onClick={() => updateChatStatus(selectedChat._id, 'pending')}
-                      className="p-2 rounded-lg transition-colors hover:bg-gray-700"
-                      title="Mark as Pending"
-                    >
-                      <IoTimeOutline className="w-4 h-4 text-yellow-400" />
-                    </button>
-                    <button
-                      onClick={() => updateChatStatus(selectedChat._id, 'closed')}
-                      className="p-2 rounded-lg transition-colors hover:bg-gray-700"
-                      title="Mark as Closed"
-                    >
-                      <IoCheckmarkCircleOutline className="w-4 h-4 text-green-400" />
-                    </button>
-                    <button
-                      onClick={() => setSelectedChat(null)}
-                      className="p-2 rounded-lg transition-colors hover:bg-gray-700"
-                      title="Close Chat"
-                    >
-                      <IoCloseCircleOutline className="w-4 h-4 text-red-400" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
 
-            {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-3 md:p-4 space-y-3 md:space-y-4 min-h-0">
-              {messages.map((message) => {
-                const isAdmin = message.isAdmin;
-                return (
-                  <div
-                    key={message._id}
-                    className={`flex ${isAdmin ? 'justify-end' : 'justify-start'}`}
-                  >
-                    <div
-                      className={`max-w-[80%] sm:max-w-xs lg:max-w-md px-3 md:px-4 py-2 rounded-lg ${
-                        isAdmin
-                          ? 'bg-blue-500 text-white'
-                          : 'bg-gray-700 text-white'
-                      }`}
-                    >
-                      {/* VIP Badge for user messages */}
-                      {!isAdmin && message.isVip && (
-                        <div className="flex justify-end items-center gap-2 mb-2">
-                          <VIPBadge size="sm" isVip={message.isVip} vipEndDate={message.vipEndDate} />
-                          <span className="text-xs py-1 px-2 rounded-full bg-gradient-to-r tracking-wider font-semibold from-[#fb8402] to-[#ad4d01] text-white">VIP</span>
-                        </div>
-                      )}
-                      <p className="text-sm md:text-base break-words">{message.content}</p>
-                      
-                      {/* Display files if any */}
-                      {message.files && message.files.length > 0 && (
-                        <div className="mt-2 space-y-2">
-                          {message.files.map((fileUrl: string, fileIndex: number) => (
-                            <FilePreview
-                              key={fileIndex}
-                              fileUrl={fileUrl}
-                              fileName={`File ${fileIndex + 1}`}
-                            />
-                          ))}
-                        </div>
-                      )}
-                      
-                      <p className="text-xs opacity-70 mt-1">
-                        {new Date(message.date).toLocaleString()}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between mb-1">
+                        <h3 className="font-semibold text-white truncate text-sm md:text-base flex items-center gap-1">
+                          {chat.userid.firstname} {chat.userid.lastname}
+                          {chat.userid.isVerified && (
+                            <BadgeCheck size={14} className="text-black inline" fill="white" />
+                          )}
+                        </h3>
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium text-white ${getStatusColor(chat.status)}`}>
+                          {chat.status}
+                        </span>
+                      </div>
+
+                      <p className="text-xs md:text-sm text-gray-400 mb-1 truncate">
+                        {chat.category}
+                      </p>
+
+                      <p className="text-xs text-gray-500 truncate">
+                        {chat.lastMessage}
+                      </p>
+
+                      <p className="text-xs text-gray-500 mt-1">
+                        {new Date(chat.lastMessageDate).toLocaleString()}
                       </p>
                     </div>
                   </div>
-                );
-              })}
-              <div ref={messagesEndRef} />
-            </div>
-
-            {/* File Preview Area */}
-            {previewFiles.length > 0 && (
-              <div className="bg-gray-800/50 border-t border-gray-700 p-3 md:p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm text-gray-300 font-medium">
-                    {previewFiles.length} file{previewFiles.length > 1 ? 's' : ''} selected
-                  </span>
-                  <button
-                    onClick={() => {
-                      setSelectedFiles([]);
-                      setPreviewFiles([]);
-                    }}
-                    className="text-xs text-gray-400 hover:text-white underline"
-                  >
-                    Clear all
-                  </button>
                 </div>
-                <div className="flex flex-wrap gap-2 sm:gap-3">
-                  {previewFiles.map((preview, index) => (
-                    <div key={index} className="relative">
-                      {preview.type === 'image' && (
-                        <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden border border-gray-600">
+              ))
+            )}
+          </div>
+        </div>
+
+        {/* Chat Messages */}
+        <div className={`${showChatView ? 'flex' : 'hidden md:flex'} flex-1 flex-col h-full overflow-hidden`}>
+          {selectedChat ? (
+            <>
+              {/* Chat Header */}
+              <div className="p-4 border-b border-gray-700 bg-gray-800 flex-shrink-0">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3 flex-1">
+                    {/* Back button for mobile */}
+                    <button
+                      onClick={goBackToList}
+                      className="md:hidden p-2 hover:bg-gray-700 rounded-lg transition-colors"
+                    >
+                      <IoArrowBackOutline className="w-5 h-5" />
+                    </button>
+
+                    <div className="relative">
+                      <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-700">
+                        {selectedChat.userid.photolink ? (
                           <Image
-                            src={preview.preview as string}
-                            alt="Preview"
-                            width={80}
-                            height={80}
+                            src={getImageSource(selectedChat.userid.photolink, 'profile').src}
+                            alt={selectedChat.userid.firstname}
+                            width={40}
+                            height={40}
                             className="w-full h-full object-cover"
                           />
-                          <button
-                            onClick={() => removeFile(index)}
-                            className="absolute -top-1 -right-1 w-5 h-5 sm:w-6 sm:h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600 transition-colors"
-                          >
-                            <X className="w-3 h-3" />
-                          </button>
-                        </div>
-                      )}
-                      {preview.type === 'video' && (
-                        <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden bg-gray-700 flex items-center justify-center border border-gray-600">
-                          <video
-                            src={preview.preview as string}
-                            className="w-full h-full object-cover"
-                            muted
-                          />
-                          <button
-                            onClick={() => removeFile(index)}
-                            className="absolute -top-1 -right-1 w-5 h-5 sm:w-6 sm:h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600 transition-colors"
-                          >
-                            <X className="w-3 h-3" />
-                          </button>
-                        </div>
-                      )}
-                      {preview.type === 'file' && (
-                        <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-lg bg-gray-700 flex flex-col items-center justify-center border border-gray-600 p-1">
-                          <Paperclip className="w-4 h-4 sm:w-6 sm:h-6 text-gray-400" />
-                          <span className="text-xs text-gray-300 truncate max-w-12 sm:max-w-16 text-center">{preview.file.name}</span>
-                          <button
-                            onClick={() => removeFile(index)}
-                            className="absolute -top-1 -right-1 w-5 h-5 sm:w-6 sm:h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600 transition-colors"
-                          >
-                            <X className="w-3 h-3" />
-                          </button>
-                        </div>
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center bg-gray-600 text-white font-bold">
+                            {selectedChat.userid.firstname.charAt(0)}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* VIP Badge for chat header - positioned relative to parent container */}
+                      {selectedChat.userid.isVip && (
+                        <VIPBadge
+                          size="lg"
+                          className="absolute -top-2 -right-2 z-50"
+                          isVip={selectedChat.userid.isVip}
+                          vipEndDate={selectedChat.userid.vipEndDate}
+                        />
                       )}
                     </div>
-                  ))}
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-white truncate flex items-center gap-1">
+                        {selectedChat.userid.firstname} {selectedChat.userid.lastname}
+                        {selectedChat.userid.isVerified && (
+                          <BadgeCheck size={16} className="text-blue-400 inline" fill="white" />
+                        )}
+                      </h3>
+                      <p className="text-sm text-gray-400 truncate">{selectedChat.category}</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <span className={`px-3 py-1 rounded-full text-sm font-medium text-white ${getStatusColor(selectedChat.status)}`}>
+                      {selectedChat.status}
+                    </span>
+
+                    <div className="flex gap-1">
+                      <button
+                        onClick={() => updateChatStatus(selectedChat._id, 'open')}
+                        className="p-2 rounded-lg transition-colors hover:bg-gray-700"
+                        title="Mark as Open"
+                      >
+                        <IoChatbubbleOutline className="w-4 h-4 text-blue-400" />
+                      </button>
+                      <button
+                        onClick={() => updateChatStatus(selectedChat._id, 'pending')}
+                        className="p-2 rounded-lg transition-colors hover:bg-gray-700"
+                        title="Mark as Pending"
+                      >
+                        <IoTimeOutline className="w-4 h-4 text-yellow-400" />
+                      </button>
+                      <button
+                        onClick={() => updateChatStatus(selectedChat._id, 'closed')}
+                        className="p-2 rounded-lg transition-colors hover:bg-gray-700"
+                        title="Mark as Closed"
+                      >
+                        <IoCheckmarkCircleOutline className="w-4 h-4 text-green-400" />
+                      </button>
+                      <button
+                        onClick={() => setSelectedChat(null)}
+                        className="p-2 rounded-lg transition-colors hover:bg-gray-700"
+                        title="Close Chat"
+                      >
+                        <IoCloseCircleOutline className="w-4 h-4 text-red-400" />
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
-            )}
 
-            {/* Message Input */}
-            <div className="p-3 md:p-4 border-t border-gray-700 bg-gray-800 flex-shrink-0">
-              <div className="flex gap-2">
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  onChange={handleFileSelect}
-                  multiple
-                  accept="image/*,video/*,.pdf,.doc,.docx,.txt"
-                  className="hidden"
-                />
-                
-                <button
-                  onClick={() => fileInputRef.current?.click()}
-                  className="flex-shrink-0 p-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors"
-                  title="Attach file"
-                >
-                  <Paperclip className="w-5 h-5" />
-                </button>
+              {/* Messages */}
+              <div className="flex-1 overflow-y-auto p-3 md:p-4 space-y-3 md:space-y-4 min-h-0">
+                {messages.map((message) => {
+                  const isAdmin = message.isAdmin;
+                  return (
+                    <div
+                      key={message._id}
+                      className={`flex ${isAdmin ? 'justify-end' : 'justify-start'}`}
+                    >
+                      <div
+                        className={`max-w-[80%] sm:max-w-xs lg:max-w-md px-3 md:px-4 py-2 rounded-lg ${isAdmin
+                            ? 'bg-blue-500 text-white'
+                            : 'bg-gray-700 text-white'
+                          }`}
+                      >
+                        {/* VIP Badge for user messages */}
+                        {!isAdmin && message.isVip && (
+                          <div className="flex justify-end items-center gap-2 mb-2">
+                            <VIPBadge size="sm" isVip={message.isVip} vipEndDate={message.vipEndDate} />
+                            <span className="text-xs py-1 px-2 rounded-full bg-gradient-to-r tracking-wider font-semibold from-[#fb8402] to-[#ad4d01] text-white">VIP</span>
+                          </div>
+                        )}
 
-                <input
-                  type="text"
-                  value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
-                  onKeyPress={(e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                      e.preventDefault();
-                      sendAdminMessage();
-                    }
-                  }}
-                  placeholder="Type your message..."
-                  className="flex-1 px-3 md:px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 text-sm md:text-base"
-                />
-                <button
-                  onClick={sendAdminMessage}
-                  disabled={(!newMessage.trim() && selectedFiles.length === 0) || sendingMessage || uploading}
-                  className="px-3 md:px-4 py-2 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-600 disabled:cursor-not-allowed text-white rounded-lg transition-colors text-sm md:text-base flex items-center gap-2"
-                >
-                  {sendingMessage || uploading ? (
-                    <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
-                  ) : (
-                    <>
-                      <Send className="w-4 h-4" />
-                      <span>Send</span>
-                    </>
-                  )}
-                </button>
+                        {/* Name for group chats or if needed, adding verified badge check for message sender could go here if design requires, 
+                          but typically messages just show content. If names were shown, we'd add badge here. 
+                          For now, just ensuring the interface supports it. */}
+
+                        {/* Verified Badge for non-admin messages if not already shown elsewhere */}
+                        {!isAdmin && message.isVerified && (
+                          <div className="flex items-center gap-1 mb-1">
+                            <span className="font-bold text-xs opacity-70">
+                              {selectedChat?.userid.firstname}
+                            </span>
+                            <BadgeCheck size={12} className="text-blue-400 inline" fill="white" />
+                          </div>
+                        )}
+
+                        <p className="text-sm md:text-base break-words">{message.content}</p>
+
+                        {/* Display files if any */}
+                        {message.files && message.files.length > 0 && (
+                          <div className="mt-2 space-y-2">
+                            {message.files.map((fileUrl: string, fileIndex: number) => (
+                              <FilePreview
+                                key={fileIndex}
+                                fileUrl={fileUrl}
+                                fileName={`File ${fileIndex + 1}`}
+                              />
+                            ))}
+                          </div>
+                        )}
+
+                        <p className="text-xs opacity-70 mt-1">
+                          {new Date(message.date).toLocaleString()}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })}
+                <div ref={messagesEndRef} />
+              </div>
+
+              {/* File Preview Area */}
+              {previewFiles.length > 0 && (
+                <div className="bg-gray-800/50 border-t border-gray-700 p-3 md:p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm text-gray-300 font-medium">
+                      {previewFiles.length} file{previewFiles.length > 1 ? 's' : ''} selected
+                    </span>
+                    <button
+                      onClick={() => {
+                        setSelectedFiles([]);
+                        setPreviewFiles([]);
+                      }}
+                      className="text-xs text-gray-400 hover:text-white underline"
+                    >
+                      Clear all
+                    </button>
+                  </div>
+                  <div className="flex flex-wrap gap-2 sm:gap-3">
+                    {previewFiles.map((preview, index) => (
+                      <div key={index} className="relative">
+                        {preview.type === 'image' && (
+                          <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden border border-gray-600">
+                            <Image
+                              src={preview.preview as string}
+                              alt="Preview"
+                              width={80}
+                              height={80}
+                              className="w-full h-full object-cover"
+                            />
+                            <button
+                              onClick={() => removeFile(index)}
+                              className="absolute -top-1 -right-1 w-5 h-5 sm:w-6 sm:h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600 transition-colors"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          </div>
+                        )}
+                        {preview.type === 'video' && (
+                          <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden bg-gray-700 flex items-center justify-center border border-gray-600">
+                            <video
+                              src={preview.preview as string}
+                              className="w-full h-full object-cover"
+                              muted
+                            />
+                            <button
+                              onClick={() => removeFile(index)}
+                              className="absolute -top-1 -right-1 w-5 h-5 sm:w-6 sm:h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600 transition-colors"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          </div>
+                        )}
+                        {preview.type === 'file' && (
+                          <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-lg bg-gray-700 flex flex-col items-center justify-center border border-gray-600 p-1">
+                            <Paperclip className="w-4 h-4 sm:w-6 sm:h-6 text-gray-400" />
+                            <span className="text-xs text-gray-300 truncate max-w-12 sm:max-w-16 text-center">{preview.file.name}</span>
+                            <button
+                              onClick={() => removeFile(index)}
+                              className="absolute -top-1 -right-1 w-5 h-5 sm:w-6 sm:h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600 transition-colors"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Message Input */}
+              <div className="p-3 md:p-4 border-t border-gray-700 bg-gray-800 flex-shrink-0">
+                <div className="flex gap-2">
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleFileSelect}
+                    multiple
+                    accept="image/*,video/*,.pdf,.doc,.docx,.txt"
+                    className="hidden"
+                  />
+
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    className="flex-shrink-0 p-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors"
+                    title="Attach file"
+                  >
+                    <Paperclip className="w-5 h-5" />
+                  </button>
+
+                  <input
+                    type="text"
+                    value={newMessage}
+                    onChange={(e) => setNewMessage(e.target.value)}
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        sendAdminMessage();
+                      }
+                    }}
+                    placeholder="Type your message..."
+                    className="flex-1 px-3 md:px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 text-sm md:text-base"
+                  />
+                  <button
+                    onClick={sendAdminMessage}
+                    disabled={(!newMessage.trim() && selectedFiles.length === 0) || sendingMessage || uploading}
+                    className="px-3 md:px-4 py-2 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-600 disabled:cursor-not-allowed text-white rounded-lg transition-colors text-sm md:text-base flex items-center gap-2"
+                  >
+                    {sendingMessage || uploading ? (
+                      <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
+                    ) : (
+                      <>
+                        <Send className="w-4 h-4" />
+                        <span>Send</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </>
+          ) : (
+            <div className="flex-1 flex items-center justify-center h-full">
+              <div className="text-center text-gray-400">
+                <IoChatbubbleOutline className="w-16 h-16 mx-auto mb-4 opacity-50" />
+                <p>Select a chat to view messages</p>
               </div>
             </div>
-          </>
-        ) : (
-          <div className="flex-1 flex items-center justify-center h-full">
-            <div className="text-center text-gray-400">
-              <IoChatbubbleOutline className="w-16 h-16 mx-auto mb-4 opacity-50" />
-              <p>Select a chat to view messages</p>
+          )}
+        </div>
+
+        {/* File Modal */}
+        {selectedFileModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-90" onClick={() => setSelectedFileModal(null)}>
+            <div className="relative max-w-4xl max-h-4xl w-full h-full flex items-center justify-center p-4">
+              {/* Close Button */}
+              <button
+                onClick={() => setSelectedFileModal(null)}
+                className="absolute top-4 right-4 z-10 w-10 h-10 bg-black bg-opacity-50 text-white rounded-full flex items-center justify-center hover:bg-opacity-70 transition-all"
+              >
+                <X className="w-6 h-6" />
+              </button>
+
+              {/* File Content */}
+              <div className="relative w-full h-full flex items-center justify-center">
+                {selectedFileModal.type === 'image' && (
+                  <Image
+                    src={getImageSource(selectedFileModal.fileUrl, 'message').src}
+                    alt={selectedFileModal.fileName || 'Shared image'}
+                    fill
+                    className="object-contain"
+                    onError={(e) => {
+                      const img = e.currentTarget as HTMLImageElement & { dataset: any };
+                      const pathUrlPrimary = selectedFileModal.fileUrl ? `${URL}/api/image/view/${encodeURIComponent(selectedFileModal.fileUrl)}` : "";
+                      const queryUrlFallback = selectedFileModal.fileUrl ? `${process.env.NEXT_PUBLIC_API || ""}/api/image/view?publicId=${encodeURIComponent(selectedFileModal.fileUrl)}` : "";
+                      const pathUrlFallback = selectedFileModal.fileUrl ? `${process.env.NEXT_PUBLIC_API || ""}/api/image/view/${encodeURIComponent(selectedFileModal.fileUrl)}` : "";
+
+                      if (!img.dataset.fallback1 && pathUrlPrimary) {
+                        img.dataset.fallback1 = "1";
+                        img.src = pathUrlPrimary;
+                        return;
+                      }
+                      if (!img.dataset.fallback2 && queryUrlFallback) {
+                        img.dataset.fallback2 = "1";
+                        img.src = queryUrlFallback;
+                        return;
+                      }
+                      if (!img.dataset.fallback3 && pathUrlFallback) {
+                        img.dataset.fallback3 = "1";
+                        img.src = pathUrlFallback;
+                        return;
+                      }
+                    }}
+                  />
+                )}
+
+                {selectedFileModal.type === 'video' && (
+                  <video
+                    src={getImageSource(selectedFileModal.fileUrl, 'message').src}
+                    controls
+                    autoPlay
+                    className="max-w-full max-h-full"
+                    onError={(e) => {
+                      const video = e.currentTarget as HTMLVideoElement & { dataset: any };
+                      const pathUrlPrimary = selectedFileModal.fileUrl ? `${URL}/api/image/view/${encodeURIComponent(selectedFileModal.fileUrl)}` : "";
+                      const queryUrlFallback = selectedFileModal.fileUrl ? `${process.env.NEXT_PUBLIC_API || ""}/api/image/view?publicId=${encodeURIComponent(selectedFileModal.fileUrl)}` : "";
+                      const pathUrlFallback = selectedFileModal.fileUrl ? `${process.env.NEXT_PUBLIC_API || ""}/api/image/view/${encodeURIComponent(selectedFileModal.fileUrl)}` : "";
+
+                      if (!video.dataset.fallback1 && pathUrlPrimary) {
+                        video.dataset.fallback1 = "1";
+                        video.src = pathUrlPrimary;
+                        video.load();
+                        return;
+                      }
+                      if (!video.dataset.fallback2 && queryUrlFallback) {
+                        video.dataset.fallback2 = "1";
+                        video.src = queryUrlFallback;
+                        video.load();
+                        return;
+                      }
+                      if (!video.dataset.fallback3 && pathUrlFallback) {
+                        video.dataset.fallback3 = "1";
+                        video.src = pathUrlFallback;
+                        video.load();
+                        return;
+                      }
+                    }}
+                  />
+                )}
+              </div>
             </div>
           </div>
         )}
-      </div>
-
-      {/* File Modal */}
-      {selectedFileModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-90" onClick={() => setSelectedFileModal(null)}>
-          <div className="relative max-w-4xl max-h-4xl w-full h-full flex items-center justify-center p-4">
-            {/* Close Button */}
-            <button
-              onClick={() => setSelectedFileModal(null)}
-              className="absolute top-4 right-4 z-10 w-10 h-10 bg-black bg-opacity-50 text-white rounded-full flex items-center justify-center hover:bg-opacity-70 transition-all"
-            >
-              <X className="w-6 h-6" />
-            </button>
-            
-            {/* File Content */}
-            <div className="relative w-full h-full flex items-center justify-center">
-              {selectedFileModal.type === 'image' && (
-                <Image
-                  src={getImageSource(selectedFileModal.fileUrl, 'message').src}
-                  alt={selectedFileModal.fileName || 'Shared image'}
-                  fill
-                  className="object-contain"
-                  onError={(e) => {
-                    const img = e.currentTarget as HTMLImageElement & { dataset: any };
-                    const pathUrlPrimary = selectedFileModal.fileUrl ? `${URL}/api/image/view/${encodeURIComponent(selectedFileModal.fileUrl)}` : "";
-                    const queryUrlFallback = selectedFileModal.fileUrl ? `${process.env.NEXT_PUBLIC_API || ""}/api/image/view?publicId=${encodeURIComponent(selectedFileModal.fileUrl)}` : "";
-                    const pathUrlFallback = selectedFileModal.fileUrl ? `${process.env.NEXT_PUBLIC_API || ""}/api/image/view/${encodeURIComponent(selectedFileModal.fileUrl)}` : "";
-                    
-                    if (!img.dataset.fallback1 && pathUrlPrimary) {
-                      img.dataset.fallback1 = "1";
-                      img.src = pathUrlPrimary;
-                      return;
-                    }
-                    if (!img.dataset.fallback2 && queryUrlFallback) {
-                      img.dataset.fallback2 = "1";
-                      img.src = queryUrlFallback;
-                      return;
-                    }
-                    if (!img.dataset.fallback3 && pathUrlFallback) {
-                      img.dataset.fallback3 = "1";
-                      img.src = pathUrlFallback;
-                      return;
-                    }
-                  }}
-                />
-              )}
-              
-              {selectedFileModal.type === 'video' && (
-                <video
-                  src={getImageSource(selectedFileModal.fileUrl, 'message').src}
-                  controls
-                  autoPlay
-                  className="max-w-full max-h-full"
-                  onError={(e) => {
-                    const video = e.currentTarget as HTMLVideoElement & { dataset: any };
-                    const pathUrlPrimary = selectedFileModal.fileUrl ? `${URL}/api/image/view/${encodeURIComponent(selectedFileModal.fileUrl)}` : "";
-                    const queryUrlFallback = selectedFileModal.fileUrl ? `${process.env.NEXT_PUBLIC_API || ""}/api/image/view?publicId=${encodeURIComponent(selectedFileModal.fileUrl)}` : "";
-                    const pathUrlFallback = selectedFileModal.fileUrl ? `${process.env.NEXT_PUBLIC_API || ""}/api/image/view/${encodeURIComponent(selectedFileModal.fileUrl)}` : "";
-                    
-                    if (!video.dataset.fallback1 && pathUrlPrimary) {
-                      video.dataset.fallback1 = "1";
-                      video.src = pathUrlPrimary;
-                      video.load();
-                      return;
-                    }
-                    if (!video.dataset.fallback2 && queryUrlFallback) {
-                      video.dataset.fallback2 = "1";
-                      video.src = queryUrlFallback;
-                      video.load();
-                      return;
-                    }
-                    if (!video.dataset.fallback3 && pathUrlFallback) {
-                      video.dataset.fallback3 = "1";
-                      video.src = pathUrlFallback;
-                      video.load();
-                      return;
-                    }
-                  }}
-                />
-              )}
-            </div>
-          </div>
-        </div>
-      )}
       </div>
     </div>
   );

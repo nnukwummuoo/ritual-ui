@@ -22,6 +22,7 @@ export default function ConditionalLayout({ children, isAuthenticated }: Conditi
   const [showNavbar, setShowNavbar] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
   const [mounted, setMounted] = useState(false);
+  const [showPromo, setShowPromo] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // Check if it's a QuickChat [userid] route
@@ -37,6 +38,16 @@ export default function ConditionalLayout({ children, isAuthenticated }: Conditi
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // Show promo modal after 5 seconds
+  useEffect(() => {
+    if (!isAuthenticated && isHomeRoute) {
+      const timer = setTimeout(() => {
+        setShowPromo(true);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [isAuthenticated, isHomeRoute]);
 
   // Optimized scroll handler with throttling for smooth performance
   useEffect(() => {
@@ -158,7 +169,8 @@ export default function ConditionalLayout({ children, isAuthenticated }: Conditi
       )}
 
       {/* Promo Modal - Only shown on home route for unauthenticated users */}
-      {!isAuthenticated && isHomeRoute && <UnauthenticatedPromoModal />}
+      {/* Promo Modal - Only shown on home route for unauthenticated users after delay */}
+      {!isAuthenticated && isHomeRoute && showPromo && <UnauthenticatedPromoModal />}
 
       <div className={`flex-1 flex flex-col overflow-hidden transition-all duration-300 min-w-0 min-h-0 ${mounted && !showNavbar ? 'mt-0' : 'md:mt-0 mt-12'}`}>
         <div
