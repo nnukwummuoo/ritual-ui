@@ -1,10 +1,8 @@
 import type { NextConfig } from "next";
 import withPWA from "next-pwa";
 
-const nextConfig: NextConfig = {
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
+const nextConfig:any = {
+ 
   typescript: {
     ignoreBuildErrors: true,
   },
@@ -54,6 +52,10 @@ const pwaConfig = withPWA({
   buildExcludes: [/middleware-manifest\.json$/, /app-build-manifest\.json$/],
   fallbacks: {
     document: '/offline',
+   image: '/offline', 
+    audio: '/offline', // FIX APPLIED HERE
+    video: '/offline',
+    font: '/offline',
   },
   publicExcludes: ['!robots.txt', '!sitemap.xml'],
   swSrc: 'public/worker.js', // Use custom unified service worker source (includes push notifications)
@@ -61,4 +63,4 @@ const pwaConfig = withPWA({
   // Note: runtimeCaching is not supported with swSrc - it's handled manually in worker.js
 });
 
-export default pwaConfig(nextConfig);
+export default pwaConfig(nextConfig) as any;

@@ -22,7 +22,7 @@ import { generateInitials } from "@/utils/generateInitials";
 import { BadgeCheck } from "lucide-react";
 
 // Video component for lazy-loaded videos - moved outside to prevent re-creation
-const VideoComponent = ({ post, src, pathUrlPrimary, queryUrlFallback, pathUrlFallback, showControls, setShowControls, controlsTimerRef, isVideoLoaded, setIsVideoLoaded }: {
+const VideoComponent = ({ post, src, pathUrlPrimary, queryUrlFallback, pathUrlFallback, showControls, setShowControls, controlsTimerRef, isVideoLoaded, setIsVideoLoaded, posterSource }: {
   post: any;
   src: string;
   pathUrlPrimary?: string;
@@ -33,6 +33,7 @@ const VideoComponent = ({ post, src, pathUrlPrimary, queryUrlFallback, pathUrlFa
   controlsTimerRef: React.MutableRefObject<NodeJS.Timeout | null>;
   isVideoLoaded: boolean;
   setIsVideoLoaded: (loaded: boolean) => void;
+  posterSource?: string;
 }) => {
   const { videoRef, isPlaying, isVisible: videoVisible, autoPlayBlocked, hasUserInteracted, togglePlay, toggleMute, isMuted } = useVideoAutoPlay({
     autoPlay: true,
@@ -68,7 +69,8 @@ const VideoComponent = ({ post, src, pathUrlPrimary, queryUrlFallback, pathUrlFa
           muted
           loop
           playsInline
-          preload="auto"
+          preload="metadata"
+          poster={posterSource}
           className="w-full h-[400px] object-cover rounded cursor-pointer"
           onLoadedData={() => {
             setIsVideoLoaded(true);
@@ -495,6 +497,16 @@ const LazyPost: React.FC<LazyPostProps> = ({
     post?.public_id ||
     post?.imageId ||
     "";
+
+  const posterRef =
+    post?.thumblink ||
+    post?.postphoto ||
+    post?.image ||
+    post?.thumbnail ||
+    "";
+
+  const posterSource = posterRef ? getImageSource(typeof posterRef === "string" ? posterRef : (posterRef?.publicId || posterRef?.public_id || posterRef?.url || ""), 'post').src : "";
+
   const asString = typeof mediaRef === "string" ? mediaRef : (mediaRef?.publicId || mediaRef?.public_id || mediaRef?.url || "");
   const isHttpUrl = typeof asString === "string" && /^https?:\/\//i.test(asString);
   const isBlobUrl = typeof asString === "string" && /^blob:/i.test(asString);
@@ -719,6 +731,7 @@ const LazyPost: React.FC<LazyPostProps> = ({
             controlsTimerRef={controlsTimerRef}
             isVideoLoaded={isVideoLoaded}
             setIsVideoLoaded={setIsVideoLoaded}
+            posterSource={posterSource}
           />
         )
       }
@@ -741,7 +754,7 @@ const LazyPost: React.FC<LazyPostProps> = ({
           }
 
           const currentUiState = ui[localPid] || {};
-          const currentlyFollowing = currentUiState.isFollowing ?? false;
+          const currentlyFollowing = currentUiState.isFollowing ?? isFollowing;
 
           setUi((prev: any) => ({
             ...prev,
@@ -987,7 +1000,7 @@ const LazyPost: React.FC<LazyPostProps> = ({
                                     }
 
                                     // Fallback to username if names not available
-                                    return (c?.commentusername || c?.username || 'U').charAt(0).toUpperCase();
+                                    return (c?.commentusername || c?.username || 'U').charAt(1).toUpperCase();
                                   })()}
                                 </div>
                               );
@@ -1018,7 +1031,7 @@ const LazyPost: React.FC<LazyPostProps> = ({
                                 {(() => {
                                   const isVerified = c?.isVerified;
                                   return isVerified && (
-                                    <span> <BadgeCheck size={17} className="text-black inline ml-1" fill="white" /> </span>
+                                    <span> <BadgeCheck size={14} className="text-black inline" fill="white" /> </span>
                                   );
                                 })()}
                               </span>

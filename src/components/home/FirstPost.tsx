@@ -257,6 +257,15 @@ const FirstPost: React.FC<FirstPostProps> = ({
     post?.public_id ||
     post?.imageId ||
     "";
+
+  const posterRef =
+    post?.thumblink ||
+    post?.postphoto ||
+    post?.image ||
+    post?.thumbnail ||
+    "";
+
+  const posterSource = posterRef ? getImageSource(typeof posterRef === "string" ? posterRef : (posterRef?.publicId || posterRef?.public_id || posterRef?.url || ""), 'post').src : "";
   const asString = typeof mediaRef === "string" ? mediaRef : (mediaRef?.publicId || mediaRef?.public_id || mediaRef?.url || "");
   const isHttpUrl = typeof asString === "string" && /^https?:\/\//i.test(asString);
   const isBlobUrl = typeof asString === "string" && /^blob:/i.test(asString);
@@ -519,7 +528,8 @@ const FirstPost: React.FC<FirstPostProps> = ({
               muted
               loop
               playsInline
-              preload="auto"
+              preload="metadata"
+              poster={posterSource}
               className="w-full h-[400px] object-cover rounded cursor-pointer"
               onLoadedData={() => {
                 setIsVideoLoaded(true);
@@ -661,9 +671,9 @@ const FirstPost: React.FC<FirstPostProps> = ({
           }
 
           const currentUiState = ui[localPid] || {};
-          const currentlyFollowing = currentUiState.isFollowing ?? false;
+          const currentlyFollowing = currentUiState.isFollowing ?? isFollowing;
 
-          setUi((prev:any) => ({
+          setUi((prev: any) => ({
             ...prev,
             [localPid]: {
               ...prev[localPid],
@@ -693,7 +703,7 @@ const FirstPost: React.FC<FirstPostProps> = ({
             dispatch(getfollow({ userid: loggedInUserId, token }));
 
           } catch {
-            setUi((prev:any) => ({
+            setUi((prev: any) => ({
               ...prev,
               [localPid]: {
                 ...prev[localPid],
@@ -742,7 +752,7 @@ const FirstPost: React.FC<FirstPostProps> = ({
             newCount: Math.max(0, currentCount + (nextLiked ? 1 : -1))
           });
 
-          setUi((prev:any) => ({
+          setUi((prev: any) => ({
             ...prev,
             [localPid]: {
               ...curr,
@@ -774,7 +784,7 @@ const FirstPost: React.FC<FirstPostProps> = ({
               message: error instanceof Error ? error.message : 'Unknown error',
               stack: error instanceof Error ? error.stack : undefined
             });
-            setUi((prev:any) => ({
+            setUi((prev: any) => ({
               ...prev,
               [localPid]: {
                 ...prev[localPid],
@@ -805,7 +815,7 @@ const FirstPost: React.FC<FirstPostProps> = ({
           //   loadingComments: currentUiState.loadingComments
           // });
 
-          setUi((prev:any) => ({
+          setUi((prev: any) => ({
             ...prev,
             [localPid]: { ...(prev[localPid] || {}), open: !isCurrentlyOpen }
           }));
@@ -822,7 +832,7 @@ const FirstPost: React.FC<FirstPostProps> = ({
 
           if (shouldFetch) {
             // console.log('💬 Fetching comments for post:', localPid);
-            setUi((prev:any) => ({
+            setUi((prev: any) => ({
               ...prev,
               [localPid]: { ...(prev[localPid] || {}), loadingComments: true }
             }));
@@ -834,7 +844,7 @@ const FirstPost: React.FC<FirstPostProps> = ({
                 const arr = (res && (res.comment || res.comments)) || [];
                 // console.log('💬 Processed comments array:', arr);
 
-                setUi((prev:any) => {
+                setUi((prev: any) => {
                   const currentState = prev[localPid] || {};
                   return {
                     ...prev,
@@ -851,9 +861,9 @@ const FirstPost: React.FC<FirstPostProps> = ({
                   };
                 });
               })
-              .catch((error:any) => {
+              .catch((error: any) => {
                 console.error('💬 Comments fetch error:', error);
-                setUi((prev:any) => ({
+                setUi((prev: any) => ({
                   ...prev,
                   [localPid]: { ...(prev[localPid] || {}), loadingComments: false }
                 }));
@@ -939,7 +949,7 @@ const FirstPost: React.FC<FirstPostProps> = ({
                                   }
 
                                   // Fallback to username if names not available
-                                  return (c?.commentusername || c?.username || 'U').charAt(0).toUpperCase();
+                                  return (c?.commentusername || c?.username || 'U').charAt(1).toUpperCase();
                                 })()}
                               </div>
                             );
@@ -970,7 +980,7 @@ const FirstPost: React.FC<FirstPostProps> = ({
                               {(() => {
                                 const isVerified = c?.isVerified;
                                 return isVerified && (
-                                  <span> <BadgeCheck size={17} fill="white" className="text-black inline ml-1" /> </span>
+                                  <span> <BadgeCheck size={14} fill="white" className="text-black inline" /> </span>
                                 );
                               })()}
 
@@ -1015,7 +1025,7 @@ const FirstPost: React.FC<FirstPostProps> = ({
                   value={uiInput}
                   onChange={(e) => {
                     const v = e.target.value;
-                    setUi((prev:any) => ({
+                    setUi((prev: any) => ({
                       ...prev,
                       [pid]: { ...(prev[pid] || {}), input: v },
                     }));
@@ -1028,7 +1038,7 @@ const FirstPost: React.FC<FirstPostProps> = ({
                   onClick={() => {
                     const text = (ui[pid]?.input || '').trim();
                     if (!text) return;
-                    setUi((prev:any) => ({
+                    setUi((prev: any) => ({
                       ...prev,
                       [pid]: {
                         ...(prev[pid] || {}),
@@ -1064,7 +1074,7 @@ const FirstPost: React.FC<FirstPostProps> = ({
                             .unwrap()
                             .then((commentRes: any) => {
                               const serverComments = (commentRes && (commentRes.comment || commentRes.comments)) || [];
-                              setUi((prev:any) => {
+                              setUi((prev: any) => {
                                 const currentState = prev[pid] || {};
                                 return {
                                   ...prev,
@@ -1082,20 +1092,20 @@ const FirstPost: React.FC<FirstPostProps> = ({
                               });
                             })
                             .catch(() => {
-                              setUi((prev:any) => ({
+                              setUi((prev: any) => ({
                                 ...prev,
                                 [pid]: { ...(prev[pid] || {}), sending: false },
                               }));
                             });
                         })
                         .catch(() => {
-                          setUi((prev:any) => ({
+                          setUi((prev: any) => ({
                             ...prev,
                             [pid]: { ...(prev[pid] || {}), sending: false },
                           }));
                         });
                     } else {
-                      setUi((prev:any) => ({
+                      setUi((prev: any) => ({
                         ...prev,
                         [pid]: { ...(prev[pid] || {}), sending: false },
                       }));
