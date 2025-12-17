@@ -955,34 +955,22 @@ export default function CreatorPage() {
     });
   }, [myCreators]);
 
-  // Step 2: Apply DEFAULT backend sorting (preserves backend order - VIP, Online, Views)
-  // This maintains your backend's custom sorting logic before any user filters
+  // Step 2: Apply DEFAULT sorting (Online -> Views)
   const defaultSortedList = useMemo(() => {
-    // Backend already sorted the data, so we just return it as-is
-    // The backend sorting (VIP → Online → Views) is preserved here
-    return [...list];
+    const sorted = [...list];
+    return sorted.sort((a, b) => {
+      // Priority 1: Online creators first
+      if (a.isOnline && !b.isOnline) return -1;
+      if (!a.isOnline && b.isOnline) return 1;
 
-    // If you want to add additional default sorting on frontend, uncomment below:
-    // const sorted = [...list];
-    // return sorted.sort((a, b) => {
-    //   // Priority 1: VIP creators first
-    //   if (a.isVip && !b.isVip) return -1;
-    //   if (!a.isVip && b.isVip) return 1;
-    //   
-    //   // Priority 2: Online creators next
-    //   if (a.isOnline && !b.isOnline) return -1;
-    //   if (!a.isOnline && b.isOnline) return 1;
-    //   
-    //   // Priority 3: Most views
-    //   const viewDiff = (b.views || 0) - (a.views || 0);
-    //   if (viewDiff !== 0) return viewDiff;
-    //   
-    //   // Priority 4: Newest creators (tie-breaker)
-    //   const dateA = new Date(a.createdAt || 0).getTime();
-    //   const dateB = new Date(b.createdAt || 0).getTime();
-    //   return dateB - dateA;
-    // });
+      // Priority 2: Most views (highest first)
+      const viewsA = a.views || 0;
+      const viewsB = b.views || 0;
+      return viewsB - viewsA;
+    });
   }, [list]);
+
+
 
   // Step 3: Filter creators based on user selections (uses defaultSortedList to preserve backend order)
   const filteredList = useMemo(() => {

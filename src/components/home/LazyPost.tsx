@@ -20,6 +20,7 @@ import { useVideoAutoPlay } from "@/hooks/useVideoAutoPlayNew";
 import ExpandableText from "../ExpandableText";
 import { generateInitials } from "@/utils/generateInitials";
 import { BadgeCheck } from "lucide-react";
+import MuxPlayer from '@mux/mux-player-react';
 
 // Video component for lazy-loaded videos - moved outside to prevent re-creation
 const VideoComponent = ({ post, src, pathUrlPrimary, queryUrlFallback, pathUrlFallback, showControls, setShowControls, controlsTimerRef, isVideoLoaded, setIsVideoLoaded, posterSource }: {
@@ -42,16 +43,36 @@ const VideoComponent = ({ post, src, pathUrlPrimary, queryUrlFallback, pathUrlFa
     postId: post?._id || post?.postid || post?.id || 'lazy-post'
   });
 
+  const hasMuxPlaybackId = !!post?.playbackId;
+
+  if (hasMuxPlaybackId) {
+    return (
+      <div className="relative w-full h-[400px] rounded overflow-hidden shadow-lg bg-black">
+        <MuxPlayer
+          playbackId={post.playbackId}
+          metadataVideoTitle="User Uploaded Content"
+          streamType="on-demand"
+          autoPlay="muted"
+          loop
+          accentColor="#3b82f6"
+          poster={posterSource}
+          style={{ height: '100%', width: '100%' }}
+          className="w-full h-full object-cover"
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="relative w-full h-[400px] rounded overflow-hidden">
-      {/* Video skeleton - show while video is loading */}
-      {!isVideoLoaded && (
+      {/* Video skeleton - show while video is loading and no poster is available */}
+      {!isVideoLoaded && !posterSource && (
         <VideoSkeleton />
       )}
 
       {/* Video with controls that auto-hide */}
       <div
-        className={`relative w-full h-full ${!isVideoLoaded ? 'opacity-0 absolute top-0 left-0' : 'opacity-100 transition-opacity duration-300'}`}
+        className={`relative w-full h-full ${(isVideoLoaded || posterSource) ? 'opacity-100' : 'opacity-0 absolute top-0 left-0'} transition-opacity duration-300`}
         onMouseMove={() => {
           // Show controls and reset the timer when mouse moves
           setShowControls(true);

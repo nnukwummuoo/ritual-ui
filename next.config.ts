@@ -1,3 +1,4 @@
+import { withNextVideo } from "next-video/process";
 import type { NextConfig } from "next";
 import withPWA from "next-pwa";
 
@@ -63,4 +64,4 @@ const pwaConfig = withPWA({
   // Note: runtimeCaching is not supported with swSrc - it's handled manually in worker.js
 });
 
-export default pwaConfig(nextConfig) as any;
+export default withNextVideo(pwaConfig(nextConfig));
