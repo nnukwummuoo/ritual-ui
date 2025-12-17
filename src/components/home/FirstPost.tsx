@@ -18,7 +18,11 @@ import { getImageSource } from "@/lib/imageUtils";
 import { useVideoAutoPlay } from "@/hooks/useVideoAutoPlayNew";
 import ExpandableText from "../ExpandableText";
 import { generateInitials } from "@/utils/generateInitials";
-import { BadgeCheck } from "lucide-react"
+import { BadgeCheck } from "lucide-react";
+import MuxPlayer from '@mux/mux-player-react';
+import { processMyStorjVideo } from "@/app/actions/video";
+import axios from "axios";
+
 // Utility function to format relative time
 const formatRelativeTime = (timestamp: string | number | Date): string => {
   try {
@@ -185,6 +189,8 @@ const FirstPost: React.FC<FirstPostProps> = ({
   // State and ref for auto-hiding video controls
   const [showControls, setShowControls] = React.useState(false);
   const [isVideoLoaded, setIsVideoLoaded] = React.useState(false);
+  const [isOptimizing, setIsOptimizing] = React.useState(false);
+  const [localPlaybackId, setLocalPlaybackId] = React.useState<string>("");
   const controlsTimerRef = React.useRef<NodeJS.Timeout | null>(null);
 
   // Video auto-play hook with post ID for global management
@@ -211,6 +217,54 @@ const FirstPost: React.FC<FirstPostProps> = ({
       if (controlsTimerRef.current) clearTimeout(controlsTimerRef.current);
     };
   }, []);
+
+  const handleOptimizeVideo = async () => {
+    try {
+      if (isOptimizing) return;
+      setIsOptimizing(true);
+      toast.info("Optimizing video... This may take a moment.");
+
+      const rawUrl = src;
+      // Ensure we have a valid URL
+      if (!rawUrl) {
+        toast.error("No video URL found to optimize");
+        setIsOptimizing(false);
+        return;
+      }
+
+      // 1. Process with Mux
+      const result = await processMyStorjVideo(rawUrl);
+
+      if (result && result.playbackId) {
+        // 2. Save to Backend
+        const endpoint = `${API_BASE}/post/updatePlaybackId`;
+        // Note: Assuming API_BASE doesn't end with slash, but check config. 
+        // Post.js mounted at /post so /post/updatePlaybackId is correct if mounted at root?
+        // User's index.js: app.use("/", postRoutes); AND app.use("/post", postRoutes);
+        // So /updatePlaybackId works too. Let's use /updatePlaybackId for safety if at root, or check.
+        // Let's safe bet: /api/post/updatePlaybackId ? No, API_BASE usually includes /api?
+        // In config.ts it is "http://localhost:3100".
+        // app.use("/", require("./routes/api/post/Post")); means localhost:3100/updatePlaybackId works.
+
+        await axios.post(`${API_BASE}/updatePlaybackId`, {
+          postId: post?._id || post?.postid || post?.id,
+          playbackId: result.playbackId,
+          assetId: result.assetId
+        });
+
+        setLocalPlaybackId(result.playbackId);
+        toast.success("Video optimized! Enjoy instant playback.");
+      } else {
+        toast.error("Failed to process video.");
+      }
+
+    } catch (e: any) {
+      console.error("Optimization failed", e);
+      toast.error("Optimization failed: " + (e.message || "Unknown error"));
+    } finally {
+      setIsOptimizing(false);
+    }
+  };
 
   // Modal functions
   const openModal = (imageSrc: string) => {
@@ -501,158 +555,190 @@ const FirstPost: React.FC<FirstPostProps> = ({
         </div>
       )}
 
-      {postType == "video" && src && (
-        <div className="relative w-full h-[400px] rounded overflow-hidden">
-          {/* Video skeleton - show while video is loading */}
-          {!isVideoLoaded && (
-            <VideoSkeleton />
-          )}
-
-          {/* Video with controls that auto-hide */}
-          <div
-            className={`relative w-full h-full ${!isVideoLoaded ? 'opacity-0 absolute top-0 left-0' : 'opacity-100 transition-opacity duration-300'}`}
-            onMouseMove={() => {
-              // Show controls and reset the timer when mouse moves
-              setShowControls(true);
-              if (controlsTimerRef.current) {
-                clearTimeout(controlsTimerRef.current);
-              }
-              controlsTimerRef.current = setTimeout(() => {
-                setShowControls(false);
-              }, 3000);
-            }}
-          >
-            <video
-              ref={videoRef}
-              src={src}
-              muted
+      {postType == "video" && (
+        (post?.playbackId || localPlaybackId) ? (
+          <div className="relative w-full h-[400px] rounded overflow-hidden shadow-lg bg-black">
+            <MuxPlayer
+              playbackId={post.playbackId || localPlaybackId}
+              metadataVideoTitle="User Uploaded Content"
+              streamType="on-demand"
+              autoPlay="muted"
               loop
-              playsInline
-              preload="metadata"
+              accentColor="#3b82f6"
               poster={posterSource}
-              className="w-full h-[400px] object-cover rounded cursor-pointer"
-              onLoadedData={() => {
-                setIsVideoLoaded(true);
-              }}
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowControls(true);
-                togglePlay();
-                if (controlsTimerRef.current) {
-                  clearTimeout(controlsTimerRef.current);
-                }
-                controlsTimerRef.current = setTimeout(() => {
-                  setShowControls(false);
-                }, 3000);
-              }}
-              onError={(e) => {
-                const video = e.currentTarget as HTMLVideoElement & { dataset: any };
-                if (!video.dataset.fallback1 && pathUrlPrimary) {
-                  video.dataset.fallback1 = "1";
-                  video.src = pathUrlPrimary;
-                  video.load();
-                  return;
-                }
-                if (!video.dataset.fallback2 && queryUrlFallback) {
-                  video.dataset.fallback2 = "1";
-                  video.src = queryUrlFallback;
-                  video.load();
-                  return;
-                }
-                if (!video.dataset.fallback3 && pathUrlFallback) {
-                  video.dataset.fallback3 = "1";
-                  video.src = pathUrlFallback;
-                  video.load();
-                }
-              }}
+              style={{ height: '100%', width: '100%' }}
+              className="w-full h-full object-cover"
             />
+          </div>
+        ) : (
+          src && (
+            <div className="relative w-full h-[400px] rounded overflow-hidden">
+              {/* Video skeleton - show while video is loading and no poster is available */}
+              {!isVideoLoaded && !posterSource && (
+                <VideoSkeleton />
+              )}
 
-            {/* Volume Button - Shows only when showControls is true */}
-            {showControls && (
-              <div className="absolute bottom-3 right-3 z-10 transition-opacity duration-300 opacity-100">
+              {/* Video with controls that auto-hide */}
+              <div
+                className={`relative w-full h-full ${(isVideoLoaded || posterSource) ? 'opacity-100' : 'opacity-0 absolute top-0 left-0'} transition-opacity duration-300`}
+                onMouseMove={() => {
+                  // Show controls and reset the timer when mouse moves
+                  setShowControls(true);
+                  if (controlsTimerRef.current) {
+                    clearTimeout(controlsTimerRef.current);
+                  }
+                  controlsTimerRef.current = setTimeout(() => {
+                    setShowControls(false);
+                  }, 3000);
+                }}
+              >
+                <video
+                  ref={videoRef}
+                  src={src}
+                  muted
+                  loop
+                  playsInline
+                  preload="metadata"
+                  poster={posterSource}
+                  className="w-full h-[400px] object-cover rounded cursor-pointer"
+                  onLoadedData={() => {
+                    setIsVideoLoaded(true);
+                  }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowControls(true);
+                    togglePlay();
+                    if (controlsTimerRef.current) {
+                      clearTimeout(controlsTimerRef.current);
+                    }
+                    controlsTimerRef.current = setTimeout(() => {
+                      setShowControls(false);
+                    }, 3000);
+                  }}
+                  onError={(e) => {
+                    const video = e.currentTarget as HTMLVideoElement & { dataset: any };
+                    if (!video.dataset.fallback1 && pathUrlPrimary) {
+                      video.dataset.fallback1 = "1";
+                      video.src = pathUrlPrimary;
+                      video.load();
+                      return;
+                    }
+                    if (!video.dataset.fallback2 && queryUrlFallback) {
+                      video.dataset.fallback2 = "1";
+                      video.src = queryUrlFallback;
+                      video.load();
+                      return;
+                    }
+                    if (!video.dataset.fallback3 && pathUrlFallback) {
+                      video.dataset.fallback3 = "1";
+                      video.src = pathUrlFallback;
+                      video.load();
+                    }
+                  }}
+                />
+
+                {/* Volume Button - Shows only when showControls is true */}
+                {showControls && (
+                  <div className="absolute bottom-3 right-3 z-10 transition-opacity duration-300 opacity-100">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleMute();
+                        // Reset auto-hide timer when interacting with controls
+                        if (controlsTimerRef.current) {
+                          clearTimeout(controlsTimerRef.current);
+                        }
+                        controlsTimerRef.current = setTimeout(() => {
+                          setShowControls(false);
+                        }, 3000);
+                      }}
+                      className="bg-black bg-opacity-70 rounded-full p-2.5 hover:bg-opacity-90 transition-all hover:scale-110"
+                      aria-label={isMuted ? "Unmute video" : "Mute video"}
+                    >
+                      {isMuted ? (
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                          <line x1="23" y1="9" x2="17" y2="15"></line>
+                          <line x1="17" y1="9" x2="23" y2="15"></line>
+                        </svg>
+                      ) : (
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                          <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                        </svg>
+                      )}
+                    </button>
+                  </div>
+                )}
+
+                {/* Center Play/Pause Button - Shows when controls are visible OR when autoplay is blocked */}
+                {(showControls || autoPlayBlocked) && (
+                  <div className="absolute inset-0 flex items-center justify-center transition-opacity duration-300 opacity-100">
+                    <div
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        togglePlay();
+                        // Reset auto-hide timer when interacting with controls
+                        if (controlsTimerRef.current) {
+                          clearTimeout(controlsTimerRef.current);
+                        }
+                        controlsTimerRef.current = setTimeout(() => {
+                          setShowControls(false);
+                        }, 3000);
+                      }}
+                      className="bg-black bg-opacity-70 rounded-full p-5 hover:bg-opacity-90 hover:scale-110 cursor-pointer transition-all"
+                    >
+                      {isPlaying ? (
+                        <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                          <rect x="6" y="4" width="4" height="16"></rect>
+                          <rect x="14" y="4" width="4" height="16"></rect>
+                        </svg>
+                      ) : (
+                        <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                          <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                        </svg>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Click to Play Overlay - Shows when autoplay is blocked and video is not playing */}
+                {(autoPlayBlocked || !hasUserInteracted) && !isPlaying && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30">
+                    <div className="text-center text-white">
+                      <div
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          togglePlay();
+                        }}
+                        className="bg-black bg-opacity-70 rounded-full p-6 hover:bg-opacity-90 hover:scale-110 cursor-pointer transition-all mb-4 mx-auto w-fit opacity-0"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                          <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Optimization Trigger for Owner/Admin */}
+              {isSelf && !localPlaybackId && !post?.playbackId && (
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    toggleMute();
-                    // Reset auto-hide timer when interacting with controls
-                    if (controlsTimerRef.current) {
-                      clearTimeout(controlsTimerRef.current);
-                    }
-                    controlsTimerRef.current = setTimeout(() => {
-                      setShowControls(false);
-                    }, 3000);
+                    handleOptimizeVideo();
                   }}
-                  className="bg-black bg-opacity-70 rounded-full p-2.5 hover:bg-opacity-90 transition-all hover:scale-110"
-                  aria-label={isMuted ? "Unmute video" : "Mute video"}
+                  className="absolute top-2 right-2 bg-yellow-500 hover:bg-yellow-600 text-black text-xs font-bold px-2 py-1 rounded shadow z-20 flex items-center gap-1"
+                  disabled={isOptimizing}
                 >
-                  {isMuted ? (
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-                      <line x1="23" y1="9" x2="17" y2="15"></line>
-                      <line x1="17" y1="9" x2="23" y2="15"></line>
-                    </svg>
-                  ) : (
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-                      <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
-                    </svg>
-                  )}
+                  {isOptimizing ? "⚡ Processing..." : "⚡ Optimize Video"}
                 </button>
-              </div>
-            )}
+              )}
 
-            {/* Center Play/Pause Button - Shows when controls are visible OR when autoplay is blocked */}
-            {(showControls || autoPlayBlocked) && (
-              <div className="absolute inset-0 flex items-center justify-center transition-opacity duration-300 opacity-100">
-                <div
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    togglePlay();
-                    // Reset auto-hide timer when interacting with controls
-                    if (controlsTimerRef.current) {
-                      clearTimeout(controlsTimerRef.current);
-                    }
-                    controlsTimerRef.current = setTimeout(() => {
-                      setShowControls(false);
-                    }, 3000);
-                  }}
-                  className="bg-black bg-opacity-70 rounded-full p-5 hover:bg-opacity-90 hover:scale-110 cursor-pointer transition-all"
-                >
-                  {isPlaying ? (
-                    <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                      <rect x="6" y="4" width="4" height="16"></rect>
-                      <rect x="14" y="4" width="4" height="16"></rect>
-                    </svg>
-                  ) : (
-                    <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                      <polygon points="5 3 19 12 5 21 5 3"></polygon>
-                    </svg>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Click to Play Overlay - Shows when autoplay is blocked and video is not playing */}
-            {(autoPlayBlocked || !hasUserInteracted) && !isPlaying && (
-              <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30">
-                <div className="text-center text-white">
-                  <div
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      togglePlay();
-                    }}
-                    className="bg-black bg-opacity-70 rounded-full p-6 hover:bg-opacity-90 hover:scale-110 cursor-pointer transition-all mb-4 mx-auto w-fit opacity-0"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                      <polygon points="5 3 19 12 5 21 5 3"></polygon>
-                    </svg>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+            </div>
+          )))
+      }
 
       <PostActions
         className="mt-3 border-t border-gray-700 pt-2"
@@ -872,282 +958,286 @@ const FirstPost: React.FC<FirstPostProps> = ({
         }}
       />
 
-      {uiOpen && (
-        <div className="mt-2 border-t border-gray-700 pt-2">
-          {uiLoading ? (
-            <p className="text-sm text-gray-400">Loading comments…</p>
-          ) : (
-            <div className="space-y-2">
-              {uiComments && uiComments.length > 0 ? (
-                [...uiComments]
-                  .sort((a: any, b: any) => {
-                    const aIsVip = a?.isVip && a?.vipEndDate && new Date(a.vipEndDate) > new Date();
-                    const bIsVip = b?.isVip && b?.vipEndDate && new Date(b.vipEndDate) > new Date();
+      {
+        uiOpen && (
+          <div className="mt-2 border-t border-gray-700 pt-2">
+            {uiLoading ? (
+              <p className="text-sm text-gray-400">Loading comments…</p>
+            ) : (
+              <div className="space-y-2">
+                {uiComments && uiComments.length > 0 ? (
+                  [...uiComments]
+                    .sort((a: any, b: any) => {
+                      const aIsVip = a?.isVip && a?.vipEndDate && new Date(a.vipEndDate) > new Date();
+                      const bIsVip = b?.isVip && b?.vipEndDate && new Date(b.vipEndDate) > new Date();
 
-                    if (aIsVip && !bIsVip) return -1;
-                    if (bIsVip && !aIsVip) return 1;
+                      if (aIsVip && !bIsVip) return -1;
+                      if (bIsVip && !aIsVip) return 1;
 
-                    const aTime = a?.commenttime || a?.date || a?.createdAt || 0;
-                    const bTime = b?.commenttime || b?.date || b?.createdAt || 0;
-                    return bTime - aTime;
-                  })
-                  .map((c: any, i: number) => {
+                      const aTime = a?.commenttime || a?.date || a?.createdAt || 0;
+                      const bTime = b?.commenttime || b?.date || b?.createdAt || 0;
+                      return bTime - aTime;
+                    })
+                    .map((c: any, i: number) => {
 
-                    return (
-                      <div key={i} className="text-sm text-gray-200 flex items-start gap-2 relative">
-                        <div className="relative flex-shrink-0 w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center text-xs overflow-hidden">
-                          {(() => {
-                            const profileImage = c?.commentuserphoto || c?.photo || c?.photolink || c?.photoLink || c?.profileImage || c?.avatar || c?.image;
+                      return (
+                        <div key={i} className="text-sm text-gray-200 flex items-start gap-2 relative">
+                          <div className="relative flex-shrink-0 w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center text-xs overflow-hidden">
+                            {(() => {
+                              const profileImage = c?.commentuserphoto || c?.photo || c?.photolink || c?.photoLink || c?.profileImage || c?.avatar || c?.image;
 
-                            if (profileImage && profileImage.trim() && profileImage !== 'null' && profileImage !== 'undefined') {
-                              const imageSource = getImageSource(profileImage, 'profile');
-                              return (
-                                <img
-                                  alt="Profile picture"
-                                  src={imageSource.src}
-                                  className="object-cover w-full h-full rounded-full"
-                                  onError={(e) => {
-                                    const target = e.currentTarget as HTMLImageElement;
-                                    target.style.display = 'none';
-                                    const parent = target.parentElement;
-                                    if (parent) {
-                                      const fallbackDiv = document.createElement('div');
-                                      fallbackDiv.className = 'w-full h-full rounded-full bg-gray-600 flex items-center justify-center text-xs text-white font-medium';
-                                      // Generate initials from firstname/lastname, fallback to username
-                                      let initialsText = c?.initials;
-                                      if (!initialsText) {
-                                        const firstName = c?.firstname || '';
-                                        const lastName = c?.lastname || '';
-                                        if (firstName || lastName) {
-                                          const nameParts = [firstName, lastName].filter(Boolean);
-                                          initialsText = nameParts.map(n => n[0]).join('').toUpperCase().slice(0, 2) || '?';
-                                        } else {
-                                          initialsText = (c?.commentusername || c?.username || 'U').charAt(0).toUpperCase();
+                              if (profileImage && profileImage.trim() && profileImage !== 'null' && profileImage !== 'undefined') {
+                                const imageSource = getImageSource(profileImage, 'profile');
+                                return (
+                                  <img
+                                    alt="Profile picture"
+                                    src={imageSource.src}
+                                    className="object-cover w-full h-full rounded-full"
+                                    onError={(e) => {
+                                      const target = e.currentTarget as HTMLImageElement;
+                                      target.style.display = 'none';
+                                      const parent = target.parentElement;
+                                      if (parent) {
+                                        const fallbackDiv = document.createElement('div');
+                                        fallbackDiv.className = 'w-full h-full rounded-full bg-gray-600 flex items-center justify-center text-xs text-white font-medium';
+                                        // Generate initials from firstname/lastname, fallback to username
+                                        let initialsText = c?.initials;
+                                        if (!initialsText) {
+                                          const firstName = c?.firstname || '';
+                                          const lastName = c?.lastname || '';
+                                          if (firstName || lastName) {
+                                            const nameParts = [firstName, lastName].filter(Boolean);
+                                            initialsText = nameParts.map(n => n[0]).join('').toUpperCase().slice(0, 2) || '?';
+                                          } else {
+                                            initialsText = (c?.commentusername || c?.username || 'U').charAt(0).toUpperCase();
+                                          }
                                         }
+                                        fallbackDiv.textContent = initialsText;
+                                        parent.appendChild(fallbackDiv);
                                       }
-                                      fallbackDiv.textContent = initialsText;
-                                      parent.appendChild(fallbackDiv);
+                                    }}
+                                  />
+                                );
+                              }
+
+                              // Show initials as fallback when no profile image
+                              return (
+                                <div className="w-full h-full rounded-full bg-gray-600 flex items-center justify-center text-xs text-white font-medium">
+                                  {(() => {
+                                    // Prioritize server-provided initials
+                                    if (c?.initials) return c.initials;
+
+                                    // Generate from firstname and lastname if available
+                                    const firstName = c?.firstname || '';
+                                    const lastName = c?.lastname || '';
+                                    if (firstName || lastName) {
+                                      const nameParts = [firstName, lastName].filter(Boolean);
+                                      return nameParts.map(n => n[0]).join('').toUpperCase().slice(0, 2) || '?';
                                     }
-                                  }}
-                                />
+
+                                    // Fallback to username if names not available
+                                    return (c?.commentusername || c?.username || 'U').charAt(1).toUpperCase();
+                                  })()}
+                                </div>
                               );
-                            }
+                            })()}
+                          </div>
 
-                            // Show initials as fallback when no profile image
-                            return (
-                              <div className="w-full h-full rounded-full bg-gray-600 flex items-center justify-center text-xs text-white font-medium">
-                                {(() => {
-                                  // Prioritize server-provided initials
-                                  if (c?.initials) return c.initials;
-
-                                  // Generate from firstname and lastname if available
-                                  const firstName = c?.firstname || '';
-                                  const lastName = c?.lastname || '';
-                                  if (firstName || lastName) {
-                                    const nameParts = [firstName, lastName].filter(Boolean);
-                                    return nameParts.map(n => n[0]).join('').toUpperCase().slice(0, 2) || '?';
-                                  }
-
-                                  // Fallback to username if names not available
-                                  return (c?.commentusername || c?.username || 'U').charAt(1).toUpperCase();
-                                })()}
-                              </div>
+                          {(() => {
+                            const isVipActive = c?.isVip && c?.vipEndDate && new Date(c.vipEndDate) > new Date();
+                            return isVipActive && (
+                              <VIPBadge size="lg" className="absolute -top-3 left-3 z-10" isVip={c.isVip} vipEndDate={c.vipEndDate} />
                             );
                           })()}
-                        </div>
+                          <div className="flex-1">
+                            <div className="flex items-center justify-between">
+                              <span className="font-medium text-gray-300">
+                                {(() => {
+                                  const combinedName = [c?.firstname, c?.lastname].filter(Boolean).join(" ");
+                                  return combinedName ||
+                                    c?.commentusername ||
+                                    c?.fullname ||
+                                    c?.fullName ||
+                                    c?.name ||
+                                    c?.username ||
+                                    c?.username ||
+                                    c?.author ||
+                                    'User';
+                                })()}
+                                {(() => {
+                                  const isVerified = c?.isVerified;
+                                  return isVerified && (
+                                    <span> <BadgeCheck size={14} fill="white" className="text-black inline" /> </span>
+                                  );
+                                })()}
 
-                        {(() => {
-                          const isVipActive = c?.isVip && c?.vipEndDate && new Date(c.vipEndDate) > new Date();
-                          return isVipActive && (
-                            <VIPBadge size="lg" className="absolute -top-3 left-3 z-10" isVip={c.isVip} vipEndDate={c.vipEndDate} />
-                          );
-                        })()}
-                        <div className="flex-1">
-                          <div className="flex items-center justify-between">
-                            <span className="font-medium text-gray-300">
-                              {(() => {
-                                const combinedName = [c?.firstname, c?.lastname].filter(Boolean).join(" ");
-                                return combinedName ||
-                                  c?.commentusername ||
-                                  c?.fullname ||
-                                  c?.fullName ||
-                                  c?.name ||
-                                  c?.username ||
-                                  c?.username ||
-                                  c?.author ||
-                                  'User';
-                              })()}
-                              {(() => {
-                                const isVerified = c?.isVerified;
-                                return isVerified && (
-                                  <span> <BadgeCheck size={14} fill="white" className="text-black inline" /> </span>
-                                );
-                              })()}
+                              </span>
+                              <span className="text-xs text-gray-500">
+                                {(() => {
+                                  const timestamp = c?.commenttime ||
+                                    c?.date ||
+                                    c?.createdAt ||
+                                    c?.created_at ||
+                                    c?.timestamp ||
+                                    c?.time ||
+                                    c?.postedAt ||
+                                    c?.posted_at;
 
-                            </span>
-                            <span className="text-xs text-gray-500">
-                              {(() => {
-                                const timestamp = c?.commenttime ||
-                                  c?.date ||
-                                  c?.createdAt ||
-                                  c?.created_at ||
-                                  c?.timestamp ||
-                                  c?.time ||
-                                  c?.postedAt ||
-                                  c?.posted_at;
+                                  if (!timestamp) {
+                                    return 'Unknown time';
+                                  }
 
-                                if (!timestamp) {
-                                  return 'Unknown time';
-                                }
+                                  const formatted = formatRelativeTime(timestamp);
 
-                                const formatted = formatRelativeTime(timestamp);
+                                  if (formatted === 'Invalid time' || formatted === 'Unknown time') {
+                                    return 'recently';
+                                  }
 
-                                if (formatted === 'Invalid time' || formatted === 'Unknown time') {
-                                  return 'recently';
-                                }
-
-                                return formatted;
-                              })()}
-                            </span>
-                          </div>
-                          <div className="text-gray-200 mt-1">
-                            {c?.content || c?.comment || String(c)}
+                                  return formatted;
+                                })()}
+                              </span>
+                            </div>
+                            <div className="text-gray-200 mt-1">
+                              {c?.content || c?.comment || String(c)}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    );
-                  })
-              ) : (
-                <p className="text-sm text-gray-500">No comments yet.</p>
-              )}
-              <div className="flex items-center gap-2 pt-1">
-                <input
-                  value={uiInput}
-                  onChange={(e) => {
-                    const v = e.target.value;
-                    setUi((prev: any) => ({
-                      ...prev,
-                      [pid]: { ...(prev[pid] || {}), input: v },
-                    }));
-                  }}
-                  placeholder="Write a comment…"
-                  className="flex-1 bg-gray-900 border border-gray-700 rounded px-3 py-2 text-sm outline-none focus:border-gray-500"
-                />
-                <button
-                  disabled={!uiInput?.trim() || uiSending}
-                  onClick={() => {
-                    const text = (ui[pid]?.input || '').trim();
-                    if (!text) return;
-                    setUi((prev: any) => ({
-                      ...prev,
-                      [pid]: {
-                        ...(prev[pid] || {}),
-                        input: "",
-                        sending: true,
-                        comments: [
-                          ...((prev[pid]?.comments as any[]) || []),
-                          {
-                            content: text,
-                            comment: text,
-                            username: [firstname, lastname].filter(Boolean).join(' ') || username || 'you',
-                            commentusername: [firstname, lastname].filter(Boolean).join(' ') || username || 'you',
-                            commentuserphoto: photolink || '',
-                            userid: String(loggedInUserId || selfId || ''),
-                            createdAt: new Date().toISOString(),
-                            commenttime: Date.now(),
-                            temp: true,
-                            initials: generateInitials(firstname, lastname, username),
-                            firstname: firstname || '',
-                            lastname: lastname || ''
-                          },
-                        ],
-                        commentCount: ((prev[pid]?.comments as any[]) || []).length + 1,
-                      },
-                    }));
-                    const uid = String(loggedInUserId || selfId || "");
-                    const localPid = post?.postid || post?.id || post?._id;
-                    if (uid && localPid && token) {
-                      (dispatch(postcomment({ userid: uid, postid: localPid, content: text, token: token } as any)) as any)
-                        .unwrap()
-                        .then((_res: any) => {
-                          dispatch(getpostcomment({ postid: localPid } as any))
-                            .unwrap()
-                            .then((commentRes: any) => {
-                              const serverComments = (commentRes && (commentRes.comment || commentRes.comments)) || [];
-                              setUi((prev: any) => {
-                                const currentState = prev[pid] || {};
-                                return {
-                                  ...prev,
-                                  [pid]: {
-                                    ...currentState,
-                                    sending: false,
-                                    comments: serverComments,
-                                    commentCount: serverComments.length,
-                                    // Explicitly preserve like and follow state
-                                    liked: currentState.liked,
-                                    likeCount: currentState.likeCount,
-                                    isFollowing: currentState.isFollowing
-                                  },
-                                };
-                              });
-                            })
-                            .catch(() => {
-                              setUi((prev: any) => ({
-                                ...prev,
-                                [pid]: { ...(prev[pid] || {}), sending: false },
-                              }));
-                            });
-                        })
-                        .catch(() => {
-                          setUi((prev: any) => ({
-                            ...prev,
-                            [pid]: { ...(prev[pid] || {}), sending: false },
-                          }));
-                        });
-                    } else {
+                      );
+                    })
+                ) : (
+                  <p className="text-sm text-gray-500">No comments yet.</p>
+                )}
+                <div className="flex items-center gap-2 pt-1">
+                  <input
+                    value={uiInput}
+                    onChange={(e) => {
+                      const v = e.target.value;
                       setUi((prev: any) => ({
                         ...prev,
-                        [pid]: { ...(prev[pid] || {}), sending: false },
+                        [pid]: { ...(prev[pid] || {}), input: v },
                       }));
-                    }
-                  }}
-                  className="px-3 py-2 text-sm bg-gray-700 hover:bg-gray-600 rounded disabled:opacity-50"
-                >
-                  Send
-                </button>
+                    }}
+                    placeholder="Write a comment…"
+                    className="flex-1 bg-gray-900 border border-gray-700 rounded px-3 py-2 text-sm outline-none focus:border-gray-500"
+                  />
+                  <button
+                    disabled={!uiInput?.trim() || uiSending}
+                    onClick={() => {
+                      const text = (ui[pid]?.input || '').trim();
+                      if (!text) return;
+                      setUi((prev: any) => ({
+                        ...prev,
+                        [pid]: {
+                          ...(prev[pid] || {}),
+                          input: "",
+                          sending: true,
+                          comments: [
+                            ...((prev[pid]?.comments as any[]) || []),
+                            {
+                              content: text,
+                              comment: text,
+                              username: [firstname, lastname].filter(Boolean).join(' ') || username || 'you',
+                              commentusername: [firstname, lastname].filter(Boolean).join(' ') || username || 'you',
+                              commentuserphoto: photolink || '',
+                              userid: String(loggedInUserId || selfId || ''),
+                              createdAt: new Date().toISOString(),
+                              commenttime: Date.now(),
+                              temp: true,
+                              initials: generateInitials(firstname, lastname, username),
+                              firstname: firstname || '',
+                              lastname: lastname || ''
+                            },
+                          ],
+                          commentCount: ((prev[pid]?.comments as any[]) || []).length + 1,
+                        },
+                      }));
+                      const uid = String(loggedInUserId || selfId || "");
+                      const localPid = post?.postid || post?.id || post?._id;
+                      if (uid && localPid && token) {
+                        (dispatch(postcomment({ userid: uid, postid: localPid, content: text, token: token } as any)) as any)
+                          .unwrap()
+                          .then((_res: any) => {
+                            dispatch(getpostcomment({ postid: localPid } as any))
+                              .unwrap()
+                              .then((commentRes: any) => {
+                                const serverComments = (commentRes && (commentRes.comment || commentRes.comments)) || [];
+                                setUi((prev: any) => {
+                                  const currentState = prev[pid] || {};
+                                  return {
+                                    ...prev,
+                                    [pid]: {
+                                      ...currentState,
+                                      sending: false,
+                                      comments: serverComments,
+                                      commentCount: serverComments.length,
+                                      // Explicitly preserve like and follow state
+                                      liked: currentState.liked,
+                                      likeCount: currentState.likeCount,
+                                      isFollowing: currentState.isFollowing
+                                    },
+                                  };
+                                });
+                              })
+                              .catch(() => {
+                                setUi((prev: any) => ({
+                                  ...prev,
+                                  [pid]: { ...(prev[pid] || {}), sending: false },
+                                }));
+                              });
+                          })
+                          .catch(() => {
+                            setUi((prev: any) => ({
+                              ...prev,
+                              [pid]: { ...(prev[pid] || {}), sending: false },
+                            }));
+                          });
+                      } else {
+                        setUi((prev: any) => ({
+                          ...prev,
+                          [pid]: { ...(prev[pid] || {}), sending: false },
+                        }));
+                      }
+                    }}
+                    className="px-3 py-2 text-sm bg-gray-700 hover:bg-gray-600 rounded disabled:opacity-50"
+                  >
+                    Send
+                  </button>
+                </div>
               </div>
-            </div>
-          )}
-        </div>
-      )}
+            )}
+          </div>
+        )
+      }
 
       {/* Image Modal */}
-      {isModalOpen && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50 p-4"
-          onClick={handleModalClick}
-        >
-          <button
-            onClick={closeModal}
-            className="absolute top-16 right-1/3 bg-black  hover:bg-opacity-30 text-white text-2xl font-bold w-10 h-10 rounded-full flex items-center justify-center hover:scale-110 transition-all duration-200 z-10"
-            aria-label="Close modal"
+      {
+        isModalOpen && (
+          <div
+            className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50 p-4"
+            onClick={handleModalClick}
           >
-            ✕
-          </button>
+            <button
+              onClick={closeModal}
+              className="absolute top-16 right-1/3 bg-black  hover:bg-opacity-30 text-white text-2xl font-bold w-10 h-10 rounded-full flex items-center justify-center hover:scale-110 transition-all duration-200 z-10"
+              aria-label="Close modal"
+            >
+              ✕
+            </button>
 
-          <div className="relative max-w-full max-h-full lg:max-w-[33.333%] lg:max-h-[80vh]">
-            <Image
-              src={selectedImage}
-              alt="Fullscreen view"
-              width={1200}
-              height={800}
-              className="max-w-full max-h-full object-contain rounded-lg"
-              onClick={(e) => e.stopPropagation()}
-            />
+            <div className="relative max-w-full max-h-full lg:max-w-[33.333%] lg:max-h-[80vh]">
+              <Image
+                src={selectedImage}
+                alt="Fullscreen view"
+                width={1200}
+                height={800}
+                className="max-w-full max-h-full object-contain rounded-lg"
+                onClick={(e) => e.stopPropagation()}
+              />
+            </div>
           </div>
-        </div>
-      )}
-    </div>
+        )
+      }
+    </div >
   );
 };
 
