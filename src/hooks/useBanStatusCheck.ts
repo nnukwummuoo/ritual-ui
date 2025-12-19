@@ -84,7 +84,7 @@ export const useBanStatusCheck = () => {
         }
         
         // Redirect to login
-        router.push('/login?session=expired');
+        router.push('/auth/login?session=expired');
       }
     } catch (error) {
       console.error('❌ Error checking ban status:', error);

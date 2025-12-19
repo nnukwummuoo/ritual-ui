@@ -16,7 +16,7 @@ export default function ProfileRedirectPage() {
 
     // Otherwise, wait briefly to allow Redux/localStorage to resolve
     const t = setTimeout(() => {
-      router.replace("/login");
+      router.replace("/auth/login");
     }, 1200);
 
     return () => clearTimeout(t);

@@ -48,7 +48,7 @@ export const checkUserBanStatus = async (): Promise<boolean> => {
       }
       
       // Redirect to login
-      window.location.href = '/login?session=expired';
+      window.location.href = '/auth/login?session=expired';
       return true; // Session expired
     }
     

@@ -904,7 +904,7 @@ const EditProfile: React.FC = () => {
         errorMessage = "Your session has expired. Please log in again to update your profile.";
         // Optionally redirect to login after a delay
         setTimeout(() => {
-          router.push("/login");
+          router.push("/auth/login");
         }, 3000);
       } else if (updateEdit_message.includes("permission")) {
         errorMessage = "You don't have permission to update this profile.";
