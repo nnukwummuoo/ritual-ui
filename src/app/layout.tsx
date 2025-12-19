@@ -13,6 +13,7 @@ import ReduxHydrator from "@/components/ReduxHydrator";
 import ScrollToTopAdvanced from "@/components/ScrollToTopAdvanced";
 import GlobalVisitorTracker from "@/components/GlobalVisitorTracker";
 import { ContentFilterProvider } from "@/lib/context/content-filter-context";
+import MaintenanceBanner from "@/components/MaintenanceBanner";
 import ReferralTracker from "@/components/ReferralTracker";
 
 
@@ -81,6 +82,7 @@ export default async function RootLayout({
               />
               <GlobalVisitorTracker />
               <ReferralTracker />
+              <MaintenanceBanner />
               <ConditionalLayoutWrapper ssrAuth={isAuthenticated}>
                 {children}
               </ConditionalLayoutWrapper>

@@ -39,6 +39,9 @@ import TransactionsPage from "./transactions/page";
 import RevenuePage from "./revenue/page";
 import ReferralAnalysisPage from "./referral-analysis/page";
 import PushNotificationToggle from "@/components/PushNotificationToggle";
+import MaintenanceToggle from "@/components/admin/MaintenanceToggle";
+import MaintenanceControl from "@/components/admin/MaintenanceControl";
+import { IoConstructOutline } from "react-icons/io5";
 
 const AdminPage = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -223,6 +226,17 @@ const AdminPage = () => {
             </div>
             <div className="flex justify-center md:justify-start">
               <PushNotificationToggle size="sm" showLabel={false} />
+            </div>
+          </div>
+
+          {/* Maintenance Toggle */}
+          <div className="mb-6 p-3 bg-gray-800 rounded-lg">
+            <div className="flex items-center justify-center md:justify-start gap-2 mb-2">
+              <IoConstructOutline color="white" size={20} />
+              <span className="font-medium text-white hidden md:inline">Maintenance</span>
+            </div>
+            <div className="flex justify-center md:justify-start">
+              <MaintenanceToggle showLabel={true} />
             </div>
           </div>
 
