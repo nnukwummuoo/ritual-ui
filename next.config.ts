@@ -2,8 +2,8 @@ import { withNextVideo } from "next-video/process";
 import type { NextConfig } from "next";
 import withPWA from "next-pwa";
 
-const nextConfig:any = {
- 
+const nextConfig: any = {
+
   typescript: {
     ignoreBuildErrors: true,
   },
@@ -25,6 +25,14 @@ const nextConfig:any = {
       {
         protocol: "https",
         hostname: "upload.wikimedia.org",
+      },
+      {
+        protocol: "https",
+        hostname: "images.unsplash.com",
+      },
+      {
+        protocol: "https",
+        hostname: "api.krea.ai",
       },
     ],
   },
@@ -53,7 +61,7 @@ const pwaConfig = withPWA({
   buildExcludes: [/middleware-manifest\.json$/, /app-build-manifest\.json$/],
   fallbacks: {
     document: '/offline',
-   image: '/offline', 
+    image: '/offline',
     audio: '/offline', // FIX APPLIED HERE
     video: '/offline',
     font: '/offline',

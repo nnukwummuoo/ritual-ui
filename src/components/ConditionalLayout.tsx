@@ -31,6 +31,9 @@ export default function ConditionalLayout({ children, isAuthenticated }: Conditi
   // Check if it's an admin route
   const isAdminRoute = pathname.includes('/mmeko/admin');
 
+  // Check if it's an anya route (story viewer)
+  const isAnyaRoute = pathname.startsWith('/anya');
+
   // Check if it's the home route
   const isHomeRoute = pathname === '/';
 
@@ -129,8 +132,8 @@ export default function ConditionalLayout({ children, isAuthenticated }: Conditi
     }
   }, [showNavbar]);
 
-  // If it's a QuickChat [userid] route or admin route, render without main layout
-  if (isQuickChatRoute || isAdminRoute) {
+  // If it's a QuickChat [userid] route, admin route, or anya route, render without main layout
+  if (isQuickChatRoute || isAdminRoute || isAnyaRoute) {
     return <>{children}</>;
   }
 
