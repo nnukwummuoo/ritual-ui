@@ -1303,7 +1303,7 @@ export default function RequestCard({ exp, img, originalPhotoLink, name, usernam
                 <div className="flex gap-3">
                   <div className="flex-1">
                     <FanActionBtn
-                      label={hosttype === "Fan call" ? "Start call" : "Mark as complete"}
+                      label={hosttype === "Fan call" ? "Start video call" : "Mark as complete"}
                       className={fanActionClass}
                       onClick={handleComplete}
                       disabled={loading}

@@ -26,7 +26,7 @@ export const Requestinfo: React.FC<requestInfoProps> = ({
         return "will be deducted from your balance, to be allocated to a pending status for creator's transport fare. These funds will be disbursed to the creator upon your confirmation of task completion";
       }
       if (normalizedType === "private show") {
-        return "will be deducted from your balance per minute during the Fan call";
+        return "will be deducted from your balance per minute  Fan call";
       }
     }
 
