@@ -8,7 +8,7 @@ const changelog = [
     intro: "Welcome to Mmeko, where real fans connect with real creators safely, privately, and globally. We're always improving to make your experience smoother, smarter, and more rewarding. Here's what's new and working right now:",
     updates: [
       { type: "current", text: "Fan Call - Connect 1-on-1 via secure video call. Creators earn per minute, fans get real-time connection." },
-      { type: "current", text: "Fan Meet - Meet verified fans in person with transport fare (pamasahe) paid in advance. Safe, secure, and scheduled." },
+      { type: "current", text: "Fan Meet - Meet verified creators in person with transport fare paid in advance. Safe, secure, and scheduled." },
       { type: "current", text: "Fan Date - Set up fun, exclusive dates. Creators set their availability, fans request and cover all cost, everyone wins." },
       { type: "current", text: "VIP Accounts - Premium fan features like a lion badge, priority support, and extra attention from creators." },
       { type: "current", text: "Messaging - Private in-app chat lets fans and creators talk freely — no charges." },
