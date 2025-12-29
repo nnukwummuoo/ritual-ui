@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import { motion } from 'framer-motion';
-import { IoSparkles, IoTrashOutline, IoHeartOutline, IoHeart, IoChatbubbleOutline, IoShareSocialOutline, IoArrowBack } from 'react-icons/io5';
+import { IoSparkles, IoTrashOutline, IoHeartOutline, IoHeart, IoChatbubbleOutline, IoArrowBack, IoHome } from 'react-icons/io5';
 import { getImageSource } from '@/lib/imageUtils';
 import { useStory } from '@/contexts/StoryContext';
 import { useSelector } from 'react-redux';
@@ -51,7 +51,7 @@ export default function AnyaPage() {
   const [selectedStoryTitle, setSelectedStoryTitle] = useState('');
 
   // Story Context for likes and comments
-  const { likedStories, commentCounts, likeCounts, toggleLike } = useStory();
+  const { likedStories, commentCounts, likeCounts, toggleLike, refreshStoryData } = useStory();
 
   // Initialize background music
   useAnyaMusic();
@@ -165,6 +165,11 @@ export default function AnyaPage() {
       }
 
       setStories(fetchedStories);
+
+      // Refresh story data for all stories to load comment counts
+      fetchedStories.forEach((story: Story) => {
+        refreshStoryData(story._id);
+      });
     } catch (error) {
       console.error('Failed to fetch stories:', error);
     } finally {
@@ -227,23 +232,7 @@ export default function AnyaPage() {
     setCommentModalOpen(true);
   };
 
-  const handleShare = async (e: React.MouseEvent, story: Story) => {
-    e.stopPropagation();
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: story.title,
-          text: `Check out this AI-generated story: ${story.title}`,
-          url: `${window.location.origin}/anya/${story._id}`,
-        });
-      } catch (error) {
-        console.log('Error sharing:', error);
-      }
-    } else {
-      navigator.clipboard.writeText(`${window.location.origin}/anya/${story._id}`);
-      alert('Link copied to clipboard!');
-    }
-  };
+
 
   if (loading) {
     return (
@@ -257,7 +246,7 @@ export default function AnyaPage() {
             <div className="absolute inset-0 border-4 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
             <div className="absolute inset-2 border-4 border-pink-500 border-b-transparent rounded-full animate-spin-reverse"></div>
           </div>
-          <p className="text-gray-400 text-lg">Loading stories...</p>
+          <p className="text-gray-400 text-lg">Loading rituals...</p>
         </motion.div>
       </div>
     );
@@ -292,9 +281,9 @@ export default function AnyaPage() {
 
                 <div>
                   <h1 className="text-3xl md:text-5xl font-bold bg-gradient-to-r from-purple-400 via-pink-500 to-purple-600 bg-clip-text text-transparent">
-                    MMEKO Rituals
+                    Rituals
                   </h1>
-               </div>
+                </div>
               </div>
             </div>
           </div>
@@ -364,166 +353,104 @@ export default function AnyaPage() {
 
               <div>
                 <h1 className="text-2xl md:text-4xl font-bold bg-gradient-to-r from-purple-400 via-pink-500 to-purple-600 bg-clip-text text-transparent">
-                  MMEKO Rituals
+                  Rituals
                 </h1>
-               
+
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Scrollable Story Cards - Like Reels */}
-      <div
-        ref={containerRef}
-        className="h-screen overflow-y-scroll snap-y snap-mandatory scroll-smooth pt-20"
-        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-      >
-        {stories.map((story, index) => (
-          <div
-            key={story._id}
-            className="h-screen w-full snap-start snap-always relative flex items-center justify-center px-4"
-            onClick={() => handleStoryClick(story._id)}
-          >
-            {/* Background Image */}
-            {story.coverImage ? (
-              <div className="absolute inset-0 z-0">
-                <img
-                  src={getImageSource(story.coverImage, 'stories').src}
-                  alt={story.title}
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    e.currentTarget.src = 'https://images.unsplash.com/photo-1469122312224-c5846569af2c?q=80&w=2000&auto=format&fit=crop';
-                  }}
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-black/70"></div>
-              </div>
-            ) : (
-              <div className="absolute inset-0 z-0 bg-gradient-to-br from-purple-900/30 to-pink-900/30"></div>
-            )}
+      {/* Story Grid - Like Creators Page */}
+      <div className="px-4 mt-2 sm:mx-4 relative overflow-y-auto pt-20 pb-12">
+        <div className="grid grid-cols-2 gap-2 mt-4 mb-12 md:grid-cols-3">
+          {stories.map((story) => (
+            <motion.div
+              key={story._id}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.4 }}
+              className="relative overflow-hidden rounded-lg cursor-pointer group"
+              onClick={() => handleStoryClick(story._id)}
+            >
+              {/* Story Image */}
+              <div className="relative aspect-[3/4] overflow-hidden">
+                {story.coverImage ? (
+                  <img
+                    src={getImageSource(story.coverImage, 'stories').src}
+                    alt={story.title}
+                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                    onError={(e) => {
+                      e.currentTarget.src = 'https://images.unsplash.com/photo-1469122312224-c5846569af2c?q=80&w=2000&auto=format&fit=crop';
+                    }}
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-br from-purple-900/30 to-pink-900/30"></div>
+                )}
 
-            {/* Content Overlay */}
-            <div className="relative z-10 max-w-4xl mx-auto text-center cursor-pointer">
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6 }}
-              >
-                {/* Story Title */}
-                <h2 className="text-4xl md:text-6xl lg:text-7xl font-bold leading-tight mb-6 drop-shadow-2xl">
-                  {story.title}
-                </h2>
+                {/* Gradient Overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent"></div>
 
-                {/* Emotional Core Badge */}
-                <div className="mb-6">
-                  <span className="inline-block px-6 py-3 bg-purple-600/80 backdrop-blur-sm rounded-full text-lg font-semibold">
+                {/* Content Overlay */}
+                <div className="absolute bottom-0 left-0 right-0 p-3 text-white">
+                  {/* Story Title */}
+                  <h3 className="text-sm md:text-base font-bold mb-1 line-clamp-2">
+                    {story.title}
+                  </h3>
+
+                  {/* Emotional Core Badge */}
+                  {/* <span className="inline-block px-2 py-1 bg-purple-600/80 backdrop-blur-sm rounded-full text-xs font-semibold mb-2">
                     {story.emotional_core}
-                  </span>
+                  </span> */}
+
+                  {/* Scene Count */}
+                  <p className="text-xs text-gray-300 mb-2">
+                    {(() => {
+                      const sceneCount = story.panels?.length
+                        || (story as any).scenes?.length
+                        || (story as any).panelCount
+                        || (story as any).scene_count
+                        || (story as any).total_panels
+                        || 0;
+                      return `${sceneCount} ${sceneCount === 1 ? 'Scene' : 'Scenes'}`;
+                    })()}
+                  </p>
+
+                  {/* Action Buttons */}
+                  <div className="flex items-center gap-3 text-xs">
+                    {/* Like */}
+                    <button
+                      onClick={(e) => handleLike(e, story._id)}
+                      className="flex items-center gap-1 hover:text-red-500 transition-colors"
+                    >
+                      {likedStories.has(story._id) ? (
+                        <IoHeart className="w-4 h-4 text-red-500" />
+                      ) : (
+                        <IoHeartOutline className="w-4 h-4" />
+                      )}
+                      <span>{likeCounts.get(story._id) || story.likes || 0}</span>
+                    </button>
+
+                    {/* Comment */}
+                    <button
+                      onClick={(e) => handleComment(e, story)}
+                      className="flex items-center gap-1 hover:text-blue-500 transition-colors"
+                    >
+                      <IoChatbubbleOutline className="w-4 h-4" />
+                      <span>{commentCounts.get(story._id) || story.comments?.length || 0}</span>
+                    </button>
+                  </div>
                 </div>
 
-                {/* Scene Count */}
-                <p className="text-xl text-gray-300 mb-8">
-                  {(() => {
-                    // Check multiple possible field names for scene/panel count
-                    const sceneCount = story.panels?.length
-                      || (story as any).scenes?.length
-                      || (story as any).panelCount
-                      || (story as any).scene_count
-                      || (story as any).total_panels
-                      || 0;
-                    return `${sceneCount} ${sceneCount === 1 ? 'Scene' : 'Scenes'}`;
-                  })()}
-                </p>
-
-                {/* Tap to View */}
-                <motion.div
-                  animate={{ scale: [1, 1.1, 1] }}
-                  transition={{ duration: 2, repeat: Infinity }}
-                  className="text-sm text-gray-400"
-                >
-                  Tap to view rituals
-                </motion.div>
-              </motion.div>
-            </div>
-
-            {/* Action Bar - Like Reels */}
-            <div className="absolute right-4 bottom-24 z-50 flex flex-col gap-6">
-              {/* Like Button */}
-              <motion.button
-                whileTap={{ scale: 0.9 }}
-                onClick={(e) => handleLike(e, story._id)}
-                className="flex flex-col items-center gap-1"
-              >
-                <div className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center hover:bg-white/20 transition-all">
-                  {likedStories.has(story._id) ? (
-                    <IoHeart className="w-6 h-6 text-red-500" />
-                  ) : (
-                    <IoHeartOutline className="w-6 h-6" />
-                  )}
-                </div>
-                <span className="text-xs font-medium">{likeCounts.get(story._id) || story.likes || 0}</span>
-              </motion.button>
-
-              {/* Comment Button */}
-              <motion.button
-                whileTap={{ scale: 0.9 }}
-                onClick={(e) => handleComment(e, story)}
-                className="flex flex-col items-center gap-1"
-              >
-                <div className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center hover:bg-white/20 transition-all">
-                  <IoChatbubbleOutline className="w-6 h-6" />
-                </div>
-                <span className="text-xs font-medium">{commentCounts.get(story._id) || story.comments?.length || 0}</span>
-              </motion.button>
-
-              {/* Share Button */}
-              <motion.button
-                whileTap={{ scale: 0.9 }}
-                onClick={(e) => handleShare(e, story)}
-                className="flex flex-col items-center gap-1"
-              >
-                <div className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center hover:bg-white/20 transition-all">
-                  <IoShareSocialOutline className="w-6 h-6" />
-                </div>
-                <span className="text-xs font-medium">Share</span>
-              </motion.button>
-            </div>
-
-            {/* Scroll Hint (only on first story) */}
-            {index === 0 && stories.length > 1 && (
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{
-                  delay: 1,
-                  repeat: Infinity,
-                  repeatType: "reverse",
-                  duration: 1.5
-                }}
-                className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20"
-              >
-                <div className="flex flex-col items-center gap-2 text-white/60">
-                  <span className="text-sm">Scroll for more</span>
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-                  </svg>
-                </div>
-              </motion.div>
-            )}
-          </div>
-        ))}
+                {/* Hover overlay */}
+                <div className="absolute inset-0 bg-purple-600/0 group-hover:bg-purple-600/10 transition-colors duration-300"></div>
+              </div>
+            </motion.div>
+          ))}
+        </div>
       </div>
-
-      {/* Hide Scrollbar */}
-      <style jsx>{`
-        div::-webkit-scrollbar {
-          display: none;
-        }
-        .animate-spin-reverse {
-          animation: spin 1s linear infinite reverse;
-        }
-      `}</style>
 
       {/* Comment Modal */}
       <CommentModal
@@ -534,6 +461,15 @@ export default function AnyaPage() {
         userId={userId}
         username={username}
       />
+
+      {/* Home Button - Bottom Left */}
+      <button
+        onClick={() => router.push('/')}
+        className="fixed left-4 bottom-16 z-50 w-14 h-14 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center hover:bg-white/20 transition-all shadow-lg"
+        aria-label="Go to Home"
+      >
+        <IoHome className="w-6 h-6 text-gray-400" />
+      </button>
     </div>
   );
 }

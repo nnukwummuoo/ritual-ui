@@ -70,9 +70,8 @@ export default function BottomNavBar() {
   // Glow animation state for Anya icon
   const [showGlow, setShowGlow] = useState(false);
   const [showAnyaBadge, setShowAnyaBadge] = useState(false);
-  const [latestStoryId, setLatestStoryId] = useState<string | null>(null);
 
-  // Check if there's a new story available
+  // Check if there's a new story created after user's last visit
   const checkForNewStory = async () => {
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API}/api/ai-story/stories`);
@@ -81,33 +80,43 @@ export default function BottomNavBar() {
       const data = await response.json();
       if (!data.stories || data.stories.length === 0) return false;
 
-      // Get the latest story (first in the array, sorted by createdAt desc)
-      const newestStory = data.stories[0];
-      const newestStoryId = newestStory._id;
+      // Get the latest story (first in array, sorted by createdAt desc from backend)
+      const latestStory = data.stories[0];
 
-      setLatestStoryId(newestStoryId);
+      if (!latestStory || !latestStory.createdAt) return false;
 
-      // Check if user has seen this story
+      const storyCreatedAt = new Date(latestStory.createdAt).getTime();
+
+      // Check user's last visit timestamp
       if (typeof window !== 'undefined') {
-        const lastViewedStoryId = localStorage.getItem('anya_last_viewed_story');
+        const lastVisitTimestamp = localStorage.getItem('anya_last_visit_timestamp');
 
-        // If there's no last viewed story, or the newest story is different, show badge
-        if (!lastViewedStoryId || lastViewedStoryId !== newestStoryId) {
-          return true; // New story available
+        if (!lastVisitTimestamp) {
+          // User has never visited - show badge
+          return true;
+        }
+
+        const lastVisit = parseInt(lastVisitTimestamp, 10);
+
+        // If story was created AFTER user's last visit, show badge
+        if (storyCreatedAt > lastVisit) {
+          return true;
         }
       }
 
-      return false; // No new story
+      return false;
     } catch (error) {
       console.error('Error checking for new story:', error);
       return false;
     }
   };
 
-  // Handle Anya icon click - save the current story as viewed
+
+  // Handle Anya icon click - save current timestamp
   const handleAnyaClick = () => {
-    if (typeof window !== 'undefined' && latestStoryId) {
-      localStorage.setItem('anya_last_viewed_story', latestStoryId);
+    if (typeof window !== 'undefined') {
+      const now = Date.now();
+      localStorage.setItem('anya_last_visit_timestamp', now.toString());
       setShowGlow(false);
       setShowAnyaBadge(false);
     }
@@ -130,9 +139,13 @@ export default function BottomNavBar() {
     return () => clearInterval(checkInterval);
   }, []);
 
-  // Trigger glow animation every 12 seconds (only if there's a new story)
+  // Trigger glow animation every 12 seconds (only if badge should be shown)
   useEffect(() => {
     if (!showAnyaBadge) return;
+
+    // Initial glow trigger
+    setShowGlow(true);
+    setTimeout(() => setShowGlow(false), 3000);
 
     const glowInterval = setInterval(() => {
       if (showAnyaBadge) {
