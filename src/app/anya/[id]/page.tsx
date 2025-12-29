@@ -4,12 +4,14 @@ import { useState, useEffect, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import axios from 'axios';
 import { motion } from 'framer-motion';
-import { IoArrowBack, IoHeartOutline, IoHeart, IoShareSocialOutline } from 'react-icons/io5';
+import { IoHeartOutline, IoHeart, IoShareSocialOutline, IoChatbubbleOutline, IoHome } from 'react-icons/io5';
+import { FaThLarge } from 'react-icons/fa';
 import { getImageSource } from '@/lib/imageUtils';
 import { useStory } from '@/contexts/StoryContext';
 import { useSelector } from 'react-redux';
 import type { RootState } from '@/store/store';
 import { useAnyaMusic } from '@/hooks/useAnyaMusic';
+import CommentModal from '@/components/CommentModal';
 
 interface Panel {
     panel_number: number;
@@ -46,8 +48,8 @@ export default function StoryViewPage() {
     const [currentPanelIndex, setCurrentPanelIndex] = useState(0);
     const containerRef = useRef<HTMLDivElement>(null);
 
-    // Story Context for likes
-    const { likedStories, toggleLike, refreshStoryData } = useStory();
+    // Story Context for likes and comments
+    const { likedStories, commentCounts, toggleLike, refreshStoryData } = useStory();
 
     // Initialize background music (different random track than main page)
     useAnyaMusic();
@@ -57,16 +59,25 @@ export default function StoryViewPage() {
 
     // Fallback to localStorage if Redux doesn't have it
     const [userId, setUserId] = useState<string>('');
+    const [username, setUsername] = useState<string>('');
+
+    // Comment Modal State
+    const [commentModalOpen, setCommentModalOpen] = useState(false);
 
     useEffect(() => {
         if (reduxUserId) {
             setUserId(reduxUserId);
-        } else if (typeof window !== 'undefined') {
+        }
+
+        if (typeof window !== 'undefined') {
             try {
                 const loginData = localStorage.getItem('login');
                 if (loginData) {
                     const parsed = JSON.parse(loginData);
-                    setUserId(parsed.userID || '');
+                    if (!reduxUserId) {
+                        setUserId(parsed.userID || '');
+                    }
+                    setUsername(parsed.username || '');
                 }
             } catch (error) {
                 console.error('Error reading login data:', error);
@@ -154,6 +165,10 @@ export default function StoryViewPage() {
         }
     };
 
+    const handleComment = () => {
+        setCommentModalOpen(true);
+    };
+
     if (loading) {
         return (
             <div className="min-h-screen bg-black flex items-center justify-center">
@@ -189,33 +204,69 @@ export default function StoryViewPage() {
                     <div className="flex items-center justify-between">
                         <button
                             onClick={() => router.push('/anya')}
-                            className="flex items-center gap-2 px-4 py-2 bg-white/10 rounded-full hover:bg-white/20 transition-colors"
+                            className="flex items-center justify-center"
+                            aria-label="Back to Rituals"
                         >
-                            <IoArrowBack />
-                            <span className="hidden sm:inline">Back</span>
+                            <FaThLarge className="w-8 h-8 text-gray-400" />
                         </button>
 
                         <div className="flex-1 mx-4 text-center">
                             <h1 className="text-lg md:text-xl font-bold line-clamp-1">{story.title}</h1>
-                            <p className="text-sm text-gray-400">{story.emotional_core}</p>
+                            {/* <p className="text-sm text-gray-400">{story.emotional_core}</p> */}
                         </div>
 
-                        <div className="flex items-center gap-2">
-                            <button
-                                onClick={handleLike}
-                                className="p-3 bg-white/10 rounded-full hover:bg-white/20 transition-colors"
-                            >
-                                {liked ? <IoHeart className="text-red-500" /> : <IoHeartOutline />}
-                            </button>
-                            <button
-                                onClick={handleShare}
-                                className="p-3 bg-white/10 rounded-full hover:bg-white/20 transition-colors"
-                            >
-                                <IoShareSocialOutline />
-                            </button>
-                        </div>
+                        <button
+                            onClick={() => router.push('/')}
+                            className="flex items-center justify-center"
+                            aria-label="Go to Home"
+                        >
+                            <IoHome className="w-8 h-8 text-gray-400" />
+                        </button>
                     </div>
                 </div>
+            </div>
+
+            {/* Action Bar - Side (Like Original Anya Page) */}
+            <div className="fixed right-4 bottom-48 z-50 flex flex-col gap-6">
+                {/* Like Button */}
+                <motion.button
+                    whileTap={{ scale: 0.9 }}
+                    onClick={handleLike}
+                    className="flex flex-col items-center gap-1"
+                >
+                    <div className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center hover:bg-white/20 transition-all">
+                        {liked ? (
+                            <IoHeart className="w-6 h-6 text-red-500" />
+                        ) : (
+                            <IoHeartOutline className="w-6 h-6" />
+                        )}
+                    </div>
+                    <span className="text-xs font-medium">{story.likes || 0}</span>
+                </motion.button>
+
+                {/* Comment Button */}
+                <motion.button
+                    whileTap={{ scale: 0.9 }}
+                    onClick={handleComment}
+                    className="flex flex-col items-center gap-1"
+                >
+                    <div className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center hover:bg-white/20 transition-all">
+                        <IoChatbubbleOutline className="w-6 h-6" />
+                    </div>
+                    <span className="text-xs font-medium">{commentCounts.get(storyId) || story.comments?.length || 0}</span>
+                </motion.button>
+
+                {/* Share Button */}
+                <motion.button
+                    whileTap={{ scale: 0.9 }}
+                    onClick={handleShare}
+                    className="flex flex-col items-center gap-1"
+                >
+                    <div className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center hover:bg-white/20 transition-all">
+                        <IoShareSocialOutline className="w-6 h-6" />
+                    </div>
+                    <span className="text-xs font-medium">Share</span>
+                </motion.button>
             </div>
 
             {/* Scrollable Container - Like Reels */}
@@ -262,15 +313,15 @@ export default function StoryViewPage() {
                         </motion.div>
 
                         {/* Content Overlay */}
-                        <div className="relative z-10 max-w-4xl mx-auto px-6 text-center h-full flex flex-col justify-center">
-                            {/* Scene Text - Centered */}
+                        <div className="relative z-10 max-w-4xl mx-auto px-6 text-center h-full flex flex-col justify-end pb-32">
+                            {/* Scene Text - Bottom Positioned */}
                             <motion.div
                                 initial={{ opacity: 0, y: 30 }}
                                 whileInView={{ opacity: 1, y: 0 }}
                                 viewport={{ once: true }}
                                 transition={{ duration: 0.6 }}
                             >
-                                <p className="text-2xl md:text-4xl lg:text-5xl font-bold leading-tight drop-shadow-2xl">
+                                <p className="text-lg md:text-xl lg:text-2xl  leading-tight drop-shadow-2xl">
                                     {panel.text}
                                 </p>
                             </motion.div>
@@ -317,6 +368,86 @@ export default function StoryViewPage() {
                         )}
                     </div>
                 ))}
+
+                {/* End Page - Final Screen */}
+                <div className="h-screen w-full snap-start snap-always relative flex items-center justify-center">
+                    {/* Background Gradient */}
+                    <div className="absolute inset-0 z-0 bg-gradient-to-br from-purple-900/40 via-black to-pink-900/40">
+                        <div className="absolute inset-0 opacity-20">
+                            <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl animate-pulse"></div>
+                            <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-pink-500 rounded-full mix-blend-multiply filter blur-3xl animate-pulse delay-1000"></div>
+                        </div>
+                    </div>
+
+                    {/* End Content */}
+                    <div className="relative z-10 max-w-2xl mx-auto px-6 text-center">
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.8 }}
+                            whileInView={{ opacity: 1, scale: 1 }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 0.8 }}
+                            className="space-y-8"
+                        >
+                            {/* The End Badge */}
+                            <motion.div
+                                animate={{
+                                    scale: [1, 1.05, 1],
+                                }}
+                                transition={{
+                                    duration: 2,
+                                    repeat: Infinity,
+                                    ease: "easeInOut"
+                                }}
+                            >
+                                <div className="inline-block px-8 py-3 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full mb-6">
+                                    <span className="text-2xl font-bold">The End</span>
+                                </div>
+                            </motion.div>
+
+                            {/* Story Title */}
+                            <h2 className="text-3xl md:text-5xl font-bold leading-tight mb-4">
+                                {story.title}
+                            </h2>
+
+                            {/* Story Stats */}
+                            <div className="flex items-center justify-center gap-8 text-gray-300 mb-8">
+                                <div className="flex items-center gap-2">
+                                    <IoHeart className="w-5 h-5 text-red-500" />
+                                    <span className="text-lg">{story.likes || 0} Likes</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <IoChatbubbleOutline className="w-5 h-5" />
+                                    <span className="text-lg">{story.comments?.length || 0} Comments</span>
+                                </div>
+                            </div>
+
+                            {/* Navigation Buttons */}
+                            <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
+                                <motion.button
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
+                                    onClick={() => router.push('/anya')}
+                                    className="px-6 py-2 sm:px-8 sm:py-3 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full text-sm sm:text-base font-semibold hover:from-purple-700 hover:to-pink-700 transition-all"
+                                >
+                                    Explore More Rituals
+                                </motion.button>
+                                <motion.button
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
+                                    onClick={() => router.push('/')}
+                                    className="px-6 py-2 sm:px-8 sm:py-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-full text-sm sm:text-base font-semibold hover:bg-white/20 transition-all"
+                                >
+                                    Go Home
+                                </motion.button>
+                            </div>
+
+                            {/* Thank You Message */}
+                            <p className="text-gray-400 text-sm mt-6">
+                                Thank you for experiencing this ritual ✨
+                            </p>
+                        </motion.div>
+                    </div>
+                </div>
             </div>
 
             {/* Hide Scrollbar */}
@@ -325,6 +456,16 @@ export default function StoryViewPage() {
                     display: none;
                 }
             `}</style>
+
+            {/* Comment Modal */}
+            <CommentModal
+                isOpen={commentModalOpen}
+                onClose={() => setCommentModalOpen(false)}
+                storyId={storyId}
+                storyTitle={story.title}
+                userId={userId}
+                username={username}
+            />
         </div>
     );
 }
