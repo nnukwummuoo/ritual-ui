@@ -11,6 +11,7 @@ import { useSelector } from 'react-redux';
 import type { RootState } from '@/store/store';
 import CommentModal from '@/components/CommentModal';
 import { useAnyaMusic } from '@/hooks/useAnyaMusic';
+import { useAnyaPageTracking } from '@/hooks/useAnyaPageTracking';
 
 interface Panel {
   panel_number: number;
@@ -55,6 +56,9 @@ export default function AnyaPage() {
 
   // Initialize background music
   useAnyaMusic();
+
+  // Track page visit
+  useAnyaPageTracking('main');
 
   // Get user ID from Redux store
   const reduxUserId = useSelector((state: RootState) => state.register.userID);
