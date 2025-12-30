@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useRef, useEffect } from "react";
-import { Ellipsis } from 'lucide-react';
+import { Ellipsis, Video } from 'lucide-react';
 import { useParams, useRouter } from "next/navigation";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/store/store";
@@ -12,30 +12,30 @@ const DropdownMenu = () => {
   const [opening, setOpening] = useState(false);
   const [blocking, setBlocking] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  
+
   const { creator_portfolio_id } = useParams<{ creator_portfolio_id: string }>();
   const router = useRouter();
   const userid = useSelector((state: RootState) => state.register.userID);
-  
+
   // Try multiple sources for user ID
   const profileUserId = useSelector((state: RootState) => state.profile?.userId || state.profile?.creator_portfolio_id);
 
   // Get userid from localStorage if not in Redux (same pattern as Chat component)
   const [localUserid, setLocalUserid] = React.useState("");
-  
+
   React.useEffect(() => {
     if (typeof window !== "undefined") {
       try {
         const raw = localStorage.getItem("login");
         if (raw) {
           const data = JSON.parse(raw);
-          
+
           // Set user ID if not in Redux - check multiple possible keys like post.tsx
           if (!userid) {
             const userId = data?.userID || data?.userid || data?.id;
             if (userId) {
               setLocalUserid(userId);
-           }
+            }
           }
         }
       } catch (error) {
@@ -99,7 +99,7 @@ const DropdownMenu = () => {
     console.log("🔍 [BLOCK] Redux userid:", userid);
     console.log("🔍 [BLOCK] Profile userid:", profileUserId);
     console.log("🔍 [BLOCK] Local userid:", localUserid);
-    
+
     // Debug localStorage content
     try {
       const raw = localStorage.getItem("login");
@@ -111,7 +111,7 @@ const DropdownMenu = () => {
       } else {
         console.log("🔍 [BLOCK] No 'login' key found in localStorage");
       }
-      
+
       // Check all localStorage keys
       console.log("🔍 [BLOCK] All localStorage keys:", Object.keys(localStorage));
     } catch (error) {
@@ -120,7 +120,7 @@ const DropdownMenu = () => {
 
     // If still no user ID, try to get it from token or other sources
     let finalUserId = loggedInUserId;
-    
+
     if (!finalUserId) {
       try {
         const raw = localStorage.getItem("login");
@@ -214,7 +214,7 @@ const DropdownMenu = () => {
       console.error("Error blocking user:", error);
       if (error && typeof error === 'object' && 'response' in error) {
         const axiosError = error as { response?: { data?: { message?: string }; status?: number } };
-        
+
         // Handle 409 - User already blocked
         if (axiosError.response?.status === 409) {
           toast.info("User is already blocked");
@@ -250,11 +250,46 @@ const DropdownMenu = () => {
     };
   }, [opening]);
 
+  // Get viewing profile data to check hosttype
+  const viewingProfile = useSelector((state: RootState) => state.viewingProfile);
+  const hosttype = viewingProfile?.hosttype || "";
+  const profileLoaded = viewingProfile?.status === "succeeded";
+  const creatorPortfolioId = viewingProfile?.creator_portfolio_id || "";
+
+  // Check if user has fan call hosttype (case insensitive) - only after profile is loaded
+  const hasFanCall = profileLoaded && hosttype.toLowerCase().includes("fan call");
+
+  const handleVideoCallClick = () => {
+    console.log("🎥 [VIDEO_CALL] Clicked video call button");
+    console.log("🎥 [VIDEO_CALL] Creator Portfolio ID:", creatorPortfolioId);
+    console.log("🎥 [VIDEO_CALL] Has creator portfolio:", !!creatorPortfolioId);
+
+    if (creatorPortfolioId) {
+      const targetUrl = `/creators/${creatorPortfolioId}`;
+      console.log("🎥 [VIDEO_CALL] Navigating to:", targetUrl);
+      router.push(targetUrl);
+    } else {
+      console.error("❌ [VIDEO_CALL] No creator portfolio ID available");
+      toast.error("Creator portfolio not found");
+    }
+  };
+
   return (
-    <div ref={dropdownRef}>
+    <div ref={dropdownRef} className="flex items-center gap-2">
+      {/* Video Call Icon - only show if user has fan call hosttype */}
+      {hasFanCall && (
+        <button
+          onClick={handleVideoCallClick}
+          className="p-2 hover:bg-gray-700 rounded-full transition-colors"
+          title="Start Video Call"
+        >
+          <Video className="w-5 h-5 text-gray-300" />
+        </button>
+      )}
+
       <div className="relative inline-block text-left">
         <button onClick={toggleoption} className="px-2">
-        <Ellipsis />
+          <Ellipsis className="rotate-90" />
         </button>
 
         {opening && (

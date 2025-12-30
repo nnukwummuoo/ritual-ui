@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { useRouter } from 'next/navigation';
+import { toast } from 'react-toastify';
 import {
     BarChart,
     Bar,
@@ -63,6 +64,7 @@ export default function AnyaAnalyticsPage() {
     const [selectedPeriod, setSelectedPeriod] = useState<string>('7days');
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
+    const [generating, setGenerating] = useState<boolean>(false);
 
     const fetchAnalytics = useCallback(async (period: string) => {
         try {
@@ -93,6 +95,44 @@ export default function AnyaAnalyticsPage() {
 
     const handlePeriodChange = (newPeriod: string) => {
         setSelectedPeriod(newPeriod);
+    };
+
+    const handleGenerateStory = async () => {
+        try {
+            setGenerating(true);
+            toast.info('Starting story generation...', { autoClose: 2000 });
+
+            const response = await axios.post(
+                `${process.env.NEXT_PUBLIC_API}/api/ai-story/generate`
+            );
+
+            if (response.data.success) {
+                toast.success('Story generated successfully! Images are being generated in the background.', {
+                    autoClose: 5000
+                });
+                // Refresh analytics to show new story
+                setTimeout(() => {
+                    fetchAnalytics(selectedPeriod);
+                }, 1000);
+            } else {
+                toast.error(response.data.message || 'Failed to generate story');
+            }
+        } catch (err: unknown) {
+            console.error('Error generating story:', err);
+            const errorMessage = (err as { response?: { data?: { message?: string; details?: string } } })?.response?.data?.message
+                || (err as { response?: { data?: { message?: string; details?: string } } })?.response?.data?.details
+                || (err as Error)?.message
+                || 'An error occurred while generating the story';
+
+            // Check if story already exists
+            if (errorMessage.includes('already exists') || errorMessage.includes('already generated')) {
+                toast.info('Today\'s story has already been generated.', { autoClose: 4000 });
+            } else {
+                toast.error(errorMessage, { autoClose: 5000 });
+            }
+        } finally {
+            setGenerating(false);
+        }
     };
 
     const periodOptions = [
@@ -158,6 +198,23 @@ export default function AnyaAnalyticsPage() {
                             </option>
                         ))}
                     </select>
+                    <button
+                        onClick={handleGenerateStory}
+                        disabled={generating}
+                        className="px-4 py-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg hover:from-green-700 hover:to-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 transition-all"
+                    >
+                        {generating ? (
+                            <>
+                                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                Generating...
+                            </>
+                        ) : (
+                            <>
+                                <span>✨</span>
+                                Generate Daily Story
+                            </>
+                        )}
+                    </button>
                     <button
                         onClick={() => router.push('/mmeko/admin')}
                         className="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600"

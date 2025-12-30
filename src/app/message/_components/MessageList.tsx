@@ -337,7 +337,7 @@ export const MessageList = () => {
   //     return bDate - aDate;
   //   });
   // }, [recentmsg, searchQuery]);
- const filteredAndSortedMessages = React.useMemo(() => {
+  const filteredAndSortedMessages = React.useMemo(() => {
     if (!recentmsg) return [];
 
     // First filter based on search query
@@ -404,9 +404,9 @@ export const MessageList = () => {
   }
 
   return (
-    <div className="space-y-1">
-      {/* Search Bar */}
-      <div className="p-4">
+    <div className="flex flex-col h-full">
+      {/* Search Bar - Sticky */}
+      <div className="sticky top-0 z-10 p-4">
         <div className="relative">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
             <svg className="w-5 h-5 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -423,117 +423,119 @@ export const MessageList = () => {
         </div>
       </div>
 
-      {/* Messages List */}
-      {filteredAndSortedMessages.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-8">
-          <MessageCircle className="w-8 h-8 text-gray-400 mb-2" />
-          <p className="text-gray-400 text-center">No messages found</p>
-          <p className="text-sm text-gray-500 text-center mt-1">
-            Try adjusting your search terms
-          </p>
-        </div>
-      ) : (
-        filteredAndSortedMessages.map((message: MessageItem, index: number) => {
-          // Get the other user ID and their profile picture
-          const otherUserId = message.fromid === userid ? message.toid : message.fromid;
-          const userProfilePicture = profilePictures[otherUserId];
+      {/* Messages List - Scrollable */}
+      <div className="flex-1 overflow-y-auto">
+        {filteredAndSortedMessages.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-8">
+            <MessageCircle className="w-8 h-8 text-gray-400 mb-2" />
+            <p className="text-gray-400 text-center">No messages found</p>
+            <p className="text-sm text-gray-500 text-center mt-1">
+              Try adjusting your search terms
+            </p>
+          </div>
+        ) : (
+          filteredAndSortedMessages.map((message: MessageItem, index: number) => {
+            // Get the other user ID and their profile picture
+            const otherUserId = message.fromid === userid ? message.toid : message.fromid;
+            const userProfilePicture = profilePictures[otherUserId];
 
-      
 
-          return (
-            <div
-              key={index}
-              onClick={() => handleMessageClick(message.fromid, message.toid)}
-              className="flex items-center gap-3 p-3 hover:bg-gray-800/50 rounded-lg cursor-pointer transition-colors"
-            >
-              {/* Avatar */}
-              <div className="relative">
-                <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-700">
-                  {userProfilePicture &&
-                    userProfilePicture.trim() !== "" &&
-                    userProfilePicture !== "null" &&
-                    userProfilePicture !== "undefined" &&
-                    userProfilePicture !== null &&
-                    userProfilePicture !== undefined &&
-                    userProfilePicture.length > 0 ? (
-                    <Image
-                      src={getImageSource(userProfilePicture, 'profile').src}
-                      alt={message.name}
-                      width={48}
-                      height={48}
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.onerror = null;
-                        target.src = "/icons/icons8-profile_user.png";
-                      }}
-                    />
-                  ) : (
-                    <div className={`w-full h-full flex items-center justify-center text-white font-semibold ${getRandomColor(message.firstname && message.lastname ? `${message.firstname} ${message.lastname}`.trim() : message.name)}`}>
-                      {getUserInitials(message.firstname && message.lastname ? `${message.firstname} ${message.lastname}`.trim() : message.name)}
-                    </div>
+
+            return (
+              <div
+                key={index}
+                onClick={() => handleMessageClick(message.fromid, message.toid)}
+                className="flex items-center gap-3 p-3 hover:bg-gray-800/50 rounded-lg cursor-pointer transition-colors"
+              >
+                {/* Avatar */}
+                <div className="relative">
+                  <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-700">
+                    {userProfilePicture &&
+                      userProfilePicture.trim() !== "" &&
+                      userProfilePicture !== "null" &&
+                      userProfilePicture !== "undefined" &&
+                      userProfilePicture !== null &&
+                      userProfilePicture !== undefined &&
+                      userProfilePicture.length > 0 ? (
+                      <Image
+                        src={getImageSource(userProfilePicture, 'profile').src}
+                        alt={message.name}
+                        width={48}
+                        height={48}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.onerror = null;
+                          target.src = "/icons/icons8-profile_user.png";
+                        }}
+                      />
+                    ) : (
+                      <div className={`w-full h-full flex items-center justify-center text-white font-semibold ${getRandomColor(message.firstname && message.lastname ? `${message.firstname} ${message.lastname}`.trim() : message.name)}`}>
+                        {getUserInitials(message.firstname && message.lastname ? `${message.firstname} ${message.lastname}`.trim() : message.name)}
+                      </div>
+                    )}
+                  </div>
+                  {/* Online indicator */}
+                  {isUserOnline(otherUserId) && (
+                    <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-gray-900 rounded-full"></div>
+                  )}
+                  {/* VIP Badge */}
+                  {message.isVip && (
+                    <VIPBadge size="xl" className="absolute -top-5 -right-5" isVip={message.isVip} vipEndDate={message.vipEndDate} />
                   )}
                 </div>
-                {/* Online indicator */}
-                {isUserOnline(otherUserId) && (
-                  <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-gray-900 rounded-full"></div>
-                )}
-                {/* VIP Badge */}
-                {message.isVip && (
-                  <VIPBadge size="xl" className="absolute -top-5 -right-5" isVip={message.isVip} vipEndDate={message.vipEndDate} />
-                )}
-              </div>
 
-              {/* Message content */}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between">
-                  <h3 className="font-semibold text-white truncate flex items-center gap-1">
-                    {message.firstname && message.lastname ? `${message.firstname} ${message.lastname}`.trim() : message.name}
-                    {message.isVerified && (
-                      <BadgeCheck size={17} className="text-black inline flex-shrink-0" fill="white" />
-                    )}
-                  </h3>
-                  <div className="flex items-center gap-1 text-xs text-gray-400">
+                {/* Message content */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-semibold text-white truncate flex items-center gap-1">
+                      {message.firstname && message.lastname ? `${message.firstname} ${message.lastname}`.trim() : message.name}
+                      {message.isVerified && (
+                        <BadgeCheck size={17} className="text-black inline flex-shrink-0" fill="white" />
+                      )}
+                    </h3>
+                    <div className="flex items-center gap-1 text-xs text-gray-400">
 
-                    <span>{formatTime(message.date)}</span>
+                      <span>{formatTime(message.date)}</span>
+                    </div>
                   </div>
+
+                  <p className="text-sm text-gray-300 truncate mt-1">
+                    {message.content}
+                  </p>
                 </div>
 
-                <p className="text-sm text-gray-300 truncate mt-1">
-                  {message.content}
-                </p>
-              </div>
-
-              {/* Unread count or indicator */}
-              {(() => {
-                // Check for unread count in multiple possible fields
-                const unreadCount = message.messagecount || message.unreadCount || 0;
-                const hasUnread = message.unread || unreadCount > 0;
+                {/* Unread count or indicator */}
+                {(() => {
+                  // Check for unread count in multiple possible fields
+                  const unreadCount = message.messagecount || message.unreadCount || 0;
+                  const hasUnread = message.unread || unreadCount > 0;
 
 
-                // Show unread indicator based on actual data
-                if (hasUnread && unreadCount > 0) {
-                  return (
-                    <div className="flex-shrink-0">
-                      <div className="w-6 h-6 bg-blue-600 text-white text-xs rounded-full flex items-center justify-center font-semibold">
-                        {unreadCount > 9 ? '9+' : unreadCount}
+                  // Show unread indicator based on actual data
+                  if (hasUnread && unreadCount > 0) {
+                    return (
+                      <div className="flex-shrink-0">
+                        <div className="w-6 h-6 bg-blue-600 text-white text-xs rounded-full flex items-center justify-center font-semibold">
+                          {unreadCount > 9 ? '9+' : unreadCount}
+                        </div>
                       </div>
-                    </div>
-                  );
-                } else if (hasUnread) {
-                  // Show a small dot indicator for messages that are unread but don't have a count
-                  return (
-                    <div className="flex-shrink-0">
-                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                    </div>
-                  );
-                }
-                return null;
-              })()}
-            </div>
-          );
-        })
-      )}
+                    );
+                  } else if (hasUnread) {
+                    // Show a small dot indicator for messages that are unread but don't have a count
+                    return (
+                      <div className="flex-shrink-0">
+                        <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                      </div>
+                    );
+                  }
+                  return null;
+                })()}
+              </div>
+            );
+          })
+        )}
+      </div>
     </div>
   );
 };

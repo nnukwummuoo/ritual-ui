@@ -467,13 +467,13 @@ export default function AnyaPage() {
       />
 
       {/* Home Button - Bottom Left */}
-      <button
+      {/* <button
         onClick={() => router.push('/')}
         className="fixed left-4 bottom-16 z-50 w-14 h-14 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center hover:bg-white/20 transition-all shadow-lg"
         aria-label="Go to Home"
       >
         <IoHome className="w-6 h-6 text-gray-400" />
-      </button>
+      </button> */}
     </div>
   );
 }
