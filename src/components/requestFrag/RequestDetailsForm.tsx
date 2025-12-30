@@ -221,9 +221,9 @@ export const RequestDetailsForm: React.FC<RequestDetailsFormProps> = ({
                 </span>
                 <span className="text-gray-400">📅</span>
               </button>
-              <p className="text-xs text-gray-400 text-right">
+              {/* <p className="text-xs text-gray-400 text-right">
                 Available: {creatorType.toLowerCase() === "fan call" ? "2 days (after today & tomorrow)" : "7 days (after today & tomorrow)"}
-              </p>
+              </p> */}
             </div>
 
             {/* Time Field */}

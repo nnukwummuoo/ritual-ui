@@ -25,14 +25,14 @@ export const MessageView = () => {
   const reduxIsLoggedIn = useSelector((state: RootState) => state.register.logedin);
   const msgnotifystatus = useSelector((state: RootState) => state.message.msgnotifystatus);
   const lastmessage = useSelector((state: RootState) => state.message.lastmessage);
-  
+
   // Support chat unread count
   const [supportUnreadCount, setSupportUnreadCount] = useState(0);
-  
+
   // Get userid from localStorage if not in Redux
   const [localUserid, setLocalUserid] = useState("");
   const [localIsLoggedIn, setLocalIsLoggedIn] = useState(false);
-  
+
   // Use Redux data if available, otherwise use localStorage
   const userid = reduxUserid || localUserid;
   const isLoggedIn = reduxIsLoggedIn || localIsLoggedIn;
@@ -58,15 +58,15 @@ export const MessageView = () => {
   // Fetch support chat unread count
   const fetchSupportUnreadCount = async () => {
     if (!userid) return;
-    
+
     try {
       const response = await fetch(`${API_URL}/support-chat/user/${userid}`);
-      
+
       if (response.ok) {
         const data = await response.json();
         if (data.ok && data.supportChat) {
           // Count admin messages (since we don't have read status, count all admin messages as unread)
-          const adminMessages = data.supportChat.messages.filter((msg: any) => 
+          const adminMessages = data.supportChat.messages.filter((msg: any) =>
             msg.isAdmin
           );
           setSupportUnreadCount(adminMessages.length);
@@ -115,7 +115,7 @@ export const MessageView = () => {
   // Periodic refresh of support unread count
   useEffect(() => {
     if (!userid) return;
-    
+
     const interval = setInterval(() => {
       fetchSupportUnreadCount();
     }, 30000); // Refresh every 30 seconds
@@ -149,7 +149,7 @@ export const MessageView = () => {
   //               contents={value.content}
   //               name={value.name}
   //               image={value.photolink}
-                
+
   //             />
   //           );
   //         }
@@ -201,13 +201,13 @@ export const MessageView = () => {
               </button>
               <h1 className="text-2xl font-bold text-white">Messages</h1>
             </div>
-            <button 
+            <button
               onClick={() => window.location.href = '/message/supportchat'}
               className="relative p-2 hover:bg-blue-700/50 rounded-full transition-colors"
             >
-              <Image 
-                src="/support.png" 
-                alt="Support" 
+              <Image
+                src="/support.png"
+                alt="Support"
                 width={24}
                 height={24}
                 className="w-10 h-10"
@@ -220,16 +220,16 @@ export const MessageView = () => {
           </div>
         </div>
 
-      
+
 
         {/* Messages List */}
-        <div className="flex-1 overflow-y-auto h-full">
+        <div className="flex-1 overflow-y-auto h-full pb-32">
           <MessageList />
         </div>
 
         {/* Floating Action Button */}
         <div className="fixed bottom-28 right-6 z-50">
-          <button 
+          <button
             onClick={() => window.location.href = '/message/following'}
             className="w-14 h-14 bg-gray-600 hover:bg-gray-700 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center"
           >
@@ -239,8 +239,8 @@ export const MessageView = () => {
           </button>
         </div>
       </div>
-      
-   
+
+
     </div>
   );
 };
