@@ -11,6 +11,7 @@ import { useStory } from '@/contexts/StoryContext';
 import { useSelector } from 'react-redux';
 import type { RootState } from '@/store/store';
 import { useAnyaMusic } from '@/hooks/useAnyaMusic';
+import { useAnyaPageTracking } from '@/hooks/useAnyaPageTracking';
 import CommentModal from '@/components/CommentModal';
 
 interface Panel {
@@ -53,6 +54,9 @@ export default function StoryViewPage() {
 
     // Initialize background music (different random track than main page)
     useAnyaMusic();
+
+    // Track page visit
+    useAnyaPageTracking('story', storyId);
 
     // Get user ID from Redux
     const reduxUserId = useSelector((state: RootState) => state.register.userID);
