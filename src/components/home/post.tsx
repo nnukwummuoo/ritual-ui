@@ -679,8 +679,8 @@ export default function PostsCard() {
                   photolink={photolink}
                   isFirstPost={false}
                 />
-                {/* Inject Rituals card after every 2nd post */}
-                {(index + 1) % 2 === 0 && <RitualsCard />}
+                {/* Inject Rituals card only once after the first LazyPost */}
+                {index === 0 && <RitualsCard />}
               </React.Fragment>
             ))}
           </div>
