@@ -20,12 +20,12 @@ const formatNumber = (num: number): string => {
   if (num < 1000) {
     return num.toString();
   }
-  
+
   if (num < 10000) {
     const k = (num / 1000).toFixed(1);
     return k.endsWith('.0') ? k.slice(0, -2) + 'k' : k + 'k';
   }
-  
+
   return Math.floor(num / 1000) + 'k';
 };
 
@@ -67,7 +67,7 @@ const FollowingPage: React.FC = () => {
             );
           }
         }
-      } catch {}
+      } catch { }
     }
   }, [userid, dispatch]);
 
@@ -75,7 +75,7 @@ const FollowingPage: React.FC = () => {
     // Get token from localStorage if not in Redux state
     let authToken = token;
     let currentUserid = userid;
-    
+
     if (!authToken && typeof window !== 'undefined') {
       try {
         const loginData = localStorage.getItem('login');
@@ -87,7 +87,7 @@ const FollowingPage: React.FC = () => {
         // Silent fail
       }
     }
-    
+
     // Get userid from localStorage if not in Redux
     if (!currentUserid && typeof window !== 'undefined') {
       try {
@@ -109,7 +109,7 @@ const FollowingPage: React.FC = () => {
   }, [userid, token, dispatch]);
 
   const loading = getfollow_stats === "loading";
-  
+
   // Get current userid from multiple sources (same logic as useEffect)
   let currentUserid = userid;
   if (!currentUserid && typeof window !== 'undefined') {
@@ -123,9 +123,9 @@ const FollowingPage: React.FC = () => {
       // Silent fail
     }
   }
-  
-  
-  
+
+
+
   // Get followers/following from API response and filter out current user
   const apiFollowers: User[] = (getfollow_data?.followers as User[])?.filter(user => {
     const isNotCurrentUser = String(user.id) !== String(currentUserid);
@@ -135,14 +135,16 @@ const FollowingPage: React.FC = () => {
     const isNotCurrentUser = String(user.id) !== String(currentUserid);
     return isNotCurrentUser;
   }) || [];
-  
+
   // Use useMemo to prevent unnecessary re-renders and filter out current user
   const allUsers = React.useMemo(() => {
-    return (getAllUsers_data as any[])?.filter(user => 
+    console.log('🔍 [allUsers memo] getAllUsers_data:', getAllUsers_data);
+    console.log('🔍 [allUsers memo] getAllUsers_stats:', getAllUsers_stats);
+    return (getAllUsers_data as any[])?.filter(user =>
       String(user._id || user.id) !== String(currentUserid)
     ) || [];
-  }, [getAllUsers_data, currentUserid]);
-  
+  }, [getAllUsers_data, currentUserid, getAllUsers_stats]);
+
   // Check if user object has followers/following arrays directly
   // This is for when the backend returns user data with these arrays
   useEffect(() => {
@@ -172,10 +174,10 @@ const FollowingPage: React.FC = () => {
     // CHANGED: Show ALL users who follow me (both mutual and non-mutual follows)
     // These are users who follow me - regardless of whether I follow them back
     const followersData = apiFollowers.filter((user) =>
-      user.name.toLowerCase().includes(search.toLowerCase()) && 
+      user.name.toLowerCase().includes(search.toLowerCase()) &&
       String(user.id) !== String(currentUserid) // Exclude current user
     );
-    
+
     return (
       <div>
         <h1 className="text-lg font-bold text-white px-2 text-left mb-4 mt-4">
@@ -196,8 +198,8 @@ const FollowingPage: React.FC = () => {
                 isVip={(user as any).isVip || false}
                 vipStartDate={(user as any).vipStartDate}
                 vipEndDate={(user as any).vipEndDate}
-                
-                  isVerified={(user as any).isVerified || false}
+
+                isVerified={(user as any).isVerified || false}
               />
             </div>
           ))}
@@ -210,10 +212,10 @@ const FollowingPage: React.FC = () => {
     // These are users I follow - both mutual and non-mutual follows
     // Get all users I follow from apiFollowing (database is the source of truth)
     const combinedFollowing = apiFollowing.filter((user) =>
-      user.name.toLowerCase().includes(search.toLowerCase()) && 
+      user.name.toLowerCase().includes(search.toLowerCase()) &&
       String(user.id) !== String(currentUserid) // Exclude current user
     );
-    
+
     return (
       <div className="">
         <h1 className="text-lg font-bold text-white px-2 text-left mt-4">
@@ -249,10 +251,19 @@ const FollowingPage: React.FC = () => {
   const discoverUsers = () => {
     // Get all following IDs from apiFollowing
     const followingIds = new Set(apiFollowing.map(u => String(u.id)));
-    
+
     // Get all follower IDs from apiFollowers
     const followerIds = new Set(apiFollowers.map(u => String(u.id)));
-    
+
+    // DEBUG: Log the data
+    console.log('🔍 [DISCOVER DEBUG]');
+    console.log('Total allUsers:', allUsers.length);
+    console.log('Current userid:', userid);
+    console.log('Following IDs:', Array.from(followingIds));
+    console.log('Follower IDs:', Array.from(followerIds));
+    console.log('apiFollowers length:', apiFollowers.length);
+    console.log('apiFollowing length:', apiFollowing.length);
+
     // Filter users for the Discover tab - only show users that:
     // 1. Are not the current user
     // 2. Are not already followed by the current user
@@ -262,26 +273,60 @@ const FollowingPage: React.FC = () => {
       const fullName = `${user.firstname ?? ""} ${user.lastname ?? ""}`.trim().toLowerCase();
       const matchesSearch = fullName.includes(search.toLowerCase());
       const isNotCurrentUser = String(user._id) !== String(userid);
-      
+
       // If we have no followers/following data, just filter out current user
       if (apiFollowers.length === 0 && apiFollowing.length === 0) {
+        console.log('No followers/following data - using simple filter');
         return matchesSearch && isNotCurrentUser;
       }
-      
+
       // Otherwise, use the filtering logic based on database data
       const isNotAlreadyFollowing = !followingIds.has(String(user._id));
       const isNotFollowingMe = !followerIds.has(String(user._id));
-      return matchesSearch && isNotCurrentUser && isNotAlreadyFollowing && isNotFollowingMe;
+
+      const shouldShow = matchesSearch && isNotCurrentUser && isNotAlreadyFollowing && isNotFollowingMe;
+
+      if (!shouldShow && user._id) {
+        console.log(`Filtered out user ${fullName}:`, {
+          matchesSearch,
+          isNotCurrentUser,
+          isNotAlreadyFollowing,
+          isNotFollowingMe
+        });
+      }
+
+      return shouldShow;
     });
+
+    console.log('Discoverable users count:', discoverableUsers.length);
+
+    // Randomly select 10 users using Fisher-Yates shuffle
+    const shuffleArray = (array: any[]) => {
+      const shuffled = [...array];
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
+      return shuffled;
+    };
+
+    const randomUsers = shuffleArray(discoverableUsers).slice(0, 10);
+
+    console.log('Random users to display:', randomUsers.length);
 
     return (
       <div className="">
-     
+
         <div className="flex flex-col items-start px-2">
-          {!loading && discoverableUsers.length === 0 && (
+          {getAllUsers_stats === "loading" && (
+            <div className="w-full flex justify-center py-8">
+              <Spinner />
+            </div>
+          )}
+          {getAllUsers_stats === "succeeded" && !loading && randomUsers.length === 0 && (
             <p className="text-gray-400 px-2 py-4">No users to discover right now.</p>
           )}
-          {discoverableUsers.map((user: any, index: number) => (
+          {getAllUsers_stats === "succeeded" && randomUsers.map((user: any, index: number) => (
             <div key={`discover_${index}_${user._id}`} className="discover-user w-full flex ">
               <FollowerCard
                 key={`discover_${index}_${user._id}`}
@@ -292,8 +337,8 @@ const FollowingPage: React.FC = () => {
                 isVip={user.isVip || false}
                 vipStartDate={user.vipStartDate}
                 vipEndDate={user.vipEndDate}
-                
-                  isVerified={(user as any).isVerified || false}
+
+                isVerified={(user as any).isVerified || false}
               />
             </div>
           ))}
@@ -308,25 +353,25 @@ const FollowingPage: React.FC = () => {
         {/* Header with back arrow + name and search icon */}
         <div className="bg-[#0e0f2a] py-2 px-2">
           <div className="flex justify-between items-center">
-          {/* Arrow + Name vertically aligned */}
-          <div className="flex items-center gap-2">
-            <FaAngleLeft
+            {/* Arrow + Name vertically aligned */}
+            <div className="flex items-center gap-2">
+              <FaAngleLeft
+                color="white"
+                size={30}
+                onClick={() => window.history.back()}
+                className="cursor-pointer"
+              />
+              <h4 className="text-white font-bold">{`${firstname} ${lastname}`}</h4>
+            </div>
+
+            {/* Search icon */}
+            <FiSearch
               color="white"
               size={30}
-              onClick={() => window.history.back()}
+              onClick={() => setToggle((v) => !v)}
               className="cursor-pointer"
             />
-            <h4 className="text-white font-bold">{`${firstname} ${lastname}`}</h4>
           </div>
-
-          {/* Search icon */}
-          <FiSearch
-            color="white"
-            size={30}
-            onClick={() => setToggle((v) => !v)}
-            className="cursor-pointer"
-          />
-        </div>
 
         </div>
 
@@ -366,7 +411,7 @@ const FollowingPage: React.FC = () => {
         </div>
       </div>
     </div>
-    
+
   );
 };
 

@@ -4,7 +4,8 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import { motion } from 'framer-motion';
-import { IoSparkles, IoTrashOutline, IoHeartOutline, IoHeart, IoChatbubbleOutline, IoArrowBack, IoHome } from 'react-icons/io5';
+import { IoSparkles, IoTrashOutline, IoHeartOutline, IoHeart, IoChatbubbleOutline, IoArrowBack, IoHome, IoShareSocialOutline } from 'react-icons/io5';
+import { FaThLarge } from 'react-icons/fa';
 import { getImageSource } from '@/lib/imageUtils';
 import { useStory } from '@/contexts/StoryContext';
 import { useSelector } from 'react-redux';
@@ -44,6 +45,8 @@ export default function AnyaPage() {
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [viewMode, setViewMode] = useState<'story' | 'grid'>('story'); // Start with story view
+  const [currentStoryIndex, setCurrentStoryIndex] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Comment Modal State
@@ -339,122 +342,308 @@ export default function AnyaPage() {
     );
   }
 
+  // Current story for full-screen view
+  const currentStory = stories[currentStoryIndex];
+
+  // Handlers for story view
+  const handleLikeStory = async () => {
+    if (!userId) {
+      console.warn('User not logged in');
+      return;
+    }
+    await toggleLike(currentStory._id, userId);
+  };
+
+  const handleCommentStory = () => {
+    setSelectedStoryId(currentStory._id);
+    setSelectedStoryTitle(currentStory.title);
+    setCommentModalOpen(true);
+  };
+
+  const handleShareStory = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: currentStory.title,
+          text: `Check out this AI-generated story: ${currentStory.title}`,
+          url: window.location.href,
+        });
+      } catch (error) {
+        console.log('Error sharing:', error);
+      }
+    } else {
+      navigator.clipboard.writeText(window.location.href);
+      alert('Link copied to clipboard!');
+    }
+  };
+
   return (
     <div className="h-screen bg-black text-white overflow-hidden relative">
-      {/* Fixed Header */}
-      <div className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-b from-black/80 to-transparent backdrop-blur-sm">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              {/* Back Button */}
-              <button
-                onClick={handleBackNavigation}
-                className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center hover:bg-white/20 transition-all"
-                aria-label="Go back"
-              >
-                <IoArrowBack className="w-5 h-5" />
-              </button>
+      {viewMode === 'story' ? (
+        // FULL-SCREEN STORY VIEW
+        <>
+          {/* Fixed Header - Story View */}
+          <div className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-b from-black/80 to-transparent backdrop-blur-sm">
+            <div className="max-w-7xl mx-auto px-4 py-4">
+              <div className="flex items-center justify-between">
+                <button
+                  onClick={() => setViewMode('grid')}
+                  className="flex items-center justify-center"
+                  aria-label="View all stories"
+                >
+                  <FaThLarge className="w-8 h-8 text-gray-400" />
+                </button>
 
-              <div>
-                <h1 className="text-2xl md:text-4xl font-bold bg-gradient-to-r from-purple-400 via-pink-500 to-purple-600 bg-clip-text text-transparent">
-                  Rituals
-                </h1>
+                <div className="flex-1 mx-4 text-center">
+                  <h1 className="text-lg md:text-xl font-bold line-clamp-1">{currentStory.title}</h1>
+                </div>
 
+                <button
+                  onClick={() => router.push('/')}
+                  className="flex items-center justify-center"
+                  aria-label="Go to Home"
+                >
+                  <IoHome className="w-8 h-8 text-gray-400" />
+                </button>
               </div>
             </div>
           </div>
-        </div>
-      </div>
 
-      {/* Story Grid - Like Creators Page */}
-      <div className="px-4 mt-2 sm:mx-4 relative overflow-y-auto pt-20 pb-12">
-        <div className="grid grid-cols-2 gap-2 mt-4 mb-12 md:grid-cols-3">
-          {stories.map((story) => (
-            <motion.div
-              key={story._id}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.4 }}
-              className="relative overflow-hidden rounded-lg cursor-pointer group"
-              onClick={() => handleStoryClick(story._id)}
+          {/* Action Bar - Side */}
+          <div className="fixed right-4 bottom-48 z-50 flex flex-col gap-6">
+            {/* Like Button */}
+            <motion.button
+              whileTap={{ scale: 0.9 }}
+              onClick={handleLikeStory}
+              className="flex flex-col items-center gap-1"
             >
-              {/* Story Image */}
-              <div className="relative aspect-[3/4] overflow-hidden">
-                {story.coverImage ? (
-                  <img
-                    src={getImageSource(story.coverImage, 'stories').src}
-                    alt={story.title}
-                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
-                    onError={(e) => {
-                      e.currentTarget.src = 'https://images.unsplash.com/photo-1469122312224-c5846569af2c?q=80&w=2000&auto=format&fit=crop';
-                    }}
-                  />
+              <div className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center hover:bg-white/20 transition-all">
+                {likedStories.has(currentStory._id) ? (
+                  <IoHeart className="w-6 h-6 text-red-500" />
                 ) : (
-                  <div className="w-full h-full bg-gradient-to-br from-purple-900/30 to-pink-900/30"></div>
+                  <IoHeartOutline className="w-6 h-6" />
                 )}
+              </div>
+              <span className="text-xs font-medium">{likeCounts.get(currentStory._id) || currentStory.likes || 0}</span>
+            </motion.button>
 
-                {/* Gradient Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent"></div>
+            {/* Comment Button */}
+            <motion.button
+              whileTap={{ scale: 0.9 }}
+              onClick={handleCommentStory}
+              className="flex flex-col items-center gap-1"
+            >
+              <div className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center hover:bg-white/20 transition-all">
+                <IoChatbubbleOutline className="w-6 h-6" />
+              </div>
+              <span className="text-xs font-medium">{commentCounts.get(currentStory._id) || currentStory.comments?.length || 0}</span>
+            </motion.button>
 
-                {/* Content Overlay */}
-                <div className="absolute bottom-0 left-0 right-0 p-3 text-white">
-                  {/* Story Title */}
-                  <h3 className="text-sm md:text-base font-bold mb-1 line-clamp-2">
-                    {story.title}
-                  </h3>
+            {/* Share Button */}
+            <motion.button
+              whileTap={{ scale: 0.9 }}
+              onClick={handleShareStory}
+              className="flex flex-col items-center gap-1"
+            >
+              <div className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center hover:bg-white/20 transition-all">
+                <IoShareSocialOutline className="w-6 h-6" />
+              </div>
+              <span className="text-xs font-medium">Share</span>
+            </motion.button>
+          </div>
 
-                  {/* Emotional Core Badge */}
-                  {/* <span className="inline-block px-2 py-1 bg-purple-600/80 backdrop-blur-sm rounded-full text-xs font-semibold mb-2">
-                    {story.emotional_core}
-                  </span> */}
+          {/* Full-Screen Story Cover */}
+          <div className="h-screen w-full relative flex items-center justify-center">
+            {/* Background Image - Full Cover */}
+            {currentStory.coverImage ? (
+              <div className="absolute inset-0 z-0 w-full h-full">
+                <img
+                  src={getImageSource(currentStory.coverImage, 'stories').src}
+                  alt={currentStory.title}
+                  className="w-full h-full min-w-full min-h-full object-cover"
+                  onError={(e) => {
+                    e.currentTarget.src = 'https://images.unsplash.com/photo-1469122312224-c5846569af2c?q=80&w=2000&auto=format&fit=crop';
+                  }}
+                />
+                {/* Dark Gradient Overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/60"></div>
+              </div>
+            ) : (
+              <div className="absolute inset-0 z-0 bg-gradient-to-br from-purple-900/20 to-pink-900/20"></div>
+            )}
 
-                  {/* Scene Count */}
-                  <p className="text-xs text-gray-300 mb-2">
-                    {(() => {
-                      const sceneCount = story.panels?.length
-                        || (story as any).scenes?.length
-                        || (story as any).panelCount
-                        || (story as any).scene_count
-                        || (story as any).total_panels
-                        || 0;
-                      return `${sceneCount} ${sceneCount === 1 ? 'Scene' : 'Scenes'}`;
-                    })()}
-                  </p>
+            {/* Content Overlay */}
+            <div className="relative z-10 max-w-4xl mx-auto px-6 text-center h-full flex flex-col justify-end pb-32">
+              {/* Story Info */}
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+                className="space-y-4"
+              >
+                <h2 className="text-2xl md:text-5xl leading-tight drop-shadow-2xl">
+                  {currentStory.title}
+                </h2>
 
-                  {/* Action Buttons */}
-                  <div className="flex items-center gap-3 text-xs">
-                    {/* Like */}
-                    <button
-                      onClick={(e) => handleLike(e, story._id)}
-                      className="flex items-center gap-1 hover:text-red-500 transition-colors"
-                    >
-                      {likedStories.has(story._id) ? (
-                        <IoHeart className="w-4 h-4 text-red-500" />
-                      ) : (
-                        <IoHeartOutline className="w-4 h-4" />
-                      )}
-                      <span>{likeCounts.get(story._id) || story.likes || 0}</span>
-                    </button>
+                <p className="text-gray-300 text-lg md:text-xl">
+                  {currentStory.panels?.length || 0} Scenes
+                </p>
 
-                    {/* Comment */}
-                    <button
-                      onClick={(e) => handleComment(e, story)}
-                      className="flex items-center gap-1 hover:text-blue-500 transition-colors"
-                    >
-                      <IoChatbubbleOutline className="w-4 h-4" />
-                      <span>{commentCounts.get(story._id) || story.comments?.length || 0}</span>
-                    </button>
+                {/* View Story Button */}
+                {/* <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => handleStoryClick(currentStory._id)}
+                  className="inline-block px-8 py-3 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full text-base font-semibold hover:from-purple-700 hover:to-pink-700 transition-all shadow-lg"
+                >
+                  Experience This Ritual →
+                </motion.button> */}
+              </motion.div>
+            </div>
+
+            {/* Scroll Hint */}
+            {stories.length > 1 && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{
+                  delay: 1,
+                  repeat: Infinity,
+                  repeatType: "reverse",
+                  duration: 1.5
+                }}
+                className="absolute bottom-12 left-1/2 -translate-x-1/2 z-20"
+              >
+                {/* <div className="flex flex-col items-center gap-1 text-white/50">
+                  <span className="text-xs font-medium">More stories →</span>
+                  <FaThLarge className="w-4 h-4" />
+                </div> */}
+              </motion.div>
+            )}
+          </div>
+        </>
+      ) : (
+        // GRID VIEW
+        <>
+          {/* Fixed Header - Grid View */}
+          <div className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-b from-black/80 to-transparent backdrop-blur-sm">
+            <div className="max-w-7xl mx-auto px-4 py-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  {/* Back Button */}
+                  <button
+                    onClick={handleBackNavigation}
+                    className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center hover:bg-white/20 transition-all"
+                    aria-label="Go back"
+                  >
+                    <IoArrowBack className="w-5 h-5" />
+                  </button>
+
+                  <div>
+                    <h1 className="text-2xl md:text-4xl font-bold bg-gradient-to-r from-purple-400 via-pink-500 to-purple-600 bg-clip-text text-transparent">
+                      Rituals
+                    </h1>
                   </div>
                 </div>
 
-                {/* Hover overlay */}
-                <div className="absolute inset-0 bg-purple-600/0 group-hover:bg-purple-600/10 transition-colors duration-300"></div>
+                {/* Home Icon */}
+                <button
+                  onClick={() => router.push('/')}
+                  className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center hover:bg-white/20 transition-all"
+                  aria-label="Go to Home"
+                >
+                  <IoHome className="w-5 h-5" />
+                </button>
               </div>
-            </motion.div>
-          ))}
-        </div>
-      </div>
+            </div>
+          </div>
+
+          {/* Story Grid */}
+          <div className="px-4 mt-2 sm:mx-4 relative overflow-y-auto pt-20 pb-12">
+            <div className="grid grid-cols-2 gap-2 mt-4 mb-12 md:grid-cols-3">
+              {stories.map((story) => (
+                <motion.div
+                  key={story._id}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.4 }}
+                  className="relative overflow-hidden rounded-lg cursor-pointer group"
+                  onClick={() => handleStoryClick(story._id)}
+                >
+                  {/* Story Image */}
+                  <div className="relative aspect-[3/4] overflow-hidden">
+                    {story.coverImage ? (
+                      <img
+                        src={getImageSource(story.coverImage, 'stories').src}
+                        alt={story.title}
+                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                        onError={(e) => {
+                          e.currentTarget.src = 'https://images.unsplash.com/photo-1469122312224-c5846569af2c?q=80&w=2000&auto=format&fit=crop';
+                        }}
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gradient-to-br from-purple-900/30 to-pink-900/30"></div>
+                    )}
+
+                    {/* Gradient Overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent"></div>
+
+                    {/* Content Overlay */}
+                    <div className="absolute bottom-0 left-0 right-0 p-3 text-white">
+                      {/* Story Title */}
+                      <h3 className="text-sm md:text-base font-bold mb-1 line-clamp-2">
+                        {story.title}
+                      </h3>
+
+                      {/* Scene Count */}
+                      <p className="text-xs text-gray-300 mb-2">
+                        {(() => {
+                          const sceneCount = story.panels?.length
+                            || (story as any).scenes?.length
+                            || (story as any).panelCount
+                            || (story as any).scene_count
+                            || (story as any).total_panels
+                            || 0;
+                          return `${sceneCount} ${sceneCount === 1 ? 'Scene' : 'Scenes'}`;
+                        })()}
+                      </p>
+
+                      {/* Action Buttons */}
+                      <div className="flex items-center gap-3 text-xs">
+                        {/* Like */}
+                        <button
+                          onClick={(e) => handleLike(e, story._id)}
+                          className="flex items-center gap-1 hover:text-red-500 transition-colors"
+                        >
+                          {likedStories.has(story._id) ? (
+                            <IoHeart className="w-4 h-4 text-red-500" />
+                          ) : (
+                            <IoHeartOutline className="w-4 h-4" />
+                          )}
+                          <span>{likeCounts.get(story._id) || story.likes || 0}</span>
+                        </button>
+
+                        {/* Comment */}
+                        <button
+                          onClick={(e) => handleComment(e, story)}
+                          className="flex items-center gap-1 hover:text-blue-500 transition-colors"
+                        >
+                          <IoChatbubbleOutline className="w-4 h-4" />
+                          <span>{commentCounts.get(story._id) || story.comments?.length || 0}</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Hover overlay */}
+                    <div className="absolute inset-0 bg-purple-600/0 group-hover:bg-purple-600/10 transition-colors duration-300"></div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
 
       {/* Comment Modal */}
       <CommentModal
@@ -465,15 +654,6 @@ export default function AnyaPage() {
         userId={userId}
         username={username}
       />
-
-      {/* Home Button - Bottom Left */}
-      {/* <button
-        onClick={() => router.push('/')}
-        className="fixed left-4 bottom-16 z-50 w-14 h-14 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center hover:bg-white/20 transition-all shadow-lg"
-        aria-label="Go to Home"
-      >
-        <IoHome className="w-6 h-6 text-gray-400" />
-      </button> */}
     </div>
   );
 }

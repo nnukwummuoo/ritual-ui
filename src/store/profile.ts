@@ -150,7 +150,7 @@ export const getprofile = createAsyncThunk<
       // Enhanced logging for profile data fetching
 
       const response = await axios.post(`${URL}/getprofile`, data);
-      
+
 
       return response.data;
     } catch (err) {
@@ -198,7 +198,7 @@ export const getsearch = createAsyncThunk("profile/getsearch", async () => {
     // console.log('under get profile')
 
     return response.data;
-  } catch (err : any) {
+  } catch (err: any) {
     // console.log('erro get profile')
     throw getErrorMessage(err);
   }
@@ -213,7 +213,7 @@ export const updatesetting = createAsyncThunk<{ message: string }, { userid: str
       // console.log('under get profile')
 
       return response.data;
-    } catch (err : any) {
+    } catch (err: any) {
       // console.log('erro get profile')
       throw getErrorMessage(err);
     }
@@ -229,7 +229,7 @@ export const deleteblockedUsers = createAsyncThunk<{ message: string }, { userid
       // console.log('under get profile')
 
       return response.data;
-    } catch (err : any) {
+    } catch (err: any) {
       // console.log('erro get profile')
       throw getErrorMessage(err);
     }
@@ -290,12 +290,12 @@ export const deleteprofile = createAsyncThunk<
       return response.data;
     } catch (err) {
       console.error("❌ [deleteprofile] Error:", err);
-      
+
       if (axios.isAxiosError(err)) {
         const message = err.response?.data?.message || err.message || "Failed to delete account";
         return rejectWithValue({ message });
       }
-      
+
       const message = getErrorMessage(err);
       return rejectWithValue({ message });
     }
@@ -308,7 +308,7 @@ export const getcollection = createAsyncThunk<{ data: CollectionData }, { userid
     try {
       let response = await axios.put(`${URL}/exclusivecontent`, data);
       return response.data;
-    } catch (err : any) {
+    } catch (err: any) {
       throw getErrorMessage(err);
     }
   }
@@ -323,7 +323,7 @@ export const getblockedUsers = createAsyncThunk<{ users: any[] }, { userid: stri
       // console.log('under get profile')
 
       return response.data;
-    } catch (err : any) {
+    } catch (err: any) {
       // console.log('erro get profile')
       throw getErrorMessage(err);
     }
@@ -339,7 +339,7 @@ export const deletecollection = createAsyncThunk<{ message: string }, { userid: 
       // console.log('under get profile')
 
       return response.data;
-    } catch (err : any) {
+    } catch (err: any) {
       // console.log('erro get profile')
       throw getErrorMessage(err);
     }
@@ -389,7 +389,7 @@ export const post_exclusive_content = createAsyncThunk<
       }
 
       return response.data;
-    } catch (err : any) {
+    } catch (err: any) {
       // console.log('erro get profile')
       throw getErrorMessage(err);
     }
@@ -429,8 +429,8 @@ export const get_my_history = createAsyncThunk<{ history: any[] }, { userid: str
       // console.log('under get profile')
 
       // return response.data;
-          return response.data.history;
-    } catch (err : any) {
+      return response.data.history;
+    } catch (err: any) {
       // console.log('erro get profile')
       throw getErrorMessageWithNetworkFallback(err);
     }
@@ -455,34 +455,34 @@ export const deposit = createAsyncThunk<{ message: string }, { userid: string; t
     // console.log('under get profile')
 
     return response.data;
-  } catch (err : any) {
+  } catch (err: any) {
     // console.log('erro get profile')
     throw getErrorMessageWithNetworkFallback(err);
   }
 });
 
 export const follow = createAsyncThunk<
-  { message: string }, 
+  { message: string },
   { userid: string; followerid: string; token: string }
 >("profile/follow", async (data) => {
   try {
-    
+
     // Send only userid and followerid in body (backend doesn't expect authentication)
     const requestBody = {
       userid: data.userid,
       followerid: data.followerid
     };
-    
-    
+
+
     let response = await axios.post(`${URL}/follow`, requestBody, {
       headers: {
         'Content-Type': 'application/json'
       }
     });
-    
+
 
     return response.data;
-  } catch (err : any) {
+  } catch (err: any) {
     console.error("❌ [follow] Error details:", {
       message: err.message,
       status: err.response?.status,
@@ -495,7 +495,7 @@ export const follow = createAsyncThunk<
         headers: err.config?.headers
       }
     });
-    
+
     // Log the specific error data from backend
     if (err.response?.data) {
       console.error("🔍 [follow] Backend error response:", JSON.stringify(err.response.data, null, 2));
@@ -505,27 +505,27 @@ export const follow = createAsyncThunk<
 });
 
 export const unfollow = createAsyncThunk<
-  { message: string }, 
+  { message: string },
   { userid: string; followerid: string; token: string }
 >("profile/unfollow", async (data) => {
   try {
-    
+
     // Send only userid and followerid in body (backend doesn't expect authentication)
     const requestBody = {
       userid: data.userid,
       followerid: data.followerid
     };
-    
-    
+
+
     let response = await axios.put(`${URL}/follow`, requestBody, {
       headers: {
         'Content-Type': 'application/json'
       }
     });
-    
+
 
     return response.data;
-  } catch (err : any) {
+  } catch (err: any) {
     console.error("❌ [unfollow] Error details:", {
       message: err.message,
       status: err.response?.status,
@@ -538,7 +538,7 @@ export const unfollow = createAsyncThunk<
         headers: err.config?.headers
       }
     });
-    
+
     // Log the specific error data from backend
     if (err.response?.data) {
       console.error("🔍 [unfollow] Backend error response:", JSON.stringify(err.response.data, null, 2));
@@ -552,18 +552,18 @@ export const getfollow = createAsyncThunk<{ data: FollowData }, { userid: string
     // Debug: trace outgoing request for followers/following
 
     // Set up headers with authorization token if available
-    const headers = data.token ? { 
+    const headers = data.token ? {
       'Authorization': `Bearer ${data.token}`,
       'Content-Type': 'application/json'
     } : {
       'Content-Type': 'application/json'
     };
 
-    let response = await axios.post(`${URL}/getfollowers`, 
-      { userid: data.userid }, 
+    let response = await axios.post(`${URL}/getfollowers`,
+      { userid: data.userid },
       { headers }
     );
-    
+
 
     return response.data;
   } catch (err) {
@@ -574,23 +574,36 @@ export const getfollow = createAsyncThunk<{ data: FollowData }, { userid: string
 
 export const getAllUsers = createAsyncThunk<{ users: Array<any> }, { token: string; userid?: string }>("profile/getAllUsers", async (data) => {
   try {
-    
+    console.log('🔍 [getAllUsers] Starting API call with data:', { token: data.token?.substring(0, 20) + '...', userid: data.userid });
+
     // Set up headers with authorization token if available
-    const headers = data.token ? { 
+    const headers = data.token ? {
       'Authorization': `Bearer ${data.token}`,
       'Content-Type': 'application/json'
     } : {
       'Content-Type': 'application/json'
     };
-    
-    let response = await axios.post(`${URL}/getallusers`, { 
+
+    let response = await axios.post(`${URL}/getallusers`, {
       token: data.token,
-      userid: data.userid 
+      userid: data.userid
     }, { headers });
+
+    console.log('✅ [getAllUsers] API response:', {
+      status: response.status,
+      usersCount: response.data?.users?.length,
+      hasUsers: !!response.data?.users
+    });
 
     return response.data;
   } catch (err) {
-    console.error("[getAllUsers] error", err);
+    console.error("❌ [getAllUsers] error", err);
+    console.error("❌ [getAllUsers] error details:", {
+      message: (err as any)?.message,
+      status: (err as any)?.response?.status,
+      statusText: (err as any)?.response?.statusText,
+      data: (err as any)?.response?.data
+    });
     throw getErrorMessageWithNetworkFallback(err);
   }
 });
@@ -672,12 +685,12 @@ export const markNotificationsSeen = createAsyncThunk<
   try {
     const headers = data.token
       ? {
-          Authorization: `Bearer ${data.token}`,
-          "Content-Type": "application/json",
-        }
+        Authorization: `Bearer ${data.token}`,
+        "Content-Type": "application/json",
+      }
       : {
-          "Content-Type": "application/json",
-        };
+        "Content-Type": "application/json",
+      };
     const response = await axios.put(`${URL}/notifications/mark-seen/${data.userid}`, {}, { headers });
     return response.data;
   } catch (err) {
@@ -693,12 +706,12 @@ export const markActivityNotificationsSeen = createAsyncThunk<
   try {
     const headers = data.token
       ? {
-          Authorization: `Bearer ${data.token}`,
-          "Content-Type": "application/json",
-        }
+        Authorization: `Bearer ${data.token}`,
+        "Content-Type": "application/json",
+      }
       : {
-          "Content-Type": "application/json",
-        };
+        "Content-Type": "application/json",
+      };
     const response = await axios.put(`${URL}/notifications/mark-activity-seen/${data.userid}`, {}, { headers });
     return response.data;
   } catch (err) {
@@ -713,19 +726,19 @@ export const getAllCreatorRatings = createAsyncThunk<
   { creatorId: string; token: string }
 >("profile/getAllCreatorRatings", async (data) => {
   try {
-    
+
     const headers = data.token
       ? {
-          Authorization: `Bearer ${data.token}`,
-          "Content-Type": "application/json",
-        }
+        Authorization: `Bearer ${data.token}`,
+        "Content-Type": "application/json",
+      }
       : {
-          "Content-Type": "application/json",
-        };
+        "Content-Type": "application/json",
+      };
     // Force localhost for development
     const apiUrl = process.env.NODE_ENV === "development" ? "http://localhost:3100" : URL;
     const url = `${apiUrl}/review/creator/${data.creatorId}/all`;
-    
+
     const response = await axios.get(url, { headers });
     return response.data;
   } catch (err) {
@@ -741,12 +754,12 @@ export const getCreatorRatings = createAsyncThunk<
   try {
     const headers = data.token
       ? {
-          Authorization: `Bearer ${data.token}`,
-          "Content-Type": "application/json",
-        }
+        Authorization: `Bearer ${data.token}`,
+        "Content-Type": "application/json",
+      }
       : {
-          "Content-Type": "application/json",
-        };
+        "Content-Type": "application/json",
+      };
     // Force localhost for development
     const apiUrl = process.env.NODE_ENV === "development" ? "http://localhost:3100" : URL;
     const response = await axios.get(`${apiUrl}/review/user/${data.creatorId}/fan-to-creator`, { headers });
@@ -765,18 +778,18 @@ export const getAllUserRatings = createAsyncThunk<
   try {
     const headers = data.token
       ? {
-          Authorization: `Bearer ${data.token}`,
-          "Content-Type": "application/json",
-        }
+        Authorization: `Bearer ${data.token}`,
+        "Content-Type": "application/json",
+      }
       : {
-          "Content-Type": "application/json",
-        };
+        "Content-Type": "application/json",
+      };
     // Force localhost for development
     const apiUrl = process.env.NODE_ENV === "development" ? "http://localhost:3100" : URL;
     const response = await axios.get(`${apiUrl}/review/user/${data.userId}/all`, { headers });
     return response.data;
   } catch (err) {
- 
+
     throw getErrorMessageWithNetworkFallback(err);
   }
 });
@@ -789,12 +802,12 @@ export const getFanRatings = createAsyncThunk<
   try {
     const headers = data.token
       ? {
-          Authorization: `Bearer ${data.token}`,
-          "Content-Type": "application/json",
-        }
+        Authorization: `Bearer ${data.token}`,
+        "Content-Type": "application/json",
+      }
       : {
-          "Content-Type": "application/json",
-        };
+        "Content-Type": "application/json",
+      };
     // Force localhost for development
     const apiUrl = process.env.NODE_ENV === "development" ? "http://localhost:3100" : URL;
     const response = await axios.get(`${apiUrl}/review/user/${data.fanId}/creator-to-fan`, { headers });
@@ -812,12 +825,12 @@ export const deleteNotification = createAsyncThunk<
   try {
     const headers = data.token
       ? {
-          Authorization: `Bearer ${data.token}`,
-          "Content-Type": "application/json",
-        }
+        Authorization: `Bearer ${data.token}`,
+        "Content-Type": "application/json",
+      }
       : {
-          "Content-Type": "application/json",
-        };
+        "Content-Type": "application/json",
+      };
     const response = await axios.delete(`${URL}/notifications/${data.id}`, { headers });
     return response.data;
   } catch (err) {
@@ -1122,7 +1135,7 @@ const profile = createSlice({
           action.error?.message ?? "Failed to load notifications";
       })
       .addCase(markNotificationsSeen.pending, (state) => {
-  state.mark_notifications_stats = "loading";
+        state.mark_notifications_stats = "loading";
       })
       .addCase(markNotificationsSeen.fulfilled, (state) => {
         state.mark_notifications_stats = "succeeded";
@@ -1145,86 +1158,86 @@ const profile = createSlice({
         // ✅ Mark only activity notifications as seen locally
         state.notifications = state.notifications.map((n) => {
           const message = n.message.toLowerCase();
-          const isActivityNotification = message.includes('request') || 
-                                       message.includes('request') ||
-                                       message.includes('fan meet') ||
-                                       message.includes('accepted') ||
-                                       message.includes('declined') ||
-                                       message.includes('cancelled') ||
-                                       message.includes('expired') ||
-                                       message.includes('completed');
-          
+          const isActivityNotification = message.includes('request') ||
+            message.includes('request') ||
+            message.includes('fan meet') ||
+            message.includes('accepted') ||
+            message.includes('declined') ||
+            message.includes('cancelled') ||
+            message.includes('expired') ||
+            message.includes('completed');
+
           if (isActivityNotification) {
             return { ...n, seen: true };
           }
           return n;
         });
       })
-        .addCase(markActivityNotificationsSeen.rejected, (state, action) => {
-            state.mark_notifications_stats = "failed";
-            state.notifications_message =
-              action.error?.message ?? "Failed to mark activity notifications as seen";
-        })
-        .addCase(getAllCreatorRatings.pending, (state) => {
-            state.ratings_stats = "loading";
-        })
-        .addCase(getAllCreatorRatings.fulfilled, (state, action) => {
-            state.ratings_stats = "succeeded";
-            state.ratings = action.payload.ratings || [];
-            state.totalRatings = action.payload.totalRatings || 0;
-            state.averageRating = action.payload.averageRating || 0;
-            state.ratingCounts = action.payload.ratingCounts || {};
-        })
-        .addCase(getAllCreatorRatings.rejected, (state, action) => {
-            state.ratings_stats = "failed";
-            state.ratings_message =
-              action.error?.message ?? "Failed to fetch ratings";
-        })
-        .addCase(getCreatorRatings.pending, (state) => {
-            state.ratings_stats = "loading";
-        })
-        .addCase(getCreatorRatings.fulfilled, (state, action) => {
-            state.ratings_stats = "succeeded";
-            state.ratings = action.payload.ratings || [];
-            state.totalRatings = action.payload.totalRatings || 0;
-            state.averageRating = action.payload.averageRating || 0;
-            state.ratingCounts = action.payload.ratingCounts || {};
-        })
-        .addCase(getCreatorRatings.rejected, (state, action) => {
-            state.ratings_stats = "failed";
-            state.ratings_message =
-              action.error?.message ?? "Failed to fetch ratings";
-        })
-        .addCase(getAllUserRatings.pending, (state) => {
-            state.ratings_stats = "loading";
-        })
-        .addCase(getAllUserRatings.fulfilled, (state, action) => {
-            state.ratings_stats = "succeeded";
-            state.ratings = action.payload.ratings || [];
-            state.totalRatings = action.payload.totalRatings || 0;
-            state.averageRating = action.payload.averageRating || 0;
-            state.ratingCounts = action.payload.ratingCounts || {};
-        })
-        .addCase(getAllUserRatings.rejected, (state, action) => {
-            state.ratings_stats = "failed";
-            state.ratings_message =
-              action.error?.message ?? "Failed to fetch ratings";
-        })
-        .addCase(getFanRatings.pending, (state) => {
-            state.fanRatings_stats = "loading";
-        })
-        .addCase(getFanRatings.fulfilled, (state, action) => {
-            state.fanRatings_stats = "succeeded";
-            state.fanRatings = action.payload.ratings || [];
-            state.totalFanRatings = action.payload.totalRatings || 0;
-            state.averageFanRating = action.payload.averageRating || 0;
-            state.fanRatingCounts = action.payload.ratingCounts || {};
-        })
-        .addCase(getFanRatings.rejected, (state, action) => {
-            state.fanRatings_stats = "failed";
-            state.fanRatings_message =
-              action.error?.message ?? "Failed to fetch fan ratings";
-        })
+      .addCase(markActivityNotificationsSeen.rejected, (state, action) => {
+        state.mark_notifications_stats = "failed";
+        state.notifications_message =
+          action.error?.message ?? "Failed to mark activity notifications as seen";
+      })
+      .addCase(getAllCreatorRatings.pending, (state) => {
+        state.ratings_stats = "loading";
+      })
+      .addCase(getAllCreatorRatings.fulfilled, (state, action) => {
+        state.ratings_stats = "succeeded";
+        state.ratings = action.payload.ratings || [];
+        state.totalRatings = action.payload.totalRatings || 0;
+        state.averageRating = action.payload.averageRating || 0;
+        state.ratingCounts = action.payload.ratingCounts || {};
+      })
+      .addCase(getAllCreatorRatings.rejected, (state, action) => {
+        state.ratings_stats = "failed";
+        state.ratings_message =
+          action.error?.message ?? "Failed to fetch ratings";
+      })
+      .addCase(getCreatorRatings.pending, (state) => {
+        state.ratings_stats = "loading";
+      })
+      .addCase(getCreatorRatings.fulfilled, (state, action) => {
+        state.ratings_stats = "succeeded";
+        state.ratings = action.payload.ratings || [];
+        state.totalRatings = action.payload.totalRatings || 0;
+        state.averageRating = action.payload.averageRating || 0;
+        state.ratingCounts = action.payload.ratingCounts || {};
+      })
+      .addCase(getCreatorRatings.rejected, (state, action) => {
+        state.ratings_stats = "failed";
+        state.ratings_message =
+          action.error?.message ?? "Failed to fetch ratings";
+      })
+      .addCase(getAllUserRatings.pending, (state) => {
+        state.ratings_stats = "loading";
+      })
+      .addCase(getAllUserRatings.fulfilled, (state, action) => {
+        state.ratings_stats = "succeeded";
+        state.ratings = action.payload.ratings || [];
+        state.totalRatings = action.payload.totalRatings || 0;
+        state.averageRating = action.payload.averageRating || 0;
+        state.ratingCounts = action.payload.ratingCounts || {};
+      })
+      .addCase(getAllUserRatings.rejected, (state, action) => {
+        state.ratings_stats = "failed";
+        state.ratings_message =
+          action.error?.message ?? "Failed to fetch ratings";
+      })
+      .addCase(getFanRatings.pending, (state) => {
+        state.fanRatings_stats = "loading";
+      })
+      .addCase(getFanRatings.fulfilled, (state, action) => {
+        state.fanRatings_stats = "succeeded";
+        state.fanRatings = action.payload.ratings || [];
+        state.totalFanRatings = action.payload.totalRatings || 0;
+        state.averageFanRating = action.payload.averageRating || 0;
+        state.fanRatingCounts = action.payload.ratingCounts || {};
+      })
+      .addCase(getFanRatings.rejected, (state, action) => {
+        state.fanRatings_stats = "failed";
+        state.fanRatings_message =
+          action.error?.message ?? "Failed to fetch fan ratings";
+      })
 
       .addCase(deleteNotification.pending, (state) => {
         state.delete_notification_stats = "loading";
@@ -1243,16 +1256,16 @@ const profile = createSlice({
           action.error?.message ?? "Failed to delete notification";
       })
       .addCase(checkApplicationStatus.pending, (state) => {
-      state.status = "loading";
+        state.status = "loading";
       })
-    .addCase(checkApplicationStatus.fulfilled, (state, action) => {
-      state.status = "succeeded";
-      state.checkApplicationStatus = action.payload.status;
-     })
-    .addCase(checkApplicationStatus.rejected, (state, action) => {
-      state.status = "failed";
-      state.error = (action.payload as any)?.message ?? "Failed to check application status";
-    })
+      .addCase(checkApplicationStatus.fulfilled, (state, action) => {
+        state.status = "succeeded";
+        state.checkApplicationStatus = action.payload.status;
+      })
+      .addCase(checkApplicationStatus.rejected, (state, action) => {
+        state.status = "failed";
+        state.error = (action.payload as any)?.message ?? "Failed to check application status";
+      })
       .addCase(getsearch.pending, (state, action) => {
         state.searchstats = "loading";
       })
@@ -1263,7 +1276,7 @@ const profile = createSlice({
       .addCase(getsearch.rejected, (state, action) => {
         state.searchstats = "failed";
         state.testmsg = action.error?.message ?? "Check internet connection";
-      }); 
+      });
   },
 });
 
