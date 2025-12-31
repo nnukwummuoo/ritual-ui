@@ -1262,7 +1262,7 @@ export default function Creatorbyid() {
               <div className="text-center">
                 <h1 className="text-xl font-bold text-white mb-2 flex items-center justify-center gap-1">
                   {getStatus(String(creator?.hosttype))} {creator.name.split(" ")[0]}
-                 
+
                 </h1>
                 <p className="text-gray-300 text-1xl flex items-center justify-center gap-1">
                   {creator.username}
@@ -1420,9 +1420,9 @@ export default function Creatorbyid() {
                 <div className="space-y-4">
                   <div className="flex justify-between items-center p-3 bg-gray-700 rounded-lg">
                     <span className="text-gray-300 font-medium">👤 Name</span>
-                    <span className="text-white font-semibold">{creator.name}  {creator.verify && (
-                    <BadgeCheck size={17} className="text-black inline flex-shrink-0" fill="white" />
-                  )}</span>
+                    <span className="text-white font-semibold text-sm sm:text-base">{creator.name}  {creator.verify && (
+                      <BadgeCheck size={17} className="text-black inline flex-shrink-0" fill="white" />
+                    )}</span>
                   </div>
 
                   <div className="flex justify-between items-center p-3 bg-gray-700 rounded-lg">
@@ -1571,29 +1571,31 @@ export default function Creatorbyid() {
               </div>
             )}
 
-            {/* Reviews Section */}
-            <div className="bg-gray-800 rounded-2xl p-6 shadow-2xl">
-              <button
-                className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg"
-                onClick={(e) => {
-                  if (!userid) {
-                    toast.info("login to access this operation", {
-                      autoClose: 2000,
-                    });
-                    return;
-                  }
-                  Check_review();
-                }}
-              >
-                <div className="flex items-center justify-center gap-2">
-                  <span>⭐</span>
-                  <span>View Reviews</span>
-                  <span className="bg-white text-blue-600 px-2 py-1 rounded-full text-sm font-bold">
-                    {totalRatings}
-                  </span>
-                </div>
-              </button>
-            </div>
+            {/* Reviews Section - Only show for non-call requests */}
+            {creator.hosttype !== "Fan call" && creator.hosttype !== "Fan Call" && (
+              <div className="bg-gray-800 rounded-2xl p-6 shadow-2xl">
+                <button
+                  className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg"
+                  onClick={(e) => {
+                    if (!userid) {
+                      toast.info("login to access this operation", {
+                        autoClose: 2000,
+                      });
+                      return;
+                    }
+                    Check_review();
+                  }}
+                >
+                  <div className="flex items-center justify-center gap-2">
+                    <span>⭐</span>
+                    <span>View Reviews</span>
+                    <span className="bg-white text-blue-600 px-2 py-1 rounded-full text-sm font-bold">
+                      {totalRatings}
+                    </span>
+                  </div>
+                </button>
+              </div>
+            )}
 
             {review_click && (
               <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">

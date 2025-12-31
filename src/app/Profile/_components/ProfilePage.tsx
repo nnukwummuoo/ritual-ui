@@ -3009,7 +3009,7 @@ export const Profile = () => {
 
                 <div className="absolute bottom-16 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-75 text-white text-xs px-2 py-1 rounded">
 
-               
+
 
                 </div>
 
@@ -6064,7 +6064,7 @@ export const Profile = () => {
 
                     <div className="flex flex-col items-start pl-7 gap-2 w-2/3">
 
-                      <p className="pt-2 text-xl font-bold text-slate-200">
+                      <p className="pt-2 text-base sm:text-xl font-bold text-slate-200">
 
                         {firstname} {lastname}
 

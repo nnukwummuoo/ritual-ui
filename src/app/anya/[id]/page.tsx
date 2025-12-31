@@ -47,6 +47,7 @@ export default function StoryViewPage() {
     const [story, setStory] = useState<Story | null>(null);
     const [loading, setLoading] = useState(true);
     const [currentPanelIndex, setCurrentPanelIndex] = useState(0);
+    const [localLikeCount, setLocalLikeCount] = useState(0);
     const containerRef = useRef<HTMLDivElement>(null);
 
     // Story Context for likes and comments
@@ -118,6 +119,8 @@ export default function StoryViewPage() {
             const res = await axios.get(`/api/proxy/api/ai-story/stories/${storyId}`);
             console.log('Story data:', res.data.story);
             setStory(res.data.story);
+            // Initialize local like count with the story's current likes
+            setLocalLikeCount(res.data.story?.likes || 0);
         } catch (error) {
             console.error('Failed to fetch story:', error);
         } finally {
@@ -149,6 +152,12 @@ export default function StoryViewPage() {
             console.warn('User not logged in');
             return;
         }
+
+        // Optimistic UI update
+        const isCurrentlyLiked = liked;
+        setLocalLikeCount(prev => isCurrentlyLiked ? prev - 1 : prev + 1);
+
+        // Call the actual API
         await toggleLike(storyId, userId);
     };
 
@@ -245,7 +254,7 @@ export default function StoryViewPage() {
                             <IoHeartOutline className="w-6 h-6" />
                         )}
                     </div>
-                    <span className="text-xs font-medium">{story.likes || 0}</span>
+                    <span className="text-xs font-medium">{localLikeCount}</span>
                 </motion.button>
 
                 {/* Comment Button */}
@@ -417,7 +426,7 @@ export default function StoryViewPage() {
                             <div className="flex items-center justify-center gap-8 text-gray-300 mb-8">
                                 <div className="flex items-center gap-2">
                                     <IoHeart className="w-5 h-5 text-red-500" />
-                                    <span className="text-lg">{story.likes || 0} Likes</span>
+                                    <span className="text-lg">{localLikeCount} Likes</span>
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <IoChatbubbleOutline className="w-5 h-5" />

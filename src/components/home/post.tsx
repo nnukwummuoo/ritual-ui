@@ -27,6 +27,7 @@ import { generateInitials } from "@/utils/generateInitials";
 import { enrichCommentsWithUserInfo } from "@/utils/enrichComments";
 import { usePerformanceMonitor } from "@/hooks/usePerformanceMonitor";
 import { useContentFilter } from "@/lib/context/content-filter-context";
+import RitualsCard from "./RitualsCard";
 
 
 // Utility function to format relative time
@@ -660,23 +661,27 @@ export default function PostsCard() {
           {/* Lazy Loaded Posts - Only remaining posts, not including first post */}
           <div className="flex flex-col gap-6">
             {remainingPosts.map((post, index) => (
-              <LazyPost
-                key={post?.postid || post?.id || post?._id || index}
-                post={post}
-                ui={ui}
-                setUi={setUi}
-                dispatch={dispatch}
-                loggedInUserId={loggedInUserId || ""}
-                selfId={selfId}
-                token={token || ""}
-                followingList={followingList}
-                vipStatus={vipStatus}
-                firstname={firstname}
-                lastname={lastname}
-                username={username}
-                photolink={photolink}
-                isFirstPost={false}
-              />
+              <React.Fragment key={post?.postid || post?.id || post?._id || index}>
+                <LazyPost
+                  key={post?.postid || post?.id || post?._id || index}
+                  post={post}
+                  ui={ui}
+                  setUi={setUi}
+                  dispatch={dispatch}
+                  loggedInUserId={loggedInUserId || ""}
+                  selfId={selfId}
+                  token={token || ""}
+                  followingList={followingList}
+                  vipStatus={vipStatus}
+                  firstname={firstname}
+                  lastname={lastname}
+                  username={username}
+                  photolink={photolink}
+                  isFirstPost={false}
+                />
+                {/* Inject Rituals card after every 2nd post */}
+                {(index + 1) % 2 === 0 && <RitualsCard />}
+              </React.Fragment>
             ))}
           </div>
         </>

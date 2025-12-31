@@ -7,12 +7,14 @@ const changelog = [
     date: "July 2025",
     intro: "Welcome to Mmeko, where real fans connect with real creators safely, privately, and globally. We're always improving to make your experience smoother, smarter, and more rewarding. Here's what's new and working right now:",
     updates: [
+      { type: "current", text: "🔮 Rituals - Once a day, a single visual story appears — designed to be felt, not rushed. Each Ritual lives for a limited time. Some are unsettling. Some are calm. They exist to slow the feed and reset attention." },
       { type: "current", text: "Fan Call - Connect 1-on-1 via secure video call. Creators earn per minute, fans get real-time connection." },
       { type: "current", text: "Fan Meet - Meet verified creators in person with transport fare paid in advance. Safe, secure, and scheduled." },
       { type: "current", text: "Fan Date - Set up fun, exclusive dates. Creators set their availability, fans request and cover all cost, everyone wins." },
       { type: "current", text: "VIP Accounts - Premium fan features like a lion badge, priority support, and extra attention from creators." },
       { type: "current", text: "Messaging - Private in-app chat lets fans and creators talk freely — no charges." },
       { type: "current", text: "Gold Wallet - Use gold coins to pay for anything: calls, dates. Fans buy gold, creators earn it." },
+      { type: "current", text: "✨ Exclusive Content - Creators can share rare moments behind a veil. Fans unlock these exclusive drops with gold. Access to the unseen, intimate, and lasting content that honors truest supporters." },
     ],
   },
   {
@@ -70,7 +72,7 @@ export default function ChangelogPage() {
           {/* Header with animation */}
           <div className="mb-10 text-center transform transition-all duration-1000 translate-y-0 opacity-100">
             <h1 className="mb-4 text-3xl sm:text-5xl font-bold bg-gradient-to-r from-white via-purple-200 to-cyan-200 bg-clip-text text-transparent">
-               What&apos;s New on Mmeko?
+              What&apos;s New on Mmeko?
             </h1>
             <div className="w-24 h-1 bg-gradient-to-r from-purple-500 to-cyan-500 mx-auto rounded-full animate-pulse"></div>
           </div>
@@ -80,19 +82,17 @@ export default function ChangelogPage() {
             {changelog.map((log, logIndex) => (
               <div
                 key={log.version}
-                className={`transform transition-all duration-1000 ${
-                  visibleItems.has(logIndex)
+                className={`transform transition-all duration-1000 ${visibleItems.has(logIndex)
                     ? "translate-y-0 opacity-100"
                     : "translate-y-8 opacity-0"
-                }`}
+                  }`}
                 style={{ transitionDelay: `${logIndex * 200}ms` }}
               >
                 <div
-                  className={`group relative p-6 rounded-2xl backdrop-blur-xl border transition-all duration-500  ${
-                    hoveredCard === logIndex
+                  className={`group relative p-6 rounded-2xl backdrop-blur-xl border transition-all duration-500  ${hoveredCard === logIndex
                       ? "bg-white/10 border-white/30 shadow-2xl shadow-purple-500/20"
                       : "bg-white/5 border-white/10 shadow-xl"
-                  }`}
+                    }`}
                   onMouseEnter={() => setHoveredCard(logIndex)}
                   onMouseLeave={() => setHoveredCard(null)}
                 >
@@ -124,24 +124,19 @@ export default function ChangelogPage() {
                     {log.updates.map((update, updateIndex) => (
                       <div
                         key={updateIndex}
-                        className={`group/item flex flex-col items-start gap-4 p-3 md:p-4 rounded-xl border transition-all duration-300 hover:transform hover:translate-x-2 md:flex-row md:items-start ${
-                          typeConfig[update.type as keyof typeof typeConfig].bg
-                        } border-white/10 hover:${
-                          typeConfig[update.type as keyof typeof typeConfig].glow
-                        } hover:shadow-lg`}
+                        className={`group/item flex flex-col items-start gap-4 p-3 md:p-4 rounded-xl border transition-all duration-300 hover:transform hover:translate-x-2 md:flex-row md:items-start ${typeConfig[update.type as keyof typeof typeConfig].bg
+                          } border-white/10 hover:${typeConfig[update.type as keyof typeof typeConfig].glow
+                          } hover:shadow-lg`}
                         style={{
-                          animationDelay: `${
-                            logIndex * 200 + updateIndex * 100
-                          }ms`,
+                          animationDelay: `${logIndex * 200 + updateIndex * 100
+                            }ms`,
                         }}
                       >
                         {/* Type badge with icon */}
                         <div
-                          className={`flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-medium ${
-                            typeConfig[update.type as keyof typeof typeConfig].bg
-                          } ${
-                            typeConfig[update.type as keyof typeof typeConfig].text
-                          } border-current/30 group-hover/item:scale-110 transition-transform duration-300`}
+                          className={`flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-medium ${typeConfig[update.type as keyof typeof typeConfig].bg
+                            } ${typeConfig[update.type as keyof typeof typeConfig].text
+                            } border-current/30 group-hover/item:scale-110 transition-transform duration-300`}
                         >
                           <span>{typeConfig[update.type as keyof typeof typeConfig].icon}</span>
                           <span>{update.type === 'current' ? 'LIVE' : 'SOON'}</span>
@@ -175,7 +170,7 @@ export default function ChangelogPage() {
               </p>
               {/* <p className="text-purple-400 font-semibold mt-2">– Team Mmeko</p> */}
             </div>
-            
+
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-gray-400 text-sm">
               <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
               <span>Building the future of fan connections</span>

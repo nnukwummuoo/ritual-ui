@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { FaAngleLeft, FaRocket, FaStar, FaBug, FaCog, FaHeart, FaComments, FaShield } from "react-icons/fa";
+import { FaAngleLeft, FaRocket, FaStar, FaBug, FaCog, FaHeart, FaComments, FaMoon, FaGem } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 
 const WhatsNewPage: React.FC = () => {
@@ -16,6 +16,15 @@ const WhatsNewPage: React.FC = () => {
       status: "current",
       features: [
         {
+          icon: <FaMoon className="w-5 h-5 text-purple-400" />,
+          title: "🔮 Introducing Rituals",
+          description: "Once a day, a single visual story appears — told in quiet panels, designed to be felt, not rushed. No creators. No noise. Just a moment. Each Ritual lives for a limited time. Miss it, and it's gone. Some are unsettling. Some are calm. Some stay with you longer than you expect. Rituals aren't meant to replace creators — they exist to slow the feed, reset attention, and give meaning to the scroll. Come back daily. Or don't. The Ritual will move on either way.",
+          type: "feature",
+          hasButton: true,
+          buttonText: "Step into today's Ritual",
+          buttonLink: "/anya"
+        },
+        {
           icon: <FaComments className="w-5 h-5 text-blue-400" />,
           title: "Enhanced Messaging System",
           description: "Real-time messaging with improved UI, message reactions, and better notification system.",
@@ -28,7 +37,7 @@ const WhatsNewPage: React.FC = () => {
           type: "feature"
         },
         {
-          icon: <FaShield className="w-5 h-5 text-green-400" />,
+          icon: <FaCog className="w-5 h-5 text-green-400" />,
           title: "Enhanced Security",
           description: "Improved authentication system with better password requirements and account protection.",
           type: "security"
@@ -38,6 +47,12 @@ const WhatsNewPage: React.FC = () => {
           title: "Bug Fixes",
           description: "Fixed issues with message delivery, profile loading, and following functionality.",
           type: "fix"
+        },
+        {
+          icon: <FaGem className="w-5 h-5 text-amber-400" />,
+          title: "✨ Exclusive Content Arrives",
+          description: "Creators now have the power to share moments that live behind a veil. Not every post is for everyone — some are reserved, rare, and meant only for those who choose to step closer. Fans can unlock these exclusive drops with gold. It's not about paywalls. It's about access. Access to the unseen. Access to the intimate. Access to what lasts. Exclusive Content isn't here to replace the feed. It's here to deepen it — to give creators a way to honor their truest supporters, and to give fans a way to hold something rare. Step in when you're ready. Or wait. The content will remain, waiting for those who choose to value it.",
+          type: "feature"
         }
       ]
     },
@@ -144,11 +159,10 @@ const WhatsNewPage: React.FC = () => {
                   <button
                     key={version.id}
                     onClick={() => setSelectedVersion(version.id)}
-                    className={`w-full text-left p-3 rounded-lg transition-colors ${
-                      selectedVersion === version.id
-                        ? "bg-blue-600 text-white"
-                        : "bg-gray-700 hover:bg-gray-600"
-                    }`}
+                    className={`w-full text-left p-3 rounded-lg transition-colors ${selectedVersion === version.id
+                      ? "bg-blue-600 text-white"
+                      : "bg-gray-700 hover:bg-gray-600"
+                      }`}
                   >
                     <div className="flex items-center justify-between">
                       <span className="font-medium">{version.version}</span>
@@ -198,6 +212,14 @@ const WhatsNewPage: React.FC = () => {
                           </span>
                         </div>
                         <p className="text-gray-300 leading-relaxed">{feature.description}</p>
+                        {(feature as any).hasButton && (feature as any).buttonText && (feature as any).buttonLink && (
+                          <button
+                            onClick={() => router.push((feature as any).buttonLink)}
+                            className="mt-4 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-all transform hover:scale-105 shadow-lg"
+                          >
+                            {(feature as any).buttonText}
+                          </button>
+                        )}
                       </div>
                     </div>
                   </div>
