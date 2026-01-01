@@ -23,7 +23,7 @@ import { BadgeCheck } from "lucide-react";
 import MuxPlayer from '@mux/mux-player-react';
 
 // Video component for lazy-loaded videos - moved outside to prevent re-creation
-const VideoComponent = ({ post, src, pathUrlPrimary, queryUrlFallback, pathUrlFallback, showControls, setShowControls, controlsTimerRef, isVideoLoaded, setIsVideoLoaded, posterSource }: {
+const VideoComponent = ({ post, src, pathUrlPrimary, queryUrlFallback, pathUrlFallback, showControls, setShowControls, controlsTimerRef, isVideoLoaded, setIsVideoLoaded, posterSource, muxPlaybackFailed, setMuxPlaybackFailed }: {
   post: any;
   src: string;
   pathUrlPrimary?: string;
@@ -35,6 +35,8 @@ const VideoComponent = ({ post, src, pathUrlPrimary, queryUrlFallback, pathUrlFa
   isVideoLoaded: boolean;
   setIsVideoLoaded: (loaded: boolean) => void;
   posterSource?: string;
+  muxPlaybackFailed: boolean;
+  setMuxPlaybackFailed: (failed: boolean) => void;
 }) => {
   const { videoRef, isPlaying, isVisible: videoVisible, autoPlayBlocked, hasUserInteracted, togglePlay, toggleMute, isMuted } = useVideoAutoPlay({
     autoPlay: true,
@@ -45,7 +47,8 @@ const VideoComponent = ({ post, src, pathUrlPrimary, queryUrlFallback, pathUrlFa
 
   const hasMuxPlaybackId = !!post?.playbackId;
 
-  if (hasMuxPlaybackId) {
+  // Only use MuxPlayer if we have a playbackId AND it hasn't failed
+  if (hasMuxPlaybackId && !muxPlaybackFailed) {
     return (
       <div className="relative w-full h-[400px] rounded overflow-hidden shadow-lg bg-black">
         <MuxPlayer
@@ -58,6 +61,12 @@ const VideoComponent = ({ post, src, pathUrlPrimary, queryUrlFallback, pathUrlFa
           poster={posterSource}
           style={{ height: '100%', width: '100%' }}
           className="w-full h-full object-cover"
+          onError={(e: any) => {
+            // Check if it's a 412 error (asset not ready) or other playback failure
+            console.warn('Mux playback error in LazyPost:', e);
+            // Fallback to regular video player when Mux fails
+            setMuxPlaybackFailed(true);
+          }}
         />
       </div>
     );
@@ -401,6 +410,7 @@ const LazyPost: React.FC<LazyPostProps> = ({
 
   // State and ref for auto-hiding video controls
   const [showControls, setShowControls] = useState(false);
+  const [muxPlaybackFailed, setMuxPlaybackFailed] = useState(false);
   const controlsTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Intersection Observer for aggressive preloading
@@ -753,6 +763,8 @@ const LazyPost: React.FC<LazyPostProps> = ({
             isVideoLoaded={isVideoLoaded}
             setIsVideoLoaded={setIsVideoLoaded}
             posterSource={posterSource}
+            muxPlaybackFailed={muxPlaybackFailed}
+            setMuxPlaybackFailed={setMuxPlaybackFailed}
           />
         )
       }

@@ -33,14 +33,20 @@ const RitualsCard: React.FC = () => {
     const fetchStories = async () => {
         try {
             setLoading(true);
+            console.log('[RitualsCard] Fetching stories...');
             const res = await axios.get('/api/proxy/api/ai-story/stories');
+            console.log('[RitualsCard] Response:', res);
+            console.log('[RitualsCard] Response data:', res.data);
             const fetchedStories = res.data.stories || [];
+            console.log('[RitualsCard] Fetched stories count:', fetchedStories.length);
 
             // Get latest 5 stories
             const latestStories = fetchedStories.slice(0, 5);
             setStories(latestStories);
+            console.log('[RitualsCard] Set stories count:', latestStories.length);
         } catch (error) {
-            console.error('Failed to fetch Rituals stories:', error);
+            console.error('[RitualsCard] Failed to fetch Rituals stories:', error);
+            console.error('[RitualsCard] Error details:', error.response || error.message);
             setStories([]);
         } finally {
             setLoading(false);
@@ -85,9 +91,22 @@ const RitualsCard: React.FC = () => {
         );
     }
 
-    // Don't render anything if no stories
+    // Show message if no stories (instead of returning null)
     if (stories.length === 0) {
-        return null;
+        return (
+            <div className="bg-gradient-to-br from-purple-900/30 via-gray-800/50 to-blue-900/30 rounded-lg p-6 border border-purple-500/20">
+                <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-white font-medium">Rituals</h3>
+                    <button className="text-purple-400 text-sm hover:underline" onClick={() => router.push('/anya')}>
+                        See all
+                    </button>
+                </div>
+                <div className="text-center py-8">
+                    <p className="text-gray-300 text-sm mb-2">🌙 New Rituals coming soon</p>
+                    <p className="text-gray-500 text-xs">Check back later for today's story</p>
+                </div>
+            </div>
+        );
     }
 
     return (

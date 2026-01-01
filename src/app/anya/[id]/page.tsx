@@ -12,6 +12,7 @@ import { useSelector } from 'react-redux';
 import type { RootState } from '@/store/store';
 import { useAnyaMusic } from '@/hooks/useAnyaMusic';
 import { useAnyaPageTracking } from '@/hooks/useAnyaPageTracking';
+import { useAnyaSessionTracking } from '@/hooks/useAnyaSessionTracking';
 import CommentModal from '@/components/CommentModal';
 
 interface Panel {
@@ -58,6 +59,9 @@ export default function StoryViewPage() {
 
     // Track page visit
     useAnyaPageTracking('story', storyId);
+
+    // Track session duration
+    useAnyaSessionTracking('story', storyId);
 
     // Get user ID from Redux
     const reduxUserId = useSelector((state: RootState) => state.register.userID);
@@ -128,16 +132,48 @@ export default function StoryViewPage() {
         }
     };
 
-    // Detect which panel is in view
+    // Detect which panel is in view and handle scroll-up from end page
     useEffect(() => {
-        const handleScroll = () => {
-            if (!containerRef.current) return;
+        let lastScrollTop = 0;
+        let isScrollingToTop = false;
 
-            const scrollPosition = containerRef.current.scrollTop;
+        const handleScroll = () => {
+            if (!containerRef.current || !story || isScrollingToTop) return;
+
+            const container = containerRef.current;
+            const scrollPosition = container.scrollTop;
             const windowHeight = window.innerHeight;
             const panelIndex = Math.round(scrollPosition / windowHeight);
+            const maxScrollTop = container.scrollHeight - container.clientHeight;
 
             setCurrentPanelIndex(panelIndex);
+
+            // Check if we're at or very near the end page
+            const distanceFromBottom = maxScrollTop - scrollPosition;
+            const isAtEndPage = distanceFromBottom < windowHeight * 0.5; // Within half screen of bottom
+            const isScrollingUp = scrollPosition < lastScrollTop;
+
+            // If at end page and user scrolls up, go back to first panel
+            if (isAtEndPage && isScrollingUp && scrollPosition > windowHeight * story.panels.length) {
+                isScrollingToTop = true;
+
+                // Temporarily disable snap for smooth scroll
+                container.style.scrollSnapType = 'none';
+
+                container.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+
+                // Re-enable snap after scroll completes
+                setTimeout(() => {
+                    container.style.scrollSnapType = 'y mandatory';
+                    isScrollingToTop = false;
+                    lastScrollTop = 0;
+                }, 1000);
+            } else {
+                lastScrollTop = scrollPosition;
+            }
         };
 
         const container = containerRef.current;
@@ -145,7 +181,7 @@ export default function StoryViewPage() {
             container.addEventListener('scroll', handleScroll);
             return () => container.removeEventListener('scroll', handleScroll);
         }
-    }, []);
+    }, [story]);
 
     const handleLike = async () => {
         if (!userId) {
@@ -210,13 +246,13 @@ export default function StoryViewPage() {
     }
 
     return (
-        <div className="h-screen bg-black text-white overflow-hidden relative">
+        <div className="h-screen bg-black text-white overflow-hidden overflow-x-hidden relative">
             {/* Fixed Header */}
             <div className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-b from-black/80 to-transparent backdrop-blur-sm">
                 <div className="max-w-7xl mx-auto px-4 py-4">
                     <div className="flex items-center justify-between">
                         <button
-                            onClick={() => router.push('/anya')}
+                            onClick={() => router.push('/anya?view=grid')}
                             className="flex items-center justify-center"
                             aria-label="Back to Rituals"
                         >
@@ -285,7 +321,7 @@ export default function StoryViewPage() {
             {/* Scrollable Container - Like Reels */}
             <div
                 ref={containerRef}
-                className="h-screen overflow-y-scroll snap-y snap-mandatory scroll-smooth"
+                className="h-screen overflow-y-scroll overflow-x-hidden snap-y snap-mandatory scroll-smooth"
                 style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
             >
                 {story.panels.map((panel, index) => (
@@ -299,7 +335,7 @@ export default function StoryViewPage() {
                                 <img
                                     src={getImageSource(panel.imageUrl, 'stories').src}
                                     alt={`Scene ${panel.panel_number}`}
-                                    className="w-full h-full min-w-full min-h-full object-cover"
+                                    className="w-full h-full object-cover"
                                     onError={(e) => {
                                         console.error('Image failed to load:', panel.imageUrl);
                                         e.currentTarget.src = 'https://images.unsplash.com/photo-1469122312224-c5846569af2c?q=80&w=2000&auto=format&fit=crop';
@@ -351,7 +387,7 @@ export default function StoryViewPage() {
                                     repeatType: "reverse",
                                     duration: 1.5
                                 }}
-                                className="absolute bottom-12 left-2.3/5 -translate-x-1/2 z-20"
+                                className="absolute bottom-12 left-2/5 -translate-x-1/2 z-20"
                             >
                                 <div className="flex flex-col items-center gap-1 text-white/50">
                                     <span className="text-xs font-medium">Scroll for more</span>
@@ -372,7 +408,7 @@ export default function StoryViewPage() {
                                 className="absolute bottom-16 left-1/2 -translate-x-1/2 z-20"
                             >
                                 <button
-                                    onClick={() => router.push('/anya')}
+                                    onClick={() => router.push('/anya?view=grid')}
                                     className="px-6 py-2.5 bg-white/10 backdrop-blur-md border border-white/20 rounded-full text-sm font-medium hover:bg-white/20 transition-all"
                                 >
                                     Explore More Rituals
@@ -439,7 +475,7 @@ export default function StoryViewPage() {
                                 <motion.button
                                     whileHover={{ scale: 1.05 }}
                                     whileTap={{ scale: 0.95 }}
-                                    onClick={() => router.push('/anya')}
+                                    onClick={() => router.push('/anya?view=grid')}
                                     className="px-6 py-2 sm:px-8 sm:py-3 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full text-sm sm:text-base font-semibold hover:from-purple-700 hover:to-pink-700 transition-all"
                                 >
                                     Explore More Rituals

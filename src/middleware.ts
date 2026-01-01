@@ -33,6 +33,9 @@ const prohibitedRoutes = [
 // Public route prefixes (routes that start with these are public)
 const publicRoutePrefixes = [
   '/auth',      // All auth routes
+  '/api/proxy', // All proxy API routes (including stories for non-logged-in users)
+  '/api/image-proxy', // Image proxy routes
+  '/api/simple-image-proxy', // Simple image proxy routes
 ];
 
 // Admin routes that require admin privileges
@@ -45,7 +48,7 @@ const PUBLIC_FILE = /\.(.*)$/;
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  
+
   // Skip middleware for static files
   if (PUBLIC_FILE.test(pathname)) {
     const res = NextResponse.next();
@@ -63,17 +66,17 @@ export async function middleware(request: NextRequest) {
   }
 
   // Check route types
-  const isPublicRoute = publicRoutes.includes(pathname) || 
+  const isPublicRoute = publicRoutes.includes(pathname) ||
     publicRoutePrefixes.some(prefix => pathname.startsWith(prefix));
   const isProhibitedRoute = prohibitedRoutes.some(route => pathname === route);
   const isAdminRoute = adminRoutes.some(route => pathname.startsWith(route));
-  
+
   // Get authentication token
   const authToken = request.cookies.get("session")?.value || request.cookies.get("auth_token")?.value;
-  
+
   // Handle session refresh
   const refreshed = await sessionMng(request);
-  
+
   // Helper function to create response with session cookie
   const createResponse = (url: string, redirect = true) => {
     const res = redirect ? NextResponse.redirect(new URL(url, request.url)) : NextResponse.next();
