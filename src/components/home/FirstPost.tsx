@@ -191,6 +191,7 @@ const FirstPost: React.FC<FirstPostProps> = ({
   const [isVideoLoaded, setIsVideoLoaded] = React.useState(false);
   const [isOptimizing, setIsOptimizing] = React.useState(false);
   const [localPlaybackId, setLocalPlaybackId] = React.useState<string>("");
+  const [muxPlaybackFailed, setMuxPlaybackFailed] = React.useState(false);
   const controlsTimerRef = React.useRef<NodeJS.Timeout | null>(null);
 
   // Video auto-play hook with post ID for global management
@@ -401,6 +402,28 @@ const FirstPost: React.FC<FirstPostProps> = ({
   );
   const uiIsFollowing = uiState.isFollowing ?? isFollowing;
 
+  // Automatically optimize video when post loads (if it's the user's own video without optimization)
+  React.useEffect(() => {
+    const isVideoPost = postType === "video";
+    const hasNoPlaybackId = !post?.playbackId && !localPlaybackId;
+    const hasVideoSource = !!src;
+
+    // Only auto-optimize if:
+    // 1. It's a video post
+    // 2. It doesn't have a playbackId yet
+    // 3. It's the user's own post
+    // 4. We're not already optimizing
+    // 5. There's a valid video source
+    if (isVideoPost && hasNoPlaybackId && isSelf && !isOptimizing && hasVideoSource) {
+      // Delay optimization slightly to avoid blocking initial render
+      const optimizeTimer = setTimeout(() => {
+        handleOptimizeVideo();
+      }, 1000);
+
+      return () => clearTimeout(optimizeTimer);
+    }
+  }, [postType, post?.playbackId, localPlaybackId, isSelf, src, isOptimizing]);
+
   return (
     <div className="mx-auto max-w-[30rem] w-full bg-gray-800 rounded-md p-3">
       <div className="flex items-center justify-between mb-3">
@@ -556,7 +579,7 @@ const FirstPost: React.FC<FirstPostProps> = ({
       )}
 
       {postType == "video" && (
-        (post?.playbackId || localPlaybackId) ? (
+        (post?.playbackId || localPlaybackId) && !muxPlaybackFailed ? (
           <div className="relative w-full h-[400px] rounded overflow-hidden shadow-lg bg-black">
             <MuxPlayer
               playbackId={post.playbackId || localPlaybackId}
@@ -568,6 +591,13 @@ const FirstPost: React.FC<FirstPostProps> = ({
               poster={posterSource}
               style={{ height: '100%', width: '100%' }}
               className="w-full h-full object-cover"
+              onError={(e: any) => {
+                // Check if it's a 412 error (asset not ready) or other playback failure
+                console.warn('Mux playback error:', e);
+                console.log('Mux fallback triggered. Original src available:', !!src, 'src:', src);
+                // Fallback to regular video player when Mux fails
+                setMuxPlaybackFailed(true);
+              }}
             />
           </div>
         ) : (
@@ -721,20 +751,6 @@ const FirstPost: React.FC<FirstPostProps> = ({
                   </div>
                 )}
               </div>
-
-              {/* Optimization Trigger for Owner/Admin */}
-              {isSelf && !localPlaybackId && !post?.playbackId && (
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleOptimizeVideo();
-                  }}
-                  className="absolute top-2 right-2 bg-yellow-500 hover:bg-yellow-600 text-black text-xs font-bold px-2 py-1 rounded shadow z-20 flex items-center gap-1"
-                  disabled={isOptimizing}
-                >
-                  {isOptimizing ? "⚡ Processing..." : "⚡ Optimize Video"}
-                </button>
-              )}
 
             </div>
           )))

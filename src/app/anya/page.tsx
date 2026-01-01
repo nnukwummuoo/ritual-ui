@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import axios from 'axios';
 import { motion } from 'framer-motion';
 import { IoSparkles, IoTrashOutline, IoHeartOutline, IoHeart, IoChatbubbleOutline, IoArrowBack, IoHome, IoShareSocialOutline } from 'react-icons/io5';
@@ -13,6 +13,7 @@ import type { RootState } from '@/store/store';
 import CommentModal from '@/components/CommentModal';
 import { useAnyaMusic } from '@/hooks/useAnyaMusic';
 import { useAnyaPageTracking } from '@/hooks/useAnyaPageTracking';
+import { useAnyaSessionTracking } from '@/hooks/useAnyaSessionTracking';
 
 interface Panel {
   panel_number: number;
@@ -41,11 +42,16 @@ interface Story {
 
 export default function AnyaPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [stories, setStories] = useState<Story[]>([]);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  const [viewMode, setViewMode] = useState<'story' | 'grid'>('story'); // Start with story view
+  const [viewMode, setViewMode] = useState<'story' | 'grid'>(() => {
+    // Initialize viewMode based on URL query parameter
+    const viewParam = searchParams.get('view');
+    return viewParam === 'grid' ? 'grid' : 'story';
+  });
   const [currentStoryIndex, setCurrentStoryIndex] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -62,6 +68,9 @@ export default function AnyaPage() {
 
   // Track page visit
   useAnyaPageTracking('main');
+
+  // Track session duration
+  useAnyaSessionTracking('main');
 
   // Get user ID from Redux store
   const reduxUserId = useSelector((state: RootState) => state.register.userID);
@@ -559,31 +568,12 @@ export default function AnyaPage() {
           <div className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-b from-black/80 to-transparent backdrop-blur-sm">
             <div className="max-w-7xl mx-auto px-4 py-4">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  {/* Back Button */}
-                  <button
-                    onClick={handleBackNavigation}
-                    className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center hover:bg-white/20 transition-all"
-                    aria-label="Go back"
-                  >
-                    <IoArrowBack className="w-5 h-5" />
-                  </button>
-
-                  <div>
-                    <h1 className="text-2xl md:text-4xl font-bold bg-gradient-to-r from-purple-400 via-pink-500 to-purple-600 bg-clip-text text-transparent">
-                      Rituals
-                    </h1>
-                  </div>
+                <div>
+                  <h1 className="text-2xl md:text-4xl font-bold bg-gradient-to-r from-purple-400 via-pink-500 to-purple-600 bg-clip-text text-transparent">
+                    Daily Rituals
+                  </h1>
+                  <p className="text-gray-400 text-sm md:text-base mt-1">Your Daily Dose of Clarity</p>
                 </div>
-
-                {/* Home Icon */}
-                <button
-                  onClick={() => router.push('/')}
-                  className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center hover:bg-white/20 transition-all"
-                  aria-label="Go to Home"
-                >
-                  <IoHome className="w-5 h-5" />
-                </button>
               </div>
             </div>
           </div>
@@ -671,6 +661,20 @@ export default function AnyaPage() {
                 </motion.div>
               ))}
             </div>
+          </div>
+
+          {/* Home Icon - Bottom Left */}
+          <div className="fixed left-4 bottom-4 z-50">
+            <motion.button
+              whileTap={{ scale: 0.9 }}
+              onClick={() => router.push('/')}
+              className="flex items-center justify-center"
+              aria-label="Go to Home"
+            >
+              <div className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center hover:bg-white/20 transition-all">
+                <IoHome className="w-6 h-6" />
+              </div>
+            </motion.button>
           </div>
         </>
       )}

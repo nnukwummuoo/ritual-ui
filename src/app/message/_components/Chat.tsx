@@ -1749,7 +1749,7 @@ export const Chat = () => {
                 {loading || (!chatusername && !chatfirstname) ? (
                   <div className="h-5 bg-gray-600 animate-pulse rounded w-24"></div>
                 ) : (
-                  <p className="font-bold text-white text-lg flex items-center gap-1">
+                  <p className="text-white text-lg flex items-center gap-1">
                     {chatfirstname ? `${chatfirstname}`.trim() : chatusername}
                     {chatVerified && <BadgeCheck size={17} fill="white" className="text-black" />}
                   </p>

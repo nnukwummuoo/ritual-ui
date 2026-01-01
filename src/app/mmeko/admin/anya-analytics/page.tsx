@@ -35,6 +35,19 @@ interface TopVisitedStory {
     visits: number;
 }
 
+interface UserSessionData {
+    userId: string | null;
+    visitorId: string;
+    firstname: string | null;
+    lastname: string | null;
+    username: string | null;
+    totalDuration: number;
+    sessionCount: number;
+    avgDuration: number;
+    formattedTotalDuration: string;
+    formattedAvgDuration: string;
+}
+
 interface AnalyticsData {
     selectedPeriod: string;
     summary: {
@@ -58,9 +71,22 @@ interface AnalyticsData {
     topVisitedStories: TopVisitedStory[];
 }
 
+interface SessionAnalyticsData {
+    summary: {
+        totalSessions: number;
+        totalDuration: number;
+        avgDuration: number;
+        formattedTotalDuration: string;
+        formattedAvgDuration: string;
+        uniqueUsers: number;
+    };
+    userSessions: UserSessionData[];
+}
+
 export default function AnyaAnalyticsPage() {
     const router = useRouter();
     const [data, setData] = useState<AnalyticsData | null>(null);
+    const [sessionData, setSessionData] = useState<SessionAnalyticsData | null>(null);
     const [selectedPeriod, setSelectedPeriod] = useState<string>('7days');
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
@@ -71,17 +97,29 @@ export default function AnyaAnalyticsPage() {
             setLoading(true);
             setError(null);
 
-            const response = await axios.get(
-                `${process.env.NEXT_PUBLIC_API}/api/ai-story/visit-analytics?period=${period}`
-            );
+            // Fetch both visit and session analytics
+            const [visitResponse, sessionResponse] = await Promise.all([
+                axios.get(
+                    `${process.env.NEXT_PUBLIC_API}/api/ai-story/visit-analytics?period=${period}`
+                ),
+                axios.get(
+                    `${process.env.NEXT_PUBLIC_API}/api/ai-story/session/analytics?period=${period}`
+                )
+            ]);
 
-            if (response.data.ok) {
-                setData(response.data.data);
+            if (visitResponse.data.ok) {
+                setData(visitResponse.data.data);
             } else {
-                throw new Error(response.data.message || 'Failed to fetch data');
+                throw new Error(visitResponse.data.message || 'Failed to fetch visit data');
+            }
+
+            if (sessionResponse.data.ok) {
+                setSessionData(sessionResponse.data.data);
+            } else {
+                console.warn('Failed to fetch session data:', sessionResponse.data.message);
             }
         } catch (err: unknown) {
-            console.error('Error fetching Anya visit analytics:', err);
+            console.error('Error fetching Anya analytics:', err);
             const errorMessage = (err as { response?: { data?: { message?: string } } })?.response?.data?.message || (err as Error)?.message || 'An error occurred';
             setError(errorMessage);
         } finally {
@@ -394,6 +432,114 @@ export default function AnyaAnalyticsPage() {
                             </tbody>
                         </table>
                     </div>
+                </div>
+            )}
+
+            {/* User Session Duration Analytics */}
+            {sessionData && (
+                <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
+                    <h2 className="text-xl font-bold text-white mb-6">User Session Duration</h2>
+
+                    {/* Session Summary Cards */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                        <div className="bg-gradient-to-br from-indigo-600 to-indigo-800 rounded-lg p-5 border border-indigo-700">
+                            <div className="text-sm text-indigo-200 mb-1">Total Time Spent</div>
+                            <div className="text-2xl font-bold text-white">
+                                {sessionData.summary.formattedTotalDuration}
+                            </div>
+                            <div className="text-xs text-indigo-200 mt-2">
+                                Across {sessionData.summary.totalSessions} sessions
+                            </div>
+                        </div>
+
+                        <div className="bg-gradient-to-br from-teal-600 to-teal-800 rounded-lg p-5 border border-teal-700">
+                            <div className="text-sm text-teal-200 mb-1">Average Session</div>
+                            <div className="text-2xl font-bold text-white">
+                                {sessionData.summary.formattedAvgDuration}
+                            </div>
+                            <div className="text-xs text-teal-200 mt-2">
+                                Per session average
+                            </div>
+                        </div>
+
+                        <div className="bg-gradient-to-br from-amber-600 to-amber-800 rounded-lg p-5 border border-amber-700">
+                            <div className="text-sm text-amber-200 mb-1">Active Users</div>
+                            <div className="text-2xl font-bold text-white">
+                                {sessionData.summary.uniqueUsers}
+                            </div>
+                            <div className="text-xs text-amber-200 mt-2">
+                                Unique visitors/users
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Top Users by Time Spent */}
+                    {sessionData.userSessions && sessionData.userSessions.length > 0 && (
+                        <div className="overflow-x-auto">
+                            <h3 className="text-lg font-semibold text-white mb-3">Most Engaged Users</h3>
+                            <table className="w-full">
+                                <thead>
+                                    <tr className="border-b border-gray-700">
+                                        <th className="text-left py-3 px-4 text-sm font-semibold text-gray-300">Rank</th>
+                                        <th className="text-left py-3 px-4 text-sm font-semibold text-gray-300">User</th>
+                                        <th className="text-right py-3 px-4 text-sm font-semibold text-gray-300">Total Time</th>
+                                        <th className="text-right py-3 px-4 text-sm font-semibold text-gray-300">Sessions</th>
+                                        <th className="text-right py-3 px-4 text-sm font-semibold text-gray-300">Avg Time/Session</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {sessionData.userSessions.slice(0, 20).map((user, index) => (
+                                        <tr key={user.visitorId} className="border-b border-gray-700 hover:bg-gray-750 transition-colors">
+                                            <td className="py-4 px-4">
+                                                <div className="flex items-center">
+                                                    {index < 3 && (
+                                                        <span className="text-yellow-400 mr-2">
+                                                            {index === 0 ? '🥇' : index === 1 ? '🥈' : '🥉'}
+                                                        </span>
+                                                    )}
+                                                    <span className="text-gray-300 font-medium">#{index + 1}</span>
+                                                </div>
+                                            </td>
+                                            <td className="py-4 px-4">
+                                                {user.userId ? (
+                                                    <div>
+                                                        <div className="text-white font-medium text-base">
+                                                            {user.firstname} {user.lastname}
+                                                        </div>
+                                                        <div className="text-gray-400 text-sm">
+                                                            {user.username}
+                                                        </div>
+                                                    </div>
+                                                ) : (
+                                                    <div>
+                                                        <div className="text-gray-400 text-sm">
+                                                            {user.visitorId.substring(0, 20)}...
+                                                        </div>
+                                                        <span className="text-xs text-gray-500">Anonymous</span>
+                                                    </div>
+                                                )}
+                                            </td>
+                                            <td className="py-4 px-4 text-right">
+                                                <span className="text-indigo-400 font-bold text-base">
+                                                    {user.formattedTotalDuration}
+                                                </span>
+                                            </td>
+                                            <td className="py-4 px-4 text-right">
+                                                <span className="text-teal-400 font-medium">
+                                                    {user.sessionCount}
+                                                </span>
+                                            </td>
+                                            <td className="py-4 px-4 text-right">
+                                                <span className="text-amber-400 font-medium">
+                                                    {user.formattedAvgDuration}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
                 </div>
             )}
         </div>
