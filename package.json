@@ -14,8 +14,6 @@
     "@ffmpeg/ffmpeg": "^0.12.15",
     "@ffmpeg/util": "^0.12.2",
     "@fingerprintjs/fingerprintjs": "^5.0.1",
-    "@mux/mux-node": "^12.8.1",
-    "@mux/mux-player-react": "^3.10.1",
     "@reduxjs/toolkit": "^2.8.2",
     "@tanstack/react-query": "^5.84.0",
     "@types/js-cookie": "^3.0.6",

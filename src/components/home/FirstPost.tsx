@@ -19,9 +19,7 @@ import { useVideoAutoPlay } from "@/hooks/useVideoAutoPlayNew";
 import ExpandableText from "../ExpandableText";
 import { generateInitials } from "@/utils/generateInitials";
 import { BadgeCheck } from "lucide-react";
-import MuxPlayer from '@mux/mux-player-react';
-import { processMyStorjVideo } from "@/app/actions/video";
-import axios from "axios";
+
 
 // Utility function to format relative time
 const formatRelativeTime = (timestamp: string | number | Date): string => {
@@ -189,9 +187,7 @@ const FirstPost: React.FC<FirstPostProps> = ({
   // State and ref for auto-hiding video controls
   const [showControls, setShowControls] = React.useState(false);
   const [isVideoLoaded, setIsVideoLoaded] = React.useState(false);
-  const [isOptimizing, setIsOptimizing] = React.useState(false);
-  const [localPlaybackId, setLocalPlaybackId] = React.useState<string>("");
-  const [muxPlaybackFailed, setMuxPlaybackFailed] = React.useState(false);
+
   const controlsTimerRef = React.useRef<NodeJS.Timeout | null>(null);
 
   // Video auto-play hook with post ID for global management
@@ -219,53 +215,7 @@ const FirstPost: React.FC<FirstPostProps> = ({
     };
   }, []);
 
-  const handleOptimizeVideo = async () => {
-    try {
-      if (isOptimizing) return;
-      setIsOptimizing(true);
-      toast.info("Optimizing video... This may take a moment.");
 
-      const rawUrl = src;
-      // Ensure we have a valid URL
-      if (!rawUrl) {
-        toast.error("No video URL found to optimize");
-        setIsOptimizing(false);
-        return;
-      }
-
-      // 1. Process with Mux
-      const result = await processMyStorjVideo(rawUrl);
-
-      if (result && result.playbackId) {
-        // 2. Save to Backend
-        const endpoint = `${API_BASE}/post/updatePlaybackId`;
-        // Note: Assuming API_BASE doesn't end with slash, but check config. 
-        // Post.js mounted at /post so /post/updatePlaybackId is correct if mounted at root?
-        // User's index.js: app.use("/", postRoutes); AND app.use("/post", postRoutes);
-        // So /updatePlaybackId works too. Let's use /updatePlaybackId for safety if at root, or check.
-        // Let's safe bet: /api/post/updatePlaybackId ? No, API_BASE usually includes /api?
-        // In config.ts it is "http://localhost:3100".
-        // app.use("/", require("./routes/api/post/Post")); means localhost:3100/updatePlaybackId works.
-
-        await axios.post(`${API_BASE}/updatePlaybackId`, {
-          postId: post?._id || post?.postid || post?.id,
-          playbackId: result.playbackId,
-          assetId: result.assetId
-        });
-
-        setLocalPlaybackId(result.playbackId);
-        toast.success("Video optimized! Enjoy instant playback.");
-      } else {
-        toast.error("Failed to process video.");
-      }
-
-    } catch (e: any) {
-      console.error("Optimization failed", e);
-      toast.error("Optimization failed: " + (e.message || "Unknown error"));
-    } finally {
-      setIsOptimizing(false);
-    }
-  };
 
   // Modal functions
   const openModal = (imageSrc: string) => {
@@ -402,27 +352,7 @@ const FirstPost: React.FC<FirstPostProps> = ({
   );
   const uiIsFollowing = uiState.isFollowing ?? isFollowing;
 
-  // Automatically optimize video when post loads (if it's the user's own video without optimization)
-  React.useEffect(() => {
-    const isVideoPost = postType === "video";
-    const hasNoPlaybackId = !post?.playbackId && !localPlaybackId;
-    const hasVideoSource = !!src;
 
-    // Only auto-optimize if:
-    // 1. It's a video post
-    // 2. It doesn't have a playbackId yet
-    // 3. It's the user's own post
-    // 4. We're not already optimizing
-    // 5. There's a valid video source
-    if (isVideoPost && hasNoPlaybackId && isSelf && !isOptimizing && hasVideoSource) {
-      // Delay optimization slightly to avoid blocking initial render
-      const optimizeTimer = setTimeout(() => {
-        handleOptimizeVideo();
-      }, 1000);
-
-      return () => clearTimeout(optimizeTimer);
-    }
-  }, [postType, post?.playbackId, localPlaybackId, isSelf, src, isOptimizing]);
 
   return (
     <div className="mx-auto max-w-[30rem] w-full bg-gray-800 rounded-md p-3">
@@ -578,66 +508,80 @@ const FirstPost: React.FC<FirstPostProps> = ({
         </div>
       )}
 
-      {postType == "video" && (
-        (post?.playbackId || localPlaybackId) && !muxPlaybackFailed ? (
-          <div className="relative w-full h-[400px] rounded overflow-hidden shadow-lg bg-black">
-            <MuxPlayer
-              playbackId={post.playbackId || localPlaybackId}
-              metadataVideoTitle="User Uploaded Content"
-              streamType="on-demand"
-              autoPlay="muted"
+      {postType == "video" && src && (
+        <div className="relative w-full h-[400px] rounded overflow-hidden">
+          {/* Video skeleton - show while video is loading and no poster is available */}
+          {!isVideoLoaded && !posterSource && (
+            <VideoSkeleton />
+          )}
+
+          {/* Video with controls that auto-hide */}
+          <div
+            className={`relative w-full h-full ${(isVideoLoaded || posterSource) ? 'opacity-100' : 'opacity-0 absolute top-0 left-0'} transition-opacity duration-300`}
+            onMouseMove={() => {
+              // Show controls and reset the timer when mouse moves
+              setShowControls(true);
+              if (controlsTimerRef.current) {
+                clearTimeout(controlsTimerRef.current);
+              }
+              controlsTimerRef.current = setTimeout(() => {
+                setShowControls(false);
+              }, 3000);
+            }}
+          >
+            <video
+              ref={videoRef}
+              src={src}
+              muted
               loop
-              accentColor="#3b82f6"
+              playsInline
+              preload="metadata"
               poster={posterSource}
-              style={{ height: '100%', width: '100%' }}
-              className="w-full h-full object-cover"
-              onError={(e: any) => {
-                // Check if it's a 412 error (asset not ready) or other playback failure
-                console.warn('Mux playback error:', e);
-                console.log('Mux fallback triggered. Original src available:', !!src, 'src:', src);
-                // Fallback to regular video player when Mux fails
-                setMuxPlaybackFailed(true);
+              className="w-full h-[400px] object-cover rounded cursor-pointer"
+              onLoadedData={() => {
+                setIsVideoLoaded(true);
+              }}
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowControls(true);
+                togglePlay();
+                if (controlsTimerRef.current) {
+                  clearTimeout(controlsTimerRef.current);
+                }
+                controlsTimerRef.current = setTimeout(() => {
+                  setShowControls(false);
+                }, 3000);
+              }}
+              onError={(e) => {
+                const video = e.currentTarget as HTMLVideoElement & { dataset: any };
+                if (!video.dataset.fallback1 && pathUrlPrimary) {
+                  video.dataset.fallback1 = "1";
+                  video.src = pathUrlPrimary;
+                  video.load();
+                  return;
+                }
+                if (!video.dataset.fallback2 && queryUrlFallback) {
+                  video.dataset.fallback2 = "1";
+                  video.src = queryUrlFallback;
+                  video.load();
+                  return;
+                }
+                if (!video.dataset.fallback3 && pathUrlFallback) {
+                  video.dataset.fallback3 = "1";
+                  video.src = pathUrlFallback;
+                  video.load();
+                }
               }}
             />
-          </div>
-        ) : (
-          src && (
-            <div className="relative w-full h-[400px] rounded overflow-hidden">
-              {/* Video skeleton - show while video is loading and no poster is available */}
-              {!isVideoLoaded && !posterSource && (
-                <VideoSkeleton />
-              )}
 
-              {/* Video with controls that auto-hide */}
-              <div
-                className={`relative w-full h-full ${(isVideoLoaded || posterSource) ? 'opacity-100' : 'opacity-0 absolute top-0 left-0'} transition-opacity duration-300`}
-                onMouseMove={() => {
-                  // Show controls and reset the timer when mouse moves
-                  setShowControls(true);
-                  if (controlsTimerRef.current) {
-                    clearTimeout(controlsTimerRef.current);
-                  }
-                  controlsTimerRef.current = setTimeout(() => {
-                    setShowControls(false);
-                  }, 3000);
-                }}
-              >
-                <video
-                  ref={videoRef}
-                  src={src}
-                  muted
-                  loop
-                  playsInline
-                  preload="metadata"
-                  poster={posterSource}
-                  className="w-full h-[400px] object-cover rounded cursor-pointer"
-                  onLoadedData={() => {
-                    setIsVideoLoaded(true);
-                  }}
+            {/* Volume Button - Shows only when showControls is true */}
+            {showControls && (
+              <div className="absolute bottom-3 right-3 z-10 transition-opacity duration-300 opacity-100">
+                <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    setShowControls(true);
-                    togglePlay();
+                    toggleMute();
+                    // Reset auto-hide timer when interacting with controls
                     if (controlsTimerRef.current) {
                       clearTimeout(controlsTimerRef.current);
                     }
@@ -645,116 +589,77 @@ const FirstPost: React.FC<FirstPostProps> = ({
                       setShowControls(false);
                     }, 3000);
                   }}
-                  onError={(e) => {
-                    const video = e.currentTarget as HTMLVideoElement & { dataset: any };
-                    if (!video.dataset.fallback1 && pathUrlPrimary) {
-                      video.dataset.fallback1 = "1";
-                      video.src = pathUrlPrimary;
-                      video.load();
-                      return;
-                    }
-                    if (!video.dataset.fallback2 && queryUrlFallback) {
-                      video.dataset.fallback2 = "1";
-                      video.src = queryUrlFallback;
-                      video.load();
-                      return;
-                    }
-                    if (!video.dataset.fallback3 && pathUrlFallback) {
-                      video.dataset.fallback3 = "1";
-                      video.src = pathUrlFallback;
-                      video.load();
-                    }
-                  }}
-                />
-
-                {/* Volume Button - Shows only when showControls is true */}
-                {showControls && (
-                  <div className="absolute bottom-3 right-3 z-10 transition-opacity duration-300 opacity-100">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        toggleMute();
-                        // Reset auto-hide timer when interacting with controls
-                        if (controlsTimerRef.current) {
-                          clearTimeout(controlsTimerRef.current);
-                        }
-                        controlsTimerRef.current = setTimeout(() => {
-                          setShowControls(false);
-                        }, 3000);
-                      }}
-                      className="bg-black bg-opacity-70 rounded-full p-2.5 hover:bg-opacity-90 transition-all hover:scale-110"
-                      aria-label={isMuted ? "Unmute video" : "Mute video"}
-                    >
-                      {isMuted ? (
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-                          <line x1="23" y1="9" x2="17" y2="15"></line>
-                          <line x1="17" y1="9" x2="23" y2="15"></line>
-                        </svg>
-                      ) : (
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-                          <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
-                        </svg>
-                      )}
-                    </button>
-                  </div>
-                )}
-
-                {/* Center Play/Pause Button - Shows when controls are visible OR when autoplay is blocked */}
-                {(showControls || autoPlayBlocked) && (
-                  <div className="absolute inset-0 flex items-center justify-center transition-opacity duration-300 opacity-100">
-                    <div
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        togglePlay();
-                        // Reset auto-hide timer when interacting with controls
-                        if (controlsTimerRef.current) {
-                          clearTimeout(controlsTimerRef.current);
-                        }
-                        controlsTimerRef.current = setTimeout(() => {
-                          setShowControls(false);
-                        }, 3000);
-                      }}
-                      className="bg-black bg-opacity-70 rounded-full p-5 hover:bg-opacity-90 hover:scale-110 cursor-pointer transition-all"
-                    >
-                      {isPlaying ? (
-                        <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                          <rect x="6" y="4" width="4" height="16"></rect>
-                          <rect x="14" y="4" width="4" height="16"></rect>
-                        </svg>
-                      ) : (
-                        <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                          <polygon points="5 3 19 12 5 21 5 3"></polygon>
-                        </svg>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {/* Click to Play Overlay - Shows when autoplay is blocked and video is not playing */}
-                {(autoPlayBlocked || !hasUserInteracted) && !isPlaying && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30">
-                    <div className="text-center text-white">
-                      <div
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          togglePlay();
-                        }}
-                        className="bg-black bg-opacity-70 rounded-full p-6 hover:bg-opacity-90 hover:scale-110 cursor-pointer transition-all mb-4 mx-auto w-fit opacity-0"
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                          <polygon points="5 3 19 12 5 21 5 3"></polygon>
-                        </svg>
-                      </div>
-                    </div>
-                  </div>
-                )}
+                  className="bg-black bg-opacity-70 rounded-full p-2.5 hover:bg-opacity-90 transition-all hover:scale-110"
+                  aria-label={isMuted ? "Unmute video" : "Mute video"}
+                >
+                  {isMuted ? (
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                      <line x1="23" y1="9" x2="17" y2="15"></line>
+                      <line x1="17" y1="9" x2="23" y2="15"></line>
+                    </svg>
+                  ) : (
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                      <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                    </svg>
+                  )}
+                </button>
               </div>
+            )}
 
-            </div>
-          )))
-      }
+            {/* Center Play/Pause Button - Shows when controls are visible OR when autoplay is blocked */}
+            {(showControls || autoPlayBlocked) && (
+              <div className="absolute inset-0 flex items-center justify-center transition-opacity duration-300 opacity-100">
+                <div
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    togglePlay();
+                    //Reset auto-hide timer when interacting with controls
+                    if (controlsTimerRef.current) {
+                      clearTimeout(controlsTimerRef.current);
+                    }
+                    controlsTimerRef.current = setTimeout(() => {
+                      setShowControls(false);
+                    }, 3000);
+                  }}
+                  className="bg-black bg-opacity-70 rounded-full p-5 hover:bg-opacity-90 hover:scale-110 cursor-pointer transition-all"
+                >
+                  {isPlaying ? (
+                    <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="6" y="4" width="4" height="16"></rect>
+                      <rect x="14" y="4" width="4" height="16"></rect>
+                    </svg>
+                  ) : (
+                    <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                    </svg>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Click to Play Overlay - Shows when autoplay is blocked and video is not playing */}
+            {(autoPlayBlocked || !hasUserInteracted) && !isPlaying && (
+              <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30">
+                <div className="text-center text-white">
+                  <div
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      togglePlay();
+                    }}
+                    className="bg-black bg-opacity-70 rounded-full p-6 hover:bg-opacity-90 hover:scale-110 cursor-pointer transition-all mb-4 mx-auto w-fit opacity-0"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                    </svg>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       <PostActions
         className="mt-3 border-t border-gray-700 pt-2"
