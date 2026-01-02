@@ -20,7 +20,7 @@ import { useVideoAutoPlay } from "@/hooks/useVideoAutoPlayNew";
 import ExpandableText from "../ExpandableText";
 import { generateInitials } from "@/utils/generateInitials";
 import { BadgeCheck } from "lucide-react";
-import MuxPlayer from '@mux/mux-player-react';
+
 
 // Video component for lazy-loaded videos - moved outside to prevent re-creation
 const VideoComponent = ({ post, src, pathUrlPrimary, queryUrlFallback, pathUrlFallback, showControls, setShowControls, controlsTimerRef, isVideoLoaded, setIsVideoLoaded, posterSource, muxPlaybackFailed, setMuxPlaybackFailed }: {
@@ -45,32 +45,7 @@ const VideoComponent = ({ post, src, pathUrlPrimary, queryUrlFallback, pathUrlFa
     postId: post?._id || post?.postid || post?.id || 'lazy-post'
   });
 
-  const hasMuxPlaybackId = !!post?.playbackId;
 
-  // Only use MuxPlayer if we have a playbackId AND it hasn't failed
-  if (hasMuxPlaybackId && !muxPlaybackFailed) {
-    return (
-      <div className="relative w-full h-[400px] rounded overflow-hidden shadow-lg bg-black">
-        <MuxPlayer
-          playbackId={post.playbackId}
-          metadataVideoTitle="User Uploaded Content"
-          streamType="on-demand"
-          autoPlay="muted"
-          loop
-          accentColor="#3b82f6"
-          poster={posterSource}
-          style={{ height: '100%', width: '100%' }}
-          className="w-full h-full object-cover"
-          onError={(e: any) => {
-            // Check if it's a 412 error (asset not ready) or other playback failure
-            console.warn('Mux playback error in LazyPost:', e);
-            // Fallback to regular video player when Mux fails
-            setMuxPlaybackFailed(true);
-          }}
-        />
-      </div>
-    );
-  }
 
   return (
     <div className="relative w-full h-[400px] rounded overflow-hidden">

@@ -91,6 +91,8 @@ export default function AnyaAnalyticsPage() {
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
     const [generating, setGenerating] = useState<boolean>(false);
+    const [deletingStoryId, setDeletingStoryId] = useState<string | null>(null);
+    const [storyToDelete, setStoryToDelete] = useState<{ id: string, title: string } | null>(null);
 
     const fetchAnalytics = useCallback(async (period: string) => {
         try {
@@ -170,6 +172,33 @@ export default function AnyaAnalyticsPage() {
             }
         } finally {
             setGenerating(false);
+        }
+    };
+
+    const handleDeleteStory = async (storyId: string) => {
+        try {
+            setDeletingStoryId(storyId);
+
+            const response = await axios.delete(
+                `${process.env.NEXT_PUBLIC_API}/api/ai-story/stories/${storyId}`
+            );
+
+            if (response.data.ok) {
+                toast.success('Story deleted successfully');
+                // Refresh analytics to update the list
+                fetchAnalytics(selectedPeriod);
+                setStoryToDelete(null);
+            } else {
+                toast.error(response.data.error || 'Failed to delete story');
+            }
+        } catch (err: unknown) {
+            console.error('Error deleting story:', err);
+            const errorMessage = (err as { response?: { data?: { error?: string } } })?.response?.data?.error
+                || (err as Error)?.message
+                || 'An error occurred while deleting the story';
+            toast.error(errorMessage);
+        } finally {
+            setDeletingStoryId(null);
         }
     };
 
@@ -401,6 +430,7 @@ export default function AnyaAnalyticsPage() {
                                     <th className="text-left py-3 px-4 text-sm font-semibold text-gray-300">Rank</th>
                                     <th className="text-left py-3 px-4 text-sm font-semibold text-gray-300">Story Title</th>
                                     <th className="text-right py-3 px-4 text-sm font-semibold text-gray-300">Total Visits</th>
+                                    <th className="text-right py-3 px-4 text-sm font-semibold text-gray-300">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -426,6 +456,15 @@ export default function AnyaAnalyticsPage() {
                                         </td>
                                         <td className="py-4 px-4 text-right">
                                             <span className="text-purple-400 font-medium text-lg">{story.visits.toLocaleString()}</span>
+                                        </td>
+                                        <td className="py-4 px-4 text-right">
+                                            <button
+                                                onClick={() => setStoryToDelete({ id: story.storyId, title: story.title })}
+                                                disabled={deletingStoryId === story.storyId}
+                                                className="px-3 py-1.5 bg-red-600 text-white text-sm rounded hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                            >
+                                                {deletingStoryId === story.storyId ? 'Deleting...' : 'Delete'}
+                                            </button>
                                         </td>
                                     </tr>
                                 ))}
@@ -540,6 +579,40 @@ export default function AnyaAnalyticsPage() {
                             </table>
                         </div>
                     )}
+                </div>
+            )}
+
+            {/* Delete Confirmation Dialog */}
+            {storyToDelete && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4 border border-gray-700">
+                        <h3 className="text-xl font-bold text-white mb-4">Confirm Delete</h3>
+                        <p className="text-gray-300 mb-2">
+                            Are you sure you want to delete this story?
+                        </p>
+                        <p className="text-gray-400 text-sm mb-6 italic line-clamp-2">
+                            "{storyToDelete.title}"
+                        </p>
+                        <div className="flex gap-3 justify-end">
+                            <button
+                                onClick={() => setStoryToDelete(null)}
+                                disabled={deletingStoryId === storyToDelete.id}
+                                className="px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-600 disabled:opacity-50"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={() => handleDeleteStory(storyToDelete.id)}
+                                disabled={deletingStoryId === storyToDelete.id}
+                                className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50 flex items-center gap-2"
+                            >
+                                {deletingStoryId === storyToDelete.id && (
+                                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                )}
+                                {deletingStoryId === storyToDelete.id ? 'Deleting...' : 'Delete'}
+                            </button>
+                        </div>
+                    </div>
                 </div>
             )}
         </div>
