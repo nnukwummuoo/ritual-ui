@@ -1,6 +1,3 @@
-import Video from 'next-video';
-import getStarted from '../../../videos/get-started.mp4';
-
 export default function SocialPost() {
     return (
         <div className="min-h-screen bg-gray-50 flex flex-col items-center py-10">
@@ -12,21 +9,15 @@ export default function SocialPost() {
                     <span className="text-sm">User_Handle</span>
                 </div>
 
-                {/* 
-            Using 'next-video' to handle adaptive bitrate streaming.
-            This uses the asset defined in /videos/get-started.mp4.json
-        */}
-                <Video
-                    src={getStarted}
-                    accentColor="#3b82f6"
-                    controls={false}
-                    autoPlay
-                    loop
-                    muted
-                />
+                {/* Video placeholder */}
+                <div className="w-full aspect-video bg-gray-200 flex items-center justify-center">
+                    <p className="text-gray-500 text-center px-4">
+                        Video player removed (Mux integration removed)
+                    </p>
+                </div>
 
                 <div className="p-4">
-                    <p className="text-gray-700">This is a high-performance video like Instagram! It loads instantly and adapts quality based on your connection.</p>
+                    <p className="text-gray-700">This is a demo feed page. Video playback has been updated to use direct sources.</p>
                 </div>
             </div>
         </div>
