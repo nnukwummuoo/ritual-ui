@@ -520,12 +520,26 @@ const LazyPost: React.FC<LazyPostProps> = ({
   const isUrl = isHttpUrl || isBlobUrl || isDataUrl;
 
   const imageSource = getImageSource(asString, 'post');
-  const src = imageSource.src;
+  let src = imageSource.src;
+
+  // Handle video streaming with range requests
+  if (postType === "video") {
+    // Use the extracted key from getImageSource (handles Storj URLs automatically)
+    const videoFileKey = imageSource.key || (!isUrl ? asString : null);
+
+    // If we have a video file key, use streaming endpoint
+    if (videoFileKey) {
+      src = `${API_BASE}/api/video/stream/${encodeURIComponent(videoFileKey)}`;
+      console.log(`🎥 [LazyPost] Streaming: ${videoFileKey}`);
+    } else {
+      console.log(`⚠️ [LazyPost] No file key | asString: ${asString?.substring(0, 80)}`);
+    }
+  }
 
   const queryUrlPrimary = asString ? `${API_BASE}/api/image/view?publicId=${encodeURIComponent(asString)}` : "";
-  const pathUrlPrimary = asString ? `${API_BASE}/api/image/view/${encodeURIComponent(asString)}` : "";
+  const pathUrlPrimary = asString ? `${API_BASE}/${postType == "video" ? 'api/video/stream' : 'api/image/view'}/${encodeURIComponent(asString)}` : "";
   const queryUrlFallback = asString ? `${PROD_BASE}/api/image/view?publicId=${encodeURIComponent(asString)}` : "";
-  const pathUrlFallback = asString ? `${PROD_BASE}/api/image/view/${encodeURIComponent(asString)}` : "";
+  const pathUrlFallback = asString ? `${PROD_BASE}/${postType == "video" ? 'api/video/stream' : 'api/image/view'}/${encodeURIComponent(asString)}` : "";
 
   const combinedName = [post?.user?.firstname, post?.user?.lastname].filter(Boolean).join(" ");
   let displayName =
