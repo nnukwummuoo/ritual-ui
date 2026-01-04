@@ -34,7 +34,17 @@ const RitualsCard: React.FC = () => {
         try {
             setLoading(true);
             console.log('[RitualsCard] Fetching stories...');
-            const res = await axios.get('/api/proxy/api/ai-story/stories');
+            // Add cache-busting with timestamp and no-cache headers
+            const res = await axios.get('/api/proxy/api/ai-story/stories', {
+                params: {
+                    _t: Date.now() // Cache-busting timestamp
+                },
+                headers: {
+                    'Cache-Control': 'no-cache, no-store, must-revalidate',
+                    'Pragma': 'no-cache',
+                    'Expires': '0'
+                }
+            });
             console.log('[RitualsCard] Response:', res);
             console.log('[RitualsCard] Response data:', res.data);
             const fetchedStories = res.data.stories || [];
@@ -44,7 +54,7 @@ const RitualsCard: React.FC = () => {
             const latestStories = fetchedStories.slice(0, 5);
             setStories(latestStories);
             console.log('[RitualsCard] Set stories count:', latestStories.length);
-        } catch (error) {
+        } catch (error: any) {
             console.error('[RitualsCard] Failed to fetch Rituals stories:', error);
             console.error('[RitualsCard] Error details:', error.response || error.message);
             setStories([]);

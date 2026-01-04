@@ -139,7 +139,7 @@ export default function TopFans() {
     }
 
     const handleFanClick = (userId: string) => {
-        router.push(`/profileid/${userId}`);
+        router.push(`/Profile/${userId}`);
     };
 
     return (
@@ -147,7 +147,7 @@ export default function TopFans() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="w-full bg-gradient-to-br from-gray-900 via-black to-gray-900 rounded-2xl p-4 md:p-6 mb-6 overflow-hidden relative"
+            className="w-full bg-gradient-to-br from-gray-900 via-black to-gray-900 rounded-2xl p-4 md:p-6 overflow-hidden relative"
         >
             {/* Background decoration */}
             <div className="absolute inset-0 opacity-10">

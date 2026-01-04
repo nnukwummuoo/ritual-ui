@@ -16,6 +16,7 @@ import {
   IoGiftOutline,
   IoFingerPrintOutline,
   IoSparkles,
+  IoRefreshOutline,
 } from "react-icons/io5";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "@/store/store";
@@ -40,6 +41,7 @@ import TransactionsPage from "./transactions/page";
 import RevenuePage from "./revenue/page";
 import ReferralAnalysisPage from "./referral-analysis/page";
 import AnyaAnalyticsPage from "./anya-analytics/page";
+import AdminUpdatesPage from "./updates/page";
 import PushNotificationToggle from "@/components/PushNotificationToggle";
 import MaintenanceToggle from "@/components/admin/MaintenanceToggle";
 import MaintenanceControl from "@/components/admin/MaintenanceControl";
@@ -203,6 +205,11 @@ const AdminPage = () => {
       icon: <IoServerOutline size={22} />,
       component: <BackupManagement />,
     },
+    {
+      name: "Updates",
+      icon: <IoRefreshOutline size={22} />,
+      component: <AdminUpdatesPage />,
+    },
   ];
 
   // Render function for content
@@ -215,8 +222,8 @@ const AdminPage = () => {
     // Full-height page with flexbox for 20%/80% split
     <div className="flex min-h-screen h-screen bg-[#111827] text-gray-200 font-sans">
       {/* Sidebar: responsive width */}
-      <aside className="w-16 md:w-[30%] bg-[#1F2937] flex flex-col justify-between">
-        <div className="p-2 md:p-4">
+      <aside className="w-16 md:w-[30%] bg-[#1F2937] flex flex-col">
+        <div className="p-2 md:p-4 overflow-y-auto flex-1">
           {/* Header */}
           <div className="flex items-center gap-3 mb-8 p-2 justify-center md:justify-start">
             <div className="w-9 h-9 bg-indigo-600 rounded-md grid place-items-center">

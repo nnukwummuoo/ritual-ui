@@ -85,6 +85,8 @@ export default function FanCallModal({
   const controlsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const callTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [peerConnection, setPeerConnection] = useState<RTCPeerConnection | null>(null);
+  const peerConnectionRef = useRef<RTCPeerConnection | null>(null); // CRITICAL FIX: Immediate ref access
+  const remoteStreamRef = useRef<MediaStream | null>(null); // CRITICAL FIX: Immediate stream ref
   const socket = getSocket();
 
   // Check for insecure context when modal opens
@@ -276,7 +278,7 @@ export default function FanCallModal({
       iceTransportPolicy: 'all'
     });
 
-    // Handle incoming remote stream - ENHANCED with track validation
+    // Handle incoming remote stream - ENHANCED with track validation and immediate ref assignment
     pc.ontrack = (event) => {
       console.log('📹 [WebRTC] ontrack event fired:', {
         hasStreams: !!event.streams,
@@ -289,6 +291,7 @@ export default function FanCallModal({
 
       if (event.streams && event.streams[0]) {
         const newRemoteStream = event.streams[0];
+        const track = event.track;
 
         // Validate tracks are active before setting
         const allTracks = newRemoteStream.getTracks();
@@ -308,12 +311,21 @@ export default function FanCallModal({
           }))
         });
 
-        if (activeTracks.length === 0) {
-          console.warn('⚠️ [WebRTC] Received stream has no active tracks, waiting for tracks to become live');
-          // Still set the stream - tracks may become active later
+        // CRITICAL FIX: Set ref immediately (synchronous)
+        remoteStreamRef.current = newRemoteStream;
+
+        // CRITICAL FIX: If track not ready, listen for it to become ready
+        if (track.readyState !== 'live') {
+          console.log('⚠️ [WebRTC] Track not live yet, adding ready listener');
+          track.addEventListener('unmute', () => {
+            console.log('✅ [WebRTC] Track became ready');
+            setRemoteStream(newRemoteStream);
+          }, { once: true });
+        } else {
+          // Track is ready, set state
+          setRemoteStream(newRemoteStream);
         }
 
-        setRemoteStream(newRemoteStream);
         (pc as any).remoteStream = newRemoteStream;
       }
     };
@@ -735,9 +747,11 @@ export default function FanCallModal({
       console.log('🧹 [VideoCall] Closing peer connection');
       peerConnection.close();
       setPeerConnection(null);
+      peerConnectionRef.current = null; // CRITICAL FIX: Clear ref too
     }
 
     setRemoteStream(null);
+    remoteStreamRef.current = null; // CRITICAL FIX: Clear stream ref
     pendingIceCandidatesRef.current = [];
   }, [localStream, peerConnection]);
 
@@ -960,6 +974,7 @@ export default function FanCallModal({
         console.log('📹 [VideoCall] I am the caller - creating peer connection and offer');
 
         const pc = createPeerConnection();
+        peerConnectionRef.current = pc; // CRITICAL FIX: Set ref immediately
         setPeerConnection(pc);
 
         // Add local tracks to peer connection
@@ -1003,13 +1018,14 @@ export default function FanCallModal({
 
       const isCorrectCall = data.callId === callData?.callId || data.callId.startsWith('temp_');
 
-      if (isCorrectCall && !peerConnection && callData?.isIncoming) {
+      if (isCorrectCall && !peerConnectionRef.current && callData?.isIncoming) {
         console.log('📹 [WebRTC] Processing offer as answerer');
 
         // CRITICAL: Create peer connection FIRST before anything else
         const pc = createPeerConnection();
 
-        // CRITICAL: Set it immediately so ICE candidates can be queued to it
+        // CRITICAL FIX: Set ref immediately (synchronous) AND state (async)
+        peerConnectionRef.current = pc;
         setPeerConnection(pc);
 
         // Ensure we have local media
@@ -1093,92 +1109,94 @@ export default function FanCallModal({
     const handleIceCandidate = async (data: any) => {
       const shouldAccept = data.callId === callData?.callId || data.callId.startsWith('temp_');
 
+      // CRITICAL FIX: Use ref instead of state for immediate check
+      const pc = peerConnectionRef.current;
+
       console.log('📹 [WebRTC] Received ICE candidate:', {
         callId: data.callId,
         currentCallId: callData?.callId,
         shouldAccept,
-        hasPeerConnection: !!peerConnection,
+        hasPeerConnection: !!pc,
         hasRemoteDescription: !!peerConnection?.remoteDescription,
         connectionState: peerConnection?.connectionState,
         iceConnectionState: peerConnection?.iceConnectionState
       });
 
       if (shouldAccept) {
-        // CRITICAL FIX: Always queue candidates if we don't have a peer connection yet
-        // This handles the race condition where ICE candidates arrive before the offer
-        if (!peerConnection) {
-          console.log('📹 [WebRTC] Queueing ICE candidate - no peer connection yet');
+        // CRITICAL FIX: Check ref-based peer connection
+        if (!pc) {
+          console.log('📹 [WebRTC] No peer connection yet, queuing ICE candidate');
           pendingIceCandidatesRef.current.push(data.candidate);
-          console.log('📹 [WebRTC] Pending candidates queue size:', pendingIceCandidatesRef.current.length);
+          return;
+        }
+        
+        if (!pc.remoteDescription) {
+          console.log('📹 [WebRTC] No remote description yet, queuing ICE candidate');
+          pendingIceCandidatesRef.current.push(data.candidate);
+          return;
+        }
+        
+        // Peer connection is ready, add candidate immediately
+        try {
+          console.log('📹 [WebRTC] Adding ICE candidate to peer connection');
+          await pc.addIceCandidate(new RTCIceCandidate(data.candidate));
+          console.log('✅ [WebRTC] ICE candidate added successfully');
+        } catch (error) {
+          console.error('❌ [WebRTC] Error adding ICE candidate:', error);
+          // If we fail to add, queue it for later retry
+          pendingIceCandidatesRef.current.push(data.candidate);
+        }
+      }
+    };
+      const handleCallEnded = (data?: any) => {
+        if (data && data.callId && callData?.callId && data.callId !== callData.callId) {
           return;
         }
 
-        try {
-          if (peerConnection.remoteDescription) {
-            console.log('📹 [WebRTC] Adding ICE candidate immediately');
-            await peerConnection.addIceCandidate(new RTCIceCandidate(data.candidate));
-            console.log('✅ [WebRTC] ICE candidate added successfully');
-          } else {
-            console.log('📹 [WebRTC] Queueing ICE candidate - no remote description yet');
-            pendingIceCandidatesRef.current.push(data.candidate);
-            console.log('📹 [WebRTC] Pending candidates queue size:', pendingIceCandidatesRef.current.length);
-          }
-        } catch (error) {
-          console.error('❌ [WebRTC] Error adding ICE candidate:', error);
-          pendingIceCandidatesRef.current.push(data.candidate);
-        }
-      }
-    };
-
-    const handleCallEnded = (data?: any) => {
-      if (data && data.callId && callData?.callId && data.callId !== callData.callId) {
-        return;
-      }
-
-      console.log('📞 [VideoCall] Call ended event received, closing immediately');
-      handleCleanup();
-      onClose();
-    };
-
-    const handleCallTimeout = () => {
-      if (callData?.isIncoming) {
+        console.log('📞 [VideoCall] Call ended event received, closing immediately');
         handleCleanup();
         onClose();
-      }
-    };
+      };
 
-    const handleMissedCall = (data: any) => {
-      // Handled by parent component
-    };
+      const handleCallTimeout = () => {
+        if (callData?.isIncoming) {
+          handleCleanup();
+          onClose();
+        }
+      };
 
-    const handleInsufficientFundsFromServer = (data: any) => {
-      console.log('💰 [VideoCall] Insufficient funds received from server:', data);
-      const isCaller = callData?.callerId === currentUserId;
-      if ((data.callId === callData?.callId || !data.callId) && isCaller) {
-        handleInsufficientFunds();
-      }
-    };
+      const handleMissedCall = (data: any) => {
+        // Handled by parent component
+      };
 
-    socket.on('fan_call_accepted', handleCallAccepted);
-    socket.on('fan_call_offer', handleOffer);
-    socket.on('fan_call_answer', handleAnswer);
-    socket.on('fan_call_ice_candidate', handleIceCandidate);
-    socket.on('fan_call_ended', handleCallEnded);
-    socket.on('fan_call_timeout', handleCallTimeout);
-    socket.on('fan_call_missed', handleMissedCall);
-    socket.on('insufficient_funds', handleInsufficientFundsFromServer);
+      const handleInsufficientFundsFromServer = (data: any) => {
+        console.log('💰 [VideoCall] Insufficient funds received from server:', data);
+        const isCaller = callData?.callerId === currentUserId;
+        if ((data.callId === callData?.callId || !data.callId) && isCaller) {
+          handleInsufficientFunds();
+        }
+      };
 
-    return () => {
-      socket.off('fan_call_accepted', handleCallAccepted);
-      socket.off('fan_call_offer', handleOffer);
-      socket.off('fan_call_answer', handleAnswer);
-      socket.off('fan_call_ice_candidate', handleIceCandidate);
-      socket.off('fan_call_ended', handleCallEnded);
-      socket.off('fan_call_timeout', handleCallTimeout);
-      socket.off('fan_call_missed', handleMissedCall);
-      socket.off('insufficient_funds', handleInsufficientFundsFromServer);
-    };
-  }, [socket, isOpen, currentUserId, callData, peerConnection, localStream, createPeerConnection, handleCleanup, onClose, handleInsufficientFunds, processPendingIceCandidates]);
+      socket.on('fan_call_accepted', handleCallAccepted);
+      socket.on('fan_call_offer', handleOffer);
+      socket.on('fan_call_answer', handleAnswer);
+      socket.on('fan_call_ice_candidate', handleIceCandidate);
+      socket.on('fan_call_ended', handleCallEnded);
+      socket.on('fan_call_timeout', handleCallTimeout);
+      socket.on('fan_call_missed', handleMissedCall);
+      socket.on('insufficient_funds', handleInsufficientFundsFromServer);
+
+      return () => {
+        socket.off('fan_call_accepted', handleCallAccepted);
+        socket.off('fan_call_offer', handleOffer);
+        socket.off('fan_call_answer', handleAnswer);
+        socket.off('fan_call_ice_candidate', handleIceCandidate);
+        socket.off('fan_call_ended', handleCallEnded);
+        socket.off('fan_call_timeout', handleCallTimeout);
+        socket.off('fan_call_missed', handleMissedCall);
+        socket.off('insufficient_funds', handleInsufficientFundsFromServer);
+      };
+    }, [socket, isOpen, currentUserId, callData, peerConnection, localStream, createPeerConnection, handleCleanup, onClose, handleInsufficientFunds, processPendingIceCandidates]);
 
   // Process pending ICE candidates when remote description is set
   useEffect(() => {

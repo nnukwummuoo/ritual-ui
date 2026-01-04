@@ -119,7 +119,7 @@ const formatRelativeTime = (timestamp: string | number | Date): string => {
 
 // Video skeleton component for loading state
 const VideoSkeleton = () => (
-  <div className="relative w-full h-[400px] rounded overflow-hidden bg-gray-700 animate-pulse">
+  <div className="relative w-full aspect-[4/5] rounded overflow-hidden bg-gray-700 animate-pulse">
     <div className="w-full h-full flex items-center justify-center">
       {/* Play button skeleton */}
       <div className="w-16 h-16 bg-gray-600 rounded-full flex items-center justify-center">
@@ -184,9 +184,12 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
     // State and ref for auto-hiding video controls
     const [showControls, setShowControls] = React.useState(false);
     const [isVideoLoaded, setIsVideoLoaded] = React.useState(false);
+    const [currentTime, setCurrentTime] = React.useState(0);
+    const [duration, setDuration] = React.useState(0);
+    const [isFullscreen, setIsFullscreen] = React.useState(false);
     const controlsTimerRef = React.useRef<NodeJS.Timeout | null>(null);
 
-    // Clear timeout when component unmounts
+    // Clear timeout when component unmounts and track fullscreen changes
     React.useEffect(() => {
       // Show controls initially when the video loads
       setShowControls(true);
@@ -194,17 +197,28 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
       // Set timer to hide controls
       const initialTimer = setTimeout(() => {
         setShowControls(false);
-      }, 3000);
+      }, 1000); // Changed from 3000ms to 1000ms
+
+      // Listen for fullscreen changes
+      const handleFullscreenChange = () => {
+        setIsFullscreen(!!document.fullscreenElement);
+        if (document.fullscreenElement) {
+          setShowControls(true);
+        }
+      };
+
+      document.addEventListener('fullscreenchange', handleFullscreenChange);
 
       return () => {
         // Clean up all timeouts on unmount
         if (initialTimer) clearTimeout(initialTimer);
         if (controlsTimerRef.current) clearTimeout(controlsTimerRef.current);
+        document.removeEventListener('fullscreenchange', handleFullscreenChange);
       };
     }, []);
 
     return (
-      <div className="relative w-full h-[400px] rounded overflow-hidden">
+      <div className="relative w-full aspect-[4/5] rounded overflow-hidden">
         {/* Video skeleton - show while video is loading */}
         {!isVideoLoaded && (
           <VideoSkeleton />
@@ -221,7 +235,7 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
             }
             controlsTimerRef.current = setTimeout(() => {
               setShowControls(false);
-            }, 3000);
+            }, 1000); // Changed from 3000ms to 1000ms
           }}
         >
           <video
@@ -230,9 +244,14 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
             muted
             loop
             playsInline
-            className="w-full h-[400px] object-cover rounded cursor-pointer"
+            className={`w-full object-cover rounded cursor-pointer transition-all ${isFullscreen ? 'h-screen' : 'aspect-[4/5]'}`}
             onLoadedData={() => {
               setIsVideoLoaded(true);
+            }}
+            onTimeUpdate={(e) => {
+              const video = e.currentTarget;
+              setCurrentTime(video.currentTime);
+              setDuration(video.duration);
             }}
             onClick={(e) => {
               e.stopPropagation();
@@ -243,7 +262,7 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
               }
               controlsTimerRef.current = setTimeout(() => {
                 setShowControls(false);
-              }, 3000);
+              }, 1000); // Changed from 3000ms to 1000ms
             }}
             onError={(e) => {
               const video = e.currentTarget as HTMLVideoElement & { dataset: any };
@@ -267,43 +286,111 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
             }}
           />
 
-          {/* Volume Button - Shows only when showControls is true */}
+          {/* Video Controls Bar - Shows only when showControls is true */}
           {showControls && (
-            <div className="absolute bottom-3 right-3 z-10 transition-opacity duration-300 opacity-100">
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  toggleMute();
-                  // Reset auto-hide timer when interacting with controls
-                  if (controlsTimerRef.current) {
-                    clearTimeout(controlsTimerRef.current);
-                  }
-                  controlsTimerRef.current = setTimeout(() => {
-                    setShowControls(false);
-                  }, 3000);
-                }}
-                className="bg-black bg-opacity-70 rounded-full p-2.5 hover:bg-opacity-90 transition-all hover:scale-110"
-                aria-label={isMuted ? "Unmute video" : "Mute video"}
-              >
-                {isMuted ? (
-                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-                    <line x1="23" y1="9" x2="17" y2="15"></line>
-                    <line x1="17" y1="9" x2="23" y2="15"></line>
-                  </svg>
-                ) : (
-                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-                    <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
-                  </svg>
-                )}
-              </button>
+            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2">
+              {/* Progress Bar */}
+              <div className="mb-2">
+                <input
+                  type="range"
+                  min="0"
+                  max={duration || 0}
+                  value={currentTime}
+                  onChange={(e) => {
+                    const newTime = parseFloat(e.target.value);
+                    if (videoRef.current) {
+                      videoRef.current.currentTime = newTime;
+                      setCurrentTime(newTime);
+                    }
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                  className="w-full h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer"
+                  style={{
+                    background: `linear-gradient(to right, #fff ${(currentTime / duration) * 100}%, #4b5563 ${(currentTime / duration) * 100}%)`
+                  }}
+                />
+              </div>
+
+              {/* Bottom Controls Row */}
+              <div className="flex items-center justify-between gap-2 text-white">
+                {/* Left: Timestamp */}
+                <div className="text-xs font-medium">
+                  {Math.floor(currentTime / 60)}:{String(Math.floor(currentTime % 60)).padStart(2, '0')} / {Math.floor(duration / 60)}:{String(Math.floor(duration % 60)).padStart(2, '0')}
+                </div>
+
+                {/* Right: Control Buttons */}
+                <div className="flex items-center gap-1">
+                  {/* Volume Button */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleMute();
+                      if (controlsTimerRef.current) {
+                        clearTimeout(controlsTimerRef.current);
+                      }
+                      controlsTimerRef.current = setTimeout(() => {
+                        setShowControls(false);
+                      }, 1000);
+                    }}
+                    className="p-2 hover:bg-white/20 rounded transition-all"
+                    aria-label={isMuted ? "Unmute video" : "Mute video"}
+                  >
+                    {isMuted ? (
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                        <line x1="23" y1="9" x2="17" y2="15"></line>
+                        <line x1="17" y1="9" x2="23" y2="15"></line>
+                      </svg>
+                    ) : (
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                        <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                      </svg>
+                    )}
+                  </button>
+
+                  {/* Fullscreen Button */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const videoContainer = videoRef.current?.parentElement;
+                      if (videoContainer) {
+                        if (document.fullscreenElement) {
+                          document.exitFullscreen();
+                        } else {
+                          videoContainer.requestFullscreen().catch(err => {
+                            console.log('Fullscreen error:', err);
+                          });
+                        }
+                      }
+                      if (controlsTimerRef.current) {
+                        clearTimeout(controlsTimerRef.current);
+                      }
+                      controlsTimerRef.current = setTimeout(() => {
+                        setShowControls(false);
+                      }, 1000);
+                    }}
+                    className="p-2 hover:bg-white/20 rounded transition-all"
+                    aria-label={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
+                  >
+                    {isFullscreen ? (
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"></path>
+                      </svg>
+                    ) : (
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
+                      </svg>
+                    )}
+                  </button>
+                </div>
+              </div>
             </div>
           )}
 
           {/* Center Play/Pause Button - Shows when controls are visible OR when autoplay is blocked */}
           {(showControls || autoPlayBlocked) && (
-            <div className="absolute inset-0 flex items-center justify-center transition-opacity duration-300 opacity-100">
+            <div className="absolute inset-0 flex items-center justify-center transition-opacity duration-300 opacity-100 pointer-events-none">
               <div
                 onClick={(e) => {
                   e.stopPropagation();
@@ -314,9 +401,9 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
                   }
                   controlsTimerRef.current = setTimeout(() => {
                     setShowControls(false);
-                  }, 3000);
+                  }, 1000); // Changed from 3000ms to 1000ms
                 }}
-                className="bg-black bg-opacity-70 rounded-full p-5 hover:bg-opacity-90 hover:scale-110 cursor-pointer transition-all"
+                className="bg-black bg-opacity-70 rounded-full p-5 hover:bg-opacity-90 hover:scale-110 cursor-pointer transition-all pointer-events-auto"
               >
                 {isPlaying ? (
                   <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -589,13 +676,13 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
             )}
 
             {postType == "image" && src && (
-              <div className="w-full max-h-[400px] relative rounded overflow-hidden">
+              <div className="w-full aspect-[4/5] relative rounded overflow-hidden">
                 <Image
                   src={src}
                   alt={p?.content || "post image"}
                   width={800}
                   height={400}
-                  className="w-full h-[400px] object-cover cursor-pointer hover:opacity-90 transition-opacity duration-200"
+                  className="w-full h-full aspect-[4/5] object-cover cursor-pointer hover:opacity-90 transition-opacity duration-200"
                   onClick={() => openModal(src)}
                   onError={(e) => {
                     const img = e.currentTarget as HTMLImageElement & { dataset: any };
@@ -652,7 +739,7 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
                 const currentUiState = ui[localPid] || {};
                 const currentlyFollowing = currentUiState.isFollowing ?? false;
 
-                setUi(prev => ({
+                setUi((prev: any) => ({
                   ...prev,
                   [localPid]: {
                     ...prev[localPid],
@@ -682,7 +769,7 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
                   dispatch(getfollow({ userid: loggedInUserId, token }));
 
                 } catch {
-                  setUi(prev => ({
+                  setUi((prev: any) => ({
                     ...prev,
                     [localPid]: {
                       ...prev[localPid],
@@ -731,7 +818,7 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
                   newCount: Math.max(0, currentCount + (nextLiked ? 1 : -1))
                 });
 
-                setUi((prev) => ({
+                setUi((prev: any) => ({
                   ...prev,
                   [localPid]: {
                     ...curr,
@@ -757,13 +844,13 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
 
                   // No need to refresh feed - rely on optimistic update to avoid race condition
 
-                } catch (error) {
+                } catch (error: any) {
                   console.error('❌ Like request failed:', error);
                   console.error('❌ Error details:', {
                     message: error instanceof Error ? error.message : 'Unknown error',
                     stack: error instanceof Error ? error.stack : undefined
                   });
-                  setUi((prev) => ({
+                  setUi((prev: any) => ({
                     ...prev,
                     [localPid]: {
                       ...prev[localPid],
@@ -794,7 +881,7 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
                 //   loadingComments: currentUiState.loadingComments
                 // });
 
-                setUi((prev) => ({
+                setUi((prev: any) => ({
                   ...prev,
                   [localPid]: { ...(prev[localPid] || {}), open: !isCurrentlyOpen }
                 }));
@@ -811,7 +898,7 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
 
                 if (shouldFetch) {
                   // console.log('💬 Fetching comments for post:', localPid);
-                  setUi((prev) => ({
+                  setUi((prev: any) => ({
                     ...prev,
                     [localPid]: { ...(prev[localPid] || {}), loadingComments: true }
                   }));
@@ -823,7 +910,7 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
                       const arr = (res && (res.comment || res.comments)) || [];
                       // console.log('💬 Processed comments array:', arr);
 
-                      setUi((prev) => {
+                      setUi((prev: any) => {
                         const currentState = prev[localPid] || {};
                         return {
                           ...prev,
@@ -840,9 +927,9 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
                         };
                       });
                     })
-                    .catch((error) => {
+                    .catch((error: any) => {
                       console.error('💬 Comments fetch error:', error);
-                      setUi((prev) => ({
+                      setUi((prev: any) => ({
                         ...prev,
                         [localPid]: { ...(prev[localPid] || {}), loadingComments: false }
                       }));
@@ -997,7 +1084,7 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
                         value={uiInput}
                         onChange={(e) => {
                           const v = e.target.value;
-                          setUi((prev) => ({
+                          setUi((prev: any) => ({
                             ...prev,
                             [pid]: { ...(prev[pid] || {}), input: v },
                           }));
@@ -1010,7 +1097,7 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
                         onClick={() => {
                           const text = (ui[pid]?.input || '').trim();
                           if (!text) return;
-                          setUi((prev) => ({
+                          setUi((prev: any) => ({
                             ...prev,
                             [pid]: {
                               ...(prev[pid] || {}),
@@ -1046,7 +1133,7 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
                                   .unwrap()
                                   .then((commentRes: any) => {
                                     const serverComments = (commentRes && (commentRes.comment || commentRes.comments)) || [];
-                                    setUi((prev) => {
+                                    setUi((prev: any) => {
                                       const currentState = prev[pid] || {};
                                       return {
                                         ...prev,
@@ -1064,20 +1151,20 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
                                     });
                                   })
                                   .catch(() => {
-                                    setUi((prev) => ({
+                                    setUi((prev: any) => ({
                                       ...prev,
                                       [pid]: { ...(prev[pid] || {}), sending: false },
                                     }));
                                   });
                               })
                               .catch(() => {
-                                setUi((prev) => ({
+                                setUi((prev: any) => ({
                                   ...prev,
                                   [pid]: { ...(prev[pid] || {}), sending: false },
                                 }));
                               });
                           } else {
-                            setUi((prev) => ({
+                            setUi((prev: any) => ({
                               ...prev,
                               [pid]: { ...(prev[pid] || {}), sending: false },
                             }));
