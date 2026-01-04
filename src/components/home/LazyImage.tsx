@@ -82,7 +82,6 @@ const LazyImage: React.FC<LazyImageProps> = ({
   const SkeletonPlaceholder = () => (
     <div
       className={`bg-gray-700 animate-pulse rounded ${className}`}
-      style={{ width, height }}
     >
       <div className="w-full h-full flex items-center justify-center">
         <div className="w-8 h-8 bg-gray-600 rounded-full"></div>
