@@ -214,12 +214,43 @@ export default function FanCallModal({
 
       const isMobile = isMobileDevice();
       const isNetworkIP = /^\d+\.\d+\.\d+\.\d+/.test(window.location.hostname);
+      const deviceInfo = detectDevice(); // Use our new device detection
 
       if (error.name === 'NotAllowedError') {
         if (isMobile && isNetworkIP) {
           setMediaError('Camera access denied on mobile device.\n\nMobile browsers require HTTPS for camera access.\n\nSolutions:\n1. Use localhost:3000 on your computer\n2. Set up HTTPS for your development server\n3. Use a different device with desktop browser\n\nFor mobile testing, you need HTTPS or localhost access.');
         } else {
-          setMediaError('Camera and microphone access denied. Please allow access and try again.\n\nTo fix this:\n1. Click the camera/mic icon in your browser address bar\n2. Select "Allow" for camera and microphone\n3. Refresh the page and try again');
+          // Device-specific error messages
+          let errorMsg = 'Camera and microphone access denied. Please allow access and try again.\n\n';
+
+          if (deviceInfo.isIOS) {
+            errorMsg += 'For iPhone/iPad:\n';
+            errorMsg += '1. Go to Settings > Safari > Camera\n';
+            errorMsg += '2. Select "Allow"\n';
+            errorMsg += '3. Go to Settings > Safari > Microphone\n';
+            errorMsg += '4. Select "Allow"\n';
+            errorMsg += '5. Refresh this page and try again';
+          } else if (deviceInfo.isSamsung) {
+            errorMsg += 'For Samsung:\n';
+            errorMsg += '1. Go to Settings > Apps > [Browser] > Permissions\n';
+            errorMsg += '2. Enable Camera and Microphone\n';
+            errorMsg += '3. Refresh this page and try again';
+          } else if (deviceInfo.isXiaomi) {
+            errorMsg += 'For Xiaomi/Redmi/MIUI:\n';
+            errorMsg += '1. Go to Settings > Apps > Manage apps > [Browser]\n';
+            errorMsg += '2. Tap Permissions\n';
+            errorMsg += '3. Enable Camera and Microphone\n';
+            errorMsg += '4. Disable battery optimization for this app\n';
+            errorMsg += '5. Refresh this page and try again\n\n';
+            errorMsg += '💡 Tip: Use earphones to avoid echo on MIUI devices';
+          } else {
+            errorMsg += 'To fix this:\n';
+            errorMsg += '1. Click the camera/mic icon in your browser address bar\n';
+            errorMsg += '2. Select "Allow" for camera and microphone\n';
+            errorMsg += '3. Refresh the page and try again';
+          }
+
+          setMediaError(errorMsg);
         }
       } else if (error.name === 'NotFoundError') {
         setMediaError('No camera or microphone found. Please check your devices.\n\nMake sure:\n1. Camera and microphone are connected\n2. No other applications are using them\n3. Browser has permission to access them');
@@ -467,12 +498,35 @@ export default function FanCallModal({
     if (!callData || !socket) return;
 
     console.log('📞 [VideoCall] Accepting call');
+
+    // CRITICAL: Check permission state first (Layer 1 fix)
+    const deviceInfo = detectDevice();
+    console.log('📱 [Device Info]:', deviceInfo);
+
+    const permState = await checkPermissionState();
+    console.log('🔐 [Permission State]:', permState);
+
+    if (permState === 'denied') {
+      console.error('❌ [VideoCall] Permissions previously denied');
+      const deviceHint = deviceInfo.isIOS ? 'iOS' : deviceInfo.isAndroid ? 'Android' : 'your device';
+      setMediaError(
+        `Camera and microphone access denied.\n\n` +
+        `On ${deviceHint}, please:\n` +
+        `1. Open device Settings\n` +
+        `2. Find this browser/app\n` +
+        `3. Enable Camera and Microphone permissions\n` +
+        `4. Refresh this page and try again`
+      );
+      setCallStatus('ended');
+      return;
+    }
+
     setCallStatus('connecting');
 
-    // Ensure we have local media before proceeding
+    // Ensure we have local media before proceeding - NOW USER-INITIATED!
     let stream = localStream;
     if (!stream) {
-      console.log('📹 [VideoCall] Getting user media before accepting');
+      console.log('📹 [VideoCall] Getting user media before accepting (user-initiated)');
       stream = await getUserMedia();
       if (!stream) {
         console.error('❌ [VideoCall] Failed to get user media');
@@ -801,6 +855,41 @@ export default function FanCallModal({
     showControlsTemporarily();
   };
 
+  // Device detection utility
+  const detectDevice = useCallback(() => {
+    const ua = navigator.userAgent;
+    const info = {
+      isIOS: /iPhone|iPad|iPod/i.test(ua),
+      isAndroid: /Android/i.test(ua),
+      isSamsung: /Samsung|SM-/i.test(ua),
+      isXiaomi: /Xiaomi|Redmi|Mi |POCO/i.test(ua),
+      userAgent: ua
+    };
+    return info;
+  }, []);
+
+  // Permission pre-check (to provide better error messages)
+  const checkPermissionState = useCallback(async (): Promise<'granted' | 'denied' | 'prompt'> => {
+    try {
+      // Note: Permissions API not fully supported on iOS Safari < 16
+      const cameraPermission = await navigator.permissions.query({ name: 'camera' as PermissionName });
+      const micPermission = await navigator.permissions.query({ name: 'microphone' as PermissionName });
+
+      if (cameraPermission.state === 'denied' || micPermission.state === 'denied') {
+        return 'denied';
+      }
+      if (cameraPermission.state === 'granted' && micPermission.state === 'granted') {
+        return 'granted';
+      }
+      return 'prompt';
+    } catch (error) {
+      // Permissions API not supported (iOS Safari < 16)
+      // Fall back to 'prompt' - will attempt getUserMedia
+      console.log('📱 [Permissions] Permissions API not supported, will attempt getUserMedia');
+      return 'prompt';
+    }
+  }, []);
+
   const toggleSpeaker = () => {
     if (mainVideoRef.current) {
       const newSpeakerState = !isSpeakerEnabled;
@@ -811,12 +900,9 @@ export default function FanCallModal({
     showControlsTemporarily();
   };
 
-  // Auto-request user media when modal opens
-  useEffect(() => {
-    if (isOpen && !localStream) {
-      getUserMedia();
-    }
-  }, [isOpen, localStream]);
+  // REMOVED: Auto-request user media when modal opens
+  // Now permissions are requested on user action (Accept Call/Start Call)
+  // This fixes iOS Safari silently denying permissions
 
   // Cleanup when modal closes
   useEffect(() => {
@@ -1129,13 +1215,13 @@ export default function FanCallModal({
           pendingIceCandidatesRef.current.push(data.candidate);
           return;
         }
-        
+
         if (!pc.remoteDescription) {
           console.log('📹 [WebRTC] No remote description yet, queuing ICE candidate');
           pendingIceCandidatesRef.current.push(data.candidate);
           return;
         }
-        
+
         // Peer connection is ready, add candidate immediately
         try {
           console.log('📹 [WebRTC] Adding ICE candidate to peer connection');
@@ -1148,55 +1234,55 @@ export default function FanCallModal({
         }
       }
     };
-      const handleCallEnded = (data?: any) => {
-        if (data && data.callId && callData?.callId && data.callId !== callData.callId) {
-          return;
-        }
+    const handleCallEnded = (data?: any) => {
+      if (data && data.callId && callData?.callId && data.callId !== callData.callId) {
+        return;
+      }
 
-        console.log('📞 [VideoCall] Call ended event received, closing immediately');
+      console.log('📞 [VideoCall] Call ended event received, closing immediately');
+      handleCleanup();
+      onClose();
+    };
+
+    const handleCallTimeout = () => {
+      if (callData?.isIncoming) {
         handleCleanup();
         onClose();
-      };
+      }
+    };
 
-      const handleCallTimeout = () => {
-        if (callData?.isIncoming) {
-          handleCleanup();
-          onClose();
-        }
-      };
+    const handleMissedCall = (data: any) => {
+      // Handled by parent component
+    };
 
-      const handleMissedCall = (data: any) => {
-        // Handled by parent component
-      };
+    const handleInsufficientFundsFromServer = (data: any) => {
+      console.log('💰 [VideoCall] Insufficient funds received from server:', data);
+      const isCaller = callData?.callerId === currentUserId;
+      if ((data.callId === callData?.callId || !data.callId) && isCaller) {
+        handleInsufficientFunds();
+      }
+    };
 
-      const handleInsufficientFundsFromServer = (data: any) => {
-        console.log('💰 [VideoCall] Insufficient funds received from server:', data);
-        const isCaller = callData?.callerId === currentUserId;
-        if ((data.callId === callData?.callId || !data.callId) && isCaller) {
-          handleInsufficientFunds();
-        }
-      };
+    socket.on('fan_call_accepted', handleCallAccepted);
+    socket.on('fan_call_offer', handleOffer);
+    socket.on('fan_call_answer', handleAnswer);
+    socket.on('fan_call_ice_candidate', handleIceCandidate);
+    socket.on('fan_call_ended', handleCallEnded);
+    socket.on('fan_call_timeout', handleCallTimeout);
+    socket.on('fan_call_missed', handleMissedCall);
+    socket.on('insufficient_funds', handleInsufficientFundsFromServer);
 
-      socket.on('fan_call_accepted', handleCallAccepted);
-      socket.on('fan_call_offer', handleOffer);
-      socket.on('fan_call_answer', handleAnswer);
-      socket.on('fan_call_ice_candidate', handleIceCandidate);
-      socket.on('fan_call_ended', handleCallEnded);
-      socket.on('fan_call_timeout', handleCallTimeout);
-      socket.on('fan_call_missed', handleMissedCall);
-      socket.on('insufficient_funds', handleInsufficientFundsFromServer);
-
-      return () => {
-        socket.off('fan_call_accepted', handleCallAccepted);
-        socket.off('fan_call_offer', handleOffer);
-        socket.off('fan_call_answer', handleAnswer);
-        socket.off('fan_call_ice_candidate', handleIceCandidate);
-        socket.off('fan_call_ended', handleCallEnded);
-        socket.off('fan_call_timeout', handleCallTimeout);
-        socket.off('fan_call_missed', handleMissedCall);
-        socket.off('insufficient_funds', handleInsufficientFundsFromServer);
-      };
-    }, [socket, isOpen, currentUserId, callData, peerConnection, localStream, createPeerConnection, handleCleanup, onClose, handleInsufficientFunds, processPendingIceCandidates]);
+    return () => {
+      socket.off('fan_call_accepted', handleCallAccepted);
+      socket.off('fan_call_offer', handleOffer);
+      socket.off('fan_call_answer', handleAnswer);
+      socket.off('fan_call_ice_candidate', handleIceCandidate);
+      socket.off('fan_call_ended', handleCallEnded);
+      socket.off('fan_call_timeout', handleCallTimeout);
+      socket.off('fan_call_missed', handleMissedCall);
+      socket.off('insufficient_funds', handleInsufficientFundsFromServer);
+    };
+  }, [socket, isOpen, currentUserId, callData, peerConnection, localStream, createPeerConnection, handleCleanup, onClose, handleInsufficientFunds, processPendingIceCandidates]);
 
   // Process pending ICE candidates when remote description is set
   useEffect(() => {
