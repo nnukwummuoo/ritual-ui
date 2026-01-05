@@ -20,6 +20,7 @@ import { createpost, getallpost, hydrateFromCache } from "@/store/post";
 import { useRouter } from "next/navigation";
 import { useUserId } from "@/lib/hooks/useUserId";
 import { useAuthToken } from "@/lib/hooks/useAuthToken";
+import { generateCroppedVideoThumbnail, createPreviewUrl } from "@/utils/videoThumbnail";
 
 export const Mainpost = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -44,6 +45,9 @@ export const Mainpost = () => {
   const [videoPreview, setVideoPreview] = useState<string>("");
   const [videoUploading, setVideoUploading] = useState<boolean>(false);
   const [videoCaption, setVideoCaption] = useState<string>("");
+  const [videoThumbnail, setVideoThumbnail] = useState<File | undefined>(undefined);
+  const [videoThumbnailPreview, setVideoThumbnailPreview] = useState<string>("");
+  const [generatingThumbnail, setGeneratingThumbnail] = useState<boolean>(false);
   const [showBanWarning, setShowBanWarning] = useState<boolean>(false);
   const [showSizeWarning, setShowSizeWarning] = useState<boolean>(false);
   const [agreedToPolicy, setAgreedToPolicy] = useState<boolean>(false);
@@ -714,7 +718,7 @@ export const Mainpost = () => {
                   if (el && !videoUploading) el.click();
                 }}
                 onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
-                onDrop={(e) => {
+                onDrop={async (e) => {
                   e.preventDefault();
                   if (videoUploading) return;
                   const file = e.dataTransfer.files?.[0];
@@ -722,6 +726,25 @@ export const Mainpost = () => {
                     const url = URL.createObjectURL(file);
                     setVideoFile(file);
                     setVideoPreview(url);
+
+                    // Generate thumbnail automatically
+                    try {
+                      setGeneratingThumbnail(true);
+                      toast.info('Generating thumbnail...', { autoClose: 1500 });
+
+                      const thumbnailFile = await generateCroppedVideoThumbnail(file, 1);
+                      const thumbnailUrl = createPreviewUrl(thumbnailFile);
+
+                      setVideoThumbnail(thumbnailFile);
+                      setVideoThumbnailPreview(thumbnailUrl);
+
+                      toast.success('Thumbnail generated!', { autoClose: 1000 });
+                    } catch (error) {
+                      console.error('Failed to generate thumbnail:', error);
+                      toast.warn('Thumbnail generation failed, uploading without thumbnail', { autoClose: 2000 });
+                    } finally {
+                      setGeneratingThumbnail(false);
+                    }
                   } else {
                     toast.error('Only video files are allowed');
                   }
@@ -736,12 +759,32 @@ export const Mainpost = () => {
                   type="file"
                   accept="video/*"
                   className="hidden"
-                  onChange={(e) => {
+                  onChange={async (e) => {
                     const file = e.target.files?.[0] || undefined;
                     if (!file) return;
+
                     const url = URL.createObjectURL(file);
                     setVideoFile(file);
                     setVideoPreview(url);
+
+                    // Generate thumbnail automatically
+                    try {
+                      setGeneratingThumbnail(true);
+                      toast.info('Generating thumbnail...', { autoClose: 1500 });
+
+                      const thumbnailFile = await generateCroppedVideoThumbnail(file, 1);
+                      const thumbnailUrl = createPreviewUrl(thumbnailFile);
+
+                      setVideoThumbnail(thumbnailFile);
+                      setVideoThumbnailPreview(thumbnailUrl);
+
+                      toast.success('Thumbnail generated!', { autoClose: 1000 });
+                    } catch (error) {
+                      console.error('Failed to generate thumbnail:', error);
+                      toast.warn('Thumbnail generation failed, uploading without thumbnail', { autoClose: 2000 });
+                    } finally {
+                      setGeneratingThumbnail(false);
+                    }
                   }}
                 />
               </div>

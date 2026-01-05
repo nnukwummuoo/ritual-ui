@@ -85,6 +85,8 @@ export default function FanCallModal({
   const controlsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const callTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [peerConnection, setPeerConnection] = useState<RTCPeerConnection | null>(null);
+  const peerConnectionRef = useRef<RTCPeerConnection | null>(null); // CRITICAL FIX: Immediate ref access
+  const remoteStreamRef = useRef<MediaStream | null>(null); // CRITICAL FIX: Immediate stream ref
   const socket = getSocket();
 
   // Check for insecure context when modal opens
@@ -212,12 +214,43 @@ export default function FanCallModal({
 
       const isMobile = isMobileDevice();
       const isNetworkIP = /^\d+\.\d+\.\d+\.\d+/.test(window.location.hostname);
+      const deviceInfo = detectDevice(); // Use our new device detection
 
       if (error.name === 'NotAllowedError') {
         if (isMobile && isNetworkIP) {
           setMediaError('Camera access denied on mobile device.\n\nMobile browsers require HTTPS for camera access.\n\nSolutions:\n1. Use localhost:3000 on your computer\n2. Set up HTTPS for your development server\n3. Use a different device with desktop browser\n\nFor mobile testing, you need HTTPS or localhost access.');
         } else {
-          setMediaError('Camera and microphone access denied. Please allow access and try again.\n\nTo fix this:\n1. Click the camera/mic icon in your browser address bar\n2. Select "Allow" for camera and microphone\n3. Refresh the page and try again');
+          // Device-specific error messages
+          let errorMsg = 'Camera and microphone access denied. Please allow access and try again.\n\n';
+
+          if (deviceInfo.isIOS) {
+            errorMsg += 'For iPhone/iPad:\n';
+            errorMsg += '1. Go to Settings > Safari > Camera\n';
+            errorMsg += '2. Select "Allow"\n';
+            errorMsg += '3. Go to Settings > Safari > Microphone\n';
+            errorMsg += '4. Select "Allow"\n';
+            errorMsg += '5. Refresh this page and try again';
+          } else if (deviceInfo.isSamsung) {
+            errorMsg += 'For Samsung:\n';
+            errorMsg += '1. Go to Settings > Apps > [Browser] > Permissions\n';
+            errorMsg += '2. Enable Camera and Microphone\n';
+            errorMsg += '3. Refresh this page and try again';
+          } else if (deviceInfo.isXiaomi) {
+            errorMsg += 'For Xiaomi/Redmi/MIUI:\n';
+            errorMsg += '1. Go to Settings > Apps > Manage apps > [Browser]\n';
+            errorMsg += '2. Tap Permissions\n';
+            errorMsg += '3. Enable Camera and Microphone\n';
+            errorMsg += '4. Disable battery optimization for this app\n';
+            errorMsg += '5. Refresh this page and try again\n\n';
+            errorMsg += '💡 Tip: Use earphones to avoid echo on MIUI devices';
+          } else {
+            errorMsg += 'To fix this:\n';
+            errorMsg += '1. Click the camera/mic icon in your browser address bar\n';
+            errorMsg += '2. Select "Allow" for camera and microphone\n';
+            errorMsg += '3. Refresh the page and try again';
+          }
+
+          setMediaError(errorMsg);
         }
       } else if (error.name === 'NotFoundError') {
         setMediaError('No camera or microphone found. Please check your devices.\n\nMake sure:\n1. Camera and microphone are connected\n2. No other applications are using them\n3. Browser has permission to access them');
@@ -276,7 +309,7 @@ export default function FanCallModal({
       iceTransportPolicy: 'all'
     });
 
-    // Handle incoming remote stream - ENHANCED with track validation
+    // Handle incoming remote stream - ENHANCED with track validation and immediate ref assignment
     pc.ontrack = (event) => {
       console.log('📹 [WebRTC] ontrack event fired:', {
         hasStreams: !!event.streams,
@@ -289,6 +322,7 @@ export default function FanCallModal({
 
       if (event.streams && event.streams[0]) {
         const newRemoteStream = event.streams[0];
+        const track = event.track;
 
         // Validate tracks are active before setting
         const allTracks = newRemoteStream.getTracks();
@@ -308,12 +342,21 @@ export default function FanCallModal({
           }))
         });
 
-        if (activeTracks.length === 0) {
-          console.warn('⚠️ [WebRTC] Received stream has no active tracks, waiting for tracks to become live');
-          // Still set the stream - tracks may become active later
+        // CRITICAL FIX: Set ref immediately (synchronous)
+        remoteStreamRef.current = newRemoteStream;
+
+        // CRITICAL FIX: If track not ready, listen for it to become ready
+        if (track.readyState !== 'live') {
+          console.log('⚠️ [WebRTC] Track not live yet, adding ready listener');
+          track.addEventListener('unmute', () => {
+            console.log('✅ [WebRTC] Track became ready');
+            setRemoteStream(newRemoteStream);
+          }, { once: true });
+        } else {
+          // Track is ready, set state
+          setRemoteStream(newRemoteStream);
         }
 
-        setRemoteStream(newRemoteStream);
         (pc as any).remoteStream = newRemoteStream;
       }
     };
@@ -455,12 +498,35 @@ export default function FanCallModal({
     if (!callData || !socket) return;
 
     console.log('📞 [VideoCall] Accepting call');
+
+    // CRITICAL: Check permission state first (Layer 1 fix)
+    const deviceInfo = detectDevice();
+    console.log('📱 [Device Info]:', deviceInfo);
+
+    const permState = await checkPermissionState();
+    console.log('🔐 [Permission State]:', permState);
+
+    if (permState === 'denied') {
+      console.error('❌ [VideoCall] Permissions previously denied');
+      const deviceHint = deviceInfo.isIOS ? 'iOS' : deviceInfo.isAndroid ? 'Android' : 'your device';
+      setMediaError(
+        `Camera and microphone access denied.\n\n` +
+        `On ${deviceHint}, please:\n` +
+        `1. Open device Settings\n` +
+        `2. Find this browser/app\n` +
+        `3. Enable Camera and Microphone permissions\n` +
+        `4. Refresh this page and try again`
+      );
+      setCallStatus('ended');
+      return;
+    }
+
     setCallStatus('connecting');
 
-    // Ensure we have local media before proceeding
+    // Ensure we have local media before proceeding - NOW USER-INITIATED!
     let stream = localStream;
     if (!stream) {
-      console.log('📹 [VideoCall] Getting user media before accepting');
+      console.log('📹 [VideoCall] Getting user media before accepting (user-initiated)');
       stream = await getUserMedia();
       if (!stream) {
         console.error('❌ [VideoCall] Failed to get user media');
@@ -735,9 +801,11 @@ export default function FanCallModal({
       console.log('🧹 [VideoCall] Closing peer connection');
       peerConnection.close();
       setPeerConnection(null);
+      peerConnectionRef.current = null; // CRITICAL FIX: Clear ref too
     }
 
     setRemoteStream(null);
+    remoteStreamRef.current = null; // CRITICAL FIX: Clear stream ref
     pendingIceCandidatesRef.current = [];
   }, [localStream, peerConnection]);
 
@@ -787,6 +855,41 @@ export default function FanCallModal({
     showControlsTemporarily();
   };
 
+  // Device detection utility
+  const detectDevice = useCallback(() => {
+    const ua = navigator.userAgent;
+    const info = {
+      isIOS: /iPhone|iPad|iPod/i.test(ua),
+      isAndroid: /Android/i.test(ua),
+      isSamsung: /Samsung|SM-/i.test(ua),
+      isXiaomi: /Xiaomi|Redmi|Mi |POCO/i.test(ua),
+      userAgent: ua
+    };
+    return info;
+  }, []);
+
+  // Permission pre-check (to provide better error messages)
+  const checkPermissionState = useCallback(async (): Promise<'granted' | 'denied' | 'prompt'> => {
+    try {
+      // Note: Permissions API not fully supported on iOS Safari < 16
+      const cameraPermission = await navigator.permissions.query({ name: 'camera' as PermissionName });
+      const micPermission = await navigator.permissions.query({ name: 'microphone' as PermissionName });
+
+      if (cameraPermission.state === 'denied' || micPermission.state === 'denied') {
+        return 'denied';
+      }
+      if (cameraPermission.state === 'granted' && micPermission.state === 'granted') {
+        return 'granted';
+      }
+      return 'prompt';
+    } catch (error) {
+      // Permissions API not supported (iOS Safari < 16)
+      // Fall back to 'prompt' - will attempt getUserMedia
+      console.log('📱 [Permissions] Permissions API not supported, will attempt getUserMedia');
+      return 'prompt';
+    }
+  }, []);
+
   const toggleSpeaker = () => {
     if (mainVideoRef.current) {
       const newSpeakerState = !isSpeakerEnabled;
@@ -797,12 +900,9 @@ export default function FanCallModal({
     showControlsTemporarily();
   };
 
-  // Auto-request user media when modal opens
-  useEffect(() => {
-    if (isOpen && !localStream) {
-      getUserMedia();
-    }
-  }, [isOpen, localStream]);
+  // REMOVED: Auto-request user media when modal opens
+  // Now permissions are requested on user action (Accept Call/Start Call)
+  // This fixes iOS Safari silently denying permissions
 
   // Cleanup when modal closes
   useEffect(() => {
@@ -960,6 +1060,7 @@ export default function FanCallModal({
         console.log('📹 [VideoCall] I am the caller - creating peer connection and offer');
 
         const pc = createPeerConnection();
+        peerConnectionRef.current = pc; // CRITICAL FIX: Set ref immediately
         setPeerConnection(pc);
 
         // Add local tracks to peer connection
@@ -1003,13 +1104,14 @@ export default function FanCallModal({
 
       const isCorrectCall = data.callId === callData?.callId || data.callId.startsWith('temp_');
 
-      if (isCorrectCall && !peerConnection && callData?.isIncoming) {
+      if (isCorrectCall && !peerConnectionRef.current && callData?.isIncoming) {
         console.log('📹 [WebRTC] Processing offer as answerer');
 
         // CRITICAL: Create peer connection FIRST before anything else
         const pc = createPeerConnection();
 
-        // CRITICAL: Set it immediately so ICE candidates can be queued to it
+        // CRITICAL FIX: Set ref immediately (synchronous) AND state (async)
+        peerConnectionRef.current = pc;
         setPeerConnection(pc);
 
         // Ensure we have local media
@@ -1093,43 +1195,45 @@ export default function FanCallModal({
     const handleIceCandidate = async (data: any) => {
       const shouldAccept = data.callId === callData?.callId || data.callId.startsWith('temp_');
 
+      // CRITICAL FIX: Use ref instead of state for immediate check
+      const pc = peerConnectionRef.current;
+
       console.log('📹 [WebRTC] Received ICE candidate:', {
         callId: data.callId,
         currentCallId: callData?.callId,
         shouldAccept,
-        hasPeerConnection: !!peerConnection,
+        hasPeerConnection: !!pc,
         hasRemoteDescription: !!peerConnection?.remoteDescription,
         connectionState: peerConnection?.connectionState,
         iceConnectionState: peerConnection?.iceConnectionState
       });
 
       if (shouldAccept) {
-        // CRITICAL FIX: Always queue candidates if we don't have a peer connection yet
-        // This handles the race condition where ICE candidates arrive before the offer
-        if (!peerConnection) {
-          console.log('📹 [WebRTC] Queueing ICE candidate - no peer connection yet');
+        // CRITICAL FIX: Check ref-based peer connection
+        if (!pc) {
+          console.log('📹 [WebRTC] No peer connection yet, queuing ICE candidate');
           pendingIceCandidatesRef.current.push(data.candidate);
-          console.log('📹 [WebRTC] Pending candidates queue size:', pendingIceCandidatesRef.current.length);
           return;
         }
 
+        if (!pc.remoteDescription) {
+          console.log('📹 [WebRTC] No remote description yet, queuing ICE candidate');
+          pendingIceCandidatesRef.current.push(data.candidate);
+          return;
+        }
+
+        // Peer connection is ready, add candidate immediately
         try {
-          if (peerConnection.remoteDescription) {
-            console.log('📹 [WebRTC] Adding ICE candidate immediately');
-            await peerConnection.addIceCandidate(new RTCIceCandidate(data.candidate));
-            console.log('✅ [WebRTC] ICE candidate added successfully');
-          } else {
-            console.log('📹 [WebRTC] Queueing ICE candidate - no remote description yet');
-            pendingIceCandidatesRef.current.push(data.candidate);
-            console.log('📹 [WebRTC] Pending candidates queue size:', pendingIceCandidatesRef.current.length);
-          }
+          console.log('📹 [WebRTC] Adding ICE candidate to peer connection');
+          await pc.addIceCandidate(new RTCIceCandidate(data.candidate));
+          console.log('✅ [WebRTC] ICE candidate added successfully');
         } catch (error) {
           console.error('❌ [WebRTC] Error adding ICE candidate:', error);
+          // If we fail to add, queue it for later retry
           pendingIceCandidatesRef.current.push(data.candidate);
         }
       }
     };
-
     const handleCallEnded = (data?: any) => {
       if (data && data.callId && callData?.callId && data.callId !== callData.callId) {
         return;

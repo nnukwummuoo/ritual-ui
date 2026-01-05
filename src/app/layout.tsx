@@ -15,6 +15,7 @@ import GlobalVisitorTracker from "@/components/GlobalVisitorTracker";
 import { ContentFilterProvider } from "@/lib/context/content-filter-context";
 import MaintenanceBanner from "@/components/MaintenanceBanner";
 import ReferralTracker from "@/components/ReferralTracker";
+import UpdateNotification from "@/components/UpdateNotification";
 
 
 const inter = Inter({
@@ -82,6 +83,7 @@ export default async function RootLayout({
               />
               <GlobalVisitorTracker />
               <ReferralTracker />
+              <UpdateNotification />
               <MaintenanceBanner />
               <ConditionalLayoutWrapper ssrAuth={isAuthenticated}>
                 {children}
