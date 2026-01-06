@@ -544,6 +544,13 @@ export default function PostsCard() {
   // Determine if we should use virtualization (for large lists)
   const shouldUseVirtualization = useVirtualization && filteredPosts.length > 20;
 
+  // Debug logging for RitualsCard
+  console.log('[PostsCard] Total posts:', allPosts.length);
+  console.log('[PostsCard] Filtered posts:', filteredPosts.length);
+  console.log('[PostsCard] Remaining posts (for LazyPost):', remainingPosts.length);
+  console.log('[PostsCard] RitualsCard should appear after index 0 (second item in feed)');
+  console.log('[PostsCard] shouldUseVirtualization:', shouldUseVirtualization);
+
   // Auto-load posts when scrolling - trigger at 10th post from end for batch loading
   React.useEffect(() => {
     if (shouldUseVirtualization || !autoLoadEnabled || !hasMorePosts) {
@@ -699,7 +706,10 @@ export default function PostsCard() {
                   />
                 </div>
                 {/* Inject Rituals card only once after the first LazyPost */}
-                {index === 0 && <RitualsCard />}
+                {index === 0 && (() => {
+                  console.log('[PostsCard] 🔮 Rendering RitualsCard at index 0');
+                  return <RitualsCard />;
+                })()}
                 {/* Inject Top Fans card after the second LazyPost */}
                 {index === 1 && <TopFans />}
               </React.Fragment>

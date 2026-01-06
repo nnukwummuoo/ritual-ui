@@ -30,13 +30,18 @@ const UpdateNotification = () => {
             const { version } = await response.json();
             const currentVersion = localStorage.getItem('app_version');
 
+            // Show update if we have a stored version AND server version is different
+            // Banner will show on EVERY page load until user clicks "Update Now"
             if (currentVersion && currentVersion !== version) {
                 console.log(`🔄 Update available: ${currentVersion} → ${version}`);
                 setUpdateAvailable(true);
             }
 
-            // Always update stored version
-            localStorage.setItem('app_version', version);
+            // Only update stored version if this is the first time or if versions match
+            // Don't auto-update when new version is detected (let user click Update Now)
+            if (!currentVersion || currentVersion === version) {
+                localStorage.setItem('app_version', version);
+            }
         } catch (error) {
             console.error('Error checking for updates:', error);
         }
@@ -46,6 +51,11 @@ const UpdateNotification = () => {
         setIsRefreshing(true);
 
         try {
+            // Get the new version before clearing cache
+            const apiUrl = process.env.NEXT_PUBLIC_API || 'http://localhost:3100';
+            const response = await fetch(`${apiUrl}/api/version`);
+            const { version } = await response.json();
+
             // Clear service worker caches
             if ('caches' in window) {
                 const cacheNames = await caches.keys();
@@ -55,7 +65,6 @@ const UpdateNotification = () => {
 
             // Preserve auth and important data
             const preserveKeys = [
-                'app_version',
                 'login',  // CRITICAL: Contains username, userID, tokens, etc.
                 'token',
                 'userID',
@@ -103,7 +112,7 @@ const UpdateNotification = () => {
             localStorage.clear();
             sessionStorage.clear();
 
-            // Restore auth data
+            // Restore auth data and set new version
             Object.entries(preservedData).forEach(([key, value]) => {
                 localStorage.setItem(key, value);
             });
@@ -112,7 +121,10 @@ const UpdateNotification = () => {
                 sessionStorage.setItem(key, value);
             });
 
-            console.log('✅ Cache cleared, auth data preserved');
+            // Set the new version after update
+            localStorage.setItem('app_version', version);
+
+            console.log('✅ Cache cleared, auth data preserved, version updated');
 
             // Hard reload
             window.location.reload();
@@ -120,6 +132,11 @@ const UpdateNotification = () => {
             console.error('Error clearing cache:', error);
             setIsRefreshing(false);
         }
+    };
+
+    const dismissUpdate = () => {
+        // Just hide the banner temporarily - it will come back on refresh
+        setUpdateAvailable(false);
     };
 
     if (!updateAvailable) return null;
@@ -132,23 +149,36 @@ const UpdateNotification = () => {
                     <span className="font-medium">A new update is available!</span>
                 </div>
 
-                <button
-                    onClick={handleUpdate}
-                    disabled={isRefreshing}
-                    className="flex items-center gap-2 bg-white text-blue-600 px-4 py-2 rounded-md font-medium hover:bg-blue-50 transition-colors disabled:opacity-50"
-                >
-                    {isRefreshing ? (
-                        <>
-                            <RefreshCw className="w-4 h-4 animate-spin" />
-                            Updating...
-                        </>
-                    ) : (
-                        <>
-                            <RefreshCw className="w-4 h-4" />
-                            Update Now
-                        </>
-                    )}
-                </button>
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={handleUpdate}
+                        disabled={isRefreshing}
+                        className="flex items-center gap-2 bg-white text-blue-600 px-4 py-2 rounded-md font-medium hover:bg-blue-50 transition-colors disabled:opacity-50"
+                    >
+                        {isRefreshing ? (
+                            <>
+                                <RefreshCw className="w-4 h-4 animate-spin" />
+                                Updating...
+                            </>
+                        ) : (
+                            <>
+                                <RefreshCw className="w-4 h-4" />
+                                Update Now
+                            </>
+                        )}
+                    </button>
+
+                    <button
+                        onClick={dismissUpdate}
+                        disabled={isRefreshing}
+                        className="text-white hover:text-blue-100 p-2 transition-colors disabled:opacity-50"
+                        title="Dismiss this update"
+                    >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
             </div>
         </div>
     );
