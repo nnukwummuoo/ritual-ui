@@ -3,6 +3,9 @@
 // /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
+// Import webrtc-adapter for cross-browser compatibility
+import 'webrtc-adapter';
+
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Image from 'next/image';
 import { IoCall, IoCallSharp, IoVideocam, IoVideocamOff, IoMic, IoMicOff, IoClose, IoVolumeHigh, IoVolumeMute } from 'react-icons/io5';
@@ -10,6 +13,7 @@ import { getSocket } from '@/lib/socket';
 import VideoCallBilling from './FanCallBilling';
 import VIPBadge from './VIPBadge';
 import { getImageSource } from '@/lib/imageUtils';
+import { diagnostics } from '@/lib/WebRTCDiagnostics';
 
 // Mobile detection utility
 const isMobileDevice = () => {
@@ -18,6 +22,64 @@ const isMobileDevice = () => {
 
 const isIOSDevice = () => {
   return /iPhone|iPad|iPod/i.test(navigator.userAgent);
+};
+
+// Codec preference utility for Safari/iOS compatibility
+const preferCodec = (sdp: string, codecName: string): string => {
+  const lines = sdp.split('\r\n');
+  let mLineIndex = -1;
+  let codecPayloadType = '';
+
+  // Find m=video line
+  for (let i = 0; i < lines.length; i++) {
+    if (lines[i].startsWith('m=video')) {
+      mLineIndex = i;
+      break;
+    }
+  }
+
+  // Find codec payload type
+  for (let i = 0; i < lines.length; i++) {
+    if (lines[i].includes('rtpmap') && lines[i].toLowerCase().includes(codecName.toLowerCase())) {
+      const match = lines[i].match(/a=rtpmap:(\d+)/);
+      if (match) {
+        codecPayloadType = match[1];
+        break;
+      }
+    }
+  }
+
+  if (mLineIndex !== -1 && codecPayloadType) {
+    const elements = lines[mLineIndex].split(' ');
+    const payloads = elements.slice(3);
+
+    // Move preferred codec to front
+    const newPayloads = [codecPayloadType, ...payloads.filter(p => p !== codecPayloadType)];
+    lines[mLineIndex] = elements.slice(0, 3).concat(newPayloads).join(' ');
+  }
+
+  return lines.join('\r\n');
+};
+
+// SDP validation utility
+const validateSDP = (sdp: RTCSessionDescriptionInit): boolean => {
+  if (!sdp.sdp) return false;
+
+  // Check for essential components
+  const hasMediaDescription = sdp.sdp.includes('m=video') || sdp.sdp.includes('m=audio');
+  const hasICECredentials = sdp.sdp.includes('a=ice-ufrag') && sdp.sdp.includes('a=ice-pwd');
+  const hasFingerprint = sdp.sdp.includes('a=fingerprint');
+
+  if (!hasMediaDescription || !hasICECredentials || !hasFingerprint) {
+    console.error('❌ [WebRTC] Invalid SDP detected:', {
+      hasMediaDescription,
+      hasICECredentials,
+      hasFingerprint
+    });
+    return false;
+  }
+
+  return true;
 };
 
 interface FanCallModalProps {
@@ -88,6 +150,9 @@ export default function FanCallModal({
   const [peerConnection, setPeerConnection] = useState<RTCPeerConnection | null>(null);
   const peerConnectionRef = useRef<RTCPeerConnection | null>(null); // CRITICAL FIX: Immediate ref access
   const remoteStreamRef = useRef<MediaStream | null>(null); // CRITICAL FIX: Immediate stream ref
+  const connectionHealthRef = useRef<NodeJS.Timeout | null>(null);
+  const keepAliveIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const dataChannelRef = useRef<RTCDataChannel | null>(null);
   const socket = getSocket();
 
   // Check for insecure context when modal opens
@@ -178,21 +243,31 @@ export default function FanCallModal({
 
       const isMobile = isMobileDevice();
       const isIOS = isIOSDevice();
+      const isSlowNetwork = (navigator as any).connection?.effectiveType === '2g' ||
+        (navigator as any).connection?.effectiveType === '3g';
 
-      // Mobile-optimized constraints for better compatibility and performance
+      // Network-aware constraints for optimal performance across all devices
       const constraints = {
         video: isVideoEnabled ? {
-          width: { ideal: isMobile ? 640 : 1280 },
-          height: { ideal: isMobile ? 480 : 720 },
-          frameRate: { ideal: isMobile ? 24 : 30 },
+          width: {
+            ideal: isSlowNetwork ? 320 : (isMobile ? 640 : 1280),
+            max: 1920 // Prevent 4K capture that overwhelms mobile CPUs
+          },
+          height: {
+            ideal: isSlowNetwork ? 240 : (isMobile ? 480 : 720),
+            max: 1080
+          },
+          frameRate: {
+            ideal: isSlowNetwork ? 15 : (isMobile ? 24 : 30),
+            max: 30
+          },
           facingMode: 'user'
         } : false,
         audio: isAudioEnabled ? {
           echoCancellation: true,
           noiseSuppression: true,
           autoGainControl: true,
-          // iOS-specific: use lower sample rate for better compatibility
-          ...(isIOS ? { sampleRate: 48000 } : {})
+          sampleRate: isIOS ? 48000 : 44100
         } : false
       };
 
@@ -289,14 +364,28 @@ export default function FanCallModal({
 
     const pc = new RTCPeerConnection({
       iceServers: [
-        // Google STUN server for public IP discovery
+        // Multiple STUN servers for redundancy and reliability
         { urls: 'stun:stun.l.google.com:19302' },
-        // Metered.ca free TURN servers for reliable global connectivity
+        { urls: 'stun:stun1.l.google.com:19302' },
+
+        // TURN with UDP (preferred for P2P efficiency)
         {
-          urls: [
-            'turn:a.relay.metered.ca:80',
-            'turn:a.relay.metered.ca:443'
-          ],
+          urls: 'turn:a.relay.metered.ca:80',
+          username: 'e62583087c262cbfba58afdd',
+          credential: 'cM5CIbxsVPPI5UR5'
+        },
+
+        // TURN with TCP (firewall fallback for UDP-blocked networks)
+        {
+          urls: 'turn:a.relay.metered.ca:80?transport=tcp',
+          username: 'e62583087c262cbfba58afdd',
+          credential: 'cM5CIbxsVPPI5UR5'
+        },
+
+        // TURN with TLS on port 443 (ultimate fallback - indistinguishable from HTTPS)
+        // Critical for restrictive corporate/university networks and African ISPs
+        {
+          urls: 'turn:a.relay.metered.ca:443?transport=tcp',
           username: 'e62583087c262cbfba58afdd',
           credential: 'cM5CIbxsVPPI5UR5'
         }
@@ -305,11 +394,87 @@ export default function FanCallModal({
       // Important: bundle policy for better compatibility
       bundlePolicy: 'max-bundle',
       rtcpMuxPolicy: 'require',
-      // Try to use all ICE candidates
+      // Try to use all ICE candidates (P2P first, relay as fallback)
       iceTransportPolicy: 'all'
     });
 
-    // Handle incoming remote stream - ENHANCED with track validation and immediate ref assignment
+    // NAT Traversal Keep-Alive: Maintain NAT bindings with periodic pings
+    // Critical for aggressive NAT timeouts and mobile network transitions
+    const dataChannel = pc.createDataChannel('keepalive', {
+      ordered: false,
+      maxRetransmits: 0
+    });
+    dataChannelRef.current = dataChannel;
+
+    dataChannel.onopen = () => {
+      console.log('📡 [WebRTC] Keep-alive data channel open');
+
+      // Send ping every 5 seconds to maintain NAT binding
+      const keepAliveInterval = setInterval(() => {
+        if (dataChannel.readyState === 'open') {
+          try {
+            dataChannel.send(JSON.stringify({ type: 'ping', timestamp: Date.now() }));
+          } catch (e) {
+            console.warn('⚠️ [WebRTC] Keep-alive send failed:', e);
+          }
+        } else {
+          // Channel closed, clean up
+          clearInterval(keepAliveInterval);
+        }
+      }, 5000);
+
+      keepAliveIntervalRef.current = keepAliveInterval;
+    };
+
+    dataChannel.onerror = (error) => {
+      console.error('❌ [WebRTC] Data channel error:', error);
+    };
+
+    dataChannel.onclose = () => {
+      console.log('📡 [WebRTC] Keep-alive data channel closed');
+      if (keepAliveIntervalRef.current) {
+        clearInterval(keepAliveIntervalRef.current);
+        keepAliveIntervalRef.current = null;
+      }
+    };
+
+    // Handle incoming data channel from remote peer
+    pc.ondatachannel = (event) => {
+      console.log('📡 [WebRTC] Received data channel from remote');
+      const channel = event.channel;
+
+      channel.onmessage = (msg) => {
+        try {
+          const data = JSON.parse(msg.data);
+          if (data.type === 'ping') {
+            // Respond with pong to confirm bidirectional connectivity
+            if (channel.readyState === 'open') {
+              channel.send(JSON.stringify({ type: 'pong', timestamp: Date.now() }));
+            }
+          } else if (data.type === 'pong') {
+            // Pong received, connection is healthy
+            console.log('✅ [WebRTC] Keep-alive pong received');
+          }
+        } catch (e) {
+          // Ignore malformed messages
+        }
+      };
+    };
+
+    // Start diagnostic monitoring
+    if (callData?.callId && currentUserId) {
+      setTimeout(() => {
+        diagnostics.startMonitoring(
+          callData.callId!,
+          currentUserId,
+          pc,
+          localStream,
+          remoteStream
+        );
+      }, 1000);
+    }
+
+
     pc.ontrack = (event) => {
       console.log('📹 [WebRTC] ontrack event fired:', {
         hasStreams: !!event.streams,
@@ -811,6 +976,31 @@ export default function FanCallModal({
       callTimeoutRef.current = null;
     }
 
+    // Stop diagnostic monitoring
+    diagnostics.stopMonitoring();
+
+    // Clean up keep-alive interval
+    if (keepAliveIntervalRef.current) {
+      clearInterval(keepAliveIntervalRef.current);
+      keepAliveIntervalRef.current = null;
+    }
+
+    // Clean up connection health monitoring
+    if (connectionHealthRef.current) {
+      clearInterval(connectionHealthRef.current);
+      connectionHealthRef.current = null;
+    }
+
+    // Close data channel
+    if (dataChannelRef.current) {
+      try {
+        dataChannelRef.current.close();
+      } catch (e) {
+        console.warn('⚠️ [WebRTC] Data channel close error:', e);
+      }
+      dataChannelRef.current = null;
+    }
+
     if (localStream) {
       console.log('🧹 [VideoCall] Stopping local stream tracks');
       localStream.getTracks().forEach(track => track.stop());
@@ -1118,6 +1308,12 @@ export default function FanCallModal({
           });
           console.log('📹 [WebRTC] Created offer');
 
+          // Prefer H.264 codec for Safari/iOS/mobile compatibility
+          if (offer.sdp) {
+            offer.sdp = preferCodec(offer.sdp, 'H264');
+            console.log('📹 [WebRTC] Applied H.264 codec preference');
+          }
+
           await pc.setLocalDescription(offer);
           console.log('📹 [WebRTC] Set local description (offer)');
 
@@ -1148,6 +1344,12 @@ export default function FanCallModal({
 
       if (isCorrectCall && !peerConnectionRef.current && callData?.isIncoming) {
         console.log('📹 [WebRTC] Processing offer as answerer');
+
+        // Validate SDP before processing
+        if (!validateSDP(data.offer)) {
+          console.error('❌ [WebRTC] Rejecting invalid offer SDP');
+          return;
+        }
 
         // CRITICAL: Create peer connection FIRST before anything else
         const pc = createPeerConnection();
@@ -1181,6 +1383,12 @@ export default function FanCallModal({
           console.log('📹 [WebRTC] Creating answer');
           const answer = await pc.createAnswer();
           console.log('📹 [WebRTC] Created answer');
+
+          // Prefer H.264 codec for compatibility
+          if (answer.sdp) {
+            answer.sdp = preferCodec(answer.sdp, 'H264');
+            console.log('📹 [WebRTC] Applied H.264 codec preference to answer');
+          }
 
           await pc.setLocalDescription(answer);
           console.log('📹 [WebRTC] Set local description (answer)');
@@ -1218,6 +1426,12 @@ export default function FanCallModal({
       const isCorrectCall = data.callId === callData?.callId || data.callId.startsWith('temp_');
 
       if (isCorrectCall && peerConnection) {
+        // Validate SDP before processing
+        if (!validateSDP(data.answer)) {
+          console.error('❌ [WebRTC] Rejecting invalid answer SDP');
+          return;
+        }
+
         try {
           console.log('📹 [WebRTC] Setting remote description (answer)');
           await peerConnection.setRemoteDescription(new RTCSessionDescription(data.answer));
