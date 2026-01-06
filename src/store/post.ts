@@ -43,11 +43,12 @@ export const createpost = createAsyncThunk("post/createpost", async (data: Creat
     if (data.onUploadProgress) {
       (config as any).onUploadProgress = data.onUploadProgress;
     }
-    const uploadeable=["image","video"]
-    const response = uploadeable.includes(data?.posttype)?(await axios.post(`${URL}/api/image/save`, formData, config)):{status:201,data:{
-            "postfilelink": "",
-      "postfilepublicid": ""
-    }
+    const uploadeable = ["image", "video"]
+    const response = uploadeable.includes(data?.posttype) ? (await axios.post(`${URL}/api/image/save`, formData, config)) : {
+      status: 201, data: {
+        "postfilelink": "",
+        "postfilepublicid": ""
+      }
     };
 
     if (!(response.status >= 200 && response.status < 300)) {
@@ -55,21 +56,21 @@ export const createpost = createAsyncThunk("post/createpost", async (data: Creat
       throw "Image upload failed";
     }
 
-  const api = backend(String(data?.token))
+    const api = backend(String(data?.token))
     const resPost = await api.post("/post", {
-      userid:data.userid,
+      userid: data.userid,
       content: data.content,
       posttype: data.posttype,
       authorUsername: data.authorUsername,
       authorName: data.authorName,
       handle: data.handle,
-      ...(response?.data||{}),
-  })
-  console.log(resPost?.data)
+      ...(response?.data || {}),
+    })
+    console.log(resPost?.data)
 
     return response.data;
   } catch (err: any) {
-    try { console.log("post err", err); } catch {}
+    try { console.log("post err", err); } catch { }
     let message = 'Upload failed';
     if (err?.response?.data) {
       const d = err.response.data;
@@ -115,7 +116,7 @@ export const getallpost = createAsyncThunk("post/getallpost", async (data: any) 
             likedBy: likeResponse.data.likedBy
           };
         }
-         console.log(post)
+        console.log(post)
         return post;
       } catch (err) {
         console.error(`Error fetching likes for post ${post._id}:`, err);
@@ -150,16 +151,16 @@ export const fetchposts = async (page = 1) => {
       console.error("Error getting user ID from localStorage:", error);
     }
 
-    let response = await axios.post(`${URL}/getallpost`, { 
+    let response = await axios.post(`${URL}/getallpost`, {
       userid,
       page,
       limit: 20
     });
-    
+
+
     // Backend already returns posts with likes and comments via aggregation
     // No need for additional API calls - use the data directly!
     const posts = response.data.post || [];
-    console.log(posts)
     return {
       ...response.data,
       post: posts
@@ -169,7 +170,7 @@ export const fetchposts = async (page = 1) => {
   }
 }
 
-export const fetchsinglepost = async (pid:String) => {
+export const fetchsinglepost = async (pid: String) => {
   try {
     let response = await axios.get(`${URL}/getallpost/${pid}`);
     return response.data;
@@ -178,7 +179,7 @@ export const fetchsinglepost = async (pid:String) => {
   }
 }
 
-export const deletesinglepost = async (pid:String) => {
+export const deletesinglepost = async (pid: String) => {
   try {
     let response = await axios.delete(`${URL}/getallpost/${pid}`);
     window.dispatchEvent(new Event("refreshfeed"));
@@ -188,9 +189,9 @@ export const deletesinglepost = async (pid:String) => {
   }
 }
 
-export const updatepost = async (pid:String,post:any) => {
+export const updatepost = async (pid: String, post: any) => {
   try {
-    let response = await axios.put(`${URL}/getallpost/${pid}`,post);
+    let response = await axios.put(`${URL}/getallpost/${pid}`, post);
     return response.data;
   } catch (err: any) {
     throw err.response.data.message;
@@ -265,7 +266,7 @@ const post = createSlice({
         // Accept multiple possible shapes for the created post
         const payload = action.payload as any;
         if (process.env.NODE_ENV !== 'production') {
-          try { console.debug('createpost.fulfilled payload:', payload); } catch {}
+          try { console.debug('createpost.fulfilled payload:', payload); } catch { }
         }
         const candidate =
           payload?.post ||
@@ -292,7 +293,7 @@ const post = createSlice({
             }
           }
           state.allPost.unshift(newPost);
-          try { localStorage.setItem('feedPosts', JSON.stringify(state.allPost)); } catch {}
+          try { localStorage.setItem('feedPosts', JSON.stringify(state.allPost)); } catch { }
         } else {
           // Optimistic fallback when API doesn't return the created post
           const args = (action.meta as any)?.arg as CreatePostArgs;
@@ -313,10 +314,10 @@ const post = createSlice({
           if (basePost && (uploadPublicId || uploadUrl)) {
             basePost.postphoto = uploadPublicId || uploadUrl;
             state.allPost.unshift(basePost);
-            try { localStorage.setItem('feedPosts', JSON.stringify(state.allPost)); } catch {}
+            try { localStorage.setItem('feedPosts', JSON.stringify(state.allPost)); } catch { }
           } else if (basePost) {
             state.allPost.unshift(basePost);
-            try { localStorage.setItem('feedPosts', JSON.stringify(state.allPost)); } catch {}
+            try { localStorage.setItem('feedPosts', JSON.stringify(state.allPost)); } catch { }
           }
         }
       })
@@ -330,7 +331,7 @@ const post = createSlice({
       .addCase(getallpost.fulfilled, (state, action) => {
         state.poststatus = "succeeded";
         state.message = action.payload.message;
-        
+
         // Extract posts with their like counts
         const payload: any = action.payload || {};
         const postsArray =
@@ -339,7 +340,7 @@ const post = createSlice({
           (Array.isArray(payload?.data?.post) && payload.data.post) ||
           (Array.isArray(payload?.data?.posts) && payload.data.posts) ||
           [];
-          
+
         // Each post should now have likeCount and likedBy from the backend
         // Create a map of existing posts for merging
         const existingMap = new Map<string | number, any>();
@@ -360,7 +361,7 @@ const post = createSlice({
             return {
               ...newPost,
               likes: existingPost.likes || newPost.likes || [],
-              like: existingPost.like || newPost.like || [], 
+              like: existingPost.like || newPost.like || [],
               likeCount: existingPost.likeCount || newPost.likeCount || 0,
               likedBy: existingPost.likedBy || newPost.likedBy || []
             };
@@ -376,7 +377,7 @@ const post = createSlice({
         };
 
         state.allPost = mergedPosts.sort((a, b) => toDate(b) - toDate(a));
-        try { localStorage.setItem('feedPosts', JSON.stringify(state.allPost)); } catch {}
+        try { localStorage.setItem('feedPosts', JSON.stringify(state.allPost)); } catch { }
       })
       .addCase(getallpost.rejected, (state, action) => {
         state.poststatus = "failed";
@@ -404,24 +405,24 @@ const post = createSlice({
       // Handle like updates
       .addCase(postlike.fulfilled, (state, action: any) => {
         if (!action.meta?.arg) return;
-        
+
         const { postid, userid } = action.meta.arg;
         const postIndex = state.allPost.findIndex(
           p => (p.postid === postid || p.id === postid || p._id === postid)
         );
-        
+
         if (postIndex === -1) return;
-        
+
         const post = state.allPost[postIndex];
         const isUnlike = action.payload?.ok === false;
-        
+
         // Safely copy existing likes
         const existingLikes = (post.likes || post.like || []) as Like[];
         const likes = [...existingLikes];
-        
+
         // Find existing like by this user
         const hasLike = likes.some(l => String(l.userid || l.userId) === String(userid));
-        
+
         if (isUnlike && hasLike) {
           // Remove like on unlike response
           const filtered = likes.filter(l => String(l.userid || l.userId) !== String(userid));

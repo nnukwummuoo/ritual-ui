@@ -625,9 +625,6 @@ const LazyPost: React.FC<LazyPostProps> = ({
     // If we have a video file key, use streaming endpoint
     if (videoFileKey) {
       src = `${API_BASE}/api/video/stream/${encodeURIComponent(videoFileKey)}`;
-      console.log(`🎥 [LazyPost] Streaming: ${videoFileKey}`);
-    } else {
-      console.log(`⚠️ [LazyPost] No file key | asString: ${asString?.substring(0, 80)}`);
     }
   }
 

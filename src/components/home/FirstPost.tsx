@@ -301,9 +301,6 @@ const FirstPost: React.FC<FirstPostProps> = ({
     // If we have a video file key, use streaming endpoint
     if (videoFileKey) {
       src = `${API_BASE}/api/video/stream/${encodeURIComponent(videoFileKey)}`;
-      console.log(`🎥 [FirstPost] Streaming: ${videoFileKey}`);
-    } else {
-      console.log(`⚠️ [FirstPost] No file key | asString: ${asString?.substring(0, 80)}`);
     }
   }
 
