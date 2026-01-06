@@ -123,9 +123,9 @@ export const getSocket = () => {
       let socketUrl: string;
 
       // Check if accessing via network IP first
-      if (window.location.hostname === '192.168.0.101') {
+      if (window.location.hostname === '192.168.0.102') {
         // Network access - use network backend (backend listens on 0.0.0.0)
-        socketUrl = "http://192.168.0.101:3100"
+        socketUrl = "http://192.168.0.102:3100"
       } else if (process.env.NODE_ENV === "development") {
         // Development: always use local server
         socketUrl = "http://localhost:3100";

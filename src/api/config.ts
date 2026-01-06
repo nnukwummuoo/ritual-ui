@@ -19,8 +19,8 @@ export const URL = (() => {
     const hostname = window.location.hostname;
 
     // If accessing via network IP, use network backend
-    if (hostname === "192.168.0.101") {
-      return "http://192.168.0.101:3100";
+    if (hostname === "192.168.0.102") {
+      return "http://192.168.0.102:3100";
     }
 
     // Otherwise use localhost backend

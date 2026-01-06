@@ -3,7 +3,7 @@
 // /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-// Import webrtc-adapter for cross-browser compatibility
+// Import webrtc-adapter for cross-browser compatibility (MUST BE FIRST)
 import 'webrtc-adapter';
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
@@ -14,6 +14,16 @@ import VideoCallBilling from './FanCallBilling';
 import VIPBadge from './VIPBadge';
 import { getImageSource } from '@/lib/imageUtils';
 import { diagnostics } from '@/lib/WebRTCDiagnostics';
+
+// Import cross-browser WebRTC utilities
+import {
+  getOptimalConstraints,
+  createUniversalPeerConnection,
+  createOfferWithCodecPreference,
+  createAnswerWithCodecPreference,
+  attachStreamToVideo,
+  diagnoseWebRTCSupport
+} from '@/lib/webrtc-cross-browser';
 
 // Mobile detection utility
 const isMobileDevice = () => {
@@ -155,7 +165,7 @@ export default function FanCallModal({
   const dataChannelRef = useRef<RTCDataChannel | null>(null);
   const socket = getSocket();
 
-  // Check for insecure context when modal opens
+  // Check for insecure context when modal opens + run diagnostics
   useEffect(() => {
     if (isOpen) {
       const isSecureContext = window.isSecureContext || window.location.protocol === 'https:' || window.location.hostname === 'localhost';
@@ -165,6 +175,9 @@ export default function FanCallModal({
       if (!isSecureContext) {
         setShowInsecureWarning(true);
       }
+
+      // Run cross-browser diagnostics (helps debug device-specific issues)
+      diagnoseWebRTCSupport().catch(err => console.warn('Diagnostics failed:', err));
     }
   }, [isOpen]);
 
@@ -227,7 +240,7 @@ export default function FanCallModal({
     }
   };
 
-  // Get user media - ENHANCED with mobile optimization
+  // Get user media - ENHANCED with cross-browser device-specific constraints
   const getUserMedia = async () => {
     try {
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
@@ -241,37 +254,20 @@ export default function FanCallModal({
 
       console.log('📹 [VideoCall] Requesting user media');
 
-      const isMobile = isMobileDevice();
-      const isIOS = isIOSDevice();
-      const isSlowNetwork = (navigator as any).connection?.effectiveType === '2g' ||
-        (navigator as any).connection?.effectiveType === '3g';
+      // Use cross-browser utility to get optimal constraints
+      const { constraints, capabilities, codecs } = await getOptimalConstraints();
 
-      // Network-aware constraints for optimal performance across all devices
-      const constraints = {
-        video: isVideoEnabled ? {
-          width: {
-            ideal: isSlowNetwork ? 320 : (isMobile ? 640 : 1280),
-            max: 1920 // Prevent 4K capture that overwhelms mobile CPUs
-          },
-          height: {
-            ideal: isSlowNetwork ? 240 : (isMobile ? 480 : 720),
-            max: 1080
-          },
-          frameRate: {
-            ideal: isSlowNetwork ? 15 : (isMobile ? 24 : 30),
-            max: 30
-          },
-          facingMode: 'user'
-        } : false,
-        audio: isAudioEnabled ? {
-          echoCancellation: true,
-          noiseSuppression: true,
-          autoGainControl: true,
-          sampleRate: isIOS ? 48000 : 44100
-        } : false
-      };
+      // Apply video/audio enabled states
+      if (!isVideoEnabled) {
+        constraints.video = false;
+      }
+      if (!isAudioEnabled) {
+        constraints.audio = false;
+      }
 
       console.log('📹 [VideoCall] Using constraints:', constraints);
+      console.log('🎥 [VideoCall] Device capabilities:', capabilities);
+      console.log('🎬 [VideoCall] Codec support:', codecs);
 
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
 
@@ -358,45 +354,12 @@ export default function FanCallModal({
     }
   };
 
-  // Create peer connection - ENHANCED with better event handlers and TURN servers
-  const createPeerConnection = useCallback(() => {
+  // Create peer connection - ENHANCED with cross-browser codec support
+  const createPeerConnection = useCallback(async () => {
     console.log('📹 [WebRTC] Creating new peer connection');
 
-    const pc = new RTCPeerConnection({
-      iceServers: [
-        // Multiple STUN servers for redundancy and reliability
-        { urls: 'stun:stun.l.google.com:19302' },
-        { urls: 'stun:stun1.l.google.com:19302' },
-
-        // TURN with UDP (preferred for P2P efficiency)
-        {
-          urls: 'turn:a.relay.metered.ca:80',
-          username: 'e62583087c262cbfba58afdd',
-          credential: 'cM5CIbxsVPPI5UR5'
-        },
-
-        // TURN with TCP (firewall fallback for UDP-blocked networks)
-        {
-          urls: 'turn:a.relay.metered.ca:80?transport=tcp',
-          username: 'e62583087c262cbfba58afdd',
-          credential: 'cM5CIbxsVPPI5UR5'
-        },
-
-        // TURN with TLS on port 443 (ultimate fallback - indistinguishable from HTTPS)
-        // Critical for restrictive corporate/university networks and African ISPs
-        {
-          urls: 'turn:a.relay.metered.ca:443?transport=tcp',
-          username: 'e62583087c262cbfba58afdd',
-          credential: 'cM5CIbxsVPPI5UR5'
-        }
-      ],
-      iceCandidatePoolSize: 10,
-      // Important: bundle policy for better compatibility
-      bundlePolicy: 'max-bundle',
-      rtcpMuxPolicy: 'require',
-      // Try to use all ICE candidates (P2P first, relay as fallback)
-      iceTransportPolicy: 'all'
-    });
+    // Use universal peer connection factory with codec preference
+    const pc = await createUniversalPeerConnection();
 
     // NAT Traversal Keep-Alive: Maintain NAT bindings with periodic pings
     // Critical for aggressive NAT timeouts and mobile network transitions
@@ -523,16 +486,34 @@ export default function FanCallModal({
         // CRITICAL FIX: Set ref immediately (synchronous)
         remoteStreamRef.current = newRemoteStream;
 
-        // CRITICAL FIX: If track not ready, listen for it to become ready
-        if (track.readyState !== 'live') {
-          console.log('⚠️ [WebRTC] Track not live yet, adding ready listener');
-          track.addEventListener('unmute', () => {
-            console.log('✅ [WebRTC] Track became ready');
+        // CRITICAL FIX: Only set state if stream is different to prevent multiple re-renders
+        // The ontrack event fires twice (once for audio, once for video) with the same stream
+        if (remoteStream?.id !== newRemoteStream.id) {
+          console.log('🔴 [FREEZE DEBUG] Setting new remote stream (first track or stream changed)', {
+            oldStreamId: remoteStream?.id,
+            newStreamId: newRemoteStream.id,
+            trackKind: track.kind,
+            trackReadyState: track.readyState
+          });
+          // CRITICAL FIX: If track not ready, listen for it to become ready
+          if (track.readyState !== 'live') {
+            console.log('⚠️ [WebRTC] Track not live yet, adding ready listener');
+            track.addEventListener('unmute', () => {
+              console.log('✅ [WebRTC] Track became ready');
+              setRemoteStream(newRemoteStream);
+            }, { once: true });
+          } else {
+            // Track is ready, set state
             setRemoteStream(newRemoteStream);
-          }, { once: true });
+          }
         } else {
-          // Track is ready, set state
-          setRemoteStream(newRemoteStream);
+          console.log('🔴 [FREEZE DEBUG] Same stream, additional track received - skipping state update', {
+            streamId: newRemoteStream.id,
+            trackKind: track.kind,
+            trackReadyState: track.readyState,
+            currentVideoTracks: newRemoteStream.getVideoTracks().length,
+            currentAudioTracks: newRemoteStream.getAudioTracks().length
+          });
         }
 
         (pc as any).remoteStream = newRemoteStream;
@@ -1199,65 +1180,39 @@ export default function FanCallModal({
       });
       if (mainVideoRef.current) {
         const videoElement = mainVideoRef.current;
-        const isMobile = isMobileDevice();
-        const isIOS = isIOSDevice();
 
-        // Set stream
-        videoElement.srcObject = remoteStream;
-
-        // CRITICAL FIX: Mobile browsers require muted attribute for autoplay
-        // Start muted for autoplay compliance, will unmute after playback starts
-        const shouldStartMuted = isMobile;
-        videoElement.muted = shouldStartMuted;
-
-        console.log('📹 [VideoCall] Video element muted setting:', {
-          isMobile,
-          muted: videoElement.muted,
-          reason: shouldStartMuted ? 'Mobile autoplay policy - will unmute after play' : 'Desktop - unmuted'
+        console.log('🔴 [FREEZE DEBUG] useEffect triggered', {
+          currentSrcObjectId: (videoElement.srcObject as MediaStream)?.id,
+          newStreamId: remoteStream.id,
+          isSameStream: videoElement.srcObject === remoteStream,
+          videoTracks: remoteStream.getVideoTracks().length,
+          audioTracks: remoteStream.getAudioTracks().length
         });
 
-        // Set required attributes for mobile/iOS compatibility
-        videoElement.setAttribute('playsinline', 'true');
-        videoElement.setAttribute('webkit-playsinline', 'true');
-        videoElement.setAttribute('autoplay', 'true');
-
-        // iOS-specific attributes
-        if (isIOS) {
-          videoElement.setAttribute('x-webkit-airplay', 'allow');
-          // Note: Don't set 'controls' attribute - it should remain hidden
+        // Check if this is the same stream already attached
+        if (videoElement.srcObject === remoteStream) {
+          console.log('🔴 [FREEZE DEBUG] Stream already attached, skipping re-attachment');
+          return;
         }
 
-        // Add loadedmetadata listener for better stream handling
-        const handleLoadedMetadata = () => {
-          console.log('📹 [VideoCall] Remote video metadata loaded');
-          safePlayVideo(videoElement);
-        };
-
-        // Add playing listener to unmute after successful autoplay on mobile
-        const handlePlaying = () => {
-          if (isMobile && videoElement.muted && isSpeakerEnabled) {
-            // Successfully started playing - now unmute for audio
-            setTimeout(() => {
-              videoElement.muted = false;
-              console.log('🔊 [VideoCall] Auto-unmuted after successful playback on mobile');
-            }, 500);
-          }
-        };
-
-        videoElement.addEventListener('loadedmetadata', handleLoadedMetadata);
-        videoElement.addEventListener('playing', handlePlaying);
-
-        // Attempt to play
-        setTimeout(() => safePlayVideo(videoElement), 100);
-
-        // Cleanup listeners
-        return () => {
-          videoElement.removeEventListener('loadedmetadata', handleLoadedMetadata);
-          videoElement.removeEventListener('playing', handlePlaying);
-        };
+        console.log('🔴 [FREEZE DEBUG] Calling attachStreamToVideo...');
+        // Use cross-browser video attachment utility
+        attachStreamToVideo(videoElement, remoteStream, !isSpeakerEnabled)
+          .then(() => {
+            console.log('🔴 [FREEZE DEBUG] ✅ Remote video attached successfully', {
+              videoWidth: videoElement.videoWidth,
+              videoHeight: videoElement.videoHeight,
+              readyState: videoElement.readyState,
+              paused: videoElement.paused
+            });
+          })
+          .catch((error) => {
+            console.error('❌ [VideoCall] Failed to attach remote video:', error);
+            safePlayVideo(videoElement);
+          });
       }
     }
-  }, [remoteStream]);
+  }, [remoteStream, isSpeakerEnabled]);
 
   // Set usersCanSeeEachOther when both streams are available
   useEffect(() => {
@@ -1291,7 +1246,8 @@ export default function FanCallModal({
       if (data.callerId === currentUserId && !callData?.isIncoming) {
         console.log('📹 [VideoCall] I am the caller - creating peer connection and offer');
 
-        const pc = createPeerConnection();
+        // CRITICAL: Await peer connection creation
+        const pc = await createPeerConnection();
         peerConnectionRef.current = pc; // CRITICAL FIX: Set ref immediately
         setPeerConnection(pc);
 
@@ -1302,17 +1258,9 @@ export default function FanCallModal({
         });
 
         try {
-          const offer = await pc.createOffer({
-            offerToReceiveAudio: true,
-            offerToReceiveVideo: true
-          });
-          console.log('📹 [WebRTC] Created offer');
-
-          // Prefer H.264 codec for Safari/iOS/mobile compatibility
-          if (offer.sdp) {
-            offer.sdp = preferCodec(offer.sdp, 'H264');
-            console.log('📹 [WebRTC] Applied H.264 codec preference');
-          }
+          // Use cross-browser utility for offer with codec preference
+          const offer = await createOfferWithCodecPreference(pc);
+          console.log('📹 [WebRTC] Created offer with codec preference');
 
           await pc.setLocalDescription(offer);
           console.log('📹 [WebRTC] Set local description (offer)');
@@ -1351,8 +1299,8 @@ export default function FanCallModal({
           return;
         }
 
-        // CRITICAL: Create peer connection FIRST before anything else
-        const pc = createPeerConnection();
+        // CRITICAL: Create peer connection FIRST before anything else (now with await)
+        const pc = await createPeerConnection();
 
         // CRITICAL FIX: Set ref immediately (synchronous) AND state (async)
         peerConnectionRef.current = pc;
@@ -1380,15 +1328,10 @@ export default function FanCallModal({
           await pc.setRemoteDescription(new RTCSessionDescription(data.offer));
           console.log('✅ [WebRTC] Remote description set successfully');
 
-          console.log('📹 [WebRTC] Creating answer');
-          const answer = await pc.createAnswer();
-          console.log('📹 [WebRTC] Created answer');
-
-          // Prefer H.264 codec for compatibility
-          if (answer.sdp) {
-            answer.sdp = preferCodec(answer.sdp, 'H264');
-            console.log('📹 [WebRTC] Applied H.264 codec preference to answer');
-          }
+          // Use cross-browser utility for answer with codec preference
+          console.log('📹 [WebRTC] Creating answer with codec preference');
+          const answer = await createAnswerWithCodecPreference(pc);
+          console.log('📹 [WebRTC] Created answer with codec preference');
 
           await pc.setLocalDescription(answer);
           console.log('📹 [WebRTC] Set local description (answer)');
