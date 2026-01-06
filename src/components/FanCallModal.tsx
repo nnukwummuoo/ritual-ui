@@ -289,27 +289,16 @@ export default function FanCallModal({
 
     const pc = new RTCPeerConnection({
       iceServers: [
-        // Google STUN servers
+        // Google STUN server for public IP discovery
         { urls: 'stun:stun.l.google.com:19302' },
-        { urls: 'stun:stun1.l.google.com:19302' },
-        { urls: 'stun:stun2.l.google.com:19302' },
-        { urls: 'stun:stun3.l.google.com:19302' },
-        { urls: 'stun:stun4.l.google.com:19302' },
-        // Free TURN servers for fallback (you should replace with your own in production)
+        // Metered.ca free TURN servers for reliable global connectivity
         {
-          urls: 'turn:openrelay.metered.ca:80',
-          username: 'openrelayproject',
-          credential: 'openrelayproject'
-        },
-        {
-          urls: 'turn:openrelay.metered.ca:443',
-          username: 'openrelayproject',
-          credential: 'openrelayproject'
-        },
-        {
-          urls: 'turn:openrelay.metered.ca:443?transport=tcp',
-          username: 'openrelayproject',
-          credential: 'openrelayproject'
+          urls: [
+            'turn:a.relay.metered.ca:80',
+            'turn:a.relay.metered.ca:443'
+          ],
+          username: 'e62583087c262cbfba58afdd',
+          credential: 'cM5CIbxsVPPI5UR5'
         }
       ],
       iceCandidatePoolSize: 10,
