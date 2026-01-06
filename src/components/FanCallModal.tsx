@@ -75,6 +75,7 @@ export default function FanCallModal({
   const [showControls, setShowControls] = useState(true);
   const [showInsecureWarning, setShowInsecureWarning] = useState(false);
   const [mediaError, setMediaError] = useState<string | null>(null);
+  const [diagnosticLogs, setDiagnosticLogs] = useState<Array<{ stage: string; time: string; data: any }>>([]); // Layer 4: Diagnostic logging
   const [callTimeout, setCallTimeout] = useState(false);
   const [callStartTime, setCallStartTime] = useState<number | null>(null);
   const [insufficientFunds, setInsufficientFunds] = useState(false);
@@ -205,6 +206,16 @@ export default function FanCallModal({
         audioTracks: stream.getAudioTracks().length,
         videoSettings: stream.getVideoTracks()[0]?.getSettings(),
         audioSettings: stream.getAudioTracks()[0]?.getSettings()
+      });
+
+      // Layer 4: Log diagnostic info
+      logDiagnosticInfo('getUserMedia', {
+        success: true,
+        hasVideo: stream.getVideoTracks().length > 0,
+        hasAudio: stream.getAudioTracks().length > 0,
+        videoSettings: stream.getVideoTracks()[0]?.getSettings(),
+        audioSettings: stream.getAudioTracks()[0]?.getSettings(),
+        constraints
       });
 
       setLocalStream(stream);
@@ -342,6 +353,19 @@ export default function FanCallModal({
           }))
         });
 
+        // Layer 4: Log diagnostic info for remote track
+        logDiagnosticInfo('remoteTrack', {
+          trackKind: track.kind,
+          trackId: track.id,
+          trackEnabled: track.enabled,
+          trackReadyState: track.readyState,
+          trackMuted: track.muted,
+          streamId: newRemoteStream.id,
+          videoTracks: newRemoteStream.getVideoTracks().length,
+          audioTracks: newRemoteStream.getAudioTracks().length,
+          activeTracks: activeTracks.length
+        });
+
         // CRITICAL FIX: Set ref immediately (synchronous)
         remoteStreamRef.current = newRemoteStream;
 
@@ -379,6 +403,13 @@ export default function FanCallModal({
     // Handle connection state changes with recovery
     pc.onconnectionstatechange = () => {
       console.log('📹 [WebRTC] Connection state changed:', pc.connectionState);
+
+      // Layer 4: Log connection state change
+      logDiagnosticInfo('connectionStateChange', {
+        connectionState: pc.connectionState,
+        iceConnectionState: pc.iceConnectionState,
+        iceGatheringState: pc.iceGatheringState
+      });
 
       if (pc.connectionState === 'connected') {
         console.log('✅ [WebRTC] Peer connection established successfully!');
@@ -867,6 +898,28 @@ export default function FanCallModal({
     };
     return info;
   }, []);
+
+  // Layer 4: Diagnostic logging utility
+  const logDiagnosticInfo = useCallback((stage: string, data: any) => {
+    const deviceInfo = detectDevice();
+
+    const logEntry = {
+      timestamp: new Date().toISOString(),
+      device: deviceInfo,
+      stage,
+      data,
+      userAgent: navigator.userAgent
+    };
+
+    console.log(`🔍 [Diagnostic ${stage}]`, logEntry);
+
+    // Store in state for potential display to user
+    setDiagnosticLogs(prev => [...prev.slice(-20), { // Keep last 20 logs
+      stage,
+      time: new Date().toISOString(),
+      data
+    }]);
+  }, [detectDevice]);
 
   // Permission pre-check (to provide better error messages)
   const checkPermissionState = useCallback(async (): Promise<'granted' | 'denied' | 'prompt'> => {
