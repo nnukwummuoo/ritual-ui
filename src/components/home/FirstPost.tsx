@@ -536,7 +536,7 @@ const FirstPost: React.FC<FirstPostProps> = ({
       )}
 
       {postType == "video" && src && (
-        <div className="relative w-full h-[400px] rounded overflow-hidden">
+        <div className="relative w-full aspect-[4/5] rounded overflow-hidden">
           {/* Video skeleton - show while video is loading and no poster is available */}
           {!isVideoLoaded && !posterSource && (
             <VideoSkeleton />

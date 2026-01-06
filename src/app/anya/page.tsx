@@ -578,9 +578,9 @@ export default function AnyaPage() {
             </div>
           </div>
 
-          {/* Story Grid */}
-          <div className="px-4 mt-2 sm:mx-4 relative overflow-y-auto pt-20 pb-12">
-            <div className="grid grid-cols-2 gap-2 mt-4 mb-12 md:grid-cols-3">
+          {/* Story Grid - Scrollable Container */}
+          <div className="h-screen overflow-y-auto pt-24 pb-20 px-4 sm:px-6">
+            <div className="grid grid-cols-2 gap-2 md:grid-cols-3 lg:grid-cols-4 max-w-7xl mx-auto">
               {stories.map((story) => (
                 <motion.div
                   key={story._id}
