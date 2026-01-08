@@ -48,7 +48,7 @@ const UnauthenticatedPromoModal: React.FC = () => {
                         Meet Your Fans  Keep 100%
                     </h2>
 
-                    <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 mb-4 leading-tight">
+                    <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 mb-4 leading-tight mt-2">
                         Stay Safe 
                     </h2>
 
