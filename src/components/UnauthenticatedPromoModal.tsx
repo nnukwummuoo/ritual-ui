@@ -45,12 +45,12 @@ const UnauthenticatedPromoModal: React.FC = () => {
                 <div className="pr-8">
                     {/* Headline */}
                     <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 mb-4 leading-tight">
-                        Meet Your Fans • Keep 100% • Stay Safe 
+                        Meet Your Fans  Keep 100%  Stay Safe 
                     </h2>
 
                     {/* Sub-headline */}
                     <p className="text-white text-lg mb-8 leading-relaxed">
-                        <span className="font-medium text-white">Mmeko is the only platform where creators can host Fan Meets, Fan Dates, and Fan Calls with a clear safety framework — and keep 100% of their earnings. </span>.
+                        <span className="font-medium text-white">Mmeko is the only platform where creators can host Fan Meets, Fan Dates, and Fan Calls with a clear safety framework and keep 100% of their earnings. </span>
                     </p>
 
                     {/* CTA Button */}
