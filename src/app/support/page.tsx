@@ -179,20 +179,20 @@ const SupportPage: React.FC = () => {
       section: "❓ FAQ – Fan Meet / Fan Date Expiration",
       questions: [
         {
-          question: "What happens if the meet or date doesn't happen within 7 days?",
-          answer: "🕒 If 7 days pass and the fan didn't marks it as complete, the system automatically refunds the fan's transport fare (unless a creator complaint was filed)."
+          question: "What happens if the meet or date doesn't happen within 14 days?",
+          answer: "🕒 If 14 days pass and the fan didn't marks it as complete, the system automatically refunds the fan's transport fare (unless a creator complaint was filed)."
         },
         {
           question: "What if the creator didn't show up?",
-          answer: "🚫 The fan will automatically receive a refund after 7 days if the meet/date was not completed and no creator complaint was made."
+          answer: "🚫 The fan will automatically receive a refund after 14 days if the meet/date was not completed and no creator complaint was made."
         },
         {
           question: "What if the fan didn't show up?",
           answer: "❌ If the creator reports that the fan didn't show, the platform will investigate before the payment will be released to the creator."
         },
         {
-          question: "Why 7 days?",
-          answer: "📅 Seven days gives both sides enough time to reschedule once while keeping requests active and organized."
+          question: "Why 14 days?",
+          answer: "📅 14 days gives both sides enough time to reschedule once while keeping requests active and organized."
         }
       ]
     },
@@ -201,7 +201,7 @@ const SupportPage: React.FC = () => {
       questions: [
         {
           question: "What happens if my Fan Call request isn't answered or started?",
-          answer: "🕒 If your Fan Call doesn't start within 48 hours after acceptance, it expires automatically.\nNo money is deducted, and you can always send a new request later."
+          answer: "🕒 If your Fan Call doesn't start within 7 days after acceptance, it expires automatically.\nNo money is deducted, and you can always send a new request later."
         },
         {
           question: "Will I lose any gold or balance if it expires?",

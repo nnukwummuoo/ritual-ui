@@ -82,7 +82,7 @@ The creator request system allows fans to request different types of interaction
 - **Purpose**: Handle expired requests
 - **Features**:
   - Automatic expiration after 24 hours (pending)
-  - Automatic expiration after 48 hours (Fan Call accepted)
+  - Automatic expiration after 7 days (Fan Call accepted)
   - Gold refund processing
   - Expiration notifications
 

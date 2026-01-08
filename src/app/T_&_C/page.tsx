@@ -130,7 +130,7 @@ const TermsAndConditions = () => {
 
           
            <p className="mb-6">
-         If the fan didn't mark the meet or date as “Completed” within 7 days after the scheduled event,
+         If the fan didn't mark the meet or date as “Completed” within 14 days after the scheduled event,
         and no complaint or dispute has been filed by the creator, the fan will automatically receive a full refund of the transport fare.
          This ensures fairness and protects both parties in cases where no meeting occurred.
 
@@ -174,14 +174,14 @@ const TermsAndConditions = () => {
           </p>
 
               <p className="mb-6">
-         If a meeting does not happen and the fan didn't mark it as complete within 7 days, the system
+         If a meeting does not happen and the fan didn't mark it as complete within 14 days, the system
           will automatically refund the fan in full — provided no complaint was filed by the creator.
 
           </p>
 
 
             <p className="mb-6">
-         After the 7 days, if there’s no confirmation or complaint, 
+         After the 14 days, if there’s no confirmation or complaint, 
          the request will expire automatically and the pending transport fare is released back to the fan.
 
 
@@ -202,7 +202,7 @@ const TermsAndConditions = () => {
 
 
             <p className="mb-6">
-         Once a creator accepts your Fan Call request, you have 48 hours to start the call.
+         Once a creator accepts your Fan Call request, you have 7 days to start the call.
          If the call does not begin within this period, the request will automatically expire.
        </p>
 

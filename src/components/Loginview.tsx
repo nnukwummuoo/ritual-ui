@@ -696,11 +696,11 @@ export const Loginview = () => {
       {/* Creator Pledge Header */}
       <div className="mb-8 text-center">
         <div className="flex items-center justify-center mb-4">
-          <div className="text-yellow-400 text-2xl mr-3">⚡</div>
-          <h1 className="text-white text-2xl font-bold">Creator Pledge</h1>
+          <div className="text-yellow-400 text-lg mr-3">⚡</div>
+          <h1 className="text-white text-lg font-bold">Meet Your Fans • Keep 100% • Stay Safe</h1>
         </div>
         <p className="text-white text-sm leading-relaxed text-left">
-          This is not a livestream app. No begging • No pennies • No cuts • No fees • Just real connections. Fans choose you when they&apos;re ready. No pressure.
+          Mmeko is the only platform where creators can host Fan Meets, Fan Dates, and Fan Calls with a clear safety framework and keep 100% of their earnings. 
         </p>
       </div>
 

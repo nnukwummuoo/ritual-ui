@@ -45,12 +45,12 @@ const UnauthenticatedPromoModal: React.FC = () => {
                 <div className="pr-8">
                     {/* Headline */}
                     <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 mb-4 leading-tight">
-                        Chat privately with real VIP creators 
+                        Meet Your Fans • Keep 100% • Stay Safe 
                     </h2>
 
                     {/* Sub-headline */}
                     <p className="text-white text-lg mb-8 leading-relaxed">
-                        <span className="font-bold text-green-400">NO PAYMENT</span>,<span className="font-bold text-purple-400"> NO CATCH</span>  —it’s always free to chat. <span className="font-bold text-yellow-400">You’re welcome anytime</span>.
+                        <span className="font-medium text-white">Mmeko is the only platform where creators can host Fan Meets, Fan Dates, and Fan Calls with a clear safety framework — and keep 100% of their earnings. </span>.
                     </p>
 
                     {/* CTA Button */}
@@ -58,12 +58,12 @@ const UnauthenticatedPromoModal: React.FC = () => {
                         onClick={handleClaimOffer}
                         className="w-full bg-gradient-to-r from-blue-500 via-purple-600 to-pink-600 text-white px-6 py-4 rounded-xl hover:from-blue-600 hover:via-purple-700 hover:to-pink-700 transition-all duration-300 font-bold text-lg shadow-lg hover:shadow-purple-500/50 transform hover:scale-105"
                     >
-                        Start My Free Chat
+                        Start your creator journey today 
                     </button>
 
                     {/* Optional: Small text at bottom */}
                     <p className="text-gray-400 text-xs mt-4 text-center">
-                        Always free  • No payment ever
+                       no cuts • no fees • just pure connection
                     </p>
                 </div>
             </div>
