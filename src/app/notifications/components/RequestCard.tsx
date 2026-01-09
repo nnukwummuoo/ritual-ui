@@ -711,7 +711,7 @@ export default function RequestCard({ exp, img, originalPhotoLink, name, usernam
   const handleComplete = async () => {
     if (!requestId) return;
 
-    // If it's a Fan Call, start video call instead of completing
+    // If it's a Fan Call, start call instead of completing
     if (hosttype === "Fan call") {
       if (creator_portfolio_id && (username || name)) {
         // Pass the original photo URL (before proxy processing) if available
@@ -1303,7 +1303,7 @@ export default function RequestCard({ exp, img, originalPhotoLink, name, usernam
                 <div className="flex gap-3">
                   <div className="flex-1">
                     <FanActionBtn
-                      label={hosttype === "Fan call" ? "Start video call" : "Mark as complete"}
+                      label={hosttype === "Fan call" ? "Start call" : "Mark as complete"}
                       className={fanActionClass}
                       onClick={handleComplete}
                       disabled={loading}

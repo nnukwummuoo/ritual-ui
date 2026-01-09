@@ -281,7 +281,7 @@ const DropdownMenu = () => {
         <button
           onClick={handleVideoCallClick}
           className="p-2 hover:bg-gray-700 rounded-full transition-colors"
-          title="Start Video Call"
+          title="Start Call"
         >
           <Video className="w-5 h-5 text-gray-300" />
         </button>

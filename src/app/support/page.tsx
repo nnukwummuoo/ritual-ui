@@ -347,11 +347,11 @@ Timestamp: ${new Date().toLocaleString()}`;
               <div className="space-y-4">
                 <div className="flex items-center gap-3">
                   <FaEnvelope className="w-4 h-4 text-gray-400" />
-                  <span className="text-sm">support@mmeko.com</span>
+                  <span className="text-sm">mmeko_platform</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <FaPhone className="w-4 h-4 text-gray-400" />
-                  <span className="text-sm">+1 (555) 123-4567</span>
+                  <span className="text-sm">mmeko_platform</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <FaClock className="w-4 h-4 text-gray-400" />

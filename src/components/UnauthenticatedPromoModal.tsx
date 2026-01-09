@@ -45,8 +45,13 @@ const UnauthenticatedPromoModal: React.FC = () => {
                 <div className="pr-8">
                     {/* Headline */}
                     <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 mb-4 leading-tight">
-                        Meet Your Fans  Keep 100%
+                        Meet Your Fans  
                     <br />
+
+                    <span className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 mb-4 leading-tight">
+                    Keep 100%
+                        </span>
+                        <br />
 
                     <span className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 mb-4 leading-tight">
                         Stay Safe 

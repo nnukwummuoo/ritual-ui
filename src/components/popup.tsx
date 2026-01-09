@@ -18,142 +18,49 @@ export function PopUp() {
   const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
   
   const messages = [
-    // Original messages
-    {
-      icon: (
-        <FaGlobeAfrica className="w-6 h-6 text-blue-500 hover:scale-110 transition-all duration-300 ease-in-out" />
-      ),
-      text: "Asian & African creators are joining fast",
-    },
-    {
-      icon: (
-        <FaBan className="w-6 h-6 text-red-500 hover:scale-110 transition-all duration-300 ease-in-out" />
-      ),
-      text: "No subscriptions. No nudity required",
-    },
-    {
-      icon: (
-        <FaClock className="w-6 h-6 text-purple-500 hover:scale-110 transition-all duration-300 ease-in-out" />
-      ),
-      text: "Set your own schedule — full control",
-    },
-    
+   
     // CREATOR-FOCUSED POPUPS
     {
       icon: (
-        <div className="w-6 h-6 text-yellow-400 hover:scale-110 transition-all duration-300 ease-in-out">❌</div>
+        <div className="w-6 h-6 text-yellow-400 hover:scale-110 transition-all duration-300 ease-in-out">🤝</div>
       ),
-      text: "No scams • Real Asians and African VIP creators ",
+      text: "Meet Your Fans. Keep 100%. Stay Safe",
     },
     {
       icon: (
-        <div className="w-6 h-6 text-blue-400 hover:scale-110 transition-all duration-300 ease-in-out">🤖</div>
+        <div className="w-6 h-6 text-blue-400 hover:scale-110 transition-all duration-300 ease-in-out">💫</div>
       ),
-      text: "No bots • Only authentic connections",
+      text: "No cuts • No fees • Just pure connection",
     },
     {
       icon: (
-        <div className="w-6 h-6 text-red-400 hover:scale-110 transition-all duration-300 ease-in-out">🪪</div>
+        <div className="w-6 h-6 text-red-400 hover:scale-110 transition-all duration-300 ease-in-out">✅</div>
       ),
-      text: "No fraud • Real creators, real conversations",
+      text: "Verified creators only • Public meet‑ups only",
     },
     {
       icon: (
-        <div className="w-6 h-6 text-orange-400 hover:scale-110 transition-all duration-300 ease-in-out">🦁</div>
+        <div className="w-6 h-6 text-orange-400 hover:scale-110 transition-all duration-300 ease-in-out">🎤</div>
       ),
-      text: "Real creators don't chase • They attract",
+      text: "Host Fan Meets, Fan Dates, and Fan Calls — all on your terms",
     },
     {
       icon: (
-        <div className="w-6 h-6 text-green-400 hover:scale-110 transition-all duration-300 ease-in-out">🛡️</div>
+        <div className="w-6 h-6 text-green-400 hover:scale-110 transition-all duration-300 ease-in-out">🚕</div>
       ),
-      text: "No cuts • No fees • Just real connections",
+      text: "Fans cover transport fare upfront. Creators set their own transport fare price",
     },
     {
       icon: (
-        <div className="w-6 h-6 text-purple-400 hover:scale-110 transition-all duration-300 ease-in-out">🆓</div>
+        <div className="w-6 h-6 text-purple-400 hover:scale-110 transition-all duration-300 ease-in-out">⏱️</div>
       ),
-      text: "No catch • Free chat, real creators",
+      text: "30‑minute cap • Public space only • You stay in control",
     },
     {
       icon: (
-        <div className="w-6 h-6 text-pink-400 hover:scale-110 transition-all duration-300 ease-in-out">🔒</div>
+        <div className="w-6 h-6 text-pink-400 hover:scale-110 transition-all duration-300 ease-in-out">🌍</div>
       ),
-      text: "No fake profiles • Verified creators only",
-    },
-    {
-      icon: (
-        <div className="w-6 h-6 text-teal-400 hover:scale-110 transition-all duration-300 ease-in-out">🎭</div>
-      ),
-      text: "No tricks • Respect for fans and creators",
-    },
-    {
-      icon: (
-        <div className="w-6 h-6 text-indigo-400 hover:scale-110 transition-all duration-300 ease-in-out">🧾</div>
-      ),
-      text: "Transparent from start to finish. Always",
-    },
-    {
-      icon: (
-        <div className="w-6 h-6 text-rose-400 hover:scale-110 transition-all duration-300 ease-in-out">💬</div>
-      ),
-      text: "No walls • No pay to message",
-    },
-    
-    // FAN-FOCUSED POPUPS
-    {
-      icon: (
-        <div className="w-6 h-6 text-yellow-500 hover:scale-110 transition-all duration-300 ease-in-out">🥇</div>
-      ),
-      text: "Meet who you admire — for real, not fantasy",
-    },
-    {
-      icon: (
-        <div className="w-6 h-6 text-blue-500 hover:scale-110 transition-all duration-300 ease-in-out">💬</div>
-      ),
-      text: "One click, one connection, no fake promises",
-    },
-    {
-      icon: (
-        <div className="w-6 h-6 text-pink-500 hover:scale-110 transition-all duration-300 ease-in-out">🌸</div>
-      ),
-      text: "Respect first •  Connection next",
-    },
-    {
-      icon: (
-        <div className="w-6 h-6 text-green-500 hover:scale-110 transition-all duration-300 ease-in-out">⚡</div>
-      ),
-      text: "Safe, verified, and real — always",
-    },
-    {
-      icon: (
-        <div className="w-6 h-6 text-red-500 hover:scale-110 transition-all duration-300 ease-in-out">💬</div>
-      ),
-      text: "No payments • Free entry, creator dignity intact",
-    },
-    {
-      icon: (
-        <div className="w-6 h-6 text-teal-500 hover:scale-110 transition-all duration-300 ease-in-out">🦢</div>
-      ),
-      text: "No pressure, just genuine connection",
-    },
-    {
-      icon: (
-        <div className="w-6 h-6 text-orange-500 hover:scale-110 transition-all duration-300 ease-in-out">🛡️</div>
-      ),
-      text: "No spam • Safe space for creators and fans",
-    },
-    {
-      icon: (
-        <div className="w-6 h-6 text-indigo-500 hover:scale-110 transition-all duration-300 ease-in-out">🌿</div>
-      ),
-      text: "No pressure • Fans welcome, creators respected",
-    },
-    {
-      icon: (
-        <div className="w-6 h-6 text-amber-500 hover:scale-110 transition-all duration-300 ease-in-out">🏆</div>
-      ),
-      text: "Be more than a viewer — be a fan that matters",
+      text: "Be part of the first platform making real fan meet‑ups safe, fair, and global",
     },
   ];
 

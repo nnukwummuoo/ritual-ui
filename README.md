@@ -121,7 +121,7 @@ The creator request system allows fans to request different types of interaction
 ##### 2. Request Processing (`/notifications/components/RequestCard.tsx`)
 - **Request states**: `request` → `accepted`/`declined` → `completed`/`cancelled`/`expired`
 - **Creator actions**: Accept/Decline requests within 24 hours
-- **Fan actions**: Cancel requests, mark as complete, start video calls
+- **Fan actions**: Cancel requests, mark as complete, start calls
 - **Real-time updates**: Socket.io integration for instant status updates
 
 ##### 3. Service Types

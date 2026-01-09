@@ -128,7 +128,7 @@ export const VideoCallProvider: React.FC<VideoCallProviderProps> = ({ children }
       
       
       if (userBalance < callRate) {
-        alert('Insufficient funds to start video call. Please purchase gold first.');
+        alert('Insufficient funds to start call. Please purchase gold first.');
         return;
       }
 

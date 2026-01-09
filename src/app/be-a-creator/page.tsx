@@ -26,10 +26,10 @@ export default function VerificationPage(){
     },
     {
       icon: FaCreditCard,
-      title: "Fan Date = Real Cash, Real Life",
+      title: "Fan Meet = Real Cash, Real Life",
       subtitle: "Guaranteed Payment",
       description:
-        "Going on a date or meeting a fan? They'll pay your transport fare upfront through the platform—we handle the logistics so you stay safe and respected.",
+        "Going on a date or meeting a fan? They'll pay your transport fare upfront through the platform, we handle the logistics so you stay safe and respected.",
     },
     {
       icon: FaVideo,

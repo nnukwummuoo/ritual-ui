@@ -25,7 +25,7 @@ const SafetyRulesBanner: React.FC = () => {
 
                     {/* Additional Info */}
                     <p className="text-sm leading-relaxed pl-9">
-                        Fans cover transport upfront —and creators may include any reasonable expenses in their fare price.
+                        Fans cover transport fare upfront and creators may include any reasonable expenses in their transport fare price.
                     </p>
                 </div>
             </div>
