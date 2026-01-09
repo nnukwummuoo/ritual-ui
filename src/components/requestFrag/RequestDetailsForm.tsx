@@ -58,7 +58,7 @@ export const RequestDetailsForm: React.FC<RequestDetailsFormProps> = ({
     }
 
     if (selectedDate > endDate) {
-      const daysAllowed = creatorType.toLowerCase() === "fan call" ? "2" : "7";
+      const daysAllowed = creatorType.toLowerCase() === "fan call" ? "3" : "7";
       toast.error(`Please select a date within the next ${daysAllowed} available days`, { autoClose: 2000 });
       return;
     }
@@ -83,8 +83,8 @@ export const RequestDetailsForm: React.FC<RequestDetailsFormProps> = ({
 
     // Different availability based on creator type
     if (creatorType.toLowerCase() === "fan call") {
-      // Fan Call: only 2 days after today and tomorrow (4 total)
-      endDate.setDate(today.getDate() + 3); // today + tomorrow + 2 days
+      // Fan Call: 3 days after today and tomorrow (5 total)
+      endDate.setDate(today.getDate() + 4); // today + tomorrow + 3 available days
     } else {
       // Fan Meet/Fan Date: 7 days after today and tomorrow (9 total)
       endDate.setDate(today.getDate() + 8); // today + tomorrow + 7 days

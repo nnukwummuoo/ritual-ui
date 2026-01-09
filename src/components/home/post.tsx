@@ -29,6 +29,7 @@ import { usePerformanceMonitor } from "@/hooks/usePerformanceMonitor";
 import { useContentFilter } from "@/lib/context/content-filter-context";
 import RitualsCard from "./RitualsCard";
 import TopFans from "./TopFans";
+import SafetyRulesBanner from "./SafetyRulesBanner";
 
 
 // Utility function to format relative time
@@ -645,9 +646,9 @@ export default function PostsCard() {
         />
       )}
 
-      {/* Creator Cards - Hidden on large devices */}
-      <div className="lg:hidden">
-        <CreatorCards />
+      {/* Safety Rules Banner - Hidden on large devices */}
+      <div className="">
+        <SafetyRulesBanner />
       </div>
 
       {/* Posts Rendering - Choose between virtualized and lazy loading */}
@@ -700,10 +701,17 @@ export default function PostsCard() {
                     isFirstPost={false}
                   />
                 </div>
-                {/* Inject Rituals card only once after the first LazyPost */}
-                {index === 0 && <RitualsCard />}
-                {/* Inject Top Fans card after the second LazyPost */}
-                {index === 1 && <TopFans />}
+                {/* Inject Safety Rules banner after the first LazyPost (index 0) */}
+                {/* Inject Top Creators card after the first LazyPost (index 0) */}
+                {index === 0 && (
+                  <div className="lg:hidden">
+                    <CreatorCards />
+                  </div>
+                )}
+                {/* Inject Rituals card after the second LazyPost (index 1) */}
+                {index === 1 && <RitualsCard />}
+                {/* Inject Top Fans card after the third LazyPost (index 2) */}
+                {index === 2 && <TopFans />}
               </React.Fragment>
             ))}
           </div>
