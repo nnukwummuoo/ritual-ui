@@ -33,7 +33,9 @@ export const RequestDetailsForm: React.FC<RequestDetailsFormProps> = ({
       return; // Prevent multiple submissions
     }
 
-    if (!date || !time || !venue) {
+    // Venue is not required for Fan Call
+    const isFanCall = creatorType.toLowerCase() === "fan call";
+    if (!date || !time || (!isFanCall && !venue)) {
       toast.error("Please fill in all fields", { autoClose: 2000 });
       return;
     }
@@ -58,14 +60,15 @@ export const RequestDetailsForm: React.FC<RequestDetailsFormProps> = ({
     }
 
     if (selectedDate > endDate) {
-      const daysAllowed = creatorType.toLowerCase() === "fan call" ? "3" : "7";
+      const daysAllowed = creatorType.toLowerCase() === "fan call" ? "6" : "7";
       toast.error(`Please select a date within the next ${daysAllowed} available days`, { autoClose: 2000 });
       return;
     }
 
     setLoading(true);
     try {
-      await onDone({ date, time, venue });
+      // For Fan Call, pass empty string for venue since it's not needed
+      await onDone({ date, time, venue: isFanCall ? "" : venue });
     } catch (error) {
       console.error('Error submitting request details:', error);
       toast.error("Failed to submit request. Please try again.", { autoClose: 2000 });
@@ -83,8 +86,8 @@ export const RequestDetailsForm: React.FC<RequestDetailsFormProps> = ({
 
     // Different availability based on creator type
     if (creatorType.toLowerCase() === "fan call") {
-      // Fan Call: 3 days after today and tomorrow (5 total)
-      endDate.setDate(today.getDate() + 4); // today + tomorrow + 3 available days
+      // Fan Call: 6 days after today and tomorrow (8 total)
+      endDate.setDate(today.getDate() + 7); // today + tomorrow + 6 available days
     } else {
       // Fan Meet/Fan Date: 7 days after today and tomorrow (9 total)
       endDate.setDate(today.getDate() + 8); // today + tomorrow + 7 days
@@ -242,17 +245,19 @@ export const RequestDetailsForm: React.FC<RequestDetailsFormProps> = ({
               </div>
             </div>
 
-            {/* Venue Field */}
-            <div className="flex items-center justify-between">
-              <label className="text-white font-medium">Input Venue:</label>
-              <input
-                type="text"
-                value={venue}
-                onChange={(e) => setVenue(e.target.value)}
-                placeholder="Enter venue location"
-                className="bg-gray-700 text-white px-3 py-2 rounded-lg border border-gray-600 focus:border-yellow-500 focus:outline-none w-40"
-              />
-            </div>
+            {/* Venue Field - Hidden for Fan Call */}
+            {creatorType.toLowerCase() !== "fan call" && (
+              <div className="flex items-center justify-between">
+                <label className="text-white font-medium">Input Venue:</label>
+                <input
+                  type="text"
+                  value={venue}
+                  onChange={(e) => setVenue(e.target.value)}
+                  placeholder="Enter venue location"
+                  className="bg-gray-700 text-white px-3 py-2 rounded-lg border border-gray-600 focus:border-yellow-500 focus:outline-none w-40"
+                />
+              </div>
+            )}
           </div>
 
           {/* Action Buttons */}
