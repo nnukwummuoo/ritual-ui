@@ -5,7 +5,7 @@
 import React, { useState, useEffect } from 'react'
 import RequestCard from '../components/RequestCard';
 import { useUserId } from '@/lib/hooks/useUserId';
-import {URL} from "@/api/config";
+import { URL } from "@/api/config";
 import VIPBadge from "@/components/VIPBadge";
 import { useActivityNotificationIndicator } from "@/hooks/useActivityNotificationIndicator";
 import { useDispatch, useSelector } from "react-redux";
@@ -47,34 +47,62 @@ export default function Activity() {
   const dispatch = useDispatch<AppDispatch>();
   const { session } = useAuth();
   const token = session?.token;
-  
+
   // Get notification data from Redux store
   const { notifications } = useSelector((state: RootState) => state.profile);
-  
+
   // Get activity notification indicator data
   const { hasUnread, unreadCount, totalCount } = useActivityNotificationIndicator();
 
   useEffect(() => {
     // Helper function to normalize status values
-  const normalizeStatus = (status: string): Request['status'] => {
-    const statusMap: Record<string, Request['status']> = {
-      'decline': 'declined',
-      'pending': 'request',
-      'accept': 'accepted',
-      'request': 'request',
-      'accepted': 'accepted',
-      'declined': 'declined',
-      'cancelled': 'cancelled',
-      'expired': 'expired',
-      'completed': 'completed'
-    };
-    
-    return statusMap[status] || 'request'; // Default to 'request' if status is unknown
-  };
+    const normalizeStatus = (status: string): Request['status'] => {
+      const statusMap: Record<string, Request['status']> = {
+        'decline': 'declined',
+        'pending': 'request',
+        'accept': 'accepted',
+        'request': 'request',
+        'accepted': 'accepted',
+        'declined': 'declined',
+        'cancelled': 'cancelled',
+        'expired': 'expired',
+        'completed': 'completed'
+      };
 
-  const fetchRequests = async () => {
+      return statusMap[status] || 'request'; // Default to 'request' if status is unknown
+    };
+
+    // Helper function to calculate time remaining based on request type
+    const calculateTimeRemaining = (createdAt: string, type: string) => {
+      try {
+        const created = new Date(createdAt);
+        const isFanCall = (type || "").toLowerCase().includes("fan call");
+        // 7 days for Fan Call, 14 days for others
+        const daysToExpire = isFanCall ? 7 : 14;
+
+        const expireTime = new Date(created.getTime() + daysToExpire * 24 * 60 * 60 * 1000);
+        const now = new Date();
+
+        const diffMs = expireTime.getTime() - now.getTime();
+
+        if (diffMs <= 0) return "Expired";
+
+        const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+        const diffHours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+
+        if (diffDays > 0) {
+          return `${diffDays}d ${diffHours}h left`;
+        } else {
+          return `${diffHours}h left`;
+        }
+      } catch (e) {
+        return "Requires action";
+      }
+    };
+
+    const fetchRequests = async () => {
       if (!userid) return;
-      
+
       try {
         // Use the dedicated fan meet requests endpoint
         const response = await fetch(`${URL}/getallfanrequests`, {
@@ -86,23 +114,26 @@ export default function Activity() {
             userid: userid
           })
         });
-        
+
         const data = await response.json();
-        
+
         if (data.ok && data.requests) {
           if (data.requests.length === 0) {
             setRequests([]);
             return;
           }
-          
+
           // Transform the data to match our Request interface
           const transformedRequests: Request[] = data.requests.map((req: any) => {
+            // Calculate time remaining based on creation date and type
+            const calculatedTimeRemaining = calculateTimeRemaining(req.createdAt, req.type || req.hosttype);
+
             return {
               requestId: req.requestId,
               type: req.type, // Already determined by backend
               status: normalizeStatus(req.status),
               otherUser: req.otherUser,
-              timeRemaining: req.timeRemaining,
+              timeRemaining: calculatedTimeRemaining, // Use calculated time
               price: req.price || 0,
               createdAt: req.createdAt,
               date: req.date,
@@ -114,14 +145,14 @@ export default function Activity() {
               hosttype: req.hosttype // Include the host type from backend
             };
           });
-          
+
           // Sort by createdAt (most recent first) as a fallback
           transformedRequests.sort((a, b) => {
             const dateA = new Date(a.createdAt).getTime();
             const dateB = new Date(b.createdAt).getTime();
             return dateB - dateA; // Most recent first
           });
-          
+
           setRequests(transformedRequests);
         }
       } catch (error) {
@@ -140,16 +171,16 @@ export default function Activity() {
       // Only mark activity-related notifications as seen (request, request, fan meet related)
       const activityNotifications = notifications.filter(notification => {
         const message = notification.message.toLowerCase();
-        return (message.includes('request') || 
-                message.includes('request') ||
-                message.includes('fan meet') ||
-                message.includes('accepted') ||
-                message.includes('declined') ||
-                message.includes('cancelled') ||
-                message.includes('expired') ||
-                message.includes('completed')) && !notification.seen;
+        return (message.includes('request') ||
+          message.includes('request') ||
+          message.includes('fan meet') ||
+          message.includes('accepted') ||
+          message.includes('declined') ||
+          message.includes('cancelled') ||
+          message.includes('expired') ||
+          message.includes('completed')) && !notification.seen;
       });
-      
+
       if (activityNotifications.length > 0) {
         // Mark only activity notifications as seen
         dispatch(markActivityNotificationsSeen({ userid: userid, token }));
@@ -158,7 +189,7 @@ export default function Activity() {
   }, [dispatch, userid, token, notifications]);
 
   const handleStatusChange = (requestId: string, newStatus: string) => {
-    setRequests(prev => prev.map(req => 
+    setRequests(prev => prev.map(req =>
       req.requestId === requestId ? { ...req, status: newStatus as Request['status'] } : req
     ));
   };
@@ -202,7 +233,7 @@ export default function Activity() {
           </div>
         </div>
       </div>
-      
+
       {requests.map((request: Request) => {
         // Determine the correct bucket based on user type (creator vs fan)
         const isCreator = request.otherUser?.isCreator || false;
@@ -212,65 +243,65 @@ export default function Activity() {
         const username = request.otherUser?.username || '';
         const firstName = request.otherUser?.firstname || '';
         const lastName = request.otherUser?.lastname || '';
-        
+
         // Get image source with correct bucket
         // Try with the determined bucket first, then fallback to 'profile' if that doesn't work
         const imageSource = getImageSource(photolink, bucket);
         let imageSrc = imageSource.src || photolink;
-        
+
         // If no src and photolink exists, try with 'profile' bucket as fallback
         if (!imageSrc && photolink && bucket === 'creator') {
           const fallbackSource = getImageSource(photolink, 'profile');
           imageSrc = fallbackSource.src || photolink;
         }
-        
+
         // Final fallback to default image
         if (!imageSrc || imageSrc.trim() === '') {
           imageSrc = "/picture-1.jfif";
         }
-        
+
         return (
-        <div key={request.requestId} className="relative">
-          <RequestCard
-            type={request.type}
-            img={imageSrc}
-            originalPhotoLink={photolink}
-            status={request.status}
-            name={name}
-            username={username}
-            firstName={firstName}
-            lastName={lastName}
-            titles={request.otherUser?.isCreator ? ["Creator"] : ["Fan"]}
-            exp={request.timeRemaining || "Expired"}
-            requestId={request.requestId}
-            price={request.price}
-            details={request.date && request.time && request.venue ? {
-              date: request.date,
-              time: request.time,
-              venue: request.venue
-            } : undefined}
-            userid={request.userid}
-            creator_portfolio_id={request.creator_portfolio_id}
-            targetUserId={request.targetUserId}
-            hosttype={request.hosttype}
-            isVip={request.otherUser?.isVip || false}
-            vipEndDate={request.otherUser?.vipEndDate}
-            createdAt={request.createdAt} // Add createdAt prop
-            onStatusChange={handleStatusChange}
-          />
-          
-          {/* VIP Badge - positioned outside the card */}
-          {request.otherUser?.isVip && (
-            <VIPBadge 
-              size="xl" 
-              className="absolute top-2 left-12 z-10" 
-              isVip={request.otherUser.isVip} 
-              vipEndDate={request.otherUser.vipEndDate || undefined} 
+          <div key={request.requestId} className="relative">
+            <RequestCard
+              type={request.type}
+              img={imageSrc}
+              originalPhotoLink={photolink}
+              status={request.status}
+              name={name}
+              username={username}
+              firstName={firstName}
+              lastName={lastName}
+              titles={request.otherUser?.isCreator ? ["Creator"] : ["Fan"]}
+              exp={request.timeRemaining || "Expired"}
+              requestId={request.requestId}
+              price={request.price}
+              details={request.date && request.time && request.venue ? {
+                date: request.date,
+                time: request.time,
+                venue: request.venue
+              } : undefined}
+              userid={request.userid}
+              creator_portfolio_id={request.creator_portfolio_id}
+              targetUserId={request.targetUserId}
+              hosttype={request.hosttype}
+              isVip={request.otherUser?.isVip || false}
+              vipEndDate={request.otherUser?.vipEndDate}
+              createdAt={request.createdAt} // Add createdAt prop
+              onStatusChange={handleStatusChange}
             />
-          )}
-        </div>
+
+            {/* VIP Badge - positioned outside the card */}
+            {request.otherUser?.isVip && (
+              <VIPBadge
+                size="xl"
+                className="absolute top-2 left-12 z-10"
+                isVip={request.otherUser.isVip}
+                vipEndDate={request.otherUser.vipEndDate || undefined}
+              />
+            )}
+          </div>
         );
       })}
-  </div>
+    </div>
   );
 }
