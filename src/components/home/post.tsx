@@ -30,6 +30,7 @@ import { useContentFilter } from "@/lib/context/content-filter-context";
 import RitualsCard from "./RitualsCard";
 import TopFans from "./TopFans";
 import SafetyRulesBanner from "./SafetyRulesBanner";
+import PromotionalBanner from "./PromotionalBanner";
 
 
 // Utility function to format relative time
@@ -626,6 +627,8 @@ export default function PostsCard() {
 
   return (
     <div className="flex flex-col gap-6">
+      {/* Promotional Banner - At the top before first post */}
+      <PromotionalBanner />
 
       {/* First Post - Always render normally for better UX */}
       {firstPost && !shouldUseVirtualization && (

@@ -289,11 +289,11 @@ export default function RequestCard({ exp, img, originalPhotoLink, name, usernam
     // Set expiration time based on request type and status
     let expirationHours;
     if (currentStatus === "request") {
-      // Pending requests expire after 24 hours
-      expirationHours = 24;
+      // Pending requests expire after 23 hours 14 minutes
+      expirationHours = 23 + (14 / 60); // 23.233333... hours
     } else if (currentStatus === "accepted") {
       // Accepted requests expire based on type
-      expirationHours = isFanCall ? 96 : 168; // 96h for Fan call, 7 days (168h) for others
+      expirationHours = isFanCall ? 240 : 168; // 240h (10 days) for Fan call, 7 days (168h) for others
     } else {
       // For other statuses, don't show countdown
       return;
@@ -1499,7 +1499,9 @@ function DetailsModal({
             <div className="flex items-center justify-center gap-2">
               <IoTimeOutline className="text-orange-500 text-xl" />
               <div className="text-center">
-                <p className="text-sm text-gray-600 mb-1">Expires in:</p>
+                <p className="text-sm text-gray-600 mb-1">
+                  {hosttype?.toLowerCase() === "fan call" ? "Expires in:" : "Remain to meet:"}
+                </p>
                 <p className={`text-2xl font-bold ${isExpired ? 'text-red-600' : 'text-orange-600'}`}>
                   {timeLeft || getFallbackCountdown()}
                 </p>
@@ -1523,40 +1525,65 @@ function DetailsModal({
           </div>
         </div>
 
-        {/* Venue */}
-        <div className="flex items-start gap-3 mb-4">
-          <IoLocationOutline className="text-gray-600 text-xl mt-1" />
-          <div>
-            <h3 className="font-semibold text-gray-800">Venue</h3>
-            <p className="text-gray-600">{details.venue}</p>
-          </div>
-        </div>
-
-        {/* Duration */}
-        <div className="flex items-start gap-3 mb-4">
-          <IoTimeOutline className="text-gray-600 text-xl mt-1" />
-          <div>
-            <h3 className="font-semibold text-gray-800">Duration</h3>
-            <p className="text-gray-600">{details.duration || "Maximum 30 minutes"}</p>
-          </div>
-        </div>
-
-        {/* Safety Rules - Only show for non-call requests */}
-        {hosttype?.toLowerCase() !== "fan call" && (
-          <div className="flex items-start gap-3 mb-4">
-            <IoWarningOutline className="text-orange-500 text-xl mt-1" />
+        {/* Card Expiration Notice - Only show for Fan Meet and Fan Date */}
+        {currentStatus === "accepted" && hosttype?.toLowerCase() !== "fan call" && (
+          <div className="flex items-start gap-3 mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <IoWarningOutline className="text-blue-500 text-xl mt-1" />
             <div>
-              <h3 className="font-semibold text-gray-800">Safety Rules (Important!)</h3>
-              <ul className="text-gray-600 text-sm mt-1 space-y-1">
-                <li>• All meets are limited to 30 minutes.</li>
-                <li>• Meets must happen in a public place only.</li>
-              </ul>
-              <p className="text-gray-500 text-xs mt-2">
-                What happens after 30 minutes is outside the platform&apos;s responsibility.
+              <h3 className="font-semibold text-gray-800">Card Expiration</h3>
+              <p className="text-gray-600 text-sm mt-1">
+                This request card expires in 14 days from acceptance. Please complete the meeting before expiration.
               </p>
             </div>
           </div>
         )}
+
+        {/* Venue - Hide for Fan Call */}
+        {hosttype?.toLowerCase() !== "fan call" && (
+          <div className="flex items-start gap-3 mb-4">
+            <IoLocationOutline className="text-gray-600 text-xl mt-1" />
+            <div>
+              <h3 className="font-semibold text-gray-800">Venue</h3>
+              <p className="text-gray-600">{details.venue}</p>
+            </div>
+          </div>
+        )}
+
+        {/* Duration - Hide for Fan Call */}
+        {hosttype?.toLowerCase() !== "fan call" && (
+          <div className="flex items-start gap-3 mb-4">
+            <IoTimeOutline className="text-gray-600 text-xl mt-1" />
+            <div>
+              <h3 className="font-semibold text-gray-800">Duration</h3>
+              <p className="text-gray-600">{details.duration || "Maximum 30 minutes"}</p>
+            </div>
+          </div>
+        )}
+
+        {/* Safety Rules */}
+        <div className="flex items-start gap-3 mb-4">
+          <IoWarningOutline className="text-orange-500 text-xl mt-1" />
+          <div>
+            <h3 className="font-semibold text-gray-800">Safety Rules (Important!)</h3>
+            {hosttype?.toLowerCase() === "fan call" ? (
+              <ul className="text-gray-600 text-sm mt-1 space-y-1">
+                <li>• Calls are billed per minute.</li>
+                <li>• Ensure stable internet connection before starting.</li>
+                <li>• Be respectful and follow platform guidelines.</li>
+              </ul>
+            ) : (
+              <>
+                <ul className="text-gray-600 text-sm mt-1 space-y-1">
+                  <li>• All meets are limited to 30 minutes.</li>
+                  <li>• Meets must happen in a public place only.</li>
+                </ul>
+                <p className="text-gray-500 text-xs mt-2">
+                  What happens after 30 minutes is outside the platform&apos;s responsibility.
+                </p>
+              </>
+            )}
+          </div>
+        </div>
 
         {/* Call Expiration Notice - Only show for fan calls */}
         {hosttype?.toLowerCase() === "fan call" && (
@@ -1565,7 +1592,7 @@ function DetailsModal({
             <div>
               <h3 className="font-semibold text-gray-800">Call Expiration</h3>
               <p className="text-gray-600 text-sm mt-1">
-                Call must start within 96 hours after acceptance or it will automatically expire.
+                Call must start within 10 days (240 hours) after acceptance or it will automatically expire.
               </p>
             </div>
           </div>

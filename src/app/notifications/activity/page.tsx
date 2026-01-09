@@ -72,24 +72,48 @@ export default function Activity() {
       return statusMap[status] || 'request'; // Default to 'request' if status is unknown
     };
 
-    // Helper function to calculate time remaining based on request type
-    const calculateTimeRemaining = (createdAt: string, type: string) => {
+    // Helper function to calculate time remaining based on request type and status
+    const calculateTimeRemaining = (createdAt: string, type: string, status: string) => {
       try {
         const created = new Date(createdAt);
+        const now = new Date();
         const isFanCall = (type || "").toLowerCase().includes("fan call");
-        // 7 days for Fan Call, 14 days for others
-        const daysToExpire = isFanCall ? 7 : 14;
+
+        let daysToExpire: number;
+
+        // Determine expiration period based on status
+        if (status === 'pending' || status === 'request') {
+          // Pending requests expire in 23 hours 14 minutes
+          daysToExpire = (23 * 60 + 14) / (24 * 60); // Convert 23h14m to fraction of days (0.9680555...)
+        } else if (status === 'accepted' || status === 'accept') {
+          // Accepted requests:
+          // - Fan Call: 10 days
+          // - Fan Meet/Date: 14 days
+          daysToExpire = isFanCall ? 10 : 14;
+        } else {
+          // For other statuses (declined, cancelled, expired, completed), show no time remaining
+          return "No action needed";
+        }
 
         const expireTime = new Date(created.getTime() + daysToExpire * 24 * 60 * 60 * 1000);
-        const now = new Date();
-
         const diffMs = expireTime.getTime() - now.getTime();
 
         if (diffMs <= 0) return "Expired";
 
         const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
         const diffHours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
 
+        // For pending requests (24 hours), show hours and minutes
+        if (daysToExpire === 1) {
+          if (diffHours > 0) {
+            return `${diffHours}h ${diffMinutes}m left`;
+          } else {
+            return `${diffMinutes}m left`;
+          }
+        }
+
+        // For accepted requests, show days and hours
         if (diffDays > 0) {
           return `${diffDays}d ${diffHours}h left`;
         } else {
@@ -125,8 +149,8 @@ export default function Activity() {
 
           // Transform the data to match our Request interface
           const transformedRequests: Request[] = data.requests.map((req: any) => {
-            // Calculate time remaining based on creation date and type
-            const calculatedTimeRemaining = calculateTimeRemaining(req.createdAt, req.type || req.hosttype);
+            // Calculate time remaining based on creation date, type, and status
+            const calculatedTimeRemaining = calculateTimeRemaining(req.createdAt, req.type || req.hosttype, req.status);
 
             return {
               requestId: req.requestId,
@@ -275,11 +299,13 @@ export default function Activity() {
               exp={request.timeRemaining || "Expired"}
               requestId={request.requestId}
               price={request.price}
-              details={request.date && request.time && request.venue ? {
-                date: request.date,
-                time: request.time,
-                venue: request.venue
-              } : undefined}
+              details={
+                request.date && request.time ? {
+                  date: request.date,
+                  time: request.time,
+                  venue: request.venue || "" // Empty venue for Fan Call
+                } : undefined
+              }
               userid={request.userid}
               creator_portfolio_id={request.creator_portfolio_id}
               targetUserId={request.targetUserId}
