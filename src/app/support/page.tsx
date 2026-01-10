@@ -235,7 +235,7 @@ const SupportPage: React.FC = () => {
         {
           question: "Does the platform profit from this fee?",
           answer: "⚙ No. The fee only covers blockchain and processing expenses — not a platform charge."
-        }
+        },
         {
           section: "💳 Payments & Earnings",
           questions: [
