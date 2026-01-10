@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { FaAngleLeft, FaQuestionCircle, FaEnvelope, FaPhone, FaClock } from "react-icons/fa";
+import { FaAngleLeft, FaQuestionCircle, FaFacebook, FaInstagram, FaEnvelope, FaPhone, FaClock } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 import { useSelector } from "react-redux";
 import { SupportForm } from "../../components/support/SupportForm";
@@ -125,57 +125,6 @@ const SupportPage: React.FC = () => {
       ]
     },
     {
-      section: "💳 Payments & Earnings",
-      questions: [
-        {
-          question: "How do Fan Meet / Fan Date payments work?",
-          answer: "Fans pay transport fare upfront. The money is held in a pending account until the fan taps \"Mark as Complete.\" Once confirmed, the payment is instantly released to the Creator."
-        },
-        {
-          question: "How does Fan Call payment work?",
-          answer: "Fans are charged per minute, and the money is transferred live to the Creator's account during the call."
-        },
-        {
-          question: "Do Creators keep 100% of their money?",
-          answer: "Yes 💯. Creators always keep 100% of their earnings."
-        }
-      ]
-    },
-    {
-      section: "🚫 Safety & Rules",
-      questions: [
-        {
-          question: "Can I post explicit content?",
-          answer: "No ❌. One offense = permanent ban. No warnings, no second chances."
-        },
-        {
-          question: "What if a fan/creator breaks the rules?",
-          answer: "Use the Report button. Our team will review immediately and take action."
-        },
-        {
-          question: "What happens if a fan doesn't mark a meet/date as complete?",
-          answer: "Contact support within 24 hours with evidence (Screenshots, photo, video or chat logs) and our support team will review the case. If valid, the payment will still be released to the Creator."
-        }
-      ]
-    },
-    {
-      section: "🛠 Account & Access",
-      questions: [
-        {
-          question: "How do I log in?",
-          answer: "Use your username and password."
-        },
-        {
-          question: "How do I recover my account?",
-          answer: "Enter your 12-secret-phrase. It will reset your access and let you set a new password."
-        },
-        {
-          question: "Can I change my 12-secret-phrase?",
-          answer: "No. It is fixed. Protect it carefully."
-        }
-      ]
-    },
-    {
       section: "❓ FAQ – Fan Meet / Fan Date Expiration",
       questions: [
         {
@@ -193,6 +142,15 @@ const SupportPage: React.FC = () => {
         {
           question: "Why 14 days?",
           answer: "📅 14 days gives both sides enough time to reschedule once while keeping requests active and organized."
+        }
+      ]
+    },
+    {
+      section: "📞 Fan Call",
+      questions: [
+        {
+          question: "What is Fan Call?",
+          answer: "📞 Fan Call is a live call where fans pay per minute, and both sides track it in real time."
         }
       ]
     },
@@ -227,15 +185,6 @@ const SupportPage: React.FC = () => {
         {
           question: "How do both sides stay protected?",
           answer: "🛡 The platform tracks confirmations, time logs, and attendance reports to ensure fairness.\nWe recommend both sides take a quick photo or check-in proof at the public venue for verification if needed."
-        }
-      ]
-    },
-    {
-      section: "💬 Contact Support",
-      questions: [
-        {
-          question: "For disputes, bugs, or urgent help:",
-          answer: "📩 Open a Support Ticket inside the app.\n🕒 Response Time: within 24 hours."
         }
       ]
     },
@@ -287,6 +236,57 @@ const SupportPage: React.FC = () => {
           question: "Does the platform profit from this fee?",
           answer: "⚙ No. The fee only covers blockchain and processing expenses — not a platform charge."
         }
+        {
+          section: "💳 Payments & Earnings",
+          questions: [
+            {
+              question: "How do Fan Meet / Fan Date payments work?",
+              answer: "Fans pay transport fare upfront. The money is held in a pending account until the fan taps \"Mark as Complete.\" Once confirmed, the payment is instantly released to the Creator."
+            },
+            {
+              question: "How does Fan Call payment work?",
+              answer: "Fans are charged per minute, and the money is transferred live to the Creator's account during the call."
+            },
+            {
+              question: "Do Creators keep 100% of their money?",
+              answer: "Yes 💯. Creators always keep 100% of their earnings."
+            }
+          ]
+        },
+        {
+          section: "🚫 Safety & Rules",
+          questions: [
+            {
+              question: "Can I post explicit content?",
+              answer: "No ❌. One offense = permanent ban. No warnings, no second chances."
+            },
+            {
+              question: "What if a fan/creator breaks the rules?",
+              answer: "Use the Report button. Our team will review immediately and take action."
+            },
+            {
+              question: "What happens if a fan doesn't mark a meet/date as complete?",
+              answer: "Contact support within 24 hours with evidence (Screenshots, photo, video or chat logs) and our support team will review the case. If valid, the payment will still be released to the Creator."
+            }
+          ]
+        },
+        {
+          section: "🛠 Account & Access",
+          questions: [
+            {
+              question: "How do I log in?",
+              answer: "Use your username and password."
+            },
+            {
+              question: "How do I recover my account?",
+              answer: "Enter your 12-secret-phrase. It will reset your access and let you set a new password."
+            },
+            {
+              question: "Can I change my 12-secret-phrase?",
+              answer: "No. It is fixed. Protect it carefully."
+            }
+          ]
+        },
       ]
     },
     {
@@ -297,9 +297,18 @@ const SupportPage: React.FC = () => {
           answer: "12-Secret-Phrase = Your only backup key."
         }
       ]
-    }
+    },
+    {
+      section: "💬 Contact Support",
+      questions: [
+        {
+          question: "For disputes, bugs, or urgent help:",
+          answer: "📩 Open a Support Ticket inside the app.\n🕒 Response Time: within 24 hours."
+        }
+      ]
+    },
   ];
-
+  
   const handleFormSubmit = async (data: { category: string; email: string; message: string }) => {
     setIsSubmitting(true);
     
@@ -346,11 +355,11 @@ Timestamp: ${new Date().toLocaleString()}`;
               </h2>
               <div className="space-y-4">
                 <div className="flex items-center gap-3">
-                  <FaEnvelope className="w-4 h-4 text-gray-400" />
+                  <FaInstagram className="w-4 h-4 text-gray-400" />
                   <span className="text-sm">mmeko_platform</span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <FaPhone className="w-4 h-4 text-gray-400" />
+                  <FaFacebook className="w-4 h-4 text-gray-400" />
                   <span className="text-sm">mmeko_platform</span>
                 </div>
                 <div className="flex items-center gap-3">
