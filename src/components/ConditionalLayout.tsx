@@ -8,6 +8,7 @@ import Navbar from "@/components/navbar";
 import BottomNavBar from "@/components/bottom-navbar";
 import ShouldRenderPopUp from "@/components/ShouldRenderPopUp";
 import CreatorCards from "@/components/home/CreatorCards";
+import RitualsCard from "@/components/home/RitualsCard";
 import UnauthenticatedPromoModal from "@/components/UnauthenticatedPromoModal";
 import PromotionalBanner from "@/components/home/PromotionalBanner";
 import { FaSignInAlt } from "react-icons/fa";
@@ -190,9 +191,12 @@ export default function ConditionalLayout({ children, isAuthenticated }: Conditi
             {/* Show CreatorCards only on home route and make it same size as bottom navbar */}
             {isHomeRoute && (
               <div className="w-full h-full max-[1000px]:w-0 lg:block hidden">
-                <div className="sticky top-28 self-start -mr-16">
+                <div className="sticky top-28 self-start -mr-16 space-y-4">
                   <div className="w-[25rem] mx-auto max-[600px]:w-[90%] rounded-2xl px-4 pt-4 pb-2 bg-gray-900">
                     <CreatorCards />
+                  </div>
+                  <div className="w-[25rem] mx-auto max-[600px]:w-[90%] rounded-2xl px-4 pt-4 pb-2 bg-gray-900">
+                    <RitualsCard />
                   </div>
                 </div>
               </div>

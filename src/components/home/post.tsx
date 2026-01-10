@@ -712,9 +712,22 @@ export default function PostsCard() {
                   </div>
                 )}
                 {/* Inject Rituals card after the second LazyPost (index 1) */}
-                {index === 1 && <RitualsCard />}
-                {/* Inject Top Fans card after the third LazyPost (index 2) */}
-                {index === 2 && <TopFans />}
+                {index === 1 && (
+                  <div className="lg:hidden">
+                    <RitualsCard />
+                  </div>
+                )}
+                {/* Inject Top Fans card - index 0 on lg+, index 2 on smaller */}
+                {index === 0 && (
+                  <div className="hidden lg:block mx-auto max-w-[30rem] w-full">
+                    <TopFans />
+                  </div>
+                )}
+                {index === 2 && (
+                  <div className="lg:hidden">
+                    <TopFans />
+                  </div>
+                )}
               </React.Fragment>
             ))}
           </div>
