@@ -365,7 +365,7 @@ const CreatorCards: React.FC = () => {
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-white font-medium">Top Creators</h3>
+        <h3 className="text-white font-medium">Creators</h3>
         <button
           className="text-blue-500 text-sm hover:underline"
           onClick={() => router.push('/creators')}
