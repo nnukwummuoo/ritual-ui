@@ -153,8 +153,11 @@ export default function StoryViewPage() {
             const isAtEndPage = distanceFromBottom < windowHeight * 0.5; // Within half screen of bottom
             const isScrollingUp = scrollPosition < lastScrollTop;
 
-            // If at end page and user scrolls up, go back to first panel
-            if (isAtEndPage && isScrollingUp && scrollPosition > windowHeight * story.panels.length) {
+            // If at end page (End Tab is the last index) and user scrolls up, go back to first panel
+            // story.panels.length is the index of the End Tab (since panels are 0 to length-1)
+            const endPageIndex = story.panels.length;
+
+            if (panelIndex === endPageIndex && isScrollingUp) {
                 isScrollingToTop = true;
 
                 // Temporarily disable snap for smooth scroll
@@ -169,7 +172,7 @@ export default function StoryViewPage() {
                 setTimeout(() => {
                     container.style.scrollSnapType = 'y mandatory';
                     isScrollingToTop = false;
-                    lastScrollTop = 0;
+                    lastScrollTop = 0; // Reset last scroll top
                 }, 1000);
             } else {
                 lastScrollTop = scrollPosition;
