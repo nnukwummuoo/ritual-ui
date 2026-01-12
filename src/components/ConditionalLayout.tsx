@@ -181,7 +181,7 @@ export default function ConditionalLayout({ children, isAuthenticated }: Conditi
       <div className={`flex-1 flex flex-col overflow-hidden transition-all duration-300 min-w-0 min-h-0 ${mounted && !showNavbar ? 'mt-0' : 'md:mt-0 mt-12'}`}>
         <div
           ref={scrollContainerRef}
-          className="flex-1 scrollbar overflow-y-auto overflow-x-hidden w-full pt-4 min-w-0"
+          className="flex-1 scrollbar overflow-y-auto overflow-x-hidden w-full min-w-0"
           style={{ minHeight: 0 }}
         >
           <div className="grid grid-cols-[60fr_40fr] max-[1200px]:grid-cols-[75fr_25fr] max-[600px]:grid-cols-1 gap-4 min-h-0">
