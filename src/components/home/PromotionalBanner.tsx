@@ -4,7 +4,7 @@ import { BadgeCheck } from 'lucide-react';
 
 const PromotionalBanner: React.FC = () => {
     return (
-        <div className="mx-auto max-w-[30rem] w-full">
+        <div className="mx-auto - max-w-[30rem] w-full">
             <div className="bg-gradient-to-br from-blue-400 via-purple-400 to-blue-300 rounded-2xl w-full p-6 md:p-8 shadow-2xl border border-blue-300/50">
                 {/* Headline */}
                 <h2 className="text-xl md:text-2xl font-bold text-white mb-4 leading-tight">

@@ -28,6 +28,8 @@ import { enrichCommentsWithUserInfo } from "@/utils/enrichComments";
 import { usePerformanceMonitor } from "@/hooks/usePerformanceMonitor";
 import { useContentFilter } from "@/lib/context/content-filter-context";
 import RitualsCard from "./RitualsCard";
+import NewRitualCard from "./NewRitualCard";
+import TopCreators from "./TopCreators";
 import TopFans from "./TopFans";
 import SafetyRulesBanner from "./SafetyRulesBanner";
 import PromotionalBanner from "./PromotionalBanner";
@@ -726,6 +728,30 @@ export default function PostsCard() {
                 {index === 2 && (
                   <div className="lg:hidden">
                     <TopFans />
+                  </div>
+                )}
+                {/* Inject New Ritual card - Desktop Index 1 */}
+                {index === 2 && (
+                  <div className="hidden lg:block mx-auto max-w-[30rem] w-full">
+                    <NewRitualCard />
+                  </div>
+                )}
+                {/* Inject Top Creators - Desktop Index 2 */}
+                {index === 1 && (
+                  <div className="hidden lg:block mx-auto max-w-[30rem] w-full">
+                    <TopCreators />
+                  </div>
+                )}
+                {/* Inject New Ritual card - Mobile Index 3 */}
+                {index === 4 && (
+                  <div className="lg:hidden">
+                    <NewRitualCard />
+                  </div>
+                )}
+                {/* Inject Top Creators - Mobile Index 4 */}
+                {index === 3 && (
+                  <div className="lg:hidden">
+                    <TopCreators />
                   </div>
                 )}
               </React.Fragment>
