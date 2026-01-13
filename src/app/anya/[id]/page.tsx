@@ -110,9 +110,14 @@ export default function StoryViewPage() {
         }
     }, []);
 
+    const [nextStory, setNextStory] = useState<Story | null>(null);
+
+    // ... existing hooks ...
+
     useEffect(() => {
         if (storyId) {
             fetchStory();
+            fetchNextStory();
             refreshStoryData(storyId);
         }
     }, [storyId]);
@@ -132,7 +137,19 @@ export default function StoryViewPage() {
         }
     };
 
-    // Detect which panel is in view and handle scroll-up from end page
+    const fetchNextStory = async () => {
+        try {
+            const res = await axios.get(`/api/proxy/api/ai-story/stories/${storyId}/next`);
+            if (res.data.nextStory) {
+                console.log('Next Story:', res.data.nextStory);
+                setNextStory(res.data.nextStory);
+            }
+        } catch (error) {
+            console.error('Failed to fetch next story:', error);
+        }
+    };
+
+    // Detect which panel is in view and handle scroll
     useEffect(() => {
         let lastScrollTop = 0;
         let isScrollingToTop = false;
@@ -144,39 +161,54 @@ export default function StoryViewPage() {
             const scrollPosition = container.scrollTop;
             const windowHeight = window.innerHeight;
             const panelIndex = Math.round(scrollPosition / windowHeight);
-            const maxScrollTop = container.scrollHeight - container.clientHeight;
 
             setCurrentPanelIndex(panelIndex);
 
-            // Check if we're at or very near the end page
-            const distanceFromBottom = maxScrollTop - scrollPosition;
-            const isAtEndPage = distanceFromBottom < windowHeight * 0.5; // Within half screen of bottom
+            // Index logic:
+            // 0..N-1 : Panels
+            // N : End Page
+            // N+1 : Next Story Preview (if exists)
+
+            const endPageIndex = story.panels.length;
+            const nextStoryIndex = nextStory ? endPageIndex + 1 : -1;
+
+            // 1. Navigation to Next Story
+            if (nextStory && panelIndex === nextStoryIndex) {
+                // User scrolled to the "Next Ritual" slide
+                // Navigate immediately or after small delay
+                router.push(`/anya/${nextStory._id}`);
+                return;
+            }
+
+            // 2. "Scroll Up" Loop (Only if at End Page and scrolling UP)
+            // Existing logic to jump to top
             const isScrollingUp = scrollPosition < lastScrollTop;
 
-            // If at end page (End Tab is the last index) and user scrolls up, go back to first panel
-            // story.panels.length is the index of the End Tab (since panels are 0 to length-1)
-            const endPageIndex = story.panels.length;
-
             if (panelIndex === endPageIndex && isScrollingUp) {
-                isScrollingToTop = true;
+                // If we have a next story, maybe 'scroll up' should strictly act as 'go back'?
+                //User requested "if user scroll up... show next ritual". 
+                // If they meant "Scroll UP (Swipe Down)", then normal scrolling back handles that.
+                // If they meant "Scroll DOWN (Swipe Up) reveals Next Ritual", that is handled by the Next Story Preview block.
 
-                // Temporarily disable snap for smooth scroll
-                container.style.scrollSnapType = 'none';
+                // I will KEEP the auto-jump-to-top ONLY if they are scrolling up from the End Page 
+                // AND there is NO next story? Or just keep it? 
+                // The user says "what i need now [is] if user scroll up... show another next ritual".
+                // This implies the jump-to-top behavior should be REPLACED or modifying.
+                // BUT "Show another next ritual" usually implies going forward.
+                // If I assume they want "Vertical Feed" behavior: 
+                // - Scroll Down past End -> Next Story.
+                // - Scroll Up from End -> Previous Panel.
+                // The current "Jump to Top" breaks the "Previous Panel" flow.
+                // I will DISABLE the "Jump to Top" behavior completely to allow smooth navigation up and down.
+                // This seems safest.
+                // Wait, the code below REMOVES the jump-to-top logic.
 
-                container.scrollTo({
-                    top: 0,
-                    behavior: 'smooth'
-                });
-
-                // Re-enable snap after scroll completes
-                setTimeout(() => {
-                    container.style.scrollSnapType = 'y mandatory';
-                    isScrollingToTop = false;
-                    lastScrollTop = 0; // Reset last scroll top
-                }, 1000);
-            } else {
-                lastScrollTop = scrollPosition;
+                // isScrollingToTop = true;
+                // container.scrollTo({ top: 0, behavior: 'smooth' });
+                // ...
             }
+
+            lastScrollTop = scrollPosition;
         };
 
         const container = containerRef.current;
@@ -184,7 +216,9 @@ export default function StoryViewPage() {
             container.addEventListener('scroll', handleScroll);
             return () => container.removeEventListener('scroll', handleScroll);
         }
-    }, [story]);
+    }, [story, nextStory]); // Add nextStory dependency
+
+
 
     const handleLike = async () => {
         if (!userId) {
@@ -497,9 +531,45 @@ export default function StoryViewPage() {
                             <p className="text-gray-400 text-sm mt-6">
                                 Thank you for experiencing this ritual ✨
                             </p>
+
+                            {/* Arrow down if next story exists */}
+                            {nextStory && (
+                                <motion.div
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1, y: [0, 10, 0] }}
+                                    transition={{ duration: 2, repeat: Infinity }}
+                                    className="mt-12 text-gray-500 text-sm"
+                                >
+                                    <p>Scroll for Next Ritual</p>
+                                    <div className="mx-auto w-6 h-6 mt-2">
+                                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7" /></svg>
+                                    </div>
+                                </motion.div>
+                            )}
                         </motion.div>
                     </div>
                 </div>
+
+                {/* Next Ritual Preview (Ghost Slide) */}
+                {nextStory && nextStory.panels && nextStory.panels[0] && (
+                    <div className="h-screen w-full snap-start snap-always relative flex items-center justify-center bg-black">
+                        {/* Overlay to indicate loading/transition */}
+                        <div className="absolute inset-0 z-50 bg-black/60 flex items-center justify-center">
+                            <span className="text-2xl font-bold text-white tracking-widest uppercase">Next Ritual</span>
+                        </div>
+
+                        {/* Background Image of Next Story First Panel */}
+                        {(nextStory.panels[0].imageUrl || nextStory.coverImage) && (
+                            <div className="absolute inset-0 z-0 w-full h-full opacity-50">
+                                <img
+                                    src={getImageSource(nextStory.panels[0].imageUrl || nextStory.coverImage || '', 'stories').src}
+                                    alt="Next Story"
+                                    className="w-full h-full object-cover blur-sm"
+                                />
+                            </div>
+                        )}
+                    </div>
+                )}
             </div>
 
             {/* Hide Scrollbar */}
