@@ -56,14 +56,17 @@ const CreatorCard: React.FC<CreatorCardProps> = ({
     }
   };
 
+  // Get first name only
+  const firstName = name.split(' ')[0];
+
   return (
     <div
-      className="relative bg-gray-800 rounded-lg p-3 w-48 flex-shrink-0 cursor-pointer hover:bg-gray-750 transition-colors"
+      className="relative bg-gray-800 rounded-lg w-48 flex-shrink-0 cursor-pointer hover:bg-gray-750 transition-colors overflow-hidden flex flex-col"
       onClick={handleCardClick}
     >
       {/* Close button */}
       <button
-        className="absolute top-2 right-2 text-gray-400 hover:text-white z-10"
+        className="absolute top-2 right-2 text-white/80 hover:text-white z-20 bg-black/20 rounded-full p-1 backdrop-blur-sm"
         onClick={(e) => {
           e.stopPropagation();
           // TODO: Implement dismiss functionality
@@ -74,68 +77,52 @@ const CreatorCard: React.FC<CreatorCardProps> = ({
         </svg>
       </button>
 
-      {/* Profile Image */}
-      <div className="relative mb-3">
-        <div
-          className="w-16 h-16 rounded-full overflow-hidden bg-gray-700 cursor-pointer hover:opacity-80 transition-opacity mx-auto"
-          onClick={handleCardClick}
-        >
-          {photolink && photolink !== "/images/default-placeholder.png" ? (
-            <img
-              src={getImageSource(photolink, 'profile').src}
-              alt={name}
-              className="w-full h-full object-cover"
-              onError={(e) => {
-                const target = e.currentTarget as HTMLImageElement;
-                target.style.display = 'none';
-                const nextElement = target.nextElementSibling as HTMLElement;
-                if (nextElement) {
-                  nextElement.style.setProperty('display', 'flex');
-                }
-              }}
-            />
-          ) : null}
-          <div className="w-full h-full flex items-center justify-center text-white text-lg font-semibold bg-gray-600" style={{ display: photolink && photolink !== "/images/default-placeholder.png" ? 'none' : 'flex' }}>
-            {name.split(' ').map(n => n.charAt(0)).join('').toUpperCase()}
-          </div>
+      {/* Profile Image - Large Portrait Style */}
+      <div className="relative w-full h-64 bg-gray-700">
+        {photolink && photolink !== "/images/default-placeholder.png" ? (
+          <img
+            src={getImageSource(photolink, 'profile').src}
+            alt={name}
+            className="w-full h-full object-cover"
+            onError={(e) => {
+              const target = e.currentTarget as HTMLImageElement;
+              target.style.display = 'none';
+              const nextElement = target.nextElementSibling as HTMLElement;
+              if (nextElement) {
+                nextElement.style.setProperty('display', 'flex');
+              }
+            }}
+          />
+        ) : null}
+        <div className="w-full h-full flex items-center justify-center text-white text-3xl font-semibold bg-gray-600" style={{ display: photolink && photolink !== "/images/default-placeholder.png" ? 'none' : 'flex' }}>
+          {firstName.charAt(0).toUpperCase()}
         </div>
 
         {/* VIP Badge */}
         {isVip && (
-          <div className="absolute -top-2 left-32">
-            <VIPBadge size="xl" isVip={isVip} vipEndDate={vipEndDate} />
+          <div className="absolute top-2 left-20 z-10">
+            <VIPBadge size="xxl" isVip={isVip} vipEndDate={vipEndDate} />
           </div>
         )}
 
         {/* Online Status */}
         {isOnline && (
-          <div className="absolute bottom-0 right-0 w-4 h-4 bg-green-500 rounded-full border-2 border-gray-800"></div>
+          <div className="absolute bottom-2 right-2 w-4 h-4 bg-green-500 rounded-full border-2 border-gray-800"></div>
         )}
       </div>
 
       {/* Creator Info */}
-      <div className="text-center mb-3">
-        <h3 className="font-medium text-white text-sm mb-1">{name}</h3>
-        <p className="text-xs text-gray-400 mb-1">
-          {age} • {gender} • {location}
-        </p>
-        <p className="text-xs text-gray-500 mb-1">
-          {views} views
-        </p>
-        {hosttype && (
-          <p className="text-xs text-blue-400 font-medium">
-            {hosttype}
-          </p>
-        )}
-      </div>
+      <div className="p-3 text-center flex flex-col gap-3">
+        <h3 className="font-semibold text-white text-lg tracking-wide">{firstName}</h3>
 
-      {/* View Profile Button */}
-      <button
-        onClick={handleCardClick}
-        className="w-full py-2 px-3 rounded-lg text-sm font-medium transition-all duration-200 bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:scale-105"
-      >
-        Request
-      </button>
+        {/* View Profile Button */}
+        <button
+          onClick={handleCardClick}
+          className="w-full py-2 px-3 rounded-lg text-sm font-bold transition-all duration-200 bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:scale-105 shadow-md"
+        >
+          Request
+        </button>
+      </div>
     </div>
   );
 };
