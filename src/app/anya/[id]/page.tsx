@@ -111,56 +111,75 @@ export default function StoryViewPage() {
     }, []);
 
     const [nextStory, setNextStory] = useState<Story | null>(null);
+    const [allStories, setAllStories] = useState<Story[]>([]);
+    const [currentStoryIndex, setCurrentStoryIndex] = useState<number>(-1);
 
     // ... existing hooks ...
 
     useEffect(() => {
         if (storyId) {
-            fetchStory();
-            fetchNextStory();
+            fetchStoriesAndSetup();
             refreshStoryData(storyId);
         }
     }, [storyId]);
 
-    const fetchStory = async () => {
+    const fetchStoriesAndSetup = async () => {
         try {
             setLoading(true);
+
+            // Fetch all stories first
+            const allStoriesRes = await axios.get('/api/proxy/api/ai-story/stories');
+            const stories = allStoriesRes.data.stories || [];
+            setAllStories(stories);
+
+            // Find current story index in the array
+            const currentIndex = stories.findIndex((s: Story) => s._id === storyId);
+            setCurrentStoryIndex(currentIndex);
+
+            if (currentIndex === -1) {
+                setLoading(false);
+                return;
+            }
+
+            // Fetch current story details
             const res = await axios.get(`/api/proxy/api/ai-story/stories/${storyId}`);
-            console.log('Story data:', res.data.story);
-            setStory(res.data.story);
-            // Initialize local like count with the story's current likes
-            setLocalLikeCount(res.data.story?.likes || 0);
+            const storyData = res.data.story;
+
+            setStory(storyData);
+            setLocalLikeCount(storyData?.likes || 0);
+
+            // Determine next story by array index
+            const nextIndex = currentIndex + 1;
+            if (nextIndex < stories.length) {
+                const next = stories[nextIndex];
+                setNextStory(next);
+            } else {
+                setNextStory(null);
+            }
+
         } catch (error) {
-            console.error('Failed to fetch story:', error);
+            console.error('❌ [RITUAL ERROR] Failed to fetch stories:', error);
         } finally {
             setLoading(false);
-        }
-    };
-
-    const fetchNextStory = async () => {
-        try {
-            const res = await axios.get(`/api/proxy/api/ai-story/stories/${storyId}/next`);
-            if (res.data.nextStory) {
-                console.log('Next Story:', res.data.nextStory);
-                setNextStory(res.data.nextStory);
-            }
-        } catch (error) {
-            console.error('Failed to fetch next story:', error);
         }
     };
 
     // Detect which panel is in view and handle scroll
     useEffect(() => {
         let lastScrollTop = 0;
-        let isScrollingToTop = false;
+        let scrollTimeout: NodeJS.Timeout | null = null;
 
         const handleScroll = () => {
-            if (!containerRef.current || !story || isScrollingToTop) return;
+            if (!containerRef.current || !story) return;
 
             const container = containerRef.current;
             const scrollPosition = container.scrollTop;
             const windowHeight = window.innerHeight;
-            const panelIndex = Math.round(scrollPosition / windowHeight);
+
+            // Use a more accurate calculation with threshold
+            // Add 0.3 * windowHeight as threshold to avoid premature index changes
+            const rawIndex = (scrollPosition + (windowHeight * 0.3)) / windowHeight;
+            const panelIndex = Math.floor(rawIndex);
 
             setCurrentPanelIndex(panelIndex);
 
@@ -172,40 +191,18 @@ export default function StoryViewPage() {
             const endPageIndex = story.panels.length;
             const nextStoryIndex = nextStory ? endPageIndex + 1 : -1;
 
-            // 1. Navigation to Next Story
-            if (nextStory && panelIndex === nextStoryIndex) {
-                // User scrolled to the "Next Ritual" slide
-                // Navigate immediately or after small delay
-                router.push(`/anya/${nextStory._id}`);
-                return;
+            // Clear any pending navigation
+            if (scrollTimeout) {
+                clearTimeout(scrollTimeout);
             }
 
-            // 2. "Scroll Up" Loop (Only if at End Page and scrolling UP)
-            // Existing logic to jump to top
-            const isScrollingUp = scrollPosition < lastScrollTop;
-
-            if (panelIndex === endPageIndex && isScrollingUp) {
-                // If we have a next story, maybe 'scroll up' should strictly act as 'go back'?
-                //User requested "if user scroll up... show next ritual". 
-                // If they meant "Scroll UP (Swipe Down)", then normal scrolling back handles that.
-                // If they meant "Scroll DOWN (Swipe Up) reveals Next Ritual", that is handled by the Next Story Preview block.
-
-                // I will KEEP the auto-jump-to-top ONLY if they are scrolling up from the End Page 
-                // AND there is NO next story? Or just keep it? 
-                // The user says "what i need now [is] if user scroll up... show another next ritual".
-                // This implies the jump-to-top behavior should be REPLACED or modifying.
-                // BUT "Show another next ritual" usually implies going forward.
-                // If I assume they want "Vertical Feed" behavior: 
-                // - Scroll Down past End -> Next Story.
-                // - Scroll Up from End -> Previous Panel.
-                // The current "Jump to Top" breaks the "Previous Panel" flow.
-                // I will DISABLE the "Jump to Top" behavior completely to allow smooth navigation up and down.
-                // This seems safest.
-                // Wait, the code below REMOVES the jump-to-top logic.
-
-                // isScrollingToTop = true;
-                // container.scrollTo({ top: 0, behavior: 'smooth' });
-                // ...
+            // 1. Navigation to Next Story
+            // Only navigate when scroll has settled on the next story index
+            if (nextStory && panelIndex === nextStoryIndex) {
+                scrollTimeout = setTimeout(() => {
+                    router.push(`/anya/${nextStory._id}`);
+                }, 300); // Small delay to ensure user intended to navigate
+                return;
             }
 
             lastScrollTop = scrollPosition;
@@ -213,10 +210,15 @@ export default function StoryViewPage() {
 
         const container = containerRef.current;
         if (container) {
-            container.addEventListener('scroll', handleScroll);
-            return () => container.removeEventListener('scroll', handleScroll);
+            container.addEventListener('scroll', handleScroll, { passive: true });
+            return () => {
+                container.removeEventListener('scroll', handleScroll);
+                if (scrollTimeout) {
+                    clearTimeout(scrollTimeout);
+                }
+            };
         }
-    }, [story, nextStory]); // Add nextStory dependency
+    }, [story, nextStory, router]); // Add router dependency
 
 
 
