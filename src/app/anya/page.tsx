@@ -174,11 +174,6 @@ export default function AnyaPage() {
       const res = await axios.get('/api/proxy/api/ai-story/stories');
       const fetchedStories = res.data.stories || [];
 
-      // Debug: Log the structure of the first story
-      if (fetchedStories.length > 0) {
-        console.log('📚 First story structure:', fetchedStories[0]);
-        console.log('📸 Panels/Scenes:', fetchedStories[0].panels || fetchedStories[0].scenes);
-      }
 
       setStories(fetchedStories);
 
@@ -187,7 +182,7 @@ export default function AnyaPage() {
         refreshStoryData(story._id);
       });
     } catch (error) {
-      console.error('Failed to fetch stories:', error);
+      console.error('❌ [RITUALS LIST ERROR] Failed to fetch stories:', error);
     } finally {
       setLoading(false);
     }

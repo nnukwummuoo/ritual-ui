@@ -8,6 +8,7 @@ import { useAuth } from "@/lib/context/auth-context";
 import { getImageSource } from "@/lib/imageUtils";
 import VIPBadge from "@/components/VIPBadge";
 import Skeleton, { SkeletonTheme } from "react-loading-skeleton";
+import { BadgeCheck } from "lucide-react";
 
 interface CreatorCardProps {
   photolink: string;
@@ -65,7 +66,7 @@ const CreatorCard: React.FC<CreatorCardProps> = ({
       onClick={handleCardClick}
     >
       {/* Close button */}
-      <button
+      {/* <button
         className="absolute top-2 right-2 text-white/80 hover:text-white z-20 bg-black/20 rounded-full p-1 backdrop-blur-sm"
         onClick={(e) => {
           e.stopPropagation();
@@ -75,7 +76,7 @@ const CreatorCard: React.FC<CreatorCardProps> = ({
         <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
           <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
         </svg>
-      </button>
+      </button> */}
 
       {/* Profile Image - Large Portrait Style */}
       <div className="relative w-full h-64 bg-gray-700">
@@ -100,8 +101,8 @@ const CreatorCard: React.FC<CreatorCardProps> = ({
 
         {/* VIP Badge */}
         {isVip && (
-          <div className="absolute top-2 left-20 z-10">
-            <VIPBadge size="xxl" isVip={isVip} vipEndDate={vipEndDate} />
+          <div className="absolute top-2 left-12 z-10">
+            <VIPBadge size="xl" isVip={isVip} vipEndDate={vipEndDate} />
           </div>
         )}
 
@@ -113,8 +114,9 @@ const CreatorCard: React.FC<CreatorCardProps> = ({
 
       {/* Creator Info */}
       <div className="p-3 text-center flex flex-col gap-3">
-        <h3 className="font-semibold text-white text-lg tracking-wide">{firstName}</h3>
-
+        <h3 className="font-semibold text-white flex text-center gap-3 items-center justify-center text-lg tracking-wide">{firstName}<span> <BadgeCheck size={17} fill="white" className="text-black" /> </span></h3>
+            
+                 
         {/* View Profile Button */}
         <button
           onClick={handleCardClick}

@@ -1258,8 +1258,8 @@ export default function CreatorPage() {
             <CreatorCard {...value} />
             {/* VIP Badge - positioned at page level on top of verified creators */}
             {value.isVip && (
-              <div className="absolute -top-1 left-20 ">
-                <VIPBadge size="xxl" isVip={value.isVip} vipEndDate={value.vipEndDate} />
+              <div className="absolute top-2 left-12 ">
+                <VIPBadge size="xl" isVip={value.isVip} vipEndDate={value.vipEndDate} />
               </div>
             )}
           </li>
