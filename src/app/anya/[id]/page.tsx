@@ -205,6 +205,22 @@ export default function StoryViewPage() {
                 return;
             }
 
+            // 2. "Scroll Up" Loop (Commented out again as it might confusion standard scrolling)
+            /*
+            const isScrollingUp = scrollPosition < lastScrollTop;
+
+            if (panelIndex === endPageIndex && isScrollingUp) {
+                // User wants to go back to start?
+                isScrollingToTop = true;
+                container.scrollTo({ top: 0, behavior: 'smooth' });
+                
+                setTimeout(() => {
+                    isScrollingToTop = false;
+                }, 1000);
+                return;
+            }
+            */
+
             lastScrollTop = scrollPosition;
         };
 
@@ -469,11 +485,7 @@ export default function StoryViewPage() {
 
                     {/* End Content */}
                     <div className="relative z-10 max-w-2xl mx-auto px-6 text-center">
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.8 }}
-                            whileInView={{ opacity: 1, scale: 1 }}
-                            viewport={{ once: true }}
-                            transition={{ duration: 0.8 }}
+                        <div
                             className="space-y-8"
                         >
                             {/* The End Badge */}
@@ -529,6 +541,23 @@ export default function StoryViewPage() {
                                 </motion.button>
                             </div>
 
+                            {/* Next Ritual Button (Explicit Fallback) */}
+                            {/* {nextStory && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: 1 }}
+                                    className="mt-6"
+                                >
+                                    <button
+                                        onClick={() => router.push(`/anya/${nextStory._id}`)}
+                                        className="px-8 py-4 bg-gradient-to-r from-purple-500 to-indigo-600 rounded-full text-white font-bold text-lg shadow-lg hover:shadow-purple-500/30 transition-all transform hover:scale-105"
+                                    >
+                                        Start Next Ritual
+                                    </button>
+                                </motion.div>
+                            )} */}
+
                             {/* Thank You Message */}
                             <p className="text-gray-400 text-sm mt-6">
                                 Thank you for experiencing this ritual ✨
@@ -548,7 +577,7 @@ export default function StoryViewPage() {
                                     </div>
                                 </motion.div>
                             )}
-                        </motion.div>
+                        </div>
                     </div>
                 </div>
 
