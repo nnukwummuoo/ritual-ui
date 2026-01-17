@@ -180,33 +180,21 @@ export default function StoryViewPage() {
                 return;
             }
 
-            // 2. "Scroll Up" Loop (Only if at End Page and scrolling UP)
-            // Existing logic to jump to top
+            // 2. "Scroll Up" Loop (Commented out again as it might confusion standard scrolling)
+            /*
             const isScrollingUp = scrollPosition < lastScrollTop;
 
             if (panelIndex === endPageIndex && isScrollingUp) {
-                // If we have a next story, maybe 'scroll up' should strictly act as 'go back'?
-                //User requested "if user scroll up... show next ritual". 
-                // If they meant "Scroll UP (Swipe Down)", then normal scrolling back handles that.
-                // If they meant "Scroll DOWN (Swipe Up) reveals Next Ritual", that is handled by the Next Story Preview block.
-
-                // I will KEEP the auto-jump-to-top ONLY if they are scrolling up from the End Page 
-                // AND there is NO next story? Or just keep it? 
-                // The user says "what i need now [is] if user scroll up... show another next ritual".
-                // This implies the jump-to-top behavior should be REPLACED or modifying.
-                // BUT "Show another next ritual" usually implies going forward.
-                // If I assume they want "Vertical Feed" behavior: 
-                // - Scroll Down past End -> Next Story.
-                // - Scroll Up from End -> Previous Panel.
-                // The current "Jump to Top" breaks the "Previous Panel" flow.
-                // I will DISABLE the "Jump to Top" behavior completely to allow smooth navigation up and down.
-                // This seems safest.
-                // Wait, the code below REMOVES the jump-to-top logic.
-
-                // isScrollingToTop = true;
-                // container.scrollTo({ top: 0, behavior: 'smooth' });
-                // ...
+                // User wants to go back to start?
+                isScrollingToTop = true;
+                container.scrollTo({ top: 0, behavior: 'smooth' });
+                
+                setTimeout(() => {
+                    isScrollingToTop = false;
+                }, 1000);
+                return;
             }
+            */
 
             lastScrollTop = scrollPosition;
         };
@@ -467,11 +455,7 @@ export default function StoryViewPage() {
 
                     {/* End Content */}
                     <div className="relative z-10 max-w-2xl mx-auto px-6 text-center">
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.8 }}
-                            whileInView={{ opacity: 1, scale: 1 }}
-                            viewport={{ once: true }}
-                            transition={{ duration: 0.8 }}
+                        <div
                             className="space-y-8"
                         >
                             {/* The End Badge */}
@@ -527,6 +511,23 @@ export default function StoryViewPage() {
                                 </motion.button>
                             </div>
 
+                            {/* Next Ritual Button (Explicit Fallback) */}
+                            {/* {nextStory && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: 1 }}
+                                    className="mt-6"
+                                >
+                                    <button
+                                        onClick={() => router.push(`/anya/${nextStory._id}`)}
+                                        className="px-8 py-4 bg-gradient-to-r from-purple-500 to-indigo-600 rounded-full text-white font-bold text-lg shadow-lg hover:shadow-purple-500/30 transition-all transform hover:scale-105"
+                                    >
+                                        Start Next Ritual
+                                    </button>
+                                </motion.div>
+                            )} */}
+
                             {/* Thank You Message */}
                             <p className="text-gray-400 text-sm mt-6">
                                 Thank you for experiencing this ritual ✨
@@ -546,7 +547,7 @@ export default function StoryViewPage() {
                                     </div>
                                 </motion.div>
                             )}
-                        </motion.div>
+                        </div>
                     </div>
                 </div>
 
