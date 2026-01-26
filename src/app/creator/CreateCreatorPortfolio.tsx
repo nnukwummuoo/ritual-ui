@@ -13,7 +13,7 @@ import idcardicon from "../../icons/idcardIcon.svg";
 import deleteIcon from "../../icons/deleteicon.svg";
 import { useAuthToken } from "@/lib/hooks/useAuthToken";
 import { useUserId } from "@/lib/hooks/useUserId";
-import { createCreatorMultipart } from "@/api/creator";
+import { createCreatorMultipart, checkUserPortfolio } from "@/api/creator";
 import { useAuth } from "@/lib/context/auth-context";
 import { useSelector, useDispatch } from "react-redux";
 import type { RootState, AppDispatch } from "@/store/store";
@@ -80,7 +80,7 @@ export default function CreateCreatorPortfolio() {
   // 🔥 Autofill full name from user profile (like side menu)
   useEffect(() => {
     const currentUserId = reduxUserId || userid;
-    
+
     // Load profile if not loaded
     if (currentUserId && (!profile.firstname || profile.status === "idle")) {
       let token: string | undefined;
@@ -93,7 +93,7 @@ export default function CreateCreatorPortfolio() {
       } catch (error) {
         console.error("Error getting token for profile:", error);
       }
-      
+
       if (token) {
         dispatch(getprofile({ userid: currentUserId, token }));
       }
@@ -126,15 +126,35 @@ export default function CreateCreatorPortfolio() {
     }
   }, [profile, reduxUserId, userid, dispatch, name]);
 
+  // Check if user already has a portfolio
+  useEffect(() => {
+    const checkExistingPortfolio = async () => {
+      const currentUserId = reduxUserId || userid;
+      if (!currentUserId || !token) return;
+
+      try {
+        const response = await checkUserPortfolio({ userid: currentUserId, token });
+        if (response.ok && response.hasPortfolio) {
+          toast.error("Portfolio already exists", { autoClose: false });
+          setdisablebut(true);
+        }
+      } catch (error) {
+        console.error("Error checking portfolio:", error);
+      }
+    };
+
+    checkExistingPortfolio();
+  }, [reduxUserId, userid, token]);
+
   // Scroll to top whenever step changes - scroll the parent scrollable container
   useEffect(() => {
     const scrollToTop = () => {
       // Find the scrollable parent container (from ConditionalLayout with overflow-y-auto)
       let scrollableContainer: HTMLElement | null = null;
-      
+
       // Try to find the container by class name (scrollbar overflow-y-auto)
       scrollableContainer = document.querySelector('.scrollbar.overflow-y-auto') as HTMLElement;
-      
+
       // Fallback: find parent element with overflow-y-auto
       if (!scrollableContainer && containerRef.current) {
         let parent = containerRef.current.parentElement;
@@ -147,7 +167,7 @@ export default function CreateCreatorPortfolio() {
           parent = parent.parentElement;
         }
       }
-      
+
       // If we found the scrollable container, scroll it to top
       if (scrollableContainer) {
         scrollableContainer.scrollTop = 0;
@@ -158,10 +178,10 @@ export default function CreateCreatorPortfolio() {
         document.body.scrollTop = 0;
       }
     };
-    
+
     // Scroll immediately
     scrollToTop();
-    
+
     // Also scroll after DOM update to ensure it works
     requestAnimationFrame(() => {
       scrollToTop();
@@ -170,22 +190,22 @@ export default function CreateCreatorPortfolio() {
     });
   }, [step]);
 
-// Initialize Storj upload function
-// Upload a file to Storj via backend API and return its public URL
-const uploadToStorjBackend = async (file: File): Promise<string> => {
-  try {
-    console.log("🔍 [Storj] Uploading file:", { name: file.name, size: file.size, type: file.type });
-    
-    const publicUrl = await uploadToStorj(file, 'creator');
-    console.log("✅ [Storj] Upload successful:", publicUrl);
-    
-    return publicUrl;
-    
-  } catch (err: any) {
-    console.error("❌ [Storj] Upload failed:", err);
-    throw new Error(`Upload failed: ${err.message || 'Unknown error'}`);
-  }
-};
+  // Initialize Storj upload function
+  // Upload a file to Storj via backend API and return its public URL
+  const uploadToStorjBackend = async (file: File): Promise<string> => {
+    try {
+      console.log("🔍 [Storj] Uploading file:", { name: file.name, size: file.size, type: file.type });
+
+      const publicUrl = await uploadToStorj(file, 'creator');
+      console.log("✅ [Storj] Upload successful:", publicUrl);
+
+      return publicUrl;
+
+    } catch (err: any) {
+      console.error("❌ [Storj] Upload failed:", err);
+      throw new Error(`Upload failed: ${err.message || 'Unknown error'}`);
+    }
+  };
 
 
 
@@ -193,84 +213,84 @@ const uploadToStorjBackend = async (file: File): Promise<string> => {
 
 
 
-// -----------------------------
-// checkuserInput
-// -----------------------------
-const checkuserInput = async () => {
-  // Prevent multiple submissions
-  if (disablebut || loading) {
-    return;
-  }
+  // -----------------------------
+  // checkuserInput
+  // -----------------------------
+  const checkuserInput = async () => {
+    // Prevent multiple submissions
+    if (disablebut || loading) {
+      return;
+    }
 
-  if (!name || name.trim() === "") return toast.error("Full name is required");
-  if (!age) return toast.error("Age is required");
-  if (!hosttype) return toast.error("Select host type");
-  if (photolink.length <= 0) return toast.error("Please upload at least one image");
-  if (!location) return toast.error("Location is required");
-  if (!priceValue) return toast.error("Price is required");
-  if (!height) return toast.error("Height is required");
-  if (Interested.length <= 0) return toast.error("Please select what you're interested in");
-  if (!discription) return toast.error("Write your description");
-  if (!userid) return toast.error("Missing user, please login again");
-  if (!token) return toast.error("Missing token");
+    if (!name || name.trim() === "") return toast.error("Full name is required");
+    if (!age) return toast.error("Age is required");
+    if (!hosttype) return toast.error("Select host type");
+    if (photolink.length <= 0) return toast.error("Please upload at least one image");
+    if (!location) return toast.error("Location is required");
+    if (!priceValue) return toast.error("Price is required");
+    if (!height) return toast.error("Height is required");
+    if (Interested.length <= 0) return toast.error("Please select what you're interested in");
+    if (!discription) return toast.error("Write your description");
+    if (!userid) return toast.error("Missing user, please login again");
+    if (!token) return toast.error("Missing token");
 
-  try {
-    // Set loading states immediately to prevent duplicate submissions
-    setdisablebut(true);
-    setLoading(true);
+    try {
+      // Set loading states immediately to prevent duplicate submissions
+      setdisablebut(true);
+      setLoading(true);
 
-    const hosttypeNormalized = hosttype.charAt(0).toUpperCase() + hosttype.slice(1).toLowerCase();
+      const hosttypeNormalized = hosttype.charAt(0).toUpperCase() + hosttype.slice(1).toLowerCase();
 
-    // Don't upload files in frontend - let backend handle all uploads
-    // Just use the file objects directly
-    setphotolink(photolink);
+      // Don't upload files in frontend - let backend handle all uploads
+      // Just use the file objects directly
+      setphotolink(photolink);
 
-    const data = {
-      userid, // ✅ leave as is, do not rename
-      name: name.trim(),
-      age: String(age),
-      location: location.trim(),
-      price: priceValue != null ? String(priceValue) : "",
-      displayPrice: price,
-      duration,
-      bodytype,
-      smoke,
-      drink,
-      interestedin: Interested.map((v) => String(v).toLowerCase()),
-      height,
-      weight,
-      description: discription.trim(),
-      gender,
-      timeava: times,
-      daysava: hours,
-      hosttype: hosttypeNormalized,
-      // photolink will be sent as files separately
-    };
+      const data = {
+        userid, // ✅ leave as is, do not rename
+        name: name.trim(),
+        age: String(age),
+        location: location.trim(),
+        price: priceValue != null ? String(priceValue) : "",
+        displayPrice: price,
+        duration,
+        bodytype,
+        smoke,
+        drink,
+        interestedin: Interested.map((v) => String(v).toLowerCase()),
+        height,
+        weight,
+        description: discription.trim(),
+        gender,
+        timeava: times,
+        daysava: hours,
+        hosttype: hosttypeNormalized,
+        // photolink will be sent as files separately
+      };
 
-    await createCreatorMultipart({
-      token,
-      userid, // ✅ keep exactly like this
-      data,
-      photolink: photolink, // Pass file objects directly
-    });
+      await createCreatorMultipart({
+        token,
+        userid, // ✅ keep exactly like this
+        data,
+        photolink: photolink, // Pass file objects directly
+      });
 
-    // Success: Keep button disabled and show success message
-    toast.success("Portfolio created successfully", { autoClose: 3000 });
-    // Navigate away with full page refresh to reload entire app state
-    window.location.href = "/creators";
-  } catch (err: any) {
-    console.error("Failed to create portfolio", err?.response || err);
-    const status = err?.response?.status;
-    const data = err?.response?.data;
-    const serverMsg = data?.message || data?.msg || data?.error || err?.message;
-    const detail = typeof data === "object" ? JSON.stringify(data).slice(0, 400) : String(data || "");
-    const msg = serverMsg ? String(serverMsg) : "Failed to create portfolio";
-    toast.error(`${status ? `[${status}]` : ""}${msg}${detail && serverMsg !== detail ? `\n${detail}` : ""}`, { autoClose: 6000 });
-    // Only reset states on error so user can retry
-    setdisablebut(false);
-    setLoading(false);
-  }
-};
+      // Success: Keep button disabled and show success message
+      toast.success("Portfolio created successfully", { autoClose: 3000 });
+      // Navigate away with full page refresh to reload entire app state
+      window.location.href = "/creators";
+    } catch (err: any) {
+      console.error("Failed to create portfolio", err?.response || err);
+      const status = err?.response?.status;
+      const data = err?.response?.data;
+      const serverMsg = data?.message || data?.msg || data?.error || err?.message;
+      const detail = typeof data === "object" ? JSON.stringify(data).slice(0, 400) : String(data || "");
+      const msg = serverMsg ? String(serverMsg) : "Failed to create portfolio";
+      toast.error(`${status ? `[${status}]` : ""}${msg}${detail && serverMsg !== detail ? `\n${detail}` : ""}`, { autoClose: 6000 });
+      // Only reset states on error so user can retry
+      setdisablebut(false);
+      setLoading(false);
+    }
+  };
 
 
 
@@ -314,13 +334,13 @@ const checkuserInput = async () => {
   };
 
 
-if (!isCreatorVerified) {
-  return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-900">
-      <p className="text-xl text-white">You are not verified yet</p>
-    </div>
-  );
-}
+  if (!isCreatorVerified) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-900">
+        <p className="text-xl text-white">You are not verified yet</p>
+      </div>
+    );
+  }
 
 
   return (
@@ -328,7 +348,7 @@ if (!isCreatorVerified) {
       <div ref={containerRef} className="pt-16 md:pt-8">
         <ToastContainer position="top-center" theme="dark" />
         <p className="text-2xl font-semibold text-center text-slate-300 sm:w-1/2">
-          Create Portfolio 
+          Create Portfolio
         </p>
         <div className="form-container">
           <div className="w-full h-2 mb-6 bg-gray-700 rounded">
@@ -345,17 +365,17 @@ if (!isCreatorVerified) {
           >
             <div className="input-container">
               <label htmlFor="fullname" className="block text-gray-300 mb-2">
-    Full Name
-  </label>
-  <input
-    id="fullname"
-    type="text"
-    className="bg-black name-label"
-    placeholder="Enter your full name"
-    value={name}
-    readOnly
-    style={{ cursor: 'not-allowed', opacity: 0.7 }}
-  />
+                Full Name
+              </label>
+              <input
+                id="fullname"
+                type="text"
+                className="bg-black name-label"
+                placeholder="Enter your full name"
+                value={name}
+                readOnly
+                style={{ cursor: 'not-allowed', opacity: 0.7 }}
+              />
             </div>
 
             <div className="input-container">
@@ -643,7 +663,7 @@ if (!isCreatorVerified) {
 
               <div className="flex items-center gap-2">
                 <label className="text-slate-300">
-                  {hosttype === "Fan call" 
+                  {hosttype === "Fan call"
                     ? "Set how much fans pay per minute for your Fan call"
                     : "Enter transport fare fans will pay you"
                   }
@@ -780,21 +800,21 @@ if (!isCreatorVerified) {
                   onChange={async (e: React.ChangeEvent<HTMLInputElement>) => {
                     const files = e.currentTarget.files;
                     if (!files || files.length === 0) return;
-                    
+
                     const selected: File[] = Array.from(files).filter((f) => f.type.startsWith("image/"));
-                    
+
                     // Check for files larger than 5MB
                     const oversizedFiles = selected.filter(f => f.size > 5 * 1024 * 1024);
                     if (oversizedFiles.length > 0) {
                       setShowFileSizeModal(true);
                       return;
                     }
-                    
+
                     // Create preview URLs for immediate display
                     const previewUrls = selected.map((f) => URL.createObjectURL(f));
                     setimglist((prev) => [...prev, ...previewUrls]);
                     setphotolink((prev) => [...prev, ...selected]);
-                    
+
                     // Don't upload to Storj here - let backend handle all uploads
                   }}
                 />
@@ -936,7 +956,7 @@ if (!isCreatorVerified) {
               ×
             </button>
             <h3 className="text-xl font-bold text-white mb-4">Recommended Prices</h3>
-            
+
             <div className="space-y-4">
               {/* Fan call */}
               <div className="bg-gray-800 p-4 rounded-lg">

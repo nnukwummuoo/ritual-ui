@@ -23,7 +23,7 @@ export async function createCreatorMultipart(params: {
 
   // Create FormData for file upload
   const formData = new FormData();
-  
+
   // Add all data fields
   Object.entries(data).forEach(([key, value]) => {
     if (Array.isArray(value)) {
@@ -41,7 +41,7 @@ export async function createCreatorMultipart(params: {
   });
 
   const res = await api.put("/creator", formData, {
-    headers: { 
+    headers: {
       "Content-Type": "multipart/form-data",
     },
   });
@@ -67,10 +67,10 @@ export async function getMyCreator(params: { userid: string; token?: string }) {
   if (data.ok && data.host) {
     // Ensure a fallback image exists - prioritize creatorfiles over photolink
     data.host = data.host.map((creator: any) => {
-      const firstImage = (creator.creatorfiles && creator.creatorfiles.length > 0) 
-        ? creator.creatorfiles[0]?.creatorfilelink 
+      const firstImage = (creator.creatorfiles && creator.creatorfiles.length > 0)
+        ? creator.creatorfiles[0]?.creatorfilelink
         : (creator.photolink && creator.photolink[0]);
-      
+
       return {
         ...creator,
         displayImage: firstImage || "/default-image.png",
@@ -92,10 +92,10 @@ export async function getAllCreators() {
   if (data.ok && data.host) {
     // Ensure a fallback image exists - prioritize creatorfiles over photolink
     data.host = data.host.map((creator: any) => {
-      const firstImage = (creator.creatorfiles && creator.creatorfiles.length > 0) 
-        ? creator.creatorfiles[0]?.creatorfilelink 
+      const firstImage = (creator.creatorfiles && creator.creatorfiles.length > 0)
+        ? creator.creatorfiles[0]?.creatorfilelink
         : (creator.photolink && creator.photolink[0]);
-      
+
       return {
         ...creator,
         displayImage: firstImage || "/default-image.png",
@@ -146,7 +146,19 @@ export async function editCreatorMultipart(params: {
   const res = await api.post("/editcreator", form, {
     headers: { "Content-Type": "multipart/form-data" },
   });
-  
-  
+
+
+  return res.data;
+}
+
+// -----------------------------
+// Check if User Has Portfolio
+// -----------------------------
+export async function checkUserPortfolio(params: { userid: string; token?: string }) {
+  const { userid, token } = params;
+  if (!userid) throw new Error("Missing userid for checkUserPortfolio");
+
+  const api = backend(token);
+  const res = await api.get(`/creator/check/${userid}`);
   return res.data;
 }
