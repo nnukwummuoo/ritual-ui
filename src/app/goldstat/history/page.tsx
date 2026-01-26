@@ -37,17 +37,17 @@ const WithdrawRequestCard = ({ usd, onWithdrawClick }: { usd: number; onWithdraw
     <div className="flex justify-between items-center">
       <div>
         <p className="text-sm">Withdrawable Money</p>
-        {usd >= 50 ? <p className="text-xl font-bold">${usd.toFixed(2)}</p> : <p className="text-xs">Available once balance ≥ $50</p>}
+        {usd >= 5 ? <p className="text-xl font-bold">${usd.toFixed(2)}</p> : <p className="text-xs">Available once balance ≥ $5</p>}
       </div>
       <button
-        className={`transition-all text-white font-bold px-4 py-2 rounded-lg ${usd >= 50
+        className={`transition-all text-white font-bold px-4 py-2 rounded-lg ${usd >= 5
           ? 'bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-500 hover:to-pink-400 cursor-pointer'
           : 'bg-gray-500 cursor-not-allowed opacity-50'
           }`}
-        disabled={usd < 50}
-        onClick={usd >= 50 ? onWithdrawClick : undefined}
+        disabled={usd < 5}
+        onClick={usd >= 5 ? onWithdrawClick : undefined}
       >
-        {usd >= 50 ? 'Withdraw' : '$50 required for available balance'}
+        {usd >= 5 ? 'Withdraw' : '$5 required for available balance'}
       </button>
     </div>
   </div>
@@ -160,8 +160,8 @@ const HistoryPage = () => {
       return 'Please enter a valid amount';
     }
 
-    if (numAmount < 50) {
-      return 'Minimum withdrawal amount is $50';
+    if (numAmount < 5) {
+      return 'Minimum withdrawal amount is $5';
     }
 
     if (numAmount > maxAmount) {
@@ -263,15 +263,15 @@ const HistoryPage = () => {
   const isCreator = creator_verified || !!creator_portfolio_id;
 
   // Calculate total current balance (not month-specific) - only for creators
- // Calculate total current balance (not month-specific) - available for all users
-const totalCurrentBalance = typeof earnings === 'number' ? earnings : parseFloat(earnings || '0') || 0;
-const totalCurrentBalanceUSD = totalCurrentBalance * 0.04;
+  // Calculate total current balance (not month-specific) - available for all users
+  const totalCurrentBalance = typeof earnings === 'number' ? earnings : parseFloat(earnings || '0') || 0;
+  const totalCurrentBalanceUSD = totalCurrentBalance * 0.04;
 
   const [views, setViews] = useState(0);
 
   // Get analytics from transactions based on selected month
   const analytics: Analytics = useMemo(() => {
-   
+
 
     const targetMonth = parseInt(selectedMonth) - 1; // Convert to 0-11
     const targetYear = parseInt(selectedYear);
@@ -292,7 +292,7 @@ const totalCurrentBalanceUSD = totalCurrentBalance * 0.04;
       // Include earnings-related transactions
       const isEarnings =
         description.includes("payment received") ||
-        description.includes("Referral reward transfer to earnings")||
+        description.includes("Referral reward transfer to earnings") ||
         description.includes("Fan call - payment received") ||
         description.includes("Fan meet completed - payment received") ||
         description.includes("exclusive post sale") ||
@@ -806,7 +806,7 @@ const totalCurrentBalanceUSD = totalCurrentBalance * 0.04;
 
             <p className="text-gray-300 mb-4">
               Available: ${totalCurrentBalanceUSD.toFixed(2)}<br />
-              Min: $50
+              Min: $5
             </p>
 
             <div className="mb-4">
@@ -816,7 +816,7 @@ const totalCurrentBalanceUSD = totalCurrentBalance * 0.04;
                 onChange={handleWithdrawAmountChange}
                 placeholder="Enter amount"
                 className="w-full px-4 py-3 rounded-lg bg-gray-700 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                min="50"
+                min="5"
                 max={totalCurrentBalanceUSD}
                 step="0.01"
               />
