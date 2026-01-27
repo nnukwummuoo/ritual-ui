@@ -27,6 +27,12 @@ const SafetyRulesBanner: React.FC = () => {
                     <p className="text-sm leading-relaxed pl-9">
                         Fans cover transport fare upfront and creators may include any reasonable expenses in their transport fare price.
                     </p>
+
+                    <div className="space-y-4 text-white">
+                        <p className="text-lg font-semibold leading-tight">
+                            No scams. We handle everything with structure and transparency.
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>
