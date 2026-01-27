@@ -28,10 +28,16 @@ const SafetyRulesBanner: React.FC = () => {
                         Fans cover transport fare upfront and creators may include any reasonable expenses in their transport fare price.
                     </p>
 
-                    <div className="space-y-4 text-white">
+                     <div className="space-y-4 text-white">
+                    {/* Main Rule */}
+                    <div className="flex gap-3">
+                        <div className="flex-shrink-0 mt-1">
+                            <CheckCircle size={24} fill="#22c55e" className="text-white" />
+                        </div>
                         <p className="text-lg font-semibold leading-tight">
                             No scams. We handle everything with structure and transparency.
-                        </p>
+                            </p>
+                        </div>
                     </div>
                 </div>
             </div>
