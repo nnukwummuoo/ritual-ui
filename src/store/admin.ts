@@ -6,77 +6,103 @@ import axios from "axios";
 
 // Helper: normalize error messages from Axios or generic errors
 const getAxiosErrorMessage = (err: unknown): string => {
-  if (axios.isAxiosError(err)) {
-    return err.response?.data?.message ?? "check internet connection";
-  }
-  if (err instanceof Error) return err.message;
-  return "check internet connection";
+    if (axios.isAxiosError(err)) {
+        return err.response?.data?.message ?? "check internet connection";
+    }
+    if (err instanceof Error) return err.message;
+    return "check internet connection";
 };
 
 // Types
-type User = { _id: string; [key: string]: any };
+type User = { _id: string;[key: string]: any };
 type AdminState = {
-  alluser_stats: string;
-  alluser_message: string;
-  alluser_list: User[];
-  userphotos_list: Record<string, any>;
-  deleteuser_stats: string;
-  deleteuser_message: string;
-  delete_photo_stats: string;
-  delete_photo_message: string;
-  suspenduser_stats: string;
-  suspenduser_message: string;
-  marked_users: string[];
-  send_stats: string;
-  send_message: string;
-  notifyme: boolean;
-  notifycount: string;
-  notify_stats: string;
-  notify_message: string;
+    alluser_stats: string;
+    alluser_message: string;
+    alluser_list: User[];
+    userphotos_list: Record<string, any>;
+    deleteuser_stats: string;
+    deleteuser_message: string;
+    delete_photo_stats: string;
+    delete_photo_message: string;
+    suspenduser_stats: string;
+    suspenduser_message: string;
+    marked_users: string[];
+    send_stats: string;
+    send_message: string;
+    notifyme: boolean;
+    notifycount: string;
+    notify_stats: string;
+    notify_message: string;
+    pagination: {
+        page: number;
+        limit: number;
+        total: number;
+        totalPages: number;
+        hasNextPage: boolean;
+        hasPrevPage: boolean;
+    };
 };
 type DeleteUserPhotoArgs = {
-  creatorphoto: any[];
-  postphoto: any[];
-  profilephoto: any[];
+    creatorphoto: any[];
+    postphoto: any[];
+    profilephoto: any[];
 };
 
 const initialState: AdminState = {
-    alluser_stats:"idle",
-    alluser_message:"",
-    alluser_list:[],
-    userphotos_list:{},
-    deleteuser_stats:"idle",
-    deleteuser_message:"",
+    alluser_stats: "idle",
+    alluser_message: "",
+    alluser_list: [],
+    userphotos_list: {},
+    deleteuser_stats: "idle",
+    deleteuser_message: "",
     delete_photo_stats: "idle",
-    delete_photo_message:"",
+    delete_photo_message: "",
     suspenduser_stats: "idle",
-    suspenduser_message:"",
-    marked_users:[],
-    send_stats:"idle",
-    send_message:"",
-    notifyme:false,
-    notifycount:"0",
-    notify_stats:"idle",
-    notify_message:""
+    suspenduser_message: "",
+    marked_users: [],
+    send_stats: "idle",
+    send_message: "",
+    notifyme: false,
+    notifycount: "0",
+    notify_stats: "idle",
+    notify_message: "",
+    pagination: {
+        page: 1,
+        limit: 20,
+        total: 0,
+        totalPages: 0,
+        hasNextPage: false,
+        hasPrevPage: false
+    }
 
 }
 
-export const getalluser = createAsyncThunk("admin/getalluser",async (data:any)=>{
+export const getalluser = createAsyncThunk("admin/getalluser", async (data: any) => {
 
-    try{
-        // First attempt: use provided data
-        let response = await axios.post(`${URL}/getallusers`,data)
+    try {
+        // Prepare request with pagination parameters
+        const requestData = {
+            userid: data.userid || "",
+            page: data.page || 1,
+            limit: data.limit || 20,
+            search: data.search || "",
+            gender: data.gender || "",
+            filter: data.filter || "",
+            includeStats: data.includeStats || false
+        };
+
+        let response = await axios.post(`${URL}/getallusers`, requestData)
         console.log(response.data)
         return response.data
-    }catch(err:any){
-        // If server errors (e.g., local API expects empty body), retry with {}
-        if (axios.isAxiosError(err)){
+    } catch (err: any) {
+        // If server errors (e.g., local API expects empty body), retry with minimal data
+        if (axios.isAxiosError(err)) {
             const status = err.response?.status
-            if (!err.response || status === 500){
-                try{
-                    const retry = await axios.post(`${URL}/getallusers`,{})
+            if (!err.response || status === 500) {
+                try {
+                    const retry = await axios.post(`${URL}/getallusers`, { page: 1, limit: 20 })
                     return retry.data
-                }catch(inner){
+                } catch (inner) {
                     throw getAxiosErrorMessage(inner);
                 }
             }
@@ -87,117 +113,117 @@ export const getalluser = createAsyncThunk("admin/getalluser",async (data:any)=>
 
 })
 
-export const deleteuser = createAsyncThunk("admin/deleteuser",async data=>{
+export const deleteuser = createAsyncThunk("admin/deleteuser", async data => {
 
-    try{
+    try {
 
 
-        let response = await axios.post(`${URL}/deleteuser`,data)
-       // console.log('under get profile')
+        let response = await axios.post(`${URL}/deleteuser`, data)
+        // console.log('under get profile')
 
         return response.data
 
-    }catch(err){
-       // console.log('erro get profile')
-       throw getAxiosErrorMessage(err);
+    } catch (err) {
+        // console.log('erro get profile')
+        throw getAxiosErrorMessage(err);
     }
 
 
 })
 
-export const deleteuser_photo = createAsyncThunk<any, DeleteUserPhotoArgs>("admin/deleteuser_photo",async (data)=>{
+export const deleteuser_photo = createAsyncThunk<any, DeleteUserPhotoArgs>("admin/deleteuser_photo", async (data) => {
 
-    try{
+    try {
 
-       let creatorphotos = data.creatorphoto
-       let postphoto = data.postphoto
-       let profilephoto = data.profilephoto
+        let creatorphotos = data.creatorphoto
+        let postphoto = data.postphoto
+        let profilephoto = data.profilephoto
 
-       for(let i = 0; i < creatorphotos.length; i++){
+        for (let i = 0; i < creatorphotos.length; i++) {
 
-        if(creatorphotos[i]){
+            if (creatorphotos[i]) {
 
-            //  await deleteImage(creatorphotos[i],"creator")
+                //  await deleteImage(creatorphotos[i],"creator")
+
+            }
 
         }
 
-       }
+        for (let i = 0; i < postphoto.length; i++) {
+            if (postphoto[i]) {
 
-       for(let i = 0; i < postphoto.length; i++){
-          if(postphoto[i]){
+                //  await deleteImage(postphoto[i],"post")
 
-            //  await deleteImage(postphoto[i],"post")
-
+            }
         }
-       }
 
-       for(let i = 0; i < profilephoto.length; i++){
+        for (let i = 0; i < profilephoto.length; i++) {
 
-         if(profilephoto[i]){
+            if (profilephoto[i]) {
 
-            //  await deleteImage(profilephoto[i],"Profile")
+                //  await deleteImage(profilephoto[i],"Profile")
 
+            }
         }
-       }
-       return {message:"delete success"}
+        return { message: "delete success" }
 
-    }catch(err){
-       // console.log('erro get profile')
-       throw getAxiosErrorMessage(err);
+    } catch (err) {
+        // console.log('erro get profile')
+        throw getAxiosErrorMessage(err);
     }
 
 
 })
 
-export const suspend_user = createAsyncThunk("admin/suspenduser",async data=>{
+export const suspend_user = createAsyncThunk("admin/suspenduser", async data => {
 
-    try{
+    try {
 
 
-        let response = await axios.post(`${URL}/suspenduser`,data)
-       // console.log('under get profile')
+        let response = await axios.post(`${URL}/suspenduser`, data)
+        // console.log('under get profile')
 
         return response.data
 
-    }catch(err){
-       // console.log('erro get profile')
-       throw getAxiosErrorMessage(err);
+    } catch (err) {
+        // console.log('erro get profile')
+        throw getAxiosErrorMessage(err);
     }
 
 
 })
 
-export const sendmessage = createAsyncThunk("admin/sendmessage",async data=>{
+export const sendmessage = createAsyncThunk("admin/sendmessage", async data => {
 
-    try{
+    try {
 
 
-        let response = await axios.post(`${URL}/sendmessages`,data)
-       // console.log('under get profile')
+        let response = await axios.post(`${URL}/sendmessages`, data)
+        // console.log('under get profile')
 
         return response.data
 
-    }catch(err){
-       // console.log('erro get profile')
-       throw getAxiosErrorMessage(err);
+    } catch (err) {
+        // console.log('erro get profile')
+        throw getAxiosErrorMessage(err);
     }
 
 
 })
 
-export const adminnotify = createAsyncThunk("admin/adminnotify",async data=>{
+export const adminnotify = createAsyncThunk("admin/adminnotify", async data => {
 
-    try{
+    try {
 
 
-        let response = await axios.post(`${URL}/adminnotify`,data)
-       // console.log('under get profile')
+        let response = await axios.post(`${URL}/adminnotify`, data)
+        // console.log('under get profile')
 
         return response.data
 
-    }catch(err){
-       // console.log('erro get profile')
-       throw getAxiosErrorMessage(err);
+    } catch (err) {
+        // console.log('erro get profile')
+        throw getAxiosErrorMessage(err);
     }
 
 
@@ -207,8 +233,8 @@ export const adminnotify = createAsyncThunk("admin/adminnotify",async data=>{
 const admin = createSlice({
     name: "admin",
     initialState,
-    reducers:{
-        reset_alluser(state,action){
+    reducers: {
+        reset_alluser(state, action) {
             state.alluser_stats = "idle"
             state.deleteuser_stats = "idle"
             state.delete_photo_stats = "idle"
@@ -216,164 +242,168 @@ const admin = createSlice({
             state.send_stats = "idle"
 
         },
-        remove_user(state,action){
+        remove_user(state, action) {
             let id = action.payload
 
-            let index = state.alluser_list.findIndex(value =>{
+            let index = state.alluser_list.findIndex(value => {
                 return String(value._id) === String(id)
             })
 
-            if(index !== -1){
-                state.alluser_list.splice(index,1)
+            if (index !== -1) {
+                state.alluser_list.splice(index, 1)
             }
         },
-        add_user(state,action){
+        add_user(state, action) {
 
             state.marked_users = action.payload
 
         },
-        clear_users(state,action){
+        clear_users(state, action) {
 
             state.marked_users = []
 
         },
     },
-    extraReducers(builder){
+    extraReducers(builder) {
 
-         builder.addCase(getalluser.pending,(state,action)=>{
+        builder.addCase(getalluser.pending, (state, action) => {
             state.alluser_stats = 'loading'
 
         }
         )
-        .addCase(getalluser.fulfilled,(state,action)=>{
+            .addCase(getalluser.fulfilled, (state, action) => {
 
-            state.alluser_stats = 'succeeded'
-            state.alluser_list = action.payload.users
+                state.alluser_stats = 'succeeded'
+                state.alluser_list = action.payload.users
+                // Store pagination metadata
+                if (action.payload.pagination) {
+                    state.pagination = action.payload.pagination
+                }
 
-        }
-
-        )
-        .addCase(getalluser.rejected,(state,action)=>{
-
-            state.alluser_stats = 'failed'
-            state.alluser_message = action.error.message ?? "unknown error"
-        }
-
-        )
-        .addCase(deleteuser.pending,(state,action)=>{
-            state.deleteuser_stats = 'loading'
-
-        }
-        )
-        .addCase(deleteuser.fulfilled,(state,action)=>{
-
-            state.deleteuser_stats = 'succeeded'
-
-            let id = action.payload.id
-
-            let index = state.alluser_list.findIndex(value =>{
-                return value._id === id
-            })
-
-            if(index !== -1){
-                state.alluser_list.splice(index,1)
             }
-        }
 
-        )
-        .addCase(deleteuser.rejected,(state,action)=>{
+            )
+            .addCase(getalluser.rejected, (state, action) => {
 
-            state.deleteuser_stats = 'failed'
-            state.deleteuser_message = action.error.message ?? "unknown error"
-        }
+                state.alluser_stats = 'failed'
+                state.alluser_message = action.error.message ?? "unknown error"
+            }
 
-        )
-        .addCase(deleteuser_photo.pending,(state,action)=>{
-            state.delete_photo_stats = 'loading'
+            )
+            .addCase(deleteuser.pending, (state, action) => {
+                state.deleteuser_stats = 'loading'
 
-        }
-        )
-        .addCase(deleteuser_photo.fulfilled,(state,action)=>{
+            }
+            )
+            .addCase(deleteuser.fulfilled, (state, action) => {
 
-            state.delete_photo_stats = 'succeeded'
+                state.deleteuser_stats = 'succeeded'
 
+                let id = action.payload.id
 
-        }
+                let index = state.alluser_list.findIndex(value => {
+                    return value._id === id
+                })
 
-        )
-        .addCase(deleteuser_photo.rejected,(state,action)=>{
+                if (index !== -1) {
+                    state.alluser_list.splice(index, 1)
+                }
+            }
 
-            state.delete_photo_stats = 'failed'
-            state.delete_photo_message = action.error.message ?? "unknown error"
-        }
+            )
+            .addCase(deleteuser.rejected, (state, action) => {
 
-        )
-        .addCase(suspend_user.pending,(state,action)=>{
-            state.suspenduser_stats = 'loading'
+                state.deleteuser_stats = 'failed'
+                state.deleteuser_message = action.error.message ?? "unknown error"
+            }
 
-        }
-        )
-        .addCase(suspend_user.fulfilled,(state,action)=>{
+            )
+            .addCase(deleteuser_photo.pending, (state, action) => {
+                state.delete_photo_stats = 'loading'
 
-            state.suspenduser_stats = 'succeeded'
+            }
+            )
+            .addCase(deleteuser_photo.fulfilled, (state, action) => {
 
-
-        }
-
-        )
-        .addCase(suspend_user.rejected,(state,action)=>{
-
-            state.suspenduser_stats = 'failed'
-            state.suspenduser_message = action.error.message ?? "unknown error"
-        }
-
-        )
-        .addCase(sendmessage.pending,(state,action)=>{
-            state.send_stats = 'loading'
-
-        }
-        )
-        .addCase(sendmessage.fulfilled,(state,action)=>{
-
-            state.send_stats = 'succeeded'
+                state.delete_photo_stats = 'succeeded'
 
 
-        }
+            }
 
-        )
-        .addCase(sendmessage.rejected,(state,action)=>{
+            )
+            .addCase(deleteuser_photo.rejected, (state, action) => {
 
-            state.send_stats = 'failed'
-            state.send_message = action.error.message ?? "unknown error"
-        }
+                state.delete_photo_stats = 'failed'
+                state.delete_photo_message = action.error.message ?? "unknown error"
+            }
 
-        )
-        .addCase(adminnotify.pending,(state,action)=>{
-            state.notify_stats = 'loading'
+            )
+            .addCase(suspend_user.pending, (state, action) => {
+                state.suspenduser_stats = 'loading'
 
-        }
-        )
-        .addCase(adminnotify.fulfilled,(state,action)=>{
+            }
+            )
+            .addCase(suspend_user.fulfilled, (state, action) => {
 
-            state.notify_stats = 'succeeded'
-            state.notifycount = action.payload.notifycount
-            state.notifyme = action.payload.notifyme
-            state.notify_stats = "idle"
+                state.suspenduser_stats = 'succeeded'
 
 
-        }
+            }
 
-        )
-        .addCase(adminnotify.rejected,(state,action)=>{
+            )
+            .addCase(suspend_user.rejected, (state, action) => {
 
-            state.notify_stats = 'failed'
-            state.notify_message = action.error.message ?? "unknown error"
-            state.notify_stats = "idle"
-        }
+                state.suspenduser_stats = 'failed'
+                state.suspenduser_message = action.error.message ?? "unknown error"
+            }
 
-        )
+            )
+            .addCase(sendmessage.pending, (state, action) => {
+                state.send_stats = 'loading'
+
+            }
+            )
+            .addCase(sendmessage.fulfilled, (state, action) => {
+
+                state.send_stats = 'succeeded'
+
+
+            }
+
+            )
+            .addCase(sendmessage.rejected, (state, action) => {
+
+                state.send_stats = 'failed'
+                state.send_message = action.error.message ?? "unknown error"
+            }
+
+            )
+            .addCase(adminnotify.pending, (state, action) => {
+                state.notify_stats = 'loading'
+
+            }
+            )
+            .addCase(adminnotify.fulfilled, (state, action) => {
+
+                state.notify_stats = 'succeeded'
+                state.notifycount = action.payload.notifycount
+                state.notifyme = action.payload.notifyme
+                state.notify_stats = "idle"
+
+
+            }
+
+            )
+            .addCase(adminnotify.rejected, (state, action) => {
+
+                state.notify_stats = 'failed'
+                state.notify_message = action.error.message ?? "unknown error"
+                state.notify_stats = "idle"
+            }
+
+            )
     }
 })
 
 export default admin.reducer;
-export const { reset_alluser, remove_user, add_user, clear_users} = admin.actions;
+export const { reset_alluser, remove_user, add_user, clear_users } = admin.actions;
