@@ -55,6 +55,8 @@ export default function ConditionalLayout({ children, isAuthenticated }: Conditi
   }, [isAuthenticated, isHomeRoute]);
 
   // Optimized scroll handler with throttling for smooth performance
+  // DISABLED: Navbar should stay fixed and visible at all times
+  /*
   useEffect(() => {
     const scrollContainer = scrollContainerRef.current;
     if (!scrollContainer) return;
@@ -133,6 +135,7 @@ export default function ConditionalLayout({ children, isAuthenticated }: Conditi
       }
     }
   }, [showNavbar]);
+  */
 
   // If it's a QuickChat [userid] route, admin route, or anya route, render without main layout
   if (isQuickChatRoute || isAdminRoute || isAnyaRoute) {
@@ -178,7 +181,7 @@ export default function ConditionalLayout({ children, isAuthenticated }: Conditi
       {!isAuthenticated && isHomeRoute && showPromo && <UnauthenticatedPromoModal />}
 
 
-      <div className={`flex-1 flex flex-col overflow-hidden transition-all duration-300 min-w-0 min-h-0 ${mounted && !showNavbar ? 'mt-0' : 'md:mt-0 mt-12'}`}>
+      <div className={`flex-1 flex flex-col overflow-hidden transition-all duration-300 min-w-0 min-h-0 md:mt-0 mt-12`}>
         <div
           ref={scrollContainerRef}
           className="flex-1 scrollbar overflow-y-auto overflow-x-hidden w-full min-w-0"

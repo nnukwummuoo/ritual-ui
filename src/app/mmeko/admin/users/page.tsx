@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback, useRef, JSX } from "react";
 import searchIcon from "@/icons/searchicon.svg";
+import axios from "axios";
 import sendIcon from "@/icons/emailsendIcon.svg";
 import PacmanLoader from "react-spinners/RingLoader";
 import { ToastContainer, toast } from "react-toastify";
@@ -898,76 +899,55 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, isOpen, onClose
                   )}
                 </div>
 
-                {/* Only show earnings and withdrawal logic if user is creator verified */}
-                {user.creator_verified ? (
-                  <>
-                    <div>
-                      <label className="text-gray-300 text-sm">Earnings</label>
-                      {isEditing ? (
-                        <input
-                          type="number"
-                          value={editedUser.earnings || 0}
-                          onChange={(e) => setEditedUser({ ...editedUser, earnings: Number(e.target.value) })}
-                          className="w-full bg-gray-700 text-white p-2 rounded mt-1"
-                        />
-                      ) : (
-                        <p className="text-white">{user.earnings || 0} gold</p>
-                      )}
-                    </div>
-                    <div>
-                      <label className="text-gray-300 text-sm">USD Value (1 gold = $0.04)</label>
-                      <p className="text-white font-bold text-lg">
-                        ${((user.earnings || 0) * 0.04).toFixed(2)}
-                      </p>
-                    </div>
-                    {/* <div>
-                      <label className="text-gray-300 text-sm">Coin Balance</label>
-                      {isEditing ? (
-                        <input
-                          type="number"
-                          value={editedUser.coinBalance || 0}
-                          onChange={(e) => setEditedUser({ ...editedUser, coinBalance: Number(e.target.value) })}
-                          className="w-full bg-gray-700 text-white p-2 rounded mt-1"
-                        />
-                      ) : (
-                        <p className="text-white">{user.coinBalance || 0} coins</p>
-                      )}
-                    </div> */}
+                {/* Earnings - Always shown for all users */}
+                <div>
+                  <label className="text-gray-300 text-sm">Earnings</label>
+                  {isEditing ? (
+                    <input
+                      type="number"
+                      value={editedUser.earnings || 0}
+                      onChange={(e) => setEditedUser({ ...editedUser, earnings: Number(e.target.value) })}
+                      className="w-full bg-gray-700 text-white p-2 rounded mt-1"
+                    />
+                  ) : (
+                    <p className="text-white">{user.earnings || 0} gold</p>
+                  )}
+                </div>
 
-                    {/* Withdrawal Logic - Only based on earnings */}
-                    {(() => {
-                      const earningsUsd = (user.earnings || 0) * 0.04;
-                      const isWithdrawable = earningsUsd >= 50;
+                {/* USD Value - Always shown for all users */}
+                <div>
+                  <label className="text-gray-300 text-sm">USD Value (1 gold = $0.04)</label>
+                  <p className="text-white font-bold text-lg">
+                    ${((user.earnings || 0) * 0.04).toFixed(2)}
+                  </p>
+                </div>
 
-                      return (
-                        <>
-                          <div>
-                            <label className="text-gray-300 text-sm">
-                              {isWithdrawable ? "Withdrawable Amount" : "Unwithdrawable Amount"}
-                            </label>
-                            <p className={`font-bold text-lg ${isWithdrawable ? "text-green-400" : "text-red-400"}`}>
-                              ${earningsUsd.toFixed(2)} ${!isWithdrawable ? "(< $50 required)" : ""}
-                            </p>
-                          </div>
-                          {!isWithdrawable && (
-                            <div className="bg-red-900/20 border border-red-500/30 rounded-lg p-3">
-                              <p className="text-red-300 text-sm">
-                                <strong>Note:</strong> Withdrawal requires earnings of at least $50.
-                                Current earnings: ${earningsUsd.toFixed(2)}
-                              </p>
-                            </div>
-                          )}
-                        </>
-                      );
-                    })()}
-                  </>
-                ) : (
-                  <div className="bg-gray-700 rounded-lg p-3">
-                    <p className="text-gray-300 text-sm">
-                      <strong>Note:</strong> This user is not creator verified. Only account balance is available.
-                    </p>
-                  </div>
-                )}
+                {/* Withdrawal Logic - Only shown for creators */}
+                {user.creator_verified && (() => {
+                  const earningsUsd = (user.earnings || 0) * 0.04;
+                  const isWithdrawable = earningsUsd >= 50;
+
+                  return (
+                    <>
+                      <div>
+                        <label className="text-gray-300 text-sm">
+                          {isWithdrawable ? "Withdrawable Amount" : "Unwithdrawable Amount"}
+                        </label>
+                        <p className={`font-bold text-lg ${isWithdrawable ? "text-green-400" : "text-red-400"}`}>
+                          ${earningsUsd.toFixed(2)} ${!isWithdrawable ? "(< $50 required)" : ""}
+                        </p>
+                      </div>
+                      {!isWithdrawable && (
+                        <div className="bg-red-900/20 border border-red-500/30 rounded-lg p-3">
+                          <p className="text-red-300 text-sm">
+                            <strong>Note:</strong> Withdrawal requires earnings of at least $50.
+                            Current earnings: ${earningsUsd.toFixed(2)}
+                          </p>
+                        </div>
+                      )}
+                    </>
+                  );
+                })()}
               </div>
             </div>
 
@@ -2122,6 +2102,7 @@ export default function Users(): JSX.Element {
   const profileStatus = useSelector((s: RootState) => s.profile.status);
   const usersFromStore = useSelector((s: RootState) => s.admin.alluser_list) as User[];
   const usersStatus = useSelector((s: RootState) => s.admin.alluser_stats);
+  const pagination = useSelector((s: RootState) => s.admin.pagination);
 
   useEffect(() => {
     // Ensure profile is loaded before enforcing admin gate
@@ -2152,7 +2133,7 @@ export default function Users(): JSX.Element {
     }
 
     if (usersStatus === "idle") {
-      dispatch(getalluser({}));
+      dispatch(getalluser({ page: 1, limit: 20 }));
     }
   }, [dispatch, token, userid, usersStatus, profileStatus]);
 
@@ -2162,7 +2143,62 @@ export default function Users(): JSX.Element {
     setalluser_list(usersFromStore || []);
     setdisplay(true);
     setLoading(usersStatus === "loading");
-  }, [usersFromStore, usersStatus]);
+
+    // Sync pagination state from store
+    if (pagination) {
+      setTotalPages(pagination.totalPages);
+      // We don't set current page here to avoid loops, as we control it locally to dispatch updates
+    }
+  }, [usersFromStore, usersStatus, pagination]);
+
+  // Helper to get current filters
+  const getFilters = () => {
+    if (male_click) return { gender: 'male', filter: '' };
+    if (female_click) return { gender: 'female', filter: '' };
+    if (admin_click) return { gender: '', filter: 'admin' };
+    return { gender: '', filter: '' };
+  };
+
+  // Handle page changes
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage);
+    const { gender, filter } = getFilters();
+    dispatch(getalluser({
+      page: newPage,
+      limit: usersPerPage,
+      search: search_text,
+      gender,
+      filter
+    }));
+  };
+
+  // Handle search (from top search bar if used)
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const text = e.target.value;
+    set_search_text(text);
+    setCurrentPage(1);
+    // The effect below will trigger the fetch
+  };
+
+  // Effect to trigger search and filters
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (usersStatus !== "idle") {
+        const { gender, filter } = getFilters();
+        dispatch(getalluser({
+          page: 1,
+          limit: usersPerPage,
+          search: search_text,
+          gender,
+          filter
+        }));
+        setCurrentPage(1);
+      }
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
+  }, [search_text, male_click, female_click, admin_click]);
+
 
   // Fetch notifications when notifications tab is active
   useEffect(() => {
@@ -2196,16 +2232,8 @@ export default function Users(): JSX.Element {
     }
   };
 
-  // Handle pagination when alluser_list changes
-  useEffect(() => {
-    const totalPages = Math.ceil(alluser_list.length / usersPerPage);
-    setTotalPages(totalPages);
-
-    const startIndex = (currentPage - 1) * usersPerPage;
-    const endIndex = startIndex + usersPerPage;
-    const paginated = alluser_list.slice(startIndex, endIndex);
-    setPaginatedUsers(paginated);
-  }, [alluser_list, currentPage, usersPerPage]);
+  // No longer needed client-side pagination effect
+  // useEffect(() => { ... }, [alluser_list, currentPage, usersPerPage]);
 
   const diplay_users = () => {
     if (loading) {
@@ -2218,7 +2246,7 @@ export default function Users(): JSX.Element {
             aria-label="Loading Spinner"
             data-testid="loader"
           />
-          <p className="text-yellow-500 text-xs mt-4">fetching all users...</p>
+          <p className="text-yellow-500 text-xs mt-4">fetching users...</p>
         </div>
       );
     }
@@ -2226,6 +2254,22 @@ export default function Users(): JSX.Element {
     if (alluser_list.length > 0) {
       return (
         <div className="w-full h-full flex flex-col">
+          <div className="flex justify-between items-center mb-4 px-4 pt-2">
+            <div className="relative w-64">
+              <input
+                type="text"
+                placeholder="Search users..."
+                value={search_text}
+                onChange={handleSearch}
+                className="w-full bg-gray-700 text-white pl-10 pr-4 py-2 rounded-lg"
+              />
+              <img
+                src={searchIcon.src}
+                alt="Search"
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4"
+              />
+            </div>
+          </div>
           <div className="flex-1 overflow-auto">
             <table className="w-full bg-gray-800 rounded-lg overflow-hidden">
               <thead className="bg-gray-700">
@@ -2244,7 +2288,7 @@ export default function Users(): JSX.Element {
                 </tr>
               </thead>
               <tbody>
-                {paginatedUsers.map((user) => (
+                {alluser_list.map((user) => (
                   <tr key={user._id} className="border-b border-gray-700 hover:bg-gray-700">
                     <td className="px-4 py-3">
                       {(() => {
@@ -2363,8 +2407,8 @@ export default function Users(): JSX.Element {
           {totalPages > 1 && (
             <div className="flex justify-center items-center mt-4 space-x-2 bg-gray-800 p-4 rounded-lg">
               <button
-                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                disabled={currentPage === 1}
+                onClick={() => handlePageChange(Math.max(currentPage - 1, 1))}
+                disabled={currentPage === 1 || loading}
                 className="px-3 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Previous
@@ -2386,11 +2430,12 @@ export default function Users(): JSX.Element {
                   return (
                     <button
                       key={pageNum}
-                      onClick={() => setCurrentPage(pageNum)}
+                      onClick={() => handlePageChange(pageNum)}
                       className={`px-3 py-2 rounded-lg ${currentPage === pageNum
                         ? 'bg-yellow-500 text-black font-bold'
                         : 'bg-gray-700 text-white hover:bg-gray-600'
                         }`}
+                      disabled={loading}
                     >
                       {pageNum}
                     </button>
@@ -2399,8 +2444,8 @@ export default function Users(): JSX.Element {
               </div>
 
               <button
-                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                disabled={currentPage === totalPages}
+                onClick={() => handlePageChange(Math.min(currentPage + 1, totalPages))}
+                disabled={currentPage === totalPages || loading}
                 className="px-3 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Next
@@ -2410,7 +2455,7 @@ export default function Users(): JSX.Element {
 
           {/* Pagination Info */}
           <div className="text-center mt-2 text-gray-400 text-sm">
-            Showing {((currentPage - 1) * usersPerPage) + 1} to {Math.min(currentPage * usersPerPage, alluser_list.length)} of {alluser_list.length} users
+            Showing {((currentPage - 1) * usersPerPage) + 1} to {Math.min(currentPage * usersPerPage, pagination?.total || 0)} of {pagination?.total || 0} users
           </div>
         </div>
       );
@@ -2504,9 +2549,26 @@ export default function Users(): JSX.Element {
   };
 
 
-  const handleViewUser = (user: User) => {
+  const handleViewUser = async (user: User) => {
     setSelectedUser(user);
     setIsModalOpen(true);
+
+    try {
+      // Lazy load detailed stats (request counts, IP, etc.) that are skipped in list view
+      const response = await axios.post(`${URL}/getallusers`, {
+        _id: user._id,
+        includeStats: true,
+        limit: 1
+      });
+
+      if (response.data.ok && response.data.users && response.data.users.length > 0) {
+        // Update selected user with detailed info
+        const detailedUser = response.data.users[0];
+        setSelectedUser(prev => prev?._id === user._id ? { ...prev, ...detailedUser } : prev);
+      }
+    } catch (err) {
+      console.error("Failed to fetch user details", err);
+    }
   };
 
   const handleBanUser = async (userId: string) => {
@@ -2920,51 +2982,25 @@ export default function Users(): JSX.Element {
                 type="text"
                 className="rounded-lg bg-slate-400 placeholder:text-slate-600 placeholder:text-xs mr-1 pl-2 placeholder:text-center h-10 w-full md:w-[28rem] lg:w-[34rem]"
                 placeholder="search by name or username"
-                onInput={(e) => {
-                  const val = e.currentTarget.value;
-                  if (val) {
-                    set_search_text(val);
-                    const valLower = val.toLowerCase().trim();
-                    const filtered = user_list.filter((value) => {
-                      const name = `${value.firstname} ${value.lastname}`;
-                      const name1 = `${value.lastname} ${value.firstname}`;
-                      const username = value.username || "";
-                      return (
-                        value.firstname.toLowerCase().trim() === valLower ||
-                        value.lastname.toLowerCase().trim() === valLower ||
-                        name.toLowerCase().includes(valLower) ||
-                        name1.toLowerCase().includes(valLower) ||
-                        username.toLowerCase().includes(valLower)
-                      );
-                    });
-                    setalluser_list(filtered.length ? filtered : user_list);
-                    setCurrentPage(1); // Reset to first page when searching
-                  } else {
-                    setalluser_list(user_list);
-                    setCurrentPage(1); // Reset to first page when clearing search
-                  }
+                value={search_text}
+                onChange={(e) => {
+                  set_search_text(e.target.value);
+                  // Effect will handle fetch
                 }}
               />
               <button
                 className="bg-yellow-500 w-fit h-fit rounded-full p-2"
                 onClick={() => {
-                  if (search_text) {
-                    const searchTextLower = search_text.toLowerCase().trim();
-                    const filtered = user_list.filter((value) => {
-                      const name = `${value.firstname} ${value.lastname}`;
-                      const name1 = `${value.lastname} ${value.firstname}`;
-                      const username = value.username || "";
-                      return (
-                        value.firstname.toLowerCase().trim() === searchTextLower ||
-                        value.lastname.toLowerCase().trim() === searchTextLower ||
-                        name.toLowerCase().includes(searchTextLower) ||
-                        name1.toLowerCase().includes(searchTextLower) ||
-                        username.toLowerCase().includes(searchTextLower)
-                      );
-                    });
-                    setalluser_list(filtered.length ? filtered : user_list);
-                    setCurrentPage(1); // Reset to first page when searching
-                  }
+                  // Instant search
+                  const { gender, filter } = getFilters();
+                  dispatch(getalluser({
+                    page: 1,
+                    limit: usersPerPage,
+                    search: search_text,
+                    gender,
+                    filter
+                  }));
+                  setCurrentPage(1);
                 }}
               >
                 <img alt="searchIcon" src={searchIcon.src} />
@@ -2991,11 +3027,7 @@ export default function Users(): JSX.Element {
                     setmale_click(true);
                     setadmin_click(false);
                     setshowall_click(false);
-                    const filtered = user_list.filter(
-                      (v) => v.gender.toLowerCase().trim() === "male"
-                    );
-                    setalluser_list(filtered.length ? filtered : user_list);
-                    setCurrentPage(1); // Reset to first page when filtering
+                    // Effect handles fetch
                   }}
                 />
                 <label className="text-white text-xs mt-1 font-bold">
@@ -3012,11 +3044,7 @@ export default function Users(): JSX.Element {
                     setfemale_click(true);
                     setadmin_click(false);
                     setshowall_click(false);
-                    const filtered = user_list.filter(
-                      (v) => v.gender.toLowerCase().trim() === "female"
-                    );
-                    setalluser_list(filtered.length ? filtered : user_list);
-                    setCurrentPage(1); // Reset to first page when filtering
+                    // Effect handles fetch
                   }}
                 />
                 <label className="text-white text-xs ml-2 mt-1 font-bold">
@@ -3033,11 +3061,7 @@ export default function Users(): JSX.Element {
                     setfemale_click(false);
                     setadmin_click(true);
                     setshowall_click(false);
-                    const filtered = user_list.filter(
-                      (v) => v.admin === true
-                    );
-                    setalluser_list(filtered.length ? filtered : []);
-                    setCurrentPage(1); // Reset to first page when filtering
+                    // Effect handles fetch
                   }}
                 />
                 <label className="text-white text-xs ml-2 mt-1 font-bold">
@@ -3054,8 +3078,7 @@ export default function Users(): JSX.Element {
                     setfemale_click(false);
                     setadmin_click(false);
                     setshowall_click(true);
-                    setalluser_list(user_list);
-                    setCurrentPage(1); // Reset to first page when showing all
+                    // Effect handles fetch
                   }}
                 />
               </div>
@@ -3075,7 +3098,7 @@ export default function Users(): JSX.Element {
 
 
               <div className="text-white text-sm">
-                Total Users: <span className="text-yellow-500 font-bold">{alluser_list.length}</span>
+                Total Users: <span className="text-yellow-500 font-bold">{pagination?.total || 0}</span>
                 {totalPages > 1 && (
                   <span className="ml-2 text-gray-400">
                     (Page {currentPage} of {totalPages})
