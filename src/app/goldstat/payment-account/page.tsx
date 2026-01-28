@@ -50,14 +50,14 @@ export default function PaymentAccountPage() {
     
     // Check if it starts with 0x and has exactly 42 characters
     if (!address.startsWith('0x') || address.length !== 42) {
-      setWalletError("Invalid wallet address. Please enter a valid USDT (BEP20) address.");
+      setWalletError("Invalid wallet address. Please enter a valid  USDT (BEP20 - Binance Smart Chain) address.");
       return false;
     }
     
     // Check if it contains only valid hexadecimal characters after 0x
     const hexPattern = /^0x[0-9a-fA-F]{40}$/;
     if (!hexPattern.test(address)) {
-      setWalletError("Invalid wallet address. Please enter a valid USDT (BEP20) address.");
+      setWalletError("Invalid wallet address. Please enter a valid  USDT (BEP20 - Binance Smart Chain) address.");
       return false;
     }
     
@@ -364,7 +364,7 @@ export default function PaymentAccountPage() {
                     type="text"
                     name="walletAddress"
                     required
-                    placeholder="Wallet Address USDT (BEP20)"
+                    placeholder="Wallet Address USDT (BNB Smart Chain)"
                     value={formData.walletAddress || ''}
                     className={`border rounded-md text-white bg-gray-700 px-3 py-2 text-sm focus:outline-none focus:ring-2 ${
                       walletError 
@@ -391,7 +391,7 @@ export default function PaymentAccountPage() {
                     onChange={(e) => setAgree(e.target.checked)}
                     className="mt-1 accent-purple-500"
                   />
-                  I confirm that the information above is correct and belongs to me. I understand that wrong or incomplete details may delay or block my payments.
+                I confirm that the information above is correct and belongs to me. I understand that wrong or incomplete details may delay, block, or lead to loss of funds.
                 </label>
 
                 <button
@@ -408,36 +408,53 @@ export default function PaymentAccountPage() {
           {/* Right Column - Withdrawal Guidelines */}
           <div className="space-y-6">
             <div className="bg-gray-800 rounded-lg p-6">
-              <h2 className="text-xl font-semibold mb-4">🌍 Guidelines for Withdrawing Crypto to Fiat</h2>
+              <h2 className="text-xl font-semibold mb-4">🌍 Guidelines for Withdrawing Crypto</h2>
               
               {/* Filipina creators Section */}
               <div className="mb-6">
-                <h3 className="text-lg font-medium text-blue-400 mb-3">🇵🇭 For Filipina Creators</h3>
+                <h3 className="text-lg font-medium text-blue-400 mb-3">🇵🇭 For Filipino Creators</h3>
                 <div className="space-y-3 text-sm">
                   <div>
-                    <h4 className="font-medium text-gray-200 mb-1">1. Recommended Wallets:</h4>
-                    <p className="text-gray-300">Binance, Coins.ph, Trust Wallet.</p>
+                    <h4 className="font-medium text-gray-200 mb-1">1. Recommended Wallet:</h4>
+                    <p className="text-gray-300">Trust Wallet.</p>
                   </div>
                   
                   <div>
-                    <h4 className="font-medium text-gray-200 mb-1">2. Steps to Withdraw to Bank:</h4>
+                    <h4 className="font-medium text-gray-200 mb-1">2. Open Trust wallet: Launch the app and ensure you are on main wallet screen. </h4>
+                    </div>
+                    <div>
+                    <h4 className="font-medium text-gray-200 mb-1">3. Add/Find USDT BEP20: </h4>
                     <ol className="list-decimal list-inside space-y-1 text-gray-300 ml-2">
-                      <li>Receive BTC/USDT into your Binance or Coins.ph wallet.</li>
-                      <li>Convert BTC/USDT → PHP.</li>
-                      <li>Select Cash Out / Withdraw.</li>
-                      <li>Choose Bank Transfer / GCash.</li>
-                      <li>Enter account details and confirm. Funds arrive usually within minutes to hours.</li>
+                      <li>Tap the toggle/search icon in the top-right corner.</li>
+                      <li>Search for "USDT".</li>
+                      <li>Locate the option that says "USDT BNB Smart Chain".</li>
+                      <li>Toggle it on to add it to your main screen.</li>
                     </ol>
                   </div>
                   
                   <div>
-                    <h4 className="font-medium text-gray-200 mb-1">3. Notes:</h4>
+                    <h4 className="font-medium text-gray-200 mb-1">3. Get the Wallet Address:</h4>
                     <ul className="list-disc list-inside space-y-1 text-gray-300 ml-2">
-                      <li>Coins.ph is easiest for beginners.</li>
-                      <li>Make sure your account is KYC verified.</li>
+                      <li>Tap on the "USDT BNB Smart Chain" token from your list.</li>
+                      <li>Tap the "Receive" button.</li>
+                       <li>Copy the address shown</li>
+                        <li>Paste on mmeko "wallet address" field</li>
+                       <li>Save account details</li>
+                       <li>Click withdraw</li>
+                       <li>Receive funds with 24 hours</li>
                     </ul>
                   </div>
                 </div>
+              </div>
+
+               {/* Important Notice */}
+              <div className="bg-red-900/20 border border-red-500/30 rounded-lg p-4">
+                <h4 className="font-medium text-red-400 mb-2">⚠ Important:</h4>
+                <ul className="list-disc list-inside space-y-1 text-sm text-gray-300">
+                  <li>Verify Network: Ensure the network is BNB Smart Chain (not ERC20/Ethereum) to avoid loss of funds.</li>
+                  <li>Address Format: The "USDT BNB Smart Chain" address typically starts with "0x".</li>
+                  <li>Crypto transactions are irreversible.</li>
+                </ul>
               </div>
 
               {/* Nigerian Creators Section */}
@@ -445,26 +462,33 @@ export default function PaymentAccountPage() {
                 <h3 className="text-lg font-medium text-green-400 mb-3">🇳🇬 For Nigerian Creators</h3>
                 <div className="space-y-3 text-sm">
                   <div>
-                    <h4 className="font-medium text-gray-200 mb-1">1. Recommended Wallets:</h4>
-                    <p className="text-gray-300">Binance, Luno, Trust Wallet.</p>
+                    <h4 className="font-medium text-gray-200 mb-1">1. Recommended Wallet:</h4>
+                    <p className="text-gray-300">Trust Wallet.</p>
                   </div>
                   
                   <div>
-                    <h4 className="font-medium text-gray-200 mb-1">2. Steps to Withdraw to Bank:</h4>
+                    <h4 className="font-medium text-gray-200 mb-1">2. Open Trust wallet: Launch the app and ensure you are on main wallet screen. </h4>
+                    </div>
+                    <div>
+                    <h4 className="font-medium text-gray-200 mb-1">3. Add/Find USDT BEP20: </h4>
                     <ol className="list-decimal list-inside space-y-1 text-gray-300 ml-2">
-                      <li>Receive BTC/USDT into your Binance or Luno wallet.</li>
-                      <li>Convert BTC/USDT → NGN.</li>
-                      <li>On Binance P2P: sell your crypto to a verified buyer.</li>
-                      <li>Select Bank Transfer as payment method.</li>
-                      <li>Confirm receipt of money in your bank account, then release crypto.</li>
+                      <li>Tap the toggle/search icon in the top-right corner.</li>
+                      <li>Search for "USDT".</li>
+                      <li>Locate the option that says "USDT BNB Smart Chain".</li>
+                      <li>Toggle it on to add it to your main screen.</li>
                     </ol>
                   </div>
                   
                   <div>
-                    <h4 className="font-medium text-gray-200 mb-1">3. Notes:</h4>
+                    <h4 className="font-medium text-gray-200 mb-1">3. Get the Wallet Address:</h4>
                     <ul className="list-disc list-inside space-y-1 text-gray-300 ml-2">
-                      <li>Always trade with verified buyers (check ratings).</li>
-                      <li>Avoid sharing sensitive banking info outside platform.</li>
+                      <li>Tap on the "USDT BNB Smart Chain" token from your list.</li>
+                      <li>Tap the "Receive" button.</li>
+                       <li>Copy the address shown</li>
+                       <li>Paste on mmeko "wallet address" field</li>
+                       <li>Save account details</li>
+                       <li>Click withdraw</li>
+                       <li>Receive funds with 24 hours</li>
                     </ul>
                   </div>
                 </div>
@@ -474,8 +498,8 @@ export default function PaymentAccountPage() {
               <div className="bg-red-900/20 border border-red-500/30 rounded-lg p-4">
                 <h4 className="font-medium text-red-400 mb-2">⚠ Important:</h4>
                 <ul className="list-disc list-inside space-y-1 text-sm text-gray-300">
-                  <li>Always double-check wallet addresses.</li>
-                  <li>Use only trusted exchanges.</li>
+                  <li>Verify Network: Ensure the network is BNB Smart Chain (not ERC20/Ethereum) to avoid loss of funds.</li>
+                  <li>Address Format: The "USDT BNB Smart Chain" address typically starts with "0x".</li>
                   <li>Crypto transactions are irreversible.</li>
                 </ul>
               </div>
