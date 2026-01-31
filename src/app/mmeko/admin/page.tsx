@@ -17,6 +17,8 @@ import {
   IoFingerPrintOutline,
   IoSparkles,
   IoRefreshOutline,
+  IoConstructOutline,
+  IoTimerOutline,
 } from "react-icons/io5";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "@/store/store";
@@ -45,7 +47,7 @@ import AdminUpdatesPage from "./updates/page";
 import PushNotificationToggle from "@/components/PushNotificationToggle";
 import MaintenanceToggle from "@/components/admin/MaintenanceToggle";
 import MaintenanceControl from "@/components/admin/MaintenanceControl";
-import { IoConstructOutline } from "react-icons/io5";
+import SortToggle from "@/components/admin/SortToggle";
 
 const AdminPage = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -205,11 +207,11 @@ const AdminPage = () => {
       icon: <IoServerOutline size={22} />,
       component: <BackupManagement />,
     },
-    {
-      name: "Updates",
-      icon: <IoRefreshOutline size={22} />,
-      component: <AdminUpdatesPage />,
-    },
+    // {
+    //   name: "Updates",
+    //   icon: <IoRefreshOutline size={22} />,
+    //   component: <AdminUpdatesPage />,
+    // },
   ];
 
   // Render function for content
@@ -251,6 +253,17 @@ const AdminPage = () => {
             </div>
             <div className="flex justify-center md:justify-start">
               <MaintenanceToggle showLabel={true} />
+            </div>
+          </div>
+
+          {/* Sort Creator Toggle */}
+          <div className="mb-6 p-3 bg-gray-800 rounded-lg">
+            <div className="flex items-center justify-center md:justify-start gap-2 mb-2">
+              <IoTimerOutline color="white" size={20} />
+              <span className="font-medium text-white hidden md:inline">Creator Sorting</span>
+            </div>
+            <div className="flex justify-center md:justify-start">
+              <SortToggle showLabel={true} />
             </div>
           </div>
 

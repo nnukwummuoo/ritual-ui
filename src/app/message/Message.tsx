@@ -187,8 +187,8 @@ export const MessageView = () => {
 
 
   return (
-    <div className="h-screen w-full overflow-hidden">
-      <div className="w-full h-full mx-auto">
+    <div className="h-full w-full overflow-hidden">
+      <div className="w-full h-full mx-auto flex flex-col">
         {/* Header */}
         <div className=" border-b  p-4">
           <div className="flex items-center justify-between">
@@ -223,7 +223,7 @@ export const MessageView = () => {
 
 
         {/* Messages List */}
-        <div className="flex-1 overflow-y-auto h-full pb-32">
+        <div className="flex-1 h-full">
           <MessageList />
         </div>
 

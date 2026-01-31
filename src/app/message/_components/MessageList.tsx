@@ -424,7 +424,7 @@ export const MessageList = () => {
       </div>
 
       {/* Messages List - Scrollable */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto pb-64">
         {filteredAndSortedMessages.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-8">
             <MessageCircle className="w-8 h-8 text-gray-400 mb-2" />
