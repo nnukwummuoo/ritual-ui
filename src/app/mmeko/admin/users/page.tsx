@@ -925,7 +925,7 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, isOpen, onClose
                 {/* Withdrawal Logic - Only shown for creators */}
                 {user.creator_verified && (() => {
                   const earningsUsd = (user.earnings || 0) * 0.04;
-                  const isWithdrawable = earningsUsd >= 50;
+                  const isWithdrawable = earningsUsd >= 5;
 
                   return (
                     <>
@@ -934,13 +934,13 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, isOpen, onClose
                           {isWithdrawable ? "Withdrawable Amount" : "Unwithdrawable Amount"}
                         </label>
                         <p className={`font-bold text-lg ${isWithdrawable ? "text-green-400" : "text-red-400"}`}>
-                          ${earningsUsd.toFixed(2)} ${!isWithdrawable ? "(< $50 required)" : ""}
+                          ${earningsUsd.toFixed(2)} ${!isWithdrawable ? "(< $5 required)" : ""}
                         </p>
                       </div>
                       {!isWithdrawable && (
                         <div className="bg-red-900/20 border border-red-500/30 rounded-lg p-3">
                           <p className="text-red-300 text-sm">
-                            <strong>Note:</strong> Withdrawal requires earnings of at least $50.
+                            <strong>Note:</strong> Withdrawal requires earnings of at least $5.
                             Current earnings: ${earningsUsd.toFixed(2)}
                           </p>
                         </div>

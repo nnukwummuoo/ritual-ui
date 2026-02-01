@@ -115,8 +115,8 @@ const CreatorCard: React.FC<CreatorCardProps> = ({
       {/* Creator Info */}
       <div className="p-3 text-center flex flex-col gap-3">
         <h3 className="font-semibold text-white flex text-center gap-3 items-center justify-center text-lg tracking-wide">{firstName}<span> <BadgeCheck size={17} fill="white" className="text-black" /> </span></h3>
-            
-                 
+
+
         {/* View Profile Button */}
         <button
           onClick={handleCardClick}
@@ -222,7 +222,7 @@ const CreatorCards: React.FC = () => {
             Array.isArray(res?.data) ? [...res.data] : [];
 
         // Map to CreatorCardProps format
-        const mappedCreators: CreatorCardProps[] = list.slice(0, 5).map((m: any) => {
+        const mappedCreators: CreatorCardProps[] = list.slice(0, 15).map((m: any) => {
           // Helper: pick first valid string from array or single value
           const pickValidPhoto = (value: any) => {
             if (!value) return null;
