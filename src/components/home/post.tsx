@@ -33,6 +33,7 @@ import TopCreators from "./TopCreators";
 import TopFans from "./TopFans";
 import SafetyRulesBanner from "./SafetyRulesBanner";
 import PromotionalBanner from "./PromotionalBanner";
+import HowItWorksCard from "./HowItWorksCard";
 
 
 // Utility function to format relative time
@@ -752,6 +753,12 @@ export default function PostsCard() {
                 {index === 3 && (
                   <div className="lg:hidden">
                     <TopCreators />
+                  </div>
+                )}
+                {/* Inject How It Works card - Index 5 (both mobile and desktop) */}
+                {index === 5 && (
+                  <div className="mx-auto max-w-[30rem] w-full">
+                    <HowItWorksCard />
                   </div>
                 )}
               </React.Fragment>
