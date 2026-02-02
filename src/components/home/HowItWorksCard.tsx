@@ -53,16 +53,16 @@ const slides: HowItWorksSlide[] = [
     },
     {
         id: 7,
-        image: "/Card7.png",
-        title: "Keep Chat In-Platform",
-        description: "Always keep chat in the platform for evidence and smooth dispute",
-    },
-    {
-        id: 8,
         image: "/Card6.png",
         title: "Contact Support",
         description:
             "Contact Support immediately and we will investigate before releasing the payment to the creator.",
+    },
+      {
+        id: 8,
+        image: "/Card7.png",
+        title: "Keep Chat In-Platform",
+        description: "Always keep chat in the platform for evidence and smooth dispute",
     },
 ];
 

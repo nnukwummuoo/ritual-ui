@@ -708,57 +708,57 @@ export default function PostsCard() {
                   />
                 </div>
                 {/* Inject Safety Rules banner after the first LazyPost (index 0) */}
-                {/* Inject Top Creators card after the first LazyPost (index 0) */}
+                {/* Inject How It Works card at index 0 (both mobile and desktop) */}
                 {index === 0 && (
+                  <div className="mx-auto max-w-[30rem] w-full">
+                    <HowItWorksCard />
+                  </div>
+                )}
+                {/* Inject Creator Cards after index 0 */}
+                {index === 1 && (
                   <div className="lg:hidden">
                     <CreatorCards />
                   </div>
                 )}
-                {/* Inject Rituals card after the second LazyPost (index 1) */}
-                {index === 1 && (
+                {/* Inject Rituals card after the second LazyPost (index 2) */}
+                {index === 2 && (
                   <div className="lg:hidden">
                     <RitualsCard />
                   </div>
                 )}
-                {/* Inject Top Fans card - index 0 on lg+, index 2 on smaller */}
-                {index === 0 && (
+                {/* Inject Top Fans card - index 1 on lg+, index 3 on smaller */}
+                {index === 1 && (
                   <div className="hidden lg:block mx-auto max-w-[30rem] w-full">
                     <TopFans />
                   </div>
                 )}
-                {index === 2 && (
+                {index === 3 && (
                   <div className="lg:hidden">
                     <TopFans />
                   </div>
                 )}
-                {/* Inject New Ritual card - Desktop Index 1 */}
-                {index === 2 && (
+                {/* Inject New Ritual card - Desktop Index 3 */}
+                {index === 3 && (
                   <div className="hidden lg:block mx-auto max-w-[30rem] w-full">
                     <NewRitualCard />
                   </div>
                 )}
                 {/* Inject Top Creators - Desktop Index 2 */}
-                {index === 1 && (
+                {index === 2 && (
                   <div className="hidden lg:block mx-auto max-w-[30rem] w-full">
                     <TopCreators />
                   </div>
                 )}
-                {/* Inject New Ritual card - Mobile Index 3 */}
-                {index === 4 && (
+                {/* Inject New Ritual card - Mobile Index 5 */}
+                {index === 5 && (
                   <div className="lg:hidden">
                     <NewRitualCard />
                   </div>
                 )}
                 {/* Inject Top Creators - Mobile Index 4 */}
-                {index === 3 && (
+                {index === 4 && (
                   <div className="lg:hidden">
                     <TopCreators />
-                  </div>
-                )}
-                {/* Inject How It Works card - Index 5 (both mobile and desktop) */}
-                {index === 5 && (
-                  <div className="mx-auto max-w-[30rem] w-full">
-                    <HowItWorksCard />
                   </div>
                 )}
               </React.Fragment>
