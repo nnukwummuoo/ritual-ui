@@ -144,7 +144,7 @@ const HowItWorksCard: React.FC = () => {
                             How it works
                         </h3>
                         <p className="text-gray-400 text-xs md:text-sm mt-1">
-                            Your complete guide to fan requests
+                            Your complete guide
                         </p>
                     </div>
                     <div className="flex items-center gap-2">
