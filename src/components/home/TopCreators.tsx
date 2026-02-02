@@ -207,7 +207,7 @@ export default function TopCreators() {
 
                 {/* Footer note */}
                 <p className="text-center text-gray-400 text-[10px] md:text-xs">
-                    Based on total earnings from content sales, fan calls, fan meets & fan dates ✨
+                    Based on total earnings from all platform activities ✨
                 </p>
             </div>
         </motion.div>
