@@ -15,54 +15,54 @@ const slides: HowItWorksSlide[] = [
         id: 1,
         image: "/Card1.png",
         title: "Send a Fan Meet Request",
-        description: "Send a Fan meet request to your favourite creator",
+        description: "Request a fan meet with your favourite creator.",
     },
     {
         id: 2,
         image: "/Card2.png",
-        title: "Payment Processed",
+        title: "Secure Payment",
         description:
-            "Once a fan meet request is sent, Payment is processed immediately and held by the platform",
+            "Once you send a fan meet request, your payment is processed right away and safely held by the platform.",
     },
     {
         id: 3,
         image: "/Card3.png",
         title: "24 Hour Window",
         description:
-            "Creator has 24 hours to accept or decline request or else payment will be automatically refunded to the fan. If the creator accepts the request within 24 hours, The fan can't cancel anymore",
+            "Creators have 24 hours to respond. If they decline or don’t reply, payment is refunded. If they accept, the booking is confirmed and final.",
     },
     {
         id: 4,
         image: "/Card8.png",
         title: "Complete the Meet",
         description:
-            'During the meet-up, Click "Mark as complete" and the payment will automatically be released to the Creator.',
+            'Click “Mark as complete” after the fan meet and the payment is securely released to the creator.',
     },
     {
         id: 5,
         image: "/Card4.png",
-        title: "Leave a Review",
-        description: "Leave a honest review of your fan meet experience",
+        title: "Share Your Experience",
+        description: "Leave an honest review to help others and support your creator.",
     },
     {
         id: 6,
         image: "/Card5.png",
         title: "Full Protection",
         description:
-            "If the creator doesn't show up, The payment is automatically refunded to the fan, So you are protected too",
+            "Your payment is safe, if the creator doesn’t show up, it’s refunded to you automatically.",
     },
     {
         id: 7,
         image: "/Card6.png",
-        title: "Contact Support",
+        title: "Full Protection",
         description:
-            "Contact Support immediately and we will investigate before releasing the payment to the creator.",
+            "If the fan doesn’t mark the meet as complete or fails to attend, contact Support. We’ll investigate before releasing payment to the creator.",
     },
       {
         id: 8,
         image: "/Card7.png",
         title: "Keep Chat In-Platform",
-        description: "Always keep chat in the platform for evidence and smooth dispute",
+        description: "Keep all chat in the platform for evidence and smooth dispute resolution.",
     },
 ];
 
