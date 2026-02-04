@@ -1,7 +1,7 @@
-import React, {useState, useEffect} from 'react'
+import React, { useState, useEffect } from 'react'
 import type { StaticImageData } from 'next/image';
 import Image from 'next/image';
-import PacmanLoader from "react-spinners/RotateLoader";
+import ClipLoader from "react-spinners/ClipLoader";
 import person from "../../../icons/icons8-profile_Icon.png"
 import onlineIcon from "../../../icons/onlineIcon.svg"
 import offlineIcon from "../../../icons/offlineIcon.svg"
@@ -23,56 +23,57 @@ type ListOfBlockUsersProps = {
 
 export const Listofblockusers: React.FC<ListOfBlockUsersProps> = ({ id, photolink, location, online, name, onUnblock }) => {
 
-let timeout: number | undefined;
-const userid = useSelector((state: RootState) => state.register.userID as string);
-const profileUserId = useSelector((state: RootState) => state.profile?.userId || state.profile?.creator_portfolio_id);
+  let timeout: number | undefined;
+  const userid = useSelector((state: RootState) => state.register.userID as string);
+  const profileUserId = useSelector((state: RootState) => state.profile?.userId || state.profile?.creator_portfolio_id);
 
-// Get userid from localStorage if not in Redux (same pattern as DropdownMenu)
-const [localUserid, setLocalUserid] = React.useState("");
+  // Get userid from localStorage if not in Redux (same pattern as DropdownMenu)
+  const [localUserid, setLocalUserid] = React.useState("");
 
-React.useEffect(() => {
-  if (typeof window !== "undefined") {
-    try {
-      const raw = localStorage.getItem("login");
-      if (raw) {
-        const data = JSON.parse(raw);
-        
-        // Set user ID if not in Redux - check multiple possible keys
-        if (!userid) {
-          const userId = data?.userID || data?.userid || data?.id;
-          if (userId) {
-            setLocalUserid(userId);
-            console.log("🔍 [UNBLOCK] UserID from localStorage:", userId);
+  React.useEffect(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const raw = localStorage.getItem("login");
+        if (raw) {
+          const data = JSON.parse(raw);
+
+          // Set user ID if not in Redux - check multiple possible keys
+          if (!userid) {
+            const userId = data?.userID || data?.userid || data?.id;
+            if (userId) {
+              setLocalUserid(userId);
+              console.log("🔍 [UNBLOCK] UserID from localStorage:", userId);
+            }
           }
         }
+      } catch (error) {
+        console.error("Error parsing user data from localStorage:", error);
       }
-    } catch (error) {
-      console.error("Error parsing user data from localStorage:", error);
     }
-  }
-}, [userid]);
+  }, [userid]);
 
-const loggedInUserId = userid || profileUserId || localUserid;
-const [loading, setloading] = useState(false);
-// Store image as a string URL for use in <img src="..."/>
-const [image, setimage] = useState<string>(typeof person === 'string' ? person : (person as StaticImageData).src);
-let [color, setColor] = useState("#d49115");
-let [disable, setdisable] = useState(false);
-let [buttonpressed, set_buttonpressed] = useState(false)
-const dispatch = useDispatch<AppDispatch>()
+  const loggedInUserId = userid || profileUserId || localUserid;
+  const [loading, setloading] = useState(false);
+  // Store image as a string URL for use in <img src="..."/>
+  const [image, setimage] = useState<string>(typeof person === 'string' ? person : (person as StaticImageData).src);
+  let [color, setColor] = useState("#d49115");
+  let [disable, setdisable] = useState(false);
+  let [buttonpressed, set_buttonpressed] = useState(false)
+  const dispatch = useDispatch<AppDispatch>()
 
-const [countryData, setCountryData] = useState({
+  const [countryData, setCountryData] = useState({
     flag: "",
     abbreviation: "",
     fifa: "",
   });
-  
+
   useEffect(() => {
 
-    if(photolink){
+    if (photolink) {
       setimage(photolink)
     }
     const fetchData = async () => {
+      if (!location || location.trim() === "") return;
       const data = await getCountryData(location);
       if (data) setCountryData(data);
     };
@@ -80,58 +81,47 @@ const [countryData, setCountryData] = useState({
   }, []);
 
   const unblockClick = async () => {
-    if (loading) return;
-
-    // Add confirmation dialog
-    const confirmed = await new Promise<boolean>((resolve) => {
-      toast.info(
-        <div className="flex flex-col gap-3 bg-blue-900 p-4 rounded-lg">
-          <div className="text-white">
-            Are you sure you want to unblock {name}? You will be able to see their posts and they will be able to see yours.
-          </div>
-          <div className="flex gap-2 justify-end">
-            <button
-              className="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 text-sm"
-              onClick={() => {
-                toast.dismiss();
-                resolve(true);
-              }}
-            >
-              Unblock User
-            </button>
-            <button
-              className="px-3 py-1 bg-gray-600 text-white rounded hover:bg-gray-700 text-sm"
-              onClick={() => {
-                toast.dismiss();
-                resolve(false);
-              }}
-            >
-              Cancel
-            </button>
-          </div>
-        </div>,
-        {
-          position: "top-center",
-          autoClose: false,
-          closeOnClick: false,
-          draggable: false,
-          className: "toast-confirmation",
-          style: {
-            backgroundColor: "#1e3a8a", // dark blue background
-            color: "white"
-          }
-        }
-      );
-    });
-
-    if (!confirmed) {
+    console.log("[UnblockClick] Button clicked");
+    if (loading) {
+      console.log("[UnblockClick] Loading is true, returning");
       return;
     }
+
+    // Check for user ID with fallback to localStorage
+    let currentUserId = loggedInUserId;
+    if (!currentUserId) {
+      try {
+        const raw = localStorage.getItem("login");
+        if (raw) {
+          const data = JSON.parse(raw);
+          currentUserId = data?.userID || data?.userid || data?.id;
+        }
+      } catch (error) {
+        console.error("Error retrieving user ID from localStorage:", error);
+      }
+    }
+
+    if (!currentUserId) {
+      console.log("[UnblockClick] No user ID, showing error toast");
+      toast.error("Please log in to unblock users");
+      return;
+    }
+
+    console.log("[UnblockClick] User found:", currentUserId);
+    console.log("[UnblockClick] Requesting confirmation...");
+
+    if (!window.confirm(`Are you sure you want to unblock ${name}? You will be able to see their posts and they will be able to see yours.`)) {
+      console.log("[UnblockClick] User cancelled");
+      return;
+    }
+
+    console.log("[UnblockClick] Confirmed. Proceeding...");
 
     setloading(true);
     setdisable(true);
 
     try {
+      console.log("[UnblockClick] Getting token...");
       const token = (() => {
         try {
           const raw = localStorage.getItem("login");
@@ -150,8 +140,10 @@ const [countryData, setCountryData] = useState({
         return;
       }
 
+
+
       const response = await axios.post(`${API_URL}/block/unblock`, {
-        blockerId: loggedInUserId,
+        blockerId: currentUserId,
         blockedUserId: id
       }, {
         headers: {
@@ -159,6 +151,8 @@ const [countryData, setCountryData] = useState({
           "Authorization": `Bearer ${token}`
         }
       });
+
+
 
       if (response.data.ok) {
         toast.success("User unblocked successfully");
@@ -212,9 +206,8 @@ const [countryData, setCountryData] = useState({
             )}
             {/* Online Status */}
             <div className="absolute -bottom-1 -right-1">
-              <div className={`w-4 h-4 rounded-full border-2 border-gray-800 ${
-                online ? "bg-green-500" : "bg-gray-500"
-              }`}></div>
+              <div className={`w-4 h-4 rounded-full border-2 border-gray-800 ${online ? "bg-green-500" : "bg-gray-500"
+                }`}></div>
             </div>
           </div>
 
@@ -222,8 +215,8 @@ const [countryData, setCountryData] = useState({
           <div className="flex-1">
             <h3 className="text-white font-semibold text-lg">{name}</h3>
             <div className="flex items-center space-x-2 mt-1">
-             
-              
+
+
               <span className="text-gray-500 text-sm">•</span>
               <span className="text-gray-400 text-sm">
                 {online ? "Online" : "Offline"}
@@ -236,10 +229,10 @@ const [countryData, setCountryData] = useState({
         <div className="flex items-center space-x-2">
           {loading ? (
             <div className="flex items-center space-x-2">
-              <PacmanLoader
-                color={color}
+              <ClipLoader
+                color={"#ffffff"}
                 loading={loading}
-                size={8}
+                size={15}
                 aria-label="Loading Spinner"
                 data-testid="loader"
               />

@@ -8,12 +8,17 @@ import { toast } from "react-toastify";
 import { URL as API_URL } from "@/api/config";
 import axios from "axios";
 
-const DropdownMenu = () => {
+interface DropdownMenuProps {
+  creator_portfolio_id?: string;
+}
+
+const DropdownMenu: React.FC<DropdownMenuProps> = ({ creator_portfolio_id: propCreatorId }) => {
   const [opening, setOpening] = useState(false);
   const [blocking, setBlocking] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const { creator_portfolio_id } = useParams<{ creator_portfolio_id: string }>();
+  const params = useParams<{ creator_portfolio_id: string }>();
+  const creator_portfolio_id = propCreatorId || params?.creator_portfolio_id;
   const router = useRouter();
   const userid = useSelector((state: RootState) => state.register.userID);
 

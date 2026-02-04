@@ -10,7 +10,8 @@ export const getCountryData = async (countryName: string): Promise<CountryData |
   try {
     const response = await fetch(apiUrl);
     if (!response.ok) {
-      throw new Error("Country not found.");
+      console.warn(`Country not found: ${countryName}`);
+      return null;
     }
 
     const data = await response.json();

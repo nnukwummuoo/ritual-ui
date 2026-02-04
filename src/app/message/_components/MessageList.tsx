@@ -370,6 +370,37 @@ export const MessageList = () => {
       return bDate - aDate;
     });
   }, [recentmsg, searchQuery]);
+
+  const scrollRef = React.useRef<HTMLDivElement>(null);
+
+  // Reset scroll position on mount
+  useEffect(() => {
+    // Disable browser scroll restoration to ensure we start at top
+    if (typeof window !== 'undefined' && window.history) {
+      window.history.scrollRestoration = 'manual';
+    }
+
+    // Immediate reset
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = 10;
+    }
+
+    // Delayed reset to handle any browser overrides
+    const timer = setTimeout(() => {
+      if (scrollRef.current) {
+        scrollRef.current.scrollTop = 10;
+      }
+    }, 50);
+
+    return () => {
+      // Re-enable auto scroll restoration on cleanup
+      if (typeof window !== 'undefined' && window.history) {
+        window.history.scrollRestoration = 'auto';
+      }
+      clearTimeout(timer);
+    };
+  }, []);
+
   if (!isLoggedIn || !userid) {
     return (
       <div className="flex flex-col items-center justify-center py-12">
@@ -424,7 +455,7 @@ export const MessageList = () => {
       </div>
 
       {/* Messages List - Scrollable */}
-      <div className="flex-1 overflow-y-auto pb-64">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto pb-64">
         {filteredAndSortedMessages.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-8">
             <MessageCircle className="w-8 h-8 text-gray-400 mb-2" />

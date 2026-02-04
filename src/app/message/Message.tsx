@@ -173,6 +173,11 @@ export const MessageView = () => {
   // };
 
   useEffect(() => {
+    // Reset window scroll position on mount
+    window.scrollTo(0, 0);
+  }, []);
+
+  useEffect(() => {
     if (msgnotifystatus === "succeeded" || msgnotifystatus === "failed") {
       // Loading state handled
     }
@@ -223,7 +228,7 @@ export const MessageView = () => {
 
 
         {/* Messages List */}
-        <div className="flex-1 h-full">
+        <div className="flex-1 min-h-0 relative">
           <MessageList />
         </div>
 
