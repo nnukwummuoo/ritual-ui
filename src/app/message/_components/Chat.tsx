@@ -849,9 +849,9 @@ export const Chat = () => {
             if (value.coin) {
               return (
                 <div key={index} className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-4 w-full`}>
-                  <div className={`w-1/2 px-4 py-3 rounded-2xl ${isUser
-                      ? ' bg-gray-800 text-white rounded-br-md'
-                      : ' bg-gray-800/50 text-white rounded-bl-md border border-blue-700/30'
+                  <div className={`max-w-[75%] w-fit px-4 py-3 rounded-2xl ${isUser
+                    ? ' bg-gray-800 text-white rounded-br-md'
+                    : ' bg-gray-800/50 text-white rounded-bl-md border border-blue-700/30'
                     }`}>
                     <div className="flex items-center gap-2">
                       <svg className="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 24 24">
@@ -864,7 +864,7 @@ export const Chat = () => {
                       )}
 
                     </div>
-                    <p className="text-lg font-bold mt-1">${value.content}</p>
+                    <p className="text-lg font-bold mt-1 break-words">${value.content}</p>
                     <p className="text-xs opacity-70 mt-1">{messageTime}</p>
                   </div>
                 </div>
@@ -872,9 +872,9 @@ export const Chat = () => {
             } else {
               return (
                 <div key={index} className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-4 w-full`}>
-                  <div className={`w-1/2 px-4 py-3 rounded-2xl ${isUser
-                      ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-br-md shadow-lg shadow-blue-500/30'
-                      : ' bg-gray-800/50 text-white rounded-bl-md border border-blue-700/30 shadow-lg shadow-blue-700/10'
+                  <div className={`max-w-[75%] w-fit px-4 py-3 rounded-2xl ${isUser
+                    ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-br-md shadow-lg shadow-blue-500/30'
+                    : ' bg-gray-800/50 text-white rounded-bl-md border border-blue-700/30 shadow-lg shadow-blue-700/10'
                     }`}>
                     {/* VIP Badge for message sender */}
                     {!isUser && value.isVip && (
@@ -883,7 +883,7 @@ export const Chat = () => {
                         <span className="text-xs py-1 px-2 rounded-full bg-gradient-to-b tracking-wider font-semibold from-[#fb8402] to-[#ad4d01] text-white">VIP</span>
                       </div>
                     )}
-                    <p className="text-sm">{value.content}</p>
+                    <p className="text-sm break-words whitespace-pre-wrap">{value.content}</p>
 
                     {/* Display files if any */}
                     {value.files && value.files.length > 0 && (
@@ -1778,7 +1778,7 @@ export const Chat = () => {
           </div>
 
           <div className="flex items-center gap-2">
-            <DropdownMenu />
+            <DropdownMenu creator_portfolio_id={finalCreatorPortfolioId} />
           </div>
         </div>
       </div>

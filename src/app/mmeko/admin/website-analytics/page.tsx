@@ -156,17 +156,32 @@ const WebsiteAnalyticsPage = () => {
   const [error, setError] = useState<string | null>(null);
   const token = useAuthToken();
 
+  const formatTime = (totalHours: number) => {
+    if (!totalHours) return "0s";
+    const totalSeconds = totalHours * 3600;
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = Math.floor(totalSeconds % 60);
+
+    const parts = [];
+    if (hours > 0) parts.push(`${hours}h`);
+    if (minutes > 0) parts.push(`${minutes}m`);
+    if (seconds > 0) parts.push(`${seconds}s`);
+
+    return parts.length > 0 ? parts.join(" ") : "0s";
+  };
+
   const fetchAnalytics = useCallback(async (period: string, userPage: number, visitorsPageNum: number) => {
     try {
       setLoading(prev => ({ ...prev, all: true }));
-      
+
       const response = await axios.get(
         `${URL}/websiteanalytics?period=${period}&userRankingPage=${userPage}&visitorsPage=${visitorsPageNum}`,
         {
           headers: token ? { Authorization: `Bearer ${token}` } : undefined,
         }
       );
-      
+
       if (response.data.ok) {
         setData(response.data.data);
       } else {
@@ -209,7 +224,7 @@ const WebsiteAnalyticsPage = () => {
     if (!data?.dailyData || data.dailyData.length === 0) {
       return [];
     }
-    
+
     return data.dailyData
       .sort((a, b) => {
         const dateA = typeof a.date === 'string' ? new Date(a.date) : new Date(a.date);
@@ -278,7 +293,7 @@ const WebsiteAnalyticsPage = () => {
               <div className="text-3xl font-bold text-white">
                 {data?.summary.totalVisitors.toLocaleString() || 0}
               </div>
-              
+
             </>
           )}
         </div>
@@ -313,7 +328,7 @@ const WebsiteAnalyticsPage = () => {
             <>
               <div className="text-sm text-purple-200 mb-1">Avg. Time Spent</div>
               <div className="text-3xl font-bold text-white">
-                {data?.summary.avgTimeSpentHours.toFixed(2) || '0.00'}h
+                {formatTime(data?.summary.avgTimeSpentHours || 0)}
               </div>
               <div className="text-xs text-purple-200 mt-2">Per visitor</div>
             </>
@@ -333,7 +348,7 @@ const WebsiteAnalyticsPage = () => {
                 {data?.summary.totalActiveUsers.toLocaleString() || 0}
               </div>
               <div className="text-xs text-orange-200 mt-2">
-                Avg. {data?.summary.avgUserTimeSpentHours.toFixed(2) || '0.00'}h per user
+                Avg. {formatTime(data?.summary.avgUserTimeSpentHours || 0)} per user
               </div>
             </>
           )}
@@ -351,8 +366,8 @@ const WebsiteAnalyticsPage = () => {
           <ResponsiveContainer width="100%" height={400}>
             <BarChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-              <XAxis 
-                dataKey="dayLabel" 
+              <XAxis
+                dataKey="dayLabel"
                 stroke="#9ca3af"
                 label={{ value: 'Date', position: 'insideBottom', offset: -5, style: { fill: '#9ca3af' } }}
                 angle={-45}
@@ -360,7 +375,7 @@ const WebsiteAnalyticsPage = () => {
                 height={80}
               />
               <YAxis stroke="#9ca3af" />
-              <Tooltip 
+              <Tooltip
                 contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #374151', borderRadius: '8px' }}
                 labelStyle={{ color: '#fff' }}
                 formatter={(value: number) => [value, 'Visitors']}
@@ -381,23 +396,21 @@ const WebsiteAnalyticsPage = () => {
       <div className="bg-gray-800 rounded-lg border border-gray-700">
         <div className="border-b border-gray-700">
           <div className="flex">
-            <button 
+            <button
               onClick={() => setActiveTab('ranking')}
-              className={`px-6 py-3 font-medium transition-colors ${
-                activeTab === 'ranking' 
-                  ? 'text-white border-b-2 border-blue-500' 
+              className={`px-6 py-3 font-medium transition-colors ${activeTab === 'ranking'
+                  ? 'text-white border-b-2 border-blue-500'
                   : 'text-gray-400 hover:text-white'
-              }`}
+                }`}
             >
               Top Users Ranking
             </button>
-            <button 
+            <button
               onClick={() => setActiveTab('visitors')}
-              className={`px-6 py-3 font-medium transition-colors ${
-                activeTab === 'visitors' 
-                  ? 'text-white border-b-2 border-blue-500' 
+              className={`px-6 py-3 font-medium transition-colors ${activeTab === 'visitors'
+                  ? 'text-white border-b-2 border-blue-500'
                   : 'text-gray-400 hover:text-white'
-              }`}
+                }`}
             >
               Website Visitors
             </button>
@@ -415,160 +428,160 @@ const WebsiteAnalyticsPage = () => {
                 </div>
               )}
             </div>
-          {loading.all ? (
-            <div className="h-64 flex items-center justify-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-            </div>
-          ) : (
-            <>
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-gray-700">
-                      <th className="text-left py-3 px-4 text-sm font-semibold text-gray-300">Rank</th>
-                      <th className="text-left py-3 px-4 text-sm font-semibold text-gray-300">User</th>
-                      <th className="text-right py-3 px-4 text-sm font-semibold text-gray-300">Time Spent</th>
-                      <th className="text-right py-3 px-4 text-sm font-semibold text-gray-300">Posts</th>
-                      <th className="text-right py-3 px-4 text-sm font-semibold text-gray-300">Activities</th>
-                      <th className="text-left py-3 px-4 text-sm font-semibold text-gray-300">IP Address</th>
-                      <th className="text-left py-3 px-4 text-sm font-semibold text-gray-300">Location</th>
-                      <th className="text-center py-3 px-4 text-sm font-semibold text-gray-300">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {data?.userRanking.data && data.userRanking.data.length > 0 ? (
-                      data.userRanking.data.map((user) => (
-                        <tr key={user.userid} className="border-b border-gray-700 hover:bg-gray-750 transition-colors">
-                          <td className="py-4 px-4">
-                            <div className="flex items-center">
-                              {user.rank <= 3 && (
-                                <span className="text-yellow-400 mr-2">
-                                  {user.rank === 1 ? '🥇' : user.rank === 2 ? '🥈' : '🥉'}
-                                </span>
-                              )}
-                              <span className="text-gray-300 font-medium">#{user.rank}</span>
-                            </div>
-                          </td>
-                          <td className="py-4 px-4">
-                            <div className="flex items-center gap-3">
-                              <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-700 flex items-center justify-center">
-                                {(() => {
-                                  const profileImage = user.userDetails.photolink;
-                                  const imageSource = getImageSource(profileImage || "", 'profile');
-                                  const initials = `${user.userDetails.firstname?.[0] || ''}${user.userDetails.lastname?.[0] || ''}`.toUpperCase();
-                                  
-                                  if (profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined") {
-                                    return (
-                                      <div className="relative w-full h-full rounded-full overflow-hidden bg-gray-600 flex items-center justify-center">
-                                        <img
-                                          src={imageSource.src}
-                                          alt={user.userDetails.firstname}
-                                          className="w-full h-full object-cover"
-                                          onError={(e) => {
-                                            const target = e.currentTarget as HTMLImageElement;
-                                            target.style.display = 'none';
-                                            const nextElement = target.nextElementSibling as HTMLElement;
-                                            if (nextElement) nextElement.style.display = 'flex';
-                                          }}
-                                        />
-                                        <div className="absolute inset-0 bg-gray-600 flex items-center justify-center text-white text-sm font-bold" style={{ display: 'none' }}>
-                                          {initials || '?'}
-                                        </div>
-                                      </div>
-                                    );
-                                  }
-                                  
-                                  return (
-                                    <span className="text-gray-400 text-sm">
-                                      {initials || '?'}
-                                    </span>
-                                  );
-                                })()}
+            {loading.all ? (
+              <div className="h-64 flex items-center justify-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+              </div>
+            ) : (
+              <>
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b border-gray-700">
+                        <th className="text-left py-3 px-4 text-sm font-semibold text-gray-300">Rank</th>
+                        <th className="text-left py-3 px-4 text-sm font-semibold text-gray-300">User</th>
+                        <th className="text-right py-3 px-4 text-sm font-semibold text-gray-300">Time Spent</th>
+                        <th className="text-right py-3 px-4 text-sm font-semibold text-gray-300">Posts</th>
+                        <th className="text-right py-3 px-4 text-sm font-semibold text-gray-300">Activities</th>
+                        <th className="text-left py-3 px-4 text-sm font-semibold text-gray-300">IP Address</th>
+                        <th className="text-left py-3 px-4 text-sm font-semibold text-gray-300">Location</th>
+                        <th className="text-center py-3 px-4 text-sm font-semibold text-gray-300">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {data?.userRanking.data && data.userRanking.data.length > 0 ? (
+                        data.userRanking.data.map((user) => (
+                          <tr key={user.userid} className="border-b border-gray-700 hover:bg-gray-750 transition-colors">
+                            <td className="py-4 px-4">
+                              <div className="flex items-center">
+                                {user.rank <= 3 && (
+                                  <span className="text-yellow-400 mr-2">
+                                    {user.rank === 1 ? '🥇' : user.rank === 2 ? '🥈' : '🥉'}
+                                  </span>
+                                )}
+                                <span className="text-gray-300 font-medium">#{user.rank}</span>
                               </div>
-                              <div>
-                                <div className="text-white font-medium">
-                                  {user.userDetails.firstname} {user.userDetails.lastname}
+                            </td>
+                            <td className="py-4 px-4">
+                              <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-700 flex items-center justify-center">
+                                  {(() => {
+                                    const profileImage = user.userDetails.photolink;
+                                    const imageSource = getImageSource(profileImage || "", 'profile');
+                                    const initials = `${user.userDetails.firstname?.[0] || ''}${user.userDetails.lastname?.[0] || ''}`.toUpperCase();
+
+                                    if (profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined") {
+                                      return (
+                                        <div className="relative w-full h-full rounded-full overflow-hidden bg-gray-600 flex items-center justify-center">
+                                          <img
+                                            src={imageSource.src}
+                                            alt={user.userDetails.firstname}
+                                            className="w-full h-full object-cover"
+                                            onError={(e) => {
+                                              const target = e.currentTarget as HTMLImageElement;
+                                              target.style.display = 'none';
+                                              const nextElement = target.nextElementSibling as HTMLElement;
+                                              if (nextElement) nextElement.style.display = 'flex';
+                                            }}
+                                          />
+                                          <div className="absolute inset-0 bg-gray-600 flex items-center justify-center text-white text-sm font-bold" style={{ display: 'none' }}>
+                                            {initials || '?'}
+                                          </div>
+                                        </div>
+                                      );
+                                    }
+
+                                    return (
+                                      <span className="text-gray-400 text-sm">
+                                        {initials || '?'}
+                                      </span>
+                                    );
+                                  })()}
                                 </div>
-                                {user.userDetails.username && (
-                                  <div className="text-xs text-gray-400">{user.userDetails.username}</div>
+                                <div>
+                                  <div className="text-white font-medium">
+                                    {user.userDetails.firstname} {user.userDetails.lastname}
+                                  </div>
+                                  {user.userDetails.username && (
+                                    <div className="text-xs text-gray-400">{user.userDetails.username}</div>
+                                  )}
+                                </div>
+                              </div>
+                            </td>
+                            <td className="py-4 px-4 text-right">
+                              <span className="text-white font-medium">{formatTime(user.stats.totalTimeSpentHours)}</span>
+                            </td>
+                            <td className="py-4 px-4 text-right">
+                              <span className="text-white font-medium">{user.stats.totalPosts}</span>
+                            </td>
+                            <td className="py-4 px-4 text-right">
+                              <div className="text-white font-medium">{user.stats.totalActivities}</div>
+                              <div className="text-xs text-gray-400">
+                                L:{user.stats.activityBreakdown.likes} C:{user.stats.activityBreakdown.comments} M:{user.stats.activityBreakdown.messages}
+                              </div>
+                            </td>
+                            <td className="py-4 px-4">
+                              <div className="text-white text-sm font-mono">
+                                {user.location?.ipAddress || 'Unknown'}
+                              </div>
+                            </td>
+                            <td className="py-4 px-4">
+                              <div className="text-white text-sm">
+                                {user.location?.city && user.location.city !== 'Unknown' ? `${user.location.city}, ` : ''}
+                                {user.location?.country || 'Unknown'}
+                              </div>
+                              {user.location?.region && user.location.region !== 'Unknown' && (
+                                <div className="text-xs text-gray-400">{user.location.region}</div>
+                              )}
+                            </td>
+                            <td className="py-4 px-4 text-center">
+                              <div className="flex items-center justify-center gap-2">
+                                {user.userDetails.isVip && (
+                                  <span className="px-2 py-1 bg-yellow-600 text-yellow-100 text-xs rounded-full">VIP</span>
+                                )}
+                                {user.userDetails.creator_verified && (
+                                  <span className="px-2 py-1 bg-blue-600 text-blue-100 text-xs rounded-full">Creator</span>
                                 )}
                               </div>
-                            </div>
-                          </td>
-                          <td className="py-4 px-4 text-right">
-                            <span className="text-white font-medium">{user.stats.totalTimeSpentHours.toFixed(2)}h</span>
-                          </td>
-                          <td className="py-4 px-4 text-right">
-                            <span className="text-white font-medium">{user.stats.totalPosts}</span>
-                          </td>
-                          <td className="py-4 px-4 text-right">
-                            <div className="text-white font-medium">{user.stats.totalActivities}</div>
-                            <div className="text-xs text-gray-400">
-                              L:{user.stats.activityBreakdown.likes} C:{user.stats.activityBreakdown.comments} M:{user.stats.activityBreakdown.messages}
-                            </div>
-                          </td>
-                          <td className="py-4 px-4">
-                            <div className="text-white text-sm font-mono">
-                              {user.location?.ipAddress || 'Unknown'}
-                            </div>
-                          </td>
-                          <td className="py-4 px-4">
-                            <div className="text-white text-sm">
-                              {user.location?.city && user.location.city !== 'Unknown' ? `${user.location.city}, ` : ''}
-                              {user.location?.country || 'Unknown'}
-                            </div>
-                            {user.location?.region && user.location.region !== 'Unknown' && (
-                              <div className="text-xs text-gray-400">{user.location.region}</div>
-                            )}
-                          </td>
-                          <td className="py-4 px-4 text-center">
-                            <div className="flex items-center justify-center gap-2">
-                              {user.userDetails.isVip && (
-                                <span className="px-2 py-1 bg-yellow-600 text-yellow-100 text-xs rounded-full">VIP</span>
-                              )}
-                              {user.userDetails.creator_verified && (
-                                <span className="px-2 py-1 bg-blue-600 text-blue-100 text-xs rounded-full">Creator</span>
-                              )}
-                            </div>
+                            </td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td colSpan={8} className="py-8 text-center text-gray-400">
+                            No user activity data available
                           </td>
                         </tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td colSpan={8} className="py-8 text-center text-gray-400">
-                          No user activity data available
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-              {/* Pagination for User Ranking */}
-              {data?.userRanking.pagination && data.userRanking.pagination.totalPages > 1 && (
-                <div className="flex justify-between items-center mt-4">
-                  <div className="text-sm text-gray-400">
-                    Page {data.userRanking.pagination.currentPage} of {data.userRanking.pagination.totalPages}
-                  </div>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => setUserRankingPage(p => Math.max(1, p - 1))}
-                      disabled={data.userRanking.pagination.currentPage === 1}
-                      className="px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      Previous
-                    </button>
-                    <button
-                      onClick={() => setUserRankingPage(p => p + 1)}
-                      disabled={data.userRanking.pagination.currentPage === data.userRanking.pagination.totalPages}
-                      className="px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      Next
-                    </button>
-                  </div>
+                      )}
+                    </tbody>
+                  </table>
                 </div>
-              )}
-            </>
-          )}
+                {/* Pagination for User Ranking */}
+                {data?.userRanking.pagination && data.userRanking.pagination.totalPages > 1 && (
+                  <div className="flex justify-between items-center mt-4">
+                    <div className="text-sm text-gray-400">
+                      Page {data.userRanking.pagination.currentPage} of {data.userRanking.pagination.totalPages}
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setUserRankingPage(p => Math.max(1, p - 1))}
+                        disabled={data.userRanking.pagination.currentPage === 1}
+                        className="px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        Previous
+                      </button>
+                      <button
+                        onClick={() => setUserRankingPage(p => p + 1)}
+                        disabled={data.userRanking.pagination.currentPage === data.userRanking.pagination.totalPages}
+                        className="px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        Next
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
           </div>
         )}
 
@@ -624,7 +637,7 @@ const WebsiteAnalyticsPage = () => {
                                       const profileImage = visitor.userDetails.photolink;
                                       const imageSource = getImageSource(profileImage || "", 'profile');
                                       const initials = `${visitor.userDetails.firstname?.[0] || ''}${visitor.userDetails.lastname?.[0] || ''}`.toUpperCase();
-                                      
+
                                       if (profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined") {
                                         return (
                                           <div className="relative w-full h-full rounded-full overflow-hidden bg-gray-600 flex items-center justify-center">
@@ -645,7 +658,7 @@ const WebsiteAnalyticsPage = () => {
                                           </div>
                                         );
                                       }
-                                      
+
                                       return (
                                         <span className="text-gray-400 text-sm">
                                           {initials || '?'}
@@ -670,15 +683,15 @@ const WebsiteAnalyticsPage = () => {
                               <span className="text-gray-300">
                                 {(() => {
                                   // Parse the visit date - handle both string and Date objects
-                                  const visitDate = visitor.visitDate 
-                                    ? new Date(visitor.visitDate) 
+                                  const visitDate = visitor.visitDate
+                                    ? new Date(visitor.visitDate)
                                     : new Date();
-                                  
+
                                   // Check if date is valid
                                   if (isNaN(visitDate.getTime())) {
                                     return 'Invalid Date';
                                   }
-                                  
+
                                   // Convert to user's local timezone automatically
                                   // The browser automatically converts UTC/server time to user's local timezone
                                   return visitDate.toLocaleString('en-US', {
@@ -694,7 +707,7 @@ const WebsiteAnalyticsPage = () => {
                               </span>
                             </td>
                             <td className="py-4 px-4 text-right">
-                              <span className="text-white font-medium">{visitor.totalTimeSpentHours.toFixed(2)}h</span>
+                              <span className="text-white font-medium">{formatTime(visitor.totalTimeSpentHours)}</span>
                             </td>
                             <td className="py-4 px-4 text-right">
                               <span className="text-white font-medium">{visitor.pageViews}</span>
@@ -787,15 +800,15 @@ const WebsiteAnalyticsPage = () => {
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 80 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                <XAxis 
-                  dataKey="dayLabel" 
+                <XAxis
+                  dataKey="dayLabel"
                   stroke="#9ca3af"
                   angle={-45}
                   textAnchor="end"
                   height={80}
                 />
                 <YAxis stroke="#9ca3af" />
-                <Tooltip 
+                <Tooltip
                   contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #374151', borderRadius: '8px' }}
                   labelStyle={{ color: '#fff' }}
                   formatter={(value: number) => [value, 'Posts']}

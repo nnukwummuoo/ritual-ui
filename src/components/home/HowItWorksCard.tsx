@@ -58,11 +58,17 @@ const slides: HowItWorksSlide[] = [
         description:
             "If the fan doesn’t mark the meet as complete or fails to attend, contact Support. We’ll investigate before releasing payment to the creator.",
     },
-      {
+    {
         id: 8,
         image: "/Card7.png",
         title: "Keep Chat In-Platform",
         description: "Keep all chat in the platform for evidence and smooth dispute resolution.",
+    },
+    {
+        id: 9,
+        image: "/Card9.jpeg",
+        title: "Warning",
+        description: "If a creator asks you to contact them on Telegram, WhatsApp, or to send money outside the platform, this is a scam. You will lose your money."
     },
 ];
 
