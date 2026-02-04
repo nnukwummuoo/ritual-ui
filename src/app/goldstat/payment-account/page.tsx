@@ -416,28 +416,26 @@ export default function PaymentAccountPage() {
                 <div className="space-y-3 text-sm">
                   <div>
                     <h4 className="font-medium text-gray-200 mb-1">1. Recommended Wallet:</h4>
-                    <p className="text-gray-300">Trust Wallet.</p>
+                    <p className="text-gray-300">Coin.ph.</p>
                   </div>
                   
                   <div>
-                    <h4 className="font-medium text-gray-200 mb-1">2. Open Trust wallet: Launch the app and ensure you are on main wallet screen. </h4>
+                    <h4 className="font-medium text-gray-200 mb-1">2. Open Coin.ph: Launch the app and ensure you are on main wallet screen. </h4>
                     </div>
                     <div>
-                    <h4 className="font-medium text-gray-200 mb-1">3. Add/Find USDT BEP20: </h4>
+                    <h4 className="font-medium text-gray-200 mb-1">3. Tap "Deposit" and then tap "Recieve Crypto" </h4>
                     <ol className="list-decimal list-inside space-y-1 text-gray-300 ml-2">
                       <li>Tap the toggle/search icon in the top-right corner.</li>
                       <li>Search for "USDT".</li>
-                      <li>Locate the option that says "USDT BNB Smart Chain".</li>
-                      <li>Toggle it on to add it to your main screen.</li>
+                      <li>Locate the option that says "USDT Tether".</li>
+                      <li>Toggle it and choose "BNB Smart Chain" .</li>
                     </ol>
                   </div>
                   
                   <div>
                     <h4 className="font-medium text-gray-200 mb-1">3. Get the Wallet Address:</h4>
                     <ul className="list-disc list-inside space-y-1 text-gray-300 ml-2">
-                      <li>Tap on the "USDT BNB Smart Chain" token from your list.</li>
-                      <li>Tap the "Receive" button.</li>
-                       <li>Copy the address shown</li>
+                      <li>Copy the "USDT BNB Smart Chain" address shown.</li>
                         <li>Paste on mmeko "wallet address" field</li>
                        <li>Save account details</li>
                        <li>Click withdraw</li>
