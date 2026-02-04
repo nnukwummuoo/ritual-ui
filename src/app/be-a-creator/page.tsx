@@ -7,6 +7,7 @@ import {
   FaCreditCard,
   FaShieldAlt,
   FaClock,
+  FaFileImage,
 } from "react-icons/fa";
 import HeaderBackNav from "../../navs/HeaderBackNav";
 import { useRouter } from "next/navigation";
@@ -37,6 +38,13 @@ export default function VerificationPage(){
       subtitle: "Live Tracking",
       description:
         "Private video calls aren't just random chats. They're built to make you money. Fans pay per minute and both of you can track the balance live during the show.",
+    },
+    {
+      icon:  FaFileImage,
+      title: "Content Sales = Instant Value, Total Control",
+      subtitle: "Keep Everything You Earn",
+      description:
+        "Dropping exclusive photos, videos, or bundles? Fans pay upfront through the platform — no subscriptions, no cuts, no chargebacks. Every sale is pure profit, 100% yours, with delivery handled automatically so your content stays protected and respected.",
     },
     {
       icon: FaUsers,
