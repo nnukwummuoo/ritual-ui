@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { getmessagenotication, getmsgnitify } from "@/store/messageSlice";
 import { getViewingProfile } from "@/store/viewingProfile";
 import type { RootState } from "@/store/store";
+import { restoreBodyScroll } from "@/utils/scrollRestore";
 import Image from "next/image";
 import { MessageCircle, BadgeCheck } from "lucide-react";
 import { getSocket, joinUserRoom, leaveUserRoom, onUserOnline, onUserOffline, removeTypingListeners } from "@/lib/socket";
@@ -76,6 +77,40 @@ export const MessageList = () => {
       }
     }
   }, [reduxUserid]);
+
+  // Add this useEffect FIRST, before all other useEffects
+  useEffect(() => {
+    // CRITICAL: Force scroll restoration when navigating back from chat
+    const restoreScroll = () => {
+      // Remove message-route class
+      document.body.classList.remove("message-route");
+
+      // Force body and html to be scrollable
+      document.body.style.overflow = "auto !important";
+      document.body.style.height = "auto !important";
+      document.body.style.position = "static !important";
+      document.documentElement.style.overflow = "auto !important";
+      document.documentElement.style.height = "auto !important";
+
+      // Force reflow
+      document.body.offsetHeight;
+      document.documentElement.offsetHeight;
+    };
+
+    // Run immediately
+    restoreScroll();
+
+    // Run again after delays to ensure it works
+    const timer1 = setTimeout(restoreScroll, 50);
+    const timer2 = setTimeout(restoreScroll, 150);
+    const timer3 = setTimeout(restoreScroll, 300);
+
+    return () => {
+      clearTimeout(timer1);
+      clearTimeout(timer2);
+      clearTimeout(timer3);
+    };
+  }, []);
 
   // Socket event listeners for online status
   React.useEffect(() => {
@@ -373,32 +408,26 @@ export const MessageList = () => {
 
   const scrollRef = React.useRef<HTMLDivElement>(null);
 
-  // Reset scroll position on mount
+  // Force scroll recalculation on mount to fix "stuck scroll" issues on mobile
   useEffect(() => {
-    // Disable browser scroll restoration to ensure we start at top
-    if (typeof window !== 'undefined' && window.history) {
-      window.history.scrollRestoration = 'manual';
-    }
+    restoreBodyScroll();
 
-    // Immediate reset
+    // Also run on mount to fix any leftover chat styles with a slight delay
+    const timer = setTimeout(restoreBodyScroll, 100);
+
     if (scrollRef.current) {
-      scrollRef.current.scrollTop = 10;
+      const container = scrollRef.current;
+
+      // Force a reflow
+      container.style.display = 'none';
+      container.offsetHeight; // Trigger reflow
+      container.style.display = '';
+
+      // Ensure it starts at the top
+      container.scrollTop = 0;
     }
 
-    // Delayed reset to handle any browser overrides
-    const timer = setTimeout(() => {
-      if (scrollRef.current) {
-        scrollRef.current.scrollTop = 10;
-      }
-    }, 50);
-
-    return () => {
-      // Re-enable auto scroll restoration on cleanup
-      if (typeof window !== 'undefined' && window.history) {
-        window.history.scrollRestoration = 'auto';
-      }
-      clearTimeout(timer);
-    };
+    return () => clearTimeout(timer);
   }, []);
 
   if (!isLoggedIn || !userid) {
@@ -455,117 +484,124 @@ export const MessageList = () => {
       </div>
 
       {/* Messages List - Scrollable */}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto pb-64">
-        {filteredAndSortedMessages.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-8">
-            <MessageCircle className="w-8 h-8 text-gray-400 mb-2" />
-            <p className="text-gray-400 text-center">No messages found</p>
-            <p className="text-sm text-gray-500 text-center mt-1">
-              Try adjusting your search terms
-            </p>
-          </div>
-        ) : (
-          filteredAndSortedMessages.map((message: MessageItem, index: number) => {
-            // Get the other user ID and their profile picture
-            const otherUserId = message.fromid === userid ? message.toid : message.fromid;
-            const userProfilePicture = profilePictures[otherUserId];
+      <div
+        ref={scrollRef}
+        className="flex-1 overflow-y-auto"
+        style={{
+          minHeight: 0,
+          WebkitOverflowScrolling: 'touch'
+        }}
+      >
+        <div style={{ paddingBottom: 'calc(8rem + env(safe-area-inset-bottom, 0px))' }}>
+          {filteredAndSortedMessages.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-8">
+              <MessageCircle className="w-8 h-8 text-gray-400 mb-2" />
+              <p className="text-gray-400 text-center">No messages found</p>
+              <p className="text-sm text-gray-500 text-center mt-1">
+                Try adjusting your search terms
+              </p>
+            </div>
+          ) : (
+            filteredAndSortedMessages.map((message: MessageItem, index: number) => {
+              // Get the other user ID and their profile picture
+              const otherUserId = message.fromid === userid ? message.toid : message.fromid;
+              const userProfilePicture = profilePictures[otherUserId];
 
-
-
-            return (
-              <div
-                key={index}
-                onClick={() => handleMessageClick(message.fromid, message.toid)}
-                className="flex items-center gap-3 p-3 hover:bg-gray-800/50 rounded-lg cursor-pointer transition-colors"
-              >
-                {/* Avatar */}
-                <div className="relative">
-                  <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-700">
-                    {userProfilePicture &&
-                      userProfilePicture.trim() !== "" &&
-                      userProfilePicture !== "null" &&
-                      userProfilePicture !== "undefined" &&
-                      userProfilePicture !== null &&
-                      userProfilePicture !== undefined &&
-                      userProfilePicture.length > 0 ? (
-                      <Image
-                        src={getImageSource(userProfilePicture, 'profile').src}
-                        alt={message.name}
-                        width={48}
-                        height={48}
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement;
-                          target.onerror = null;
-                          target.src = "/icons/icons8-profile_user.png";
-                        }}
-                      />
-                    ) : (
-                      <div className={`w-full h-full flex items-center justify-center text-white font-semibold ${getRandomColor(message.firstname && message.lastname ? `${message.firstname} ${message.lastname}`.trim() : message.name)}`}>
-                        {getUserInitials(message.firstname && message.lastname ? `${message.firstname} ${message.lastname}`.trim() : message.name)}
-                      </div>
+              return (
+                <div
+                  key={index}
+                  onClick={() => handleMessageClick(message.fromid, message.toid)}
+                  className="flex items-center gap-3 p-3 hover:bg-gray-800/50 rounded-lg cursor-pointer transition-colors"
+                >
+                  {/* Avatar */}
+                  <div className="relative">
+                    <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-700">
+                      {userProfilePicture &&
+                        userProfilePicture.trim() !== "" &&
+                        userProfilePicture !== "null" &&
+                        userProfilePicture !== "undefined" &&
+                        userProfilePicture !== null &&
+                        userProfilePicture !== undefined &&
+                        userProfilePicture.length > 0 ? (
+                        <Image
+                          src={getImageSource(userProfilePicture, 'profile').src}
+                          alt={message.name}
+                          width={48}
+                          height={48}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.onerror = null;
+                            target.src = "/icons/icons8-profile_user.png";
+                          }}
+                        />
+                      ) : (
+                        <div className={`w-full h-full flex items-center justify-center text-white font-semibold ${getRandomColor(message.firstname && message.lastname ? `${message.firstname} ${message.lastname}`.trim() : message.name)}`}>
+                          {getUserInitials(message.firstname && message.lastname ? `${message.firstname} ${message.lastname}`.trim() : message.name)}
+                        </div>
+                      )}
+                    </div>
+                    {/* Online indicator */}
+                    {isUserOnline(otherUserId) && (
+                      <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-gray-900 rounded-full"></div>
+                    )}
+                    {/* VIP Badge */}
+                    {message.isVip && (
+                      <VIPBadge size="xl" className="absolute -top-5 -right-5" isVip={message.isVip} vipEndDate={message.vipEndDate} />
                     )}
                   </div>
-                  {/* Online indicator */}
-                  {isUserOnline(otherUserId) && (
-                    <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-gray-900 rounded-full"></div>
-                  )}
-                  {/* VIP Badge */}
-                  {message.isVip && (
-                    <VIPBadge size="xl" className="absolute -top-5 -right-5" isVip={message.isVip} vipEndDate={message.vipEndDate} />
-                  )}
-                </div>
 
-                {/* Message content */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between">
-                    <h3 className="font-semibold text-white truncate flex items-center gap-1">
-                      {message.firstname && message.lastname ? `${message.firstname} ${message.lastname}`.trim() : message.name}
-                      {message.isVerified && (
-                        <BadgeCheck size={17} className="text-black inline flex-shrink-0" fill="white" />
-                      )}
-                    </h3>
-                    <div className="flex items-center gap-1 text-xs text-gray-400">
+                  {/* Message content */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-semibold text-white truncate flex items-center gap-1">
+                        {message.firstname && message.lastname ? `${message.firstname} ${message.lastname}`.trim() : message.name}
+                        {message.isVerified && (
+                          <BadgeCheck size={17} className="text-black inline flex-shrink-0" fill="white" />
+                        )}
+                      </h3>
+                      <div className="flex items-center gap-1 text-xs text-gray-400">
 
-                      <span>{formatTime(message.date)}</span>
+                        <span>{formatTime(message.date)}</span>
+                      </div>
                     </div>
+
+                    <p className="text-sm text-gray-300 truncate mt-1">
+                      {message.content}
+                    </p>
                   </div>
 
-                  <p className="text-sm text-gray-300 truncate mt-1">
-                    {message.content}
-                  </p>
-                </div>
-
-                {/* Unread count or indicator */}
-                {(() => {
-                  // Check for unread count in multiple possible fields
-                  const unreadCount = message.messagecount || message.unreadCount || 0;
-                  const hasUnread = message.unread || unreadCount > 0;
+                  {/* Unread count or indicator */}
+                  {(() => {
+                    // Check for unread count in multiple possible fields
+                    const unreadCount = message.messagecount || message.unreadCount || 0;
+                    const hasUnread = message.unread || unreadCount > 0;
 
 
-                  // Show unread indicator based on actual data
-                  if (hasUnread && unreadCount > 0) {
-                    return (
-                      <div className="flex-shrink-0">
-                        <div className="w-6 h-6 bg-blue-600 text-white text-xs rounded-full flex items-center justify-center font-semibold">
-                          {unreadCount > 9 ? '9+' : unreadCount}
+                    // Show unread indicator based on actual data
+                    if (hasUnread && unreadCount > 0) {
+                      return (
+                        <div className="flex-shrink-0">
+                          <div className="w-6 h-6 bg-blue-600 text-white text-xs rounded-full flex items-center justify-center font-semibold">
+                            {unreadCount > 9 ? '9+' : unreadCount}
+                          </div>
                         </div>
-                      </div>
-                    );
-                  } else if (hasUnread) {
-                    // Show a small dot indicator for messages that are unread but don't have a count
-                    return (
-                      <div className="flex-shrink-0">
-                        <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                      </div>
-                    );
-                  }
-                  return null;
-                })()}
-              </div>
-            );
-          })
-        )}
+                      );
+                    } else if (hasUnread) {
+                      // Show a small dot indicator for messages that are unread but don't have a count
+                      return (
+                        <div className="flex-shrink-0">
+                          <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                        </div>
+                      );
+                    }
+                    return null;
+                  })()}
+                </div>
+              );
+            })
+          )}
+        </div>
       </div>
     </div>
   );

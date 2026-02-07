@@ -60,6 +60,15 @@ export default function ConditionalLayout({ children, isAuthenticated }: Conditi
     }
   }, [isAuthenticated, isHomeRoute]);
 
+  // Reset scroll position when navigating to specific routes
+  // Home page preserves scroll for better UX when browsing posts
+  // All other pages start at top when navigated to
+  useEffect(() => {
+    if (pathname !== '/' && scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTop = 0;
+    }
+  }, [pathname]);
+
   // Optimized scroll handler with throttling for smooth performance
   // DISABLED: Navbar should stay fixed and visible at all times
   /*
@@ -190,7 +199,8 @@ export default function ConditionalLayout({ children, isAuthenticated }: Conditi
       <div className={`flex-1 flex flex-col overflow-hidden transition-all duration-300 min-w-0 min-h-0 md:mt-0 mt-12`}>
         <div
           ref={scrollContainerRef}
-          className={`flex-1 scrollbar ${isMessageRoute ? 'overflow-hidden' : 'overflow-y-auto'} overflow-x-hidden w-full min-w-0`}
+          key={isMessageRoute ? 'message-scroll' : 'scroll-container'} // Keep the key to ensure state reset on route change
+          className={`flex-1 scrollbar overflow-y-auto overflow-x-hidden w-full min-w-0`}
           style={{ minHeight: 0 }}
         >
           <div className="grid grid-cols-[60fr_40fr] max-[1200px]:grid-cols-[75fr_25fr] max-[600px]:grid-cols-1 gap-4 min-h-0">

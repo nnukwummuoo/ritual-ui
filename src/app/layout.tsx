@@ -5,6 +5,7 @@ import Providers from "./providers";
 import { cookies } from "next/headers";
 import 'react-loading-skeleton/dist/skeleton.css';
 import ServiceWorkerProvider from "@/components/ServiceWorkerProvider";
+import StorageCleanup from "@/components/StorageCleanup";
 import PWAInstallPrompt from "@/components/PWAInstallPrompt";
 import ConditionalLayoutWrapper from "@/components/ConditionalLayoutWrapper";
 import { VideoProvider } from "@/contexts/VideoContext";
@@ -63,6 +64,7 @@ export default async function RootLayout({
       </head>
       <body className={`${inter.className} antialiased bg-background`}>
         <ServiceWorkerProvider />
+        <StorageCleanup />
         <PWAInstallPrompt />
         <Providers>
           <ContentFilterProvider>
