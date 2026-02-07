@@ -172,17 +172,6 @@ export const MessageView = () => {
   //   }
   // };
 
-  useEffect(() => {
-    // Reset window scroll position on mount
-    window.scrollTo(0, 0);
-  }, []);
-
-  useEffect(() => {
-    if (msgnotifystatus === "succeeded" || msgnotifystatus === "failed") {
-      // Loading state handled
-    }
-  }, [msgnotifystatus]);
-
   // Mark the latest message as read once notifications provide a lastmessage date
   useEffect(() => {
     if (!isLoggedIn) return;
@@ -192,60 +181,56 @@ export const MessageView = () => {
 
 
   return (
-    <div className="h-full w-full overflow-hidden">
-      <div className="w-full h-full mx-auto flex flex-col">
-        {/* Header */}
-        <div className=" border-b  p-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <button
-                onClick={() => window.history.back()}
-                className="p-2 hover:bg-blue-700/50 rounded-full transition-colors"
-              >
-                <FaAngleLeft className="w-6 h-6 text-white" />
-              </button>
-              <h1 className="text-2xl font-bold text-white">Messages</h1>
-            </div>
+    <div className="w-full h-full flex flex-col">
+      {/* Header */}
+      <div className="border-b p-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
             <button
-              onClick={() => window.location.href = '/message/supportchat'}
-              className="relative p-2 hover:bg-blue-700/50 rounded-full transition-colors"
+              onClick={() => window.history.back()}
+              className="p-2 hover:bg-blue-700/50 rounded-full transition-colors"
             >
-              <Image
-                src="/support.png"
-                alt="Support"
-                width={24}
-                height={24}
-                className="w-10 h-10"
-              />
-              {/* Unread indicator dot */}
-              {supportUnreadCount > 0 && (
-                <span className="absolute top-1 animate-pulse right-1 bg-red-500 rounded-full h-4 w-4"></span>
-              )}
+              <FaAngleLeft className="w-6 h-6 text-white" />
             </button>
+            <h1 className="text-2xl font-bold text-white">Messages</h1>
           </div>
-        </div>
-
-
-
-        {/* Messages List */}
-        <div className="flex-1 min-h-0 relative">
-          <MessageList />
-        </div>
-
-        {/* Floating Action Button */}
-        <div className="fixed bottom-28 right-6 z-50">
           <button
-            onClick={() => window.location.href = '/message/following'}
-            className="w-14 h-14 bg-gray-600 hover:bg-gray-700 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center"
+            onClick={() => window.location.href = '/message/supportchat'}
+            className="relative p-2 hover:bg-blue-700/50 rounded-full transition-colors"
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
+            <Image
+              src="/support.png"
+              alt="Support"
+              width={24}
+              height={24}
+              className="w-10 h-10"
+            />
+            {/* Unread indicator dot */}
+            {supportUnreadCount > 0 && (
+              <span className="absolute top-1 animate-pulse right-1 bg-red-500 rounded-full h-4 w-4"></span>
+            )}
           </button>
         </div>
       </div>
 
 
+
+      {/* Messages List */}
+      <div className="flex-1 min-h-0 relative overflow-hidden">
+        <MessageList />
+      </div>
+
+      {/* Floating Action Button */}
+      <div className="fixed bottom-28 right-6 z-50">
+        <button
+          onClick={() => window.location.href = '/message/following'}
+          className="w-14 h-14 bg-gray-600 hover:bg-gray-700 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center"
+        >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+          </svg>
+        </button>
+      </div>
     </div>
   );
 };

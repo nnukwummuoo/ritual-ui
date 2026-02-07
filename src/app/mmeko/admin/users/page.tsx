@@ -8,7 +8,7 @@ import PacmanLoader from "react-spinners/RingLoader";
 import { ToastContainer, toast } from "react-toastify";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "@/store/store";
-import { getalluser } from "@/store/admin";
+import { getalluser, searchUsersForNotification, reset_notification_users, clear_notification_users } from "@/store/admin";
 import { loginAuthUser } from "@/store/registerSlice";
 import { getprofile } from "@/store/profile";
 import { URL } from "@/api/config";
@@ -2102,7 +2102,18 @@ export default function Users(): JSX.Element {
   const profileStatus = useSelector((s: RootState) => s.profile.status);
   const usersFromStore = useSelector((s: RootState) => s.admin.alluser_list) as User[];
   const usersStatus = useSelector((s: RootState) => s.admin.alluser_stats);
+
+
   const pagination = useSelector((s: RootState) => s.admin.pagination);
+
+  const notificationUserList = useSelector((s: RootState) => s.admin.notificationUserList) as User[];
+  const notificationPagination = useSelector((s: RootState) => s.admin.notificationPagination);
+  const notificationSearchStatus = useSelector((s: RootState) => s.admin.notificationSearchStatus);
+
+  // Debounced search text for notification selector
+  const [debouncedNotificationSearch, setDebouncedNotificationSearch] = useState("");
+  const [notificationPage, setNotificationPage] = useState(1);
+
 
   useEffect(() => {
     // Ensure profile is loaded before enforcing admin gate
@@ -2197,7 +2208,44 @@ export default function Users(): JSX.Element {
     }, 500);
 
     return () => clearTimeout(timeoutId);
+    return () => clearTimeout(timeoutId);
   }, [search_text, male_click, female_click, admin_click]);
+
+
+  // Effect for debouncing notification user search
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedNotificationSearch(userSearchText);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [userSearchText]);
+
+  // Effect to fetch users for notification selector
+  useEffect(() => {
+    if (showUserSelector) {
+      // If search text changed, reset page to 1 (handled by setting page 1 when search changes logic? 
+      // No, we should rely on dependencies)
+
+      // Actually, better to just trigger fetch here based on dependencies
+      dispatch(searchUsersForNotification({
+        page: notificationPage,
+        limit: 20,
+        search: debouncedNotificationSearch,
+        gender: 'all', // The selector shows all users initially, filtering is done by search
+        filter: ''
+      }));
+    }
+  }, [showUserSelector, debouncedNotificationSearch, notificationPage, dispatch]);
+
+  // Reset notification users when selector is closed
+  useEffect(() => {
+    if (!showUserSelector) {
+      dispatch(clear_notification_users());
+      setNotificationPage(1);
+      setUserSearchText("");
+    }
+  }, [showUserSelector, dispatch]);
 
 
   // Fetch notifications when notifications tab is active
@@ -3373,7 +3421,10 @@ export default function Users(): JSX.Element {
                         <input
                           type="text"
                           value={userSearchText}
-                          onChange={(e) => setUserSearchText(e.target.value)}
+                          onChange={(e) => {
+                            setUserSearchText(e.target.value);
+                            setNotificationPage(1); // Reset page on search change
+                          }}
                           placeholder="Search users by name or username..."
                           className="flex-1 bg-gray-700 text-white px-3 py-2 rounded text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-500"
                         />
@@ -3390,95 +3441,57 @@ export default function Users(): JSX.Element {
 
                     {/* User List */}
                     <div className="max-h-64 overflow-y-auto p-2">
-                      {(() => {
-                        // Filter users based on search text
-                        const filteredUsers = user_list.filter((user) => {
-                          if (!userSearchText.trim()) return true;
-                          const searchLower = userSearchText.toLowerCase().trim();
-                          const fullName = `${user.firstname} ${user.lastname}`.toLowerCase();
-                          const username = (user.username || "").toLowerCase();
-                          return fullName.includes(searchLower) || username.includes(searchLower);
-                        });
-
-                        if (filteredUsers.length === 0) {
-                          return (
-                            <div className="text-center py-8">
-                              <p className="text-gray-400 text-sm">No users found</p>
-                            </div>
-                          );
-                        }
-
-                        return (
-                          <div className="space-y-1">
-                            {filteredUsers.map((user) => {
-                              const isSelected = selectedUserIds.includes(user._id);
-                              return (
-                                <label
-                                  key={user._id}
-                                  className={`flex items-center gap-3 p-2 rounded cursor-pointer transition-colors ${isSelected
-                                    ? 'bg-yellow-500/20 border border-yellow-500/50'
-                                    : 'hover:bg-gray-700'
-                                    }`}
-                                >
-                                  <input
-                                    type="checkbox"
-                                    checked={isSelected}
-                                    onChange={() => toggleUserSelection(user._id)}
-                                    className="w-4 h-4 text-yellow-500 focus:ring-yellow-500 focus:ring-2 rounded"
-                                  />
-                                  <div className="flex items-center gap-2 flex-1">
-                                    {(() => {
-                                      const profileImage = user.photolink;
-                                      const imageSource = getImageSource(profileImage || "", 'profile');
-                                      const initials = `${user.firstname?.[0] || ''}${user.lastname?.[0] || ''}`.toUpperCase();
-
-                                      return (
-                                        <div className="relative w-10 h-10 rounded-full overflow-hidden bg-gray-600 flex items-center justify-center flex-shrink-0">
-                                          {profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined" ? (
-                                            <img
-                                              src={imageSource.src}
-                                              alt="Profile"
-                                              className="w-full h-full object-cover"
-                                              onError={(e) => {
-                                                const target = e.currentTarget as HTMLImageElement;
-                                                target.style.display = 'none';
-                                                const nextElement = target.nextElementSibling as HTMLElement;
-                                                if (nextElement) nextElement.style.display = 'flex';
-                                              }}
-                                            />
-                                          ) : null}
-                                          <div className="absolute inset-0 bg-gray-600 flex items-center justify-center text-white text-xs font-bold" style={{ display: (!profileImage || profileImage === "null" || profileImage === "undefined") ? 'flex' : 'none' }}>
-                                            {initials || '?'}
-                                          </div>
-                                        </div>
-                                      );
-                                    })()}
-                                    <div className="flex-1 min-w-0">
-                                      <div className="flex items-center gap-2 flex-wrap">
-                                        <span className="text-white text-sm font-medium">
-                                          {user.firstname} {user.lastname}
-                                        </span>
-                                        {user.username && (
-                                          <span className="text-gray-400 text-xs">{user.username}</span>
-                                        )}
-                                        {user.creator_verified && (
-                                          <span className="px-1.5 py-0.5 rounded text-xs bg-blue-500 text-white">Creator</span>
-                                        )}
-                                        {user.isVip && (
-                                          <span className="px-1.5 py-0.5 rounded text-xs bg-yellow-500 text-black">VIP</span>
-                                        )}
+                      {notificationSearchStatus === 'loading' && notificationPage === 1 ? (
+                        <div className="text-center py-4 text-gray-400">Loading users...</div>
+                      ) : (
+                        <>
+                          {notificationUserList.map((user) => {
+                            const isSelected = selectedUserIds.includes(user._id);
+                            return (
+                              <div
+                                key={user._id}
+                                onClick={() => toggleUserSelection(user._id)}
+                                className={`flex items-center justify-between p-2 rounded cursor-pointer mb-1 ${isSelected ? "bg-yellow-500/20 border border-yellow-500" : "bg-gray-700 hover:bg-gray-600"
+                                  }`}
+                              >
+                                <div className="flex items-center gap-2">
+                                  <div className="w-8 h-8 rounded-full bg-gray-600 overflow-hidden flex-shrink-0">
+                                    {user.photolink && user.photolink !== "null" ? (
+                                      <img src={getImageSource(user.photolink, 'profile').src} alt="profile" className="w-full h-full object-cover" />
+                                    ) : (
+                                      <div className="w-full h-full flex items-center justify-center text-xs font-bold text-white">
+                                        {user.firstname?.[0]}{user.lastname?.[0]}
                                       </div>
-                                      <div className="text-gray-400 text-xs mt-0.5">
-                                        {user.gender} • {user.country}
-                                      </div>
-                                    </div>
+                                    )}
                                   </div>
-                                </label>
-                              );
-                            })}
-                          </div>
-                        );
-                      })()}
+                                  <div>
+                                    <p className="text-white text-sm font-medium">{user.firstname} {user.lastname}</p>
+                                    <p className="text-gray-400 text-xs">@{user.username || "no_username"}</p>
+                                  </div>
+                                </div>
+                                {isSelected && <span className="text-yellow-500 font-bold">✓</span>}
+                              </div>
+                            );
+                          })}
+
+                          {notificationSearchStatus === 'loading' && notificationPage > 1 && (
+                            <div className="text-center py-2 text-xs text-gray-400">Loading more...</div>
+                          )}
+
+                          {!notificationUserList.length && notificationSearchStatus !== 'loading' && (
+                            <div className="text-center py-4 text-gray-400">No users found</div>
+                          )}
+
+                          {notificationPagination?.hasNextPage && notificationSearchStatus !== 'loading' && (
+                            <button
+                              onClick={() => setNotificationPage(prev => prev + 1)}
+                              className="w-full py-2 text-yellow-500 text-xs hover:underline mt-2"
+                            >
+                              Load More Users
+                            </button>
+                          )}
+                        </>
+                      )}
                     </div>
                   </div>
                 )}

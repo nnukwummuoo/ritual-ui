@@ -66,7 +66,7 @@ const slides: HowItWorksSlide[] = [
     },
     {
         id: 9,
-        image: "/Card9.jpeg",
+        image: "/Card9.png",
         title: "Warning",
         description: "If a creator asks you to contact them on Telegram, WhatsApp, or to send money outside the platform, this is a scam. You will lose your money."
     },

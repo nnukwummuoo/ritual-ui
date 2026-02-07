@@ -41,6 +41,18 @@ type AdminState = {
         hasNextPage: boolean;
         hasPrevPage: boolean;
     };
+    // Notification User Selector State
+    notificationUserList: User[];
+    notificationPagination: {
+        page: number;
+        limit: number;
+        total: number;
+        totalPages: number;
+        hasNextPage: boolean;
+        hasPrevPage: boolean;
+    };
+    notificationSearchStatus: 'idle' | 'loading' | 'succeeded' | 'failed';
+    notificationSearchError: string;
 };
 type DeleteUserPhotoArgs = {
     creatorphoto: any[];
@@ -73,7 +85,18 @@ const initialState: AdminState = {
         totalPages: 0,
         hasNextPage: false,
         hasPrevPage: false
-    }
+    },
+    notificationUserList: [],
+    notificationPagination: {
+        page: 1,
+        limit: 20,
+        total: 0,
+        totalPages: 0,
+        hasNextPage: false,
+        hasPrevPage: false
+    },
+    notificationSearchStatus: "idle",
+    notificationSearchError: ""
 
 }
 
@@ -229,6 +252,37 @@ export const adminnotify = createAsyncThunk("admin/adminnotify", async data => {
 
 })
 
+// Async thunk for searching users specifically for notifications
+export const searchUsersForNotification = createAsyncThunk("admin/searchUsersForNotification", async (data: any) => {
+    try {
+        const requestData = {
+            userid: data.userid || "",
+            page: data.page || 1,
+            limit: data.limit || 20, // Default to 20 for selector
+            search: data.search || "",
+            gender: data.gender || "",
+            filter: data.filter || "",
+            includeStats: false // We don't need stats for the selector list
+        };
+
+        let response = await axios.post(`${URL}/getallusers`, requestData)
+        return response.data
+    } catch (err: any) {
+        if (axios.isAxiosError(err)) {
+            const status = err.response?.status
+            if (!err.response || status === 500) {
+                try {
+                    const retry = await axios.post(`${URL}/getallusers`, { page: 1, limit: 20 })
+                    return retry.data
+                } catch (inner) {
+                    throw getAxiosErrorMessage(inner);
+                }
+            }
+        }
+        throw getAxiosErrorMessage(err);
+    }
+})
+
 
 const admin = createSlice({
     name: "admin",
@@ -262,6 +316,22 @@ const admin = createSlice({
 
             state.marked_users = []
 
+        },
+        reset_notification_users(state) {
+            state.notificationUserList = [];
+            state.notificationPagination = {
+                page: 1,
+                limit: 20,
+                total: 0,
+                totalPages: 0,
+                hasNextPage: false,
+                hasPrevPage: false
+            };
+            state.notificationSearchStatus = 'idle';
+            state.notificationSearchError = '';
+        },
+        clear_notification_users(state) {
+            state.notificationUserList = [];
         },
     },
     extraReducers(builder) {
@@ -402,8 +472,42 @@ const admin = createSlice({
             }
 
             )
+            .addCase(searchUsersForNotification.pending, (state) => {
+                state.notificationSearchStatus = 'loading';
+            })
+            .addCase(searchUsersForNotification.fulfilled, (state, action) => {
+                state.notificationSearchStatus = 'succeeded';
+                const { users, pagination } = action.payload;
+
+                // If page is 1, replace list, otherwise append (for infinite scroll/load more)
+                // However, the action payload usually returns the whole page.
+                // It's cleaner to let the component handle "append" logic by checking page number,
+                // OR we can handle it here. 
+                // Let's Handle it here: if the request page > 1, append.
+                // But wait, the thunk doesn't know the request page easily unless passed in metadata.
+                // Actually, action.meta.arg contains the arguments.
+
+                const requestPage = action.meta.arg.page || 1;
+
+                if (requestPage === 1) {
+                    state.notificationUserList = users;
+                } else {
+                    // Filter out duplicates just in case
+                    const existingIds = new Set(state.notificationUserList.map(u => u._id));
+                    const newUsers = users.filter((u: User) => !existingIds.has(u._id));
+                    state.notificationUserList = [...state.notificationUserList, ...newUsers];
+                }
+
+                state.notificationPagination = pagination;
+            })
+            .addCase(searchUsersForNotification.rejected, (state, action) => {
+                state.notificationSearchStatus = 'failed';
+                state.notificationSearchError = action.error.message ?? "unknown error";
+            })
+
+
     }
 })
 
 export default admin.reducer;
-export const { reset_alluser, remove_user, add_user, clear_users } = admin.actions;
+export const { reset_alluser, remove_user, add_user, clear_users, reset_notification_users, clear_notification_users } = admin.actions;

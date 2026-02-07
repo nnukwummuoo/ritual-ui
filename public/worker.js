@@ -17,7 +17,7 @@ const VAPID_PUBLIC_KEY = 'BFOop0dhgbA4z797vPVoKUvMf_aTocG5baoucv2r14ZOv2xXwIc3QY
 self.addEventListener('push', (event) => {
   console.log('Push SW: Push event received', event);
   console.log('Push SW: Event data:', event.data ? event.data.text() : 'No data');
-  
+
   let notificationData = {
     title: 'MmeKo',
     body: 'You have a new notification',
@@ -48,27 +48,27 @@ self.addEventListener('push', (event) => {
     try {
       const pushData = event.data.json();
       console.log('Push SW: Push data parsed', pushData);
-      
+
       if (pushData.message) {
         notificationData.body = pushData.message;
       }
-      
+
       if (pushData.icon) {
         notificationData.icon = pushData.icon;
       }
-      
+
       if (pushData.title) {
         notificationData.title = pushData.title;
       }
-      
+
       if (pushData.url) {
         notificationData.data.url = pushData.url;
       }
-      
+
       if (pushData.userid) {
         notificationData.data.userid = pushData.userid;
       }
-      
+
       // Set different tags for different notification types
       if (pushData.type === 'message') {
         notificationData.tag = `mmeko-message-${Date.now()}`;
@@ -86,7 +86,7 @@ self.addEventListener('push', (event) => {
         // For any other type or no type, ensure unique tag
         notificationData.tag = `mmeko-general-${Date.now()}`;
       }
-      
+
     } catch (error) {
       console.error('Push SW: Error parsing push data', error);
       // Error parsing push data, using defaults
@@ -102,24 +102,24 @@ self.addEventListener('push', (event) => {
     noscreen: false, // Ensure notification shows on screen
     sticky: true // Keep notification visible
   };
-  
+
   // Chrome-specific notification handling
   const isChrome = /Chrome/.test(navigator.userAgent) && !/Edge/.test(navigator.userAgent);
-  
+
   console.log('Push SW: Showing notification with tag:', notificationData.tag);
-  
+
   const promiseChain = self.registration.showNotification(
     notificationData.title,
     notificationOptions
   ).then(() => {
     console.log('Push SW: Notification shown successfully with tag:', notificationData.tag);
-    
+
     // Additional check to ensure notification is actually visible
     return self.registration.getNotifications().then(notifications => {
-      
+
       if (notifications.length === 0 && isChrome) {
         console.log('Push SW: No notifications visible, trying Chrome-specific options');
-        
+
         // Try Chrome-specific notification options
         const chromeOptions = {
           body: notificationData.body,
@@ -143,10 +143,10 @@ self.addEventListener('push', (event) => {
             }
           ]
         };
-        
+
         return self.registration.showNotification(notificationData.title, chromeOptions);
       }
-      
+
     });
   }).catch((error) => {
     console.error('Push SW: Error showing notification, trying minimal options', error);
@@ -157,7 +157,7 @@ self.addEventListener('push', (event) => {
       badge: '/icons/m-logo.png',
       tag: notificationData.tag,
       requireInteraction: true
-    });   
+    });
   });
 
   event.waitUntil(promiseChain);
@@ -166,19 +166,19 @@ self.addEventListener('push', (event) => {
 // Notification click event
 self.addEventListener('notificationclick', (event) => {
   console.log('Push SW: Notification clicked', event);
-  
+
   event.notification.close();
-  
+
   const action = event.action;
   const notificationData = event.notification.data || {};
-  
+
   let urlToOpen = notificationData.url || '/';
-  
+
   // Handle different actions
   if (action === 'close') {
     return;
   }
-  
+
   // Open the app
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
@@ -190,7 +190,7 @@ self.addEventListener('notificationclick', (event) => {
           return;
         }
       }
-      
+
       // Open new window if app is not open
       if (clients.openWindow) {
         return clients.openWindow(urlToOpen);
@@ -202,7 +202,7 @@ self.addEventListener('notificationclick', (event) => {
 // Background sync for offline notifications
 self.addEventListener('sync', (event) => {
   console.log('Push SW: Background sync event', event.tag);
-  
+
   if (event.tag === 'notification-sync') {
     event.waitUntil(
       // Handle any pending notifications
@@ -212,15 +212,15 @@ self.addEventListener('sync', (event) => {
 });
 
 // Handle push subscription changes
-self.addEventListener('pushsubscriptionchange', function(event) {
+self.addEventListener('pushsubscriptionchange', function (event) {
   console.log('Push SW: Push subscription changed', event);
-  
+
   event.waitUntil(
     // Re-subscribe to push notifications
     self.registration.pushManager.subscribe({
       userVisibleOnly: true,
       applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
-    }).then(function(subscription) {
+    }).then(function (subscription) {
       // Send new subscription to server
       return fetch('/api/push/subscribe', {
         method: 'POST',
@@ -250,11 +250,11 @@ function urlBase64ToUint8Array(base64String) {
 }
 
 // Handle errors
-self.addEventListener('error', function(event) {
+self.addEventListener('error', function (event) {
   console.error('Push SW: Error', event);
 });
 
-self.addEventListener('unhandledrejection', function(event) {
+self.addEventListener('unhandledrejection', function (event) {
   console.error('Push SW: Unhandled rejection', event);
 });
 
@@ -262,31 +262,67 @@ console.log('Unified Service Worker: Loaded with PWA and Push Notification suppo
 
 // --- END PUSH NOTIFICATION LOGIC ---
 
+
 // --- WORKBOX PRECACHE ---
 // Workbox will inject its precache manifest here during build
 // The manifest will be injected as self.__WB_MANIFEST
 // IMPORTANT: self.__WB_MANIFEST must be referenced directly for next-pwa to inject it
+
+// Cache versioning
+const CACHE_VERSION = 'v1.0.1';
+const CACHE_PREFIX = 'mmeko-cache';
+const CURRENT_CACHE = `${CACHE_PREFIX}-${CACHE_VERSION}`;
+
+// Cleanup old caches on activate
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    caches.keys().then((cacheNames) => {
+      return Promise.all(
+        cacheNames.map((cacheName) => {
+          if (cacheName.startsWith(CACHE_PREFIX) && cacheName !== CURRENT_CACHE) {
+            console.log('SW: Deleting old cache:', cacheName);
+            return caches.delete(cacheName);
+          }
+        })
+      );
+    })
+  );
+  // Take control immediately
+  self.clients.claim();
+});
 
 // Register runtime caching routes when Workbox is available
 if (typeof workbox !== 'undefined' && workbox.routing && workbox.strategies && workbox.precaching) {
   // Precache all assets from the manifest
   // wbManifest contains self.__WB_MANIFEST which was replaced by next-pwa during build
   workbox.precaching.precacheAndRoute(wbManifest);
-  
+
   // Clean up outdated caches
   workbox.precaching.cleanupOutdatedCaches();
-  
-  // Claim clients immediately
-  workbox.core.clientsClaim();
-  
+
   // Skip waiting
   self.skipWaiting();
 
   // --- RUNTIME CACHING STRATEGIES ---
   const { registerRoute } = workbox.routing;
-  const { CacheFirst, NetworkFirst, StaleWhileRevalidate } = workbox.strategies;
+  const { CacheFirst, NetworkFirst, StaleWhileRevalidate, NetworkOnly } = workbox.strategies;
   const { ExpirationPlugin } = workbox.expiration;
   const { RangeRequestsPlugin } = workbox.rangeRequests;
+
+  // 1. DYNAMIC ROUTES - NO CACHE (NetworkOnly)
+  // Essential for preventing stale data on sensitive pages
+
+  // API Calls - Network only (failed previous NetworkFirst might show stale data)
+  // or NetworkFirst with very short timeout if offline support is needed.
+  // Given the requirement "stale data persisting", NetworkOnly or NetworkFirst w/ short cache is safer.
+  // The user specifically complained about "close and reopen" persistence.
+
+  registerRoute(
+    ({ url }) => url.pathname.startsWith('/api/') ||
+      url.pathname.startsWith('/message/') ||
+      url.pathname.startsWith('/profile/'),
+    new NetworkOnly()
+  );
 
   // Google Fonts - CacheFirst
   registerRoute(
@@ -416,7 +452,7 @@ if (typeof workbox !== 'undefined' && workbox.routing && workbox.strategies && w
     })
   );
 
-  // API Cache - NetworkFirst with timeout
+  // Specific API fallback for other routes
   registerRoute(
     /^https:\/\/mmekoapi\.onrender\.com\/.*/i,
     new NetworkFirst({

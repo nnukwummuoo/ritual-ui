@@ -7,6 +7,12 @@ const nextConfig: any = {
   typescript: {
     ignoreBuildErrors: true,
   },
+  experimental: {
+    staleTimes: {
+      dynamic: 0, // No cache for dynamic routes
+      static: 180, // 3 minutes for static pages
+    },
+  },
   images: {
     unoptimized: true,
     remotePatterns: [

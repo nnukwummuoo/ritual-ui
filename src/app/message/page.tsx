@@ -6,5 +6,6 @@ export const metadata = {
   description: "View your messages here",
 }
 export default function page() {
-    return <MessageView />
+  console.log('📄 [Message Page] Rendered');
+  return <MessageView />
 }

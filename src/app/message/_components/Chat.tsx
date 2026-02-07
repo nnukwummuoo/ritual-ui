@@ -411,14 +411,33 @@ export const Chat = () => {
   React.useEffect(() => {
     // Ensure viewport meta tag is set for mobile
     const viewport = document.querySelector('meta[name="viewport"]');
+    let originalContent = ''; // Store original content to restore later
+
     if (viewport) {
+      originalContent = viewport.getAttribute('content') || '';
+      console.log('📱 [Chat] Changing Viewport (Mount):', {
+        before: originalContent,
+        new: 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover'
+      });
       viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover');
     } else {
+      console.log('📱 [Chat] Creating Viewport (Mount)');
       const meta = document.createElement('meta');
       meta.name = 'viewport';
       meta.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover';
       document.head.appendChild(meta);
     }
+
+    // Cleanup function to restore original viewport
+    return () => {
+      console.log('📱 [Chat] Restoring Viewport (Unmount):', {
+        restoringTo: originalContent,
+        current: viewport?.getAttribute('content')
+      });
+      if (viewport && originalContent) {
+        viewport.setAttribute('content', originalContent);
+      }
+    };
   }, []);
 
   // Check if VIP celebration should be shown (database-based)
@@ -1661,17 +1680,14 @@ export const Chat = () => {
 
 
   return (
-    <div className="h-screen w-full flex flex-col fixed inset-0" style={{
+    <div className="h-screen w-full flex flex-col fixed inset-0 bg-gray-900" style={{
       WebkitOverflowScrolling: 'touch',
       overscrollBehavior: 'contain',
       touchAction: 'pan-y',
       height: '100dvh', // Dynamic viewport height for mobile
       maxHeight: '100dvh',
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0
+      position: 'relative',
+      paddingBottom: 'env(safe-area-inset-bottom, 0px)'
     }}>
       {/* VIP Celebration Animation */}
       {showVipCelebration && (
@@ -1815,7 +1831,7 @@ export const Chat = () => {
           </div>
         ) : (
           <div className="space-y-4 w-full max-w-4xl mx-auto" style={{
-            paddingBottom: 'calc(6rem + env(safe-area-inset-bottom, 0px))'
+            paddingBottom: 'calc(120px + env(safe-area-inset-bottom, 0px))' // Increased to 120px to fully clear input bar + spacing
           }}>
             {messagelist()}
           </div>
