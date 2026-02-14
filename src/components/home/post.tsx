@@ -707,7 +707,7 @@ export default function PostsCard() {
                     isFirstPost={false}
                   />
                 </div>
-                {/* Inject Safety Rules banner after the first LazyPost (index 0) */}
+               
                 {/* Inject How It Works card at index 0 (both mobile and desktop) */}
                 {index === 0 && (
                   <div className="mx-auto max-w-[30rem] w-full">
@@ -715,7 +715,7 @@ export default function PostsCard() {
                   </div>
                 )}
                 {/* Inject Creator Cards after index 0 */}
-                {index === 1 && (
+                {index === 0 && (
                   <div className="lg:hidden">
                     <CreatorCards />
                   </div>
