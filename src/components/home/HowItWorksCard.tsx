@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useRef, useEffect } from "react";
-import { IoChevronBackOutline, IoChevronForwardOutline } from "react-icons/io5";
+import { IoChevronBackOutline, IoChevronForwardOutline, IoChevronDownOutline } from "react-icons/io5";
 import Image from "next/image";
 
 interface HowItWorksSlide {
@@ -10,7 +10,7 @@ interface HowItWorksSlide {
     description: string;
 }
 
-const slides: HowItWorksSlide[] = [
+const baseSlides: HowItWorksSlide[] = [
     {
         id: 1,
         image: "/Card1.png",
@@ -72,12 +72,48 @@ const slides: HowItWorksSlide[] = [
     },
 ];
 
+type TutorialType = "Fan meet" | "Fan date" | "Fan call";
+
 const HowItWorksCard: React.FC = () => {
     const [currentSlide, setCurrentSlide] = useState(0);
     const [isDragging, setIsDragging] = useState(false);
     const [startX, setStartX] = useState(0);
     const [scrollLeft, setScrollLeft] = useState(0);
     const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+    const [tutorialType, setTutorialType] = useState<TutorialType>("Fan meet");
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const dropdownRef = useRef<HTMLDivElement>(null);
+
+    // Close dropdown when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                setIsDropdownOpen(false);
+            }
+        };
+
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
+
+    // Generate slides based on tutorial type
+    const getSlides = (): HowItWorksSlide[] => {
+        if (tutorialType === "Fan meet") return baseSlides;
+
+        const targetWord = tutorialType === "Fan date" ? "Date" : "Call";
+        const targetLower = targetWord.toLowerCase();
+
+        return baseSlides.map(slide => ({
+            ...slide,
+            title: slide.title.replace(/Meet/g, targetWord).replace(/meet/g, targetLower),
+            description: slide.description.replace(/fan meet/g, `fan ${targetLower}`).replace(/meet/g, targetLower)
+        }));
+    };
+
+    const slides = getSlides();
 
     const nextSlide = () => {
         setCurrentSlide((prev) => (prev + 1) % slides.length);
@@ -140,11 +176,17 @@ const HowItWorksCard: React.FC = () => {
         setIsDragging(false);
     };
 
+    const handleTypeSelect = (type: TutorialType) => {
+        setTutorialType(type);
+        setIsDropdownOpen(false);
+        setCurrentSlide(0); // Reset to first slide when changing type
+    };
+
     return (
         <div className="w-full bg-gradient-to-br from-purple-900/30 via-gray-800/50 to-blue-900/30 rounded-xl overflow-hidden border border-purple-500/20 shadow-lg shadow-purple-900/20">
             {/* Header */}
-            <div className="p-4 md:p-6 pb-3">
-                <div className="flex items-center justify-between">
+            <div className="p-4 md:p-6 pb-3 relative">
+                <div className="flex items-start justify-between">
                     <div>
                         <h3 className="text-white font-semibold text-lg md:text-xl">
                             How it works
@@ -153,28 +195,68 @@ const HowItWorksCard: React.FC = () => {
                             Your complete guide
                         </p>
                     </div>
+
                     <div className="flex items-center gap-2">
+                        {/* More Tutorial Dropdown */}
+                        <div className="relative" ref={dropdownRef}>
+                            <button
+                                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                                className="flex items-center gap-1.5 px-3 py-1.5 bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 text-xs md:text-sm font-medium rounded-full transition-all border border-purple-500/30"
+                            >
+                                More tutorial
+                                <IoChevronDownOutline className={`w-3.5 h-3.5 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} />
+                            </button>
+
+                            {/* Dropdown Menu */}
+                            {isDropdownOpen && (
+                                <div className="absolute right-0 top-full mt-2 w-40 bg-gray-900 border border-purple-500/20 rounded-xl shadow-xl z-20 overflow-hidden backdrop-blur-xl">
+                                    <div className="py-1">
+                                        {(["Fan meet", "Fan date", "Fan call"] as TutorialType[]).map((type) => (
+                                            <button
+                                                key={type}
+                                                onClick={() => handleTypeSelect(type)}
+                                                className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${tutorialType === type
+                                                        ? "bg-purple-600/20 text-purple-300 font-medium"
+                                                        : "text-gray-300 hover:bg-white/5 hover:text-white"
+                                                    }`}
+                                            >
+                                                {type}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
                         {/* Navigation arrows - Desktop */}
-                        <button
-                            onClick={prevSlide}
-                            className="hidden md:flex p-2 rounded-full bg-purple-500/20 hover:bg-purple-500/30 text-white transition-colors"
-                            aria-label="Previous slide"
-                        >
-                            <IoChevronBackOutline className="w-5 h-5" />
-                        </button>
-                        <button
-                            onClick={nextSlide}
-                            className="hidden md:flex p-2 rounded-full bg-purple-500/20 hover:bg-purple-500/30 text-white transition-colors"
-                            aria-label="Next slide"
-                        >
-                            <IoChevronForwardOutline className="w-5 h-5" />
-                        </button>
+                        <div className="hidden md:flex gap-2 ml-2">
+                            <button
+                                onClick={prevSlide}
+                                className="p-2 rounded-full bg-purple-500/20 hover:bg-purple-500/30 text-white transition-colors"
+                                aria-label="Previous slide"
+                            >
+                                <IoChevronBackOutline className="w-5 h-5" />
+                            </button>
+                            <button
+                                onClick={nextSlide}
+                                className="p-2 rounded-full bg-purple-500/20 hover:bg-purple-500/30 text-white transition-colors"
+                                aria-label="Next slide"
+                            >
+                                <IoChevronForwardOutline className="w-5 h-5" />
+                            </button>
+                        </div>
                     </div>
                 </div>
 
-                {/* Slide counter */}
-                <div className="text-purple-300 text-xs md:text-sm font-medium mt-3">
-                    Step {currentSlide + 1} of {slides.length}
+                {/* Slide counter and Title update */}
+                <div className="flex items-center gap-2 mt-3">
+                    <span className="text-purple-300 text-xs md:text-sm font-medium">
+                        Step {currentSlide + 1} of {slides.length}
+                    </span>
+                    <span className="text-gray-500 text-xs">•</span>
+                    <span className="text-gray-400 text-xs md:text-sm font-medium">
+                        {tutorialType}
+                    </span>
                 </div>
             </div>
 
