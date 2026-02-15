@@ -36,6 +36,7 @@ const publicRoutePrefixes = [
   '/api/proxy', // All proxy API routes (including stories for non-logged-in users)
   '/api/image-proxy', // Image proxy routes
   '/api/simple-image-proxy', // Simple image proxy routes
+  '/Profile', // Allow guest access to profiles
 ];
 
 // Admin routes that require admin privileges

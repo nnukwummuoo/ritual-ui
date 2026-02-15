@@ -25,7 +25,7 @@ const VideoPreview = React.memo(function VideoPreview({ src }: { src: string }) 
   });
 
   return (
-    <div className="relative w-full max-h-64 rounded-lg overflow-hidden">
+    <div className="relative w-full aspect-[4/5] rounded-lg overflow-hidden bg-black">
       <video
         ref={videoRef}
         src={src}
@@ -36,7 +36,7 @@ const VideoPreview = React.memo(function VideoPreview({ src }: { src: string }) 
         onClick={togglePlay}
       />
       {!isPlaying && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30">
+        <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 pointer-events-none">
           <div className="w-16 h-16 bg-black bg-opacity-50 rounded-full flex items-center justify-center">
             <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
               <polygon points="5 3 19 12 5 21 5 3"></polygon>
@@ -67,7 +67,7 @@ export default function UploadExclusivePage() {
         const data = JSON.parse(raw);
         return data?.userID || "";
       }
-    } catch {}
+    } catch { }
     return "";
   })() : "";
 
@@ -103,15 +103,15 @@ export default function UploadExclusivePage() {
               const data = JSON.parse(raw);
               return data?.refreshtoken || data?.accesstoken || "";
             }
-          } catch {}
+          } catch { }
           return "";
         })();
 
         // Fetch all exclusive posts and find the one with matching ID
-        const response = await axios.post(`${API_URL}/getallExclusivePosts`, 
-          { userid: routeUserId }, 
-          { 
-            headers: { 
+        const response = await axios.post(`${API_URL}/getallExclusivePosts`,
+          { userid: routeUserId },
+          {
+            headers: {
               'Content-Type': 'application/json',
               'Authorization': `Bearer ${authToken}`
             },
@@ -130,7 +130,7 @@ export default function UploadExclusivePage() {
             setEditingPost(post);
             setExclusiveContentDescription(post.content || "");
             setExclusiveContentPrice(post.price?.toString() || "");
-            
+
             // Set existing media with proxy URL
             if (post.postfilelink) {
               const imageSource = getImageSource(post.postfilelink, 'post');
@@ -160,8 +160,8 @@ export default function UploadExclusivePage() {
     if (file) {
       // Check file size based on file type
       const maxImageSize = 5 * 1024 * 1024; // 5MB in bytes
-      const maxVideoSize = 10 * 1024 * 1024; // 10MB in bytes
-      
+      const maxVideoSize = 50 * 1024 * 1024; // 50MB in bytes
+
       if (file.type.startsWith('image/')) {
         if (file.size > maxImageSize) {
           setFileSizeError({
@@ -177,7 +177,7 @@ export default function UploadExclusivePage() {
         if (file.size > maxVideoSize) {
           setFileSizeError({
             title: "File Too Large",
-            message: "Max size is 10 MB. Please trim or compress before uploading."
+            message: "Max size is 50 MB. Please trim or compress before uploading."
           });
           setShowFileSizeError(true);
           // Reset the input
@@ -185,7 +185,7 @@ export default function UploadExclusivePage() {
           return;
         }
       }
-      
+
       // File size is valid, proceed with file selection
       setExclusiveContentFile(file);
       setExistingMediaUrl(null); // Clear existing media when new file is selected
@@ -232,7 +232,7 @@ export default function UploadExclusivePage() {
             const data = JSON.parse(raw);
             return data?.refreshtoken || data?.accesstoken || "";
           }
-        } catch {}
+        } catch { }
         return "";
       })();
 
@@ -245,7 +245,7 @@ export default function UploadExclusivePage() {
       if (isEditMode && editingPost) {
         // Update existing post
         const formData = new FormData();
-        
+
         // Only append file if a new one is selected
         if (exclusiveContentFile) {
           formData.append("file", exclusiveContentFile);
@@ -325,7 +325,7 @@ export default function UploadExclusivePage() {
             <h2 className="text-xl font-semibold text-white">
               {isEditMode ? "Edit Exclusive Content" : "Upload Exclusive Content"}
             </h2>
-         
+
           </div>
 
           {/* Content */}
@@ -348,7 +348,7 @@ export default function UploadExclusivePage() {
                           <img
                             src={exclusiveContentPreview}
                             alt="Preview"
-                            className="max-h-64 mx-auto rounded-lg"
+                            className="w-full aspect-[4/5] object-cover mx-auto rounded-lg"
                           />
                         ) : exclusiveContentFile?.type.startsWith('video/') ? (
                           <VideoPreview src={exclusiveContentPreview} />
@@ -372,7 +372,7 @@ export default function UploadExclusivePage() {
                           <img
                             src={existingMediaUrl}
                             alt="Current content"
-                            className="max-h-64 mx-auto rounded-lg"
+                            className="w-full aspect-[4/5] object-cover mx-auto rounded-lg"
                           />
                         ) : existingMediaType === "video" ? (
                           <VideoPreview src={existingMediaUrl} />
@@ -408,47 +408,47 @@ export default function UploadExclusivePage() {
                   </div>
                 </div>
 
-            {/* Content/Description Input */}
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Description
-              </label>
-              <textarea
-                value={exclusiveContentDescription}
-                onChange={(e) => setExclusiveContentDescription(e.target.value)}
-                placeholder="Add a description for your exclusive content..."
-                rows={3}
-                className="w-full px-4 py-2 bg-gray-800 dark:bg-gray-700 border border-gray-600 dark:border-gray-500 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 resize-none"
-              />
-            </div>
+                {/* Content/Description Input */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Description
+                  </label>
+                  <textarea
+                    value={exclusiveContentDescription}
+                    onChange={(e) => setExclusiveContentDescription(e.target.value)}
+                    placeholder="Add a description for your exclusive content..."
+                    rows={3}
+                    className="w-full px-4 py-2 bg-gray-800 dark:bg-gray-700 border border-gray-600 dark:border-gray-500 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 resize-none"
+                  />
+                </div>
 
-            {/* Price Input */}
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2 flex items-center gap-2">
-                Price
-                <span className="text-yellow-400 text-lg">🪙</span>
-              </label>
-              <div className="relative">
-                <input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={exclusiveContentPrice}
-                  onChange={(e) => setExclusiveContentPrice(e.target.value)}
-                  placeholder="0.00"
-                  className="w-full px-4 py-2 pr-10 bg-gray-800 dark:bg-gray-700 border border-gray-600 dark:border-gray-500 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPriceTooltip(true)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-orange-500 transition-colors focus:outline-none"
-                  aria-label="Price recommendation info"
-                >
-                  <HelpCircle className="w-5 h-5" />
-                </button>
-              </div>
-              <p className="text-xs text-gray-500 mt-1">Set the price for this exclusive content in gold </p>
-            </div>
+                {/* Price Input */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2 flex items-center gap-2">
+                    Price
+                    <span className="text-yellow-400 text-lg">🪙</span>
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={exclusiveContentPrice}
+                      onChange={(e) => setExclusiveContentPrice(e.target.value)}
+                      placeholder="0.00"
+                      className="w-full px-4 py-2 pr-10 bg-gray-800 dark:bg-gray-700 border border-gray-600 dark:border-gray-500 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPriceTooltip(true)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-orange-500 transition-colors focus:outline-none"
+                      aria-label="Price recommendation info"
+                    >
+                      <HelpCircle className="w-5 h-5" />
+                    </button>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">Set the price for this exclusive content in gold </p>
+                </div>
 
                 {/* Submit Button */}
                 <div className="flex gap-3">
@@ -463,8 +463,8 @@ export default function UploadExclusivePage() {
                     disabled={isUploadingExclusive}
                     className="flex-1 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {isUploadingExclusive 
-                      ? (isEditMode ? "Updating..." : "Uploading...") 
+                    {isUploadingExclusive
+                      ? (isEditMode ? "Updating..." : "Uploading...")
                       : (isEditMode ? "Update" : "Upload")}
                   </button>
                 </div>
