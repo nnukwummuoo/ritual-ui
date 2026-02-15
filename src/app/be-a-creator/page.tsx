@@ -23,7 +23,7 @@ export default function VerificationPage(){
       title: "Keep 100% of Your Earnings",
       subtitle: "Forever",
       description:
-        "Unlike other platforms, we take 0%. Every cent you make from Fan Meets, Fan Dates, and Fan Calls is yours.",
+        "Unlike other platforms, we take 0%. Every cent you make from Fan Meets, Fan Dates, Fan Calls, and Exclusive Contents is yours.",
     },
     {
       icon: FaCreditCard,

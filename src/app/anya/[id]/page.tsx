@@ -288,7 +288,7 @@ export default function StoryViewPage() {
         return (
             <div className="min-h-screen bg-black flex items-center justify-center">
                 <div className="text-center text-white">
-                    <h2 className="text-2xl font-bold mb-4">Rituals not found</h2>
+                    <h2 className="text-2xl font-bold mb-4">This Ritual has passed, You missed it</h2>
                     <button
                         onClick={() => router.push('/anya')}
                         className="px-6 py-3 bg-purple-600 rounded-full hover:bg-purple-700 transition-colors"
