@@ -723,7 +723,7 @@ export const markActivityNotificationsSeen = createAsyncThunk<
 // Fetch ALL ratings for a creator (both fan-to-creator and creator-to-creator)
 export const getAllCreatorRatings = createAsyncThunk<
   { ratings: any[]; totalRatings: number; averageRating: number; ratingCounts: any },
-  { creatorId: string; token: string }
+  { creatorId: string; token?: string }
 >("profile/getAllCreatorRatings", async (data) => {
   try {
 
@@ -749,7 +749,7 @@ export const getAllCreatorRatings = createAsyncThunk<
 // Fetch ratings for a creator (original - only fan-to-creator)
 export const getCreatorRatings = createAsyncThunk<
   { ratings: any[]; totalRatings: number; averageRating: number; ratingCounts: any },
-  { creatorId: string; token: string }
+  { creatorId: string; token?: string }
 >("profile/getCreatorRatings", async (data) => {
   try {
     const headers = data.token
@@ -773,7 +773,7 @@ export const getCreatorRatings = createAsyncThunk<
 // Fetch ALL ratings for a user (for user profile page)
 export const getAllUserRatings = createAsyncThunk<
   { ratings: any[]; totalRatings: number; averageRating: number; ratingCounts: any },
-  { userId: string; token: string }
+  { userId: string; token?: string }
 >("profile/getAllUserRatings", async (data) => {
   try {
     const headers = data.token
@@ -797,7 +797,7 @@ export const getAllUserRatings = createAsyncThunk<
 // Fetch ratings for a fan
 export const getFanRatings = createAsyncThunk<
   { ratings: any[]; totalRatings: number; averageRating: number; ratingCounts: any },
-  { fanId: string; token: string }
+  { fanId: string; token?: string }
 >("profile/getFanRatings", async (data) => {
   try {
     const headers = data.token

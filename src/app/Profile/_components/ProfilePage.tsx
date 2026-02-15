@@ -886,9 +886,9 @@ export const Profile = () => {
 
   useEffect(() => {
 
-    if (targetUserId && token) {
+    if (targetUserId) {
 
-      if (isViewingOwnProfile) {
+      if (isViewingOwnProfile && token) {
 
         // For current user's own profile, use regular getfollow
 
@@ -896,13 +896,21 @@ export const Profile = () => {
 
         dispatch(getAllUsers({ token, userid: String(targetUserId) }));
 
-      } else {
+      } else if (!isViewingOwnProfile) {
 
         // For other user's profile, use viewing profile thunks
+        // Pass token if available, otherwise it might just fetch public data if backend allows (or we might need to skip this for guests if backend requires token)
+        // Assuming getViewingFollow might need token, but let's see. If it fails, it fails gracefully? 
+        // Actually, preventing the call if no token for follow status is safer unless we want to see followers publicly.
+        // But for guest access, we might not need follow status.
+        if (token) {
+          dispatch(getViewingFollow({ userid: String(targetUserId), token }));
+        }
 
-        dispatch(getViewingFollow({ userid: String(targetUserId), token }));
-
-        dispatch(getAllUsersForViewing({ token }));
+        // For getAllUsersForViewing, likely needs token. 
+        if (token) {
+          dispatch(getAllUsersForViewing({ token }));
+        }
 
       }
 
@@ -926,22 +934,23 @@ export const Profile = () => {
 
       // Use the target user ID (the profile we're viewing) for getfollow
 
-      if (targetUserId && token) {
+      if (targetUserId) {
 
-        if (isViewingOwnProfile) {
+        if (isViewingOwnProfile && token) {
 
           dispatch(getfollow({ userid: String(targetUserId), token }));
 
           dispatch(getAllUsers({ token, userid: String(targetUserId) }));
 
-        } else {
+        } else if (!isViewingOwnProfile) {
 
-          dispatch(getViewingFollow({ userid: String(targetUserId), token }));
-
-          dispatch(getAllUsersForViewing({ token }));
+          if (token) {
+            dispatch(getViewingFollow({ userid: String(targetUserId), token }));
+            dispatch(getAllUsersForViewing({ token }));
+          }
 
           // Also fetch the current logged-in user's following list for star icon
-          if (loggedInUserId) {
+          if (loggedInUserId && token) {
             dispatch(getfollow({ userid: String(loggedInUserId), token }));
           }
 
@@ -1195,7 +1204,7 @@ export const Profile = () => {
 
   const fetchUserPosts = React.useCallback(async (userId: string) => {
 
-    if (!userId || !token) {
+    if (!userId) { // Removed token check to allow guest access
 
       return;
 
@@ -1210,6 +1219,17 @@ export const Profile = () => {
     try {
 
       // Use the URL constant from config for backend requests
+      // For guest access, we might not have a token. 
+      // If the backend requires a token, we might need to handle 401s or use a public endpoint.
+      // Assuming getalluserpost is public as per analysis.
+
+      const headers: any = {
+        'Content-Type': 'application/json',
+      };
+
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
 
       const response = await axios.post(`${API_URL}/getalluserpost`,
 
@@ -1223,13 +1243,7 @@ export const Profile = () => {
 
         {
 
-          headers: {
-
-            'Content-Type': 'application/json',
-
-            'Authorization': `Bearer ${token}`
-
-          },
+          headers,
 
           timeout: 10000
 
@@ -1567,7 +1581,12 @@ export const Profile = () => {
       e.stopPropagation();
     }
 
-    if (!loggedInUserId || !token || !post) return;
+    if (!loggedInUserId || !token) {
+      toast.error("Please login to purchase exclusive content");
+      return;
+    }
+
+    if (!post) return;
 
 
 
@@ -1592,9 +1611,9 @@ export const Profile = () => {
 
   const fetchExclusivePosts = React.useCallback(async (userId: string) => {
 
-    if (!userId || !token) {
+    if (!userId) {
 
-      console.log('[fetchExclusivePosts] Skipping - missing userId or token');
+      console.log('[fetchExclusivePosts] Skipping - missing userId');
 
       return;
 
@@ -1610,19 +1629,21 @@ export const Profile = () => {
 
     try {
 
+      const headers: any = {
+        'Content-Type': 'application/json',
+      };
+
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
       const response = await axios.post(`${API_URL}/getallExclusivePosts`,
 
         { userid: userId },
 
         {
 
-          headers: {
-
-            'Content-Type': 'application/json',
-
-            'Authorization': `Bearer ${token}`
-
-          },
+          headers,
 
           timeout: 20000
 
@@ -1864,9 +1885,11 @@ export const Profile = () => {
 
   // Fetch posts and reviews when profile is loaded - ONLY for the specific user being viewed
 
+  // Fetch posts and reviews when profile is loaded - ONLY for the specific user being viewed
+
   useEffect(() => {
 
-    if (targetUserId && token) {
+    if (targetUserId) {
 
       // Add a small delay to ensure other API calls complete first
 
@@ -1874,13 +1897,15 @@ export const Profile = () => {
 
         fetchUserPosts(String(targetUserId));
 
+        // Exclusive posts might require token? Let's assume it's like regular posts for now, 
+        // but likely locked content won't be viewable. 
+        // However, we want to show the LOCKED posts.
         fetchExclusivePosts(String(targetUserId));
 
 
 
         // Always fetch fan ratings (creator-to-fan) for all users
-
-        dispatch(getFanRatings({ fanId: String(targetUserId), token }));
+        dispatch(getFanRatings({ fanId: String(targetUserId), token: token || "" }));
 
       }, 500);
 
@@ -1912,7 +1937,7 @@ export const Profile = () => {
 
   useEffect(() => {
 
-    if (targetUserId && token && profileData) {
+    if (targetUserId && profileData) {
 
       const creatorId = (profileData as any)?.creator_portfolio_id || targetUserId;
 
@@ -1938,7 +1963,7 @@ export const Profile = () => {
 
           fetchedCreatorsRef.current.add(creatorId);
 
-          dispatch(getAllUserRatings({ userId: creatorId, token }));
+          dispatch(getAllUserRatings({ userId: creatorId, token: token || "" }));
 
         }
 
@@ -1964,7 +1989,7 @@ export const Profile = () => {
 
   const onFollowClick = async () => {
 
-    if (!loggedInUserId || !targetUserId || isProcessing) {
+    if (!targetUserId || isProcessing) {
 
       return;
 
@@ -2002,7 +2027,9 @@ export const Profile = () => {
 
     if (!authToken) {
 
-      alert("Please log in to follow/unfollow users");
+      toast.error("Please log in to follow/unfollow users");
+      // Use router.push to redirect to login if desired, or just show toast
+      // router.push('/auth/login');
 
       return;
 
@@ -2660,7 +2687,7 @@ export const Profile = () => {
 
   // Video Component for profile modal - using the same approach as FirstPost and RemainingPosts
 
-  const VideoComponent = React.memo(function VideoComponent({ post, src, pathUrlPrimary, queryUrlFallback, pathUrlFallback, isFirstVideo = false }: {
+  const VideoComponent = React.memo(function VideoComponent({ post, src, pathUrlPrimary, queryUrlFallback, pathUrlFallback, isFirstVideo = false, className }: {
 
     post: any;
 
@@ -2673,6 +2700,8 @@ export const Profile = () => {
     pathUrlFallback?: string;
 
     isFirstVideo?: boolean;
+
+    className?: string;
 
   }) {
 
@@ -2732,7 +2761,7 @@ export const Profile = () => {
 
     return (
 
-      <div className="relative w-full h-[400px] rounded overflow-hidden">
+      <div className={`relative w-full rounded overflow-hidden ${className || 'h-[400px]'}`}>
 
         {/* Video skeleton - show while video is loading */}
 
@@ -2818,7 +2847,7 @@ export const Profile = () => {
 
             playsInline
 
-            className="w-full h-[400px] object-cover rounded cursor-pointer"
+            className="w-full h-full object-cover rounded cursor-pointer"
 
             onLoadedData={(e) => {
               const video = e.currentTarget as HTMLVideoElement;
@@ -5152,525 +5181,411 @@ export const Profile = () => {
 
                       </div>
 
+                      {/* Dropdown Menu - Moved to top right */}
+                      <div className="relative exclusive-post-dropdown">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleDropdown(String(postId));
+                          }}
+                          className="text-gray-400 hover:text-white transition-colors p-2"
+                          title="More options"
+                        >
+                          <MoreHorizontal className="w-5 h-5" />
+                        </button>
+                        {openDropdowns.has(String(postId)) && (
+                          <div
+                            className="absolute right-0 top-full mt-2 w-48 rounded-md shadow-lg bg-gray-800 ring-1 ring-gray-600 ring-opacity-5 focus:outline-none z-50"
+                            role="menu"
+                            aria-orientation="vertical"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <div className="py-1" role="none">
+                              {/* Edit - Only show for post owner */}
+                              {isPostOwner && (
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    closeAllDropdowns();
+                                    handleEditPost(post);
+                                  }}
+                                  className="text-white block w-full text-left px-4 py-2 text-sm hover:bg-gray-700 transition-colors flex items-center gap-2"
+                                  role="menuitem"
+                                >
+                                  <BiPencil className="w-4 h-4" />
+                                  Edit
+                                </button>
+                              )}
+                              {/* Share - Show for everyone */}
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleSharePost(post);
+                                }}
+                                className="text-white block w-full text-left px-4 py-2 text-sm hover:bg-gray-700 transition-colors flex items-center gap-2"
+                                role="menuitem"
+                              >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                                </svg>
+                                Share
+                              </button>
+                              {/* Delete - Only show for post owner */}
+                              {isPostOwner && (
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDeletePost(post);
+                                  }}
+                                  disabled={deletingPostId === String(postId)}
+                                  className="text-red-400 block w-full text-left px-4 py-2 text-sm hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                                  role="menuitem"
+                                >
+                                  {deletingPostId === String(postId) ? (
+                                    <div className="flex items-center gap-2">
+                                      <div className="w-3 h-3 border border-red-400 border-t-transparent rounded-full animate-spin"></div>
+                                      Deleting...
+                                    </div>
+                                  ) : (
+                                    <>
+                                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                      </svg>
+                                      Delete
+                                    </>
+                                  )}
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
                     </div>
 
 
 
                     {/* Price Badge */}
 
-                    {post.price && (
+                    {
+                      post.price && (
 
-                      <div className="mb-2 inline-flex items-center gap-1 bg-white text-gray-900 px-2 py-1 rounded text-xs font-semibold shadow-lg">
+                        <div className="mb-2 inline-flex items-center gap-1 bg-white text-gray-900 px-2 py-1 rounded text-xs font-semibold shadow-lg">
 
-                        <span>🪙</span>
+                          <span>🪙</span>
 
-                        {parseFloat(post.price).toFixed(2)}
+                          {parseFloat(post.price).toFixed(2)}
 
-                      </div>
+                        </div>
 
-                    )}
+                      )
+                    }
 
 
 
                     {/* Post Content */}
 
-                    {post?.content && (
+                    {
+                      post?.content && (
 
-                      <div className="my-2">
+                        <div className="my-2">
 
-                        <p className="text-white">{post.content}</p>
+                          <p className="text-white">{post.content}</p>
 
-                      </div>
+                        </div>
 
-                    )}
+                      )
+                    }
 
 
 
                     {/* Post Media - Similar to PostModal */}
 
-                    {postType === "image" && src && (
+                    {
+                      postType === "image" && src && (
 
-                      <div className="w-full max-h-[480px] relative rounded overflow-hidden bg-gray-800">
-                        {/* Skeleton loader while image is loading */}
-                        {isImageLoading && !imageError && (
-                          <div className="absolute inset-0 flex items-center justify-center bg-gray-800 animate-pulse z-10">
-                            <SkeletonTheme baseColor="#202020" highlightColor="#444">
-                              <Skeleton height="100%" width="100%" className="rounded" />
-                            </SkeletonTheme>
-                          </div>
-                        )}
-                        <img
-                          key={`modal-exclusive-img-${postId}`}
-                          src={src}
-
-                          alt={post?.content || "exclusive post image"}
-
-                          className={`w-full h-auto object-contain transition-opacity duration-200 ${isImageLoading ? 'opacity-0 absolute inset-0' : 'opacity-100 relative'} ${canView ? 'cursor-pointer hover:opacity-90' : 'cursor-pointer blur-sm brightness-50'}`}
-                          onLoad={(e) => {
-                            const img = e.currentTarget as HTMLImageElement;
-                            // Always update loading state when onLoad fires
-                            imageLoadingStatesRef.current.set(String(postId), { loading: false, error: false });
-                            // Force re-render by updating a dummy state
-                            setModalUi(prev => ({ ...prev }));
-                          }}
-                          onLoadStart={() => {
-                            // Ensure loading state is set when image starts loading
-                            imageLoadingStatesRef.current.set(String(postId), { loading: true, error: false });
-                            setModalUi(prev => ({ ...prev }));
-                          }}
-                          ref={(img) => {
-                            // Check if image is already loaded (for cached images) - this runs after render
-                            if (img && img.complete && img.naturalHeight !== 0) {
-                              const currentState = imageLoadingStatesRef.current.get(String(postId));
-                              if (currentState?.loading) {
-                                imageLoadingStatesRef.current.set(String(postId), { loading: false, error: false });
-                                setModalUi(prev => ({ ...prev }));
-                              }
-                            }
-                          }}
-                          onClick={(e) => {
-                            if (!canView) {
-                              e.stopPropagation();
-                              // Trigger purchase flow
-                              handlePurchasePost(post, e);
-                              return;
-                            }
-                            // For viewable images, allow full-screen view
-                            e.preventDefault();
-                            e.stopPropagation();
-                            // Use the processed src first, then fallbacks
-                            // The src from getMediaSource should already be processed by getImageSource
-                            let imageSrc = src;
-
-                            // Check if src is a valid URL format
-                            const isValidUrl = imageSrc && (
-                              imageSrc.startsWith('http://') ||
-                              imageSrc.startsWith('https://') ||
-                              imageSrc.startsWith('/') ||
-                              imageSrc.startsWith('blob:') ||
-                              imageSrc.startsWith('data:')
-                            );
-
-                            // If src is not a valid URL, use the fallback URLs
-                            if (!isValidUrl) {
-                              imageSrc = pathUrlPrimary || queryUrlFallback || pathUrlFallback || src || '';
-                            }
-
-                            console.log("Image clicked, setting full-screen:", {
-                              imageSrc,
-                              src,
-                              isValidUrl,
-                              pathUrlPrimary,
-                              queryUrlFallback,
-                              pathUrlFallback,
-                              canView,
-                              postId
-                            });
-
-                            if (imageSrc) {
-
-                              setFullScreenImage(imageSrc);
-
-                              // Store the original media reference for fallback handling
-                              setFullScreenImageOriginal(asString || '');
-                            } else {
-
-                              console.warn("No image source available for full-screen view");
-                            }
-
-                          }}
-
-                          onError={(e) => {
-
-                            const img = e.currentTarget as HTMLImageElement & { dataset: any };
-
-                            if (!img.dataset.fallback1 && pathUrlPrimary) {
-
-                              img.dataset.fallback1 = "1";
-
-                              img.src = pathUrlPrimary;
-
-                              return;
-
-                            }
-
-                            if (!img.dataset.fallback2 && queryUrlFallback) {
-
-                              img.dataset.fallback2 = "1";
-
-                              img.src = queryUrlFallback;
-
-                              return;
-
-                            }
-
-                            if (!img.dataset.fallback3 && pathUrlFallback) {
-
-                              img.dataset.fallback3 = "1";
-
-                              img.src = pathUrlFallback;
-
-                              return;
-                            }
-
-                            // If all fallbacks fail, show error state
-                            imageLoadingStatesRef.current.set(String(postId), { loading: false, error: true });
-                            setModalUi(prev => ({ ...prev }));
-                          }}
-
-                        />
-
-                        {/* Lock overlay for visitors - clickable to purchase */}
-
-                        {!canView && (
-
-                          <div
-
-                            className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center cursor-pointer hover:bg-opacity-50 transition-opacity z-10"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handlePurchasePost(post, e);
-                            }}
-                          >
-
-                            <div className="text-center">
-
-                              <Lock className="w-8 h-8 text-white mx-auto mb-2" />
-
-                              <p className="text-white text-sm font-semibold">Click to unlock</p>
-
-                              {post.price && (
-
-                                <p className="text-yellow-400 mt-1 text-xs font-semibold flex items-center justify-center gap-1">
-
-                                  <span>🪙</span>
-
-                                  {parseFloat(post.price).toFixed(2)}
-
-                                </p>
-
-                              )}
-
+                        <div className="w-full aspect-[4/5] relative rounded overflow-hidden bg-gray-800">
+                          {isImageLoading && !imageError && (
+                            <div className="absolute inset-0 bg-gray-800 animate-pulse z-10">
+                              <SkeletonTheme baseColor="#202020" highlightColor="#444">
+                                <Skeleton height="100%" width="100%" containerClassName="w-full h-full block" className="rounded" />
+                              </SkeletonTheme>
                             </div>
-
-                          </div>
-
-                        )}
-
-                      </div>
-
-                    )}
-
-
-
-                    {postType === "video" && src && (
-
-                      <div className="relative">
-
-                        {/* VideoComponent has its own built-in skeleton loader */}
-                        <div
-
-                          className={canView ? '' : 'pointer-events-none'}
-
-                          onClick={(e) => {
-
-                            if (!canView) {
-
-                              e.stopPropagation();
-
-                              handlePurchasePost(post);
-
-                            }
-
-                          }}
-
-                        >
-
-                          <VideoComponent
-
-                            post={post}
-
+                          )}
+                          <img
+                            key={`modal-exclusive-img-${postId}`}
                             src={src}
 
-                            pathUrlPrimary={getMediaSource(post).pathUrlPrimary}
+                            alt={post?.content || "exclusive post image"}
 
-                            queryUrlFallback={getMediaSource(post).queryUrlFallback}
+                            className={`w-full h-full object-cover transition-opacity duration-200 ${isImageLoading ? 'opacity-0 absolute inset-0' : 'opacity-100 relative'} ${canView ? 'cursor-pointer hover:opacity-90' : 'cursor-pointer blur-sm brightness-50'}`}
+                            onLoad={(e) => {
+                              const img = e.currentTarget as HTMLImageElement;
+                              // Always update loading state when onLoad fires
+                              imageLoadingStatesRef.current.set(String(postId), { loading: false, error: false });
+                              // Force re-render by updating a dummy state
+                              setModalUi(prev => ({ ...prev }));
+                            }}
+                            onLoadStart={() => {
+                              // Ensure loading state is set when image starts loading
+                              imageLoadingStatesRef.current.set(String(postId), { loading: true, error: false });
+                              setModalUi(prev => ({ ...prev }));
+                            }}
+                            ref={(img) => {
+                              // Check if image is already loaded (for cached images) - this runs after render
+                              if (img && img.complete && img.naturalHeight !== 0) {
+                                const currentState = imageLoadingStatesRef.current.get(String(postId));
+                                if (currentState?.loading) {
+                                  imageLoadingStatesRef.current.set(String(postId), { loading: false, error: false });
+                                  setModalUi(prev => ({ ...prev }));
+                                }
+                              }
+                            }}
+                            onClick={(e) => {
+                              if (!canView) {
+                                e.stopPropagation();
+                                // Trigger purchase flow
+                                handlePurchasePost(post, e);
+                                return;
+                              }
+                              // For viewable images, allow full-screen view
+                              e.preventDefault();
+                              e.stopPropagation();
+                              // Use the processed src first, then fallbacks
+                              // The src from getMediaSource should already be processed by getImageSource
+                              let imageSrc = src;
 
-                            pathUrlFallback={getMediaSource(post).pathUrlFallback}
+                              // Check if src is a valid URL format
+                              const isValidUrl = imageSrc && (
+                                imageSrc.startsWith('http://') ||
+                                imageSrc.startsWith('https://') ||
+                                imageSrc.startsWith('/') ||
+                                imageSrc.startsWith('blob:') ||
+                                imageSrc.startsWith('data:')
+                              );
+
+                              // If src is not a valid URL, use the fallback URLs
+                              if (!isValidUrl) {
+                                imageSrc = pathUrlPrimary || queryUrlFallback || pathUrlFallback || src || '';
+                              }
+
+                              console.log("Image clicked, setting full-screen:", {
+                                imageSrc,
+                                src,
+                                isValidUrl,
+                                pathUrlPrimary,
+                                queryUrlFallback,
+                                pathUrlFallback,
+                                canView,
+                                postId
+                              });
+
+                              if (imageSrc) {
+
+                                setFullScreenImage(imageSrc);
+
+                                // Store the original media reference for fallback handling
+                                setFullScreenImageOriginal(asString || '');
+                              } else {
+
+                                console.warn("No image source available for full-screen view");
+                              }
+
+                            }}
+
+                            onError={(e) => {
+
+                              const img = e.currentTarget as HTMLImageElement & { dataset: any };
+
+                              if (!img.dataset.fallback1 && pathUrlPrimary) {
+
+                                img.dataset.fallback1 = "1";
+
+                                img.src = pathUrlPrimary;
+
+                                return;
+
+                              }
+
+                              if (!img.dataset.fallback2 && queryUrlFallback) {
+
+                                img.dataset.fallback2 = "1";
+
+                                img.src = queryUrlFallback;
+
+                                return;
+
+                              }
+
+                              if (!img.dataset.fallback3 && pathUrlFallback) {
+
+                                img.dataset.fallback3 = "1";
+
+                                img.src = pathUrlFallback;
+
+                                return;
+                              }
+
+                              // If all fallbacks fail, show error state
+                              imageLoadingStatesRef.current.set(String(postId), { loading: false, error: true });
+                              setModalUi(prev => ({ ...prev }));
+                            }}
 
                           />
 
-                        </div>
+                          {/* Lock overlay for visitors - clickable to purchase */}
 
-                        {/* Lock overlay for visitors - clickable to purchase */}
+                          {!canView && (
 
-                        {!canView && (
+                            <div
 
-                          <div
+                              className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center cursor-pointer hover:bg-opacity-50 transition-opacity z-10"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handlePurchasePost(post, e);
+                              }}
+                            >
 
-                            className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center rounded cursor-pointer hover:bg-opacity-50 transition-opacity z-10"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handlePurchasePost(post, e);
-                            }}
-                          >
+                              <div className="text-center">
 
-                            <div className="text-center">
+                                <Lock className="w-8 h-8 text-white mx-auto mb-2" />
 
-                              <Lock className="w-8 h-8 text-white mx-auto mb-2" />
+                                <p className="text-white text-sm font-semibold">Click to unlock</p>
 
-                              <p className="text-white text-sm font-semibold">Click to unlock</p>
+                                {post.price && (
 
-                              {post.price && (
+                                  <p className="text-yellow-400 mt-1 text-xs font-semibold flex items-center justify-center gap-1">
 
-                                <p className="text-yellow-400 mt-1 text-xs font-semibold flex items-center justify-center gap-1">
+                                    <span>🪙</span>
 
-                                  <span>🪙</span>
+                                    {parseFloat(post.price).toFixed(2)}
 
-                                  {parseFloat(post.price).toFixed(2)}
+                                  </p>
 
-                                </p>
+                                )}
 
-                              )}
+                              </div>
 
                             </div>
 
+                          )}
+
+                        </div>
+
+                      )
+                    }
+
+
+
+                    {
+                      postType === "video" && src && (
+
+                        <div className="relative aspect-[4/5] overflow-hidden rounded bg-black">
+
+                          {/* VideoComponent has its own built-in skeleton loader */}
+                          <div
+
+                            className={`w-full h-full ${canView ? '' : 'pointer-events-none'}`}
+
+                            onClick={(e) => {
+
+                              if (!canView) {
+
+                                e.stopPropagation();
+
+                                handlePurchasePost(post);
+
+                              }
+
+                            }}
+
+                          >
+
+                            <VideoComponent
+
+                              post={post}
+
+                              src={src}
+
+                              pathUrlPrimary={getMediaSource(post).pathUrlPrimary}
+
+                              queryUrlFallback={getMediaSource(post).queryUrlFallback}
+
+                              pathUrlFallback={getMediaSource(post).pathUrlFallback}
+
+                              className="w-full h-full object-cover"
+
+                            />
+
                           </div>
 
-                        )}
+                          {/* Lock overlay for visitors - clickable to purchase */}
 
-                      </div>
+                          {!canView && (
 
-                    )}
+                            <div
+
+                              className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center rounded cursor-pointer hover:bg-opacity-50 transition-opacity z-10"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handlePurchasePost(post, e);
+                              }}
+                            >
+
+                              <div className="text-center">
+
+                                <Lock className="w-8 h-8 text-white mx-auto mb-2" />
+
+                                <p className="text-white text-sm font-semibold">Click to unlock</p>
+
+                                {post.price && (
+
+                                  <p className="text-yellow-400 mt-1 text-xs font-semibold flex items-center justify-center gap-1">
+
+                                    <span>🪙</span>
+
+                                    {parseFloat(post.price).toFixed(2)}
+
+                                  </p>
+
+                                )}
+
+                              </div>
+
+                            </div>
+
+                          )}
+
+                        </div>
+
+                      )
+                    }
 
 
 
                     {/* Post Actions */}
 
-                    <div className="mt-3 border-t border-gray-700 pt-2 flex items-center justify-between">
 
-                      <div className="flex-1 flex items-center gap-2">
-                        {/* Like Button */}
-                        <button
-                          type="button"
-                          className="flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-700/50 transition-colors duration-200 text-gray-400 hover:text-gray-200"
-                          onClick={async () => {
-                            const uid = String(loggedInUserId || localUserid || "");
-                            const postId = post._id || post.postid || post.id;
-
-                            if (!postId || !token) {
-                              toast.error("Please login to like posts");
-                              return;
-                            }
-
-                            try {
-                              await dispatch(postlike({
-                                userid: uid,
-                                postid: postId,
-                                token: token
-                              } as any)).unwrap();
-
-                              toast.success("Post liked!");
-                              fetchExclusivePosts(String(targetUserId));
-                            } catch (err) {
-                              toast.error("Failed to like post");
-                            }
-                          }}
-                        >
-                          <Heart className="w-5 h-5" />
-                          <span className="text-sm tabular-nums">{post.likeCount || post.likes?.length || 0}</span>
-                        </button>
-
-                        {/* Comment Button */}
-                        <button
-                          type="button"
-                          className="flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-700/50 transition-colors duration-200 text-gray-400 hover:text-gray-200"
-                          onClick={() => {
-                            const postId = post._id || post.postid || post.id;
-                            setModalUi(prev => ({
-                              ...prev,
-                              [postId]: {
-                                ...prev[postId],
-                                open: !prev[postId]?.open
-                              }
-                            }));
-                          }}
-                        >
-                          <MessageCircle className="w-5 h-5" />
-                          <span className="text-sm tabular-nums">{post.commentCount || post.comments?.length || 0}</span>
-                        </button>
-                      </div>
-
-                      {/* Dropdown Menu - Show for everyone, but Edit/Delete only for owner */}
-
-                      <div className="relative exclusive-post-dropdown ml-2">
-
-                        <button
-
-                          onClick={(e) => {
-
-                            e.stopPropagation();
-
-                            toggleDropdown(String(postId));
-
-                          }}
-
-                          className="text-gray-400 hover:text-white transition-colors p-2"
-
-                          title="More options"
-
-                        >
-
-                          <MoreHorizontal className="w-5 h-5" />
-
-                        </button>
-
-                        {openDropdowns.has(String(postId)) && (
-
-                          <div
-
-                            className="absolute right-0 bottom-full mb-2 w-48 rounded-md shadow-lg bg-gray-800 ring-1 ring-gray-600 ring-opacity-5 focus:outline-none z-50"
-
-                            role="menu"
-
-                            aria-orientation="vertical"
-
-                            onClick={(e) => e.stopPropagation()}
-
-                          >
-
-                            <div className="py-1" role="none">
-
-                              {/* Edit - Only show for post owner */}
-                              {isPostOwner && (
-                                <button
-
-                                  onClick={(e) => {
-
-                                    e.stopPropagation();
-
-                                    closeAllDropdowns();
-
-                                    handleEditPost(post);
-
-                                  }}
-
-                                  className="text-white block w-full text-left px-4 py-2 text-sm hover:bg-gray-700 transition-colors flex items-center gap-2"
-
-                                  role="menuitem"
-
-                                >
-
-                                  <BiPencil className="w-4 h-4" />
-
-                                  Edit
-
-                                </button>
-                              )}
-
-                              {/* Share - Show for everyone */}
-                              <button
-
-                                onClick={(e) => {
-
-                                  e.stopPropagation();
-
-                                  handleSharePost(post);
-
-                                }}
-
-                                className="text-white block w-full text-left px-4 py-2 text-sm hover:bg-gray-700 transition-colors flex items-center gap-2"
-
-                                role="menuitem"
-
-                              >
-
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-
-                                </svg>
-
-                                Share
-
-                              </button>
-
-                              {/* Delete - Only show for post owner */}
-                              {isPostOwner && (
-                                <button
-
-                                  onClick={(e) => {
-
-                                    e.stopPropagation();
-
-                                    handleDeletePost(post);
-
-                                  }}
-
-                                  disabled={deletingPostId === String(postId)}
-
-                                  className="text-red-400 block w-full text-left px-4 py-2 text-sm hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-
-                                  role="menuitem"
-
-                                >
-
-                                  {deletingPostId === String(postId) ? (
-
-                                    <div className="flex items-center gap-2">
-
-                                      <div className="w-3 h-3 border border-red-400 border-t-transparent rounded-full animate-spin"></div>
-
-                                      Deleting...
-
-                                    </div>
-
-                                  ) : (
-
-                                    <>
-
-                                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-
-                                      </svg>
-
-                                      Delete
-
-                                    </>
-
-                                  )}
-
-                                </button>
-                              )}
-
-                            </div>
-
-                          </div>
-
-                        )}
-
-                      </div>
-
-                    </div>
 
 
 
                     {/* Comments Section */}
 
-                    {modalUi[post._id || post.postid || post.id]?.open && (
+                    {
+                      modalUi[post._id || post.postid || post.id]?.open && (
 
-                      <div className="mt-2 border-t border-gray-700 pt-2">
+                        <div className="mt-2 border-t border-gray-700 pt-2">
 
-                        <div className="space-y-2">
+                          <div className="space-y-2">
 
-                          <p className="text-sm text-gray-500">Comments feature coming soon...</p>
+                            <p className="text-sm text-gray-500">Comments feature coming soon...</p>
+
+                          </div>
 
                         </div>
 
-                      </div>
-
-                    )}
+                      )
+                    }
 
                   </div>
 
@@ -5684,128 +5599,130 @@ export const Profile = () => {
 
 
 
-        </div>
+        </div >
 
         {/* Full-Screen Image Viewer - Outside modal for proper z-index */}
-        {fullScreenImage && (
-
-          <div
-
-            className="fixed inset-0 z-[99999] bg-black bg-opacity-95 flex items-center justify-center p-4"
-            onClick={() => setFullScreenImage(null)}
-
-            style={{ zIndex: 99999 }}
-          >
-
-            <button
-
-              onClick={(e) => {
-
-                e.stopPropagation();
-
-                setFullScreenImage(null);
-
-              }}
-
-              className="absolute top-4 right-4 z-10 p-3 bg-black bg-opacity-50 hover:bg-opacity-70 rounded-full text-white transition-all duration-200 hover:scale-110"
-
-              aria-label="Close full screen image"
-            >
-
-              <X className="w-6 h-6" />
-
-            </button>
+        {
+          fullScreenImage && (
 
             <div
 
-              className="relative max-w-full max-h-full w-full h-full flex items-center justify-center"
+              className="fixed inset-0 z-[99999] bg-black bg-opacity-95 flex items-center justify-center p-4"
+              onClick={() => setFullScreenImage(null)}
 
-              onClick={(e) => e.stopPropagation()}
-
+              style={{ zIndex: 99999 }}
             >
 
-              {/* Skeleton loader for full-screen image */}
-              <div className="fullscreen-skeleton absolute inset-0 flex items-center justify-center bg-gray-900 animate-pulse">
-                <SkeletonTheme baseColor="#202020" highlightColor="#444">
-                  <Skeleton height="80vh" width="80vw" className="rounded" />
-                </SkeletonTheme>
-              </div>
-              <img
-                src={fullScreenImage || ''}
-                alt="Full screen post image"
+              <button
 
-                className="max-w-full max-h-full object-contain relative z-10"
-                onLoad={(e) => {
-                  // Hide skeleton when image loads
-                  const skeleton = (e.currentTarget as HTMLElement).parentElement?.querySelector('.fullscreen-skeleton');
-                  if (skeleton) {
-                    (skeleton as HTMLElement).style.display = 'none';
-                  }
-                  console.log("Full-screen image loaded successfully:", fullScreenImage);
+                onClick={(e) => {
+
+                  e.stopPropagation();
+
+                  setFullScreenImage(null);
+
                 }}
-                onError={(e) => {
-                  const img = e.currentTarget as HTMLImageElement & { dataset: any };
-                  const originalRef = fullScreenImageOriginal || fullScreenImage;
 
-                  // If current URL is path-based and failed, try query parameter format
-                  if (fullScreenImage && fullScreenImage.includes('/api/image/view/') && !fullScreenImage.includes('?publicId=')) {
-                    if (!img.dataset.fallback1) {
-                      img.dataset.fallback1 = "1";
-                      // Extract the filename from the path URL
-                      const filename = fullScreenImage.split('/api/image/view/')[1];
-                      const queryUrl = `${API_URL}/api/image/view?publicId=${encodeURIComponent(filename)}`;
-                      console.log("Path format failed, trying query format:", queryUrl);
-                      img.src = queryUrl;
-                      return;
+                className="absolute top-4 right-4 z-10 p-3 bg-black bg-opacity-50 hover:bg-opacity-70 rounded-full text-white transition-all duration-200 hover:scale-110"
+
+                aria-label="Close full screen image"
+              >
+
+                <X className="w-6 h-6" />
+
+              </button>
+
+              <div
+
+                className="relative max-w-full max-h-full w-full h-full flex items-center justify-center"
+
+                onClick={(e) => e.stopPropagation()}
+
+              >
+
+                {/* Skeleton loader for full-screen image */}
+                <div className="fullscreen-skeleton absolute inset-0 flex items-center justify-center bg-gray-900 animate-pulse">
+                  <SkeletonTheme baseColor="#202020" highlightColor="#444">
+                    <Skeleton height="80vh" width="80vw" className="rounded" />
+                  </SkeletonTheme>
+                </div>
+                <img
+                  src={fullScreenImage || ''}
+                  alt="Full screen post image"
+
+                  className="max-w-full max-h-full object-contain relative z-10"
+                  onLoad={(e) => {
+                    // Hide skeleton when image loads
+                    const skeleton = (e.currentTarget as HTMLElement).parentElement?.querySelector('.fullscreen-skeleton');
+                    if (skeleton) {
+                      (skeleton as HTMLElement).style.display = 'none';
                     }
-                  }
+                    console.log("Full-screen image loaded successfully:", fullScreenImage);
+                  }}
+                  onError={(e) => {
+                    const img = e.currentTarget as HTMLImageElement & { dataset: any };
+                    const originalRef = fullScreenImageOriginal || fullScreenImage;
 
-                  // If current URL is query-based and failed, try path format
-                  if (fullScreenImage && fullScreenImage.includes('?publicId=')) {
-                    if (!img.dataset.fallback2) {
-                      img.dataset.fallback2 = "1";
-                      // Extract the publicId from the query URL
-                      const urlParams = new URLSearchParams(fullScreenImage.split('?')[1]);
-                      const publicId = urlParams.get('publicId');
-                      if (publicId) {
-                        const pathUrl = `${API_URL}/api/image/view/${encodeURIComponent(publicId)}`;
-                        console.log("Query format failed, trying path format:", pathUrl);
+                    // If current URL is path-based and failed, try query parameter format
+                    if (fullScreenImage && fullScreenImage.includes('/api/image/view/') && !fullScreenImage.includes('?publicId=')) {
+                      if (!img.dataset.fallback1) {
+                        img.dataset.fallback1 = "1";
+                        // Extract the filename from the path URL
+                        const filename = fullScreenImage.split('/api/image/view/')[1];
+                        const queryUrl = `${API_URL}/api/image/view?publicId=${encodeURIComponent(filename)}`;
+                        console.log("Path format failed, trying query format:", queryUrl);
+                        img.src = queryUrl;
+                        return;
+                      }
+                    }
+
+                    // If current URL is query-based and failed, try path format
+                    if (fullScreenImage && fullScreenImage.includes('?publicId=')) {
+                      if (!img.dataset.fallback2) {
+                        img.dataset.fallback2 = "1";
+                        // Extract the publicId from the query URL
+                        const urlParams = new URLSearchParams(fullScreenImage.split('?')[1]);
+                        const publicId = urlParams.get('publicId');
+                        if (publicId) {
+                          const pathUrl = `${API_URL}/api/image/view/${encodeURIComponent(publicId)}`;
+                          console.log("Query format failed, trying path format:", pathUrl);
+                          img.src = pathUrl;
+                          return;
+                        }
+                      }
+                    }
+
+                    // If it's just a filename, try both formats
+                    if (originalRef && !originalRef.startsWith('http') && !originalRef.startsWith('/') && !originalRef.startsWith('blob:') && !originalRef.startsWith('data:')) {
+                      if (!img.dataset.fallback3) {
+                        img.dataset.fallback3 = "1";
+                        const queryUrl = `${API_URL}/api/image/view?publicId=${encodeURIComponent(originalRef)}`;
+                        console.log("Trying query format from filename:", queryUrl);
+                        img.src = queryUrl;
+                        return;
+                      }
+
+                      if (!img.dataset.fallback4) {
+                        img.dataset.fallback4 = "1";
+                        const pathUrl = `${API_URL}/api/image/view/${encodeURIComponent(originalRef)}`;
+                        console.log("Trying path format from filename:", pathUrl);
                         img.src = pathUrl;
                         return;
                       }
                     }
-                  }
 
-                  // If it's just a filename, try both formats
-                  if (originalRef && !originalRef.startsWith('http') && !originalRef.startsWith('/') && !originalRef.startsWith('blob:') && !originalRef.startsWith('data:')) {
-                    if (!img.dataset.fallback3) {
-                      img.dataset.fallback3 = "1";
-                      const queryUrl = `${API_URL}/api/image/view?publicId=${encodeURIComponent(originalRef)}`;
-                      console.log("Trying query format from filename:", queryUrl);
-                      img.src = queryUrl;
-                      return;
-                    }
+                    // Only log error if all fallback attempts have been exhausted
+                    console.error("All fallback attempts failed for image:", { fullScreenImage, originalRef });
+                    img.style.display = 'none';
+                  }}
+                />
 
-                    if (!img.dataset.fallback4) {
-                      img.dataset.fallback4 = "1";
-                      const pathUrl = `${API_URL}/api/image/view/${encodeURIComponent(originalRef)}`;
-                      console.log("Trying path format from filename:", pathUrl);
-                      img.src = pathUrl;
-                      return;
-                    }
-                  }
-
-                  // Only log error if all fallback attempts have been exhausted
-                  console.error("All fallback attempts failed for image:", { fullScreenImage, originalRef });
-                  img.style.display = 'none';
-                }}
-              />
+              </div>
 
             </div>
 
-          </div>
-
-        )}
+          )
+        }
 
       </>
     );
@@ -6150,6 +6067,11 @@ export const Profile = () => {
 
                           onClick={() => {
 
+                            if (!token) {
+                              toast.error("Please login to message");
+                              return;
+                            }
+
                             // Pass only the target user ID (the user being viewed) as creator_portfolio_id
 
                             // The Chat component will use this to fetch the target user's profile details
@@ -6214,58 +6136,34 @@ export const Profile = () => {
 
 
                         {/* Follow Button */}
+                        {/* Only show follow button if not viewing own profile */}
+                        {!isViewingOwnProfile && (
+                          <button
+                            onClick={onFollowClick}
+                            disabled={isProcessing || !token} // Disable if not logged in
+                            className={`flex-1 flex justify-center gap-x-1 items-center py-1.5 px-3 rounded-lg cursor-pointer transition-all duration-200 ${isFollowing
+                              ? "bg-gradient-to-r !from-blue-700 !to-purple-800"
+                              : "bg-gradient-to-r !from-blue-500 !to-purple-600"
+                              } ${isProcessing || !token ? "opacity-70 cursor-not-allowed" : "hover:scale-105"}`}
+                          >
+                            <Image
+                              src={isFollowing ? StarIcon2 : StarIcon}
+                              width={20}
+                              height={20}
+                              className="size-5"
+                              alt="rating"
+                            />
 
-                        <button
-
-                          key={`follow-button-${isFollowing}`}
-
-                          onClick={onFollowClick}
-
-                          disabled={isProcessing}
-
-                          className={`flex-1 flex justify-center gap-x-1 items-center py-1.5 px-3 rounded-lg cursor-pointer transition-all duration-200 ${isFollowing
-
-                            ? "bg-gradient-to-r !from-blue-700 !to-purple-800"
-
-                            : "bg-gradient-to-r !from-blue-500 !to-purple-600"
-
-                            } ${isProcessing ? "opacity-70 cursor-not-allowed" : "hover:scale-105"}`}
-
-                        >
-
-                          <Image
-
-                            src={isFollowing ? StarIcon2 : StarIcon}
-
-                            width={20}
-
-                            height={20}
-
-                            className="size-5"
-
-                            alt="rating"
-
-                          />
-
-
-
-                          <span className="font-medium">
-
-                            {isProcessing
-
-                              ? "..."
-
-                              : isFollowing === true
-
-                                ? "Following"
-
-                                : "Follow"
-
-                            }
-
-                          </span>
-
-                        </button>
+                            <span className="font-medium">
+                              {isProcessing
+                                ? "..."
+                                : isFollowing === true
+                                  ? "Following"
+                                  : "Follow"
+                              }
+                            </span>
+                          </button>
+                        )}
 
                       </div>
 
@@ -7743,6 +7641,18 @@ export const Profile = () => {
                       const file = (e.target as HTMLInputElement).files?.[0];
 
                       if (file) {
+
+                        const maxImageSize = 5 * 1024 * 1024; // 5MB
+                        const maxVideoSize = 50 * 1024 * 1024; // 50MB
+
+                        if (file.type.startsWith('image/') && file.size > maxImageSize) {
+                          toast.error("Image too large. Max size is 5 MB.");
+                          return;
+                        }
+                        if (file.type.startsWith('video/') && file.size > maxVideoSize) {
+                          toast.error("Video too large. Max size is 50 MB.");
+                          return;
+                        }
 
                         setEditExclusiveFile(file);
 
