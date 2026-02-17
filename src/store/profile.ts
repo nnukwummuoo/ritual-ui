@@ -644,6 +644,8 @@ export const delete_exclusive_thumb = createAsyncThunk<
   }
 );
 
+
+
 export const checkApplicationStatus = createAsyncThunk<
   { status: "pending" | "rejected" | "none" },
   { userid: string; token: string },

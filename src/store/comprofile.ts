@@ -107,13 +107,13 @@ export const getprofilebyid = createAsyncThunk("comprofile/getprofilebyid", asyn
 
 })
 
-export const getEdit = createAsyncThunk<any, { 
-  userid: string; 
-  token: string; 
-  hasToken?: boolean;
-  accesstoken?: string;
-  refreshtoken?: string;
-  userID?: string;
+export const getEdit = createAsyncThunk<any, {
+    userid: string;
+    token: string;
+    hasToken?: boolean;
+    accesstoken?: string;
+    refreshtoken?: string;
+    userID?: string;
 }>("comprofile/getEdit", async (data) => {
 
     try {
@@ -126,10 +126,10 @@ export const getEdit = createAsyncThunk<any, {
         // First try the direct approach that works (without JWT auth)
         try {
             console.log("Trying direct getprofile approach first");
-            const directResponse = await axios.post(`${URL}/getprofile`, { 
-                userid: data.userid 
+            const directResponse = await axios.post(`${URL}/getprofile`, {
+                userid: data.userid
             });
-            
+
             if (directResponse.status === 200 && directResponse.data) {
                 console.log("✅ [getEdit] Direct getprofile approach succeeded:", {
                     status: directResponse.status,
@@ -137,17 +137,17 @@ export const getEdit = createAsyncThunk<any, {
                     hasProfile: !!directResponse.data.profile,
                     profileKeys: directResponse.data.profile ? Object.keys(directResponse.data.profile).length : 0
                 });
-                
+
                 // Log the raw response data for debugging
                 console.log("📊 [getEdit] Raw direct response data:", {
                     hasProfile: !!directResponse.data.profile,
                     directDataKeys: Object.keys(directResponse.data),
                     profileDataKeys: directResponse.data.profile ? Object.keys(directResponse.data.profile) : []
                 });
-                
+
                 // getprofile returns data in response.data.profile, check both locations
                 const profileData = directResponse.data.profile || directResponse.data;
-                
+
                 console.log("📊 [getEdit] Profile data extracted:", {
                     hasPhotolink: !!profileData.photolink,
                     hasPhotoLink: !!profileData.photoLink,
@@ -155,7 +155,7 @@ export const getEdit = createAsyncThunk<any, {
                     photoLink: profileData.photoLink || "NONE",
                     photoID: profileData.photoID || "NONE"
                 });
-                
+
                 // Transform the response to match the expected format
                 const transformedData = {
                     ok: true,
@@ -172,7 +172,7 @@ export const getEdit = createAsyncThunk<any, {
                         username: profileData.username || ""
                     }
                 };
-                
+
                 console.log("✅ [getEdit] Transformed data for Redux:", {
                     hasPhotolink: !!transformedData.data.photolink,
                     photolink: transformedData.data.photolink || "NONE",
@@ -181,10 +181,10 @@ export const getEdit = createAsyncThunk<any, {
                 return transformedData;
             }
         } catch (directError) {
-            console.log("Direct getprofile approach failed, trying JWT auth", 
+            console.log("Direct getprofile approach failed, trying JWT auth",
                 directError instanceof Error ? directError.message : "unknown error");
         }
-        
+
         // If direct approach fails, try JWT auth as fallback
         // Create a complete data object with all fields the API might need
         const completeData = {
@@ -196,12 +196,12 @@ export const getEdit = createAsyncThunk<any, {
         // Remove Bearer prefix if it exists, then add it back properly
         const cleanToken = data.token.startsWith('Bearer ') ? data.token.substring(7) : data.token;
         const authToken = `Bearer ${cleanToken}`;
-        
+
         const headers = {
             'Authorization': authToken,
             'Content-Type': 'application/json'
         };
-        
+
         console.log("getEdit token format check:", {
             originalLength: data.token.length,
             hasBearer: data.token.startsWith('Bearer '),
@@ -214,7 +214,7 @@ export const getEdit = createAsyncThunk<any, {
             hasAuthHeader: !!headers.Authorization,
             authHeaderPrefix: headers.Authorization?.substring(0, 10) + '...'
         });
-        
+
         try {
             const response = await axios.post(`${URL}/useredit`, completeData, { headers });
             console.log("getEdit API response:", {
@@ -233,7 +233,7 @@ export const getEdit = createAsyncThunk<any, {
                     errorMessage: error.message,
                     responseData: error.response?.data
                 });
-                
+
                 // Try one more fallback - localStorage data
                 try {
                     console.log("JWT auth failed, trying to use localStorage data");
@@ -297,16 +297,16 @@ export const updateEdit = createAsyncThunk<any, UpdateEditPayload>("comprofile/u
         // Validate image file if provided
         if (data.updatePhoto && data.updatePhoto instanceof File) {
             console.log("Validating image file...");
-            
+
             const validation = validateImageFile(data.updatePhoto, 5); // 5MB max
             if (!validation.valid) {
                 throw new Error(validation.error || "Invalid image file");
             }
-            
+
             console.log("Image file validation passed");
         }
-        
-       
+
+
         // Create FormData for file upload
         const formData = new FormData();
         formData.append('data', JSON.stringify({
@@ -336,25 +336,21 @@ export const updateEdit = createAsyncThunk<any, UpdateEditPayload>("comprofile/u
             deletePhotolink: data.deletePhotolink,
             deletePhotoID: data.deletePhotoID
         };
-        
+
         console.log("Sending profile update with FormData:", {
             userid: data.userid,
             hasFile: !!(data.updatePhoto && data.updatePhoto instanceof File),
             fileName: data.updatePhoto instanceof File ? data.updatePhoto.name : 'no file',
             formDataPayload: formDataPayload
         });
-        
+
         console.log("Making request to editmoreprofile with:", {
             url: `${URL}/editmoreprofile`,
             formDataKeys: Array.from(formData.keys()),
             note: "No authentication required - middleware removed to match other profile controllers"
         });
-        
-        const response = await axios.post(`${URL}/editmoreprofile`, formData, {
-            headers: {
-                "Content-Type": "multipart/form-data"
-            }
-        });
+
+        const response = await axios.post(`${URL}/editmoreprofile`, formData);
 
         console.log("Profile update succeeded:", {
             status: response.status,
@@ -366,7 +362,7 @@ export const updateEdit = createAsyncThunk<any, UpdateEditPayload>("comprofile/u
 
     } catch (err) {
         console.error("updateEdit error:", err);
-        
+
         if (axios.isAxiosError(err)) {
             const errorDetails = {
                 status: err.response?.status,
@@ -376,9 +372,9 @@ export const updateEdit = createAsyncThunk<any, UpdateEditPayload>("comprofile/u
                 url: err.config?.url,
                 method: err.config?.method
             };
-            
+
             console.error("updateEdit axios error:", errorDetails);
-            
+
             // Provide specific error messages based on status code
             if (err.response?.status === 401) {
                 throw new Error("Your session has expired. Please log in again to update your profile.");
@@ -392,12 +388,12 @@ export const updateEdit = createAsyncThunk<any, UpdateEditPayload>("comprofile/u
                 throw new Error("Server error occurred while updating profile. Please try again.");
             }
         }
-        
+
         // Handle non-axios errors
         if (err instanceof Error) {
             throw new Error(`Profile update failed: ${err.message}`);
         }
-        
+
         throw new Error("An unexpected error occurred while updating your profile.");
     }
 })
@@ -499,7 +495,7 @@ const comprofile = createSlice({
             )
             .addCase(updateEdit.fulfilled, (state, action) => {
                 state.updateEdit_stats = 'succeeded'
-                
+
                 // Update the profile data with the new information
                 if (action.payload && action.payload.profile) {
                     console.log("Updating profile data in Redux:", action.payload.profile);

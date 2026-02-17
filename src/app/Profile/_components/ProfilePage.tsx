@@ -14,7 +14,7 @@ import Tabs from "./Tabs";
 
 import DropdownMenu from "./DropDonMenu";
 
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, usePathname } from "next/navigation";
 
 import { useDispatch, useSelector } from "react-redux";
 
@@ -481,8 +481,9 @@ export const Profile = () => {
   // Access properties that might not exist on both types
 
   const bio = (profileData as any).bio || "";
-
   const photolink = (profileData as any).photolink || "";
+
+
 
 
 
@@ -552,6 +553,7 @@ export const Profile = () => {
 
   const userid = useSelector((state: RootState) => state.register.userID);
 
+  const pathname = usePathname();
   const { postuserid } = useParams();
 
 
@@ -623,6 +625,20 @@ export const Profile = () => {
   const [isProcessing, setIsProcessing] = useState(false);
 
   const fetchedCreatorsRef = useRef<Set<string>>(new Set());
+
+  // Track the last fetched profile to prevent infinite loops
+
+  const lastFetchedProfileRef = useRef<string | null>(null);
+
+
+
+  // Reset fetch tracking when navigating to a different profile
+
+  useEffect(() => {
+
+    lastFetchedProfileRef.current = null;
+
+  }, [viewingUserId]);
 
 
 
@@ -756,28 +772,18 @@ export const Profile = () => {
 
   }, [vipStatus, status, viewingUserId, loggedInUserId, celebrationChecked, checkVipCelebrationStatus, markVipCelebrationAsViewed]);
 
-
-
   useEffect(() => {
 
     // Use the viewingUserId from params (the profile we're viewing)
-
     if (!viewingUserId) return;
 
-
-
     // Read token from Redux first, then fall back to localStorage
-
     const tokenFromRedux = (() => {
 
       try {
-
         return (window as any).__REDUX_TOKEN__ ?? undefined;
-
       } catch {
-
         return undefined;
-
       }
 
     })();
@@ -832,25 +838,31 @@ export const Profile = () => {
 
     // If viewing own profile, use current user profile, otherwise fetch viewing profile
 
+    // If viewing own profile, use current user profile, otherwise fetch viewing profile
     if (viewingUserId === loggedInUserId) {
+      // Fetch profile if we haven't fetched this user yet, or if we're coming back to the page
+      // Use a ref to track fetches to prevent infinite loops while still allowing fresh data
+      // Include pathname in key to force re-fetch when navigating between sub-pages (e.g. edit profile -> profile)
+      const profileKey = `own-${viewingUserId}-${pathname}`;
 
-      // Load current user profile if not already loaded
 
-      if (currentUserProfile.status === "idle") {
 
+      if (lastFetchedProfileRef.current !== profileKey) {
+        lastFetchedProfileRef.current = profileKey;
         dispatch(getprofile({ userid: viewingUserId, token } as any));
-
+      } else {
       }
 
     } else {
-
       // Load viewing profile for other users
+      const profileKey = `viewing-${viewingUserId}-${pathname}`;
 
-      dispatch(getViewingProfile({ userid: String(viewingUserId), token: token || "" }));
-
+      if (lastFetchedProfileRef.current !== profileKey) {
+        lastFetchedProfileRef.current = profileKey;
+        dispatch(getViewingProfile({ userid: String(viewingUserId), token: token || "" }));
+      }
     }
-
-  }, [viewingUserId, dispatch, loggedInUserId, currentUserProfile.status]);
+  }, [viewingUserId, dispatch, loggedInUserId, pathname]);
 
 
 
@@ -899,13 +911,8 @@ export const Profile = () => {
       } else if (!isViewingOwnProfile) {
 
         // For other user's profile, use viewing profile thunks
-        // Pass token if available, otherwise it might just fetch public data if backend allows (or we might need to skip this for guests if backend requires token)
-        // Assuming getViewingFollow might need token, but let's see. If it fails, it fails gracefully? 
-        // Actually, preventing the call if no token for follow status is safer unless we want to see followers publicly.
-        // But for guest access, we might not need follow status.
-        if (token) {
-          dispatch(getViewingFollow({ userid: String(targetUserId), token }));
-        }
+        // Pass token if available, otherwise pass empty string for public data
+        dispatch(getViewingFollow({ userid: String(targetUserId), token: token || "" }));
 
         // For getAllUsersForViewing, likely needs token. 
         if (token) {
@@ -944,8 +951,10 @@ export const Profile = () => {
 
         } else if (!isViewingOwnProfile) {
 
+          // Allow fetching followers for guest users (token is optional for public data)
+          dispatch(getViewingFollow({ userid: String(targetUserId), token: token || "" }));
+
           if (token) {
-            dispatch(getViewingFollow({ userid: String(targetUserId), token }));
             dispatch(getAllUsersForViewing({ token }));
           }
 
