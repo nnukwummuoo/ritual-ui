@@ -42,7 +42,7 @@ export function PopUp() {
       icon: (
         <div className="w-6 h-6 text-orange-400 hover:scale-110 transition-all duration-300 ease-in-out">🎤</div>
       ),
-      text: "Host Fan Meets, Fan Dates, and Fan Calls — all on your terms",
+      text: "Host Fan Meets, Fan Dates, Fan Calls and Exclusive Contents — all on your terms",
     },
     {
       icon: (
