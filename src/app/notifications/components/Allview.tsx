@@ -8,7 +8,7 @@ import { getNotifications, markNotificationsSeen } from "@/store/profile";
 import { RootState, AppDispatch } from "@/store/store";
 import { useAuth } from "@/lib/context/auth-context";
 import PacmanLoader from "react-spinners/RingLoader";
-import { CheckCircle, XCircle, Clock, Star, Phone, Heart, Handshake, MessageCircle, Shield, ShoppingCart,Wallet } from "lucide-react";
+import { CheckCircle, XCircle, Clock, Star, Phone, Heart, Handshake, MessageCircle, Shield, ShoppingCart, Wallet, Tv } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { useNotificationIndicator } from "@/hooks/useNotificationIndicator";
@@ -218,7 +218,7 @@ export const Allview = () => {
         let status: "approved" | "rejected" | "pending" = "pending";
         if (message.includes("approve")) status = "approved";
         else if (message.includes("reject")) status = "rejected";
-        else if (message.includes("follow") || message.includes("unfollow") || message.includes("like") || message.includes("comment") || message.includes("message") || message.includes("request") || message.includes("request") || message.includes("missed") || message.includes("accept") || message.includes("decline") || message.includes("cancel") || message.includes("complete") || message.includes("rating") || message.includes("star")) {
+        else if (message.includes("follow") || message.includes("unfollow") || message.includes("like") || message.includes("comment") || message.includes("message") || message.includes("request") || message.includes("request") || message.includes("missed") || message.includes("accept") || message.includes("decline") || message.includes("cancel") || message.includes("complete") || message.includes("rating") || message.includes("star") || message.includes("ppv")) {
           status = "approved"; // These are informational notifications, not pending actions
         }
 
@@ -256,6 +256,9 @@ export const Allview = () => {
           title = "Rating Notification";
         } else if (message.includes("rating") || message.includes("withdrawal")) {
           title = "Withdrawal Notification";
+        } else if (message.includes("pay per view") || message.includes("ppv")) {
+          if (message.includes("approved")) title = "PPV Approved";
+          else if (message.includes("declined")) title = "PPV Declined";
         }
 
         return (
@@ -319,17 +322,17 @@ export const Allview = () => {
                     <Image src="/icons/following.png" alt="Users" width={28} height={28} />
                   </div>
                 )}
-                {title !== "Admin Notification" && title !== "Rating Notification" && title !== "Missed Fan Call" && title !== "Fan Date Request" && title !== "Fan Meet Request" && title !== "Fan Call Request" && title !== "Like Notification" && title !== "Message Notification" && title !== "Follow Notification" && title !== "Unfollow Notification" && title !== "Purchase Notification" && title !== "Withdrawal Notification" && status === "approved" && (
+                {title !== "Admin Notification" && title !== "Rating Notification" && title !== "Missed Fan Call" && title !== "Fan Date Request" && title !== "Fan Meet Request" && title !== "Fan Call Request" && title !== "Like Notification" && title !== "Message Notification" && title !== "Follow Notification" && title !== "Unfollow Notification" && title !== "Purchase Notification" && title !== "Withdrawal Notification" && title !== "PPV Approved" && title !== "PPV Declined" && status === "approved" && (
                   <div className="bg-green-500/10 p-1 rounded-full">
                     <CheckCircle className="text-green-500 w-5 h-5" />
                   </div>
                 )}
-                {title !== "Admin Notification" && title !== "Rating Notification" && title !== "Missed Fan Call" && title !== "Fan Date Request" && title !== "Fan Meet Request" && title !== "Fan Call Request" && title !== "Like Notification" && title !== "Message Notification" && title !== "Follow Notification" && title !== "Unfollow Notification" && title !== "Purchase Notification" && title !== "Withdrawal Notification" && status === "rejected" && (
+                {title !== "Admin Notification" && title !== "Rating Notification" && title !== "Missed Fan Call" && title !== "Fan Date Request" && title !== "Fan Meet Request" && title !== "Fan Call Request" && title !== "Like Notification" && title !== "Message Notification" && title !== "Follow Notification" && title !== "Unfollow Notification" && title !== "Purchase Notification" && title !== "Withdrawal Notification" && title !== "PPV Approved" && title !== "PPV Declined" && status === "rejected" && (
                   <div className="bg-red-500/10 p-1 rounded-full">
                     <XCircle className="text-red-500 w-5 h-5" />
                   </div>
                 )}
-                {title !== "Admin Notification" && title !== "Rating Notification" && title !== "Missed Fan Call" && title !== "Fan Date Request" && title !== "Fan Meet Request" && title !== "Fan Call Request" && title !== "Like Notification" && title !== "Message Notification" && title !== "Follow Notification" && title !== "Unfollow Notification" && title !== "Purchase Notification" && title !== "Withdrawal Notification" && status === "pending" && (
+                {title !== "Admin Notification" && title !== "Rating Notification" && title !== "Missed Fan Call" && title !== "Fan Date Request" && title !== "Fan Meet Request" && title !== "Fan Call Request" && title !== "Like Notification" && title !== "Message Notification" && title !== "Follow Notification" && title !== "Unfollow Notification" && title !== "Purchase Notification" && title !== "Withdrawal Notification" && title !== "PPV Approved" && title !== "PPV Declined" && status === "pending" && (
                   <div className="bg-yellow-500/10 p-1 rounded-full">
                     <Clock className="text-yellow-500 w-5 h-5" />
                   </div>
@@ -342,6 +345,16 @@ export const Allview = () => {
                 {title === "Withdrawal Notification" && (
                   <div className="bg-green-500/10 p-1 rounded-full">
                     <Wallet className="text-green-500 w-5 h-5" />
+                  </div>
+                )}
+                {title === "PPV Approved" && (
+                  <div className="bg-green-500/10 p-1 rounded-full">
+                    <Tv className="text-green-500 w-5 h-5" />
+                  </div>
+                )}
+                {title === "PPV Declined" && (
+                  <div className="bg-red-500/10 p-1 rounded-full">
+                    <Tv className="text-red-500 w-5 h-5" />
                   </div>
                 )}
                 <h2 className="text-base sm:text-lg font-semibold">

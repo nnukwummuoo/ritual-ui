@@ -19,6 +19,7 @@ import {
   IoRefreshOutline,
   IoConstructOutline,
   IoTimerOutline,
+  IoLockOpenOutline,
 } from "react-icons/io5";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "@/store/store";
@@ -44,6 +45,7 @@ import RevenuePage from "./revenue/page";
 import ReferralAnalysisPage from "./referral-analysis/page";
 import AnyaAnalyticsPage from "./anya-analytics/page";
 import AdminUpdatesPage from "./updates/page";
+import PPVRequestsPage from "./ppv-requests/page";
 import PushNotificationToggle from "@/components/PushNotificationToggle";
 import MaintenanceToggle from "@/components/admin/MaintenanceToggle";
 import MaintenanceControl from "@/components/admin/MaintenanceControl";
@@ -201,6 +203,11 @@ const AdminPage = () => {
       name: "Users",
       icon: <IoPeopleOutline size={22} />,
       component: <Users />,
+    },
+    {
+      name: "PPV Requests",
+      icon: <IoLockOpenOutline size={22} />,
+      component: <PPVRequestsPage />,
     },
     {
       name: "Backup Management",

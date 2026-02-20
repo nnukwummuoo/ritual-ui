@@ -39,6 +39,11 @@ export const SettingPage = () => {
       icon: <AiOutlineSafetyCertificate color="white" size={20} />,
       linktitle: "privacy-safety",
     },
+    {
+      name: "Unlock pay per view",
+      icon: <AiOutlineSafetyCertificate color="white" size={20} />, // Using same icon for now, user can change later
+      linktitle: "ppv",
+    },
 
     {
       name: "Help & Support",
