@@ -147,7 +147,7 @@ export default function PPVRequestPage() {
                     <div className="mt-1"><div className="bg-white/10 p-2 rounded-full"><FaBolt size={14} /></div></div>
                     <div>
                         <h4 className="font-bold">Instant Payouts</h4>
-                        <p className="text-gray-400 text-xs">Funds pay immediately when they view.</p>
+                        <p className="text-gray-400 text-xs">Fans pay immediately when they view.</p>
                     </div>
                 </div>
 
