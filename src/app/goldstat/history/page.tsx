@@ -297,6 +297,7 @@ const HistoryPage = () => {
         description.includes("Fan meet completed - payment received") ||
         description.includes("exclusive post sale") ||
         description.includes("exclusive content sale") ||
+        description.includes("Earning from PPV message sale") ||
         (descLower.includes("received") && (descLower.includes("coins") || descLower.includes("golds")));
 
       // Exclude spending/payment transactions

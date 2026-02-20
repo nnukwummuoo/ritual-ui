@@ -8,7 +8,7 @@ import { getViewingProfile } from "@/store/viewingProfile";
 import type { RootState } from "@/store/store";
 import { restoreBodyScroll } from "@/utils/scrollRestore";
 import Image from "next/image";
-import { MessageCircle, BadgeCheck } from "lucide-react";
+import { MessageCircle, BadgeCheck, Lock } from "lucide-react";
 import { getSocket, joinUserRoom, leaveUserRoom, onUserOnline, onUserOffline, removeTypingListeners } from "@/lib/socket";
 import { useOnlineStatus } from "@/contexts/OnlineStatusContext";
 import VIPBadge from "@/components/VIPBadge";
@@ -33,6 +33,8 @@ interface MessageItem {
   vipStartDate?: string;
   vipEndDate?: string;
   isVerified?: boolean; // Add verification status
+  isPPV?: boolean;
+  isLocked?: boolean;
 }
 
 export const MessageList = () => {
@@ -566,9 +568,15 @@ export const MessageList = () => {
                       </div>
                     </div>
 
-                    <p className="text-sm text-gray-300 truncate mt-1">
-                      {message.content}
-                    </p>
+                    <div className="text-sm text-gray-300 truncate mt-1">
+                      {message.content === "LOCKED_MESSAGE" || (message as any).isLocked || message.isLocked ? (
+                        <div className="flex items-center gap-1 text-yellow-500">
+                          <Lock className="w-4 h-4" />
+                        </div>
+                      ) : (
+                        message.content
+                      )}
+                    </div>
                   </div>
 
                   {/* Unread count or indicator */}

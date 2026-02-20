@@ -19,7 +19,7 @@ import { toast } from "react-toastify";
 import { URL as API_URL } from "@/api/config";
 import axios from "axios";
 import Image from "next/image";
-import { X, Paperclip, Send, File, Download, BadgeCheck } from "lucide-react";
+import { X, Paperclip, Send, File, Download, BadgeCheck, Lock, Unlock } from "lucide-react";
 import VIPBadge from "@/components/VIPBadge";
 import { checkVipCelebration, markVipCelebrationViewed } from "@/api/vipCelebration";
 import { getImageSource } from "@/lib/imageUtils";
@@ -73,6 +73,36 @@ export const Chat = () => {
   const reduxUserId = useSelector((state: RootState) => state.register.userID);
 
   const loggedInUserId = reduxUserId || localUserid;
+
+  // Key to trigger re-load of settings on navigation or refresh
+  const [routeChangeKey, setRouteChangeKey] = useState(0);
+
+  // Ref to track if we're currently showing a dialog to avoid triggering sync reloads
+  const isDialogActive = useRef(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const handleSync = () => {
+        if (isDialogActive.current) {
+          console.log("💬 [Chat] Focus changed but dialog is active, skipping sync update");
+          return;
+        }
+        console.log("💬 [Chat] Window focused or page shown, refreshing sync key...");
+        setRouteChangeKey(prev => prev + 1);
+      };
+      window.addEventListener("focus", handleSync);
+      window.addEventListener("pageshow", handleSync);
+      return () => {
+        window.removeEventListener("focus", handleSync);
+        window.removeEventListener("pageshow", handleSync);
+      };
+    }
+  }, []);
+
+  // Update key on mount and when path changes
+  useEffect(() => {
+    setRouteChangeKey(prev => prev + 1);
+  }, [params]);
 
 
   const [chatphotolink, setchatphotolink] = useState("");
@@ -328,6 +358,87 @@ export const Chat = () => {
   const [text, settext] = useState("");
   const [loading, setLoading] = useState(true);
 
+  // PPV State
+  const [isPPVMode, setIsPPVMode] = useState(false);
+  const [ppvPrice, setPpvPrice] = useState(0);
+  const [ppvEnabled, setPpvEnabled] = useState(false);
+  const [unlockingMessageId, setUnlockingMessageId] = useState<string | null>(null);
+
+  // Load PPV settings
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const raw = localStorage.getItem("login");
+      console.log("💬 [Chat] Loading PPV settings (routeChangeKey triggered):", raw ? "Found" : "Not found");
+      if (raw) {
+        try {
+          const data = JSON.parse(raw);
+          const userData = data.user || data;
+          console.log("💬 [Chat] FULL User Object from localStorage:", userData);
+          console.log("💬 [Chat] PPV Settings found:", {
+            ppvEnabled: userData.ppvEnabled,
+            ppvPrice: userData.ppvPrice
+          });
+          setPpvEnabled(userData.ppvEnabled === true);
+          setPpvPrice(userData.ppvPrice || 0);
+        } catch (e) {
+          console.error("💬 [Chat] Error loading PPV settings:", e);
+        }
+      }
+    }
+  }, [routeChangeKey]);
+
+  const handleUnlockMessage = async (msgId: string, price: number) => {
+    console.log("🔓 [Chat] Attempting to unlock message:", { msgId, price, loggedInUserId });
+
+    if (!msgId || msgId === "undefined") {
+      console.error("❌ [Chat] Invalid message ID for unlock:", msgId);
+      toast.error("Invalid message reference. Please refresh the chat.");
+      return;
+    }
+
+    // Just open the modal — no window.confirm
+    setUnlockConfirm({ msgId, price });
+  };
+
+  const confirmUnlockAction = async () => {
+    if (!unlockConfirm) return;
+    const { msgId, price } = unlockConfirm;
+    setUnlockConfirm(null);
+
+    setUnlockingMessageId(msgId);
+    try {
+      console.log("🔓 [Chat] Sending unlock request to API...", { userid: loggedInUserId, messageid: msgId });
+      const res = await axios.post(`${API_URL}/api/ppv/unlock-message`, {
+        userid: loggedInUserId,
+        messageid: msgId
+      });
+
+      if (res.data.ok) {
+        toast.success("Message unlocked!");
+
+        // Update ONLY the unlocked message in local state — no full refetch
+        setmessage(prev => prev.map(m => {
+          if ((m as any)._id === msgId || m.id === msgId) {
+            return {
+              ...m,
+              isLocked: false,
+              content: res.data.content || res.data.message?.content || m.content,
+              files: res.data.files || res.data.message?.files || m.files || [],
+            };
+          }
+          return m;
+        }));
+
+        // NO fetchMessagesDirectly() — this was causing the full reload
+      }
+    } catch (error: any) {
+      console.error(error);
+      toast.error(error.response?.data?.message || "Failed to unlock");
+    } finally {
+      setUnlockingMessageId(null);
+    }
+  };
+
   const [isTyping, setIsTyping] = useState(false);
   const [otherUserTyping, setOtherUserTyping] = useState(false);
   const [typingTimeout, setTypingTimeout] = useState<NodeJS.Timeout | null>(null);
@@ -349,6 +460,10 @@ export const Chat = () => {
     isVip?: boolean;
     vipStartDate?: string;
     vipEndDate?: string;
+    // PPV Fields
+    isPPV?: boolean;
+    ppvPrice?: number;
+    isLocked?: boolean;
   }>>([]);
   // Removed Redux dependencies - using direct API calls instead
 
@@ -373,6 +488,13 @@ export const Chat = () => {
 
   // Flag to prevent multiple simultaneous message fetches
   const isFetchingMessages = useRef(false);
+
+  // New fetch and confirmation state
+  const hasFetchedOnce = useRef(false);
+  const [unlockConfirm, setUnlockConfirm] = useState<{
+    msgId: string;
+    price: number;
+  } | null>(null);
 
   // VIP celebration states
   const [showVipCelebration, setShowVipCelebration] = useState(false);
@@ -438,6 +560,15 @@ export const Chat = () => {
         viewport.setAttribute('content', originalContent);
       }
     };
+  }, []);
+
+  // Fix 4 — Add beforeunload debug listener (temporary)
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      console.log('⚠️ TRUE PAGE RELOAD happening');
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, []);
 
   // Check if VIP celebration should be shown (database-based)
@@ -601,23 +732,6 @@ export const Chat = () => {
   // Chat info is now handled by viewingProfile only (no Redux chatinfo)
 
   // Track route changes to force fresh profile fetch
-  const [routeChangeKey, setRouteChangeKey] = useState(0);
-
-  // Force fresh fetch when user navigates back to chat
-  useEffect(() => {
-    const handleRouteChange = () => {
-      setRouteChangeKey(prev => prev + 1);
-    };
-
-    // Listen for route changes (when user comes back to chat)
-    window.addEventListener('focus', handleRouteChange);
-    window.addEventListener('pageshow', handleRouteChange);
-
-    return () => {
-      window.removeEventListener('focus', handleRouteChange);
-      window.removeEventListener('pageshow', handleRouteChange);
-    };
-  }, []);
 
   // Fetch target user profile details when creator_portfolio_id changes or route changes
   useEffect(() => {
@@ -805,39 +919,21 @@ export const Chat = () => {
   const prevCreatorPortfolioId = useRef<string | null>(null);
   const prevLoggedInUserId = useRef<string | null>(null);
 
-  // Additional useEffect to handle navigation from MessageList (skip Redux)
+  // Reset fetch flag when user changes
   useEffect(() => {
-    // Only proceed if we have both creator_portfolio_id and loggedInUserId
-    if (!finalCreatorPortfolioId) {
-      return;
-    }
+    hasFetchedOnce.current = false;
+  }, [finalCreatorPortfolioId]);
 
-    if (!loggedInUserId) {
-      return;
-    }
+  // Single consolidated effect for fetching messages
+  useEffect(() => {
+    if (!finalCreatorPortfolioId || !loggedInUserId) return;
+    if (hasFetchedOnce.current) return;
 
-    // Check if this is actually a new user (not just a re-render)
-    const isNewUser = prevCreatorPortfolioId.current !== finalCreatorPortfolioId ||
-      prevLoggedInUserId.current !== loggedInUserId;
-
-    // Don't clear messages if we're in the middle of file operations
-    if (isNewUser && !isFileOperationInProgress.current && !isFetchingMessages.current) {
-      // Update refs to current values
-      prevCreatorPortfolioId.current = finalCreatorPortfolioId;
-      prevLoggedInUserId.current = loggedInUserId;
-
-      // Only clear messages and fetch when actually changing users
-      setmessage([]);
-      setLoading(true);
-
-      // Use direct API call instead of Redux
-      fetchMessagesDirectly();
-    } else if (isNewUser && (isFileOperationInProgress.current || isFetchingMessages.current)) {
-      // Update refs to current values
-      prevCreatorPortfolioId.current = finalCreatorPortfolioId;
-      prevLoggedInUserId.current = loggedInUserId;
-    }
-  }, [finalCreatorPortfolioId, loggedInUserId, fetchMessagesDirectly, message.length]); // Added all dependencies with guards
+    hasFetchedOnce.current = true;
+    setmessage([]);
+    setLoading(true);
+    fetchMessagesDirectly();
+  }, [finalCreatorPortfolioId, loggedInUserId, fetchMessagesDirectly]);
 
   // Auto-scroll to bottom when messages change
   useEffect(() => {
@@ -864,6 +960,71 @@ export const Chat = () => {
           {message.map((value, index: number) => {
             const isUser = value.id === loggedInUserId;
             const messageTime = new Date(Number(value.date)).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+            // PPV Locked Message Rendering (Premium Style)
+            if ((value as any).isLocked) {
+              return (
+                <div key={index} className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-4 w-full animate-in fade-in slide-in-from-bottom-2`}>
+                  <div className={`max-w-[85%] sm:max-w-[75%] w-full sm:w-fit px-5 py-4 rounded-3xl overflow-hidden relative group ${isUser
+                    ? 'bg-gradient-to-br from-blue-600 to-indigo-700 text-white rounded-br-sm'
+                    : 'bg-gradient-to-br from-gray-800 to-gray-900 border border-yellow-500/30 text-white rounded-bl-sm shadow-xl shadow-yellow-500/5'
+                    }`}>
+
+                    {/* Premium Glass Header */}
+                    <div className="flex items-center justify-between mb-3 border-b border-white/5 pb-2">
+                      <div className="flex items-center gap-2">
+                        <div className="p-1 px-2 bg-yellow-500/20 rounded-md border border-yellow-500/40 flex items-center gap-1.5">
+                          <Lock className="w-3.5 h-3.5 text-yellow-400" />
+                          <span className="text-yellow-400 font-bold text-[11px] uppercase tracking-wider">Pay Per View</span>
+                        </div>
+                      </div>
+                      <div className="text-[10px] text-gray-400 font-medium">{messageTime}</div>
+                    </div>
+
+                    {/* High-End Blurred Content Area */}
+                    <div className="relative overflow-hidden rounded-xl bg-black/30 border border-white/5 p-4 mb-4 select-none group-hover:bg-black/40 transition-all">
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none"></div>
+                      <div className="filter blur-md opacity-30 space-y-2">
+                        <div className="h-3 bg-gray-400 w-full rounded"></div>
+                        <div className="h-3 bg-gray-400 w-5/6 rounded"></div>
+                        <div className="h-3 bg-gray-400 w-4/6 rounded"></div>
+                      </div>
+
+                      {/* Floating Lock Overlay */}
+                      <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
+                        <div className="w-12 h-12 bg-yellow-500/10 rounded-full flex items-center justify-center border border-yellow-500/30 backdrop-blur-md animate-pulse">
+                          <Lock className="w-6 h-6 text-yellow-500" />
+                        </div>
+                        <p className="text-sm font-bold text-yellow-500/90 tracking-tight">EXCLUSIVE CONTENT</p>
+                      </div>
+                    </div>
+
+                    {/* Improved Unlock Button */}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handleUnlockMessage((value as any)._id || (value as any).messageId, (value as any).ppvPrice);
+                      }}
+                      disabled={unlockingMessageId === ((value as any)._id || (value as any).messageId)}
+                      className="w-full bg-gradient-to-r from-yellow-500 to-amber-600 hover:from-yellow-400 hover:to-amber-500 text-white font-black py-3 px-6 rounded-2xl flex items-center justify-center gap-2.5 transition-all active:scale-[0.98] shadow-lg shadow-yellow-500/20"
+                    >
+                      {unlockingMessageId === ((value as any)._id || (value as any).messageId) ? (
+                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                      ) : (
+                        <>
+                          <Unlock className="w-4.5 h-4.5" />
+                          <span className="text-sm">UNLOCK FOR {(value as any).ppvPrice} GOLD</span>
+                        </>
+                      )}
+                    </button>
+
+                    <p className="text-[10px] text-center mt-3 text-gray-500 font-medium">Safe & secure payments</p>
+                  </div>
+                </div>
+              );
+            }
 
             if (value.coin) {
               return (
@@ -900,6 +1061,14 @@ export const Chat = () => {
                       <div className="flex justify-end items-center gap-2 mb-2">
                         <VIPBadge size="md" isVip={value.isVip} vipEndDate={value.vipEndDate} />
                         <span className="text-xs py-1 px-2 rounded-full bg-gradient-to-b tracking-wider font-semibold from-[#fb8402] to-[#ad4d01] text-white">VIP</span>
+                      </div>
+                    )}
+
+                    {/* PPV Badge for sender/unlocked messages */}
+                    {value.isPPV && (
+                      <div className="flex items-center gap-1.5 mb-2 py-1 px-2 bg-yellow-500/10 border border-yellow-500/20 rounded-lg w-fit">
+                        <Unlock className="w-3.5 h-3.5 text-yellow-500" />
+                        <span className="text-[10px] text-yellow-500 font-bold uppercase tracking-tight">PPV Message • {(value as any).ppvPrice} Gold</span>
                       </div>
                     )}
                     <p className="text-sm break-words whitespace-pre-wrap">{value.content}</p>
@@ -1005,21 +1174,7 @@ export const Chat = () => {
     }
   };
 
-  // Direct API call when component loads (skip Redux) - Only run once
-  useEffect(() => {
-    if (!finalCreatorPortfolioId) {
-      return;
-    }
-
-    if (!loggedInUserId) {
-      return;
-    }
-
-    // Only fetch messages once when component first loads
-    if (!isFetchingMessages.current && message.length === 0) {
-      fetchMessagesDirectly();
-    }
-  }, [finalCreatorPortfolioId, loggedInUserId, fetchMessagesDirectly, message.length]); // Added dependencies but with guards
+  // Direct API call when component loads (skip Redux) - REMOVED redundant useEffect
 
 
   // Socket connection and real-time message handling
@@ -1054,6 +1209,8 @@ export const Chat = () => {
         isVip?: boolean;
         vipStartDate?: string;
         vipEndDate?: string;
+        isPPV?: boolean;
+        ppvPrice?: number;
       };
       name: string;
       photolink: string;
@@ -1093,7 +1250,11 @@ export const Chat = () => {
           status: 'delivered' as const,
           isVip: data.data.isVip || false,
           vipStartDate: data.data.vipStartDate,
-          vipEndDate: data.data.vipEndDate
+          vipEndDate: data.data.vipEndDate,
+          isPPV: data.data.isPPV || false,
+          ppvPrice: data.data.ppvPrice || 0,
+          isLocked: (data.data.isPPV && data.data.fromid !== loggedInUserId) ? true : false,
+          _id: (data.data as any)._id
         };
 
         // Check if this is a message from the current user (optimistic update)
@@ -1432,6 +1593,13 @@ export const Chat = () => {
       setchatusername(profilename);
     }
 
+    console.log("💬 [Chat] send_chat called:", {
+      hasText: !!text.trim(),
+      fileCount: selectedFiles.length,
+      isPPVMode,
+      ppvPrice
+    });
+
     setUploading(true);
 
     // Set flag to prevent message clearing during file operations
@@ -1453,7 +1621,10 @@ export const Chat = () => {
       tempId: tempId,
       isVip: false,
       vipStartDate: undefined,
-      vipEndDate: undefined
+      vipEndDate: undefined,
+      isPPV: isPPVMode,
+      ppvPrice: isPPVMode ? ppvPrice : 0,
+      isLocked: false // Sender never sees their own message as locked
     };
 
     // Add optimistic message immediately
@@ -1483,13 +1654,21 @@ export const Chat = () => {
         notify: true,
         coin: false,
         files: fileUrls,
-        fileCount: fileUrls.length
+        fileCount: fileUrls.length,
+        isPPV: isPPVMode,
+        ppvPrice: isPPVMode ? ppvPrice : 0
       };
 
       // Emit message through socket
       const socket = getSocket();
 
       if (socket) {
+        console.log("🚀 [Chat] Emitting socket message:", {
+          to: targetUserId,
+          isPPV: content.isPPV,
+          price: content.ppvPrice,
+          fileCount: content.fileCount
+        });
         socket.emit("message", content);
       } else {
         toast.error("Connection lost. Please refresh and try again.");
@@ -1928,14 +2107,30 @@ export const Chat = () => {
           className="hidden"
         />
 
-        <button
-          onClick={() => fileInputRef.current?.click()}
-          className="flex-shrink-0 p-3  bg-gray-800 hover: bg-gray-800 text-white rounded-full transition-colors"
-        >
-          <Paperclip className="w-5 h-5" />
-        </button>
+        <div className="flex items-center flex-1 px-4 py-2 bg-gray-800/50 border border-blue-600/50 rounded-full transition-all focus-within:ring-2 focus-within:ring-blue-500/20">
 
-        <div className="flex items-center flex-1 px-4 py-3  bg-gray-800/50 border border-blue-600/50 rounded-full">
+          {/* Attachment Button */}
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            className="flex-shrink-0 p-2 mr-1 text-gray-400 hover:text-blue-400 hover:bg-blue-500/10 rounded-full transition-all"
+            title="Attach file"
+          >
+            <Paperclip className="w-5 h-5" />
+          </button>
+
+          {/* PPV Toggle Button */}
+          {ppvEnabled && (
+            <button
+              onClick={() => setIsPPVMode(!isPPVMode)}
+              className={`flex-shrink-0 p-2 mr-2 rounded-full transition-all ${isPPVMode
+                  ? 'text-yellow-500 bg-yellow-500/10 hover:bg-yellow-500/20'
+                  : 'text-gray-400 hover:text-yellow-500 hover:bg-yellow-500/10'
+                }`}
+              title={isPPVMode ? "Disable Pay-Per-View" : "Enable Pay-Per-View"}
+            >
+              {isPPVMode ? <Lock className="w-5 h-5" /> : <Unlock className="w-5 h-5" />}
+            </button>
+          )}
           <textarea
             className="flex-1 h-8 text-white placeholder-blue-300 bg-transparent outline-none resize-none"
             value={text}
@@ -2071,6 +2266,34 @@ export const Chat = () => {
                   }}
                 />
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* PPV Unlock Confirmation Modal */}
+      {unlockConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
+          <div className="bg-gray-800 border border-yellow-500/30 rounded-2xl p-6 mx-4 max-w-sm w-full shadow-2xl animate-in zoom-in-95 fade-in duration-200">
+            <h3 className="text-white font-bold text-lg mb-2">Unlock Message</h3>
+            <p className="text-gray-300 text-sm mb-6">
+              Unlock this exclusive message for <span className="text-yellow-400 font-bold">{unlockConfirm.price} gold</span>?
+            </p>
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={() => setUnlockConfirm(null)}
+                className="flex-1 py-2 px-4 bg-gray-700 text-white rounded-xl hover:bg-gray-600 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={confirmUnlockAction}
+                className="flex-1 py-2 px-4 bg-gradient-to-r from-yellow-500 to-amber-600 text-white font-bold rounded-xl hover:from-yellow-400 hover:to-amber-500 transition-all active:scale-95 shadow-lg shadow-yellow-500/20"
+              >
+                Unlock
+              </button>
             </div>
           </div>
         </div>
