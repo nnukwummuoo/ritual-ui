@@ -7,13 +7,12 @@ import { useRouter } from 'next/navigation'
 import axios from 'axios'
 import { URL } from '@/api/config'
 import { toast } from 'react-toastify'
-import PushNotificationToggle from '@/components/PushNotificationToggle'
 
 export default function PPVSettingsPage() {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
     const [enabled, setEnabled] = useState(false);
-    const [price, setPrice] = useState(5); // Default 5 gold
+    const [price, setPrice] = useState<number | "">("");
     const [isSaving, setIsSaving] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
 
@@ -23,14 +22,12 @@ export default function PPVSettingsPage() {
     const fetchProfile = async (userId: string) => {
         setLoading(true);
         try {
-            console.log("PPV Settings - Fetching live profile for:", userId);
             const res = await axios.post(`${URL}/getprofilebyid`, { userid: userId });
-            console.log("PPV Settings - Fetch Response:", res.data);
             if (res.data.ok) {
                 const userData = res.data.user || res.data.profile;
                 setUser(userData);
                 setEnabled(userData.ppvEnabled || false);
-                setPrice(userData.ppvPrice || 5);
+                setPrice(userData.ppvPrice || "");
 
                 // Update localStorage to keep it fresh
                 const raw = localStorage.getItem("login");
@@ -56,7 +53,6 @@ export default function PPVSettingsPage() {
     useEffect(() => {
         if (typeof window !== "undefined") {
             const raw = localStorage.getItem("login");
-            console.log("PPV Settings - Initial Load - localStorage 'login':", raw ? "Found" : "Not found");
 
             let userIdFromStorage = "";
             if (raw) {
@@ -67,7 +63,7 @@ export default function PPVSettingsPage() {
 
                     setUser(userData);
                     setEnabled(userData.ppvEnabled || false);
-                    setPrice(userData.ppvPrice || 5);
+                    setPrice(userData.ppvPrice || "");
                 } catch (e) {
                     console.error("PPV Settings - Failed to parse login data", e);
                 }
@@ -81,27 +77,29 @@ export default function PPVSettingsPage() {
     }, [reduxUserId]);
 
     const handleSave = async () => {
-        const userId = user?._id || user?.userID || reduxUserId;
-        const payload = {
-            userid: userId,
-            enabled,
-            price: Number(price)
-        };
+        if (price === "" || Number(price) < 1) {
+            toast.error("Please enter a valid price (minimum 1 Gold).");
+            return;
+        }
 
-        console.log("PPV Settings - Attempting Save:", payload);
+        const userId = user?._id || user?.userID || reduxUserId;
 
         if (!userId) {
             toast.error("User session not found. Please log in again.");
             return;
         }
 
+        const payload = {
+            userid: userId,
+            enabled,
+            price: Number(price)
+        };
+
         setIsSaving(true);
         try {
             const res = await axios.put(`${URL}/api/ppv/settings`, payload);
-            console.log("PPV Settings - API Response:", res.data);
 
             if (res.data.ok) {
-                // Refresh local data to ensure sync
                 await fetchProfile(userId);
                 toast.success("Settings saved successfully!");
                 setIsEditing(false);
@@ -113,6 +111,21 @@ export default function PPVSettingsPage() {
             toast.error(error.response?.data?.message || "Failed to save settings.");
         } finally {
             setIsSaving(false);
+        }
+    }
+
+    const handleCancel = () => {
+        setIsEditing(false);
+        const raw = localStorage.getItem("login");
+        if (raw) {
+            try {
+                const data = JSON.parse(raw);
+                const userData = data.user || data;
+                setEnabled(userData.ppvEnabled || false);
+                setPrice(userData.ppvPrice || "");
+            } catch (e) {
+                console.error("PPV Settings - Failed to parse login data on cancel", e);
+            }
         }
     }
 
@@ -174,8 +187,9 @@ export default function PPVSettingsPage() {
                                 <input
                                     type="number"
                                     value={price}
-                                    onChange={(e) => setPrice(Number(e.target.value))}
-                                    className="bg-gray-800 text-white p-4 rounded-lg w-full text-center text-xl font-bold border border-gray-700 focus:border-blue-500 outline-none"
+                                    onChange={(e) => setPrice(e.target.value === "" ? "" : Number(e.target.value))}
+                                    placeholder="Enter price in Gold"
+                                    className="bg-gray-800 text-white p-4 rounded-lg w-full text-center text-xl font-bold border border-gray-700 focus:border-blue-500 outline-none placeholder-gray-600"
                                     min="1"
                                 />
                             </div>
@@ -185,8 +199,14 @@ export default function PPVSettingsPage() {
                         </>
                     ) : (
                         <div className="text-center py-2">
-                            <span className="text-4xl font-black text-yellow-400">{price}</span>
-                            <span className="ml-2 text-gray-400 font-bold">Gold</span>
+                            {price ? (
+                                <>
+                                    <span className="text-4xl font-black text-yellow-400">{price}</span>
+                                    <span className="ml-2 text-gray-400 font-bold">Gold</span>
+                                </>
+                            ) : (
+                                <span className="text-gray-500 text-lg">No price set</span>
+                            )}
                         </div>
                     )}
                 </div>
@@ -194,17 +214,7 @@ export default function PPVSettingsPage() {
                 {isEditing && (
                     <div className="flex gap-3 mt-8">
                         <button
-                            onClick={() => {
-                                setIsEditing(false);
-                                // Reset to synced values
-                                const raw = localStorage.getItem("login");
-                                if (raw) {
-                                    const data = JSON.parse(raw);
-                                    const userData = data.user || data;
-                                    setEnabled(userData.ppvEnabled || false);
-                                    setPrice(userData.ppvPrice || 5);
-                                }
-                            }}
+                            onClick={handleCancel}
                             className="flex-1 bg-gray-800 hover:bg-gray-700 text-white font-bold py-4 rounded-xl transition-all"
                         >
                             Cancel
