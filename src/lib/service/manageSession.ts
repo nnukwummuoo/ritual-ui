@@ -159,3 +159,35 @@ export async function checkUserAdmin(request: NextRequest): Promise<boolean> {
     return false;
   }
 }
+// export async function checkCreatorVerified(request: NextRequest): Promise<boolean> {
+//   try {
+//     let cookie = request.cookies.get("session")?.value;
+//     if (!cookie) {
+//       cookie = request.cookies.get("auth_token")?.value;
+//     }
+//     if (!cookie?.length) return false;
+
+//     const decryptCookie = await decryptData(cookie);
+//     if (decryptCookie.status !== "valid") return false;
+
+//     const userData = decryptCookie.body as any;
+//     console.log("🔍 [checkCreatorVerified] userData keys:", Object.keys(userData));
+//     console.log("🔍 [checkCreatorVerified] creator_verified:", userData?.creator_verified);
+
+//     // The session cookie (encrypted by encryptData) contains the full user object
+//     // from isRegistered() which includes creator_verified from the login response
+//     if (userData?.creator_verified !== undefined) {
+//       return userData.creator_verified === true;
+//     }
+
+//     // Fallback: check nested user object
+//     if (userData?.user?.creator_verified !== undefined) {
+//       return userData.user.creator_verified === true;
+//     }
+
+//     return false;
+//   } catch (error: any) {
+//     console.error("❌ [checkCreatorVerified] Error:", error.message);
+//     return false;
+//   }
+// }

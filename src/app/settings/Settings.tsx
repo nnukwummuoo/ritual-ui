@@ -21,7 +21,22 @@ export const SettingPage = () => {
   //     window.location.href = "/";
   //   }
   // },[])
+const [isCreatorVerified, setIsCreatorVerified] = React.useState(false);
 
+useEffect(() => {
+  if (typeof window !== "undefined") {
+    try {
+      const raw = localStorage.getItem("login");
+      if (raw) {
+        const data = JSON.parse(raw);
+        const userData = data.user || data;
+        setIsCreatorVerified(userData.creator_verified === true);
+      }
+    } catch (e) {
+      console.error("Error reading localStorage:", e);
+    }
+  }
+}, []);
   const navdata = [
     {
       name: "Account",
@@ -39,11 +54,11 @@ export const SettingPage = () => {
       icon: <AiOutlineSafetyCertificate color="white" size={20} />,
       linktitle: "privacy-safety",
     },
-    {
-      name: "pay per view",
-      icon: <AiOutlineSafetyCertificate color="white" size={20} />, // Using same icon for now, user can change later
-      linktitle: "ppv",
-    },
+  ...(isCreatorVerified ? [{
+    name: "Pay Per View",
+    icon: <AiOutlineSafetyCertificate color="white" size={20} />,
+    linktitle: "ppv",
+  }] : []),
 
     {
       name: "Help & Support",

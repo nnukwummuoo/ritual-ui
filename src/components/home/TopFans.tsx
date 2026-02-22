@@ -206,7 +206,7 @@ export default function TopFans() {
 
                 {/* Footer note */}
                 <p className="text-center text-gray-400 text-[10px] md:text-xs">
-                    Based on total spending on fan calls, fan meets, fan dates, content purchase & VIP upgrades ✨
+                    Based on total spending on fan calls, fan meets, fan dates, content purchase, VIP upgrades & PPV messages ✨
                 </p>
             </div>
         </motion.div>

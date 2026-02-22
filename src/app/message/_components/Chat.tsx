@@ -2094,7 +2094,7 @@ export const Chat = () => {
       )}
 
       {/* Input Bar - Mobile Optimized */}
-      <div className="flex items-center gap-2 sm:gap-3 p-3 sm:p-4 bg-gray-800 border-t border-blue-700/30 sticky bottom-0 z-50 flex-shrink-0 shadow-lg" style={{
+      {/* <div className="flex items-center gap-2 sm:gap-3 p-3 sm:p-4 bg-gray-800 border-t border-blue-700/30 sticky bottom-0 z-50 flex-shrink-0 shadow-lg" style={{
         paddingBottom: 'calc(1rem + env(safe-area-inset-bottom, 0px))',
         minHeight: 'calc(80px + env(safe-area-inset-bottom, 0px))'
       }}>
@@ -2109,7 +2109,7 @@ export const Chat = () => {
 
         <div className="flex items-center flex-1 px-4 py-2 bg-gray-800/50 border border-blue-600/50 rounded-full transition-all focus-within:ring-2 focus-within:ring-blue-500/20">
 
-          {/* Attachment Button */}
+        
           <button
             onClick={() => fileInputRef.current?.click()}
             className="flex-shrink-0 p-2 mr-1 text-gray-400 hover:text-blue-400 hover:bg-blue-500/10 rounded-full transition-all"
@@ -2118,7 +2118,7 @@ export const Chat = () => {
             <Paperclip className="w-5 h-5" />
           </button>
 
-          {/* PPV Toggle Button */}
+       
           {ppvEnabled && (
             <button
               onClick={() => setIsPPVMode(!isPPVMode)}
@@ -2138,19 +2138,18 @@ export const Chat = () => {
             onChange={(e) => {
               settext(e.target.value);
 
-              // Handle typing indicators
+     
               if (e.target.value.trim() && loggedInUserId && finalCreatorPortfolioId && finalCreatorPortfolioId.length >= 10) {
                 if (!isTyping) {
                   setIsTyping(true);
                   startTyping(loggedInUserId, finalCreatorPortfolioId);
                 }
 
-                // Clear existing timeout
                 if (typingTimeout) {
                   clearTimeout(typingTimeout);
                 }
 
-                // Set new timeout to stop typing after 2 seconds of inactivity
+            
                 const timeout = setTimeout(() => {
                   setIsTyping(false);
                   stopTyping(loggedInUserId, finalCreatorPortfolioId);
@@ -2186,8 +2185,93 @@ export const Chat = () => {
             <Send className="w-5 h-5" />
           )}
         </button>
-      </div>
+      </div> */}
 
+<div className="flex items-center gap-1.5 sm:gap-3 p-2 sm:p-4 bg-gray-800 border-t border-blue-700/30 sticky bottom-0 z-50 flex-shrink-0 shadow-lg" style={{
+  paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom, 0px))',
+  minHeight: 'calc(64px + env(safe-area-inset-bottom, 0px))'
+}}>
+  <input
+    type="file"
+    ref={fileInputRef}
+    onChange={handleFileSelect}
+    multiple
+    accept="image/*,video/*,.pdf,.doc,.docx,.txt"
+    className="hidden"
+  />
+
+  <div className="flex items-center flex-1 min-w-0 px-2 sm:px-4 py-2 bg-gray-800/50 border border-blue-600/50 rounded-full transition-all focus-within:ring-2 focus-within:ring-blue-500/20">
+
+    {/* Attachment Button */}
+    <button
+      onClick={() => fileInputRef.current?.click()}
+      className="flex-shrink-0 p-1 sm:p-2 text-gray-400 hover:text-blue-400 hover:bg-blue-500/10 rounded-full transition-all"
+      title="Attach file"
+    >
+      <Paperclip className="w-4 h-4 sm:w-5 sm:h-5" />
+    </button>
+
+    {/* PPV Toggle Button */}
+    {ppvEnabled && (
+      <button
+        onClick={() => setIsPPVMode(!isPPVMode)}
+        className={`flex-shrink-0 p-1 ml-1 sm:p-2 rounded-full transition-all ${isPPVMode
+            ? 'text-yellow-500 bg-yellow-500/10 hover:bg-yellow-500/20'
+            : 'text-gray-400 hover:text-yellow-500 hover:bg-yellow-500/10'
+          }`}
+        title={isPPVMode ? "Disable Pay-Per-View" : "Enable Pay-Per-View"}
+      >
+        {isPPVMode ? <Lock className="w-4 h-4 sm:w-5 sm:h-5" /> : <Unlock className="w-4 h-4 sm:w-5 sm:h-5" />}
+      </button>
+    )}
+
+    <textarea
+      className="flex-1 min-w-0 h-8 text-white placeholder-blue-300 bg-transparent outline-none resize-none text-sm sm:text-base"
+      value={text}
+      placeholder="Type a message..."
+      onChange={(e) => {
+        settext(e.target.value);
+        if (e.target.value.trim() && loggedInUserId && finalCreatorPortfolioId && finalCreatorPortfolioId.length >= 10) {
+          if (!isTyping) {
+            setIsTyping(true);
+            startTyping(loggedInUserId, finalCreatorPortfolioId);
+          }
+          if (typingTimeout) clearTimeout(typingTimeout);
+          const timeout = setTimeout(() => {
+            setIsTyping(false);
+            stopTyping(loggedInUserId, finalCreatorPortfolioId);
+          }, 2000);
+          setTypingTimeout(timeout);
+        } else if (!e.target.value.trim() && isTyping && finalCreatorPortfolioId) {
+          setIsTyping(false);
+          stopTyping(loggedInUserId, finalCreatorPortfolioId);
+          if (typingTimeout) {
+            clearTimeout(typingTimeout);
+            setTypingTimeout(null);
+          }
+        }
+      }}
+      onKeyPress={(e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          send_chat(text);
+        }
+      }}
+    />
+  </div>
+
+  <button
+    onClick={() => send_chat(text)}
+    disabled={(!text.trim() && selectedFiles.length === 0) || uploading}
+    className="flex-shrink-0 p-2 sm:p-3 bg-gray-700 hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-full transition-colors"
+  >
+    {uploading ? (
+      <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+    ) : (
+      <Send className="w-4 h-4 sm:w-5 sm:h-5" />
+    )}
+  </button>
+</div>
       {/* File Modal */}
       {selectedFileModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-90" onClick={() => setSelectedFileModal(null)}>
