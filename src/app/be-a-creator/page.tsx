@@ -3,7 +3,7 @@ import React from "react";
 import {
   FaHandHoldingUsd,
   FaVideo,
-  FaLock
+  FaLock,
   FaUsers,
   FaCreditCard,
   FaShieldAlt,
