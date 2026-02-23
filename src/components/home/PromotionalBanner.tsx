@@ -13,7 +13,7 @@ const PromotionalBanner: React.FC = () => {
 
                 {/* Sub-headline */}
                 <p className="text-white text-sm md:text-base mb-6 leading-relaxed">
-                    <span className="font-medium text-white">Mmeko is the only platform where creators can host Fan Meets, Fan Dates, Fan Calls, Pay-Per-View Messages, and Exclusive Contents with a clear safety framework and keep 100% of their earnings. no cuts • no fees • just pure connection.</span>
+                    <span className="font-medium text-white">Mmeko is the only platform where creators can host Fan Meets, Fan Dates, Fan Calls, Pay-Per-View Messages, and Exclusive Contents with a clear safety framework and keep 100% of their earnings. no platform cuts • no fees • just pure connection.</span>
                 </p>
 
                 {/* Verified Badge */}

@@ -3,6 +3,7 @@ import React from "react";
 import {
   FaHandHoldingUsd,
   FaVideo,
+  FaLock
   FaUsers,
   FaCreditCard,
   FaShieldAlt,
@@ -38,6 +39,13 @@ export default function VerificationPage(){
       subtitle: "Live Tracking",
       description:
         "Private video calls aren't just random chats. They're built to make you money. Fans pay per minute and both of you can track the balance live during the show.",
+    },
+    {
+      icon:  FaLock,
+      title: "Pay Per View Messages = Every Reply Counts",
+      subtitle: "Your Words, Your Worth",
+      description:
+        "Turn conversations into income with blurred messages fans unlock at the price you set. No subscriptions, no middlemen — just direct value for your attention. Every reply is protected, every unlock is instant, and you keep 100% of what you earn.",
     },
     {
       icon:  FaFileImage,
@@ -128,7 +136,7 @@ export default function VerificationPage(){
           <div className="mt-12 text-center bg-gradient-to-r from-blue-500/10 to-purple-600/10 p-6 rounded-xl border border-blue-500/20">
             <h3 className="text-xl font-bold mb-2">Ready to Start Earning?</h3>
             <p className="text-gray-400 mb-4">
-              Join thousands of successful creators on our platform.
+              Join hundreds of successful creators on our platform.
             </p>
             <button
               onClick={() => router.push("/be-a-creator/apply")}
