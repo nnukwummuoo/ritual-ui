@@ -721,7 +721,7 @@ export default function PostsCard() {
                   </div>
                 )}
                 {/* Inject Rituals card after the second LazyPost (index 2) */}
-                {index === 2 && (
+                {index === 1 && (
                   <div className="lg:hidden">
                     <RitualsCard />
                   </div>
@@ -732,31 +732,31 @@ export default function PostsCard() {
                     <TopFans />
                   </div>
                 )}
-                {index === 3 && (
+                {index === 2 && (
                   <div className="lg:hidden">
                     <TopFans />
                   </div>
                 )}
                 {/* Inject New Ritual card - Desktop Index 3 */}
-                {index === 3 && (
+                {index === 2 && (
                   <div className="hidden lg:block mx-auto max-w-[30rem] w-full">
                     <NewRitualCard />
                   </div>
                 )}
                 {/* Inject Top Creators - Desktop Index 2 */}
-                {index === 2 && (
+                {index === 3 && (
                   <div className="hidden lg:block mx-auto max-w-[30rem] w-full">
                     <TopCreators />
                   </div>
                 )}
                 {/* Inject New Ritual card - Mobile Index 5 */}
-                {index === 5 && (
+                {index === 4 && (
                   <div className="lg:hidden">
                     <NewRitualCard />
                   </div>
                 )}
                 {/* Inject Top Creators - Mobile Index 4 */}
-                {index === 4 && (
+                {index === 3 && (
                   <div className="lg:hidden">
                     <TopCreators />
                   </div>
