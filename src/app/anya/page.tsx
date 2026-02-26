@@ -457,6 +457,7 @@ export default function AnyaPage() {
                     <h2 className="text-2xl md:text-5xl leading-tight drop-shadow-2xl">
                       {story.title}
                     </h2>
+                    <p className="text-gray-400 text-sm md:text-base">Episode {story.story_number}</p>
 
                     <p className="text-gray-300 text-lg md:text-xl">
                       {story.panels?.length || 0} Scenes
@@ -610,6 +611,7 @@ export default function AnyaPage() {
                       <h3 className="text-sm md:text-base font-bold mb-1 line-clamp-2">
                         {story.title}
                       </h3>
+                      <p className="text-xs text-gray-400">Episode {story.story_number}</p>
 
                       {/* Scene Count */}
                       <p className="text-xs text-gray-300 mb-2">

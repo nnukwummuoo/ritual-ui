@@ -316,7 +316,7 @@ export default function StoryViewPage() {
 
                         <div className="flex-1 mx-4 text-center">
                             <h1 className="text-lg md:text-xl font-bold line-clamp-1">{story.title}</h1>
-                            {/* <p className="text-sm text-gray-400">{story.emotional_core}</p> */}
+                            <p className="text-sm text-gray-400">Episode {story.story_number}</p>
                         </div>
 
                         <button
@@ -508,6 +508,7 @@ export default function StoryViewPage() {
                             <h2 className="text-3xl md:text-5xl font-bold leading-tight mb-4">
                                 {story.title}
                             </h2>
+                            <p className="text-gray-400 text-lg mb-6">Episode {story.story_number}</p>
 
                             {/* Story Stats */}
                             <div className="flex items-center justify-center gap-8 text-gray-300 mb-8">
