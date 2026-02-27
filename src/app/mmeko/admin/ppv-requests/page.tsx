@@ -75,7 +75,7 @@ export default function PPVRequestsPage() {
                                 </div>
                                 <div>
                                     <h3 className="font-bold text-lg">{req.firstname} {req.lastname}</h3>
-                                    <p className="text-gray-400 text-sm">@{req.username}</p>
+                                    <p className="text-gray-400 text-sm">{req.username}</p>
                                 </div>
                             </div>
 

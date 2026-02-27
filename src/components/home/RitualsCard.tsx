@@ -161,6 +161,7 @@ const RitualsCard: React.FC = () => {
                                 <h3 className="text-sm font-bold mb-1 line-clamp-2">
                                     {story.title}
                                 </h3>
+                                <p className="text-xs text-gray-400 mb-1">Episode {story.story_number}</p>
 
                                 {/* Scene Count */}
                                 <p className="text-xs text-gray-300 mb-2">
