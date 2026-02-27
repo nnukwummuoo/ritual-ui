@@ -28,9 +28,12 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: {
     template: "Mmeko | %s",
-    default: "Mmeko - Welcome",
+    default: "Mmeko",
   },
-  description: "",
+  description: "Join Mmeko today — creators keep 100%, enjoy instant payouts, and connect with fans through safe meets, calls, and PPV content.",
+  alternates: {
+    canonical: 'https://mmeko.com', // This adds the <link rel="canonical" ...> tag
+  },
   manifest: "/manifest.json",
   themeColor: "#00A86B",
   viewport: {
