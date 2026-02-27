@@ -74,6 +74,9 @@ const AdminPage = () => {
   // State for support chat count
   const [supportChatCount, setSupportChatCount] = useState(0);
 
+  // State for PPV requests count (pending)
+  const [ppvRequestsCount, setPpvRequestsCount] = useState(0);
+
   // Notification logic remains unchanged
   useEffect(() => {
     const ping = () => {
@@ -139,6 +142,28 @@ const AdminPage = () => {
       fetchSupportChatCount();
       // Refresh every 30 seconds
       const interval = setInterval(fetchSupportChatCount, 30000);
+      return () => clearInterval(interval);
+    }
+  }, [token]);
+
+  // Fetch PPV requests count on mount and periodically
+  useEffect(() => {
+    const fetchPpvRequestsCount = async () => {
+      try {
+        const res = await axios.get(`${URL}/api/ppv/admin/requests`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        });
+        const requests = res.data?.ok ? res.data.requests || [] : [];
+        setPpvRequestsCount(requests.length);
+      } catch (err) {
+        console.error("Error fetching PPV requests count:", err);
+        setPpvRequestsCount(0);
+      }
+    };
+
+    if (token) {
+      fetchPpvRequestsCount();
+      const interval = setInterval(fetchPpvRequestsCount, 30000);
       return () => clearInterval(interval);
     }
   }, [token]);
@@ -307,6 +332,11 @@ const AdminPage = () => {
                 {item.name === "Withdrawal Requests" && pendingWithdrawalsCount > 0 && (
                   <span className="ml-2 bg-yellow-500 text-white px-1.5 py-1 rounded-full text-xs">
                     {pendingWithdrawalsCount}
+                  </span>
+                )}
+                {item.name === "PPV Requests" && ppvRequestsCount > 0 && (
+                  <span className="ml-2 bg-red-500 text-white px-1.5 py-1 rounded-full text-xs">
+                    {ppvRequestsCount}
                   </span>
                 )}
               </li>

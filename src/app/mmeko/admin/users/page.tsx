@@ -58,6 +58,9 @@ interface User {
   referredBy?: string;
   referralCount?: number;
   rewardBalance?: number;
+  ppvStatus?: string;
+  ppvEnabled?: boolean;
+  ppvPrice?: number;
 }
 
 
@@ -1117,6 +1120,65 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, isOpen, onClose
                     </div>
                   </div>
                 )}
+              </div>
+            </div>
+
+            {/* PPV Access */}
+            <div className="bg-gray-800 p-4 rounded-lg">
+              <h3 className="text-lg font-semibold text-yellow-500 mb-4">PPV Access</h3>
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <label className="text-gray-300 text-sm">PPV Status:</label>
+                  <span className={`px-2 py-1 rounded text-xs capitalize ${user.ppvStatus === "approved" ? "bg-green-500" : user.ppvStatus === "pending" ? "bg-yellow-500" : user.ppvStatus === "declined" ? "bg-red-500" : "bg-gray-500"}`}>
+                    {user.ppvStatus || "none"}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <label className="text-gray-300 text-sm">PPV Enabled:</label>
+                  <span className={`px-2 py-1 rounded text-xs ${user.ppvEnabled ? "bg-green-500" : "bg-gray-500"}`}>
+                    {user.ppvEnabled ? "Yes" : "No"}
+                  </span>
+                </div>
+                {(user.ppvPrice !== undefined && user.ppvPrice !== null) && (
+                  <div>
+                    <label className="text-gray-300 text-sm">PPV Price</label>
+                    <p className="text-white">{user.ppvPrice} gold</p>
+                  </div>
+                )}
+                <div className="flex gap-2 mt-2">
+                  {!user.ppvEnabled ? (
+                    <button
+                      onClick={async () => {
+                        try {
+                          await onUpdateUser(user._id, { ppvStatus: "approved", ppvEnabled: true });
+                          setEditedUser(prev => ({ ...prev, ppvStatus: "approved", ppvEnabled: true }));
+                          toast.success("PPV access granted");
+                        } catch {
+                          toast.error("Failed to grant PPV");
+                        }
+                      }}
+                      className="bg-green-500 text-white px-4 py-2 rounded text-sm hover:bg-green-600"
+                    >
+                      Grant PPV
+                    </button>
+                  ) : (
+                    <button
+                      onClick={async () => {
+                        if (!window.confirm("Remove PPV access for this user? They will no longer be able to use PPV until re-approved.")) return;
+                        try {
+                          await onUpdateUser(user._id, { ppvStatus: "none", ppvEnabled: false });
+                          setEditedUser(prev => ({ ...prev, ppvStatus: "none", ppvEnabled: false }));
+                          toast.success("PPV access removed");
+                        } catch {
+                          toast.error("Failed to remove PPV");
+                        }
+                      }}
+                      className="bg-red-500 text-white px-4 py-2 rounded text-sm hover:bg-red-600"
+                    >
+                      Remove PPV
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
 
