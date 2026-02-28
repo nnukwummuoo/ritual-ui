@@ -18,7 +18,7 @@ const PromotionalBanner: React.FC = () => {
 
                 {/* Verified Badge */}
                 <div className="flex items-center gap-2">
-                    <BadgeCheck size={48} fill="#22c55e" className="text-white" />
+                    <BadgeCheck size={34} fill="#22c55e" className="text-white" />
                     <span className="text-white text-base font-medium">Trusted by creators worldwide with instant payouts and structured safety.</span>
                 </div>
             </div>
