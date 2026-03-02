@@ -125,7 +125,7 @@ const faqItems: { question: string; answer: string }[] = [
   {
     question: "How do I get paid?",
     answer:
-      "You keep 100% of what you earn. Payouts are processed through the platform with instant wallet releases and options for crypto cashouts. No holds, no chargebacks—just your money, on your terms.",
+      "You keep 100% of what you earn. Payouts are processed through the platform with instant wallet releases and options for crypto cashouts. No platform cut, no chargebacks—just your money, on your terms.",
   },
   {
     question: "How long does verification take?",

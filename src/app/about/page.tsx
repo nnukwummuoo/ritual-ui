@@ -5,7 +5,7 @@ import AboutBackHeader from "./_components/AboutBackHeader";
 export const metadata: Metadata = {
   title: "About Mmeko",
   description:
-    "A platform built for creator sovereignty. Mmeko gives creators full control over their work, earnings, and audience — 100% of what you earn, no holds, no middlemen.",
+    "A platform built for creator sovereignty. Mmeko gives creators full control over their work, earnings, and audience — 100% of what you earn, no platform cut, no middlemen.",
 };
 
 const AboutPage: React.FC = () => {
@@ -41,7 +41,7 @@ const AboutPage: React.FC = () => {
             <span className="text-blue-400 font-bold shrink-0">•</span>
             <span>
               <strong className="text-gray-200">Instant Payouts</strong> — Your
-              earnings are released the moment you make them. No holds, no
+              earnings are released the moment you make them. No platform cut, no
               delays, no waiting periods.
             </span>
           </li>

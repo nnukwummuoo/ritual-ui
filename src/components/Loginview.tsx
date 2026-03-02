@@ -700,7 +700,7 @@ export const Loginview = () => {
           <h1 className="text-white text-sm font-bold">Meet Your Fans • Keep 100% • Stay Safe</h1>
         </div>
         <p className="text-white text-sm leading-relaxed text-left">
-          Mmeko is the only platform where creators can host Fan Meets, Fan Dates, Fan Calls, Pay-Per-View Messages, and Exclusive Contents with a clear safety framework and keep 100% of their earnings. 
+          No Platform Cut. Instant Payouts. Structured Safety.
         </p>
       </div>
 
