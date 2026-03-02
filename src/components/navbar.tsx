@@ -14,20 +14,21 @@ export default function Navbar({ isAuthenticated }: { isAuthenticated: boolean }
   return (
     <>
       {/* Mobile/Tablet Navbar - Hidden on lg screens and up */}
-      <div className="z-[100] w-full fixed top-0 left-0 bg-gray-900 h-12 border-b border-b-gray-500 lg:hidden">
+      <div
+        className={`z-[100] w-full fixed top-0 left-0 h-12 lg:hidden ${isAuthenticated ? "bg-gray-900" : ""}`}
+        style={!isAuthenticated ? { backgroundColor: "#0c0f27" } : undefined}
+      >
         <div className="flex items-center text-orange-600 justify-between">
-          <div className="absolute left-0 top-0 p-2 flex items-center justify-between w-full">
+          <div className={`absolute left-0 top-0 p-2 flex items-center w-full ${isAuthenticated ? "justify-between" : "justify-start"}`}>
             {isAuthenticated ? (
               <button onClick={toggle} className="navBtn">
                 <span className="bg-clip-text bg-gradient-to-r from-blue-500 to-purple-600 text-blue-500">
                   {isOpen ? <FaTimes size={25} className="text-blue-500" /> : <FaBars size={25} />}
                 </span>
               </button>
-            ) : (
-              <div className="size-6" />
-            )}
+            ) : null}
             <Image src={anyaLogo} alt="logo" className="logo" />
-            <div className="size-6"></div>
+            {isAuthenticated ? <div className="size-6" /> : <div className="flex-1" />}
           </div>
           {!isAuthenticated && (
             <button
