@@ -680,6 +680,17 @@ export default function PostsCard() {
           <div className="flex flex-col gap-6">
             {remainingPosts.map((post, index) => (
               <React.Fragment key={post?.postid || post?.id || post?._id || index}>
+                {/* Inject How It Works + Creator Cards above first post */}
+                {index === 0 && (
+                  <>
+                    <div className="mx-auto max-w-[30rem] w-full">
+                      <HowItWorksCard />
+                    </div>
+                    <div className="lg:hidden">
+                      <CreatorCards />
+                    </div>
+                  </>
+                )}
                 <div
                   ref={(el) => {
                     if (el) {
@@ -707,58 +718,43 @@ export default function PostsCard() {
                     isFirstPost={false}
                   />
                 </div>
-               
-                {/* Inject How It Works card at index 0 (both mobile and desktop) */}
+                {/* After post 2 (index 1): TopFans desktop, RitualsCard mobile */}
                 {index === 0 && (
-                  <div className="mx-auto max-w-[30rem] w-full">
-                    <HowItWorksCard />
-                  </div>
+                  <>
+                    <div className="hidden lg:block mx-auto max-w-[30rem] w-full">
+                      <TopFans />
+                    </div>
+                    <div className="lg:hidden">
+                      <RitualsCard />
+                    </div>
+                  </>
                 )}
-                {/* Inject Creator Cards after index 0 */}
-                {index === 0 && (
-                  <div className="lg:hidden">
-                    <CreatorCards />
-                  </div>
-                )}
-                {/* Inject Rituals card after the second LazyPost (index 2) */}
+                {/* After post 3 (index 2): NewRitualCard desktop, TopFans mobile */}
                 {index === 1 && (
-                  <div className="lg:hidden">
-                    <RitualsCard />
-                  </div>
+                  <>
+                    <div className="hidden lg:block mx-auto max-w-[30rem] w-full">
+                      <NewRitualCard />
+                    </div>
+                    <div className="lg:hidden">
+                      <TopFans />
+                    </div>
+                  </>
                 )}
-                {/* Inject Top Fans card - index 1 on lg+, index 3 on smaller */}
-                {index === 1 && (
-                  <div className="hidden lg:block mx-auto max-w-[30rem] w-full">
-                    <TopFans />
-                  </div>
-                )}
+                {/* After post 4 (index 3): TopCreators desktop + mobile */}
                 {index === 2 && (
-                  <div className="lg:hidden">
-                    <TopFans />
-                  </div>
+                  <>
+                    <div className="hidden lg:block mx-auto max-w-[30rem] w-full">
+                      <TopCreators />
+                    </div>
+                    <div className="lg:hidden">
+                      <TopCreators />
+                    </div>
+                  </>
                 )}
-                {/* Inject New Ritual card - Desktop Index 3 */}
-                {index === 2 && (
-                  <div className="hidden lg:block mx-auto max-w-[30rem] w-full">
-                    <NewRitualCard />
-                  </div>
-                )}
-                {/* Inject Top Creators - Desktop Index 2 */}
-                {index === 3 && (
-                  <div className="hidden lg:block mx-auto max-w-[30rem] w-full">
-                    <TopCreators />
-                  </div>
-                )}
-                {/* Inject New Ritual card - Mobile Index 5 */}
-                {index === 4 && (
-                  <div className="lg:hidden">
-                    <NewRitualCard />
-                  </div>
-                )}
-                {/* Inject Top Creators - Mobile Index 4 */}
+                {/* After post 5 (index 4): NewRitualCard mobile only */}
                 {index === 3 && (
                   <div className="lg:hidden">
-                    <TopCreators />
+                    <NewRitualCard />
                   </div>
                 )}
               </React.Fragment>

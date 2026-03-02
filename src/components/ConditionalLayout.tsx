@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
@@ -160,17 +161,22 @@ export default function ConditionalLayout({ children, isAuthenticated }: Conditi
   // Otherwise, render with main layout
   return (
     <main className="flex overflow-hidden h-screen relative">
-      {/* Sidebar Container - Hidden on mobile, visible on sm and up */}
-      <div className="hidden sm:block md:p-4 h-full overflow-hidden flex items-center sm:w-1/4 flex-shrink-0">
-        <div className="h-full w-full">
-          <Sidebar />
-        </div>
-      </div>
+      {/* Sidebar - only shown when authenticated */}
+      {isAuthenticated && (
+        <>
+          {/* Sidebar Container - Hidden on mobile, visible on sm and up */}
+          <div className="hidden sm:block md:p-4 h-full overflow-hidden flex items-center sm:w-1/4 flex-shrink-0">
+            <div className="h-full w-full">
+              <Sidebar />
+            </div>
+          </div>
 
-      {/* Mobile Sidebar - Only visible on mobile, positioned fixed */}
-      <div className="sm:hidden">
-        <Sidebar />
-      </div>
+          {/* Mobile Sidebar - Only visible on mobile, positioned fixed */}
+          <div className="sm:hidden">
+            <Sidebar />
+          </div>
+        </>
+      )}
 
       {/* Navbar - Hidden on md devices and up */}
       <div className="md:hidden">
@@ -192,8 +198,7 @@ export default function ConditionalLayout({ children, isAuthenticated }: Conditi
       )}
 
       {/* Promo Modal - Only shown on home route for unauthenticated users */}
-      {/* Promo Modal - Only shown on home route for unauthenticated users after delay */}
-      {!isAuthenticated && isHomeRoute && showPromo && <UnauthenticatedPromoModal />}
+      {/* {!isAuthenticated && isHomeRoute && showPromo && <UnauthenticatedPromoModal />} */}
 
 
       <div className={`flex-1 flex flex-col overflow-hidden transition-all duration-300 min-w-0 min-h-0 md:mt-0 mt-12`}>
@@ -207,8 +212,8 @@ export default function ConditionalLayout({ children, isAuthenticated }: Conditi
             <div className="w-full max-w-full min-w-0 overflow-x-hidden">
               {children}
             </div>
-            {/* Show CreatorCards only on home route and make it same size as bottom navbar */}
-            {isHomeRoute && (
+            {/* Show CreatorCards only on home route when authenticated */}
+            {isHomeRoute && isAuthenticated && (
               <div className="w-full h-full max-[1000px]:w-0 lg:block hidden">
                 <div className="sticky top-28 self-start -mr-16 space-y-4">
                   <div className="w-[25rem] mx-auto max-[600px]:w-[90%] rounded-2xl px-4 pt-4 pb-2 bg-gray-900">
@@ -224,7 +229,7 @@ export default function ConditionalLayout({ children, isAuthenticated }: Conditi
           {isAuthenticated && !isMessageRoute && <div className="h-24 md:h-0"></div>}
         </div>
         {isAuthenticated && <BottomNavBar />}
-        {!isAuthenticated && <ShouldRenderPopUp />}
+        {/* {!isAuthenticated && <ShouldRenderPopUp />} */}
       </div>
     </main>
   );

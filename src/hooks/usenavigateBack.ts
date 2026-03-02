@@ -12,6 +12,5 @@ export default function useNavigateBack(){
       setPrevPageURL(prev)
     }
   }, []);
-
     return prevPageURL
 }
