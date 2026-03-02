@@ -200,7 +200,7 @@ function LovedByCreators({
         The Platform Where Creators Keep 100% With Instant Payouts and Structured Safety.
       </h2>
       <p className="text-gray-400 text-xs md:text-sm text-center mt-1">
-        No holds. No chargebacks. Just safe connections and full earnings.
+        No platform cut. No chargebacks. Just safe connections and full earnings.
       </p>
     </motion.div>
   );
