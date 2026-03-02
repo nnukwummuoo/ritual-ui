@@ -17,15 +17,17 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion, useInView } from "framer-motion";
-import { getImageSource } from "@/lib/imageUtils";
-
 interface CreatorAvatar {
   userId: string;
   username: string;
   photolink: string | null;
 }
 
-const CREATOR_AVATAR_COUNT = 10;
+// Static creator images for "Loved by creators" (public/creator (1).jpeg … creator (7).jpeg)
+const STATIC_CREATOR_IMAGES = Array.from(
+  { length: 7 },
+  (_, i) => `/creator (${i + 1}).jpeg`
+);
 
 const features = [
   {
@@ -137,71 +139,11 @@ const cardTap = { scale: 0.99 };
 const buttonHover = { scale: 1.02 };
 const buttonTap = { scale: 0.98 };
 
-function getInitials(username: string): string {
-  if (!username) return "?";
-  const clean = username.replace("@", "").trim();
-  if (clean.length >= 2) return clean.substring(0, 2).toUpperCase();
-  return clean.charAt(0).toUpperCase();
-}
-
 function LovedByCreators({
-  prefetchedCreators,
+  prefetchedCreators: _prefetchedCreators,
 }: {
   prefetchedCreators?: CreatorAvatar[] | null;
 }) {
-  const [creators, setCreators] = useState<CreatorAvatar[]>(prefetchedCreators ?? []);
-  const [loading, setLoading] = useState(
-    () => !prefetchedCreators || prefetchedCreators.length === 0
-  );
-
-  // Use prefetched data when provided (e.g. from home page); sync when it arrives async
-  useEffect(() => {
-    if (prefetchedCreators !== undefined && prefetchedCreators !== null) {
-      setCreators(prefetchedCreators);
-      setLoading(prefetchedCreators.length === 0);
-      return;
-    }
-    setLoading(true);
-    let cancelled = false;
-    (async () => {
-      try {
-        const res = await fetch("/api/proxy/top_creators");
-        const data = await res.json();
-        if (!cancelled && data?.ok && Array.isArray(data.creators)) {
-          setCreators(
-            data.creators
-              .slice(0, CREATOR_AVATAR_COUNT)
-              .map((c: { userId: string; username: string; photolink?: string | null }) => ({
-                userId: c.userId,
-                username: c.username || "",
-                photolink: c.photolink ?? null,
-              }))
-          );
-        }
-      } catch {
-        if (!cancelled) {
-          setCreators(
-            Array.from({ length: CREATOR_AVATAR_COUNT }, (_, i) => ({
-              userId: `placeholder-${i}`,
-              username: ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"][i],
-              photolink: null,
-            }))
-          );
-        }
-      }
-      if (!cancelled) setLoading(false);
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [prefetchedCreators]);
-
-  useEffect(() => {
-    if (creators.length > 0) setLoading(false);
-  }, [creators.length]);
-
-  const showSkeleton = loading && creators.length === 0;
-
   return (
     <motion.div
       className="flex flex-col items-center mt-8 justify-center mb-8"
@@ -210,55 +152,22 @@ function LovedByCreators({
       transition={tMedium}
     >
       <div className="flex items-center justify-center -space-x-3">
-        {showSkeleton
-          ? Array.from({ length: CREATOR_AVATAR_COUNT }, (_, index) => (
-              <div
-                key={`skeleton-${index}`}
-                className="relative w-10 h-10 rounded-full overflow-hidden border-2 border-gray-900 flex-shrink-0 bg-gray-700 animate-pulse"
-                style={{ zIndex: CREATOR_AVATAR_COUNT - index }}
-              />
-            ))
-          : creators.map((creator, index) => (
+        {STATIC_CREATOR_IMAGES.map((src, index) => (
           <motion.div
-            key={creator.userId}
-            className="relative w-10 h-10 rounded-full overflow-hidden border-2 border-gray-900 bg-gray-700 flex-shrink-0 flex items-center justify-center"
+            key={src}
+            className="relative w-10 h-10 rounded-full overflow-hidden border-2 border-gray-900 bg-gray-700 flex-shrink-0 flex items-center justify-center cursor-default pointer-events-none select-none"
             initial={{ opacity: 0, scale: 0.92 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: index * 0.02, ...tFast }}
-            whileHover={{ scale: 1.06, zIndex: 10 }}
-            style={{ zIndex: creators.length - index }}
+            style={{ zIndex: STATIC_CREATOR_IMAGES.length - index }}
           >
-            {creator.photolink &&
-            creator.photolink.trim() &&
-            creator.photolink !== "null" &&
-            creator.photolink !== "undefined" ? (
-              // eslint-disable-next-line @next/next/no-img-element -- dynamic user profile URLs
-              <img
-                src={getImageSource(creator.photolink, "profilePhotos").src}
-                alt={creator.username}
-                className="w-full h-full object-cover"
-                onError={(e) => {
-                  const target = e.currentTarget;
-                  target.style.display = "none";
-                  const fallback = target.nextElementSibling as HTMLElement;
-                  if (fallback) fallback.style.display = "flex";
-                }}
-              />
-            ) : null}
-            <div
-              className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-500 to-purple-600 text-white text-xs font-bold"
-              style={{
-                display:
-                  creator.photolink &&
-                  creator.photolink.trim() &&
-                  creator.photolink !== "null" &&
-                  creator.photolink !== "undefined"
-                    ? "none"
-                    : "flex",
-              }}
-            >
-              {getInitials(creator.username)}
-            </div>
+            {/* eslint-disable-next-line @next/next/no-img-element -- static public assets, decorative only */}
+            <img
+              src={src}
+              alt=""
+              className="w-full h-full object-cover"
+              draggable={false}
+            />
           </motion.div>
         ))}
       </div>
