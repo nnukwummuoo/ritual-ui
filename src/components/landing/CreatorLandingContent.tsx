@@ -5,6 +5,8 @@ import {
   FaHandHoldingUsd,
   FaVideo,
   FaLock,
+  FaBolt,
+  FaCompass,
   FaUsers,
   FaCreditCard,
   FaShieldAlt,
@@ -33,7 +35,7 @@ const features = [
     title: "Keep 100% of Your Earnings",
     subtitle: "Forever",
     description:
-      "Unlike other platforms, we take 0%. Every cent you make from Fan Meets, Fan Dates, Fan Calls, and Exclusive Contents is yours.",
+      "Unlike other platforms, we take 0%. Every cent you make from Fan Meets, Fan Dates, Fan Calls, PPVs and Exclusive Contents is yours.",
   },
   {
     icon: FaCreditCard,
@@ -62,6 +64,20 @@ const features = [
     subtitle: "Keep Everything You Earn",
     description:
       "Dropping exclusive photos, videos, or bundles? Fans pay upfront through the platform — no subscriptions, no cuts, no chargebacks. Every sale is pure profit, 100% yours, with delivery handled automatically so your content stays protected and respected.",
+  },
+  {
+    icon: FaCompass,
+    title: "Algorithm Boost = More Eyes, More Impact",
+    subtitle: "Reach the Fans Who Actually Care.",
+    description:
+      "Get discovered naturally by the algorithm and land on fans’ feeds who are most likely to engage. No tricks, no waiting — just optimized exposure that increases your reach. Every post has a chance to trend, every interaction counts, and your content works for you. Instant visibility. Real growth. Full control.",
+  },
+  {
+    icon: FaBolt,
+    title: "Instant Payouts = Your Earnings, On Demand",
+    subtitle: "Cash Out. No Delays. No Excuses.",
+    description:
+      "Access your money the moment you decide to withdraw. No waiting periods, no complicated approvals — just a smooth, direct transfer when you request it. Your balance stays in your control, your timing sets the pace, and what you earn stays yours. Simple process. Immediate release. 100% yours.",
   },
   {
     icon: FaUsers,
@@ -114,7 +130,7 @@ const faqItems: { question: string; answer: string }[] = [
   {
     question: "How long does verification take?",
     answer:
-      "Most creator applications are reviewed within hours. Once verified, you can set up your profile and start accepting fan meets, calls, dates, and selling content right away.",
+      "Creators applications are reviewed within minutes. Once verified, you can set up your profile and start accepting fan meets, calls, dates, ppvs and selling content right away.",
   },
   {
     question: "Is my content and data protected?",
@@ -122,9 +138,14 @@ const faqItems: { question: string; answer: string }[] = [
       "Yes. We use structured safety rules, secure payments, and respect your control over your content. Exclusive content is delivered through the platform so you stay protected and in charge.",
   },
   {
-    question: "How do fan meets and fan calls work?",
+    question: "How do fan meets/dates work?",
     answer:
-      "Fans pay upfront for meets and per minute for video calls. Transport for meets is covered through the platform. You and the fan can track balances in real time, and you receive your earnings with no platform fee.",
+      "Fans cover transport fare upfront through the platform, we handle the logistics so you stay safe and respected and creators may include any reasonable expenses in their transport fare price. All Fan Meets and Fan Dates are limited to 30 minutes and must happen in public places.",
+  },
+  {
+    question: "How do fan call work?",
+    answer:
+      "Fan Call is a live call where fans pay per minute, and both sides track it in real time.",
   },
 ];
 
@@ -463,7 +484,7 @@ export default function CreatorLandingContent({
               <FaClock className="text-green-400" size={28} />
             </div>
             <h2 className="text-2xl font-bold mb-3">
-              Apply and be a Verified Creator within Hours
+              Apply and be a Verified Creator within Minutes
             </h2>
             <p className="text-gray-300 mb-6 leading-relaxed">
               Fast-track verification process with premium benefits.
@@ -482,14 +503,12 @@ export default function CreatorLandingContent({
 
         {/* What Sets Us Apart */}
         <div ref={sectionRef} className="px-2">
-          <motion.h2
+          <h2
             className="text-3xl font-bold text-center mb-8"
-            initial={{ opacity: 0, y: 12 }}
-            animate={sectionInView ? { opacity: 1, y: 0 } : {}}
-            transition={tMedium}
+           
           >
             What Sets Us Apart?
-          </motion.h2>
+          </h2>
           <div className="space-y-8">
             {features.map((feature, index) => (
               <FeatureCard key={index} feature={feature} />
@@ -511,7 +530,7 @@ export default function CreatorLandingContent({
           >
             <h3 className="text-xl font-bold mb-2">Ready to Start Earning?</h3>
             <p className="text-gray-400 mb-4">
-              Join hundreds of successful creators on our platform.
+              Join thousands of successful creators on our platform.
             </p>
             <motion.button
               onClick={() => router.push("/auth/register")}

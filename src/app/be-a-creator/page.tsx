@@ -3,6 +3,8 @@ import React from "react";
 import {
   FaHandHoldingUsd,
   FaVideo,
+  FaBolt,
+  FaCompass,
   FaLock,
   FaUsers,
   FaCreditCard,
@@ -24,7 +26,7 @@ export default function VerificationPage(){
       title: "Keep 100% of Your Earnings",
       subtitle: "Forever",
       description:
-        "Unlike other platforms, we take 0%. Every cent you make from Fan Meets, Fan Dates, Fan Calls, and Exclusive Contents is yours.",
+        "Unlike other platforms, we take 0%. Every cent you make from Fan Meets, Fan Dates, Fan Calls, PPVs and Exclusive Contents is yours.",
     },
     {
       icon: FaCreditCard,
@@ -53,6 +55,20 @@ export default function VerificationPage(){
       subtitle: "Keep Everything You Earn",
       description:
         "Dropping exclusive photos, videos, or bundles? Fans pay upfront through the platform — no subscriptions, no cuts, no chargebacks. Every sale is pure profit, 100% yours, with delivery handled automatically so your content stays protected and respected.",
+    },
+    {
+        icon: FaCompass,
+        title: "Algorithm Boost = More Eyes, More Impact",
+        subtitle: "Reach the Fans Who Actually Care.",
+        description:
+          "Get discovered naturally by the algorithm and land on fans’ feeds who are most likely to engage. No tricks, no waiting — just optimized exposure that increases your reach. Every post has a chance to trend, every interaction counts, and your content works for you. Instant visibility. Real growth. Full control.",
+    },
+    {
+        icon: FaBolt,
+        title: "Instant Payouts = Your Earnings, On Demand",
+        subtitle: "Cash Out. No Delays. No Excuses.",
+        description:
+          "Access your money the moment you decide to withdraw. No waiting periods, no complicated approvals — just a smooth, direct transfer when you request it. Your balance stays in your control, your timing sets the pace, and what you earn stays yours. Simple process. Immediate release. 100% yours.",
     },
     {
       icon: FaUsers,
@@ -86,7 +102,7 @@ export default function VerificationPage(){
               <FaClock className="text-green-400" size={28} />
             </div>
             <h2 className="text-2xl font-bold mb-3">
-              Apply and be a Verified Creator within Hours
+              Apply and be a Verified Creator within Minutes
             </h2>
             <p className="text-gray-300 mb-6 leading-relaxed">
               Fast-track verification process with premium benefits.
@@ -136,7 +152,7 @@ export default function VerificationPage(){
           <div className="mt-12 text-center bg-gradient-to-r from-blue-500/10 to-purple-600/10 p-6 rounded-xl border border-blue-500/20">
             <h3 className="text-xl font-bold mb-2">Ready to Start Earning?</h3>
             <p className="text-gray-400 mb-4">
-              Join hundreds of successful creators on our platform.
+              Join thousands of successful creators on our platform.
             </p>
             <button
               onClick={() => router.push("/be-a-creator/apply")}
