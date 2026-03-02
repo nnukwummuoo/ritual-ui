@@ -1,42 +1,82 @@
-
 import React from "react";
-import { FaGraduationCap } from "react-icons/fa";
-import SearchBar from "@/components/help/searchbar";
-import SupportButton from "@/components/help/supportButton";
-import Breadcrumbs from "@/components/help/breadcrumb";
-import TitleSection from "@/components/help/titleSection";
-import ArticleList from "@/components/help/articlelist";
+import type { Metadata } from "next";
+import AboutBackHeader from "./_components/AboutBackHeader";
 
-interface Article {
-  title: string;
-  ref: string;
-}
+export const metadata: Metadata = {
+  title: "About Mmeko",
+  description:
+    "A platform built for creator sovereignty. Mmeko gives creators full control over their work, earnings, and audience — 100% of what you earn, no holds, no middlemen.",
+};
 
 const AboutPage: React.FC = () => {
-  const articles: Article[] = [
-    { title: "What is Mmeko?", ref: "/aboutmmeko" },
-    { title: "Is the platform free?", ref: "/is-platformfree" },
-    { title: "Do you allow explicit content?", ref: "/Explicitcontent" },
-    { title: "How do I sell exclusive content?", ref: "/how-do-i-sell" },
-    { title: "How do you ensure safety and legitimacy?", ref: "/Whouse" },
-  ];
-
   return (
-    <div className="min-h-screen px-1 pt-4 text-white bg-black md:mt-6 md:px-0">
-      <SearchBar />
+    <div className="min-h-screen text-white bg-black px-4 py-8 md:py-12 md:px-6">
+      <div className="max-w-2xl mx-auto">
+        <AboutBackHeader />
+        <h1 className="text-3xl md:text-4xl text-center font-bold mb-2 bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
+          About Mmeko
+        </h1>
+        <p className="text-xl md:text-2xl text-center font-semibold text-gray-200 mb-8">
+          A Platform Built for Creator Sovereignty
+        </p>
 
-      <div className="p-4">
-        <Breadcrumbs title="About" />
-        <TitleSection
-          title="About"
-          article="6 articles"
-          icon={<FaGraduationCap size={30} />}
-        />
+        <p className="text-gray-300 leading-relaxed mb-8">
+          Mmeko is more than a platform — it&apos;s a movement to give creators
+          full control over their work, their earnings, and their audience. We
+          believe every interaction has value, and creators deserve to keep 100%
+          of what they earn without waiting periods, hidden cuts, or middlemen.
+        </p>
 
-        <ArticleList articles={articles} />
+        <h2 className="text-xl font-bold text-white mb-4">What We Offer</h2>
+        <ul className="space-y-4 mb-10 text-gray-300 leading-relaxed">
+          <li className="flex gap-3">
+            <span className="text-blue-400 font-bold shrink-0">•</span>
+            <span>
+              <strong className="text-gray-200">Pay Per View Messages</strong> —
+              Blur replies until fans unlock them at the price you set. Every
+              word counts, every unlock is instant.
+            </span>
+          </li>
+          <li className="flex gap-3">
+            <span className="text-blue-400 font-bold shrink-0">•</span>
+            <span>
+              <strong className="text-gray-200">Instant Payouts</strong> — Your
+              earnings are released the moment you make them. No holds, no
+              delays, no waiting periods.
+            </span>
+          </li>
+          <li className="flex gap-3">
+            <span className="text-blue-400 font-bold shrink-0">•</span>
+            <span>
+              <strong className="text-gray-200">Discovery Feed</strong> — Fans
+              can find you easily, with AI‑powered discovery coming soon to
+              amplify your reach.
+            </span>
+          </li>
+          <li className="flex gap-3">
+            <span className="text-blue-400 font-bold shrink-0">•</span>
+            <span>
+              <strong className="text-gray-200">Fan Interactions</strong> — Go
+              beyond content with Fan Meets, Fan Calls, and Fan Dates — all
+              designed with safety and transparency at the core.
+            </span>
+          </li>
+        </ul>
+
+        <h2 className="text-xl font-bold text-white mb-4">Why Mmeko</h2>
+        <p className="text-gray-300 leading-relaxed mb-10">
+          We&apos;re building a space where creators rise on their own terms.
+          Early adopters enjoy VIP visibility in a smaller creator pool, making
+          it easier to grow and secure top placement before the platform scales.
+        </p>
+
+        <h2 className="text-xl font-bold text-white mb-4">Our Vision</h2>
+        <p className="text-gray-300 leading-relaxed">
+          Mmeko is designed for dignity, legitimacy, and generational legacy.
+          Every feature is choreographed to protect creators&apos; energy,
+          ensure transparency, and build trust with fans.
+        </p>
       </div>
-
-      <SupportButton />
     </div>
   );
 };

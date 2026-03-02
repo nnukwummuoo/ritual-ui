@@ -17,6 +17,8 @@ const publicRoutes = [
   '/change-log',
   '/feedback',
   '/support',
+  '/about',
+  '/blog',
   "/creators",
   '/offline',
   '/banned',  // Allow banned users to access banned page

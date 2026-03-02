@@ -1,7 +1,10 @@
 "use client";
 import React, { useState, useRef, useEffect } from "react";
 import { IoChevronBackOutline, IoChevronForwardOutline, IoChevronDownOutline } from "react-icons/io5";
+import { FaTimes } from "react-icons/fa";
 import Image from "next/image";
+
+const DISMISS_KEY = "howItWorksCardDismissed";
 
 interface HowItWorksSlide {
     id: number;
@@ -75,6 +78,7 @@ const baseSlides: HowItWorksSlide[] = [
 type TutorialType = "Fan meet" | "Fan date" | "Fan call";
 
 const HowItWorksCard: React.FC = () => {
+    const [visible, setVisible] = useState(false);
     const [currentSlide, setCurrentSlide] = useState(0);
     const [isDragging, setIsDragging] = useState(false);
     const [startX, setStartX] = useState(0);
@@ -84,6 +88,26 @@ const HowItWorksCard: React.FC = () => {
     const [tutorialType, setTutorialType] = useState<TutorialType>("Fan meet");
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
+
+    // Check if user has dismissed the card
+    useEffect(() => {
+        if (typeof window === "undefined") return;
+        try {
+            const dismissed = localStorage.getItem(DISMISS_KEY);
+            setVisible(!dismissed);
+        } catch {
+            setVisible(true);
+        }
+    }, []);
+
+    const handleDismiss = () => {
+        try {
+            localStorage.setItem(DISMISS_KEY, "true");
+            setVisible(false);
+        } catch {
+            setVisible(false);
+        }
+    };
 
     // Close dropdown when clicking outside
     useEffect(() => {
@@ -182,8 +206,19 @@ const HowItWorksCard: React.FC = () => {
         setCurrentSlide(0); // Reset to first slide when changing type
     };
 
+    if (!visible) return null;
+
     return (
-        <div className="w-full bg-gradient-to-br from-purple-900/30 via-gray-800/50 to-blue-900/30 rounded-xl overflow-hidden border border-purple-500/20 shadow-lg shadow-purple-900/20">
+        <div className="w-full bg-gradient-to-br from-purple-900/30 via-gray-800/50 to-blue-900/30 rounded-xl overflow-hidden border border-purple-500/20 shadow-lg shadow-purple-900/20 relative">
+            {/* Dismiss button */}
+            <button
+                type="button"
+                onClick={handleDismiss}
+                className="absolute top-3 right-3 z-10 p-1.5 rounded-full text-white hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/30 transition-colors"
+                aria-label="Close How it works"
+            >
+                <FaTimes size={20} />
+            </button>
             {/* Header */}
             <div className="p-4 md:p-6 pb-3 relative">
                 <div className="flex items-start justify-between">
@@ -196,7 +231,7 @@ const HowItWorksCard: React.FC = () => {
                         </p>
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 mr-8 md:mr-10">
                         {/* More Tutorial Dropdown */}
                         <div className="relative" ref={dropdownRef}>
                             <button

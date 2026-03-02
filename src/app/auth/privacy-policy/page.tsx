@@ -1,15 +1,25 @@
-// import Head from "../../_components/Head";
+"use client";
 
-import Head from "@/components/Head";
+import { useRouter } from "next/navigation";
+import { FaAngleLeft } from "react-icons/fa";
 
 const PrivacyPolicy = () => {
+  const router = useRouter();
 
   return (
     <div className="w-screen mx-auto sm:w-11/12 md:w-10/12 lg:w-9/12 xl:w-8/12">
-      
-
-  <div className="flex flex-col w-full px-4 pt-10 text-gray-400 md:px-0 md:pt-6">
-      <Head heading="🔒 Privacy Policy" />
+      <div className="flex flex-col w-full px-4 pt-10 text-gray-400 md:px-0 md:pt-6">
+        <header className="flex items-center gap-4 mb-2">
+          <button
+            type="button"
+            onClick={() => router.back()}
+            className="p-1 -ml-1 text-white hover:opacity-80 transition-opacity"
+            aria-label="Go back"
+          >
+            <FaAngleLeft size={30} />
+          </button>
+          <h4 className="text-lg font-bold text-white">🔒 Privacy Policy</h4>
+        </header>
       <section>
         <div className="">
           <h2 className="mb-6 text-gray-500">Effective Date: 23th October 2025</h2>

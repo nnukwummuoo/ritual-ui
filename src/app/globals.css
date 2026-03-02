@@ -204,3 +204,17 @@ body .Toastify__toast-body {
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
+
+/* Landing page headline gradient shimmer */
+@keyframes gradient-shift {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+.animate-gradient {
+  animation: gradient-shift 6s ease infinite;
+}
