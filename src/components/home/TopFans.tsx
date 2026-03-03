@@ -120,9 +120,9 @@ export default function TopFans() {
     useEffect(() => {
         const fetchTopFans = async () => {
             try {
-                const response = await axios.get('/api/proxy/top_fans');
+                const response = await axios.get('/api/proxy/top_fans?limit=10');
                 if (response.data.ok) {
-                    setTopFans(response.data.fans);
+                    setTopFans((response.data.fans || []).slice(0, 10));
                 }
             } catch (error) {
                 console.error('Error fetching top fans:', error);
@@ -180,7 +180,7 @@ export default function TopFans() {
                     </svg>
                 </div>
 
-                {/* Layout: 5 fans in first row, 5 in second row, 4 in third row */}
+                {/* Layout: 5 fans in first row, 5 in second row */}
                 <div className="flex flex-col gap-3 md:gap-4 mb-4">
                     {/* First row - 5 fans */}
                     <div className="grid grid-cols-5 gap-3 md:gap-4">
@@ -193,13 +193,6 @@ export default function TopFans() {
                     <div className="grid grid-cols-5 gap-3 md:gap-4">
                         {topFans.slice(5, 10).map((fan, index) => (
                             <FanCard key={fan.userId} fan={fan} index={index + 5} handleFanClick={handleFanClick} />
-                        ))}
-                    </div>
-
-                    {/* Third row - 4 fans (centered) */}
-                    <div className="grid grid-cols-4 gap-3 md:gap-4 max-w-4xl mx-auto">
-                        {topFans.slice(10, 14).map((fan, index) => (
-                            <FanCard key={fan.userId} fan={fan} index={index + 10} handleFanClick={handleFanClick} />
                         ))}
                     </div>
                 </div>
