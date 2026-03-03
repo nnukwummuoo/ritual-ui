@@ -51,7 +51,7 @@ const PromotionalBanner: React.FC = () => {
             <FaClock className="text-green-400" size={28} />
           </div>
           <h2 className="text-2xl font-bold mb-3 text-white">
-            Apply and be a Verified Creator within Hours
+            Apply and be a Verified Creator within Minutes
           </h2>
           <p className="text-gray-300 mb-6 leading-relaxed">
             Fast-track verification process with premium benefits.
