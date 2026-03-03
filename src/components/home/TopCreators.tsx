@@ -121,9 +121,9 @@ export default function TopCreators() {
         const fetchTopCreators = async () => {
             try {
                 // Using the specific endpoint for top creators
-                const response = await axios.get('/api/proxy/top_creators');
+                const response = await axios.get('/api/proxy/top_creators?limit=10');
                 if (response.data.ok) {
-                    setTopCreators(response.data.creators);
+                    setTopCreators((response.data.creators || []).slice(0, 10));
                 }
             } catch (error) {
                 console.error('Error fetching top creators:', error);
@@ -181,7 +181,7 @@ export default function TopCreators() {
                     </svg>
                 </div>
 
-                {/* Layout: 5 fans in first row, 5 in second row, 4 in third row */}
+                {/* Layout: 5 creators in first row, 5 in second row */}
                 <div className="flex flex-col gap-3 md:gap-4 mb-4">
                     {/* First row - 5 creators */}
                     <div className="grid grid-cols-5 gap-3 md:gap-4">
@@ -194,13 +194,6 @@ export default function TopCreators() {
                     <div className="grid grid-cols-5 gap-3 md:gap-4">
                         {topCreators.slice(5, 10).map((creator, index) => (
                             <CreatorCard key={creator.userId} creator={creator} index={index + 5} handleCreatorClick={handleCreatorClick} />
-                        ))}
-                    </div>
-
-                    {/* Third row - 4 creators (centered) */}
-                    <div className="grid grid-cols-4 gap-3 md:gap-4 max-w-4xl mx-auto">
-                        {topCreators.slice(10, 14).map((creator, index) => (
-                            <CreatorCard key={creator.userId} creator={creator} index={index + 10} handleCreatorClick={handleCreatorClick} />
                         ))}
                     </div>
                 </div>

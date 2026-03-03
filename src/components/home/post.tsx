@@ -720,9 +720,10 @@ export default function PostsCard() {
                 {/* After post 2 (index 1): TopFans desktop, RitualsCard mobile */}
                 {index === 0 && (
                   <>
-                    <div className="hidden lg:block mx-auto max-w-[30rem] w-full">
+                 
+                    {/* <div className="hidden lg:block mx-auto max-w-[30rem] w-full">
                       <TopFans />
-                    </div>
+                    </div> */}
                     <div className="lg:hidden">
                       <RitualsCard />
                     </div>
@@ -731,31 +732,34 @@ export default function PostsCard() {
                 {/* After post 3 (index 2): NewRitualCard desktop, TopFans mobile */}
                 {index === 1 && (
                   <>
+                     <div className="">
+                    <NewRitualCard />
+                  </div>
                     <div className="hidden lg:block mx-auto max-w-[30rem] w-full">
                       <NewRitualCard />
                     </div>
-                    <div className="lg:hidden">
+                    {/* <div className="lg:hidden">
                       <TopFans />
-                    </div>
+                    </div> */}
                   </>
                 )}
                 {/* After post 4 (index 3): TopCreators desktop + mobile */}
                 {index === 2 && (
                   <>
-                    <div className="hidden lg:block mx-auto max-w-[30rem] w-full">
+                    {/* <div className="hidden lg:block mx-auto max-w-[30rem] w-full">
                       <TopCreators />
                     </div>
                     <div className="lg:hidden">
                       <TopCreators />
-                    </div>
+                    </div> */}
                   </>
                 )}
                 {/* After post 5 (index 4): NewRitualCard mobile only */}
-                {index === 3 && (
+                {/* {index === 3 && (
                   <div className="lg:hidden">
                     <NewRitualCard />
                   </div>
-                )}
+                )} */}
               </React.Fragment>
             ))}
           </div>
