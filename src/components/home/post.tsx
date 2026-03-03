@@ -652,14 +652,11 @@ export default function PostsCard() {
         />
       )}
 
-      {/* Safety Rules Banner - Hidden on large devices */}
-      <div className="">
-        <SafetyRulesBanner />
-      </div>
-
       {/* Posts Rendering - Choose between virtualized and lazy loading */}
       {shouldUseVirtualization ? (
-        <VirtualizedPostList
+        <>
+          <SafetyRulesBanner />
+          <VirtualizedPostList
           posts={remainingPosts}
           ui={ui}
           setUi={setUi}
@@ -674,22 +671,24 @@ export default function PostsCard() {
           username={username}
           photolink={photolink}
         />
+        </>
       ) : (
         <>
-          {/* Lazy Loaded Posts - Only remaining posts, not including first post */}
+          {/* Safety Rules Banner + Lazy Loaded Posts - banner inside flex so no extra gap when dismissed */}
           <div className="flex flex-col gap-6">
+            <SafetyRulesBanner />
             {remainingPosts.map((post, index) => (
               <React.Fragment key={post?.postid || post?.id || post?._id || index}>
                 {/* Inject How It Works + Creator Cards above first post */}
                 {index === 0 && (
-                  <>
+                  <div className="flex flex-col gap-3 -mt-1 -mb-2">
                     <div className="mx-auto max-w-[30rem] w-full">
                       <HowItWorksCard />
                     </div>
                     <div className="lg:hidden">
                       <CreatorCards />
                     </div>
-                  </>
+                  </div>
                 )}
                 <div
                   ref={(el) => {
@@ -715,7 +714,7 @@ export default function PostsCard() {
                     lastname={lastname}
                     username={username}
                     photolink={photolink}
-                    isFirstPost={false}
+                    isFirstPost={index === 0}
                   />
                 </div>
                 {/* After post 2 (index 1): TopFans desktop, RitualsCard mobile */}
