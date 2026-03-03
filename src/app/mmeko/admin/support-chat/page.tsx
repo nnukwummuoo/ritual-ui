@@ -596,8 +596,8 @@ const AdminSupportChat = () => {
         return 1;
       }
 
-      // Priority 2: Status priority (pending > open > closed)
-      const statusPriority = { 'pending': 3, 'open': 2, 'closed': 1 };
+      // Priority 2: Status priority (open > pending > closed)
+      const statusPriority = { 'open': 3, 'pending': 2, 'closed': 1 };
       const aStatusPriority = statusPriority[a.status] || 0;
       const bStatusPriority = statusPriority[b.status] || 0;
 
@@ -1044,18 +1044,18 @@ const AdminSupportChat = () => {
                     <Paperclip className="w-5 h-5" />
                   </button>
 
-                  <input
-                    type="text"
+                  <textarea
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
-                    onKeyPress={(e) => {
-                      if (e.key === 'Enter' && !e.shiftKey) {
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
                         e.preventDefault();
                         sendAdminMessage();
                       }
                     }}
-                    placeholder="Type your message..."
-                    className="flex-1 px-3 md:px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 text-sm md:text-base"
+                    placeholder="Type your message... (Ctrl+Enter to send)"
+                    rows={3}
+                    className="flex-1 min-h-[2.5rem] max-h-[8rem] resize-none overflow-y-auto px-3 md:px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 text-sm md:text-base"
                   />
                   <button
                     onClick={sendAdminMessage}

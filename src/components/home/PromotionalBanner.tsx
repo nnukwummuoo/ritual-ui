@@ -3,11 +3,13 @@
 import React, { useState, useEffect } from "react";
 import { FaShieldAlt, FaClock, FaTimes } from "react-icons/fa";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/lib/context/auth-context";
 
 const DISMISS_KEY = "promotionalBannerDismissed";
 
 const PromotionalBanner: React.FC = () => {
   const router = useRouter();
+  const { session } = useAuth();
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -29,6 +31,7 @@ const PromotionalBanner: React.FC = () => {
     }
   };
 
+  if (session?.creator_verified) return null;
   if (!visible) return null;
 
   return (

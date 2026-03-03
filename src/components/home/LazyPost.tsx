@@ -23,7 +23,7 @@ import { BadgeCheck } from "lucide-react";
 
 
 // Video component for lazy-loaded videos - moved outside to prevent re-creation
-const VideoComponent = ({ post, src, pathUrlPrimary, queryUrlFallback, pathUrlFallback, showControls, setShowControls, controlsTimerRef, isVideoLoaded, setIsVideoLoaded, posterSource, muxPlaybackFailed, setMuxPlaybackFailed, currentTime, setCurrentTime, duration, setDuration }: {
+const VideoComponent = ({ post, src, pathUrlPrimary, queryUrlFallback, pathUrlFallback, showControls, setShowControls, controlsTimerRef, isVideoLoaded, setIsVideoLoaded, posterSource, muxPlaybackFailed, setMuxPlaybackFailed, currentTime, setCurrentTime, duration, setDuration, priority = false }: {
   post: any;
   src: string;
   pathUrlPrimary?: string;
@@ -41,6 +41,7 @@ const VideoComponent = ({ post, src, pathUrlPrimary, queryUrlFallback, pathUrlFa
   setCurrentTime: (time: number) => void;
   duration: number;
   setDuration: (duration: number) => void;
+  priority?: boolean;
 }) => {
   const { videoRef, isPlaying, isVisible: videoVisible, autoPlayBlocked, hasUserInteracted, togglePlay, toggleMute, isMuted } = useVideoAutoPlay({
     autoPlay: true,
@@ -93,7 +94,7 @@ const VideoComponent = ({ post, src, pathUrlPrimary, queryUrlFallback, pathUrlFa
           muted
           loop
           playsInline
-          preload="metadata"
+          preload={priority ? "auto" : "metadata"}
           poster={posterSource}
           className={`w-full object-cover rounded cursor-pointer transition-all ${isFullscreen ? 'h-screen' : 'aspect-[4/5]'}`}
           onLoadedData={() => {
@@ -464,7 +465,7 @@ const LazyPost: React.FC<LazyPostProps> = ({
   photolink,
   isFirstPost = false
 }) => {
-  const [isVisible, setIsVisible] = useState(false);
+  const [isVisible, setIsVisible] = useState(!!isFirstPost);
   const [hasLoaded, setHasLoaded] = useState(false);
   const [isInView, setIsInView] = useState(false);
   const [shouldAnimate, setShouldAnimate] = useState(false);
@@ -850,6 +851,7 @@ const LazyPost: React.FC<LazyPostProps> = ({
             setCurrentTime={setCurrentTime}
             duration={duration}
             setDuration={setDuration}
+            priority={isFirstPost}
           />
         )
       }

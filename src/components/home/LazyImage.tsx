@@ -29,13 +29,14 @@ const LazyImage: React.FC<LazyImageProps> = ({
   priority = false
 }) => {
   const [isLoaded, setIsLoaded] = useState(false);
-  const [isInView, setIsInView] = useState(false);
+  const [isInView, setIsInView] = useState(priority);
   const [currentSrc, setCurrentSrc] = useState(src);
   const [errorCount, setErrorCount] = useState(0);
   const imgRef = useRef<HTMLDivElement>(null);
 
-  // Intersection Observer for lazy loading
+  // Intersection Observer for lazy loading (skip when priority so image shows immediately)
   useEffect(() => {
+    if (priority) return;
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {

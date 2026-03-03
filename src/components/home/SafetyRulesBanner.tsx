@@ -42,7 +42,7 @@ const SafetyRulesBanner: React.FC = () => {
         <button
           type="button"
           onClick={handleDismiss}
-          className="absolute top-3 right-3 p-1.5 rounded-full text-white hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-white/40 transition-colors"
+          className="absolute top-2 right-2 p-1.5 rounded-full text-white hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-white/40 transition-colors"
           aria-label="Close safety rules banner"
         >
           <FaTimes size={20} />

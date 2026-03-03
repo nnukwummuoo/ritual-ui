@@ -2386,21 +2386,37 @@ export const Profile = () => {
 
     const imageSource = getImageSource(asString, 'post');
 
-    const src = imageSource.src;
+    let src = imageSource.src;
 
+    // Poster/thumbnail for video (same as FirstPost/RemainingPosts) – show first while video loads
 
+    const posterRef = post?.thumblink || post?.postphoto || post?.image || post?.thumbnail || "";
 
-    // Keep fallback URLs for error handling
+    const posterSource = posterRef ? getImageSource(typeof posterRef === "string" ? posterRef : (posterRef?.publicId || posterRef?.public_id || posterRef?.url || ""), 'post').src : "";
+
+    // Video: use stream endpoint for range requests (same as FirstPost) – fetches faster
+
+    if (postType === "video") {
+
+      const videoFileKey = imageSource.key || (!isUrl ? asString : null);
+
+      if (videoFileKey) {
+
+        src = `${API_URL}/api/video/stream/${encodeURIComponent(videoFileKey)}`;
+
+      }
+
+    }
+
+    // Fallback URLs: use video/stream for video so error fallbacks match
 
     const queryUrlPrimary = asString ? `${API_URL}/api/image/view?publicId=${encodeURIComponent(asString)}` : "";
 
-    const pathUrlPrimary = asString ? `${API_URL}/api/image/view/${encodeURIComponent(asString)}` : "";
+    const pathUrlPrimary = asString ? `${API_URL}/${postType === "video" ? "api/video/stream" : "api/image/view"}/${encodeURIComponent(asString)}` : "";
 
-    const queryUrlFallback = asString ? `${API_URL}/api/image/view?publicId=${encodeURIComponent(asString)}` : "";
+    const queryUrlFallback = asString ? `${process.env.NEXT_PUBLIC_API || ""}/api/image/view?publicId=${encodeURIComponent(asString)}` : "";
 
-    const pathUrlFallback = asString ? `${API_URL}/api/image/view/${encodeURIComponent(asString)}` : "";
-
-
+    const pathUrlFallback = asString ? `${process.env.NEXT_PUBLIC_API || ""}/${postType === "video" ? "api/video/stream" : "api/image/view"}/${encodeURIComponent(asString)}` : "";
 
     return {
 
@@ -2416,7 +2432,9 @@ export const Profile = () => {
 
       queryUrlFallback,
 
-      pathUrlFallback
+      pathUrlFallback,
+
+      posterSource
 
     };
 
@@ -2696,7 +2714,7 @@ export const Profile = () => {
 
   // Video Component for profile modal - using the same approach as FirstPost and RemainingPosts
 
-  const VideoComponent = React.memo(function VideoComponent({ post, src, pathUrlPrimary, queryUrlFallback, pathUrlFallback, isFirstVideo = false, className }: {
+  const VideoComponent = React.memo(function VideoComponent({ post, src, pathUrlPrimary, queryUrlFallback, pathUrlFallback, posterSource, isFirstVideo = false, className }: {
 
     post: any;
 
@@ -2707,6 +2725,8 @@ export const Profile = () => {
     queryUrlFallback?: string;
 
     pathUrlFallback?: string;
+
+    posterSource?: string;
 
     isFirstVideo?: boolean;
 
@@ -2772,9 +2792,9 @@ export const Profile = () => {
 
       <div className={`relative w-full rounded overflow-hidden ${className || 'h-[400px]'}`}>
 
-        {/* Video skeleton - show while video is loading */}
+        {/* Video skeleton - show only when no poster (same as FirstPost) */}
 
-        {!isVideoLoaded && (
+        {!isVideoLoaded && !posterSource && (
 
           <div className="absolute inset-0 w-full h-full bg-gray-800 animate-pulse flex items-center justify-center">
 
@@ -2794,11 +2814,11 @@ export const Profile = () => {
 
 
 
-        {/* Video with controls that auto-hide */}
+        {/* Video with controls that auto-hide – show as soon as poster or video is ready */}
 
         <div
 
-          className={`relative w-full h-full ${!isVideoLoaded ? 'opacity-0 absolute top-0 left-0' : 'opacity-100 transition-opacity duration-300'}`}
+          className={`relative w-full h-full ${(isVideoLoaded || posterSource) ? 'opacity-100' : 'opacity-0 absolute top-0 left-0'} transition-opacity duration-300`}
 
           onMouseMove={() => {
 
@@ -2855,6 +2875,10 @@ export const Profile = () => {
             loop
 
             playsInline
+
+            preload="auto"
+
+            poster={posterSource}
 
             className="w-full h-full object-cover rounded cursor-pointer"
 
@@ -3295,33 +3319,7 @@ export const Profile = () => {
 
             {userPosts.map((post, index) => {
 
-              const { src, postType } = getMediaSource(post);
-
-
-
-              // Generate fallback URLs for video error handling
-
-              const mediaRef = post?.postfilelink || post?.postphoto || post?.postvideo || post?.postlink ||
-
-                post?.postFile || post?.file || post?.proxy_view || post?.file_link ||
-
-                post?.media || post?.image || post?.video || post?.thumblink ||
-
-                post?.postfilepublicid || post?.publicId || post?.public_id ||
-
-                post?.imageId || "";
-
-              const asString = typeof mediaRef === "string" ? mediaRef : (mediaRef?.publicId || mediaRef?.public_id || mediaRef?.url || "");
-
-
-
-              const queryUrlPrimary = asString ? `${API_URL}/api/image/view?publicId=${encodeURIComponent(asString)}` : "";
-
-              const pathUrlPrimary = asString ? `${API_URL}/api/image/view/${encodeURIComponent(asString)}` : "";
-
-              const queryUrlFallback = asString ? `${process.env.NEXT_PUBLIC_API || ""}/api/image/view?publicId=${encodeURIComponent(asString)}` : "";
-
-              const pathUrlFallback = asString ? `${process.env.NEXT_PUBLIC_API || ""}/api/image/view/${encodeURIComponent(asString)}` : "";
+              const { src, postType, pathUrlPrimary, queryUrlFallback, pathUrlFallback, posterSource } = getMediaSource(post);
 
 
 
@@ -3615,71 +3613,23 @@ export const Profile = () => {
 
 
 
-                  {postType === "video" && (
+                  {postType === "video" && src && (
 
-                    (() => {
+                    <VideoComponent
 
-                      // For videos, use the direct URL from postfilelink (like RemainingPosts does)
+                      post={post}
 
-                      const mediaRef = post?.postfilelink || post?.postphoto || post?.postvideo || post?.postlink ||
+                      src={src}
 
-                        post?.postFile || post?.file || post?.proxy_view || post?.file_link ||
+                      pathUrlPrimary={pathUrlPrimary}
 
-                        post?.media || post?.image || post?.video || post?.thumblink ||
+                      queryUrlFallback={queryUrlFallback}
 
-                        post?.postfilepublicid || post?.publicId || post?.public_id ||
+                      pathUrlFallback={pathUrlFallback}
 
-                        post?.imageId || "";
+                      posterSource={posterSource}
 
-                      const asString = typeof mediaRef === "string" ? mediaRef : (mediaRef?.publicId || mediaRef?.public_id || mediaRef?.url || "");
-
-                      const isHttpUrl = typeof asString === "string" && /^https?:\/\//i.test(asString);
-
-                      const isBlobUrl = typeof asString === "string" && /^blob:/i.test(asString);
-
-                      const isDataUrl = typeof asString === "string" && /^data:/i.test(asString);
-
-                      const isUrl = isHttpUrl || isBlobUrl || isDataUrl;
-
-
-
-                      // Use getImageSource for all videos (same as RemainingPosts)
-
-                      const imageSource = getImageSource(asString, 'post');
-
-                      const videoSrc = imageSource.src;
-
-
-
-                      // Only render if we have a valid video source
-
-                      if (!videoSrc) {
-
-                        return <div className="w-full h-[400px] bg-gray-800 rounded flex items-center justify-center text-white">No video source</div>;
-
-                      }
-
-
-
-                      return (
-
-                        <VideoComponent
-
-                          post={post}
-
-                          src={videoSrc}
-
-                          pathUrlPrimary={pathUrlPrimary}
-
-                          queryUrlFallback={queryUrlFallback}
-
-                          pathUrlFallback={pathUrlFallback}
-
-                        />
-
-                      );
-
-                    })()
+                    />
 
                   )}
 
@@ -4658,10 +4608,33 @@ export const Profile = () => {
     const [fullScreenImageOriginal, setFullScreenImageOriginal] = React.useState<string | null>(null);
     // Track image loading state per post
     const imageLoadingStatesRef = React.useRef<Map<string, { loading: boolean; error: boolean }>>(new Map());
+    // Preserve scroll when image load state updates cause re-render
+    const scrollPositionRef = React.useRef<number | null>(null);
+    const flushScheduledRef = React.useRef(false);
     // Track dropdown open state per post
     const [openDropdowns, setOpenDropdowns] = React.useState<Set<string>>(new Set());
     const [deletingPostId, setDeletingPostId] = React.useState<string | null>(null);
 
+    // Batched image-load update: update ref, save scroll, schedule single re-render so scroll doesn't jump
+    const scheduleImageLoadUpdate = React.useCallback((postId: string, loading: boolean, error: boolean) => {
+      imageLoadingStatesRef.current.set(String(postId), { loading, error });
+      scrollPositionRef.current = scrollContainerRef.current?.scrollTop ?? 0;
+      if (!flushScheduledRef.current) {
+        flushScheduledRef.current = true;
+        requestAnimationFrame(() => {
+          setModalUi(prev => ({ ...prev, _tick: (prev._tick ?? 0) + 1 }));
+          flushScheduledRef.current = false;
+        });
+      }
+    }, []);
+
+    // Restore scroll position after re-render from image load updates (keeps user from being jumped back)
+    React.useLayoutEffect(() => {
+      if (scrollPositionRef.current != null && scrollContainerRef.current) {
+        scrollContainerRef.current.scrollTop = scrollPositionRef.current;
+        scrollPositionRef.current = null;
+      }
+    }, [modalUi._tick]);
 
     // Handle Escape key to close full-screen image
 
@@ -5075,7 +5048,7 @@ export const Profile = () => {
               {exclusivePosts.map((post, index) => {
 
                 const postId = post._id || post.postid || post.id;
-                const { src, postType, asString, pathUrlPrimary, queryUrlFallback, pathUrlFallback } = getMediaSource(post);
+                const { src, postType, asString, pathUrlPrimary, queryUrlFallback, pathUrlFallback, posterSource } = getMediaSource(post);
                 const postUserId = post.userid || post.user?.userid || post.user?._id;
 
                 const isPostOwner = String(postUserId) === String(loggedInUserId || localUserid);
@@ -5327,26 +5300,18 @@ export const Profile = () => {
 
                             alt={post?.content || "exclusive post image"}
 
-                            className={`w-full h-full object-cover transition-opacity duration-200 ${isImageLoading ? 'opacity-0 absolute inset-0' : 'opacity-100 relative'} ${canView ? 'cursor-pointer hover:opacity-90' : 'cursor-pointer blur-sm brightness-50'}`}
-                            onLoad={(e) => {
-                              const img = e.currentTarget as HTMLImageElement;
-                              // Always update loading state when onLoad fires
-                              imageLoadingStatesRef.current.set(String(postId), { loading: false, error: false });
-                              // Force re-render by updating a dummy state
-                              setModalUi(prev => ({ ...prev }));
+                            className={`w-full h-full object-cover transition-opacity duration-200 ${isImageLoading ? 'opacity-0 absolute inset-0' : 'opacity-100 relative'} ${canView ? 'cursor-pointer hover:opacity-90' : 'cursor-pointer blur-xl brightness-50'}`}
+                            onLoad={() => {
+                              scheduleImageLoadUpdate(String(postId), false, false);
                             }}
                             onLoadStart={() => {
-                              // Ensure loading state is set when image starts loading
                               imageLoadingStatesRef.current.set(String(postId), { loading: true, error: false });
-                              setModalUi(prev => ({ ...prev }));
                             }}
                             ref={(img) => {
-                              // Check if image is already loaded (for cached images) - this runs after render
                               if (img && img.complete && img.naturalHeight !== 0) {
                                 const currentState = imageLoadingStatesRef.current.get(String(postId));
                                 if (currentState?.loading) {
-                                  imageLoadingStatesRef.current.set(String(postId), { loading: false, error: false });
-                                  setModalUi(prev => ({ ...prev }));
+                                  scheduleImageLoadUpdate(String(postId), false, false);
                                 }
                               }
                             }}
@@ -5436,8 +5401,7 @@ export const Profile = () => {
                               }
 
                               // If all fallbacks fail, show error state
-                              imageLoadingStatesRef.current.set(String(postId), { loading: false, error: true });
-                              setModalUi(prev => ({ ...prev }));
+                              scheduleImageLoadUpdate(String(postId), false, true);
                             }}
 
                           />
@@ -5494,7 +5458,7 @@ export const Profile = () => {
                           {/* VideoComponent has its own built-in skeleton loader */}
                           <div
 
-                            className={`w-full h-full ${canView ? '' : 'pointer-events-none'}`}
+                            className={`w-full h-full ${canView ? '' : 'pointer-events-none blur-xl brightness-50'}`}
 
                             onClick={(e) => {
 
@@ -5521,6 +5485,8 @@ export const Profile = () => {
                               queryUrlFallback={getMediaSource(post).queryUrlFallback}
 
                               pathUrlFallback={getMediaSource(post).pathUrlFallback}
+
+                              posterSource={getMediaSource(post).posterSource}
 
                               className="w-full h-full object-cover"
 
@@ -6302,7 +6268,7 @@ export const Profile = () => {
 
                       {userPosts.map((post) => {
 
-                        const { src, postType, pathUrlPrimary, queryUrlFallback, pathUrlFallback } = getMediaSource(post);
+                        const { src, postType, pathUrlPrimary, queryUrlFallback, pathUrlFallback, posterSource } = getMediaSource(post);
 
 
 
@@ -6393,6 +6359,10 @@ export const Profile = () => {
                                 <video
 
                                   src={src}
+
+                                  poster={posterSource}
+
+                                  preload="auto"
 
                                   className="absolute inset-0 w-full h-full object-cover"
 
@@ -6605,7 +6575,7 @@ export const Profile = () => {
                       {exclusivePosts.map((post) => {
 
                         const postId = post._id || post.postid || post.id;
-                        const { src, postType, pathUrlPrimary, queryUrlFallback, pathUrlFallback } = getMediaSource(post);
+                        const { src, postType, pathUrlPrimary, queryUrlFallback, pathUrlFallback, posterSource } = getMediaSource(post);
 
                         const postUserId = post.userid || post.user?.userid || post.user?._id;
 
@@ -6647,7 +6617,7 @@ export const Profile = () => {
 
                                   alt={post?.content || "exclusive post image"}
 
-                                  className={`absolute inset-0 w-full h-full object-cover transition-all duration-200 ${!canView ? 'blur-sm brightness-50' : ''}`}
+                                  className={`absolute inset-0 w-full h-full object-cover transition-all duration-200 ${!canView ? 'blur-xl brightness-50' : ''}`}
                                   loading="lazy"
                                   onError={(e) => {
 
@@ -6711,10 +6681,12 @@ export const Profile = () => {
                                   key={`exclusive-video-${postId}`}
                                   src={src}
 
-                                  className={`absolute inset-0 w-full h-full object-cover transition-all duration-200 ${!canView ? 'blur-sm brightness-50' : ''}`}
-                                  muted
+                                  poster={posterSource}
 
-                                  preload="metadata"
+                                  preload="auto"
+
+                                  className={`absolute inset-0 w-full h-full object-cover transition-all duration-200 ${!canView ? 'blur-xl brightness-50' : ''}`}
+                                  muted
                                   onError={(e) => {
 
                                     const video = e.currentTarget as HTMLVideoElement & { dataset: any };
