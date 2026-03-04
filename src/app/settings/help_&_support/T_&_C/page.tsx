@@ -30,19 +30,27 @@ const TermCondition = () => {
         <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">2. Account & Conduct</h3>
         <p className="mb-6">
           You are responsible for maintaining the confidentiality of your account credentials.
-          You agree not to:Upload or share explicit, pornographic, or violent content.Use the platform
+          You agree not to:Upload or share explicit, pornographic, or violent content on the homepage feed.Use the platform
            for illegal activities or to facilitate prostitution.Misrepresent your identity or services offered.
             </p>
 
             <p className="mb-6">
-          Explicit Content is strictly prohibited on the platform.
+          Explicit Content is strictly prohibited on the homepage feed.
 
 
         </p>
 
         <p className="mb-6">
-         Any Creator or Fan who posts, shares,
-          or requests explicit content will be banned immediately — no second chances.
+         Any Creator or Fan who posts, or shares
+         explicit content on the homepage feed will be banned immediately — no second chances.
+
+
+        </p>
+
+        
+
+        <p className="mb-6">
+         Homepage feed is safe‑view only — explicit uploads = permanent ban — no second chances.
 
 
         </p>

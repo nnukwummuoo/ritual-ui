@@ -22,11 +22,12 @@ const Community = () => {
         </section>
 
         <section className="mb-6">
-          <h2 className="text-xl font-semibold text-gray-300">🚫 1. No Explicit Adult Content</h2>
+          <h2 className="text-xl font-semibold text-gray-300">🚫 1. No Explicit Content on Homepage Feed</h2>
           <ul className="mt-2 text-gray-400 list-disc list-inside">
             <li>Nudity, pornography, and sexually explicit content are strictly prohibited.</li>
             <li>Simulated sexual acts, sex toys in sexual context, or visible genitals are not allowed.</li>
             <li>Content must be suggestive at most, not explicit.</li>
+            <li>Homepage feed is safe‑view only — explicit uploads = permanent ban. No second chances.</li>
           </ul>
         </section>
 

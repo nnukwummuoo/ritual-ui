@@ -65,9 +65,9 @@ const AboutPage: React.FC = () => {
 
         <h2 className="text-xl font-bold text-white mb-4">Why Mmeko</h2>
         <p className="text-gray-300 leading-relaxed mb-10">
-          We&apos;re building a space where creators rise on their own terms.
-          Early adopters enjoy VIP visibility in a smaller creator pool, making
-          it easier to grow and secure top placement before the platform scales.
+          Mmeko is a creator‑first platform designed for sovereignty and safety. Creators keep 100% of earnings,
+           receive instant payouts, and connect directly with fans through built‑in calls, dates, and meetups — all with 
+           structured protection and effortless setup.
         </p>
 
         <h2 className="text-xl font-bold text-white mb-4">Our Vision</h2>
