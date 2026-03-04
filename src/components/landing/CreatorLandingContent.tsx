@@ -118,7 +118,7 @@ const faqItems: { question: string; answer: string }[] = [
   {
     question: "What is Mmeko?",
     answer:
-      "Mmeko is a creator-first platform where you keep 100% of your earnings. We offer fan meets, fan calls, fan dates, pay-per-view messages, and content sales—all with instant payouts and no platform cuts.",
+      "Mmeko is a creator‑first platform where you keep 100% of your earnings. With instant payouts and no platform cuts, you can sell content, run PPV messages, and connect directly with fans through meets, calls, and dates — all in one place.",
   },
   {
     question: "Who can create on Mmeko?",

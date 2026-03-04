@@ -186,7 +186,7 @@ const SupportPage: React.FC = () => {
       questions: [
         {
           question: "What is Gold?",
-          answer: "⭐ Gold is the in-app currency used for all paid features such as Fan Call, Fan Meet, and Fan Experience.\n1 Gold = $0.04 USD."
+          answer: "⭐ Gold is the in-app currency used for all paid features such as PPvs, Exclusive Contents, Fan Call, Fan Meet, and Fan Experience.\n1 Gold = $0.04 USD."
         },
         {
           question: "How do I buy Gold?",
@@ -214,7 +214,7 @@ const SupportPage: React.FC = () => {
         },
         {
           question: "How do creators earn from Gold?",
-          answer: "👑 When fans spend Gold on Fan Calls, Meets, or Dates, the full value goes directly to the creator's earnings dashboard.\nCreators can withdraw anytime in USDT (BEP20) to their connected wallet."
+          answer: "👑 When fans spend Gold on Fan Calls, Fan Meets, Fan Dates, PPVs, or Exclusive Contents the full value goes directly to the creator's earnings dashboard.\nCreators can withdraw anytime in USDT (BEP20) to their connected wallet."
         }
       ]
     },
