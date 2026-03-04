@@ -449,15 +449,21 @@ export const Profile = () => {
 
 
 
-  // Get viewingUserId from params
+  // Slug from URL (username or user id for backward compatibility); usernames may include @ (e.g. @folashade)
+  // Decode so %40 becomes @ (Next.js passes path segments encoded)
+  const rawSlug = ((params as any)?.slug ?? (params as any)?.userid) as string;
+  const slug = (() => { try { return rawSlug ? decodeURIComponent(rawSlug) : ""; } catch { return rawSlug || ""; } })();
+  const slugNorm = (slug || "").replace(/^@+/, "");
+  const isSlugObjectId = slug && /^[a-f0-9]{24}$/i.test(String(slug));
+  const isViewingOwnProfileBySlug = isSlugObjectId
+    ? slug === currentUserProfile.userId
+    : Boolean((currentUserProfile.username || "").replace(/^@+/, "") && ((currentUserProfile.username || "").replace(/^@+/, "") === slugNorm));
+  // Resolved viewing user id: from loaded profile state (viewing or own)
+  const viewingUserId = (viewingProfile?.userId && viewingProfile.userId) ? viewingProfile.userId : (isViewingOwnProfileBySlug ? currentUserProfile.userId : "");
 
-  const viewingUserId = (params as any)?.userid as string;
-
-
-
-  // Determine which profile data to use based on whether we're viewing our own profile
-
-  const isViewingOwnProfile = viewingUserId === currentUserProfile.userId;
+  // Determine which profile data to use: slug refers to current user, or loaded profile is current user
+  const isViewingOwnProfile = isViewingOwnProfileBySlug || (viewingProfile?.userId && viewingProfile.userId === currentUserProfile.userId);
+  const profileSlugForUrl = (isViewingOwnProfile ? currentUserProfile.username : viewingProfile?.username) || viewingUserId || slug;
 
   const profileData = isViewingOwnProfile ? currentUserProfile : viewingProfile;
 
@@ -606,9 +612,10 @@ export const Profile = () => {
 
 
 
-  // Use postuserid from URL params as the target user ID (the profile we're viewing)
-
-  const targetUserId = viewingUserId || postuserid || userid || localUserid;
+  // Target user ID for profile data: when viewing another user, use only viewingUserId (never fall back to current user id)
+  const targetUserId = isViewingOwnProfile
+    ? (viewingUserId || userid || localUserid)
+    : (viewingUserId || postuserid);
 
 
 
@@ -632,13 +639,11 @@ export const Profile = () => {
 
 
 
-  // Reset fetch tracking when navigating to a different profile
-
+  // Reset fetch tracking and clear viewing profile only when slug changes (not on every effect run)
   useEffect(() => {
-
     lastFetchedProfileRef.current = null;
-
-  }, [viewingUserId]);
+    dispatch(clearViewingProfile());
+  }, [slug, dispatch]);
 
 
 
@@ -773,10 +778,7 @@ export const Profile = () => {
   }, [vipStatus, status, viewingUserId, loggedInUserId, celebrationChecked, checkVipCelebrationStatus, markVipCelebrationAsViewed]);
 
   useEffect(() => {
-
-    // Use the viewingUserId from params (the profile we're viewing)
-    if (!viewingUserId) return;
-
+    // Fetch by slug (or own userId); do not require viewingUserId — it's empty until profile loads when viewing another user
     // Read token from Redux first, then fall back to localStorage
     const tokenFromRedux = (() => {
 
@@ -830,57 +832,41 @@ export const Profile = () => {
 
 
 
-    // Clear viewing profile first
-
-    dispatch(clearViewingProfile());
-
-
-
-    // If viewing own profile, use current user profile, otherwise fetch viewing profile
-
-    // If viewing own profile, use current user profile, otherwise fetch viewing profile
-    if (viewingUserId === loggedInUserId) {
-      // Fetch profile if we haven't fetched this user yet, or if we're coming back to the page
-      // Use a ref to track fetches to prevent infinite loops while still allowing fresh data
-      // Include pathname in key to force re-fetch when navigating between sub-pages (e.g. edit profile -> profile)
-      const profileKey = `own-${viewingUserId}-${pathname}`;
-
-
-
+    // Fetch profile (viewing profile is cleared when slug changes in a separate effect)
+    if (isViewingOwnProfileBySlug && loggedInUserId) {
+      const profileKey = `own-${loggedInUserId}-${pathname}`;
       if (lastFetchedProfileRef.current !== profileKey) {
         lastFetchedProfileRef.current = profileKey;
-        dispatch(getprofile({ userid: viewingUserId, token } as any));
-      } else {
+        dispatch(getprofile({ userid: loggedInUserId, token } as any));
       }
-
-    } else {
-      // Load viewing profile for other users
-      const profileKey = `viewing-${viewingUserId}-${pathname}`;
-
+    } else if (slug) {
+      const profileKey = `viewing-${slug}-${pathname}`;
       if (lastFetchedProfileRef.current !== profileKey) {
         lastFetchedProfileRef.current = profileKey;
-        dispatch(getViewingProfile({ userid: String(viewingUserId), token: token || "" }));
+        if (isSlugObjectId) {
+          dispatch(getViewingProfile({ userid: String(slug), token: token || "" }));
+        } else {
+          dispatch(getViewingProfile({ username: String(slug), token: token || "" }));
+        }
       }
     }
-  }, [viewingUserId, dispatch, loggedInUserId, pathname]);
+  }, [slug, isSlugObjectId, isViewingOwnProfileBySlug, dispatch, loggedInUserId, pathname]);
 
 
 
   // Cleanup effect to restore current user profile when navigating away
 
+  // Viewing profile is cleared when slug changes (in the slug effect); do not clear on unmount
+  // so that React Strict Mode double-mount does not wipe data after the first fetch completes.
+
+  // Canonicalize URL: when user landed with id, show username in URL
   useEffect(() => {
-
-    return () => {
-
-      // Clear viewing profile when component unmounts or when navigating away
-
-      dispatch(clearViewingProfile());
-
-    };
-
-  }, [dispatch]);
-
-
+    if (!slug || !isSlugObjectId || status !== "succeeded") return;
+    const canonicalUsername = isViewingOwnProfile ? currentUserProfile.username : viewingProfile?.username;
+    if (canonicalUsername && String(canonicalUsername).trim() && pathname === `/Profile/${slug}`) {
+      router.replace(`/Profile/${canonicalUsername}`, { scroll: false });
+    }
+  }, [slug, isSlugObjectId, status, isViewingOwnProfile, currentUserProfile.username, viewingProfile?.username, pathname, router]);
 
   useEffect(() => {
 
@@ -4881,7 +4867,7 @@ export const Profile = () => {
       const postId = post._id || post.postid || post.id;
       if (!postId) return;
 
-      const postUrl = `${window.location.origin}/Profile/${viewingUserId}?exclusive=${postId}`;
+      const postUrl = `${window.location.origin}/Profile/${profileSlugForUrl}?exclusive=${postId}`;
 
       closeAllDropdowns();
 
@@ -4931,7 +4917,7 @@ export const Profile = () => {
       const postId = post._id || post.postid || post.id;
       setShowExclusivePostModal(false);
       // Navigate to upload-exclusive page with post ID for editing
-      router.push(`/Profile/${viewingUserId}/upload-exclusive?postId=${postId}`);
+      router.push(`/Profile/${profileSlugForUrl}/upload-exclusive?postId=${postId}`);
     }, [viewingUserId, router]);
 
     if (!exclusivePosts || exclusivePosts.length === 0) return null;
@@ -5856,7 +5842,7 @@ export const Profile = () => {
 
           )}
 
-          {status === "succeeded" && (
+          {(status === "succeeded" || (!isViewingOwnProfile && (viewingProfile?.userId || (viewingProfile as any)?.firstname))) && (
 
             <div className="flex flex-col">
 
@@ -5870,7 +5856,7 @@ export const Profile = () => {
 
 
 
-                    <DropdownMenu userId={viewingUserId} isOwnProfile={viewingUserId === loggedInUserId} />
+                    <DropdownMenu userId={profileSlugForUrl} isOwnProfile={viewingUserId === loggedInUserId} />
 
                   </div>
 
@@ -6148,7 +6134,7 @@ export const Profile = () => {
 
                         className="p-2 flex items-center justify-center gap-x-1 bg-gradient-to-r !from-blue-500 !to-purple-600 text-center text-sm rounded-lg mt-4"
 
-                        onClick={() => router.push(`/Profile/${viewingUserId}/editprofile`)}
+                        onClick={() => router.push(`/Profile/${profileSlugForUrl}/editprofile`)}
 
                       >
 
@@ -6552,7 +6538,7 @@ export const Profile = () => {
 
                           className="relative aspect-square group cursor-pointer rounded-sm overflow-hidden bg-gray-800 dark:bg-gray-700 border-2 border-dashed border-gray-600 dark:border-gray-500 hover:border-orange-500 dark:hover:border-orange-500 transition-colors flex items-center justify-center"
 
-                          onClick={() => router.push(`/Profile/${viewingUserId}/upload-exclusive`)}
+                          onClick={() => router.push(`/Profile/${profileSlugForUrl}/upload-exclusive`)}
 
                         >
 

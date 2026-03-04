@@ -121,8 +121,11 @@ const FollowingMessagesPage: React.FC = () => {
     router.push(`/message/${userId}`);
   };
 
-  const handleProfileClick = (userId: string) => {
-    router.push(`/Profile/${userId}`);
+  const handleProfileClick = (user: User) => {
+    const slug = (user as any).username && String((user as any).username).trim()
+      ? String((user as any).username).trim()
+      : user.id;
+    router.push(`/Profile/${slug}`);
   };
 
   const loading = getfollow_stats === "loading";
@@ -268,7 +271,7 @@ const FollowingMessagesPage: React.FC = () => {
                     {/* Profile Picture */}
                     <div 
                       className="relative cursor-pointer"
-                      onClick={() => handleProfileClick(user.id)}
+                      onClick={() => handleProfileClick(user)}
                     >
                       {hasImage ? (() => {
                         // Use getImageSource to handle Storj URLs properly (same as ProfilePage.tsx and EditProfile)
@@ -319,7 +322,7 @@ const FollowingMessagesPage: React.FC = () => {
                     {/* User Info */}
                     <div 
                       className="flex-1 cursor-pointer"
-                      onClick={() => handleProfileClick(user.id)}
+                      onClick={() => handleProfileClick(user)}
                     >
                       <div className="text-white font-semibold">{user.name}</div>
                       <div className="text-gray-400 text-sm">Following</div>

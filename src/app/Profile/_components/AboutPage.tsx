@@ -16,34 +16,30 @@ const AboutPage = () => {
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
   
-  // Get viewingUserId from params first
-  const viewingUserId = (params as { userid?: string })?.userid as string;
+  const rawSlug = (params as { slug?: string; userid?: string })?.slug ?? (params as { userid?: string })?.userid;
+  const slug = (() => { try { return rawSlug ? decodeURIComponent(rawSlug) : ""; } catch { return rawSlug || ""; } })();
   
-  // Get current user profile data
   const currentUserProfile = useSelector((s: RootState) => s.profile);
-  
-  // Get viewing profile data
   const viewingProfile = useSelector((s: RootState) => s.viewingProfile);
   
-  // Determine which profile data to use
-  const isViewingOwnProfile = viewingUserId === currentUserProfile.userId;
+  const viewingUserId = viewingProfile?.userId || currentUserProfile?.userId;
+  const isViewingOwnProfile = viewingProfile?.userId === currentUserProfile.userId || (slug && currentUserProfile?.username === slug);
   const profileData = isViewingOwnProfile ? currentUserProfile : viewingProfile;
   
   const { status, firstname, lastname, username, country: location } = profileData;
   const profile = useSelector((state: RootState) => state.comprofile.profile);
   
-  // Try to get createdAt from multiple sources
   const createdAt = profileData?.createdAt || profile?.createdAt || (profileData as any)?.created_at || (profile as any)?.created_at;
   const [copied, setCopied] = useState(false);
   
-  // Generate profile URL
+  const profileSlugForUrl = (isViewingOwnProfile ? currentUserProfile.username : viewingProfile?.username) || viewingUserId || slug;
   const profileUrl = React.useMemo(() => {
-    if (!viewingUserId) return "";
+    if (!profileSlugForUrl) return "";
     if (typeof window !== "undefined") {
-      return `${window.location.origin}/Profile/${viewingUserId}`;
+      return `${window.location.origin}/Profile/${profileSlugForUrl}`;
     }
     return "";
-  }, [viewingUserId]);
+  }, [profileSlugForUrl]);
   
   // Copy profile link to clipboard
   const handleCopyProfileLink = async () => {
@@ -97,8 +93,11 @@ const AboutPage = () => {
   }, [createdAt]);
 
   useEffect(() => {
-    const userid = (params as { userid?: string })?.userid as string | undefined;
-    if (!userid) return;
+    const raw = (params as { slug?: string; userid?: string })?.slug ?? (params as { userid?: string })?.userid;
+    const paramSlug = (() => { try { return raw ? decodeURIComponent(raw) : ""; } catch { return raw || ""; } })();
+    if (!paramSlug) return;
+    const isSlugId = /^[a-f0-9]{24}$/i.test(String(paramSlug));
+    const isOwn = paramSlug === currentUserProfile.userId || paramSlug === currentUserProfile.username;
     
     let token: string | undefined = undefined;
     if (!token) {
@@ -111,18 +110,20 @@ const AboutPage = () => {
       } catch {}
     }
     
-    // Clear viewing profile first
     dispatch(clearViewingProfile());
     
-    // If viewing own profile, use current user profile, otherwise fetch viewing profile
-    if (userid === currentUserProfile.userId) {
-      if (currentUserProfile.status === "idle") {
-        dispatch(getprofile({ userid, token: token || "" }));
+    if (isOwn) {
+      if (currentUserProfile.status === "idle" && currentUserProfile.userId) {
+        dispatch(getprofile({ userid: currentUserProfile.userId, token: token || "" }));
       }
     } else {
-      dispatch(getViewingProfile({ userid, token: token || "" }));
+      if (isSlugId) {
+        dispatch(getViewingProfile({ userid: paramSlug, token: token || "" }));
+      } else {
+        dispatch(getViewingProfile({ username: paramSlug, token: token || "" }));
+      }
     }
-  }, [params, dispatch, currentUserProfile.userId, currentUserProfile.status]);
+  }, [params, dispatch, currentUserProfile.userId, currentUserProfile.username, currentUserProfile.status]);
 
 
   type AccountDetail = {

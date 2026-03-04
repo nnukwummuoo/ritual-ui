@@ -42,6 +42,9 @@ interface ViewingProfileState {
   // Search
   search_users: any[];
   searchstats: "idle" | "loading" | "succeeded" | "failed";
+
+  /** Slug/userid we are currently fetching; used to ignore stale responses when navigating away */
+  requestKey: string;
 }
 
 const initialState: ViewingProfileState = {
@@ -78,17 +81,25 @@ const initialState: ViewingProfileState = {
   
   search_users: [],
   searchstats: "idle",
+
+  requestKey: "",
 };
 
-// Async thunk to get profile data for viewing
+// Async thunk to get profile data for viewing (accepts userid or username)
 export const getViewingProfile = createAsyncThunk(
   'viewingProfile/getProfile',
-  async ({ userid, token }: { userid: string; token: string }) => {
+  async ({ userid, username, token }: { userid?: string; username?: string; token: string }, { rejectWithValue }) => {
+    const payload: { userid?: string; username?: string; token: string } = { token };
+    if (username && String(username).trim()) payload.username = String(username).trim();
+    else if (userid) payload.userid = userid;
     try {
-      const response = await axios.post(`${URL}/getprofile`, { userid, token });
-
+      const response = await axios.post(`${URL}/getprofile`, payload);
       return response.data;
-    } catch (error) {
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error) && error.response?.status === 404) {
+        const data = error.response?.data as { message?: string; debug?: unknown };
+        return rejectWithValue(data?.message || 'User not found.');
+      }
       console.error('Error fetching viewing profile:', error);
       throw error;
     }
@@ -144,14 +155,21 @@ const viewingProfileSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(getViewingProfile.pending, (state) => {
+      .addCase(getViewingProfile.pending, (state, action) => {
         state.status = "loading";
+        state.requestKey = (action.meta.arg?.username || action.meta.arg?.userid || "") as string;
       })
       .addCase(getViewingProfile.fulfilled, (state, action) => {
+        const requested = (action.meta.arg?.username || action.meta.arg?.userid || "") as string;
+        if (state.requestKey && requested !== state.requestKey) {
+          return; // Stale response (e.g. navigated to another profile); ignore
+        }
         state.status = "succeeded";
-        
-        const p = action.payload?.profile ?? {};
-        state.userId = p.userId ?? p._id ?? "";
+        state.error = null;
+        const raw = action.payload;
+        const p = raw?.profile ?? raw?.data?.profile ?? {};
+        const id = p.userId ?? p._id;
+        state.userId = id != null ? String(id) : "";
         state.firstname = p.firstname ?? "";
         state.lastname = p.lastname ?? "";
         state.username = p.username ?? "";
@@ -171,8 +189,12 @@ const viewingProfileSlice = createSlice({
         state.createdAt = (p as any).createdAt ?? "";
       })
       .addCase(getViewingProfile.rejected, (state, action) => {
+        const requested = (action.meta.arg?.username || action.meta.arg?.userid || "") as string;
+        if (state.requestKey && requested !== state.requestKey) {
+          return; // Stale rejection; ignore
+        }
         state.status = "failed";
-        state.error = action.error.message ?? "Failed to fetch profile";
+        state.error = (action.payload as string) || action.error.message || "Failed to fetch profile";
       })
       .addCase(getViewingFollow.pending, (state) => {
         state.getfollow_stats = "loading";

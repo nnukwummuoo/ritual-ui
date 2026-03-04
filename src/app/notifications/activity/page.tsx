@@ -37,6 +37,7 @@ interface Request {
   userid?: string;
   creator_portfolio_id?: string;
   targetUserId?: string; // Add target user ID for profile navigation
+  targetUsername?: string; // Username for profile URL (e.g. @handle)
   hosttype?: string;
 }
 
@@ -165,8 +166,9 @@ export default function Activity() {
               venue: req.place,
               userid: req.userid,
               creator_portfolio_id: req.creator_portfolio_id,
-              targetUserId: req.targetUserId, // Add target user ID for profile navigation
-              hosttype: req.hosttype // Include the host type from backend
+              targetUserId: req.targetUserId,
+              targetUsername: req.targetUsername || req.otherUser?.username,
+              hosttype: req.hosttype
             };
           });
 
@@ -309,6 +311,7 @@ export default function Activity() {
               userid={request.userid}
               creator_portfolio_id={request.creator_portfolio_id}
               targetUserId={request.targetUserId}
+              targetUsername={request.targetUsername}
               hosttype={request.hosttype}
               isVip={request.otherUser?.isVip || false}
               vipEndDate={request.otherUser?.vipEndDate}

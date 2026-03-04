@@ -581,7 +581,7 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
                     className="size-10 rounded-full overflow-hidden bg-gray-700 cursor-pointer hover:opacity-80 transition-opacity"
                     onClick={(e) => {
                       e.stopPropagation();
-                      router.push(`/Profile/${postAuthorId}`);
+                      router.push(`/Profile/${post?.user?.username || postAuthorId}`);
                     }}
                   >
                     {(() => {
@@ -646,7 +646,7 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
                   <p className="font-medium text-white"
                     onClick={(e) => {
                       e.stopPropagation();
-                      router.push(`/Profile/${postAuthorId}`);
+                      router.push(`/Profile/${post?.user?.username || postAuthorId}`);
                     }}
                   >{p?.user?.firstname} {p?.user?.lastname}</p>
                   <span className="text-gray-400 text-sm">{handleStr ? `${handleStr}` : ""}</span>

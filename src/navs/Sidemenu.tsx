@@ -280,7 +280,7 @@ const Sidemenu = () => {
                     name={`${firstname} ${lastname}`.trim()}
                     firstname={firstname}
                     lastname={lastname}
-                    url={userId ? `/Profile/${userId}` : `/Profile`}
+                    url={userId || profile?.username ? `/Profile/${profile?.username || userId}` : `/Profile`}
                     gold_balance={gold_balance}
                     {...(pending_balance > 0 && { pending_balance })}
                     isVip={isVip || false}
@@ -314,7 +314,7 @@ const Sidemenu = () => {
               {/* <MenuIconImg
                 src="/icons/icons8-customer.gif"
                 name="Profile"
-                url={userId ? `/Profile/${userId}` : `/Profile`}
+                url={userId || profile?.username ? `/Profile/${profile?.username || userId}` : `/Profile`}
               /> */}
 
               {getCreatorButton()}

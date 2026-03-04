@@ -231,6 +231,7 @@ interface CardProps {
   userid?: string;
   creator_portfolio_id?: string;
   targetUserId?: string; // Add target user ID for profile navigation
+  targetUsername?: string; // Username for profile URL (e.g. @handle)
   hosttype?: string;
   isVip?: boolean;
   vipEndDate?: string | null;
@@ -238,7 +239,7 @@ interface CardProps {
   onStatusChange?: (requestId: string, newStatus: string) => void;
 }
 
-export default function RequestCard({ exp, img, originalPhotoLink, name, username, firstName, lastName, titles = ["fan"], status, type = "fan", requestId, price, details, userid, creator_portfolio_id, targetUserId, hosttype, isVip = false, vipEndDate = null, createdAt, onStatusChange }: CardProps) {
+export default function RequestCard({ exp, img, originalPhotoLink, name, username, firstName, lastName, titles = ["fan"], status, type = "fan", requestId, price, details, userid, creator_portfolio_id, targetUserId, targetUsername, hosttype, isVip = false, vipEndDate = null, createdAt, onStatusChange }: CardProps) {
   const [loading, setLoading] = useState(false);
   const [currentStatus, setCurrentStatus] = useState(status);
   const [timeLeft, setTimeLeft] = useState<string>("");
@@ -934,11 +935,9 @@ export default function RequestCard({ exp, img, originalPhotoLink, name, usernam
   };
 
   const handleProfileClick = () => {
-    // Navigate to the target user's profile
-    // Use targetUserId which is the correct user ID for the person whose profile we want to view
-    if (targetUserId) {
-      router.push(`/Profile/${targetUserId}`);
-    }
+    if (!targetUserId && !targetUsername) return;
+    const slug = (targetUsername && String(targetUsername).trim()) ? String(targetUsername).trim() : targetUserId;
+    router.push(`/Profile/${slug}`);
   };
 
   return (

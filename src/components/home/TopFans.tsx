@@ -18,7 +18,7 @@ interface TopFan {
 interface FanCardProps {
     fan: TopFan;
     index: number;
-    handleFanClick: (userId: string) => void;
+    handleFanClick: (fan: TopFan) => void;
 }
 
 const FanCard: React.FC<FanCardProps> = ({ fan, index, handleFanClick }) => {
@@ -27,7 +27,7 @@ const FanCard: React.FC<FanCardProps> = ({ fan, index, handleFanClick }) => {
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: index * 0.03, duration: 0.3 }}
-            onClick={() => handleFanClick(fan.userId)}
+            onClick={() => handleFanClick(fan)}
             className="flex flex-col items-center cursor-pointer group"
         >
             {/* Fan avatar container */}
@@ -138,8 +138,9 @@ export default function TopFans() {
         return null;
     }
 
-    const handleFanClick = (userId: string) => {
-        router.push(`/Profile/${userId}`);
+    const handleFanClick = (fan: TopFan) => {
+        const slug = (fan.username && String(fan.username).trim()) ? String(fan.username).trim() : fan.userId;
+        router.push(`/Profile/${slug}`);
     };
 
     return (

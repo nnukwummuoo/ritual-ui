@@ -16,13 +16,14 @@ interface FollowerCardProps {
   name: string;
   creator_portfolio_id: string;
   userId?: string; // User ID for following functionality
+  username?: string; // Username for profile URL (e.g. @handle)
   isVip?: boolean;
   vipStartDate?: string;
   vipEndDate?: string;
   isVerified?: boolean;
 }
 
-const FollowerCard: React.FC<FollowerCardProps> = ({ image, name, creator_portfolio_id, userId, isVip = false, vipStartDate, vipEndDate, isVerified }) => {
+const FollowerCard: React.FC<FollowerCardProps> = ({ image, name, creator_portfolio_id, userId, username, isVip = false, vipStartDate, vipEndDate, isVerified }) => {
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
 
@@ -151,7 +152,9 @@ const FollowerCard: React.FC<FollowerCardProps> = ({ image, name, creator_portfo
 
   const handleProfileClick = () => {
     if (userId) {
-      router.push(`/Profile/${userId}`);
+      // Prefer username for profile URL when available; use as-is so URL shows /Profile/@baby not %40baby
+      const slug = (username && String(username).trim()) ? String(username).trim() : userId;
+      router.push(`/Profile/${slug}`);
     } else if (creator_portfolio_id) {
       router.push(`/creators/${creator_portfolio_id}`);
     }
