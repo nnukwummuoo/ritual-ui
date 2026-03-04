@@ -34,14 +34,14 @@ const apiRequestTracker = {
 };
 
 const EditProfile: React.FC = () => {
-  // Get user ID from route parameter
   const params = useParams();
-  const routeUserId = params?.userid as string;
+  const rawRouteSlug = (params?.slug ?? params?.userid) as string;
+  const routeSlug = (() => { try { return rawRouteSlug ? decodeURIComponent(rawRouteSlug) : ""; } catch { return rawRouteSlug || ""; } })();
+  const isSlugObjectId = routeSlug && /^[a-f0-9]{24}$/i.test(String(routeSlug));
 
-  // Get authentication data from Redux
-  // const isLoggedIn = useSelector((state: RootState) => state.register.logedin); // Unused for now
   const loggedInUserId = useSelector((state: RootState) => state.register.userID);
   const token = useSelector((state: RootState) => state.register.refreshtoken);
+  const currentUserProfile = useSelector((state: RootState) => state.profile);
 
   // Get profile data from Redux store
   const data = useSelector((state: RootState) => state.comprofile.editData);
@@ -126,7 +126,7 @@ const EditProfile: React.FC = () => {
     try {
       const response = await axios.post(`${API_URL}/checkusername`, {
         username: `@${username}`, // Add @ prefix for database check
-        currentUserId: routeUserId // Exclude current user from check
+        currentUserId: data?.id || (isSlugObjectId ? routeSlug : undefined) // Exclude current user from check
       });
 
       if (response.data.available) {
@@ -188,17 +188,16 @@ const EditProfile: React.FC = () => {
 
     const effectiveUserId = loggedInUserId || getLocalUserId();
 
-    // Check if user is authorized to edit this profile
-    if (routeUserId && effectiveUserId) {
-      if (routeUserId === effectiveUserId) {
-        setIsAuthorized(true);
-      } else {
-        setIsAuthorized(false);
-        setErrorMessage("You are not authorized to edit this profile");
-        setLoading(false);
-      }
+    const authorized = routeSlug && effectiveUserId && (
+      (isSlugObjectId && routeSlug === effectiveUserId) ||
+      (!isSlugObjectId && currentUserProfile?.username === routeSlug)
+    );
+    setIsAuthorized(!!authorized);
+    if (routeSlug && effectiveUserId && !authorized) {
+      setErrorMessage("You are not authorized to edit this profile");
+      setLoading(false);
     }
-  }, [routeUserId, loggedInUserId]);
+  }, [routeSlug, isSlugObjectId, loggedInUserId, currentUserProfile?.username]);
 
   // Helper function to get token and user data from localStorage if not in Redux
   const getLocalStorageData = () => {
@@ -332,7 +331,7 @@ const EditProfile: React.FC = () => {
       try {
         // Get data from all possible sources
         const localData = getLocalStorageData();
-        const effectiveUserId = loggedInUserId || localData.userID || routeUserId;
+        const effectiveUserId = loggedInUserId || localData.userID;
 
         if (!effectiveUserId) {
           return;
@@ -488,13 +487,13 @@ const EditProfile: React.FC = () => {
     if (isAuthorized && !directAuthVerified) {
       verifyAuthDirectly();
     }
-  }, [isAuthorized, token, loggedInUserId, routeUserId, directAuthVerified]);
+  }, [isAuthorized, token, loggedInUserId, routeSlug, directAuthVerified]);
 
-  // Reset fetch state when routeUserId changes (user navigates to different profile or returns to edit page)
+  // Reset fetch state when routeSlug changes (user navigates to different profile or returns to edit page)
   useEffect(() => {
     dataFetchedRef.current = false;
     apiRequestTracker.resetGetEditRequested();
-  }, [routeUserId]);
+  }, [routeSlug]);
 
   // Fetch profile data once when component mounts
   useEffect(() => {
@@ -511,22 +510,21 @@ const EditProfile: React.FC = () => {
     const effectiveToken = token || localData.token || cookieToken;
 
     // Only fetch if we have the required data, are authorized, and either direct auth is verified or we haven't tried yet
-    if (routeUserId && effectiveToken && isAuthorized && !apiRequestTracker.getEditRequested && (directAuthVerified || !dataFetchedRef.current)) {
+    if (routeSlug && effectiveToken && isAuthorized && !apiRequestTracker.getEditRequested && (directAuthVerified || !dataFetchedRef.current)) {
       apiRequestTracker.getEditRequested = true;
       dataFetchedRef.current = true;
 
-      // Create a more complete authentication payload
-      // Make sure we're using the raw token without Bearer prefix
       const cleanToken = effectiveToken.startsWith('Bearer ') ? effectiveToken.substring(7) : effectiveToken;
 
-      const authPayload = {
-        userid: routeUserId,
+      const authPayload: any = {
         token: cleanToken,
         hasToken: true,
         accesstoken: localData.rawData?.accesstoken || "",
         refreshtoken: localData.rawData?.refreshtoken || "",
-        userID: localData.userID || loggedInUserId || routeUserId
+        userID: localData.userID || loggedInUserId || routeSlug
       };
+      if (isSlugObjectId) authPayload.userid = routeSlug;
+      else authPayload.username = routeSlug;
 
       // Make sure we're sending the actual token values in the request
       const finalAuthPayload = {
@@ -551,7 +549,7 @@ const EditProfile: React.FC = () => {
 
       return () => clearTimeout(timer);
     }
-  }, [routeUserId, token, isAuthorized, dispatch, loading, directAuthVerified, loggedInUserId]);
+  }, [routeSlug, isSlugObjectId, token, isAuthorized, dispatch, loading, directAuthVerified, loggedInUserId]);
 
   // Handle API response for profile data fetch
   useEffect(() => {
@@ -695,7 +693,7 @@ const EditProfile: React.FC = () => {
       setTimeout(() => {
         // Use window.location.href to force a complete page reload
         // This ensures the entire web page loads fresh with updated data
-        window.location.href = `/Profile/${routeUserId}`;
+        window.location.href = `/Profile/${routeSlug}`;
       }, 1500);
     }
 
@@ -725,7 +723,7 @@ const EditProfile: React.FC = () => {
 
       setErrorMessage(errorMessage);
     }
-  }, [updateEdit_stats, updateEdit_message, routeUserId, router, dispatch]);
+  }, [updateEdit_stats, updateEdit_message, routeSlug, router, dispatch]);
 
   // Handle form submission
   const updateButton = async () => {
@@ -770,13 +768,14 @@ const EditProfile: React.FC = () => {
     const effectiveToken = token || localData.token || cookieToken;
 
     // Create a more complete authentication payload
+    const resolvedUserId = data?.id || (isSlugObjectId ? routeSlug : loggedInUserId);
     const changedProfileData = {
-      userid: routeUserId, // Use the route user ID
+      userid: resolvedUserId,
       token: effectiveToken,
-      hasToken: true, // Ensure this flag is set
+      hasToken: true,
       accesstoken: localData.rawData?.accesstoken || "",
       refreshtoken: localData.rawData?.refreshtoken || "",
-      userID: localData.userID || loggedInUserId || routeUserId,
+      userID: localData.userID || loggedInUserId || resolvedUserId,
 
       // Profile data - send current or new values
       // Only send deletePhotolink and deletePhotoID if user is uploading a new photo
@@ -827,7 +826,7 @@ const EditProfile: React.FC = () => {
               </div>
               <button
                 className="mt-4 bg-gray-700 hover:bg-gray-600 text-white text-sm py-2 px-4 rounded-md"
-                onClick={() => router.push(`/Profile/${routeUserId}`)}
+                onClick={() => router.push(`/Profile/${routeSlug}`)}
               >
                 Back to Profile
               </button>
@@ -960,7 +959,7 @@ const EditProfile: React.FC = () => {
 
                         // Get user data for the API call
                         const localData = getLocalStorageData();
-                        const effectiveUserId = loggedInUserId || localData.userID || routeUserId;
+                        const effectiveUserId = loggedInUserId || localData.userID;
 
                         // Immediately update UI
                         setProfileimg(profileIcon.src);
@@ -1182,7 +1181,7 @@ const EditProfile: React.FC = () => {
 
                   <button
                     className="bg-transparent border border-gray-600 text-gray-300 hover:bg-gray-800 transition-colors font-medium py-2 px-4 rounded-lg w-full text-center disabled:opacity-50"
-                    onClick={() => router.push(`/Profile/${routeUserId}`)}
+                    onClick={() => router.push(`/Profile/${routeSlug}`)}
                     disabled={loading}
                   >
                     Cancel

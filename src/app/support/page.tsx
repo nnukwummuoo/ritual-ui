@@ -6,21 +6,14 @@ import { useRouter } from "next/navigation";
 import { useSelector } from "react-redux";
 import { SupportForm } from "../../components/support/SupportForm";
 
-// Types
-interface RootState {
-  register: {
-    userID: string;
-    logedin: boolean;
-    refreshtoken: string;
-  };
-}
+import type { RootState } from "@/store/store";
 
 const SupportPage: React.FC = () => {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
-  // Get user ID from Redux
   const reduxUserid = useSelector((state: RootState) => state.register.userID);
+  const profileUsername = useSelector((state: RootState) => state.profile?.username);
 
   // Helper function to get current user ID with localStorage fallback
   const getCurrentUserId = () => {
@@ -379,8 +372,8 @@ Timestamp: ${new Date().toLocaleString()}`;
                 <button
                   onClick={() => {
                     const currentUserId = getCurrentUserId();
-                    if (currentUserId) {
-                      router.push(`/Profile/${currentUserId}`);
+                    if (currentUserId || profileUsername) {
+                      router.push(profileUsername ? `/Profile/${profileUsername}` : `/Profile/${currentUserId}`);
                     } else {
                       router.push("/Profile");
                     }

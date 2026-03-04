@@ -1902,7 +1902,8 @@ export const Chat = () => {
                 className="relative cursor-pointer hover:opacity-80 transition-opacity"
                 onClick={() => {
                   if (finalCreatorPortfolioId) {
-                    router.push(`/Profile/${finalCreatorPortfolioId}`);
+                    const slug = (viewingProfile?.username && String(viewingProfile.username).trim()) ? String(viewingProfile.username).trim() : finalCreatorPortfolioId;
+                    router.push(`/Profile/${slug}`);
                   }
                 }}
               >
@@ -1937,7 +1938,8 @@ export const Chat = () => {
                 className="cursor-pointer hover:opacity-80 transition-opacity"
                 onClick={() => {
                   if (finalCreatorPortfolioId) {
-                    router.push(`/Profile/${finalCreatorPortfolioId}`);
+                    const slug = (viewingProfile?.username && String(viewingProfile.username).trim()) ? String(viewingProfile.username).trim() : finalCreatorPortfolioId;
+                    router.push(`/Profile/${slug}`);
                   }
                 }}
               >

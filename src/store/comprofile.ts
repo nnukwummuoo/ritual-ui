@@ -108,7 +108,8 @@ export const getprofilebyid = createAsyncThunk("comprofile/getprofilebyid", asyn
 })
 
 export const getEdit = createAsyncThunk<any, {
-    userid: string;
+    userid?: string;
+    username?: string;
     token: string;
     hasToken?: boolean;
     accesstoken?: string;
@@ -117,8 +118,12 @@ export const getEdit = createAsyncThunk<any, {
 }>("comprofile/getEdit", async (data) => {
 
     try {
+        const getProfileBody = (data as any).username && String((data as any).username).trim()
+            ? { username: String((data as any).username).trim() }
+            : { userid: data.userid };
         console.log("getEdit action called with data:", {
             userid: data.userid,
+            username: (data as any).username,
             hasToken: data.hasToken,
             tokenProvided: !!data.token
         });
@@ -126,9 +131,7 @@ export const getEdit = createAsyncThunk<any, {
         // First try the direct approach that works (without JWT auth)
         try {
             console.log("Trying direct getprofile approach first");
-            const directResponse = await axios.post(`${URL}/getprofile`, {
-                userid: data.userid
-            });
+            const directResponse = await axios.post(`${URL}/getprofile`, getProfileBody);
 
             if (directResponse.status === 200 && directResponse.data) {
                 console.log("✅ [getEdit] Direct getprofile approach succeeded:", {

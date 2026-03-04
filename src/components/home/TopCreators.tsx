@@ -18,7 +18,7 @@ interface TopCreator {
 interface CreatorCardProps {
     creator: TopCreator;
     index: number;
-    handleCreatorClick: (userId: string) => void;
+    handleCreatorClick: (creator: TopCreator) => void;
 }
 
 const CreatorCard: React.FC<CreatorCardProps> = ({ creator, index, handleCreatorClick }) => {
@@ -27,7 +27,7 @@ const CreatorCard: React.FC<CreatorCardProps> = ({ creator, index, handleCreator
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: index * 0.03, duration: 0.3 }}
-            onClick={() => handleCreatorClick(creator.userId)}
+            onClick={() => handleCreatorClick(creator)}
             className="flex flex-col items-center cursor-pointer group"
         >
             {/* Creator avatar container */}
@@ -139,8 +139,9 @@ export default function TopCreators() {
         return null;
     }
 
-    const handleCreatorClick = (userId: string) => {
-        router.push(`/Profile/${userId}`);
+    const handleCreatorClick = (creator: TopCreator) => {
+        const slug = (creator.username && String(creator.username).trim()) ? String(creator.username).trim() : creator.userId;
+        router.push(`/Profile/${slug}`);
     };
 
     return (

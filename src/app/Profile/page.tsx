@@ -2,25 +2,26 @@
 import React, { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useUserId } from "@/lib/hooks/useUserId";
+import { useSelector } from "react-redux";
+import type { RootState } from "@/store/store";
 
 export default function ProfileRedirectPage() {
   const router = useRouter();
   const userId = useUserId();
+  const username = useSelector((state: RootState) => state.profile?.username);
 
   useEffect(() => {
-    // If we already have a userId, go immediately
     if (userId && userId.length > 0) {
-      router.replace(`/Profile/${userId}`);
+      router.replace(username ? `/Profile/${username}` : `/Profile/${userId}`);
       return;
     }
 
-    // Otherwise, wait briefly to allow Redux/localStorage to resolve
     const t = setTimeout(() => {
       router.replace("/auth/login");
     }, 1200);
 
     return () => clearTimeout(t);
-  }, [userId, router]);
+  }, [userId, username, router]);
 
   return (
     <div className="flex items-center justify-center w-full h-dvh text-slate-300">

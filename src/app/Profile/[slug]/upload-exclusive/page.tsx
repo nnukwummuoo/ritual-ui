@@ -52,7 +52,9 @@ export default function UploadExclusivePage() {
   const params = useParams();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const routeUserId = params?.userid as string;
+  const rawRouteSlug = (params?.slug ?? params?.userid) as string;
+  const routeSlug = (() => { try { return rawRouteSlug ? decodeURIComponent(rawRouteSlug) : ""; } catch { return rawRouteSlug || ""; } })();
+  const isSlugObjectId = routeSlug && /^[a-f0-9]{24}$/i.test(String(routeSlug));
   const postId = searchParams?.get("postId");
 
   // Get authentication data from Redux
@@ -89,7 +91,7 @@ export default function UploadExclusivePage() {
   // Fetch post data if in edit mode
   useEffect(() => {
     const fetchPostData = async () => {
-      if (!postId || !routeUserId) return;
+      if (!postId || !routeSlug) return;
 
       setIsLoadingPost(true);
       setIsEditMode(true);
@@ -109,7 +111,7 @@ export default function UploadExclusivePage() {
 
         // Fetch all exclusive posts and find the one with matching ID
         const response = await axios.post(`${API_URL}/getallExclusivePosts`,
-          { userid: routeUserId },
+          isSlugObjectId ? { userid: routeSlug } : { username: routeSlug },
           {
             headers: {
               'Content-Type': 'application/json',
@@ -139,20 +141,20 @@ export default function UploadExclusivePage() {
             }
           } else {
             toast.error("Post not found");
-            router.push(`/Profile/${routeUserId}`);
+            router.push(`/Profile/${routeSlug}`);
           }
         }
       } catch (error: any) {
         console.error("Error fetching post:", error);
         toast.error("Failed to load post data");
-        router.push(`/Profile/${routeUserId}`);
+        router.push(`/Profile/${routeSlug}`);
       } finally {
         setIsLoadingPost(false);
       }
     };
 
     fetchPostData();
-  }, [postId, routeUserId, loggedInUserId, localUserid, token, router]);
+  }, [postId, routeSlug, isSlugObjectId, loggedInUserId, localUserid, token, router]);
 
   // Handle file selection
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -267,7 +269,7 @@ export default function UploadExclusivePage() {
 
         if (response.data.ok) {
           toast.success("Exclusive post updated successfully!");
-          router.push(`/Profile/${routeUserId}`);
+          router.push(`/Profile/${routeSlug}`);
         } else {
           toast.error(response.data.message || "Update failed");
         }
@@ -290,7 +292,7 @@ export default function UploadExclusivePage() {
 
         if (response.data.ok) {
           toast.success("Exclusive content uploaded successfully!");
-          router.push(`/Profile/${routeUserId}`);
+          router.push(`/Profile/${routeSlug}`);
         } else {
           toast.error(response.data.message || "Upload failed");
         }
@@ -310,7 +312,7 @@ export default function UploadExclusivePage() {
     setExclusiveContentPreview(null);
     setExclusiveContentPrice("");
     setExclusiveContentDescription("");
-    router.push(`/Profile/${routeUserId}`);
+    router.push(`/Profile/${routeSlug}`);
   };
 
   return (

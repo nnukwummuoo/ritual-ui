@@ -7,18 +7,9 @@ export const metadata = {
     description: "Your profile account"
 }
 export const dynamic = 'force-dynamic';
-// export async function generateStaticParams() {
-//   const res = await fetch('https://api.example.com/users');
-//   const users = await res.json();
-
-//   return users.map((user: any) => ({
-//     userid: user.id,
-//   }));
-// }
 
 export default function Page() {
   return <CallProvider>
     <Profile />
   </CallProvider>
-  
 }
