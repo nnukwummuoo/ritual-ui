@@ -937,7 +937,7 @@ export default function RequestCard({ exp, img, originalPhotoLink, name, usernam
   const handleProfileClick = () => {
     if (!targetUserId && !targetUsername) return;
     const slug = (targetUsername && String(targetUsername).trim()) ? String(targetUsername).trim() : targetUserId;
-    router.push(`/Profile/${slug}`);
+    router.push(`/${slug}`);
   };
 
   return (

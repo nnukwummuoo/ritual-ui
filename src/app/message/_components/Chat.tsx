@@ -1903,7 +1903,7 @@ export const Chat = () => {
                 onClick={() => {
                   if (finalCreatorPortfolioId) {
                     const slug = (viewingProfile?.username && String(viewingProfile.username).trim()) ? String(viewingProfile.username).trim() : finalCreatorPortfolioId;
-                    router.push(`/Profile/${slug}`);
+                    router.push(`/${slug}`);
                   }
                 }}
               >
@@ -1939,7 +1939,7 @@ export const Chat = () => {
                 onClick={() => {
                   if (finalCreatorPortfolioId) {
                     const slug = (viewingProfile?.username && String(viewingProfile.username).trim()) ? String(viewingProfile.username).trim() : finalCreatorPortfolioId;
-                    router.push(`/Profile/${slug}`);
+                    router.push(`/${slug}`);
                   }
                 }}
               >

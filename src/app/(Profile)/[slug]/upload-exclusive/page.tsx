@@ -141,13 +141,13 @@ export default function UploadExclusivePage() {
             }
           } else {
             toast.error("Post not found");
-            router.push(`/Profile/${routeSlug}`);
+            router.push(`/${routeSlug}`);
           }
         }
       } catch (error: any) {
         console.error("Error fetching post:", error);
         toast.error("Failed to load post data");
-        router.push(`/Profile/${routeSlug}`);
+        router.push(`/${routeSlug}`);
       } finally {
         setIsLoadingPost(false);
       }
@@ -269,7 +269,7 @@ export default function UploadExclusivePage() {
 
         if (response.data.ok) {
           toast.success("Exclusive post updated successfully!");
-          router.push(`/Profile/${routeSlug}`);
+          router.push(`/${routeSlug}`);
         } else {
           toast.error(response.data.message || "Update failed");
         }
@@ -292,7 +292,7 @@ export default function UploadExclusivePage() {
 
         if (response.data.ok) {
           toast.success("Exclusive content uploaded successfully!");
-          router.push(`/Profile/${routeSlug}`);
+          router.push(`/${routeSlug}`);
         } else {
           toast.error(response.data.message || "Upload failed");
         }
@@ -312,7 +312,7 @@ export default function UploadExclusivePage() {
     setExclusiveContentPreview(null);
     setExclusiveContentPrice("");
     setExclusiveContentDescription("");
-    router.push(`/Profile/${routeSlug}`);
+    router.push(`/${routeSlug}`);
   };
 
   return (

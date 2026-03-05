@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { FaAngleLeft, FaQuestionCircle, FaFacebook, FaInstagram, FaEnvelope, FaPhone, FaClock } from "react-icons/fa";
+import { FaAngleLeft, FaQuestionCircle, FaFacebook, FaInstagram, FaEnvelope, FaClock } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 import { useSelector } from "react-redux";
 import { SupportForm } from "../../components/support/SupportForm";
@@ -178,6 +178,15 @@ const SupportPage: React.FC = () => {
         {
           question: "How do both sides stay protected?",
           answer: "🛡 The platform tracks confirmations, time logs, and attendance reports to ensure fairness.\nWe recommend both sides take a quick photo or check-in proof at the public venue for verification if needed."
+        }
+      ]
+    },
+    {
+      section: "📺 How PPV Works",
+      questions: [
+        {
+          question: "How PPV Works",
+          answer: "PPV (Pay‑Per‑View) is available only to verified creators. To enable it:\n\n1. Verify your account — once verified, go to Settings.\n2. Navigate to the Pay‑Per‑View page and submit a Request.\n3. After approval, return to Settings to set your PPV price and save it.\n4. From then on, when replying to a fan, you can lock any reply by clicking the padlock icon in the typing container.\n\nThis allows you to send blurred or locked replies that fans can unlock by paying your set PPV price."
         }
       ]
     },
@@ -373,9 +382,9 @@ Timestamp: ${new Date().toLocaleString()}`;
                   onClick={() => {
                     const currentUserId = getCurrentUserId();
                     if (currentUserId || profileUsername) {
-                      router.push(profileUsername ? `/Profile/${profileUsername}` : `/Profile/${currentUserId}`);
+                      router.push(profileUsername ? `/${profileUsername}` : `/${currentUserId}`);
                     } else {
-                      router.push("/Profile");
+                      router.push("/");
                     }
                   }}
                   className="w-full text-left p-3 bg-gray-700 rounded-lg hover:bg-gray-600 transition-colors"

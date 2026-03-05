@@ -36,7 +36,7 @@ const AboutPage = () => {
   const profileUrl = React.useMemo(() => {
     if (!profileSlugForUrl) return "";
     if (typeof window !== "undefined") {
-      return `${window.location.origin}/Profile/${profileSlugForUrl}`;
+      return `${window.location.origin}/${profileSlugForUrl}`;
     }
     return "";
   }, [profileSlugForUrl]);
