@@ -12,7 +12,7 @@ export default function ProfileRedirectPage() {
 
   useEffect(() => {
     if (userId && userId.length > 0) {
-      router.replace(username ? `/Profile/${username}` : `/Profile/${userId}`);
+      router.replace(username ? `/${username}` : `/${userId}`);
       return;
     }
 

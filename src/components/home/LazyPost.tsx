@@ -709,7 +709,7 @@ const LazyPost: React.FC<LazyPostProps> = ({
               className="size-10 rounded-full overflow-hidden bg-gray-700 cursor-pointer hover:opacity-80 transition-opacity"
               onClick={(e) => {
                 e.stopPropagation();
-                router.push(`/Profile/${post?.user?.username || postAuthorId}`);
+                router.push(`/${post?.user?.username || postAuthorId}`);
               }}
             >
               {(() => {
@@ -768,7 +768,7 @@ const LazyPost: React.FC<LazyPostProps> = ({
             <p className="font-medium text-white flex items-center gap-1 text-sm sm:text-base"
               onClick={(e) => {
                 e.stopPropagation();
-                router.push(`/Profile/${post?.user?.username || postAuthorId}`);
+                router.push(`/${post?.user?.username || postAuthorId}`);
               }}
             >
               {post?.user?.firstname} {post?.user?.lastname}

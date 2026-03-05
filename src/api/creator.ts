@@ -12,9 +12,12 @@ export async function createCreatorMultipart(params: {
   token: string;
   userid: string;
   data: Record<string, any>;
+  /** Image files (some pages pass as photolink, some as files) */
   photolink?: File[];
+  files?: File[];
 }) {
-  const { token, userid, data, photolink = [] } = params;
+  const { token, userid, data } = params;
+  const filesToUpload = (params.photolink?.length ? params.photolink : params.files) ?? [];
 
   if (!userid) throw new Error("Missing userid for createCreatorMultipart");
   if (!token) throw new Error("Missing token for createCreatorMultipart");
@@ -35,16 +38,13 @@ export async function createCreatorMultipart(params: {
     }
   });
 
-  // Add files - use consistent field names that backend expects
-  photolink.forEach((file, index) => {
+  // Add files - backend expects field name 'creatorfiles'
+  filesToUpload.forEach((file) => {
     formData.append('creatorfiles', file);
   });
 
-  const res = await api.put("/creator", formData, {
-    headers: {
-      "Content-Type": "multipart/form-data",
-    },
-  });
+  // Do not set Content-Type: axios must add multipart/form-data with boundary for files to be parsed
+  const res = await api.put("/creator", formData);
 
   return res.data;
 }
@@ -124,11 +124,14 @@ export async function editCreatorMultipart(params: {
   const api = backend(token);
   const form = new FormData();
 
-  // Append all non-file fields
+  // Append all non-file fields (existingImages as JSON string so backend gets full array via multipart)
   Object.entries(data).forEach(([key, value]) => {
-    if (Array.isArray(value)) {
+    if (value === undefined || value === null) return;
+    if (key === 'existingImages' && Array.isArray(value)) {
+      form.append(key, JSON.stringify(value));
+    } else if (Array.isArray(value)) {
       value.forEach((v) => form.append(key, v));
-    } else if (value !== undefined && value !== null) {
+    } else {
       form.append(key, String(value));
     }
   });

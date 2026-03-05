@@ -49,7 +49,7 @@ const DropdownMenu = ({ userId, isOwnProfile = false }: DropdownMenuProps) => {
 
   const handleAboutPage = () => {
     if (userId) {
-      router.push(`/Profile/${userId}/about`);
+      router.push(`/${userId}/about`);
     }
     toggleoption();
   };

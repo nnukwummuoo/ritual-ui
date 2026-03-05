@@ -5,7 +5,7 @@ const backend = (token:String|undefined) => {
     return axios.create({
     baseURL: URL,
     headers: {
-        "Content-Type": "multipart/form-data",
+        // Do not set Content-Type here: FormData must get multipart/form-data with boundary from axios
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
     timeout: 180000,

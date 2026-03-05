@@ -27,7 +27,7 @@ export default function Navbar({ isAuthenticated }: { isAuthenticated: boolean }
                 </span>
               </button>
             ) : null}
-            <Image src={anyaLogo} alt="logo" className="logo" />
+            <Image src={anyaLogo} onClick={() => router.push('/')} alt="logo" className="logo" />
             {isAuthenticated ? <div className="size-6" /> : <div className="flex-1" />}
           </div>
           {!isAuthenticated && (

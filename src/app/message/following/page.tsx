@@ -125,7 +125,7 @@ const FollowingMessagesPage: React.FC = () => {
     const slug = (user as any).username && String((user as any).username).trim()
       ? String((user as any).username).trim()
       : user.id;
-    router.push(`/Profile/${slug}`);
+    router.push(`/${slug}`);
   };
 
   const loading = getfollow_stats === "loading";

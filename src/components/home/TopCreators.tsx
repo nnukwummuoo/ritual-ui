@@ -141,7 +141,7 @@ export default function TopCreators() {
 
     const handleCreatorClick = (creator: TopCreator) => {
         const slug = (creator.username && String(creator.username).trim()) ? String(creator.username).trim() : creator.userId;
-        router.push(`/Profile/${slug}`);
+        router.push(`/${slug}`);
     };
 
     return (

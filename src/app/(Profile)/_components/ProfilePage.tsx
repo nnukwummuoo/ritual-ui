@@ -18,9 +18,9 @@ import { useParams, useRouter, usePathname } from "next/navigation";
 
 import { useDispatch, useSelector } from "react-redux";
 
-import { getprofile, getfollow, getAllUsers, follow, unfollow, getAllUserRatings, getFanRatings } from "@/store/profile";
+import { getprofile, getfollow, follow, unfollow, getAllUserRatings, getFanRatings } from "@/store/profile";
 
-import { getViewingProfile, getViewingFollow, getAllUsersForViewing, clearViewingProfile } from "@/store/viewingProfile";
+import { getViewingProfile, getViewingFollow, clearViewingProfile } from "@/store/viewingProfile";
 
 import { checkVipStatus } from "@/store/vip";
 
@@ -537,12 +537,6 @@ export const Profile = () => {
 
   const viewingFollowStats = useSelector((state: RootState) => state.viewingProfile.getfollow_stats);
 
-  const currentAllUsersData = useSelector((state: RootState) => state.profile.getAllUsers_data as any);
-
-  const viewingAllUsersData = useSelector((state: RootState) => state.viewingProfile.getAllUsers_data as any);
-
-
-
   // Use conditional logic to select the right data
 
   const getprofilebyidstats = isViewingOwnProfile ? currentProfileStatus : viewingProfileStatus;
@@ -552,8 +546,6 @@ export const Profile = () => {
   const getfollow_data = isViewingOwnProfile ? currentFollowData : viewingFollowData;
 
   const getfollow_stats = isViewingOwnProfile ? currentFollowStats : viewingFollowStats;
-
-  const getAllUsers_data = isViewingOwnProfile ? currentAllUsersData : viewingAllUsersData;
 
 
 
@@ -863,8 +855,8 @@ export const Profile = () => {
   useEffect(() => {
     if (!slug || !isSlugObjectId || status !== "succeeded") return;
     const canonicalUsername = isViewingOwnProfile ? currentUserProfile.username : viewingProfile?.username;
-    if (canonicalUsername && String(canonicalUsername).trim() && pathname === `/Profile/${slug}`) {
-      router.replace(`/Profile/${canonicalUsername}`, { scroll: false });
+    if (canonicalUsername && String(canonicalUsername).trim() && pathname === `/${slug}`) {
+      router.replace(`/${canonicalUsername}`, { scroll: false });
     }
   }, [slug, isSlugObjectId, status, isViewingOwnProfile, currentUserProfile.username, viewingProfile?.username, pathname, router]);
 
@@ -889,21 +881,12 @@ export const Profile = () => {
       if (isViewingOwnProfile && token) {
 
         // For current user's own profile, use regular getfollow
-
         dispatch(getfollow({ userid: String(targetUserId), token }));
-
-        dispatch(getAllUsers({ token, userid: String(targetUserId) }));
 
       } else if (!isViewingOwnProfile) {
 
         // For other user's profile, use viewing profile thunks
-        // Pass token if available, otherwise pass empty string for public data
         dispatch(getViewingFollow({ userid: String(targetUserId), token: token || "" }));
-
-        // For getAllUsersForViewing, likely needs token. 
-        if (token) {
-          dispatch(getAllUsersForViewing({ token }));
-        }
 
       }
 
@@ -923,9 +906,7 @@ export const Profile = () => {
 
 
 
-      // Fetch follower data and all users if not already loaded
-
-      // Use the target user ID (the profile we're viewing) for getfollow
+      // Fetch follower data for the profile we're viewing
 
       if (targetUserId) {
 
@@ -933,16 +914,9 @@ export const Profile = () => {
 
           dispatch(getfollow({ userid: String(targetUserId), token }));
 
-          dispatch(getAllUsers({ token, userid: String(targetUserId) }));
-
         } else if (!isViewingOwnProfile) {
 
-          // Allow fetching followers for guest users (token is optional for public data)
           dispatch(getViewingFollow({ userid: String(targetUserId), token: token || "" }));
-
-          if (token) {
-            dispatch(getAllUsersForViewing({ token }));
-          }
 
           // Also fetch the current logged-in user's following list for star icon
           if (loggedInUserId && token) {
@@ -986,16 +960,6 @@ export const Profile = () => {
     return (getfollow_data?.following as any[]) || [];
 
   }, [getfollow_data]);
-
-
-
-  // Use useMemo to prevent unnecessary re-renders
-
-  const allUsers = React.useMemo(() => {
-
-    return (getAllUsers_data as any[]) || [];
-
-  }, [getAllUsers_data]);
 
 
 
@@ -4867,7 +4831,7 @@ export const Profile = () => {
       const postId = post._id || post.postid || post.id;
       if (!postId) return;
 
-      const postUrl = `${window.location.origin}/Profile/${profileSlugForUrl}?exclusive=${postId}`;
+      const postUrl = `${window.location.origin}/${profileSlugForUrl}?exclusive=${postId}`;
 
       closeAllDropdowns();
 
@@ -4917,7 +4881,7 @@ export const Profile = () => {
       const postId = post._id || post.postid || post.id;
       setShowExclusivePostModal(false);
       // Navigate to upload-exclusive page with post ID for editing
-      router.push(`/Profile/${profileSlugForUrl}/upload-exclusive?postId=${postId}`);
+      router.push(`/${profileSlugForUrl}/upload-exclusive?postId=${postId}`);
     }, [viewingUserId, router]);
 
     if (!exclusivePosts || exclusivePosts.length === 0) return null;
@@ -6134,7 +6098,7 @@ export const Profile = () => {
 
                         className="p-2 flex items-center justify-center gap-x-1 bg-gradient-to-r !from-blue-500 !to-purple-600 text-center text-sm rounded-lg mt-4"
 
-                        onClick={() => router.push(`/Profile/${profileSlugForUrl}/editprofile`)}
+                        onClick={() => router.push(`/${profileSlugForUrl}/editprofile`)}
 
                       >
 
@@ -6538,7 +6502,7 @@ export const Profile = () => {
 
                           className="relative aspect-square group cursor-pointer rounded-sm overflow-hidden bg-gray-800 dark:bg-gray-700 border-2 border-dashed border-gray-600 dark:border-gray-500 hover:border-orange-500 dark:hover:border-orange-500 transition-colors flex items-center justify-center"
 
-                          onClick={() => router.push(`/Profile/${profileSlugForUrl}/upload-exclusive`)}
+                          onClick={() => router.push(`/${profileSlugForUrl}/upload-exclusive`)}
 
                         >
 

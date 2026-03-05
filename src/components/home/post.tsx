@@ -732,10 +732,10 @@ export default function PostsCard() {
                 {/* After post 3 (index 2): NewRitualCard desktop, TopFans mobile */}
                 {index === 1 && (
                   <>
-                     <div className="">
+                     {/* <div className="">
                     <NewRitualCard />
-                  </div>
-                    <div className="hidden lg:block mx-auto max-w-[30rem] w-full">
+                  </div> */}
+                    <div className=" mx-auto max-w-[30rem] w-full">
                       <NewRitualCard />
                     </div>
                     {/* <div className="lg:hidden">

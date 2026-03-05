@@ -574,9 +574,6 @@ export const getfollow = createAsyncThunk<{ data: FollowData }, { userid: string
 
 export const getAllUsers = createAsyncThunk<{ users: Array<any> }, { token: string; userid?: string }>("profile/getAllUsers", async (data) => {
   try {
-    console.log('🔍 [getAllUsers] Starting API call with data:', { token: data.token?.substring(0, 20) + '...', userid: data.userid });
-
-    // Set up headers with authorization token if available
     const headers = data.token ? {
       'Authorization': `Bearer ${data.token}`,
       'Content-Type': 'application/json'
@@ -584,26 +581,13 @@ export const getAllUsers = createAsyncThunk<{ users: Array<any> }, { token: stri
       'Content-Type': 'application/json'
     };
 
-    let response = await axios.post(`${URL}/getallusers`, {
+    const response = await axios.post(`${URL}/getallusers`, {
       token: data.token,
       userid: data.userid
     }, { headers });
 
-    console.log('✅ [getAllUsers] API response:', {
-      status: response.status,
-      usersCount: response.data?.users?.length,
-      hasUsers: !!response.data?.users
-    });
-
     return response.data;
   } catch (err) {
-    console.error("❌ [getAllUsers] error", err);
-    console.error("❌ [getAllUsers] error details:", {
-      message: (err as any)?.message,
-      status: (err as any)?.response?.status,
-      statusText: (err as any)?.response?.statusText,
-      data: (err as any)?.response?.data
-    });
     throw getErrorMessageWithNetworkFallback(err);
   }
 });

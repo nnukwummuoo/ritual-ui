@@ -693,7 +693,7 @@ const EditProfile: React.FC = () => {
       setTimeout(() => {
         // Use window.location.href to force a complete page reload
         // This ensures the entire web page loads fresh with updated data
-        window.location.href = `/Profile/${routeSlug}`;
+        window.location.href = `/${routeSlug}`;
       }, 1500);
     }
 
@@ -826,7 +826,7 @@ const EditProfile: React.FC = () => {
               </div>
               <button
                 className="mt-4 bg-gray-700 hover:bg-gray-600 text-white text-sm py-2 px-4 rounded-md"
-                onClick={() => router.push(`/Profile/${routeSlug}`)}
+                onClick={() => router.push(`/${routeSlug}`)}
               >
                 Back to Profile
               </button>
@@ -1181,7 +1181,7 @@ const EditProfile: React.FC = () => {
 
                   <button
                     className="bg-transparent border border-gray-600 text-gray-300 hover:bg-gray-800 transition-colors font-medium py-2 px-4 rounded-lg w-full text-center disabled:opacity-50"
-                    onClick={() => router.push(`/Profile/${routeSlug}`)}
+                    onClick={() => router.push(`/${routeSlug}`)}
                     disabled={loading}
                   >
                     Cancel

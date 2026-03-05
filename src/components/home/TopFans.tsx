@@ -140,7 +140,7 @@ export default function TopFans() {
 
     const handleFanClick = (fan: TopFan) => {
         const slug = (fan.username && String(fan.username).trim()) ? String(fan.username).trim() : fan.userId;
-        router.push(`/Profile/${slug}`);
+        router.push(`/${slug}`);
     };
 
     return (

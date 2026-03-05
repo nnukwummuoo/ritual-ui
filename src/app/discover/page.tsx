@@ -393,7 +393,7 @@ function DiscoverPageContent() {
                 const uniqueKey = `${user.userId}-${user.resultType || 'user'}-${index}`;
                 const href = isCreatorEntry && user.creatorPortfolioId
                   ? `/creators/${user.creatorPortfolioId}`
-                  : `/Profile/${user.username || user.userId}`;
+                  : `/${user.username || user.userId}`;
 
                 return (
                   <Link
@@ -723,7 +723,7 @@ function DiscoverPageContent() {
                               className="size-10 rounded-full overflow-hidden bg-gray-700 cursor-pointer hover:opacity-80 transition-opacity"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                router.push(`/Profile/${post?.user?.username || postAuthorId}`);
+                                router.push(`/${post?.user?.username || postAuthorId}`);
                               }}
                             >
                               {(() => {
@@ -788,7 +788,7 @@ function DiscoverPageContent() {
                           >
                             <p className="font-medium text-white" onClick={(e) => {
                               e.stopPropagation();
-                              router.push(`/Profile/${post?.user?.username || postAuthorId}`);
+                              router.push(`/${post?.user?.username || postAuthorId}`);
                             }}>{displayName}</p>
                             <span className="text-gray-400 text-sm">{handleStr ? `${handleStr}` : ""}</span>
                           </div>
@@ -1337,8 +1337,8 @@ function DiscoverPageContent() {
                     <Link
                       key={user.userId}
                       href={user.isCreator && user.creatorPortfolioId
-                        ? `/Profile/${user.username || user.userId}`
-                        : `/Profile/${user.username || user.userId}`}
+                        ? `/${user.username || user.userId}`
+                        : `/${user.username || user.userId}`}
                       className="flex-shrink-0 flex flex-col items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity"
                     >
                       <div className="relative">

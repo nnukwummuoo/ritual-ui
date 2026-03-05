@@ -152,9 +152,9 @@ const FollowerCard: React.FC<FollowerCardProps> = ({ image, name, creator_portfo
 
   const handleProfileClick = () => {
     if (userId) {
-      // Prefer username for profile URL when available; use as-is so URL shows /Profile/@baby not %40baby
+      // Prefer username for profile URL when available; use as-is so URL shows /@baby not %40baby
       const slug = (username && String(username).trim()) ? String(username).trim() : userId;
-      router.push(`/Profile/${slug}`);
+      router.push(`/${slug}`);
     } else if (creator_portfolio_id) {
       router.push(`/creators/${creator_portfolio_id}`);
     }
