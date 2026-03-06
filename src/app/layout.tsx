@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import Providers from "./providers";
@@ -18,12 +18,19 @@ import MaintenanceBanner from "@/components/MaintenanceBanner";
 import ReferralTracker from "@/components/ReferralTracker";
 import UpdateNotification from "@/components/UpdateNotification";
 
-
 const inter = Inter({
   weight: ["100", "300", "400", "500", "700"],
   subsets: ["latin"],
   display: "swap",
 });
+
+export const viewport: Viewport = {
+  themeColor: "#00A86B",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+};
 
 export const metadata: Metadata = {
   title: {
@@ -32,16 +39,9 @@ export const metadata: Metadata = {
   },
   description: "Join Mmeko today — creators keep 100%, enjoy instant payouts, and connect with fans through safe meets, calls, and PPV content.",
   alternates: {
-    canonical: 'https://mmeko.com', // This adds the <link rel="canonical" ...> tag
+    canonical: 'https://mmeko.com',
   },
   manifest: "/manifest.json",
-  themeColor: "#00A86B",
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-    maximumScale: 1,
-    userScalable: false,
-  },
 };
 
 export default async function RootLayout({
