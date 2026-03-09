@@ -457,7 +457,7 @@ export default function CreatorLandingContent({
 
         <div className="mx-auto max-w-[30rem] w-full">
       {/* Heading */}
-      <h3 className="text-white text-lg font-bold mb-3 px-3">
+      <h3 className="text-white text-lg font-bold mb-2 mt-2 px-3">
         Safety Rules (Important)
       </h3>
 
