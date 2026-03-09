@@ -12,6 +12,7 @@ import {
   FaClock,
   FaFileImage,
 } from "react-icons/fa";
+import { HiShieldCheck } from "react-icons/hi";
 import HeaderBackNav from "../../navs/HeaderBackNav";
 import { useRouter } from "next/navigation";
 // import { useNavigate } from "react-router-dom";
@@ -54,14 +55,7 @@ export default function VerificationPage(){
       title: "Content Sales = Instant Value, Total Control",
       subtitle: "Keep Everything You Earn",
       description:
-        "Dropping exclusive photos, videos, or bundles? Fans pay upfront through the platform — no subscriptions, no cuts, no chargebacks. Every sale is pure profit, 100% yours, with delivery handled automatically so your content stays protected and respected.",
-    },
-    {
-        icon: FaCompass,
-        title: "Algorithm Boost = More Eyes, More Impact",
-        subtitle: "Reach the Fans Who Actually Care.",
-        description:
-          "Get discovered naturally by the algorithm and land on fans’ feeds who are most likely to engage. No tricks, no waiting — just optimized exposure that increases your reach. Every post has a chance to trend, every interaction counts, and your content works for you. Instant visibility. Real growth. Full control.",
+      "Dropping exclusive photos, videos, or bundles? Fans pay upfront through the platform — no subscriptions, no cuts, no chargebacks. Every sale is pure profit, 100% yours, with delivery handled automatically so your content stays protected and respected.",
     },
     {
         icon: FaBolt,
@@ -69,6 +63,20 @@ export default function VerificationPage(){
         subtitle: "Cash Out. No Delays. No Excuses.",
         description:
           "Access your money the moment you decide to withdraw. No waiting periods, no complicated approvals — just a smooth, direct transfer when you request it. Your balance stays in your control, your timing sets the pace, and what you earn stays yours. Simple process. Immediate release. 100% yours.",
+    },
+    {
+        icon: HiShieldCheck,
+        title: "Structured Fan Meets & Dates",
+        subtitle: "30 Minutes. Public Spaces. Clear Boundaries.",
+        description:
+          "Fan meets and dates are designed with structure and safety in mind. Every meetup is limited to 30 minutes and takes place only in public spaces like cafés or restaurants, creating a comfortable environment for both creators and fans. No uncertainty, no awkward expectations — just a clear, respectful meetup format. You choose which requests to accept, meet in safe locations, and stay fully in control of your experience. Simple rules. Public settings. Structured fan meets & dates.",
+    },
+    {
+        icon: FaCompass,
+        title: "Algorithm Boost = More Eyes, More Impact",
+        subtitle: "Reach the Fans Who Actually Care.",
+        description:
+          "Get discovered naturally by the algorithm and land on fans’ feeds who are most likely to engage. No tricks, no waiting — just optimized exposure that increases your reach. Every post has a chance to trend, every interaction counts, and your content works for you. Instant visibility. Real growth. Full control.",
     },
     {
       icon: FaUsers,
