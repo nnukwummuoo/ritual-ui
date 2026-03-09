@@ -19,40 +19,36 @@ const publicRoutes = [
   '/support',
   '/about',
   '/blog',
-  "/creators",
+  '/creators',
   '/offline',
-  '/banned',  // Allow banned users to access banned page
+  '/banned',
 ];
 
-// Routes that should redirect authenticated users away
 const prohibitedRoutes = [
   '/auth/login',
   '/auth/register',
   '/auth/verify-email',
-  '/api/session'
+  '/api/session',
 ];
 
-// Public route prefixes (routes that start with these are public)
 const publicRoutePrefixes = [
-  '/auth',      // All auth routes
-  '/api/proxy', // All proxy API routes (including stories for non-logged-in users)
-  '/api/image-proxy', // Image proxy routes
-  '/api/simple-image-proxy', // Simple image proxy routes
-  '/Profile', // Allow guest access to profiles
+  '/auth',
+  '/api/proxy',
+  '/api/image-proxy',
+  '/api/simple-image-proxy',
 ];
 
-// Admin routes that require admin privileges
 const adminRoutes = [
-  '/mmeko',  // All admin routes under /mmeko
+  '/mmeko',
 ];
 
-// Static files pattern
+const PUBLIC_PROFILE_ROUTE = /^\/@[^/]+$/;
+
 const PUBLIC_FILE = /\.(.*)$/;
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Skip middleware for static files
   if (PUBLIC_FILE.test(pathname)) {
     const res = NextResponse.next();
     const refreshed = await sessionMng(request);
@@ -62,73 +58,68 @@ export async function middleware(request: NextRequest) {
         secure: process.env.NODE_ENV === 'production',
         path: '/',
         sameSite: 'strict',
-        maxAge: 30 * 24 * 60 * 60, // 30 days in seconds
+        maxAge: 30 * 24 * 60 * 60,
       });
     }
     return res;
   }
 
-  // Check route types
-  const isPublicRoute = publicRoutes.includes(pathname) ||
-    publicRoutePrefixes.some(prefix => pathname.startsWith(prefix));
-  const isProhibitedRoute = prohibitedRoutes.some(route => pathname === route);
-  const isAdminRoute = adminRoutes.some(route => pathname.startsWith(route));
+  const isPublicProfileRoute = PUBLIC_PROFILE_ROUTE.test(pathname); 
+  const isPublicRoute =
+    publicRoutes.includes(pathname) ||
+    publicRoutePrefixes.some((prefix) => pathname.startsWith(prefix)) ||
+    isPublicProfileRoute; 
 
-  // Get authentication token
-  const authToken = request.cookies.get("session")?.value || request.cookies.get("auth_token")?.value;
+  const isProhibitedRoute = prohibitedRoutes.some((route) => pathname === route);
+  const isAdminRoute = adminRoutes.some((route) => pathname.startsWith(route));
 
-  // Handle session refresh
+  const authToken =
+    request.cookies.get('session')?.value ||
+    request.cookies.get('auth_token')?.value;
+
   const refreshed = await sessionMng(request);
 
-  // Helper function to create response with session cookie
   const createResponse = (url: string, redirect = true) => {
-    const res = redirect ? NextResponse.redirect(new URL(url, request.url)) : NextResponse.next();
+    const res = redirect
+      ? NextResponse.redirect(new URL(url, request.url))
+      : NextResponse.next();
     if (refreshed) {
       res.cookies.set('session', refreshed, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         path: '/',
         sameSite: 'strict',
-        maxAge: 30 * 24 * 60 * 60, // 30 days in seconds
+        maxAge: 30 * 24 * 60 * 60,
       });
     }
     return res;
   };
 
-  // Case 1: No authentication token
   if (!authToken) {
-    // Allow public routes
     if (isPublicRoute) {
       return createResponse('', false);
     }
-    // Redirect to login for all other routes
     return createResponse('/auth/login');
   }
 
-  // Case 2: User is authenticated
-  // Redirect authenticated users away from prohibited routes (login, register, etc.)
   if (isProhibitedRoute) {
     return createResponse('/');
   }
 
-  // Case 3: Admin route access
   if (isAdminRoute) {
     const isAdmin = await checkUserAdmin(request);
     if (!isAdmin) {
-      // User is authenticated but not admin, redirect to home
       return createResponse('/');
     }
-    // Admin user accessing admin route - allow
     return createResponse('', false);
   }
 
-  // Case 4: Authenticated user accessing regular routes - allow
   return createResponse('', false);
 }
 
 export const config = {
   matcher: [
     '/((?!_next/static|_next/image|favicon.ico|.*\\.css$|.*\\.js$).*)',
-    "/"
+    '/',
   ],
 };
