@@ -32,14 +32,14 @@ const baseSlides: HowItWorksSlide[] = [
         image: "/Card3.png",
         title: "24 Hour Window",
         description:
-            "Creators have 24 hours to respond. If they decline or don’t reply, payment is refunded. If they accept, the booking is confirmed and final.",
+            "Creators have 24 hours to respond. If they decline or don't reply, payment is refunded. If they accept, the booking is confirmed and final.",
     },
     {
         id: 4,
         image: "/Card8.png",
         title: "Complete the Meet",
         description:
-            'Click “Mark as complete” after the fan meet and the payment is securely released to the creator.',
+            'Click "Mark as complete" after the fan meet and the payment is securely released to the creator.',
     },
     {
         id: 5,
@@ -52,14 +52,14 @@ const baseSlides: HowItWorksSlide[] = [
         image: "/Card5.png",
         title: "Full Protection",
         description:
-            "Your payment is safe, if the creator doesn’t show up, it’s refunded to you automatically.",
+            "Your payment is safe, if the creator doesn't show up, it's refunded to you automatically.",
     },
     {
         id: 7,
         image: "/Card6.png",
         title: "Full Protection",
         description:
-            "If the fan doesn’t mark the meet as complete or fails to attend, contact Support. We’ll investigate before releasing payment to the creator.",
+            "If the fan doesn't mark the meet as complete or fails to attend, contact Support. We'll investigate before releasing payment to the creator.",
     },
     {
         id: 8,
@@ -80,9 +80,6 @@ type TutorialType = "Fan meet" | "Fan date" | "Fan call";
 const HowItWorksCard: React.FC = () => {
     const [visible, setVisible] = useState(false);
     const [currentSlide, setCurrentSlide] = useState(0);
-    const [isDragging, setIsDragging] = useState(false);
-    const [startX, setStartX] = useState(0);
-    const [scrollLeft, setScrollLeft] = useState(0);
     const scrollContainerRef = useRef<HTMLDivElement>(null);
 
     const [tutorialType, setTutorialType] = useState<TutorialType>("Fan meet");
@@ -127,13 +124,47 @@ const HowItWorksCard: React.FC = () => {
     const getSlides = (): HowItWorksSlide[] => {
         if (tutorialType === "Fan meet") return baseSlides;
 
-        const targetWord = tutorialType === "Fan date" ? "Date" : "Call";
-        const targetLower = targetWord.toLowerCase();
+        if (tutorialType === "Fan call") {
+            return [
+                {
+                    id: 1,
+                    image: "/call1.png",
+                    title: "Send a Fan Call Request",
+                    description: "Request a fan call with your favourite creator.",
+                },
+                {
+                    id: 2,
+                    image: "/call2.png",
+                    title: "24 Hour Window",
+                    description:
+                        "Creators have 24 hours to respond. If they decline or don't reply, payment is refunded. If they accept, the booking is confirmed and final.",
+                },
+                {
+                    id: 3,
+                    image: "/call3.png",
+                    title: "Start Call",
+                    description: "Once call begins, billing starts per minute.",
+                },
+                {
+                    id: 4,
+                    image: "/Card7.png",
+                    title: "Keep Chat In-Platform",
+                    description: "Keep all chat in the platform for evidence and smooth dispute resolution.",
+                },
+                {
+                    id: 5,
+                    image: "/Card9.png",
+                    title: "Warning",
+                    description: "If a creator asks you to contact them on Telegram, WhatsApp, or to send money outside the platform, this is a scam. You will lose your money.",
+                },
+            ];
+        }
 
+        // Fan date
         return baseSlides.map(slide => ({
             ...slide,
-            title: slide.title.replace(/Meet/g, targetWord).replace(/meet/g, targetLower),
-            description: slide.description.replace(/fan meet/g, `fan ${targetLower}`).replace(/meet/g, targetLower)
+            title: slide.title.replace(/Meet/g, "Date").replace(/meet/g, "date"),
+            description: slide.description.replace(/fan meet/g, "fan date").replace(/meet/g, "date")
         }));
     };
 
@@ -151,7 +182,6 @@ const HowItWorksCard: React.FC = () => {
         setCurrentSlide(index);
     };
 
-    // Auto scroll to current slide
     useEffect(() => {
         if (scrollContainerRef.current) {
             const slideWidth = scrollContainerRef.current.offsetWidth;
@@ -161,44 +191,6 @@ const HowItWorksCard: React.FC = () => {
             });
         }
     }, [currentSlide]);
-
-    // Touch/drag handlers
-    const handleMouseDown = (e: React.MouseEvent) => {
-        if (!scrollContainerRef.current) return;
-        setIsDragging(true);
-        setStartX(e.pageX - scrollContainerRef.current.offsetLeft);
-        setScrollLeft(scrollContainerRef.current.scrollLeft);
-    };
-
-    const handleTouchStart = (e: React.TouchEvent) => {
-        if (!scrollContainerRef.current) return;
-        setIsDragging(true);
-        setStartX(e.touches[0].pageX - scrollContainerRef.current.offsetLeft);
-        setScrollLeft(scrollContainerRef.current.scrollLeft);
-    };
-
-    const handleMouseMove = (e: React.MouseEvent) => {
-        if (!isDragging || !scrollContainerRef.current) return;
-        e.preventDefault();
-        const x = e.pageX - scrollContainerRef.current.offsetLeft;
-        const walk = (x - startX) * 2;
-        scrollContainerRef.current.scrollLeft = scrollLeft - walk;
-    };
-
-    const handleTouchMove = (e: React.TouchEvent) => {
-        if (!isDragging || !scrollContainerRef.current) return;
-        const x = e.touches[0].pageX - scrollContainerRef.current.offsetLeft;
-        const walk = (x - startX) * 2;
-        scrollContainerRef.current.scrollLeft = scrollLeft - walk;
-    };
-
-    const handleMouseUp = () => {
-        setIsDragging(false);
-    };
-
-    const handleTouchEnd = () => {
-        setIsDragging(false);
-    };
 
     const handleTypeSelect = (type: TutorialType) => {
         setTutorialType(type);
@@ -299,21 +291,13 @@ const HowItWorksCard: React.FC = () => {
             <div className="relative px-4 md:px-6 pb-4">
                 <div
                     ref={scrollContainerRef}
-                    className="flex gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-hide cursor-grab active:cursor-grabbing"
+                    className="flex gap-4 overflow-x-hidden snap-x snap-mandatory"
                     style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
-                    onMouseDown={handleMouseDown}
-                    onMouseMove={handleMouseMove}
-                    onMouseUp={handleMouseUp}
-                    onMouseLeave={handleMouseUp}
-                    onTouchStart={handleTouchStart}
-                    onTouchMove={handleTouchMove}
-                    onTouchEnd={handleTouchEnd}
                 >
                     {slides.map((slide, index) => (
                         <div
                             key={slide.id}
                             className="flex-shrink-0 w-full snap-center"
-                            onClick={() => goToSlide(index)}
                         >
                             <div className="bg-gray-800/40 rounded-lg overflow-hidden border border-purple-500/10 hover:border-purple-500/30 transition-all duration-300 group">
                                 {/* Image Container */}
