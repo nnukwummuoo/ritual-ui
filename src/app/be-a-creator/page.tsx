@@ -34,7 +34,21 @@ export default function VerificationPage(){
       title: "Fan Meet = Real Cash, Real Life",
       subtitle: "Guaranteed Payment",
       description:
-        "Going on a date or meeting a fan? They'll pay your transport fare upfront through the platform, we handle the logistics so you stay safe and respected.",
+      "Going on a date or meeting a fan? They'll pay your transport fare upfront through the platform, we handle the logistics so you stay safe and respected.",
+    },
+    {
+        icon: HiShieldCheck,
+        title: "Structured Fan Meets & Dates",
+        subtitle: "30 Minutes. Public Spaces. Clear Boundaries.",
+        description:
+          "Fan meets and dates are designed with structure and safety in mind. Every meetup is limited to 30 minutes and takes place only in public spaces like cafés or restaurants, creating a comfortable environment for both creators and fans. No uncertainty, no awkward expectations — just a clear, respectful meetup format. You choose which requests to accept, meet in safe locations, and stay fully in control of your experience. Simple rules. Public settings. Structured fan meets & dates.",
+    },
+    {
+        icon: FaBolt,
+        title: "Instant Payouts = Your Earnings, On Demand",
+        subtitle: "Cash Out. No Delays. No Excuses.",
+        description:
+          "Access your money the moment you decide to withdraw. No waiting periods, no complicated approvals — just a smooth, direct transfer when you request it. Your balance stays in your control, your timing sets the pace, and what you earn stays yours. Simple process. Immediate release. 100% yours.",
     },
     {
       icon: FaVideo,
@@ -56,20 +70,6 @@ export default function VerificationPage(){
       subtitle: "Keep Everything You Earn",
       description:
       "Dropping exclusive photos, videos, or bundles? Fans pay upfront through the platform — no subscriptions, no cuts, no chargebacks. Every sale is pure profit, 100% yours, with delivery handled automatically so your content stays protected and respected.",
-    },
-    {
-        icon: FaBolt,
-        title: "Instant Payouts = Your Earnings, On Demand",
-        subtitle: "Cash Out. No Delays. No Excuses.",
-        description:
-          "Access your money the moment you decide to withdraw. No waiting periods, no complicated approvals — just a smooth, direct transfer when you request it. Your balance stays in your control, your timing sets the pace, and what you earn stays yours. Simple process. Immediate release. 100% yours.",
-    },
-    {
-        icon: HiShieldCheck,
-        title: "Structured Fan Meets & Dates",
-        subtitle: "30 Minutes. Public Spaces. Clear Boundaries.",
-        description:
-          "Fan meets and dates are designed with structure and safety in mind. Every meetup is limited to 30 minutes and takes place only in public spaces like cafés or restaurants, creating a comfortable environment for both creators and fans. No uncertainty, no awkward expectations — just a clear, respectful meetup format. You choose which requests to accept, meet in safe locations, and stay fully in control of your experience. Simple rules. Public settings. Structured fan meets & dates.",
     },
     {
         icon: FaCompass,
