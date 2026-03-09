@@ -134,19 +134,8 @@ const faqItems: { question: string; answer: string }[] = [
       "Anyone 18+ can apply to become a verified creator. We review applications quickly so you can start earning through fan meets, calls, dates, PPV messages, and exclusive content.",
   },
   {
-    question: "How do I get paid?",
-    answer:
-      "You keep 100% of what you earn. Payouts are processed through the platform with instant wallet releases and options for crypto cashouts. No platform cut, no chargebacks—just your money, on your terms.",
-  },
-  {
-    question: "How long does verification take?",
-    answer:
-      "Creators applications are reviewed within minutes. Once verified, you can set up your profile and start accepting fan meets, calls, dates, ppvs and selling content right away.",
-  },
-  {
-    question: "Is my content and data protected?",
-    answer:
-      "Yes. We use structured safety rules, secure payments, and respect your control over your content. Exclusive content is delivered through the platform so you stay protected and in charge.",
+          question: "What are Fan Meet and Fan Date for?",
+          answer: "🤝 Fan Meet – A short, casual meeting where you can greet your favorite creator, chat, and even take a selfie. It's about making a quick personal connection - limited to 30 minutes maximum for safety and fairness.\n\n🍽 Fan Date – A slightly more relaxed session where you spend time together in a safe public place — like grabbing coffee, eating, or walking — but still limited to 30 minutes maximum for safety and fairness."
   },
   {
     question: "How do fan meets/dates work?",
@@ -157,6 +146,21 @@ const faqItems: { question: string; answer: string }[] = [
     question: "How do fan call work?",
     answer:
       "Fan Call is a live call where fans pay per minute, and both sides track it in real time.",
+  },
+  {
+    question: "How do I get paid?",
+    answer:
+      "You keep 100% of what you earn. Withdraw your earnings instantly via crypto payouts. No platform cut, no chargebacks — just your earnings, on your terms. Funds are securely held by the platform until interactions are completed.",
+  },
+  {
+    question: "How long does verification take?",
+    answer:
+      "Creators applications are reviewed within minutes. Once verified, you can set up your profile and start accepting fan meets, calls, dates, ppvs and selling content right away.",
+  },
+  {
+    question: "Is my content and data protected?",
+    answer:
+      "Yes. We use structured safety rules, secure payments, and respect your control over your content. Exclusive content is delivered through the platform so you stay protected and in charge.",
   },
 ];
 
