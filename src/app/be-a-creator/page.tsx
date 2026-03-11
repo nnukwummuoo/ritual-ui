@@ -13,6 +13,7 @@ import {
   FaFileImage,
 } from "react-icons/fa";
 import { HiShieldCheck } from "react-icons/hi";
+import { AiOutlineWallet } from "react-icons/ai";
 import HeaderBackNav from "../../navs/HeaderBackNav";
 import { useRouter } from "next/navigation";
 // import { useNavigate } from "react-router-dom";
@@ -35,6 +36,13 @@ export default function VerificationPage(){
       subtitle: "Guaranteed Payment",
       description:
       "Going on a date or meeting a fan? They'll pay your transport fare upfront through the platform, we handle the logistics so you stay safe and respected.",
+    },
+    {
+        icon: AiOutlineWallet,
+        title: "Confident, Secure Fan Requests",
+        subtitle: "No Time-Wasters. No Hesitation. Confident Payments.",
+        description:
+        "Fans pay upfront when sending requests, so you never deal with time-wasters or uncertain commitments. Every request is handled through our structured system, giving fans confidence to pay without hesitation. You stay in full control — accept or decline any request, meet only those you choose, and enjoy a transparent, trustworthy process that protects both you and your fans. No chasing payments. No awkward uncertainty. Just smooth, reliable bookings with clear expectations and full creator control.",
     },
     {
         icon: HiShieldCheck,

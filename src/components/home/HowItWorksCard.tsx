@@ -50,28 +50,28 @@ const baseSlides: HowItWorksSlide[] = [
     {
         id: 6,
         image: "/Card5.png",
-        title: "Full Protection",
+        title: "Full Fan Protection",
         description:
             "Your payment is safe, if the creator doesn't show up, it's refunded to you automatically.",
     },
     {
         id: 7,
         image: "/Card6.png",
-        title: "Full Protection",
+        title: "Full Creator Protection",
         description:
-            "If the fan doesn't mark the meet as complete or fails to attend, contact Support. We'll investigate before releasing payment to the creator.",
+            "If a fan doesn’t mark the meetup as complete or fails to attend, contact Support. Our team will review the situation and release the payment accordingly.",
     },
     {
         id: 8,
         image: "/Card7.png",
         title: "Keep Chat In-Platform",
-        description: "Keep all chat in the platform for evidence and smooth dispute resolution.",
+        description: "All communication stays on the platform, ensuring smooth support, easy verification, and secure dispute resolution.",
     },
     {
         id: 9,
         image: "/Card9.png",
-        title: "Warning",
-        description: "If a creator asks you to contact them on Telegram, WhatsApp, or to send money outside the platform, this is a scam. You will lose your money."
+        title: "Safe Payments Only",
+        description: "Always process payments through the platform. Any request to pay outside (Telegram, WhatsApp, etc.) could put your money at risk."
     },
 ];
 
@@ -149,13 +149,13 @@ const HowItWorksCard: React.FC = () => {
                     id: 4,
                     image: "/Card7.png",
                     title: "Keep Chat In-Platform",
-                    description: "Keep all chat in the platform for evidence and smooth dispute resolution.",
+                    description: "All communication stays on the platform, ensuring smooth support, easy verification, and secure dispute resolution.",
                 },
                 {
                     id: 5,
                     image: "/Card9.png",
-                    title: "Warning",
-                    description: "If a creator asks you to contact them on Telegram, WhatsApp, or to send money outside the platform, this is a scam. You will lose your money.",
+                    title: "Safe Payments Only",
+                    description: "Always process payments through the platform. Any request to pay outside (Telegram, WhatsApp, etc.) could put your money at risk.",
                 },
             ];
         }

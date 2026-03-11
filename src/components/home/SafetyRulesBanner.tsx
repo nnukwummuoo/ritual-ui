@@ -68,7 +68,7 @@ const SafetyRulesBanner: React.FC = () => {
               <CheckCircle size={24} fill="#22c55e" className="text-white" />
             </div>
             <p className="text-lg font-semibold leading-tight">
-              No scams. We handle everything with structure and transparency.
+              Secure, fair, and transparent payments for creators and fans.
             </p>
           </div>
         </div>
