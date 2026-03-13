@@ -101,8 +101,10 @@ export const Chat = () => {
 
   // Update key on mount and when path changes
   useEffect(() => {
+  if (!isDialogActive.current) {
     setRouteChangeKey(prev => prev + 1);
-  }, [params]);
+  }
+}, [params]);
 
 
   const [chatphotolink, setchatphotolink] = useState("");
@@ -212,7 +214,24 @@ export const Chat = () => {
     const imageSource = getImageSource(fileUrl, 'message');
     const fullUrl = imageSource.src;
 
-    // Keep fallback URLs for error handling
+
+      const getStorjKey = (url: string): string => {
+        if (!url) return url;
+        try {
+          const u = new URL(url);
+          // Handles: https://gateway.storjshare.io/message/KEY or /message/KEY
+          const segments = u.pathname.split('/').filter(Boolean);
+          return segments[segments.length - 1];
+        } catch {
+          return url.split('/').filter(Boolean).pop() || url;
+        }
+      };
+
+      const storjKey = getStorjKey(fileUrl);
+      const videoStreamUrl = isVideo
+        ? `${API_URL}/api/video/stream/${storjKey}`
+        : fullUrl;
+
     const pathUrlPrimary = fileUrl ? `${API_URL}/api/image/view/${encodeURIComponent(fileUrl)}` : "";
     const queryUrlFallback = fileUrl ? `${process.env.NEXT_PUBLIC_API || ""}/api/image/view?publicId=${encodeURIComponent(fileUrl)}` : "";
     const pathUrlFallback = fileUrl ? `${process.env.NEXT_PUBLIC_API || ""}/api/image/view/${encodeURIComponent(fileUrl)}` : "";
@@ -280,10 +299,10 @@ export const Chat = () => {
           </div>
         )}
 
-        {isVideo && (
+        {/* {isVideo && (
           <div className="relative cursor-pointer" onClick={() => setSelectedFileModal({ fileUrl, fileName, type: 'video' })}>
             <video
-              src={fullUrl}
+              src={videoStreamUrl}
               controls
               className="rounded-lg max-w-full h-auto hover:opacity-90 transition-opacity"
               style={{ maxHeight: '200px' }}
@@ -309,6 +328,22 @@ export const Chat = () => {
                   return;
                 }
                 handleError();
+              }}
+            />
+          </div>
+        )} */}
+
+        {isVideo && (
+          <div className="relative cursor-pointer" onClick={() => { isDialogActive.current = true; setSelectedFileModal({ fileUrl, fileName, type: 'video' }); }}>
+            <video
+              src={videoStreamUrl}
+              controls
+              className="rounded-lg max-w-full h-auto hover:opacity-90 transition-opacity"
+              style={{ maxHeight: '200px' }}
+              onLoadedData={handleLoad}
+              onError={() => {
+                console.error("[VIDEO] Stream failed, key was:", storjKey, "full url was:", videoStreamUrl);
+                handleError(); // show "Failed to load file" — no image fallback for videos
               }}
             />
           </div>
@@ -774,9 +809,6 @@ export const Chat = () => {
       setChatVerified(false);
       setChatphotoError(false);
 
-      // Clear messages to prevent showing old messages
-      setmessage([]);
-
       // Clear VIP celebration state
       setShowVipCelebration(false);
       setVipCelebrationShown(false);
@@ -1077,10 +1109,10 @@ export const Chat = () => {
                     {value.files && value.files.length > 0 && (
                       <div className="mt-2 space-y-2">
                         {value.files.map((fileUrl, fileIndex) => (
-                          <FilePreview
+                         <FilePreview
                             key={fileIndex}
                             fileUrl={fileUrl}
-                            fileName={`File ${fileIndex + 1}`}
+                            fileName={fileUrl.split('/').pop() || `File ${fileIndex + 1}`}
                           />
                         ))}
                       </div>
@@ -2319,9 +2351,17 @@ export const Chat = () => {
                 />
               )}
 
-              {selectedFileModal.type === 'video' && (
-                <video
-                  src={getImageSource(selectedFileModal.fileUrl, 'message').src}
+              {/* {selectedFileModal.type === 'video' && (
+  <video
+    src={(() => {
+      try {
+        const u = new URL(selectedFileModal.fileUrl);
+        const key = u.pathname.split('/').filter(Boolean).pop();
+        return `${API_URL}/api/video/stream/${key}`;
+      } catch {
+        return `${API_URL}/api/video/stream/${selectedFileModal.fileUrl}`;
+      }
+    })()}
                   controls
                   autoPlay
                   className="max-w-full max-h-full"
@@ -2351,7 +2391,27 @@ export const Chat = () => {
                     }
                   }}
                 />
-              )}
+              )} */}
+
+              {selectedFileModal.type === 'video' && (
+  <video
+    src={(() => {
+      try {
+        const u = new URL(selectedFileModal.fileUrl);
+        const key = u.pathname.split('/').filter(Boolean).pop();
+        return `${API_URL}/api/video/stream/${key}`;
+      } catch {
+        return `${API_URL}/api/video/stream/${selectedFileModal.fileUrl}`;
+      }
+    })()}
+    controls
+    autoPlay
+    className="max-w-full max-h-full"
+    onError={(e) => {
+      console.error("[VIDEO MODAL] Stream failed:", e.currentTarget.src);
+    }}
+  />
+)}
             </div>
           </div>
         </div>
