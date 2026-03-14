@@ -679,10 +679,10 @@ export const SupportChat = () => {
                       <div className="mt-2 space-y-2">
                         {message.files.map((fileUrl: string, fileIndex: number) => (
                           <FilePreview
-                            key={fileIndex}
-                            fileUrl={fileUrl}
-                            fileName={`File ${fileIndex + 1}`}
-                          />
+  key={fileIndex}
+  fileUrl={fileUrl}
+  fileName={fileUrl.split('/').pop() || `File ${fileIndex + 1}`}
+/>
                         ))}
                       </div>
                     )}
