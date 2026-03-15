@@ -214,14 +214,6 @@ const HowItWorksCard: React.FC = () => {
             {/* Header */}
             <div className="p-4 md:p-6 pb-3 relative">
                 <div className="flex items-start justify-between">
-                    <div>
-                        <h3 className="text-white font-semibold text-lg md:text-xl">
-                            How it works
-                        </h3>
-                        <p className="text-gray-400 text-xs md:text-sm mt-1">
-                            Your complete guide
-                        </p>
-                    </div>
 
                     <div className="flex items-center gap-2 mr-8 md:mr-10">
                         {/* More Tutorial Dropdown */}

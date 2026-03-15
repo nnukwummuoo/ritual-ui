@@ -34,6 +34,7 @@ import TopFans from "./TopFans";
 import SafetyRulesBanner from "./SafetyRulesBanner";
 import PromotionalBanner from "./PromotionalBanner";
 import HowItWorksCard from "./HowItWorksCard";
+import StartGettingRequestsBanner from "./StartGettingRequestsBanner";
 
 
 // Utility function to format relative time
@@ -631,7 +632,8 @@ export default function PostsCard() {
   return (
     <div className="flex flex-col gap-6">
       {/* Promotional Banner - At the top before first post */}
-      <PromotionalBanner />
+    <PromotionalBanner />
+    <StartGettingRequestsBanner />
 
       {/* First Post - Always render normally for better UX */}
       {firstPost && !shouldUseVirtualization && (
