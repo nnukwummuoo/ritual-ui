@@ -1,10 +1,10 @@
-import React from 'react'
-import { createContext } from 'react';
+import React, { createContext } from 'react';
 
-interface MenuContextProps {   
-    open: boolean;
-    toggleMenu: (e?: React.MouseEvent<HTMLElement>) => void;
+interface MenuContextProps {
+  open: boolean;
+  toggleMenu: (e?: React.MouseEvent<HTMLElement>) => void;
 }
+
 const MenuContext = createContext<MenuContextProps | undefined>(undefined);
 
 const MenuProvider = ({ children }: { children: React.ReactNode }) => {
@@ -12,9 +12,9 @@ const MenuProvider = ({ children }: { children: React.ReactNode }) => {
 
   const toggleMenu = (e?: React.MouseEvent<HTMLElement>) => {
     e?.preventDefault();
-    const target = e?.target as HTMLButtonElement;
-    if (target?.classList.contains("mini-btn")) return;
-    setOpen(!open);
+    e?.stopPropagation();
+    // Removed the mini-btn guard — it was blocking the second click to close
+    setOpen(prev => !prev);
   };
 
   return (
@@ -27,7 +27,7 @@ const MenuProvider = ({ children }: { children: React.ReactNode }) => {
 export const useMenuContext = () => {
   const context = React.useContext(MenuContext);
   if (!context) {
-    throw new Error("useMenuContext must be used within a MenuProvider");
+    throw new Error('useMenuContext must be used within a MenuProvider');
   }
   return context;
 };

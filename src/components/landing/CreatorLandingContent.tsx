@@ -3,38 +3,37 @@ import React, { useRef, useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion, useInView } from "framer-motion";
-import { createPortal } from "react-dom";
 
+// ─── TYPES & DATA ──────────────────────────────────────────────────────────────
 
-const STATIC_CREATOR_IMAGES = Array.from({ length: 7 }, (_, i) => `/creator (${i + 1}).jpeg`);
 
 const OFFERINGS_GRID = [
-  { tag: "📞 Video & Voice", tagColor: "rose", icon: "🎙", title: "Fan Calls", desc: "Book one-on-one video or voice calls. Set your rate, set your duration — mmeko handles scheduling, payment, and protection.", ghost: "02" },
-  { tag: "🎬 Content & Messages", tagColor: "teal", icon: "🔐", title: "Pay-Per-View & Locked Messages", desc: "Gate your best content behind a paywall — single posts, collections, or even your replies. Fans pay to unlock. Zero commission.", ghost: "03" },
-  { tag: "✦ Premium", tagColor: "amber", icon: "👑", title: "Exclusive Content Sales", desc: "Sell exclusive content directly to fans — no subscription required. Each piece is purchased individually, full control over your catalogue.", ghost: "04" },
+  { tag: "📞 Video & Voice", tagColor: "rose", icon: "🎙", title: "Fan Calls", desc: "Request one-on-one video or voice calls with your fans. Set your rate, set your duration — mmeko handles scheduling, payment, and protection.", ghost: "02" },
+  { tag: "🎬 Content & Messages", tagColor: "teal", icon: "🔐", title: "Pay-Per-View & Locked Messages", desc: "Gate your best content behind a paywall — single posts, collections, or even your replies. Fans pay to unlock individual pieces of content or locked messages. You earn instantly, zero commission.", ghost: "03" },
+  { tag: "✦ Premium", tagColor: "amber", icon: "👑", title: "Exclusive Content Sales", desc: "Sell exclusive content directly to your fans — no subscription required. Each piece is purchased individually, giving fans flexibility and you full control over your premium catalogue.", ghost: "04" },
 ];
 
 const STEPS = [
   { n: "01", icon: "✍️", title: "Apply & Get Verified", desc: "Submit your application and get verified in under 10 minutes. Fast-track screening with premium creator status unlocked instantly." },
-  { n: "02", icon: "🎨", title: "Build Your Profile", desc: "Set up your creator page. Choose what you offer — meets, calls, PPV, locked messages, exclusive content — and set your own rates." },
-  { n: "03", icon: "☕", title: "Meet in Public, Safely", desc: "All fan meets happen in public venues — cafés, restaurants, parks. Every meet is capped at 30 minutes. All chats stay on-platform." },
-  { n: "04", icon: "💸", title: "Fan Pays, You're Secured", desc: "When a fan books, payment is held securely by mmeko — locked in before you even show up. Once complete, funds release instantly." },
+  { n: "02", icon: "🎨", title: "Build Your Profile", desc: "Set up your creator page. Choose what you offer — meets, calls, PPV, locked messages, exclusive content — and set your own rates for each." },
+  { n: "03", icon: "☕", title: "Meet in Public, Safely", desc: "All fan meets happen in public venues — cafés, restaurants, parks. Every meet is capped at 30 minutes. No pressure, no overstay — just a real connection on your terms." },
+  { n: "04", icon: "💸", title: "Fan Pays, You're Secured", desc: "When a fan request is confirmed, payment is held securely by mmeko — locked in before you even show up. Once complete, funds release instantly. Guaranteed." },
 ];
 
 const PAY_STEPS = [
-  { n: "1", icon: "📅", title: "Fan Books", desc: "Fan pays upfront. mmeko holds the payment securely — the money is locked in and guaranteed." },
-  { n: "2", icon: "☕", title: "Meet Happens", desc: "You show up, connect in a public venue for up to 30 minutes. All chats stay on the mmeko platform." },
+  { n: "1", icon: "📅", title: "Fan Requests", desc: "Fan sends a request and pays upfront. mmeko holds the payment securely — the money is locked in and guaranteed." },
+  { n: "2", icon: "☕", title: "Meet Happens", desc: "You show up, connect in a public venue for up to 30 minutes. No pressure, no overstay. Just show up, connect, and leave on time." },
   { n: "3", icon: "✅", title: "Fan Confirms", desc: "Fan marks the meet complete — payment releases instantly. 100% of it. No deductions whatsoever." },
-  { n: "4", icon: "⚡", title: "You Get Paid", desc: "Funds hit your wallet immediately. Support reviews any issues using your on-platform chat history." },
+  { n: "4", icon: "⚡", title: "You Get Paid", desc: "Funds hit your wallet immediately. Support reviews any issues using your meeting history and releases payment accordingly." },
 ];
 
 const SAFETY_CARDS = [
-  { icon: "⏱", title: "30-Minute Maximum", desc: "All fan meets are strictly capped at 30 minutes. This hard limit protects creators from pressure, overstay, and uncomfortable situations." },
-  { icon: "☕", title: "Public Spaces Only", desc: "Every fan meet must take place in a public venue — cafés, restaurants, public parks. Private locations are never permitted." },
-  { icon: "💬", title: "All Chats On-Platform", desc: "Every conversation between creators and fans must happen through mmeko's built-in messaging. Full record of all interactions." },
-  { icon: "✅", title: "Optional Fan Verification", desc: "Creators can request fan verification before confirming a meet booking — a powerful tool for extra confidence." },
+  { icon: "⏱", title: "30-Minute Maximum", desc: "All fan meets are strictly capped at 30 minutes. This hard limit protects creators from pressure, overstay, and uncomfortable situations — boundaries are built into the platform itself." },
+  { icon: "☕", title: "Public Spaces Only", desc: "Every fan meet must take place in a public venue — cafés, restaurants, public parks. Private locations are never permitted. Your safety is non-negotiable." },
+  { icon: "💬", title: "All Chats On-Platform", desc: "Every conversation between creators and fans must happen through mmeko's built-in messaging. This keeps a full record of all interactions — protecting you if Support ever needs to review." },
+  { icon: "✅", title: "Optional Fan Verification", desc: "Creators can request fan verification before confirming a meet request. While not mandatory, it's a powerful tool — verified fans give you extra confidence about who you're meeting in person." },
   { icon: "🛡", title: "Chargeback Protection", desc: "Every transaction is fully covered. If a fan attempts a chargeback, mmeko absorbs the risk entirely — your earnings are never clawed back." },
-  // { icon: "🌍", title: "Geo-Blocking Controls", desc: "Block any region or country from viewing your profile. Full privacy and location control, always on your terms." },
+  { icon: "🌍", title: "Geo-Blocking Controls", desc: "Block any region or country from viewing your profile. Full privacy and location control, always on your terms." },
 ];
 
 const CMP_ROWS = [
@@ -49,35 +48,35 @@ const CMP_ROWS = [
   ["Exclusive Content Sales", "✓", "Subscription only"],
   ["Chargeback Protection", "✓ Fully covered", "Creator's risk"],
   ["Video / Voice Fan Calls", "✓ Built in", "Limited / third-party"],
-  // ["Geo-Blocking", "✓ Full control", "Limited"],
+  ["Geo-Blocking", "✓ Full control", "Limited"],
   ["Verification Speed", "< 10 minutes", "3–7 days"],
   ["Minimum Payout", "$0", "$20–$100"],
 ];
 
 const TESTIMONIALS = [
-  { initial: "A", grad: "from-[#6c63ff] to-[#9b59f5]", name: "Alicia M.", niche: "Fitness & Lifestyle", quote: "I switched from OnlyFans and made back my full month's earnings in week one — without giving up a single cent. The meet booking system alone changed everything.", monthly: "$12K", fans: "2.4K", offer: "🤝 Fan Meets" },
-  { initial: "J", grad: "from-[#2dd4bf] to-[#0891b2]", name: "Jordan K.", niche: "Music & Entertainment", quote: "The instant payout is real — I booked a fan call on a Monday and had the money in my wallet by the time the call ended. I've never experienced that anywhere else.", monthly: "$8.5K", fans: "1.1K", offer: "🎙 Fan Calls" },
+  { initial: "A", grad: "from-[#6c63ff] to-[#9b59f5]", name: "Alicia M.", niche: "Fitness & Lifestyle", quote: "I switched from OnlyFans and made back my full month's earnings in week one — without giving up a single cent. The meet request system alone changed everything.", monthly: "$12K", fans: "2.4K", offer: "🤝 Fan Meets" },
+  { initial: "J", grad: "from-[#2dd4bf] to-[#0891b2]", name: "Jordan K.", niche: "Music & Entertainment", quote: "The instant payout is real — I sent a fan call request on a Monday and had the money in my wallet by the time the call ended. I've never experienced that anywhere else.", monthly: "$8.5K", fans: "1.1K", offer: "🎙 Fan Calls" },
   { initial: "S", grad: "from-[#f472b6] to-[#db2777]", name: "Sofia R.", niche: "Art & Content", quote: "The 30-minute rule and public-only venues weren't a limitation — they were the reason I felt safe enough to even try fan meets. It's the structure I didn't know I needed.", monthly: "$19K", fans: "4.7K", offer: "🔐 PPV + Locked DMs" },
 ];
 
 const FAQ_CREATORS = [
-  { q: "How does mmeko make money if there's 0% commission?", a: "mmeko charges fans a small booking or platform fee on transactions — not creators. This means 100% of what a fan pays you goes directly to you." },
-  { q: "What counts as a valid public space for meets?", a: "Any open, publicly accessible venue — cafés, restaurants, hotel lobbies, shopping malls, parks, or similar spaces. Private residences, cars, and secluded locations are never permitted." },
-  { q: "What if the fan doesn't show up to the meet?", a: "Contact mmeko Support immediately through the platform. Our team has full visibility of your booking history and will review the situation and release your payment accordingly." },
-  { q: "What if the fan doesn't mark the meet as complete?", a: "Reach out to mmeko Support directly via the platform. Our team will review your on-platform chat history and release your payment. You will not be left unpaid for a meet you showed up to." },
-  { q: "Can I cancel or decline a booking?", a: "Yes — you have full control. You can decline any booking request before confirming it, and cancellations are possible subject to mmeko's cancellation policy." },
-  { q: "What's the difference between PPV content and exclusive content sales?", a: "PPV lets you lock individual posts, media, or even your message replies. Exclusive content sales are premium standalone pieces in your catalogue, priced and sold individually." },
-  { q: "Can I lock my message replies for fans to pay to unlock?", a: "Yes — this is one of mmeko's unique features. You can lock specific replies in a conversation, requiring the fan to pay to see your response." },
-  { q: "Is fan verification mandatory before I accept a meet?", a: "No — fan verification is optional and creator-controlled. We recommend enabling it for in-person meets as an extra layer of confidence." },
+  { q: "How does mmeko make money if there's 0% commission?", a: "mmeko charges fans a small request or platform fee on transactions — not creators. This means 100% of what a fan pays you goes directly to you. Our business model is built around growing the fan side, not cutting into your earnings." },
+  { q: "What counts as a valid public space for meets?", a: "Any open, publicly accessible venue — cafés, restaurants, hotel lobbies, shopping malls, parks, or similar spaces. Private residences, cars, and secluded locations are never permitted. If you're unsure about a specific venue, contact mmeko Support before confirming the request." },
+  { q: "What if the fan doesn't show up to the meet?", a: "Contact mmeko Support immediately through the platform. Our team has full visibility of your request history and can review the situation and release your payment accordingly. You will not be left unpaid for a meet you showed up to." },
+  { q: "What if the fan doesn't mark the meet as complete?", a: "Reach out to mmeko Support directly via the platform. Our team will review your meeting details and release your payment accordingly. We always have your back — you will not be left unpaid for a meet you showed up to." },
+  { q: "Can I cancel or decline a request?", a: "Yes — you have full control over your requests. You can decline any request before confirming it, and cancellations are handled through mmeko Support. You're never obligated to accept a request you're not comfortable with." },
+  { q: "What's the difference between PPV content and exclusive content sales?", a: "PPV lets you lock individual posts, media, or even your message replies — fans pay a set price to unlock that specific piece of content. Exclusive content sales are premium standalone pieces in your catalogue, priced and sold individually rather than as part of a feed." },
+  { q: "Can I lock my message replies for fans to pay to unlock?", a: "Yes — this is one of mmeko's unique features. You can lock specific replies in a conversation, requiring the fan to pay to see your response. It's a powerful way to monetize your engagement without leaving the chat." },
+  { q: "Is fan verification mandatory before I accept a meet?", a: "No — fan verification is optional and creator-controlled. You can choose to require it for your requests or leave it open. We recommend enabling it for in-person meets as an extra layer of confidence, but the choice is entirely yours." },
 ];
 
 const FAQ_FANS = [
-  { q: "How do I book a meet with a creator?", a: "Browse creator profiles and select the type of experience you want. Choose a time slot, pay securely through mmeko, and your booking is confirmed." },
-  { q: "Where do fan meets take place?", a: "All in-person fan meets happen in public venues — cafés, restaurants, hotel lobbies, parks. Private locations are never permitted on mmeko." },
-  { q: "How long do fan meets last?", a: "All fan meets on mmeko are capped at 30 minutes. This is a platform-wide rule with no exceptions." },
-  { q: "What if the creator doesn't show up?", a: "Contact mmeko Support immediately through the platform. If the creator was a no-show, you will receive a full refund." },
-  { q: "How do I mark a meet as complete?", a: "After the meet ends, you'll receive a prompt in the app to mark it as complete. Doing so releases the payment to the creator instantly." },
-  { q: "Can I message a creator before booking?", a: "Yes — mmeko has built-in messaging so you can connect with creators directly on the platform before booking." },
+  { q: "How do I send a meet request to a creator?", a: "Browse creator profiles and select the type of experience you want — fan meet, call, or content. Choose a time slot the creator has made available, pay securely through mmeko, and your request is sent. The creator will see your request and can confirm or decline — you are always in control." },
+  { q: "Where do fan meets take place?", a: "All in-person fan meets happen in public venues — cafés, restaurants, hotel lobbies, parks. Private locations are never permitted on mmeko. This rule protects both you and the creator." },
+  { q: "How long do fan meets last?", a: "All fan meets on mmeko are capped at 30 minutes. This is a platform-wide rule with no exceptions — it ensures a clear, comfortable experience for everyone involved." },
+  { q: "What if the creator doesn't show up?", a: "Contact mmeko Support immediately through the platform. Since all requests and communications are on-platform, our team has full visibility and will review the situation. If the creator was a no-show, you will receive a full refund." },
+  { q: "How do I mark a meet as complete?", a: "After the meet ends, you'll receive a prompt in the app to mark it as complete. Doing so releases the payment to the creator instantly. If you experienced any issues during the meet, contact Support before marking it complete so we can assist you." },
+  { q: "Can I message a creator before sending a request?", a: "Yes — mmeko has built-in messaging so you can connect with creators directly on the platform before sending a request. This keeps everything in one place and ensures both you and the creator are always protected." },
 ];
 
 // ─── ANIMATION HELPERS ────────────────────────────────────────────────────────
@@ -95,34 +94,121 @@ function Reveal({ children, delay = 0, className = "" }: { children: React.React
   );
 }
 
+// ─── NAV ──────────────────────────────────────────────────────────────────────
 
 // function NavBar() {
 //   const [scrolled, setScrolled] = useState(false);
+//   const [mobileOpen, setMobileOpen] = useState(false);
+
 //   useEffect(() => {
 //     const h = () => setScrolled(window.scrollY > 40);
 //     window.addEventListener("scroll", h, { passive: true });
 //     return () => window.removeEventListener("scroll", h);
 //   }, []);
+
 //   return (
-//     <nav className={`fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 md:px-10 h-16 transition-all duration-300 ${scrolled ? "bg-[rgba(8,11,20,0.95)] backdrop-blur-xl border-b border-white/[0.07]" : "border-b border-transparent"}`}>
-//       <Link href="/" className="flex items-center gap-2.5 no-underline">
-//         <div className="w-[34px] h-[34px] rounded-[9px] bg-gradient-to-br from-[#6c63ff] to-[#9b59f5] flex items-center justify-center text-white font-extrabold text-sm">M</div>
-//         <span className="text-white font-bold text-[17px] tracking-tight">mmeko</span>
-//       </Link>
-//       <div className="flex items-center gap-2">
-//         <div className="hidden md:flex items-center gap-1">
+//     <>
+//       <nav
+//         style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+//         className={`fixed top-0 left-0 right-0 z-[9999] flex items-center justify-between px-6 md:px-10 h-16 transition-all duration-300 ${
+//           scrolled
+//             ? "bg-[rgba(8,11,20,0.95)] backdrop-blur-xl border-b border-white/[0.07]"
+//             : "border-b border-transparent"
+//         }`}
+//       >
+//         {/* Logo */}
+//         <Link href="/" className="flex items-center gap-2.5 no-underline flex-shrink-0">
+//           <div className="w-[34px] h-[34px] rounded-[9px] bg-gradient-to-br from-[#6c63ff] to-[#9b59f5] flex items-center justify-center text-white font-extrabold text-sm flex-shrink-0">
+//             M
+//           </div>
+//           <span className="text-white font-bold text-[17px] tracking-tight whitespace-nowrap">
+//             mmeko
+//           </span>
+//         </Link>
+
+//         {/* Desktop links */}
+//         <div className="hidden md:flex items-center gap-1 flex-shrink-0">
 //           {["Offerings", "How It Works", "Payments", "Safety", "FAQ"].map((l, i) => (
-//             <Link key={l} href={`#${["offerings","how","payments","safety","faq"][i]}`} className="text-[#94a3b8] hover:text-white text-[13.5px] font-medium px-3 py-1.5 rounded-lg hover:bg-white/5 transition-all no-underline">{l}</Link>
+//             <Link
+//               key={l}
+//               href={`#${["offerings", "how", "payments", "safety", "faq"][i]}`}
+//               className="text-[#94a3b8] hover:text-white text-[13.5px] font-medium px-3 py-1.5 rounded-lg hover:bg-white/5 transition-all no-underline whitespace-nowrap"
+//             >
+//               {l}
+//             </Link>
 //           ))}
 //         </div>
-//         <div className="hidden md:block w-px h-5 bg-white/[0.07] mx-1" />
-//         <Link href="/auth/login" className="text-[#94a3b8] border border-white/[0.07] hover:text-white hover:border-white/15 hover:bg-white/5 text-[13.5px] font-semibold px-4 py-2 rounded-lg transition-all no-underline">Sign In</Link>
-//         <Link href="/auth/register" className="bg-gradient-to-r from-[#6c63ff] to-[#9b59f5] text-white text-[13.5px] font-semibold px-4 py-2 rounded-lg shadow-[0_0_0_1px_rgba(108,99,255,0.3),0_4px_16px_rgba(108,99,255,0.25)] hover:shadow-[0_0_0_1px_rgba(108,99,255,0.4),0_8px_24px_rgba(108,99,255,0.35)] hover:-translate-y-px transition-all no-underline">Apply Now →</Link>
-//       </div>
-//     </nav>
+
+//         {/* Desktop CTAs */}
+//         <div className="hidden md:flex items-center gap-2 flex-shrink-0">
+//           <div className="w-px h-5 bg-white/[0.07] mx-1" />
+//           <Link
+//             href="/auth/login"
+//             className="text-[#94a3b8] border border-white/[0.07] hover:text-white hover:border-white/15 hover:bg-white/5 text-[13.5px] font-semibold px-4 py-2 rounded-lg transition-all no-underline whitespace-nowrap"
+//           >
+//             Sign In
+//           </Link>
+//           <Link
+//             href="/auth/register"
+//             className="bg-gradient-to-r from-[#6c63ff] to-[#9b59f5] text-white text-[13.5px] font-semibold px-4 py-2 rounded-lg shadow-[0_0_0_1px_rgba(108,99,255,0.3),0_4px_16px_rgba(108,99,255,0.25)] hover:shadow-[0_0_0_1px_rgba(108,99,255,0.4),0_8px_24px_rgba(108,99,255,0.35)] hover:-translate-y-px transition-all no-underline whitespace-nowrap"
+//           >
+//             Apply Now →
+//           </Link>
+//         </div>
+
+//         {/* Mobile hamburger */}
+//         <button
+//           className="md:hidden flex items-center justify-center w-9 h-9 rounded-lg bg-white/[0.05] border border-white/[0.07] text-[#94a3b8] hover:text-white transition-all"
+//           onClick={() => setMobileOpen(!mobileOpen)}
+//         >
+//           {mobileOpen ? (
+//             <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+//               <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+//             </svg>
+//           ) : (
+//             <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+//               <path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+//             </svg>
+//           )}
+//         </button>
+//       </nav>
+
+//       {/* Mobile menu dropdown */}
+//       {mobileOpen && (
+//         <div
+//           className="fixed top-16 left-0 right-0 z-[9998] bg-[rgba(8,11,20,0.98)] backdrop-blur-xl border-b border-white/[0.07] px-6 py-4 flex flex-col gap-1 md:hidden"
+//           style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+//         >
+//           {["Offerings", "How It Works", "Payments", "Safety", "FAQ"].map((l, i) => (
+//             <Link
+//               key={l}
+//               href={`#${["offerings", "how", "payments", "safety", "faq"][i]}`}
+//               onClick={() => setMobileOpen(false)}
+//               className="text-[#94a3b8] hover:text-white text-[14px] font-medium px-3 py-3 rounded-lg hover:bg-white/5 transition-all no-underline"
+//             >
+//               {l}
+//             </Link>
+//           ))}
+//           <div className="h-px bg-white/[0.07] my-2" />
+//           <Link
+//             href="/auth/login"
+//             className="text-[#94a3b8] text-[14px] font-semibold px-3 py-3 rounded-lg hover:bg-white/5 transition-all no-underline"
+//           >
+//             Sign In
+//           </Link>
+//           <Link
+//             href="/auth/register"
+//             className="bg-gradient-to-r from-[#6c63ff] to-[#9b59f5] text-white text-[14px] font-semibold px-4 py-3 rounded-lg text-center no-underline mt-1"
+//           >
+//             Apply Now →
+//           </Link>
+//         </div>
+//       )}
+//     </>
 //   );
 // }
 
+// ─── HERO ─────────────────────────────────────────────────────────────────────
 
 function Hero() {
   const router = useRouter();
@@ -132,18 +218,47 @@ function Hero() {
       <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(ellipse 80% 50% at 20% 20%,rgba(108,99,255,.12) 0%,transparent 60%),radial-gradient(ellipse 60% 40% at 80% 80%,rgba(155,89,245,.1) 0%,transparent 60%),radial-gradient(ellipse 40% 30% at 50% 50%,rgba(45,212,191,.05) 0%,transparent 60%)" }} />
       <div className="absolute inset-0 pointer-events-none opacity-[0.025]" style={{ backgroundImage: "linear-gradient(rgba(255,255,255,0.07) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.07) 1px,transparent 1px)", backgroundSize: "60px 60px", maskImage: "radial-gradient(ellipse 80% 80% at 50% 50%,black 0%,transparent 100%)" }} />
 
+      {/* ✅ Inline top bar — no fixed navbar needed */}
+      <div className="absolute top-0 left-0 right-0 flex items-center justify-between px-6 md:px-10 h-16">
+        <Link href="/" className="flex items-center gap-2.5 no-underline">
+          <div className="w-[34px] h-[34px] rounded-[9px] bg-gradient-to-br from-[#6c63ff] to-[#9b59f5] flex items-center justify-center text-white font-extrabold text-sm">
+            M
+          </div>
+          <span className="text-white font-bold text-[17px] tracking-tight">mmeko</span>
+        </Link>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/auth/login"
+            className="text-[#94a3b8] border border-white/[0.07] hover:text-white hover:border-white/15 hover:bg-white/5 text-[13.5px] font-semibold px-4 py-2 rounded-lg transition-all no-underline"
+          >
+            Sign In
+          </Link>
+          <Link
+            href="/auth/register"
+            className="bg-gradient-to-r from-[#6c63ff] to-[#9b59f5] text-white text-[13.5px] font-semibold px-4 py-2 rounded-lg shadow-[0_0_0_1px_rgba(108,99,255,0.3),0_4px_16px_rgba(108,99,255,0.25)] hover:-translate-y-px transition-all no-underline"
+          >
+            Apply Now →
+          </Link>
+        </div>
+      </div>
+
+      {/* rest of hero unchanged below... */}
       <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, ease }} className="flex items-center gap-2 bg-[rgba(108,99,255,0.1)] border border-[rgba(108,99,255,0.25)] rounded-full px-3.5 py-1.5 mb-8 text-xs font-semibold text-[#a89cff] tracking-wide uppercase">
         <span className="w-1.5 h-1.5 rounded-full bg-[#2dd4bf] shadow-[0_0_6px_#2dd4bf] animate-pulse" />
         Now accepting creator applications
       </motion.div>
 
-      {/* Avatars */}
       <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.05, ease }} className="flex items-center justify-center mb-7">
         <div className="flex items-center -space-x-2">
-          {STATIC_CREATOR_IMAGES.map((src, i) => (
-            <div key={i} className="w-9 h-9 rounded-full border-2 border-[#080b14] overflow-hidden bg-gray-700 flex-shrink-0" style={{ zIndex: 10 - i }}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={src} alt="" className="w-full h-full object-cover" draggable={false} />
+          {[
+            { letter: "A", grad: "linear-gradient(135deg,#6c63ff,#9b59f5)" },
+            { letter: "J", grad: "linear-gradient(135deg,#2dd4bf,#0891b2)" },
+            { letter: "S", grad: "linear-gradient(135deg,#f472b6,#db2777)" },
+            { letter: "R", grad: "linear-gradient(135deg,#fb923c,#ea580c)" },
+            { letter: "+", grad: "linear-gradient(135deg,#a78bfa,#7c3aed)" },
+          ].map(({ letter, grad }, i) => (
+            <div key={i} className="w-9 h-9 rounded-full border-2 border-[#080b14] flex items-center justify-center text-[13px] font-bold text-white flex-shrink-0" style={{ background: grad, zIndex: 10 - i, marginLeft: i === 0 ? 0 : "-8px" }}>
+              {letter}
             </div>
           ))}
         </div>
@@ -176,6 +291,7 @@ function Hero() {
   );
 }
 
+// ─── STATS ────────────────────────────────────────────────────────────────────
 
 function Stats() {
   const stats = [["100%", "Earnings you keep"], ["0s", "Payout delay"], ["1K+", "Verified creators"], ["0", "Chargebacks lost"]];
@@ -191,6 +307,7 @@ function Stats() {
   );
 }
 
+// ─── SECTION WRAPPER ──────────────────────────────────────────────────────────
 
 function Section({ id, alt, children }: { id?: string; alt?: boolean; children: React.ReactNode }) {
   return (
@@ -208,6 +325,7 @@ function SecTitle({ children }: { children: React.ReactNode }) {
   return <Reveal delay={0.08} className="text-[clamp(28px,4vw,46px)] font-extrabold tracking-[-0.03em] leading-[1.1] mb-14 [&_em]:not-italic [&_em]:bg-gradient-to-r [&_em]:from-[#6c63ff] [&_em]:to-[#9b59f5] [&_em]:bg-clip-text [&_em]:text-transparent">{children}</Reveal>;
 }
 
+// ─── OFFERINGS ────────────────────────────────────────────────────────────────
 
 const tagStyles: Record<string, string> = {
   purple: "bg-[rgba(108,99,255,0.12)] text-[#a89cff]",
@@ -232,7 +350,7 @@ function Offerings() {
             <p className="text-sm text-[#94a3b8] leading-[1.75]">mmeko's flagship experience. Offer real-world meet-ups, virtual dates, and exclusive one-on-one time with your fans — structured, safe, and fully on your terms. Every booking is protected, every payment is instant.</p>
           </div>
           <div className="bg-[#161b2e] border-t md:border-t-0 md:border-l border-white/[0.04] p-9 flex flex-col gap-3 justify-center">
-            {[["📅", "fi-purple", "You set the schedule", "When, where, and how — total control over your availability"], ["🛡", "fi-teal", "Structured safety", "Every interaction governed by mmeko's protection framework"], ["💸", "fi-rose", "Instant payment on booking", "Funds secured the moment a fan books"]].map(([icon, color, t, d]) => (
+            {[["📅", "fi-purple", "You set the schedule", "When, where, and how — total control over your availability"], ["🛡", "fi-teal", "Structured safety", "Every interaction governed by mmeko's protection framework"], ["💸", "fi-rose", "Instant payment on request", "Funds secured the moment a fan requests"]].map(([icon, color, t, d]) => (
               <div key={t} className="flex items-start gap-3.5 p-4 bg-[#0e1220] border border-white/[0.04] rounded-[10px] hover:border-white/[0.07] hover:bg-white/[0.03] transition-all">
                 <div className={`w-9 h-9 rounded-lg flex items-center justify-center text-base flex-shrink-0 ${color === "fi-purple" ? "bg-[rgba(108,99,255,0.12)]" : color === "fi-teal" ? "bg-[rgba(45,212,191,0.1)]" : "bg-[rgba(244,114,182,0.1)]"}`}>{icon}</div>
                 <div><p className="text-[13px] font-semibold mb-0.5">{t}</p><p className="text-xs text-[#94a3b8] leading-[1.5]">{d}</p></div>
@@ -257,12 +375,13 @@ function Offerings() {
   );
 }
 
+// ─── HOW IT WORKS ─────────────────────────────────────────────────────────────
 
 function HowItWorks() {
   return (
     <Section id="how" alt>
       <Eyebrow>The Process</Eyebrow>
-      <SecTitle>From sign-up to<br /><em>first booking.</em></SecTitle>
+      <SecTitle>From sign-up to<br /><em>first request.</em></SecTitle>
       <Reveal delay={0.16}>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-px bg-white/[0.07] rounded-xl overflow-hidden">
           {STEPS.map((s) => (
@@ -279,13 +398,14 @@ function HowItWorks() {
   );
 }
 
+// ─── PAYMENTS ─────────────────────────────────────────────────────────────────
 
 function PaymentFlow() {
   return (
     <Section id="payments">
       <Eyebrow>How Payments Work</Eyebrow>
       <SecTitle>Your money is secured<br /><em>before you show up.</em></SecTitle>
-      <p className="text-base text-[#94a3b8] max-w-[480px] leading-[1.75] -mt-8 mb-14">We know payment transparency matters. Here's exactly how every booking works — no surprises, no fine print.</p>
+      <p className="text-base text-[#94a3b8] max-w-[480px] leading-[1.75] -mt-8 mb-14">We know payment transparency matters. Here's exactly how every request works — no surprises, no fine print.</p>
 
       <Reveal delay={0.12} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         {PAY_STEPS.map((p, i) => (
@@ -310,6 +430,7 @@ function PaymentFlow() {
   );
 }
 
+// ─── SAFETY ───────────────────────────────────────────────────────────────────
 
 function Safety() {
   return (
@@ -322,7 +443,7 @@ function Safety() {
           <h3 className="text-[18px] font-bold mb-2 tracking-tight">mmeko's Core Safety Rules</h3>
           <p className="text-sm text-[#94a3b8] leading-[1.7] max-w-[520px]">Every fan meet on mmeko is governed by two non-negotiable rules designed to protect creators at all times. These aren't suggestions — they're enforced by the platform.</p>
           <div className="flex gap-2.5 flex-wrap mt-5">
-            {["Max 30 minutes per meet", "Public venues only", "All chats on-platform", "Optional fan verification"].map((p) => (
+            {["Max 30 minutes per meet", "Public venues only", "Public meets only", "Optional fan verification"].map((p) => (
               <span key={p} className="flex items-center gap-1.5 px-3.5 py-1.5 bg-[#0e1220] border border-white/[0.07] rounded-full text-xs font-medium text-[#94a3b8]">
                 <span className="w-4 h-4 rounded-full bg-[rgba(34,197,94,0.12)] flex items-center justify-center text-[9px] text-[#22c55e] flex-shrink-0">✓</span>{p}
               </span>
@@ -341,6 +462,7 @@ function Safety() {
   );
 }
 
+// ─── COMPARISON ───────────────────────────────────────────────────────────────
 
 function Comparison() {
   return (
@@ -380,37 +502,38 @@ function Comparison() {
   );
 }
 
+// ─── TESTIMONIALS ─────────────────────────────────────────────────────────────
 
-// function Testimonials() {
-//   return (
-//     <Section alt>
-//       <Eyebrow>Creator Stories</Eyebrow>
-//       <SecTitle>What creators<br /><em>are saying.</em></SecTitle>
-//       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-//         {TESTIMONIALS.map((t, i) => (
-//           <Reveal key={t.name} delay={i * 0.1} className="bg-[#111624] border border-white/[0.07] rounded-xl p-7 flex flex-col gap-5 hover:border-[rgba(108,99,255,0.25)] hover:-translate-y-1 transition-all">
-//             <div className="flex items-center gap-3.5">
-//               <div className={`relative w-[46px] h-[46px] rounded-full flex items-center justify-center text-[17px] font-bold text-white bg-gradient-to-br ${t.grad} flex-shrink-0`}>
-//                 {t.initial}
-//                 <span className="absolute -bottom-px -right-px w-4 h-4 rounded-full bg-[#2dd4bf] border-2 border-[#111624] flex items-center justify-center text-[8px] text-[#080b14]">✓</span>
-//               </div>
-//               <div><p className="font-bold text-[15px] tracking-tight">{t.name}</p><p className="text-xs text-[#94a3b8]">{t.niche}</p></div>
-//             </div>
-//             <p className="text-sm text-[#94a3b8] leading-[1.75] flex-1"><span className="text-[#a89cff] text-lg font-bold mr-0.5">&ldquo;</span>{t.quote}</p>
-//             <div className="pt-4 border-t border-white/[0.04] flex items-center justify-between">
-//               <div className="flex gap-5">
-//                 {[[t.monthly, "Monthly"], [t.fans, "Fans"]].map(([n, l]) => (
-//                   <div key={l}><p className="text-lg font-extrabold tracking-tight bg-gradient-to-r from-[#6c63ff] to-[#9b59f5] bg-clip-text text-transparent">{n}</p><p className="text-[11px] text-[#475569] font-medium">{l}</p></div>
-//                 ))}
-//               </div>
-//               <span className="flex items-center gap-1.5 px-2.5 py-1 bg-[rgba(108,99,255,0.1)] border border-[rgba(108,99,255,0.15)] rounded-md text-[11px] font-semibold text-[#a89cff]">{t.offer}</span>
-//             </div>
-//           </Reveal>
-//         ))}
-//       </div>
-//     </Section>
-//   );
-// }
+function Testimonials() {
+  return (
+    <Section alt>
+      <Eyebrow>Creator Stories</Eyebrow>
+      <SecTitle>What creators<br /><em>are saying.</em></SecTitle>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {TESTIMONIALS.map((t, i) => (
+          <Reveal key={t.name} delay={i * 0.1} className="bg-[#111624] border border-white/[0.07] rounded-xl p-7 flex flex-col gap-5 hover:border-[rgba(108,99,255,0.25)] hover:-translate-y-1 transition-all">
+            <div className="flex items-center gap-3.5">
+              <div className={`relative w-[46px] h-[46px] rounded-full flex items-center justify-center text-[17px] font-bold text-white bg-gradient-to-br ${t.grad} flex-shrink-0`}>
+                {t.initial}
+                <span className="absolute -bottom-px -right-px w-4 h-4 rounded-full bg-[#2dd4bf] border-2 border-[#111624] flex items-center justify-center text-[8px] text-[#080b14]">✓</span>
+              </div>
+              <div><p className="font-bold text-[15px] tracking-tight">{t.name}</p><p className="text-xs text-[#94a3b8]">{t.niche}</p></div>
+            </div>
+            <p className="text-sm text-[#94a3b8] leading-[1.75] flex-1"><span className="text-[#a89cff] text-lg font-bold mr-0.5">&ldquo;</span>{t.quote}</p>
+            <div className="pt-4 border-t border-white/[0.04] flex items-center justify-between">
+              <div className="flex gap-5">
+                {[[t.monthly, "Monthly"], [t.fans, "Fans"]].map(([n, l]) => (
+                  <div key={l}><p className="text-lg font-extrabold tracking-tight bg-gradient-to-r from-[#6c63ff] to-[#9b59f5] bg-clip-text text-transparent">{n}</p><p className="text-[11px] text-[#475569] font-medium">{l}</p></div>
+                ))}
+              </div>
+              <span className="flex items-center gap-1.5 px-2.5 py-1 bg-[rgba(108,99,255,0.1)] border border-[rgba(108,99,255,0.15)] rounded-md text-[11px] font-semibold text-[#a89cff]">{t.offer}</span>
+            </div>
+          </Reveal>
+        ))}
+      </div>
+    </Section>
+  );
+}
 
 // ─── FAQ ──────────────────────────────────────────────────────────────────────
 
@@ -452,6 +575,7 @@ function FAQSection() {
   );
 }
 
+// ─── FINAL CTA ────────────────────────────────────────────────────────────────
 
 function FinalCTA() {
   const router = useRouter();
@@ -480,6 +604,7 @@ function FinalCTA() {
   );
 }
 
+// ─── FOOTER ───────────────────────────────────────────────────────────────────
 
 function Footer() {
   return (
@@ -500,36 +625,22 @@ function Footer() {
   );
 }
 
+// ─── ROOT EXPORT ──────────────────────────────────────────────────────────────
 
 export default function MmekoLanding() {
-  const [mounted, setMounted] = useState(false);
-
+  // Allow page to scroll (globals.css sets overflow:hidden on body at desktop)
   useEffect(() => {
-    setMounted(true);
-    // Override globals.css overflow:hidden with !important via setProperty
-    const els = [document.documentElement, document.body];
-    els.forEach(el => {
-      el.style.setProperty("overflow", "auto", "important");
-      el.style.setProperty("height", "auto", "important");
-    });
+    document.body.style.overflow = "auto";
+    document.documentElement.style.overflow = "auto";
     return () => {
-      els.forEach(el => {
-        el.style.removeProperty("overflow");
-        el.style.removeProperty("height");
-      });
+      document.body.style.overflow = "";
+      document.documentElement.style.overflow = "";
     };
   }, []);
 
-  if (!mounted) return null;
-
-  return createPortal(
-    <div style={{
-      position: "fixed", inset: 0, zIndex: 9999,
-      background: "#080b14",
-      fontFamily: "'Plus Jakarta Sans', sans-serif",
-      overflowY: "auto", overflowX: "hidden",
-      color: "white",
-    }}>
+  return (
+    <div className="min-h-screen text-white" style={{ background: "#080b14", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+      {/* Plus Jakarta Sans via Google Fonts — tiny perf hit, avoids next/font config changes */}
       {/* eslint-disable-next-line @next/next/no-page-custom-font */}
       <style>{`@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');`}</style>
       {/* <NavBar /> */}
@@ -540,11 +651,10 @@ export default function MmekoLanding() {
       <PaymentFlow />
       <Safety />
       <Comparison />
-      {/* <Testimonials /> */}
+      <Testimonials />
       <FAQSection />
       <FinalCTA />
       <Footer />
-    </div>,
-    document.body
+    </div>
   );
 }

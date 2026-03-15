@@ -685,7 +685,7 @@ export default function PostsCard() {
                 {index === 0 && (
                   <div className="flex flex-col gap-3 -mt-1 -mb-2">
                     <div className="mx-auto max-w-[30rem] w-full">
-                      <HowItWorksCard />
+                      {/* <HowItWorksCard /> */}
                     </div>
                     <div className="lg:hidden">
                       <CreatorCards />

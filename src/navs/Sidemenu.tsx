@@ -7,7 +7,6 @@ import MenuIconImg from "@/components/MenuIcon-img";
 import { useMenuContext } from "@/lib/context/MenuContext";
 import Profile from "@/components/Profile";
 import { FaCoins, FaAngleRight, FaAngleDown } from "react-icons/fa";
-import OpenMobileMenuBtn from "@/components/OpenMobileMenuBtn";
 import handleLogout from "@/lib/service/logout";
 import { useUserId } from "@/lib/hooks/useUserId";
 import { useSelector, useDispatch } from "react-redux";
@@ -16,10 +15,6 @@ import { getprofile } from "@/store/profile";
 import { checkVipStatus } from "@/store/vip";
 
 const Sidemenu = () => {
-  // 🔒 CRITICAL: This component ALWAYS uses current user data
-  // It is NEVER affected by viewing other users' profiles
-  // The side menu should always show the current logged-in user's information
-
   const [minimize, setMinimize] = useState(false);
   const userId = useUserId();
   const router = useRouter();
@@ -27,34 +22,20 @@ const Sidemenu = () => {
   const dispatch = useDispatch<AppDispatch>();
   const menuRef = useRef<HTMLDivElement>(null);
 
-  // ALWAYS use current user profile from Redux (NEVER viewing profile)
-  // This ensures side menu is NEVER affected by viewing other users' profiles
   const profile = useSelector((state: RootState) => state.profile);
-
-  // Get current user ID to ensure we're using the right profile
   const reduxUserId = useSelector((state: RootState) => state.register.userID);
-
-  // Fallback to localStorage if Redux doesn't have the user ID
-  const [currentUserId, setCurrentUserId] = React.useState(reduxUserId || '');
-
-  // Get VIP status from VIP store (more reliable)
+  const [currentUserId, setCurrentUserId] = React.useState(reduxUserId || "");
   const vipStatus = useSelector((state: RootState) => state.vip.vipStatus);
   const isVip = vipStatus?.isVip || false;
-  const vipStartDate = vipStatus?.vipStartDate;
   const vipEndDate = vipStatus?.vipEndDate;
 
-
-  // Get user ID from localStorage if Redux doesn't have it
   React.useEffect(() => {
-    if (!reduxUserId && typeof window !== 'undefined') {
+    if (!reduxUserId && typeof window !== "undefined") {
       try {
         const raw = localStorage.getItem("login");
         if (raw) {
           const data = JSON.parse(raw);
-          if (data?.userID) {
-            setCurrentUserId(data.userID);
-
-          }
+          if (data?.userID) setCurrentUserId(data.userID);
         }
       } catch (error) {
         console.error("Error getting userID from localStorage:", error);
@@ -64,32 +45,25 @@ const Sidemenu = () => {
     }
   }, [reduxUserId]);
 
-  // VIP status is now loaded from login data in register state
-
-  // Click outside to close menu functionality
+  // Click outside to close
   useEffect(() => {
+    if (!open) return;
     const handleClickOutside = (event: MouseEvent) => {
-      if (open && menuRef.current && !menuRef.current.contains(event.target as Node)) {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
         handleMenubar();
       }
     };
-
-    if (open) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-
+    const timer = setTimeout(() => {
+      document.addEventListener("mousedown", handleClickOutside);
+    }, 100);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      clearTimeout(timer);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [open, handleMenubar]);
 
-  // 🔒 CRITICAL: Ensure current user profile is always loaded
-  // This prevents the side menu from showing "User" fallback
-  // MUST be called before any early returns to maintain hook order
   React.useEffect(() => {
     if (currentUserId && (!profile.firstname || profile.status === "idle")) {
-
-      // Get token from localStorage or Redux
       let token: string | undefined;
       try {
         const raw = localStorage.getItem("login");
@@ -100,24 +74,17 @@ const Sidemenu = () => {
       } catch (error) {
         console.error("Error getting token for side menu:", error);
       }
-
       if (token) {
         dispatch(getprofile({ userid: currentUserId, token }));
-        // Also check VIP status
         dispatch(checkVipStatus(currentUserId));
       }
     }
   }, [currentUserId, profile.firstname, profile.status, dispatch]);
 
-  // Additional effect for Edge browser compatibility
   React.useEffect(() => {
-    const isEdge = navigator.userAgent.includes('Edg');
+    const isEdge = navigator.userAgent.includes("Edg");
     const isCurrentUserProfile = profile.userId === currentUserId;
-
     if (isEdge && currentUserId && (!profile.firstname || !isCurrentUserProfile)) {
-
-
-      // Force reload profile for Edge browser
       let token: string | undefined;
       try {
         const raw = localStorage.getItem("login");
@@ -128,9 +95,7 @@ const Sidemenu = () => {
       } catch (error) {
         console.error("Error getting token for Edge fallback:", error);
       }
-
       if (token) {
-        // Add a small delay for Edge browser
         setTimeout(() => {
           dispatch(getprofile({ userid: currentUserId, token }));
         }, 100);
@@ -138,18 +103,12 @@ const Sidemenu = () => {
     }
   }, [currentUserId, profile.firstname, profile.userId, dispatch]);
 
-  // ⛔ Don't render until current user profile exists and has actual data
   if (!profile || Object.keys(profile).length === 0 || !profile.firstname) {
-    return null; // nothing until current user profile is ready with real data
+    return null;
   }
 
-  // SAFETY: Always use current user data with fallbacks
-  // These values are ALWAYS from the current logged-in user, never from viewing profiles
-  // Only use profile data if it belongs to the current user
   const isCurrentUserProfile = profile.userId === currentUserId;
 
-
-  // Enhanced fallback mechanism for cross-browser compatibility
   let firstname = "User";
   let lastname = "";
   let gold_balance = 0;
@@ -165,23 +124,14 @@ const Sidemenu = () => {
     admin = profile.admin || false;
     verified = profile.creator_verified || false;
   } else {
-    // Try to get data from localStorage as fallback for Edge browser issues
     try {
-      if (typeof window !== 'undefined') {
+      if (typeof window !== "undefined") {
         const raw = localStorage.getItem("login");
         if (raw) {
           const data = JSON.parse(raw);
           if (data?.firstname && data?.userID === currentUserId) {
             firstname = data.firstname;
             lastname = data.lastname || "";
-          } else {
-            console.log("❌ [Sidemenu] localStorage fallback failed:", {
-              hasFirstname: !!data?.firstname,
-              userIDMatch: data?.userID === currentUserId,
-              localStorageUserID: data?.userID,
-              currentUserId,
-              reduxUserId
-            });
           }
         }
       }
@@ -190,41 +140,16 @@ const Sidemenu = () => {
     }
   }
 
-  // Debug logging to track what's happening
-
-
-
-
-
-
-
-
-  //creator button dynmic condition
-
-
-  // MODEL BUTTON LOGIC
-  // MODEL BUTTON LOGIC
-
-
-
-  //  url={`/creators/${profile?.creator_portfolio_id||profile?.creator_portfolio_id}`}
-
-  // MODEL BUTTON LOGIC - ALWAYS uses current user's creator data
-  // This ensures the creator button reflects the current user's creator status
   const getCreatorButton = () => {
-    // 1️⃣ Current user already has a creator → go to their creator profile
     if (profile.creator_portfolio_id) {
       return (
         <MenuIconImg
           src="/icons/icons8-creator.png"
           name="My Portfolio"
           url={`/creators/${profile.creator_portfolio_id}`}
-        // url="/creator/create"
         />
       );
     }
-
-    // 2️⃣ Current user applied/verified but hasn't created a creator yet → go to create creator
     if (profile.creator_verified) {
       return (
         <MenuIconImg
@@ -234,8 +159,6 @@ const Sidemenu = () => {
         />
       );
     }
-
-    // 3️⃣ Default → current user hasn't applied yet → show Become a creator
     return (
       <MenuIconImg
         src="/icons/icons-become-a-creator.png"
@@ -245,25 +168,47 @@ const Sidemenu = () => {
     );
   };
 
-
-
   return (
     <div className="fixed z-[110]">
       <div className="p-2">
+        {/* ✅ Backdrop — closes menu when clicking outside on all screen sizes */}
+        {open && (
+          <div
+            className="fixed inset-0 bg-black/40 z-[90]"
+            style={{ backdropFilter: "blur(2px)" }}
+            onClick={handleMenubar}
+          />
+        )}
+
         <nav
           ref={menuRef}
-          onClick={handleMenubar}
-          className={`${open ? "show" : "hide"
-            } sm:block menu-width origin-top-right mr mt pt px-2 py-4 h-fit bg-gray-900 text-white fixed rounded-l-lg rounded-r-2xl z-[100]`}
+          // ✅ No onClick here — was closing menu on any click inside
+          className={`${
+            open ? "show" : "hide"
+          } menu-width origin-top-right mr mt pt px-2 py-4 h-fit bg-gray-900 text-white fixed rounded-l-lg rounded-r-2xl z-[100]`}
         >
-          <div className="absolute -top-3 right-0 w-fit cls-btn">
-            <OpenMobileMenuBtn />
+          {/* ✅ Close button — visible on ALL screen sizes */}
+          <div className="absolute top-3 right-3 z-[110]">
+            <button
+              onClick={handleMenubar}
+              className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-700 hover:bg-gray-600 transition-colors duration-200"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M18 6L6 18M6 6l12 12"
+                  stroke="white"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
+              </svg>
+            </button>
           </div>
 
           <div className="overflow-hidden">
             <div
-              className={`${minimize ? "minimize" : "maximize"
-                } mt-4 transition-all duration-500 flex flex-col items-start ml-1 mr-1 p-2 divider relative overflow-hidden`}
+              className={`${
+                minimize ? "minimize" : "maximize"
+              } mt-4 transition-all duration-500 flex flex-col items-start ml-1 mr-1 p-2 divider relative overflow-hidden`}
             >
               <button
                 onClick={() => setMinimize(!minimize)}
@@ -280,7 +225,11 @@ const Sidemenu = () => {
                     name={`${firstname} ${lastname}`.trim()}
                     firstname={firstname}
                     lastname={lastname}
-                    url={userId || profile?.username ? `/${profile?.username || userId}` : `/`}
+                    url={
+                      userId || profile?.username
+                        ? `/${profile?.username || userId}`
+                        : `/`
+                    }
                     gold_balance={gold_balance}
                     {...(pending_balance > 0 && { pending_balance })}
                     isVip={isVip || false}
@@ -288,7 +237,6 @@ const Sidemenu = () => {
                     onClick={() => handleMenubar()}
                     verified={verified}
                   />
-                  {/* 🔒 SAFETY: This Profile component ALWAYS shows current user's data */}
                 </div>
               </div>
 
@@ -307,16 +255,9 @@ const Sidemenu = () => {
                   <span>Upgrade Account</span>
                 </button>
               </div>
-            </div >
+            </div>
 
-            {/* 🔒 ALL MENU ITEMS BELOW ALWAYS USE CURRENT USER DATA */}
-            < div className="grid-sys text-xs text-blue-100 mt-4" >
-              {/* <MenuIconImg
-                src="/icons/icons8-customer.gif"
-                name="Profile"
-                url={userId || profile?.username ? `/${profile?.username || userId}` : `/`}
-              /> */}
-
+            <div className="grid-sys text-xs text-blue-100 mt-4">
               {getCreatorButton()}
 
               <MenuIconImg
@@ -335,15 +276,13 @@ const Sidemenu = () => {
                 url="/goldstat/history"
               />
 
-              {
-                admin && (
-                  <MenuIconImg
-                    src="/icons/icons8-admin.png"
-                    name="Admin"
-                    url="/mmeko/admin"
-                  />
-                )
-              }
+              {admin && (
+                <MenuIconImg
+                  src="/icons/icons8-admin.png"
+                  name="Admin"
+                  url="/mmeko/admin"
+                />
+              )}
 
               <MenuIconImg
                 src="/icons/icons8-gift.png"
@@ -355,13 +294,11 @@ const Sidemenu = () => {
                 onClick={async () => {
                   try {
                     localStorage.clear();
-                    // Attempt the logout
                     await handleLogout();
                   } catch (error) {
                     console.error(error);
                   } finally {
-                    // This runs 100% of the time, successful logout or not
-                    if (typeof window !== 'undefined') {
+                    if (typeof window !== "undefined") {
                       window.location.reload();
                     }
                   }
@@ -371,17 +308,17 @@ const Sidemenu = () => {
                 <img
                   alt="Logout"
                   src="/icons/icons8-log-out.png"
-                  className="object-cover w-12 h-12 "
+                  className="object-cover w-12 h-12"
                 />
                 <p className="mt-1 text-center group-hover:text-gray-400">
                   Log Out
                 </p>
               </div>
-            </div >
-          </div >
-        </nav >
-      </div >
-    </div >
+            </div>
+          </div>
+        </nav>
+      </div>
+    </div>
   );
 };
 

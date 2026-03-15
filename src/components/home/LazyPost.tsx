@@ -788,8 +788,7 @@ const LazyPost: React.FC<LazyPostProps> = ({
             <div className="flex items-end gap-1">
               <button
                 onClick={() => router.push(`/creators/${post?.user?.creator_portfolio_id}`)}
-                className={`text-white px-2 bg-gradient-to-r from-orange-500 to-red-600 cursor-pointer text-sm py-1 rounded ${shouldAnimate ? 'animate-wiggle-periodic' : ''}`}>
-                {post?.user?.hosttype}
+className={`text-white px-2 bg-gradient-to-r from-[#6c63ff] to-[#9b59f5] cursor-pointer text-sm py-1 rounded shadow-[0_2px_8px_rgba(108,99,255,0.4)] ${shouldAnimate ? 'animate-wiggle-periodic' : ''}`}>                {post?.user?.hosttype}
               </button>
             </div>)}
         </div>

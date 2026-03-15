@@ -158,6 +158,16 @@ export default function ConditionalLayout({ children, isAuthenticated }: Conditi
     return <>{children}</>;
   }
 
+  // Unauthenticated home — render landing page with NO layout chrome
+if (!isAuthenticated && isHomeRoute) {
+  return (
+    <>
+      <Navbar isAuthenticated={false} />
+      {children}
+    </>
+  );
+}
+
   // Otherwise, render with main layout
   return (
   <main className="flex overflow-hidden h-screen relative" style={{ background: "#080b14" }}>
@@ -203,8 +213,8 @@ export default function ConditionalLayout({ children, isAuthenticated }: Conditi
         <div
           ref={scrollContainerRef}
           key={isMessageRoute ? 'message-scroll' : 'scroll-container'} // Keep the key to ensure state reset on route change
-          className={`flex-1 scrollbar overflow-y-auto overflow-x-hidden w-full min-w-0`} style={{ background: "#080b14" }}
-          style={{ minHeight: 0 }}
+          className="flex-1 scrollbar overflow-y-auto overflow-x-hidden w-full min-w-0"
+          style={{ background: "#080b14", minHeight: 0 }}
         >
           <div className="grid grid-cols-[60fr_40fr] max-[1200px]:grid-cols-[75fr_25fr] max-[600px]:grid-cols-1 gap-4 min-h-0">
             <div className="w-full max-w-full min-w-0 overflow-x-hidden">

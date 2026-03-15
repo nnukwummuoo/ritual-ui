@@ -76,12 +76,26 @@ export default function HomePage() {
   }
 
   if (!isAuthenticated) {
-    return (
-      <div className="w-full text-white min-h-screen">
-        <CreatorLandingContent prefetchedCreators={prefetchedCreators} />
-      </div>
-    );
-  }
+  return (
+    <div
+      className="text-white min-h-screen"
+      style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        overflowY: "auto",
+        overflowX: "hidden",
+        zIndex: 40,
+        background: "#080b14",
+        width: "100vw",
+      }}
+    >
+      <CreatorLandingContent prefetchedCreators={prefetchedCreators} />
+    </div>
+  );
+}
 
   return (
     <div className="w-full mx-auto space-y-5 px-2 md:mt-0 mt-8">
