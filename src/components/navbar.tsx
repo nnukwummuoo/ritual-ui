@@ -2,63 +2,81 @@
 import { useAuth } from "@/lib/context/auth-context";
 import Image from "next/image";
 import React from "react";
-import { FaBars, FaTimes, FaSignInAlt } from "react-icons/fa";
+import { FaTimes, FaSignInAlt } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 import anyaLogo from '@/icons/icon-192.png';
 
 export default function Navbar({ isAuthenticated }: { isAuthenticated: boolean }) {
   const { isOpen, toggle } = useAuth();
-  const router = useRouter()
-
+  const router = useRouter();
 
   return (
     <>
-      {/* Mobile/Tablet Navbar - Hidden on lg screens and up */}
+      {/* Mobile/Tablet Navbar */}
       <div
-        className={`z-[100] w-full fixed top-0 left-0 h-12 lg:hidden ${isAuthenticated ? "bg-gray-900" : ""}`}
-        style={!isAuthenticated ? { backgroundColor: "#0c0f27" } : undefined}
+        className="z-[100] w-full fixed top-0 left-0 h-12 lg:hidden"
+        style={{ backgroundColor: "#080b14", borderBottom: "1px solid rgba(255,255,255,0.07)" }}
       >
-        <div className="flex items-center text-orange-600 justify-between">
-          <div className={`absolute left-0 top-0 p-2 flex items-center w-full ${isAuthenticated ? "justify-between" : "justify-start"}`}>
-            {isAuthenticated ? (
-              <button onClick={toggle} className="navBtn">
-                <span className="bg-clip-text bg-gradient-to-r from-blue-500 to-purple-600 text-blue-500">
-                  {isOpen ? <FaTimes size={25} className="text-blue-500" /> : <FaBars size={25} />}
-                </span>
-              </button>
-            ) : null}
-            <Image src={anyaLogo} onClick={() => router.push('/')} alt="logo" className="logo" />
-            {isAuthenticated ? <div className="size-6" /> : <div className="flex-1" />}
-          </div>
-          {!isAuthenticated && (
+        <div className="flex items-center justify-between h-full px-3">
+
+          {/* Left — hamburger or spacer */}
+          {isAuthenticated ? (
+            <button onClick={toggle} className="flex items-center justify-center w-8 h-8 rounded-lg transition-colors hover:bg-white/5">
+              {isOpen
+                ? <FaTimes size={20} style={{ color: "#6c63ff" }} />
+                : (
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                    <path d="M4 6h16M4 12h16M4 18h16" stroke="#6c63ff" strokeWidth="2" strokeLinecap="round"/>
+                  </svg>
+                )
+              }
+            </button>
+          ) : (
+            <div className="w-8" />
+          )}
+
+          {/* Center — logo */}
+          <Image
+            src={anyaLogo}
+            onClick={() => router.push("/")}
+            alt="logo"
+            className="logo cursor-pointer"
+            width={32}
+            height={32}
+          />
+
+          {/* Right — search icon (authenticated) or sign in */}
+          {isAuthenticated ? (
             <button
-              onClick={() => router.push('/auth/login')}
-              className="bg-gradient-to-r from-blue-500 to-purple-600 absolute right-4 top-2.5 z-[1000] text-white hover:text-white active:text-white focus:outline-none rounded-full lg:hidden"
-              style={{
-                display: "flex",
-                alignItems: "center",
-                padding: "6px 10px",
-                borderRadius: 20,
-              }}
+              onClick={() => router.push("/discover")}
+              className="flex items-center justify-center w-8 h-8 rounded-lg transition-colors hover:bg-white/5"
             >
-              <FaSignInAlt size={18} className="text-gray-900" />
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                <circle cx="11" cy="11" r="8" stroke="#6c63ff" strokeWidth="2"/>
+                <path d="M21 21l-4.35-4.35" stroke="#6c63ff" strokeWidth="2" strokeLinecap="round"/>
+              </svg>
+            </button>
+          ) : (
+            <button
+              onClick={() => router.push("/auth/login")}
+              className="flex items-center text-white rounded-full text-xs font-semibold"
+              style={{ background: "linear-gradient(135deg,#6c63ff,#9b59f5)", padding: "6px 10px", boxShadow: "0 4px 14px rgba(108,99,255,.35)" }}
+            >
+              <FaSignInAlt size={16} />
             </button>
           )}
-          {/* <div className="size-6"></div> *<Logins /> placeholder */}
+
         </div>
       </div>
 
-      {/* Desktop Login Button - Only shown on lg screens and up, only when not authenticated */}
+      {/* Desktop Login Button — unauthenticated only */}
       {!isAuthenticated && (
         <button
-          onClick={() => router.push('/auth/login')}
-          className="hidden lg:flex fixed top-2.5 right-4 z-[1000] bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:text-white active:text-white focus:outline-none rounded-full items-center"
-          style={{
-            padding: "6px 10px",
-            borderRadius: 20,
-          }}
+          onClick={() => router.push("/auth/login")}
+          className="hidden lg:flex fixed top-2.5 right-4 z-[1000] items-center text-white rounded-full"
+          style={{ background: "linear-gradient(135deg,#6c63ff,#9b59f5)", padding: "6px 10px", boxShadow: "0 4px 14px rgba(108,99,255,.35)" }}
         >
-          <FaSignInAlt size={18} className="text-gray-900" />
+          <FaSignInAlt size={18} />
         </button>
       )}
     </>

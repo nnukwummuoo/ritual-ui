@@ -160,7 +160,7 @@ export default function ConditionalLayout({ children, isAuthenticated }: Conditi
 
   // Otherwise, render with main layout
   return (
-    <main className="flex overflow-hidden h-screen relative">
+  <main className="flex overflow-hidden h-screen relative" style={{ background: "#080b14" }}>
       {/* Sidebar - only shown when authenticated */}
       {isAuthenticated && (
         <>
@@ -197,15 +197,13 @@ export default function ConditionalLayout({ children, isAuthenticated }: Conditi
         </button>
       )}
 
-      {/* Promo Modal - Only shown on home route for unauthenticated users */}
-      {/* {!isAuthenticated && isHomeRoute && showPromo && <UnauthenticatedPromoModal />} */}
-
+     
 
       <div className={`flex-1 flex flex-col overflow-hidden transition-all duration-300 min-w-0 min-h-0 md:mt-0 mt-12`}>
         <div
           ref={scrollContainerRef}
           key={isMessageRoute ? 'message-scroll' : 'scroll-container'} // Keep the key to ensure state reset on route change
-          className={`flex-1 scrollbar overflow-y-auto overflow-x-hidden w-full min-w-0`}
+          className={`flex-1 scrollbar overflow-y-auto overflow-x-hidden w-full min-w-0`} style={{ background: "#080b14" }}
           style={{ minHeight: 0 }}
         >
           <div className="grid grid-cols-[60fr_40fr] max-[1200px]:grid-cols-[75fr_25fr] max-[600px]:grid-cols-1 gap-4 min-h-0">
@@ -229,7 +227,6 @@ export default function ConditionalLayout({ children, isAuthenticated }: Conditi
           {isAuthenticated && !isMessageRoute && <div className="h-24 md:h-0"></div>}
         </div>
         {isAuthenticated && <BottomNavBar />}
-        {/* {!isAuthenticated && <ShouldRenderPopUp />} */}
       </div>
     </main>
   );
