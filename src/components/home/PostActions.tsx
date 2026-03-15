@@ -45,23 +45,44 @@ const extractPostId = (id: string | undefined): string => {
 
 function StarIconComponent({ filled }: { filled?: boolean }) {
   return filled ? (
-    <Image src="/icons/current-filled-start-icon.png" alt="star filled" width={28} height={28} className="w-8 h-8 object-cover" />
+    // Following state — person + green checkmark
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+      <circle cx="9" cy="7" r="4" stroke="#22c55e" strokeWidth="1.8"/>
+      <path d="M1 21v-2a7 7 0 0114 0v2" stroke="#22c55e" strokeWidth="1.8" strokeLinecap="round"/>
+      <path d="M16 11l2.5 2.5L23 9" stroke="#22c55e" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
   ) : (
-    <Image src="/icons/current-start-icon.png" alt="star outline" width={28} height={28} className="w-8 h-8 object-cover" />
+    // Not following — person + plus
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+      <circle cx="9" cy="7" r="4" stroke="#64748b" strokeWidth="1.8"/>
+      <path d="M1 21v-2a7 7 0 0114 0v2" stroke="#64748b" strokeWidth="1.8" strokeLinecap="round"/>
+      <path d="M19 8v6M16 11h6" stroke="#64748b" strokeWidth="1.8" strokeLinecap="round"/>
+    </svg>
   );
 }
 
 function HeartIconComponent({ filled }: { filled?: boolean }) {
-  return filled ? (
-    <Image src="/icons/current-filled-heart-icon.png" alt="heart filled" width={28} height={28} className="w-7 h-7 object-cover" />
-  ) : (
-    <Image src="/icons/current-heart-icon.png" alt="heart outline" width={28} height={28} className="w-7 h-7 object-cover" />
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+      <path
+        d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"
+        stroke={filled ? "#6c63ff" : "#64748b"}
+        strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+        fill={filled ? "rgba(108,99,255,0.2)" : "none"}
+      />
+    </svg>
   );
 }
 
 function CommentIconComponent() {
   return (
-    <Image src="/icons/current-comment-icon.png" alt="comment" width={28} height={28} className="w-8 h-8" />
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+      <path
+        d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"
+        stroke="#64748b"
+        strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+      />
+    </svg>
   );
 }
 
@@ -348,11 +369,13 @@ export default function PostActions({
     <div className={`flex items-center justify-between text-gray-200 ${className}`}>
       {!isOwnPost && (
         <button
-          type="button"
-          className={`flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-700/50 transition-colors duration-200 ${
-            starred ? 'text-white' : 'text-gray-400 hover:text-gray-200'
-          }`}
-          onClick={onStar}
+  type="button"
+  className={`flex items-center gap-2 px-2 py-2 rounded-[9px] transition-all duration-200 ${
+    starred
+      ? 'bg-[rgba(34,197,94,0.08)]'
+      : 'hover:bg-white/5'
+  }`}
+  onClick={onStar}
           aria-label={starred ? "Unfollow" : "Follow"}
           aria-pressed={!!starred}
         >

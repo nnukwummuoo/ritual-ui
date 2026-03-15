@@ -58,28 +58,33 @@ function ProfileMenuBtn() {
   }, [reduxAvatar, reduxName]);
 
   return (
-    <button
-      onClick={toggleMenu}
-      className="flex flex-col items-center gap-1 relative px-3 py-1 rounded-xl border-none bg-transparent cursor-pointer hover:bg-white/[0.04] transition-all duration-200"
-    >
-      <div className="w-[22px] h-[22px] rounded-full overflow-hidden bg-gradient-to-br from-[#334155] to-[#1e293b] flex items-center justify-center flex-shrink-0">
-        {avatar ? (
-          <Image
-            src={avatar}
-            alt="profile"
-            width={22}
-            height={22}
-            className="w-full h-full object-cover"
-          />
-        ) : (
-          <span className="text-white text-[8px] font-bold">{initials}</span>
-        )}
-      </div>
-      <span className="text-[9.5px] font-semibold text-[#64748b] whitespace-nowrap">
-        Profile
-      </span>
-    </button>
-  );
+  <button
+    onClick={toggleMenu}
+    className="flex flex-col items-center gap-1 relative px-3 py-1 rounded-xl border-none bg-transparent cursor-pointer hover:bg-white/[0.04] transition-all duration-200"
+  >
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+      <circle
+        cx="12"
+        cy="8"
+        r="4"
+        stroke="#64748b"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M4 20c0-4 3.582-7 8-7s8 3 8 7"
+        stroke="#64748b"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+    <span className="text-[9.5px] font-semibold text-[#64748b] whitespace-nowrap">
+      Profile
+    </span>
+  </button>
+);
 }
 
 // ── Inner nav (uses context so must be inside MenuProvider) ──────────────────

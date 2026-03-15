@@ -632,8 +632,8 @@ export default function PostsCard() {
   return (
     <div className="flex flex-col gap-6">
       {/* Promotional Banner - At the top before first post */}
-    <PromotionalBanner />
-    <StartGettingRequestsBanner />
+    <div className="mx-auto max-w-[30rem] w-full"><PromotionalBanner /></div>
+    <div className="mx-auto max-w-[30rem] w-full"><StartGettingRequestsBanner /></div>
 
       {/* First Post - Always render normally for better UX */}
       {firstPost && !shouldUseVirtualization && (
@@ -657,7 +657,7 @@ export default function PostsCard() {
       {/* Posts Rendering - Choose between virtualized and lazy loading */}
       {shouldUseVirtualization ? (
         <>
-          <SafetyRulesBanner />
+          {/* <SafetyRulesBanner /> */}
           <VirtualizedPostList
           posts={remainingPosts}
           ui={ui}
@@ -678,7 +678,7 @@ export default function PostsCard() {
         <>
           {/* Safety Rules Banner + Lazy Loaded Posts - banner inside flex so no extra gap when dismissed */}
           <div className="flex flex-col gap-6">
-            <SafetyRulesBanner />
+            {/* <SafetyRulesBanner /> */}
             {remainingPosts.map((post, index) => (
               <React.Fragment key={post?.postid || post?.id || post?._id || index}>
                 {/* Inject How It Works + Creator Cards above first post */}
