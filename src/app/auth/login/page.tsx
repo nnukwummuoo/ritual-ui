@@ -14,7 +14,7 @@ export default function LoginPage() {
   }, []);
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center px-4 overflow-hidden" style={{backgroundColor: '#0c0f27'}}>
+    <div className="fixed inset-0 flex items-center justify-center px-4 overflow-hidden" style={{backgroundColor: '#080b14'}}>
       <div className="w-full max-w-md h-full flex flex-col justify-center">
         <Loginview />
       </div>
