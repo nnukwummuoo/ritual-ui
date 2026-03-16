@@ -550,7 +550,7 @@
 //       {/* Filter Button - Fixed position like in the image */}
 //         <button
 //           onClick={() => setShowFilterModal(true)}
-//           className="fixed bottom-32 right-4 z-50 bg-gray-900 hover:bg-blue-800 text-white rounded-full w-16 h-16 flex flex-col items-center justify-center shadow-lg transition-all duration-200 hover:scale-110"
+//           className="fixed bottom-32 right-4 z-50 bg-[#080b14] hover:bg-blue-800 text-white rounded-full w-16 h-16 flex flex-col items-center justify-center shadow-lg transition-all duration-200 hover:scale-110"
 //           aria-label="Open filter"
 //         >
 //         <svg
@@ -1275,7 +1275,7 @@ export default function CreatorPage() {
       {/* Filter Button - Fixed position like in the image */}
       <button
         onClick={() => setShowFilterModal(true)}
-        className="fixed bottom-32 right-4 z-50 bg-gray-900 hover:bg-blue-800 text-white rounded-full w-16 h-16 flex flex-col items-center justify-center shadow-lg transition-all duration-200 hover:scale-110"
+        className="fixed bottom-32 right-4 z-50 bg-[#080b14] hover:bg-blue-800 text-white rounded-full w-16 h-16 flex flex-col items-center justify-center shadow-lg transition-all duration-200 hover:scale-110"
         aria-label="Open filter"
       >
         <svg

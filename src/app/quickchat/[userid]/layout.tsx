@@ -13,7 +13,7 @@ export default function QuickChatLayout({
 }) {
   return (
     <QuickChatLayoutClient>
-      <div className="h-screen w-full overflow-hidden bg-gray-900">
+      <div className="h-screen w-full overflow-hidden bg-[#080b14]">
         {children}
       </div>
     </QuickChatLayoutClient>

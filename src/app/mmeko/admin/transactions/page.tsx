@@ -188,7 +188,7 @@ const TransactionsPage = () => {
 
 
   return (
-    <div className="min-h-screen bg-gray-900 p-6">
+    <div className="min-h-screen bg-[#080b14] p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
@@ -444,7 +444,7 @@ const TransactionsPage = () => {
                   {selectedTransaction.txData && (
                     <div>
                       <label className="block text-sm font-medium text-gray-300 mb-1">Transaction Data</label>
-                      <pre className="mt-1 text-xs text-gray-300 bg-gray-900 p-3 rounded overflow-auto border border-gray-700 max-h-64 break-words whitespace-pre-wrap">
+                      <pre className="mt-1 text-xs text-gray-300 bg-[#080b14] p-3 rounded overflow-auto border border-gray-700 max-h-64 break-words whitespace-pre-wrap">
                         {JSON.stringify(selectedTransaction.txData, null, 2)}
                       </pre>
                     </div>
@@ -494,7 +494,7 @@ const TransactionsPage = () => {
                       type="text"
                       value={verifyOrderId}
                       readOnly
-                      className="w-full px-4 py-2 bg-gray-900 border border-gray-600 text-gray-400 rounded-lg font-mono text-sm cursor-not-allowed"
+                      className="w-full px-4 py-2 bg-[#080b14] border border-gray-600 text-gray-400 rounded-lg font-mono text-sm cursor-not-allowed"
                     />
                   </div>
 

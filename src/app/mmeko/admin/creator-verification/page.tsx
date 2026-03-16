@@ -225,7 +225,7 @@ export default function AdminVerifyDocumentPage() {
   );
 
   return (
-    <div className="container mx-auto mt-8 bg-gray-900 text-white min-h-screen pb-16">
+    <div className="container mx-auto mt-8 bg-[#080b14] text-white min-h-screen pb-16">
       <h1 className="text-2xl mb-6 font-bold text-center">
         Admin: Verify User Documents
       </h1>

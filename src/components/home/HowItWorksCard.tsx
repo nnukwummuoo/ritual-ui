@@ -228,7 +228,7 @@ const HowItWorksCard: React.FC = () => {
 
                             {/* Dropdown Menu */}
                             {isDropdownOpen && (
-                                <div className="absolute right-0 top-full mt-2 w-40 bg-gray-900 border border-purple-500/20 rounded-xl shadow-xl z-20 overflow-hidden backdrop-blur-xl">
+                                <div className="absolute right-0 top-full mt-2 w-40 bg-[#080b14] border border-purple-500/20 rounded-xl shadow-xl z-20 overflow-hidden backdrop-blur-xl">
                                     <div className="py-1">
                                         {(["Fan meet", "Fan date", "Fan call"] as TutorialType[]).map((type) => (
                                             <button
@@ -293,7 +293,7 @@ const HowItWorksCard: React.FC = () => {
                         >
                             <div className="bg-gray-800/40 rounded-lg overflow-hidden border border-purple-500/10 hover:border-purple-500/30 transition-all duration-300 group">
                                 {/* Image Container */}
-                                <div className="relative aspect-[4/3] bg-gray-900/50 overflow-hidden">
+                                <div className="relative aspect-[4/3] bg-[#080b14]/50 overflow-hidden">
                                     <Image
                                         src={slide.image}
                                         alt={slide.title}

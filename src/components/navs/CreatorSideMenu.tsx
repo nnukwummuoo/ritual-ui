@@ -108,7 +108,7 @@ export const CreatorSideMenu: React.FC<CreatorSideMenuProps> = ({
           onClick={handleMenubar}
           className={`${
             open ? "hidden" : "block"
-          } sm:block sm:h-[80%] sm:w-[34.5rem] w-[80%] h-full bg-gray-900 text-white fixed 
+          } sm:block sm:h-[80%] sm:w-[34.5rem] w-[80%] h-full bg-[#080b14] text-white fixed 
          transform origin-top-right sm:rounded-l-lg z-40`}
         >
           <div className="overflow-auto">

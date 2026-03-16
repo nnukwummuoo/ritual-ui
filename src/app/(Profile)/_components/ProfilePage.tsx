@@ -2408,7 +2408,7 @@ export const Profile = () => {
 
   //       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75 p-4">
 
-  //         <div className="bg-gray-900 rounded-lg max-w-3xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+  //         <div className="bg-[#080b14] rounded-lg max-w-3xl w-full max-h-[90vh] overflow-hidden flex flex-col">
 
   //           {/* Header */}
 
@@ -3163,11 +3163,11 @@ export const Profile = () => {
 
     return (
 
-      <div className="fixed inset-0 z-[100] bg-gray-900">
+      <div className="fixed inset-0 z-[100] bg-[#080b14]">
 
         {/* Header */}
 
-        <div className="sticky top-0 z-10 bg-gray-900 border-b border-gray-800 p-4 flex justify-between items-center">
+        <div className="sticky top-0 z-10 bg-[#080b14] border-b border-gray-800 p-4 flex justify-between items-center">
 
           <div className="flex items-center gap-3">
 
@@ -4087,7 +4087,7 @@ export const Profile = () => {
 
                               placeholder="Write a comment…"
 
-                              className="flex-1 bg-gray-900 border border-gray-700 rounded px-3 py-2 text-sm outline-none focus:border-gray-500"
+                              className="flex-1 bg-[#080b14] border border-gray-700 rounded px-3 py-2 text-sm outline-none focus:border-gray-500"
 
                             />
 
@@ -4891,11 +4891,11 @@ export const Profile = () => {
     return (
 
       <>
-        <div className="fixed inset-0 z-[100] bg-gray-900">
+        <div className="fixed inset-0 z-[100] bg-[#080b14]">
 
           {/* Header */}
 
-          <div className="sticky top-0 z-10 bg-gray-900 border-b border-gray-800 p-4 flex justify-between items-center">
+          <div className="sticky top-0 z-10 bg-[#080b14] border-b border-gray-800 p-4 flex justify-between items-center">
 
             <div className="flex items-center gap-3">
 
@@ -5566,7 +5566,7 @@ export const Profile = () => {
               >
 
                 {/* Skeleton loader for full-screen image */}
-                <div className="fullscreen-skeleton absolute inset-0 flex items-center justify-center bg-gray-900 animate-pulse">
+                <div className="fullscreen-skeleton absolute inset-0 flex items-center justify-center bg-[#080b14] animate-pulse">
                   <SkeletonTheme baseColor="#202020" highlightColor="#444">
                     <Skeleton height="80vh" width="80vw" className="rounded" />
                   </SkeletonTheme>
@@ -6304,7 +6304,7 @@ export const Profile = () => {
 
                             {postType === "video" && src && (
 
-                              <div className="absolute inset-0 w-full h-full flex items-center justify-center bg-gray-900">
+                              <div className="absolute inset-0 w-full h-full flex items-center justify-center bg-[#080b14]">
 
                                 <video
 
@@ -6624,7 +6624,7 @@ export const Profile = () => {
 
                             {postType === "video" && src && (
 
-                              <div className="absolute inset-0 w-full h-full flex items-center justify-center bg-gray-900">
+                              <div className="absolute inset-0 w-full h-full flex items-center justify-center bg-[#080b14]">
 
                                 <video
 
@@ -6885,7 +6885,7 @@ export const Profile = () => {
 
                   {(totalRatings > 0 || totalFanRatings > 0) && (
 
-                    <div className="bg-gray-900 rounded-lg p-4 mb-6">
+                    <div className="bg-[#080b14] rounded-lg p-4 mb-6">
 
                       <div className="flex items-center justify-between mb-4">
 
@@ -6951,7 +6951,7 @@ export const Profile = () => {
 
                       {Array.from({ length: 3 }).map((_, index) => (
 
-                        <div key={index} className="bg-gray-900 rounded-lg p-4 animate-pulse">
+                        <div key={index} className="bg-[#080b14] rounded-lg p-4 animate-pulse">
 
                           <div className="flex items-center mb-3">
 
@@ -7005,7 +7005,7 @@ export const Profile = () => {
 
                       {ratings.map((review) => (
 
-                        <div key={`fan-to-creator-${review._id || review.requestId}`} className="bg-gray-900 rounded-lg p-4 flex flex-col relative">
+                        <div key={`fan-to-creator-${review._id || review.requestId}`} className="bg-[#080b14] rounded-lg p-4 flex flex-col relative">
 
                           {/* VIP Badge for fan reviewer - on main container */}
 
@@ -7141,7 +7141,7 @@ export const Profile = () => {
 
                       {fanRatings.map((rating) => (
 
-                        <div key={`creator-to-fan-${rating._id || rating.requestId}`} className="bg-gray-900 rounded-lg p-4 flex flex-col relative">
+                        <div key={`creator-to-fan-${rating._id || rating.requestId}`} className="bg-[#080b14] rounded-lg p-4 flex flex-col relative">
 
                           {/* VIP Badge for creator reviewer - on main container */}
 
@@ -7295,7 +7295,7 @@ export const Profile = () => {
 
         <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black bg-opacity-75 p-4">
 
-          <div className="bg-gray-900 rounded-lg max-w-md w-full p-6">
+          <div className="bg-[#080b14] rounded-lg max-w-md w-full p-6">
 
             <div className="flex items-center justify-between mb-4">
 
@@ -7459,9 +7459,9 @@ export const Profile = () => {
 
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75 p-4">
 
-          <div className="bg-gray-900 dark:bg-gray-800 rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-[#080b14] dark:bg-gray-800 rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto">
 
-            <div className="sticky top-0 bg-gray-900 dark:bg-gray-800 border-b border-gray-700 px-6 py-4 flex items-center justify-between">
+            <div className="sticky top-0 bg-[#080b14] dark:bg-gray-800 border-b border-gray-700 px-6 py-4 flex items-center justify-between">
 
               <h2 className="text-xl font-semibold text-white">Edit Exclusive Content</h2>
 

@@ -316,12 +316,12 @@ export default function UploadExclusivePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 dark:bg-gray-800">
+    <div className="min-h-screen bg-[#080b14] dark:bg-gray-800">
       {/* <HeaderBackNav />
       <Gennavigation /> */}
 
       <div className="max-w-2xl mx-auto px-4 py-8">
-        <div className="bg-gray-900 dark:bg-gray-800 rounded-lg border border-gray-700">
+        <div className="bg-[#080b14] dark:bg-gray-800 rounded-lg border border-gray-700">
           {/* Header */}
           <div className="border-b border-gray-700 px-6 py-4 flex items-center justify-between">
             <h2 className="text-xl font-semibold text-white">
@@ -479,7 +479,7 @@ export default function UploadExclusivePage() {
       {/* Price Recommendation Modal */}
       {showPriceTooltip && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75 p-4">
-          <div className="bg-gray-900 dark:bg-gray-800 rounded-lg max-w-md w-full border border-gray-700 shadow-xl">
+          <div className="bg-[#080b14] dark:bg-gray-800 rounded-lg max-w-md w-full border border-gray-700 shadow-xl">
             <div className="flex items-center justify-between p-6 border-b border-gray-700">
               <h3 className="text-xl font-semibold text-white">Price Recommendation</h3>
               <button
@@ -510,7 +510,7 @@ export default function UploadExclusivePage() {
       {/* File Size Error Modal */}
       {showFileSizeError && fileSizeError && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75 p-4">
-          <div className="bg-gray-900 dark:bg-gray-800 rounded-lg max-w-md w-full border border-gray-700 shadow-xl overflow-hidden">
+          <div className="bg-[#080b14] dark:bg-gray-800 rounded-lg max-w-md w-full border border-gray-700 shadow-xl overflow-hidden">
             {/* Red Header */}
             <div className="bg-red-600 px-6 py-4">
               <h3 className="text-xl font-bold text-white">{fileSizeError.title}</h3>

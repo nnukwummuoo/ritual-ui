@@ -362,7 +362,7 @@ function PostSingle() {
 
     if (!thePost || Object.keys(thePost).length === 0) {
         return (
-            <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+            <div className="min-h-screen bg-[#080b14] flex items-center justify-center">
                 <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-orange-500"></div>
             </div>
         );
@@ -374,9 +374,9 @@ function PostSingle() {
     const imageSrc = src && !src.startsWith('http') ? pathUrlPrimary || queryUrlFallback || pathUrlFallback : src;
 
     return (
-        <div className="min-h-screen bg-gray-900">
+        <div className="min-h-screen bg-[#080b14]">
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75 p-4">
-                <div className="bg-gray-900 rounded-lg max-w-3xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+                <div className="bg-[#080b14] rounded-lg max-w-3xl w-full max-h-[90vh] overflow-hidden flex flex-col">
                     {/* Header */}
                     <div className="p-4 border-b border-gray-800 flex justify-between items-center">
                     <div className="flex items-center gap-3">

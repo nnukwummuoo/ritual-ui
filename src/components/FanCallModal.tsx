@@ -1575,7 +1575,7 @@ export default function FanCallModal({
         )}
 
         {/* Main Video Display */}
-        <div className="flex-1 relative bg-gray-900 cursor-pointer" onClick={handleVideoAreaClick}>
+        <div className="flex-1 relative bg-[#080b14] cursor-pointer" onClick={handleVideoAreaClick}>
           {remoteStream ? (
             <video
               ref={mainVideoRef}

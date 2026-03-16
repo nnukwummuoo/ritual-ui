@@ -106,7 +106,7 @@ export default function SeriesConfigPage() {
             <textarea
                 value={config}
                 onChange={(e) => setConfig(e.target.value)}
-                className="w-full h-[60vh] min-h-[320px] p-4 font-mono text-sm bg-gray-900 text-gray-100 border border-gray-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                className="w-full h-[60vh] min-h-[320px] p-4 font-mono text-sm bg-[#080b14] text-gray-100 border border-gray-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 spellCheck={false}
             />
         </div>

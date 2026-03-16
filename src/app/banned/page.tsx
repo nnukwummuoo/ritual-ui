@@ -36,7 +36,7 @@ export default function BannedPage() {
         toastClassName="!z-[999999]"
         bodyClassName="!z-[999999]"
       />
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-[#080b14] flex items-center justify-center p-4">
         <div className="max-w-md w-full bg-gray-800 rounded-lg shadow-xl p-8 text-center">
         {/* Ban Icon */}
         <div className="mb-6">

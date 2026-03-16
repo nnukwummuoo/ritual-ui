@@ -4,7 +4,7 @@ import Link from "next/link";
 
 export default function LoginPromptBanner() {
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 bg-gray-900 border-t border-gray-700 shadow-2xl px-4 py-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+    <div className="fixed bottom-0 left-0 right-0 z-50 bg-[#080b14] border-t border-gray-700 shadow-2xl px-4 py-4 flex flex-col sm:flex-row items-center justify-between gap-3">
       <div>
         <p className="font-semibold text-white text-sm">
           Join to interact with creators

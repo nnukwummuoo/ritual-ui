@@ -945,7 +945,7 @@ export default function RequestCard({ exp, img, originalPhotoLink, name, usernam
       <div className={`flex justify-between items-start gap-4 ${cardTextVariance}`}>
         <div className="flex gap-4">
           <div
-            className={`size-16 relative rounded-full border-4 overflow-hidden ${cardBorderVariance} bg-gray-900 flex items-center justify-center cursor-pointer hover:opacity-80 transition-opacity`}
+            className={`size-16 relative rounded-full border-4 overflow-hidden ${cardBorderVariance} bg-[#080b14] flex items-center justify-center cursor-pointer hover:opacity-80 transition-opacity`}
             onClick={handleProfileClick}
           >
             {img && img !== '/picture-1.jfif' && img !== '/default-image.png' && img.trim() !== '' ? (

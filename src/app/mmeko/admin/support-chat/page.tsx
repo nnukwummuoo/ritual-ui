@@ -629,7 +629,7 @@ const AdminSupportChat = () => {
   };
 
   return (
-    <div className="h-screen flex flex-col bg-gray-900 text-white">
+    <div className="h-screen flex flex-col bg-[#080b14] text-white">
       {/* Header */}
       <header className="flex justify-between items-center p-4 md:p-8 pb-4 border-b border-gray-700 flex-shrink-0">
         <h2 className="text-2xl md:text-3xl font-bold text-white">Support Chat</h2>

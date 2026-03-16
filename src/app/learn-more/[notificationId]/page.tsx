@@ -93,7 +93,7 @@ const LearnMorePage = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-[#080b14] flex items-center justify-center">
         <div className="text-white text-lg">Loading notification details...</div>
       </div>
     );
@@ -101,7 +101,7 @@ const LearnMorePage = () => {
 
   if (error || !notification) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-[#080b14] flex items-center justify-center">
         <div className="text-center">
           <div className="text-red-500 text-xl mb-4">Error</div>
           <div className="text-white text-lg">{error || 'Notification not found'}</div>
@@ -111,7 +111,7 @@ const LearnMorePage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 py-8">
+    <div className="min-h-screen bg-[#080b14] py-8">
       <div className="max-w-4xl mx-auto px-4">
         <div className="bg-gray-800 rounded-lg p-8">
           <h1 className="text-3xl font-bold text-blue-500 mb-6">{notification.title}</h1>

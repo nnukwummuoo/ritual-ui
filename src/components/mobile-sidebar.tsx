@@ -132,7 +132,7 @@ export default function MobileSidebar() {
 
       <section
         ref={sidebarRef}
-        className={`sidebar bg-gray-900 h-full flex flex-col overflow-y-auto ${isOpen ? "sidebar-open" : "sidebar-closed"}`}
+        className={`sidebar bg-[#080b14] h-full flex flex-col overflow-y-auto ${isOpen ? "sidebar-open" : "sidebar-closed"}`}
       >
         <Link
           href="/"

@@ -66,7 +66,7 @@ const MyContentList: React.FC<ContentItem> = ({
           className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50"
           onClick={() => setShowModal(false)}
         >
-          <div className="bg-gray-900 p-4 rounded-lg">
+          <div className="bg-[#080b14] p-4 rounded-lg">
             {contenttype === "image" ? (
               <img src={exclusivelink} alt={name} className="max-h-[70vh] mx-auto" />
             ) : (

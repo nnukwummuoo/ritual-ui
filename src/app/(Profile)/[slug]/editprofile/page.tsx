@@ -1029,7 +1029,7 @@ const EditProfile: React.FC = () => {
 
               {/* Form */}
 
-              <div className="w-full max-w-md mx-auto mt-6 p-4 bg-gray-900 rounded-xl shadow-md text-slate-700 font-semibold">
+              <div className="w-full max-w-md mx-auto mt-6 p-4 bg-[#080b14] rounded-xl shadow-md text-slate-700 font-semibold">
                 {/* First Name */}
                 <div className="flex flex-col mb-4">
                   <label className="mb-1 text-sm text-slate-300">First Name</label>

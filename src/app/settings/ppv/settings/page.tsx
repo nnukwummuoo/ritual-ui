@@ -150,7 +150,7 @@ export default function PPVSettingsPage() {
 
             <div className="space-y-6">
                 {/* Toggle Enable */}
-                <div className="bg-gray-900 p-6 rounded-xl flex items-center justify-between border border-gray-800">
+                <div className="bg-[#080b14] p-6 rounded-xl flex items-center justify-between border border-gray-800">
                     <div>
                         <h3 className="font-bold text-lg">PPV Status</h3>
                         <p className={`text-sm ${enabled ? 'text-green-400' : 'text-gray-400'}`}>
@@ -175,7 +175,7 @@ export default function PPVSettingsPage() {
                 </div>
 
                 {/* Set Price */}
-                <div className="bg-gray-900 p-6 rounded-xl border border-gray-800">
+                <div className="bg-[#080b14] p-6 rounded-xl border border-gray-800">
                     <div className="flex items-center gap-2 mb-4">
                         <FaCoins className="text-yellow-400" />
                         <h3 className="font-bold text-lg">Price per Message</h3>

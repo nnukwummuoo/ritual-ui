@@ -84,7 +84,7 @@ interface PostWithHashtag {
 export default function DiscoverPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-[#080b14] flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
       </div>
     }>
@@ -320,7 +320,7 @@ function DiscoverPageContent() {
   }, [searchParams]);
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white p-4">
+    <div className="min-h-screen bg-[#080b14] text-white p-4">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="mb-6">
@@ -1198,7 +1198,7 @@ function DiscoverPageContent() {
                                     }));
                                   }}
                                   placeholder="Write a comment…"
-                                  className="flex-1 bg-gray-900 border border-gray-700 rounded px-3 py-2 text-sm outline-none focus:border-gray-500"
+                                  className="flex-1 bg-[#080b14] border border-gray-700 rounded px-3 py-2 text-sm outline-none focus:border-gray-500"
                                 />
                                 <button
                                   disabled={!uiInput?.trim() || uiSending}

@@ -111,7 +111,7 @@ export default function VerificationPage(){
         </div>
 
         {/* Hero Call-to-Action */}
-        <div className="bg-gray-900 rounded-2xl shadow-lg p-8 mb-10">
+        <div className="bg-[#080b14] rounded-2xl shadow-lg p-8 mb-10">
           <div className="flex flex-col items-center text-center">
             <div className="flex items-center justify-center gap-3 mb-4">
               <FaShieldAlt className="text-orange-500" size={28} />

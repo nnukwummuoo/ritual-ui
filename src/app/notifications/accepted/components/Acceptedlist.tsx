@@ -202,7 +202,7 @@ export const Acceptedlist = ({
   const [initialStatus, setInitialStatus] = useState("Mark as Completed");
 
   return (
-    <li className="bg-gray-900 p-1 w-full ml-2 mr-2 rounded-lg mb-2">
+    <li className="bg-[#080b14] p-1 w-full ml-2 mr-2 rounded-lg mb-2">
       {loading && (
         <div className="w-full flex flex-col items-center mb-2">
           <PacmanLoader

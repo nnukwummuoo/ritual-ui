@@ -159,7 +159,7 @@ export const Commmentpage = ({
   // };
 
   return (
-    <div className="bg-gray-900 showcomment">
+    <div className="bg-[#080b14] showcomment">
       <div className="h-100 overflow-y-scroll pb-24" id="fullpage">
         <div className="flex flex-col p-5">
           <p className="text-slate-200">All Comments</p>
@@ -232,7 +232,7 @@ export const Commmentpage = ({
         </div>
       </div>
 
-      <div className="fixed bottom-16 left-0 right-0 px-4 pb-2 bg-gray-900 z-10 flex items-center gap-2">
+      <div className="fixed bottom-16 left-0 right-0 px-4 pb-2 bg-[#080b14] z-10 flex items-center gap-2">
         <textarea
           className="textinpt placeholder:pt-1 w-full rounded-lg bg-gray-800 text-white border border-gray-600 py-2 px-3"
           value={commentcontent}

@@ -112,7 +112,7 @@ export const Requestform: React.FC<RequestFormProps> = ({
   };
 
   return (
-    <div className="w-[95%] max-w-md mx-auto p-6 bg-gray-900 rounded-2xl shadow-lg z-50">
+    <div className="w-[95%] max-w-md mx-auto p-6 bg-[#080b14] rounded-2xl shadow-lg z-50">
       <p className="text-center text-sm font-semibold text-white underline underline-offset-4">
         Please Enter Request Details
       </p>

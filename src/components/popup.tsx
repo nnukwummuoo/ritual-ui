@@ -135,7 +135,7 @@ export function PopUp() {
   return (
     <div className="fixed bottom-2 max-[600px]:bottom-4 left-0 right-0 z-40 flex justify-center px-4 sm:bottom-24">
       <div
-        className={`bg-gray-900 text-white p-4 rounded-lg shadow-lg max-w-md w-full border border-gray-700
+        className={`bg-[#080b14] text-white p-4 rounded-lg shadow-lg max-w-md w-full border border-gray-700
           transform transition-all duration-300 ease-in-out ${
             animatingOut ? "translate-y-4 opacity-0 scale-95" : "translate-y-0 opacity-100 scale-100"
           }`}

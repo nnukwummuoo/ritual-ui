@@ -255,7 +255,7 @@ export default function ReferAndEarnPage() {
     const currentBalance = referralData ? (referralData.rewardBalance !== undefined ? referralData.rewardBalance : (referralData.referralCount * 1.7)) : 0;
 
     return (
-        <div className="min-h-screen bg-gray-900 text-white flex flex-col items-center pt-12 px-4 relative">
+        <div className="min-h-screen bg-[#080b14] text-white flex flex-col items-center pt-12 px-4 relative">
             <div className="w-full max-w-md flex flex-col items-center">
 
                 {/* Rocket Icon */}
@@ -308,7 +308,7 @@ export default function ReferAndEarnPage() {
                 {/* Stats Cards */}
                 <div className="grid grid-cols-2 gap-4 w-full">
                     {/* Total Earned */}
-                    <div className="bg-gray-900 rounded-2xl p-6 flex flex-col items-center justify-center text-center border border-gray-800 relative">
+                    <div className="bg-[#080b14] rounded-2xl p-6 flex flex-col items-center justify-center text-center border border-gray-800 relative">
                         <p className="text-gray-400 text-sm mb-1">Total earned</p>
                         <p className="text-2xl font-bold text-white mb-2">💰{currentBalance.toFixed(1)}</p>
 
@@ -323,7 +323,7 @@ export default function ReferAndEarnPage() {
                     </div>
 
                     {/* Your Referrals */}
-                    <div className="bg-gray-900 rounded-2xl p-6 flex flex-col items-center justify-center text-center border border-gray-800">
+                    <div className="bg-[#080b14] rounded-2xl p-6 flex flex-col items-center justify-center text-center border border-gray-800">
                         <p className="text-gray-400 text-sm mb-1">Your referrals</p>
                         <p className="text-2xl font-bold text-white">
                             {validReferralCount}
@@ -334,7 +334,7 @@ export default function ReferAndEarnPage() {
 
                 {/* Steps & Rewards Tabs */}
                 <div className="w-full mt-8 mb-8">
-                    <div className="flex w-full bg-gray-900 rounded-full p-1 mb-6">
+                    <div className="flex w-full bg-[#080b14] rounded-full p-1 mb-6">
                         <button
                             onClick={() => setActiveTab('steps')}
                             className={`flex-1 py-3 rounded-full text-sm font-bold transition-all ${activeTab === 'steps' ? 'bg-gray-800 text-white shadow-lg' : 'text-gray-400 hover:text-gray-200'}`}
@@ -388,7 +388,7 @@ export default function ReferAndEarnPage() {
                             {/* Reward Tiers */}
                             <div className="space-y-3">
                                 {/* Tier 1 */}
-                                <div className="bg-gray-900 p-4 rounded-xl border border-gray-800">
+                                <div className="bg-[#080b14] p-4 rounded-xl border border-gray-800">
                                     <div className="flex items-center gap-4">
                                         <div className="text-3xl">💰</div>
                                         <div className="flex-1">
@@ -403,7 +403,7 @@ export default function ReferAndEarnPage() {
                                 </div>
 
                                 {/* Tier 2 */}
-                                <div className="bg-gray-900 p-4 rounded-xl border border-gray-800">
+                                <div className="bg-[#080b14] p-4 rounded-xl border border-gray-800">
                                     <div className="flex items-center gap-4">
                                         <div className="text-3xl">💰</div>
                                         <div className="flex-1">
@@ -462,7 +462,7 @@ export default function ReferAndEarnPage() {
                                 const isFailed = referral.milestoneFailed || progress?.milestoneFailed;
 
                                 return (
-                                    <div key={referral.id} className="bg-gray-900 p-4 rounded-xl border border-gray-800">
+                                    <div key={referral.id} className="bg-[#080b14] p-4 rounded-xl border border-gray-800">
                                         <div className="flex justify-between items-start mb-2">
                                             <div>
                                                 <span className="text-white font-medium block">{referral.username}</span>
@@ -548,8 +548,8 @@ export default function ReferAndEarnPage() {
 
             {/* Transfer Confirmation Modal */}
             {showTransferModal && (
-                <div className="fixed inset-0 bg-gray-900 bg-opacity-80 z-50 flex items-center justify-center p-4">
-                    <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 max-w-sm w-full shadow-2xl">
+                <div className="fixed inset-0 bg-[#080b14] bg-opacity-80 z-50 flex items-center justify-center p-4">
+                    <div className="bg-[#080b14] border border-gray-800 rounded-2xl p-6 max-w-sm w-full shadow-2xl">
                         <h3 className="text-xl font-bold text-white mb-2">Confirm Transfer</h3>
                         <p className="text-gray-400 mb-6">
                             Are you sure you want to transfer your entire reward balance of <span className="text-blue-400 font-bold">${currentBalance.toFixed(1)}</span> to your main earning wallet?

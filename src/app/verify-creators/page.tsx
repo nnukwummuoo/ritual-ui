@@ -93,7 +93,7 @@ const VerifyCreatorsPage: React.FC = () => {
   };
 
   return (
-    <div className="w-screen sm:w-11/12 md:w-10/12 lg:w-9/12 xl:w-8/12 mx-auto bg-gray-900">
+    <div className="w-screen sm:w-11/12 md:w-10/12 lg:w-9/12 xl:w-8/12 mx-auto bg-[#080b14]">
       <div className="w-full h-full flex flex-col items-center md:w-2/4 mt-12 md:mt-0">
         <p className="jost text-[1.3em] text-white py-4 font-[500]">
           Verify new creators

@@ -1891,7 +1891,7 @@ export const Chat = () => {
 
 
   return (
-    <div className="h-screen w-full flex flex-col fixed inset-0 bg-gray-900" style={{
+    <div className="h-screen w-full flex flex-col fixed inset-0 bg-[#080b14]" style={{
       WebkitOverflowScrolling: 'touch',
       overscrollBehavior: 'contain',
       touchAction: 'pan-y',

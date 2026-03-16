@@ -351,7 +351,7 @@ export default function CreateCreatorPortfolio () {
 
           <fieldset
             style={{ display: step === 1 ? "flex" : "none" }}
-            className="bg-gray-900 form-container"
+            className="bg-[#080b14] form-container"
             disabled={disablebut}
           >
             <div className="input-container">
@@ -502,7 +502,7 @@ export default function CreateCreatorPortfolio () {
 
           <fieldset
             style={{ display: step === 2 ? "flex" : "none" }}
-            className="bg-gray-900 form-container"
+            className="bg-[#080b14] form-container"
             disabled={disablebut}
           >
             <div className="input-container">
@@ -730,7 +730,7 @@ export default function CreateCreatorPortfolio () {
 
           <fieldset
             style={{ display: step === 3 ? "flex" : "none" }}
-            className="bg-gray-900 form-container"
+            className="bg-[#080b14] form-container"
             disabled={disablebut}
           >
             <div className="w-full p-4 shadow-md bg-slate-800 rounded-2xl">

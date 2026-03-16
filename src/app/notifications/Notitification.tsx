@@ -71,7 +71,7 @@ function HeadBtn({ label, route, showIndicator = false, count = 0 }: {
   return (
     <Link
       href={route}
-      className={`w-full font-bold transition-all duration-500 p-2 border border-gray-800 text-center text-slate-400 rounded-2xl hover:bg-gray-900 relative ${
+      className={`w-full font-bold transition-all duration-500 p-2 border border-gray-800 text-center text-slate-400 rounded-2xl hover:bg-[#080b14] relative ${
         endpoint ? "bg-gray-800" : "bg-transparent"
       }`}
     >

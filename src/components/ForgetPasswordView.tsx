@@ -67,7 +67,7 @@ export const ForgetPasswordView = () => {
 
   return (
     <div
-      className="flex flex-col items-center justify-center h-screen bg-gray-900 text-white px-4"
+      className="flex flex-col items-center justify-center h-screen bg-[#080b14] text-white px-4"
       style={{
         position: "fixed",
         right: 0,

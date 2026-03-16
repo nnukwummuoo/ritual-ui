@@ -1200,7 +1200,7 @@ className={`text-white px-2 bg-gradient-to-r from-[#6c63ff] to-[#9b59f5] cursor-
                       }));
                     }}
                     placeholder="Write a comment…"
-                    className="flex-1 bg-gray-900 border border-gray-700 rounded px-3 py-2 text-sm outline-none focus:border-gray-500"
+                    className="flex-1 bg-[#080b14] border border-gray-700 rounded px-3 py-2 text-sm outline-none focus:border-gray-500"
                   />
                   <button
                     disabled={!uiInput?.trim() || uiSending}

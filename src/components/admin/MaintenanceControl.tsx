@@ -74,7 +74,7 @@ export default function MaintenanceControl() {
                 </div>
             </div>
 
-            <div className="flex items-center justify-between bg-gray-900 rounded-lg p-6 border border-gray-700">
+            <div className="flex items-center justify-between bg-[#080b14] rounded-lg p-6 border border-gray-700">
                 <div>
                     <span className="block text-sm font-medium text-gray-400 mb-1">Current Status</span>
                     <span className={`text-xl font-bold ${isMaintenance ? 'text-amber-500' : 'text-emerald-500'}`}>

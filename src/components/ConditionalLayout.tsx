@@ -224,10 +224,10 @@ if (!isAuthenticated && isHomeRoute) {
             {isHomeRoute && isAuthenticated && (
               <div className="w-full h-full max-[1000px]:w-0 lg:block hidden">
                 <div className="sticky top-28 self-start -mr-16 space-y-4">
-                  <div className="w-[25rem] mx-auto max-[600px]:w-[90%] rounded-2xl px-4 pt-4 pb-2 bg-gray-900">
+                  <div className="w-[25rem] mx-auto max-[600px]:w-[90%] rounded-2xl px-4 pt-4 pb-2 bg-[#080b14]">
                     <CreatorCards />
                   </div>
-                  <div className="w-[25rem] mx-auto max-[600px]:w-[90%] rounded-2xl px-4 pt-4 pb-2 bg-gray-900">
+                  <div className="w-[25rem] mx-auto max-[600px]:w-[90%] rounded-2xl px-4 pt-4 pb-2 bg-[#080b14]">
                     <RitualsCard />
                   </div>
                 </div>

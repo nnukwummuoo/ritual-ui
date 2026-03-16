@@ -183,9 +183,9 @@ export default function VerifiedUserForm() {
 
   if (applicationStatus === "pending") {
     return (
-      <div className="text-white flex items-center justify-center min-h-screen bg-gray-900">
+      <div className="text-white flex items-center justify-center min-h-screen bg-[#080b14]">
         <ToastContainer position="top-center" theme="dark" />
-        <div className="bg-gray-900 rounded-xl shadow-md p-6 text-center max-w-sm">
+        <div className="bg-[#080b14] rounded-xl shadow-md p-6 text-center max-w-sm">
           <div className="flex justify-center mb-4">
             <div className="w-12 h-12 bg-yellow-500 rounded-full flex items-center justify-center">
               <span className="text-white font-bold">⏳</span>
@@ -234,7 +234,7 @@ export default function VerifiedUserForm() {
             )}
 
             <fieldset disabled={loading}>
-              <form onSubmit={handleSubmit} className="max-w-2xl mx-auto bg-gray-900 rounded-xl shadow-md p-6">
+              <form onSubmit={handleSubmit} className="max-w-2xl mx-auto bg-[#080b14] rounded-xl shadow-md p-6">
                 {step === 1 && (
                   <div className="verify step1 mb-6">
                     <h4 className="font-bold text-md mb-4 text-center">Personal Information</h4>
@@ -392,7 +392,7 @@ export default function VerifiedUserForm() {
 
             {showSuccessModal && (
               <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                <div className="bg-gray-900 rounded-xl shadow-md p-6 text-center max-w-sm">
+                <div className="bg-[#080b14] rounded-xl shadow-md p-6 text-center max-w-sm">
                   <div className="flex justify-center mb-4">
                     <div className="w-12 h-12 bg-green-600 rounded-full flex items-center justify-center">
                       <svg width="24" height="24" fill="white" viewBox="0 0 24 24">

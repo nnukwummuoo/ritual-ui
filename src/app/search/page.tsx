@@ -84,7 +84,7 @@ const SearchBar: React.FC = () => {
   };
 
   return (
-    <div className="w-screen mx-auto mb-3 bg-gray-900 sm:w-11/12 md:w-10/12 lg:w-9/12 xl:w-8/12">
+    <div className="w-screen mx-auto mb-3 bg-[#080b14] sm:w-11/12 md:w-10/12 lg:w-9/12 xl:w-8/12">
       <div className="relative md:mt-6 mt-16 m-auto w-[90%] sm:w-[60%] items-center sm:m-0 py-4">
         <div className='relative m-auto w-[90%] sm:w-[60%] items-center sm:m-0'>
             <FaSearch className="absolute text-gray-400 top-4 left-4" />

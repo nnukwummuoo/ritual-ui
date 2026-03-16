@@ -380,7 +380,7 @@ export const Mainpost = () => {
   };
 
   return (
-    <div className="bg-gray-900 text-white p-4 rounded-md space-y-5 max-w-4xl mx-auto border border-gray-700">
+    <div className="bg-[#080b14] text-white p-4 rounded-md space-y-5 max-w-4xl mx-auto border border-gray-700">
 
       {/* Text Post Section */}
       <div className="space-y-3">

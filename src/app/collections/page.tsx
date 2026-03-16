@@ -823,7 +823,7 @@ const CollectionsPage: React.FC = () => {
               const { src, pathUrlPrimary, queryUrlFallback, pathUrlFallback } = getFullScreenMediaSrc(fullScreenItem);
               return (
                 <>
-                  <div className="fullscreen-skeleton absolute inset-0 flex items-center justify-center bg-gray-900 animate-pulse">
+                  <div className="fullscreen-skeleton absolute inset-0 flex items-center justify-center bg-[#080b14] animate-pulse">
                     <SkeletonTheme baseColor="#202020" highlightColor="#444">
                       <Skeleton height="80vh" width="80vw" className="rounded" />
                     </SkeletonTheme>

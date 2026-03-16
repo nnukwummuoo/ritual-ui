@@ -118,7 +118,7 @@ const WithdrawalRequests = () => {
   }, [token]);
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white p-6">
+    <div className="min-h-screen bg-[#080b14] text-white p-6">
       <style jsx>{`
         .scrollbar-hide {
           -ms-overflow-style: none;

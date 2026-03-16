@@ -456,7 +456,7 @@ export default function Editcreator () {
           </div>
           <fieldset
             style={{ display: step === 1 ? "flex" : "none" }}
-            className="bg-gray-900 form-container"
+            className="bg-[#080b14] form-container"
             disabled={disablebut}
           >
           <div className="input-container">
@@ -603,7 +603,7 @@ export default function Editcreator () {
           </fieldset>
           <fieldset
             style={{ display: step === 2 ? "flex" : "none" }}
-            className="bg-gray-900 form-container"
+            className="bg-[#080b14] form-container"
             disabled={disablebut}
           >
             <div className="input-container">
@@ -808,7 +808,7 @@ export default function Editcreator () {
           
           <fieldset
             style={{ display: step === 3 ? "flex" : "none" }}
-            className="bg-gray-900 form-container"
+            className="bg-[#080b14] form-container"
             disabled={disablebut}
           >
             <div className="w-full p-4 shadow-md bg-slate-800 rounded-2xl">
@@ -976,7 +976,7 @@ export default function Editcreator () {
       {/* Price Guide Modal */}
       {showPriceGuide && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-gray-900 rounded-lg p-6 max-w-md mx-4 relative">
+          <div className="bg-[#080b14] rounded-lg p-6 max-w-md mx-4 relative">
             <button
               onClick={() => setShowPriceGuide(false)}
               className="absolute top-4 right-4 text-gray-400 hover:text-white text-xl"
@@ -1036,7 +1036,7 @@ export default function Editcreator () {
       {/* File Size Modal */}
       {showFileSizeModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-gray-900 rounded-lg p-6 max-w-md mx-4 relative">
+          <div className="bg-[#080b14] rounded-lg p-6 max-w-md mx-4 relative">
             <div className="bg-red-600 text-white font-bold text-lg px-4 py-3 rounded-t-lg -m-6 mb-4">
               File Too Large
             </div>

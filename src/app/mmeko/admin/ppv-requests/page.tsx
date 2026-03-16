@@ -56,7 +56,7 @@ export default function PPVRequestsPage() {
     if (loading) return <div className="p-8 text-white">Loading requests...</div>
 
     return (
-        <div className="min-h-screen bg-gray-900 text-white p-6">
+        <div className="min-h-screen bg-[#080b14] text-white p-6">
             <h1 className="text-2xl font-bold mb-6">PPV Access Requests</h1>
 
             {requests.length === 0 ? (
