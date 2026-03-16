@@ -79,13 +79,14 @@ const CSS = `
   font-size: 15px; font-weight: 800; color: white; letter-spacing: -.5px;
 }
 .lp .logo-name { font-size: 18px; font-weight: 700; color: var(--text); letter-spacing: -.3px; }
-.lp .nav-links { display: flex; align-items: center; gap: 8px; }
-.lp .nl {
+.lp-nav .nav-links { display: flex; align-items: center; gap: 8px; }
+.lp-nav .nl {
   color: var(--text2); text-decoration: none; font-size: 13.5px; font-weight: 500;
   padding: 6px 12px; border-radius: 8px; transition: color .2s, background .2s;
 }
-.lp .nl:hover { color: var(--text); background: rgba(255,255,255,.05); }
-.lp .nav-divider { width: 1px; height: 20px; background: rgba(255,255,255,0.07); margin: 0 4px; }
+.lp-nav .nl:hover { color: var(--text); background: rgba(255,255,255,.05); }
+.lp-nav .nav-divider { width: 1px; height: 20px; background: rgba(255,255,255,0.07); margin: 0 4px; }
+.lp-nav .nav-btns { display: flex; align-items: center; gap: 8px; }
 .lp .nav-btn {
   padding: 8px 18px; border-radius: 8px; font-size: 13.5px; font-weight: 600;
   text-decoration: none; transition: all .2s; display: inline-flex; align-items: center; gap: 6px;
@@ -340,8 +341,9 @@ const CSS = `
 /* RESPONSIVE */
 @media(max-width: 900px) {
   .lp-nav { padding: 0 20px; }
-  .lp .nl { display: none; }
-  .lp .nav-divider { display: none; }
+  .lp-nav .nav-links { display: none !important; }
+  .lp-nav .nl { display: none; }
+  .lp-nav .nav-divider { display: none; }
   .lp .hero h1 { font-size: 36px; }
   .lp .stats { grid-template-columns: repeat(2,1fr); }
   .lp .section { padding: 64px 20px; }
@@ -478,11 +480,13 @@ export default function CreatorLandingContent({ prefetchedCreators }: Props) {
           <div className="logo-icon" style={{ width:34, height:34, borderRadius:9, background:"linear-gradient(135deg,#6c63ff,#9b59f5)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:15, fontWeight:800, color:"white" }}>M</div>
           <span className="logo-name" style={{ fontSize:18, fontWeight:700, color:"#f1f5f9", letterSpacing:"-.3px" }}>mmeko</span>
         </Link>
-        <div className="nav-links" style={{ display:"flex", alignItems:"center", gap:8 }}>
+        <div className="nav-links">
           {[["Offerings","#offerings"],["How It Works","#how"],["Payments","#payments"],["Safety","#safety"],["Compare","#compare"],["FAQ","#faq"]].map(([l,h]) => (
             <a key={l} href={h} className="nl">{l}</a>
           ))}
           <div className="nav-divider" />
+        </div>
+        <div className="nav-btns">
           <Link href="/auth/login" className="nav-btn nav-btn-ghost">Sign In</Link>
           <Link href="/auth/register" className="nav-btn nav-btn-primary">Apply Now →</Link>
         </div>
