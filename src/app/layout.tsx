@@ -37,7 +37,7 @@ export const metadata: Metadata = {
     template: "Mmeko | %s",
     default: "Mmeko",
   },
-  description: "Join Mmeko today — creators keep 100%, enjoy instant payouts, and connect with fans through safe meets, calls, and PPV content.",
+  description: "The platform where fans meet creators safely. Structured fan meets, calls, PPV content and exclusive sales. You keep 100%. Always.",
   alternates: {
     canonical: 'https://mmeko.com',
   },

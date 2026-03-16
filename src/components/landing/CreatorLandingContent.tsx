@@ -377,7 +377,7 @@ const CSS = `
 // ── FAQ data ──────────────────────────────────────────────────────────────────
 
 const FAQ_CREATORS = [
-  { q: "How does mmeko make money if there's 0% commission?", a: "mmeko charges fans a small booking or platform fee on transactions — not creators. This means 100% of what a fan pays you goes directly to you. Our business model is built around growing the fan side, not cutting into your earnings." },
+  { q: "What are Fan Meet and Fan Date for?", a: "🤝 Fan Meet – A short, casual meeting where you can greet your favorite creator, chat, and even take a selfie. It's about making a quick personal connection - limited to 30 minutes maximum for safety and fairness. 🍽 Fan Date – A slightly more relaxed session where you spend time together in a safe public place — like grabbing coffee, eating, or walking — but still limited to 30 minutes maximum for safety and fairness." },
   { q: "What counts as a valid public space for meets?", a: "Any open, publicly accessible venue — cafés, restaurants, hotel lobbies, shopping malls, parks, or similar spaces. Private residences, cars, and secluded locations are never permitted. If you're unsure about a specific venue, contact mmeko Support before confirming the booking." },
   { q: "What if the fan doesn't show up to the meet?", a: "Contact mmeko Support immediately through the platform. Since all communication is required to stay on-platform, our team has full visibility of your booking history and can review the situation and release your payment accordingly. Keep all your conversations on mmeko — this is your protection." },
   { q: "What if the fan doesn't mark the meet as complete?", a: "Reach out to mmeko Support directly via the platform. Our team will review your on-platform chat history and meeting details, and release your payment accordingly. We always have your back — you will not be left unpaid for a meet you showed up to." },
@@ -683,7 +683,7 @@ export default function CreatorLandingContent({ prefetchedCreators }: Props) {
         </div>
 
         {/* TESTIMONIALS */}
-        <div className="section-alt">
+      {/* <div className="section-alt">
           <div className="section">
             <div className="sec-eyebrow reveal">Creator Stories</div>
             <div className="sec-title reveal d1">What creators<br /><em>are saying.</em></div>
@@ -705,7 +705,7 @@ export default function CreatorLandingContent({ prefetchedCreators }: Props) {
               </div>
             </div>
           </div>
-        </div>
+        </div>*/}
 
         {/* FAQ */}
         <FAQSection />
