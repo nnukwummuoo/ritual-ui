@@ -187,12 +187,11 @@ const Sidemenu = () => {
             open ? "show" : "hide"
           } menu-width origin-top-right mr mt pt px-2 py-4 h-fit bg-[#080b14] text-white fixed rounded-l-lg rounded-r-2xl z-[100]`}
         >
-          {/* ✅ Close button — visible on ALL screen sizes */}
-          <div className="absolute top-3 right-3 z-[110]">
-            <button
-              onClick={handleMenubar}
-              className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-700 hover:bg-gray-600 transition-colors duration-200"
-            >
+<div className="absolute top-3 right-3 z-[110] hidden lg:block">
+  <button
+    onClick={handleMenubar}
+    className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-700 hover:bg-gray-600 transition-colors duration-200"
+  >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
                 <path
                   d="M18 6L6 18M6 6l12 12"

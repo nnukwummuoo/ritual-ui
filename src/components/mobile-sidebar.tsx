@@ -143,27 +143,30 @@ export default function MobileSidebar() {
             }
           }}
         >
-          <div className="flex items-center gap-2 cursor-pointer justify-center py-4">
+         <div className="flex items-center gap-2 cursor-pointer justify-center py-4">
   <div style={{
     width: 32, height: 32, borderRadius: 8,
     background: "linear-gradient(135deg,#6c63ff,#9b59f5)",
     display: "flex", alignItems: "center", justifyContent: "center",
     fontSize: 15, fontWeight: 800, color: "white", flexShrink: 0,
-  }}>M</div>
-  <span
-  style={{
-    fontSize: 17, fontWeight: 700, color: "#f1f5f9", letterSpacing: "-0.3px",
-    display: "none",
   }}
-  className="sidebar-logo-text"
->
-  mmeko
-</span>
-<style>{`
-  @media (min-width: 1024px) {
-    .sidebar-logo-text { display: block !important; }
-  }
-`}</style>
+  className="sidebar-logo-icon"
+  >M</div>
+  <span
+    style={{
+      fontSize: 17, fontWeight: 700, color: "#f1f5f9", letterSpacing: "-0.3px",
+      display: "none",
+    }}
+    className="sidebar-logo-text"
+  >
+    mmeko
+  </span>
+  <style>{`
+    @media (min-width: 1024px) {
+      .sidebar-logo-text { display: block !important; font-size: 22px !important; }
+      .sidebar-logo-icon { width: 42px !important; height: 42px !important; font-size: 20px !important; border-radius: 11px !important; }
+    }
+  `}</style>
 </div>
         </Link>
         <button onClick={toggle} className="navBtn">
