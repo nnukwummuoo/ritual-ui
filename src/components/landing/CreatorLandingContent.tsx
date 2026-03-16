@@ -381,7 +381,7 @@ const FAQ_CREATORS = [
   { q: "What counts as a valid public space for meets?", a: "Any open, publicly accessible venue — cafés, restaurants, hotel lobbies, shopping malls, parks, or similar spaces. Private residences, cars, and secluded locations are never permitted. If you're unsure about a specific venue, contact mmeko Support before confirming the booking." },
   { q: "What if the fan doesn't show up to the meet?", a: "Contact mmeko Support immediately through the platform. Since all communication is required to stay on-platform, our team has full visibility of your booking history and can review the situation and release your payment accordingly. Keep all your conversations on mmeko — this is your protection." },
   { q: "What if the fan doesn't mark the meet as complete?", a: "Reach out to mmeko Support directly via the platform. Our team will review your on-platform chat history and meeting details, and release your payment accordingly. We always have your back — you will not be left unpaid for a meet you showed up to." },
-  { q: "Can I cancel or decline a booking?", a: "Yes — you have full control over your bookings. You can decline any booking request before confirming it, and cancellations are possible subject to mmeko's cancellation policy. You're never obligated to accept a booking you're not comfortable with." },
+  { q: "Can I cancel or decline a fan request?", a: "Yes — you have full control over fan request. You can decline any fan request before confirming it, and cancellations are possible subject to mmeko's cancellation policy. You're never obligated to accept a fan request you're not comfortable with." },
   { q: "What's the difference between PPV content and exclusive content sales?", a: "PPV (Pay-Per-View) lets you lock individual posts, media, or even your message replies — fans pay a set price to unlock that specific piece of content. Exclusive content sales work similarly but are positioned as premium standalone pieces in your catalogue, priced and sold individually rather than as part of a feed." },
   { q: "Can I lock my message replies for fans to pay to unlock?", a: "Yes — this is one of mmeko's unique features. You can lock specific replies in a conversation, requiring the fan to pay to see your response. It's a powerful way to monetize your engagement without leaving the chat." },
   { q: "Is fan verification mandatory before I accept a meet?", a: "No — fan verification is optional and creator-controlled. You can choose to require it for your bookings or leave it open. We recommend enabling it for in-person meets as an extra layer of confidence, but the choice is entirely yours." },
@@ -572,12 +572,12 @@ export default function CreatorLandingContent({ prefetchedCreators }: Props) {
                 <div className="off-tag tag-purple">⭐ Core Offering</div>
                 <span className="off-icon">🤝</span>
                 <div className="off-title">Structured Fan Meets &amp; Dates</div>
-                <div className="off-desc">mmeko&apos;s flagship experience. Offer real-world meet-ups, virtual dates, and exclusive one-on-one time with your fans — structured, safe, and fully on your terms. Every booking is protected, every payment is instant.</div>
+                <div className="off-desc">mmeko&apos;s flagship experience. Offer real-world meet-ups, virtual dates, and exclusive one-on-one time with your fans — structured, safe, and fully on your terms. Every meet is protected, every payment is instant.</div>
               </div>
               <div className="off-hero-right">
                 <div className="off-feat-row"><div className="off-feat-icon fi-purple">📅</div><div><div className="off-feat-title">You set the schedule</div><div className="off-feat-desc">When, where, and how — total control over your availability</div></div></div>
                 <div className="off-feat-row"><div className="off-feat-icon fi-teal">🛡</div><div><div className="off-feat-title">Structured safety</div><div className="off-feat-desc">Every interaction governed by mmeko&apos;s protection framework</div></div></div>
-                <div className="off-feat-row"><div className="off-feat-icon fi-rose">💸</div><div><div className="off-feat-title">Instant payment on booking</div><div className="off-feat-desc">Funds secured the moment a fan books</div></div></div>
+                <div className="off-feat-row"><div className="off-feat-icon fi-rose">💸</div><div><div className="off-feat-title">Instant payment on booking</div><div className="off-feat-desc">Funds secured the moment a fan request</div></div></div>
               </div>
             </div>
             <div className="off-grid">
@@ -592,12 +592,12 @@ export default function CreatorLandingContent({ prefetchedCreators }: Props) {
         <div className="section-alt" id="how">
           <div className="section">
             <div className="sec-eyebrow reveal">The Process</div>
-            <div className="sec-title reveal d1">From sign-up to<br /><em>first booking.</em></div>
+            <div className="sec-title reveal d1">From sign-up to<br /><em>first fan request.</em></div>
             <div className="steps-grid reveal d2">
               <div className="step"><div className="step-num">Step 01</div><div className="step-icon">✍️</div><div className="step-title">Apply &amp; Get Verified</div><div className="step-desc">Submit your application and get verified in under 10 minutes. Fast-track screening with premium creator status unlocked instantly.</div></div>
               <div className="step"><div className="step-num">Step 02</div><div className="step-icon">🎨</div><div className="step-title">Build Your Profile</div><div className="step-desc">Set up your creator page. Choose what you offer — meets, calls, PPV, locked messages, exclusive content — and set your own rates for each.</div></div>
-              <div className="step"><div className="step-num">Step 03</div><div className="step-icon">☕</div><div className="step-title">Meet in Public, Safely</div><div className="step-desc">All fan meets happen in public venues — cafés, restaurants, parks. Every meet is capped at 30 minutes. All conversations stay on the mmeko platform.</div></div>
-              <div className="step"><div className="step-num">Step 04</div><div className="step-icon">💸</div><div className="step-title">Fan Pays, You&apos;re Secured</div><div className="step-desc">When a fan books, payment is held securely by mmeko — locked in before you even show up. Once complete, funds release instantly. Guaranteed.</div></div>
+              <div className="step"><div className="step-num">Step 03</div><div className="step-icon">☕</div><div className="step-title">Meet in Public, Safely</div><div className="step-desc">All fan meets happen in public venues — cafés, restaurants, parks. Every meet is capped at 30 minutes. No pressure, no overstay — just a real connection on your terms.</div></div>
+              <div className="step"><div className="step-num">Step 04</div><div className="step-icon">💸</div><div className="step-title">Fan Pays, You&apos;re Secured</div><div className="step-desc">When a fan request, payment is held securely by mmeko — locked in before you even show up. Once complete, funds release instantly. Guaranteed.</div></div>
             </div>
           </div>
         </div>
@@ -607,9 +607,9 @@ export default function CreatorLandingContent({ prefetchedCreators }: Props) {
           <div className="section">
             <div className="sec-eyebrow reveal">How Payments Work</div>
             <div className="sec-title reveal d1">Your money is secured<br /><em>before you show up.</em></div>
-            <div className="sec-subtitle reveal d2">We know payment transparency matters. Here&apos;s exactly how every booking works — no surprises, no fine print.</div>
+            <div className="sec-subtitle reveal d2">We know payment transparency matters. Here&apos;s exactly how every fan request works — no surprises, no fine print.</div>
             <div className="pay-grid reveal d2">
-              <div className="pay-card"><div className="pay-num">1</div><div className="pay-icon-wrap">📅</div><div className="pay-title">Fan Books</div><div className="pay-desc">Fan pays upfront. mmeko holds the payment securely — the money is locked in and guaranteed.</div></div>
+              <div className="pay-card"><div className="pay-num">1</div><div className="pay-icon-wrap">📅</div><div className="pay-title">Fan Request</div><div className="pay-desc">Fan pays upfront. mmeko holds the payment securely — the money is locked in and guaranteed.</div></div>
               <div className="pay-card"><div className="pay-num">2</div><div className="pay-icon-wrap">☕</div><div className="pay-title">Meet Happens</div><div className="pay-desc">You show up, connect in a public venue for up to 30 minutes. All chats stay on the mmeko platform.</div></div>
               <div className="pay-card"><div className="pay-num">3</div><div className="pay-icon-wrap">✅</div><div className="pay-title">Fan Confirms</div><div className="pay-desc">Fan marks the meet complete — payment releases instantly. 100% of it. No deductions whatsoever.</div></div>
               <div className="pay-card"><div className="pay-num">4</div><div className="pay-icon-wrap">⚡</div><div className="pay-title">You Get Paid</div><div className="pay-desc">Funds hit your wallet immediately. Support reviews any issues using your on-platform chat history.</div></div>
