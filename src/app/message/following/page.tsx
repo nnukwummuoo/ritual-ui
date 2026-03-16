@@ -158,7 +158,7 @@ const FollowingMessagesPage: React.FC = () => {
   }, [getfollow_stats]);
 
   return (
-    <div className="h-screen w-full overflow-hidden bg-[#0e0f2a] text-white">
+    <div className="h-screen w-full overflow-hidden bg-[#080b14] text-white">
       {/* Header */}
       <div className="border-b p-4">
         <div className="flex items-center justify-between">

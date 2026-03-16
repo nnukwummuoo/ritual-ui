@@ -630,10 +630,10 @@ export default function PostsCard() {
   }
 
   return (
-    <div className="flex flex-col gap-6">
-      {/* Promotional Banner - At the top before first post */}
-    <div className="mx-auto max-w-[30rem] w-full"><PromotionalBanner /></div>
-    <div className="mx-auto max-w-[30rem] w-full"><StartGettingRequestsBanner /></div>
+    <div className="flex flex-col gap-4">
+  {/* Promotional Banner - At the top before first post */}
+<div className="mx-auto max-w-[30rem] w-full"><PromotionalBanner /></div>
+<div className="mx-auto max-w-[30rem] w-full"><StartGettingRequestsBanner /></div>
 
       {/* First Post - Always render normally for better UX */}
       {firstPost && !shouldUseVirtualization && (

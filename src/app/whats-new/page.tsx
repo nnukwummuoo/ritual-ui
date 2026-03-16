@@ -133,7 +133,7 @@ const WhatsNewPage: React.FC = () => {
   const currentVersion = versions.find(v => v.id === selectedVersion) || versions[0];
 
   return (
-    <div className="min-h-screen bg-[#0e0f2a] text-white">
+    <div className="min-h-screen bg-[#080b14] text-white">
       <div className="w-full max-w-6xl mx-auto px-4 py-6">
         {/* Header */}
         <div className="flex items-center gap-4 mb-8">

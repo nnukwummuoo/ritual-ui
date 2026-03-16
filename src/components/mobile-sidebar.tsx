@@ -143,8 +143,28 @@ export default function MobileSidebar() {
             }
           }}
         >
-          <Image src={anyaLogo} alt="logo" className="brand-logo w-20" />
-          <Image src={MmekoLogo} alt="logo" className="sidebar-logo" />
+          <div className="flex items-center gap-2 cursor-pointer justify-center py-4">
+  <div style={{
+    width: 32, height: 32, borderRadius: 8,
+    background: "linear-gradient(135deg,#6c63ff,#9b59f5)",
+    display: "flex", alignItems: "center", justifyContent: "center",
+    fontSize: 15, fontWeight: 800, color: "white", flexShrink: 0,
+  }}>M</div>
+  <span
+  style={{
+    fontSize: 17, fontWeight: 700, color: "#f1f5f9", letterSpacing: "-0.3px",
+    display: "none",
+  }}
+  className="sidebar-logo-text"
+>
+  mmeko
+</span>
+<style>{`
+  @media (min-width: 1024px) {
+    .sidebar-logo-text { display: block !important; }
+  }
+`}</style>
+</div>
         </Link>
         <button onClick={toggle} className="navBtn">
           {/* {isOpen ? <FaTimes size={25} /> : <FaBars size={25} />} */}
