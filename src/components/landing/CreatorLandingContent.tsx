@@ -616,7 +616,7 @@ export default function CreatorLandingContent({ prefetchedCreators }: Props) {
             </div>
             <div className="pay-callout reveal d3">
               <div className="pay-callout-icon">💡</div>
-              <div><div className="pay-callout-title">What if the fan doesn&apos;t mark complete?</div><div className="pay-callout-desc">Don&apos;t worry — just contact mmeko Support directly through the platform. Our team reviews the situation using your on-platform chat history and releases your payment accordingly. We always have your back.</div></div>
+              <div><div className="pay-callout-title">What if the fan doesn&apos;t show up or mark the meet as complete?</div><div className="pay-callout-desc">Don&apos;t worry — just contact mmeko Support directly through the platform. Our team reviews the situation using your on-platform chat history and releases your payment accordingly. We always have your back.</div></div>
             </div>
           </div>
         </div>

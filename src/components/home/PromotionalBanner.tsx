@@ -60,7 +60,7 @@ const PromotionalBanner: React.FC = () => {
 
         <div className="flex-1 min-w-0">
           <p className="text-[13px] font-extrabold text-[#f1f5f9] leading-snug tracking-tight mb-0.5">Become a Verified Creator</p>
-          <p className="text-[11px] text-[#64748b] leading-snug">Get verified in <span className="text-[#22c55e] font-semibold">under 10 minutes</span> — start getting requests today</p>
+          <p className="text-[11px] text-[#64748b] leading-snug">Get verified in <span className="text-[#22c55e] font-semibold">under 10 minutes</span> — start getting fan requests today</p>
         </div>
 
         <button

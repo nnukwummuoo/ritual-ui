@@ -44,7 +44,7 @@ const profileUrl = `https://mmeko.com/@${cleanUsername}`;
         <div className="flex items-center justify-between mb-3.5">
           <div className="flex items-center gap-2">
             <div className="w-[26px] h-[26px] rounded-[7px] flex items-center justify-center text-[13px] flex-shrink-0" style={{ background: "linear-gradient(135deg,#6c63ff,#9b59f5)", boxShadow: "0 2px 8px rgba(108,99,255,.35)" }}>⚡</div>
-            <span className="text-[14px] font-extrabold text-white tracking-tight">Start Getting Requests</span>
+            <span className="text-[14px] font-extrabold text-white tracking-tight">Start Getting fan Requests</span>
           </div>
           <button onClick={handleDismiss} className="text-[#475569] hover:text-[#94a3b8] transition-colors text-xs leading-none p-1">✕</button>
         </div>
