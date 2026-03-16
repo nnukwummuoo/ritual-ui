@@ -478,46 +478,49 @@ export default function CreatorLandingContent({ prefetchedCreators }: Props) {
       {/* NAV */}
       <nav style={{
         position:"fixed", top:0, left:0, right:0, zIndex:100,
-        padding:"0 40px", height:64,
+        padding:"0 20px", height:64,
         display:"flex", alignItems:"center", justifyContent:"space-between",
-        transition:"background .3s, borderColor .3s",
-        borderBottom: scrolled ? "1px solid rgba(255,255,255,0.07)" : "1px solid transparent",
-        background: scrolled ? "rgba(8,11,20,.95)" : "transparent",
-        backdropFilter: scrolled ? "blur(20px)" : "none",
-        WebkitBackdropFilter: scrolled ? "blur(20px)" : "none",
+        background:"rgba(8,11,20,.98)",
+        backdropFilter:"blur(20px)",
+        WebkitBackdropFilter:"blur(20px)",
+        borderBottom:"1px solid rgba(255,255,255,0.07)",
         fontFamily:"'Plus Jakarta Sans', sans-serif",
+        boxSizing:"border-box",
+        overflow:"hidden",
       }}>
-        <Link href="/" style={{ display:"flex", alignItems:"center", gap:10, textDecoration:"none" }}>
+        {/* Logo */}
+        <Link href="/" style={{ display:"flex", alignItems:"center", gap:10, textDecoration:"none", flexShrink:0 }}>
           <div style={{
-            width:34, height:34, borderRadius:9,
+            width:34, height:34, borderRadius:9, flexShrink:0,
             background:"linear-gradient(135deg,#6c63ff,#9b59f5)",
             display:"flex", alignItems:"center", justifyContent:"center",
             fontSize:15, fontWeight:800, color:"white", letterSpacing:"-.5px",
-            flexShrink:0,
           }}>M</div>
-          <span style={{ fontSize:18, fontWeight:700, color:"#f1f5f9", letterSpacing:"-.3px" }}>mmeko</span>
+          <span style={{ fontSize:18, fontWeight:700, color:"#f1f5f9", letterSpacing:"-.3px", whiteSpace:"nowrap" }}>mmeko</span>
         </Link>
 
-        {/* Desktop links — hidden on mobile via CSS */}
-        <div className="lp-nav-links-inner" style={{ display:"flex", alignItems:"center", gap:8 }}>
+        {/* Desktop links — hidden on mobile */}
+        <div className="lp-nav-links-inner" style={{ display:"flex", alignItems:"center", gap:8, flex:1, justifyContent:"center" }}>
           {[["Offerings","#offerings"],["How It Works","#how"],["Payments","#payments"],["Safety","#safety"],["Compare","#compare"],["FAQ","#faq"]].map(([l,h]) => (
-            <a key={l} href={h} style={{ color:"#94a3b8", textDecoration:"none", fontSize:13.5, fontWeight:500, padding:"6px 12px", borderRadius:8 }}>{l}</a>
+            <a key={l} href={h} style={{ color:"#94a3b8", textDecoration:"none", fontSize:13.5, fontWeight:500, padding:"6px 12px", borderRadius:8, whiteSpace:"nowrap" }}>{l}</a>
           ))}
-          <div style={{ width:1, height:20, background:"rgba(255,255,255,0.07)", margin:"0 4px" }} />
+          <div style={{ width:1, height:20, background:"rgba(255,255,255,0.07)", margin:"0 4px", flexShrink:0 }} />
         </div>
 
         {/* Sign In + Apply — always visible */}
         <div style={{ display:"flex", alignItems:"center", gap:8, flexShrink:0 }}>
           <Link href="/auth/login" style={{
             color:"#94a3b8", border:"1px solid rgba(255,255,255,0.07)",
-            padding:"8px 18px", borderRadius:8, fontSize:13.5, fontWeight:600,
+            padding:"8px 16px", borderRadius:8, fontSize:13.5, fontWeight:600,
             textDecoration:"none", display:"inline-flex", alignItems:"center",
+            whiteSpace:"nowrap",
           }}>Sign In</Link>
           <Link href="/auth/register" style={{
             background:"linear-gradient(135deg,#6c63ff,#9b59f5)", color:"white",
-            padding:"8px 18px", borderRadius:8, fontSize:13.5, fontWeight:600,
+            padding:"8px 16px", borderRadius:8, fontSize:13.5, fontWeight:600,
             textDecoration:"none", display:"inline-flex", alignItems:"center",
             boxShadow:"0 0 0 1px rgba(108,99,255,.3),0 4px 16px rgba(108,99,255,.25)",
+            whiteSpace:"nowrap",
           }}>Apply Now →</Link>
         </div>
       </nav>
