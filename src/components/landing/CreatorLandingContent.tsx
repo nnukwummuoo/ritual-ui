@@ -309,6 +309,7 @@ const CSS = `
 .lp .ft-icon { width: 20px; height: 20px; border-radius: 50%; background: rgba(34,197,94,.1); display: flex; align-items: center; justify-content: center; font-size: 10px; color: #22c55e; flex-shrink: 0; }
 
 /* FAQ */
+#faq { border: none !important; outline: none !important; }
 .lp .faq-section { padding: 96px 40px; max-width: 1140px; margin: 0 auto; }
 .lp .faq-tabs { display: flex; gap: 8px; margin-bottom: 48px; background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 6px; width: fit-content; }
 .lp .faq-tab { padding: 10px 24px; border-radius: 8px; font-size: 13.5px; font-weight: 600; cursor: pointer; transition: all .2s; border: none; background: transparent; color: var(--text2); font-family: 'Plus Jakarta Sans', sans-serif; }
@@ -415,8 +416,8 @@ function FAQSection() {
   const [tab, setTab] = useState<"creators" | "fans">("creators");
   return (
     <div id="faq">
-      <div className="faq-section">
-        <div className="sec-eyebrow reveal">FAQ</div>
+  <div className="lp faq-section">
+    <div className="sec-eyebrow reveal">FAQ</div>
         <div className="sec-title reveal d1">Got questions?<br /><em>We&apos;ve got answers.</em></div>
         <div className="faq-tabs reveal d2">
           <button className={`faq-tab${tab === "creators" ? " active" : ""}`} onClick={() => setTab("creators")}>For Creators</button>
@@ -729,22 +730,41 @@ export default function CreatorLandingContent({ prefetchedCreators }: Props) {
         </div>
 
         {/* FOOTER */}
-        <footer>
-          <div className="footer-left">
-            <Link href="/" className="logo" style={{ display:"flex", alignItems:"center", gap:10, textDecoration:"none" }}>
-              <div className="logo-icon" style={{ width:28, height:28, borderRadius:7, background:"linear-gradient(135deg,#6c63ff,#9b59f5)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:13, fontWeight:800, color:"white" }}>M</div>
-              <span className="logo-name" style={{ fontSize:16, fontWeight:700, color:"#f1f5f9" }}>mmeko</span>
-            </Link>
-            <span className="footer-copy">© {new Date().getFullYear()} mmeko.com — All rights reserved</span>
-          </div>
-          <div className="footer-links">
-            <Link href="/safety">Safety</Link>
-            <Link href="/auth/privacy-policy">Privacy</Link>
-            <Link href="/T_&_C">Terms</Link>
-            <Link href="/support">Support</Link>
-            <Link href="/blog">Blog</Link>
-          </div>
-        </footer>
+       {/* FOOTER */}
+<footer style={{
+  borderTop: "1px solid rgba(255,255,255,0.07)",
+  padding: "32px 40px",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  gap: 20,
+  flexWrap: "wrap",
+}}>
+  <div style={{ display: "flex", alignItems: "center", gap: 24, flexWrap: "wrap" }}>
+    <Link href="/" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
+      <div style={{
+        width: 28, height: 28, borderRadius: 7,
+        background: "linear-gradient(135deg,#6c63ff,#9b59f5)",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        fontSize: 13, fontWeight: 800, color: "white", flexShrink: 0,
+      }}>M</div>
+      <span style={{ fontSize: 16, fontWeight: 700, color: "#f1f5f9", letterSpacing: "-0.3px" }}>
+        mmeko
+      </span>
+    </Link>
+    <span style={{ fontSize: 13, color: "#475569" }}>
+      © {new Date().getFullYear()} mmeko.com — All rights reserved
+    </span>
+  </div>
+
+  <div style={{ display: "flex", alignItems: "center", gap: 24, flexWrap: "wrap" }}>
+    {[["Safety", "/safety"], ["Privacy", "/auth/privacy-policy"], ["Terms", "/T_&_C"], ["Support", "/support"], ["Blog", "/blog"]].map(([l, h]) => (
+      <Link key={l} href={h} style={{ fontSize: 13, color: "#475569", textDecoration: "none" }}>
+        {l}
+      </Link>
+    ))}
+  </div>
+</footer>
 
       </div>
     </>

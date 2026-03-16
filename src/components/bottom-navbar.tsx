@@ -312,7 +312,7 @@ function BottomNavBarInner() {
 
   return (
     <div className="h-fit mr-6 mt-4 max-[600px]:m-0 fixed right-0 max-[600px]:bottom-1 max-[600px]:w-full max-[600px]:right-0 max-[600px]:left-0 z-50">
-<div className="w-[25rem] mx-auto max-[600px]:w-[96%] max-[380px]:w-full max-[380px]:rounded-none rounded-2xl px-2 max-[600px]:px-1 pt-3 pb-5 bottom-4"        style={{
+<div className="w-[25rem] mx-auto max-[600px]:w-[96%] max-[380px]:w-full max-[380px]:rounded-none rounded-2xl px-2 max-[600px]:px-1 pt-3 pb-5 bottom-4 lg:w-[28rem]"style={{
           background: "rgba(8,11,20,0.97)",
           borderTop: "1px solid rgba(255,255,255,0.07)",
           backdropFilter: "blur(20px)",
@@ -320,6 +320,7 @@ function BottomNavBarInner() {
         }}
       >
         <div className="flex items-center justify-around">
+<style>{`@media(min-width:1024px){.bnav-icon svg{width:30px!important;height:30px!important;}}`}</style>
           {navItems.map((item) => {
             const active = isActive(item.route);
 
@@ -332,7 +333,7 @@ function BottomNavBarInner() {
                 >
                   {/* Elevated gradient circle */}
                   <div
-                    className="flex items-center justify-center rounded-[14px] -mt-[22px]"
+                     className="flex items-center justify-center rounded-[14px] -mt-[22px] bnav-icon"
                     style={{
                       width: 44,
                       height: 44,
@@ -356,8 +357,8 @@ function BottomNavBarInner() {
                 className="flex flex-col items-center gap-1 relative px-3 py-1 rounded-xl hover:bg-white/[0.04] transition-all duration-200"
               >
                 {/* Icon + badge wrapper */}
-                <div className="relative">
-                  {(item.icon as (a: boolean) => ReactNode)(active)}
+                <div className="relative bnav-icon">
+  {(item.icon as (a: boolean) => ReactNode)(active)}
 
                   {/* Badge */}
                   {item.badge && item.badge > 0 ? (
