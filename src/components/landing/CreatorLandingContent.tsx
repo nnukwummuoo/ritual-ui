@@ -676,7 +676,7 @@ export default function CreatorLandingContent({ prefetchedCreators }: Props) {
                   <tr><td className="td-feature">Video / Voice Fan Calls</td><td className="td-mmeko"><span className="ck">✓ Built in</span></td><td className="td-other"><span className="cm">Limited / third-party</span></td></tr>
                   <tr><td className="td-feature">Geo-Blocking</td><td className="td-mmeko"><span className="ck">✓ Full control</span></td><td className="td-other"><span className="cm">Limited</span></td></tr>
                   <tr><td className="td-feature">Verification Speed</td><td className="td-mmeko"><span className="ck">&lt; 10 minutes</span></td><td className="td-other"><span className="cm">3–7 days</span></td></tr>
-                  <tr><td className="td-feature">Minimum Payout</td><td className="td-mmeko"><span className="ck">$0</span></td><td className="td-other"><span className="cm">$20–$100</span></td></tr>
+                  <tr><td className="td-feature">Minimum Payout</td><td className="td-mmeko"><span className="ck">$5</span></td><td className="td-other"><span className="cm">$20–$100</span></td></tr>
                 </tbody>
               </table>
             </div>
