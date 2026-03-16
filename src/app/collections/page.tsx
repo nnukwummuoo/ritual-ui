@@ -715,13 +715,13 @@ const CollectionsPage: React.FC = () => {
 
   return (
     <div
-      className="h-screen overflow-y-scroll bg-[#0e0f2a] text-white"
+      className="h-screen overflow-y-scroll bg-[#080b14] text-white"
       style={{ scrollbarGutter: "stable both-edges" }}
     >
       <div className="w-full max-w-2xl mx-auto pt-16 px-4">
         <div className="w-full flex flex-col text-gray-400">
           {/* Sticky Tab Buttons */}
-          <div className="sticky z-8 top-0 bg-[#0e0f2a] pb-4">
+          <div className="sticky z-8 top-0 bg-[#080b14] pb-4">
             <div className="grid grid-cols-2 gap-4 pt-2">
               <button
                 className="flex items-center justify-center gap-2 border-2 transition-all duration-200 ease-in-out text-white py-3 px-4 rounded-lg font-medium w-full shadow-sm hover:shadow-md text-sm sm:text-base"

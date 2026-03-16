@@ -38,15 +38,25 @@ export default function Navbar({ isAuthenticated }: { isAuthenticated: boolean }
         <div className="flex items-center justify-between h-full px-3">
           <button onClick={toggle} className="flex items-center justify-center w-8 h-8 rounded-lg transition-colors hover:bg-white/5">
             {isOpen
-              ? <FaTimes size={20} style={{ color: "#6c63ff" }} />
-              : <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h16M4 18h16" stroke="#6c63ff" strokeWidth="2" strokeLinecap="round"/></svg>
+              ? <FaTimes size={20} style={{ color: "#64748b" }} />
+              : <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h16M4 18h16" stroke="#64748b" strokeWidth="2" strokeLinecap="round"/></svg>
             }
           </button>
-          <Image src={anyaLogo} onClick={() => router.push("/")} alt="logo" className="logo cursor-pointer" width={32} height={32} />
-          <button onClick={() => router.push("/discover")} className="flex items-center justify-center w-8 h-8 rounded-lg transition-colors hover:bg-white/5">
+        <div
+          onClick={() => router.push("/")}
+          className="flex items-center gap-2 cursor-pointer"
+        >
+          <div style={{
+            width: 30, height: 30, borderRadius: 7,
+            background: "linear-gradient(135deg,#6c63ff,#9b59f5)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            fontSize: 13, fontWeight: 800, color: "white", flexShrink: 0,
+          }}>M</div>
+        </div>          
+        <button onClick={() => router.push("/discover")} className="flex items-center justify-center w-8 h-8 rounded-lg transition-colors hover:bg-white/5">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-              <circle cx="11" cy="11" r="8" stroke="#6c63ff" strokeWidth="2"/>
-              <path d="M21 21l-4.35-4.35" stroke="#6c63ff" strokeWidth="2" strokeLinecap="round"/>
+              <circle cx="11" cy="11" r="8" stroke="#64748b" strokeWidth="2"/>
+<path d="M21 21l-4.35-4.35" stroke="#64748b" strokeWidth="2" strokeLinecap="round"/>
             </svg>
           </button>
         </div>

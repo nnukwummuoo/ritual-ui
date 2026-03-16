@@ -193,9 +193,9 @@ const AboutPage = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-[#0e0f2a] text-white">
+    <div className="min-h-screen bg-[#080b14] text-white">
       {/* Header */}
-      <div className="sticky top-0 bg-[#0e0f2a] border-b border-gray-700 px-4 py-3 flex items-center justify-between">
+      <div className="sticky top-0 bg-[#080b14] border-b border-gray-700 px-4 py-3 flex items-center justify-between">
         <button
           onClick={() => router.back()}
           className="p-2 hover:bg-[#111624] rounded-full transition-colors"

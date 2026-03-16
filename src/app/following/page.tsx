@@ -349,10 +349,10 @@ const FollowingPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0e0f2a] text-white overflow-y-scroll [scrollbar-gutter:stable]">
+    <div className="min-h-screen bg-[#080b14] text-white overflow-y-scroll [scrollbar-gutter:stable]">
       <div className="w-full max-w-[1400px] mx-auto pt-6 px-4 md:px-6 lg:px-8">
         {/* Header with back arrow + name and search icon */}
-        <div className="bg-[#0e0f2a] py-2 px-2">
+        <div className="bg-[#080b14] py-2 px-2">
           <div className="flex justify-between items-center">
             {/* Arrow + Name vertically aligned */}
             <div className="flex items-center gap-2">

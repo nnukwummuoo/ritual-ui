@@ -331,7 +331,7 @@ Timestamp: ${new Date().toLocaleString()}`;
   };
 
   return (
-    <div className="min-h-screen mb-24 bg-[#0e0f2a] text-white">
+    <div className="min-h-screen mb-24 bg-[#080b14] text-white">
       <div className="w-full max-w-4xl mx-auto px-4 py-6">
         {/* Header */}
         <div className="flex items-center gap-4 mb-8">
