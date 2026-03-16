@@ -298,7 +298,7 @@ export const RequestDetailsForm: React.FC<RequestDetailsFormProps> = ({
           {/* Calendar Modal */}
           {showCalendar && (
             <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black bg-opacity-75">
-              <div className="bg-gray-800 rounded-2xl p-6 max-w-sm w-full mx-4 shadow-2xl">
+              <div className="bg-[#111624] rounded-2xl p-6 max-w-sm w-full mx-4 shadow-2xl">
                 {/* Calendar Header */}
                 <div className="flex items-center justify-between mb-4">
                   <button

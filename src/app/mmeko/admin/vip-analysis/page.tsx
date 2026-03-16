@@ -123,7 +123,7 @@ const VipAnalysisPage = () => {
   return (
     <div className="p-6 space-y-8">
       {/* Month Filter */}
-      <div className="bg-gray-800 p-4 rounded-lg shadow">
+      <div className="bg-[#111624] p-4 rounded-lg shadow">
         <div className="flex items-center gap-4">
           <label className="text-sm font-medium text-gray-200">Filter by months:</label>
           <select
@@ -171,7 +171,7 @@ const VipAnalysisPage = () => {
 
       {/* Growth Trends */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-gray-800 p-6 rounded-lg shadow">
+        <div className="bg-[#111624] p-6 rounded-lg shadow">
           <h3 className="text-lg font-semibold mb-4 text-gray-200">VIP Growth Trend</h3>
           <div className="text-center">
             <p className={`text-2xl font-bold ${parseFloat(data.trends.vipGrowth) >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
@@ -181,7 +181,7 @@ const VipAnalysisPage = () => {
           </div>
         </div>
         
-        <div className="bg-gray-800 p-6 rounded-lg shadow">
+        <div className="bg-[#111624] p-6 rounded-lg shadow">
           <h3 className="text-lg font-semibold mb-4 text-gray-200">Earnings Growth Trend</h3>
           <div className="text-center">
             <p className={`text-2xl font-bold ${parseFloat(data.trends.earningsGrowth) >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
@@ -195,7 +195,7 @@ const VipAnalysisPage = () => {
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* VIP Users Over Time */}
-        <div className="bg-gray-800 p-6 rounded-lg shadow">
+        <div className="bg-[#111624] p-6 rounded-lg shadow">
           <h3 className="text-lg font-semibold mb-4 text-gray-200">VIP Users Over Time</h3>
           <ResponsiveContainer width="100%" height={300}>
             <AreaChart data={data.monthlyData}>
@@ -217,7 +217,7 @@ const VipAnalysisPage = () => {
         </div>
 
         {/* Auto vs Non-renewal */}
-        <div className="bg-gray-800 p-6 rounded-lg shadow">
+        <div className="bg-[#111624] p-6 rounded-lg shadow">
           <h3 className="text-lg font-semibold mb-4 text-gray-200">Renewal Type Distribution</h3>
           <ResponsiveContainer width="100%" height={300}>
             <PieChart>
@@ -242,7 +242,7 @@ const VipAnalysisPage = () => {
       </div>
 
       {/* Monthly Breakdown */}
-      <div className="bg-gray-800 p-6 rounded-lg shadow">
+      <div className="bg-[#111624] p-6 rounded-lg shadow">
         <h3 className="text-lg font-semibold mb-4 text-gray-200">Monthly VIP Breakdown</h3>
         <ResponsiveContainer width="100%" height={400}>
           <BarChart data={data.monthlyData}>
@@ -258,7 +258,7 @@ const VipAnalysisPage = () => {
       </div>
 
       {/* Earnings Chart */}
-      <div className="bg-gray-800 p-6 rounded-lg shadow">
+      <div className="bg-[#111624] p-6 rounded-lg shadow">
         <h3 className="text-lg font-semibold mb-4 text-gray-200">Monthly Earnings</h3>
         <ResponsiveContainer width="100%" height={300}>
           <LineChart data={data.monthlyData}>
@@ -280,7 +280,7 @@ const VipAnalysisPage = () => {
 
 
       {/* Detailed Table */}
-      <div className="bg-gray-800 p-6 rounded-lg shadow">
+      <div className="bg-[#111624] p-6 rounded-lg shadow">
         <h3 className="text-lg font-semibold mb-4 text-gray-200">Detailed Monthly Data</h3>
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-600">
@@ -306,7 +306,7 @@ const VipAnalysisPage = () => {
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-gray-800 divide-y divide-gray-600">
+            <tbody className="bg-[#111624] divide-y divide-gray-600">
               {data.monthlyData.slice().reverse().map((month, index) => (
                 <tr key={index}>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-200">

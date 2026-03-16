@@ -8,7 +8,7 @@ export default function PostSkeleton() {
         {Array.from({ length: 3 }).map((_, index) => (
           <div
             key={index}
-            className="mx-auto max-w-[30rem] w-full bg-gray-800 rounded-md p-3"
+            className="mx-auto max-w-[30rem] w-full bg-[#111624] rounded-md p-3"
           >
             {/* Profile Section */}
             <div className="flex items-center justify-between mb-3">

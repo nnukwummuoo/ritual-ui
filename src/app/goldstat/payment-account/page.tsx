@@ -297,7 +297,7 @@ export default function PaymentAccountPage() {
           {/* Left Column - Account Form */}
           <div className="space-y-6">
             {/* Current Account Status */}
-            <div className="bg-gray-800 rounded-lg p-6">
+            <div className="bg-[#111624] rounded-lg p-6">
               <h2 className="text-xl font-semibold mb-4">Current Account Status</h2>
               {isFetchingAccount ? (
                 <p className="text-sm text-gray-400 animate-pulse">Checking for account...</p>
@@ -347,7 +347,7 @@ export default function PaymentAccountPage() {
             </div>
 
             {/* Account Form */}
-            <div className="bg-gray-800 rounded-lg p-6">
+            <div className="bg-[#111624] rounded-lg p-6">
               <h2 className="text-xl font-semibold mb-4">Cryptocurrency Account Information</h2>
               <form onSubmit={handleSubmit} className="space-y-4">
                 {renderInput("fullName", "Full Name")}
@@ -407,7 +407,7 @@ export default function PaymentAccountPage() {
 
           {/* Right Column - Withdrawal Guidelines */}
           <div className="space-y-6">
-            <div className="bg-gray-800 rounded-lg p-6">
+            <div className="bg-[#111624] rounded-lg p-6">
               <h2 className="text-xl font-semibold mb-4">🌍 Guidelines for Withdrawing Crypto</h2>
               
               {/* Filipina creators Section */}

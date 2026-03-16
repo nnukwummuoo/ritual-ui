@@ -145,7 +145,7 @@ const WithdrawalRequests = () => {
               placeholder="Search by name or username..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full px-4 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="w-full px-4 py-2 bg-[#111624] border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
             />
           </div>
         </div>
@@ -171,7 +171,7 @@ const WithdrawalRequests = () => {
                 className={`px-3 py-1 rounded-full text-xs font-medium transition-colors whitespace-nowrap ${
                   selectedColor === color
                     ? color === 'black' ? 'bg-black text-white' : `bg-${color}-600 text-white`
-                    : color === 'black' ? 'bg-black text-white hover:bg-gray-800' : `bg-${color}-500 text-white hover:bg-${color}-600`
+                    : color === 'black' ? 'bg-black text-white hover:bg-[#111624]' : `bg-${color}-500 text-white hover:bg-${color}-600`
                 }`}
               >
                 {color.charAt(0).toUpperCase() + color.slice(1)}
@@ -190,7 +190,7 @@ const WithdrawalRequests = () => {
             return (
               <div
                 key={req._id}
-                className="bg-gray-800 rounded-xl shadow-lg p-5 hover:shadow-emerald-400 transition relative"
+                className="bg-[#111624] rounded-xl shadow-lg p-5 hover:shadow-emerald-400 transition relative"
               >
                 {/* Colored Circle */}
                 <div className={`absolute bottom-1 right-1 w-4 h-4 rounded-full ${containerColor === 'black' ? 'bg-black' : `bg-${containerColor}-500`}`}></div>

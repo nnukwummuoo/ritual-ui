@@ -47,7 +47,7 @@ const Earnings: React.FC = () => {
       )}
 
       {/* Gold Card */}
-      <div className="bg-gray-800 rounded-lg px-4 py-3 mb-3">
+      <div className="bg-[#111624] rounded-lg px-4 py-3 mb-3">
         <div className="flex justify-between">
           <button
             className="text-sm text-blue-400 font-semibold focus:outline-none cursor-pointer"

@@ -216,7 +216,7 @@ export default function ReferAndEarnPage() {
     if (!isLoggedIn) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-900 via-gray-900 to-black p-4">
-                <div className="bg-gray-800 p-8 rounded-2xl shadow-2xl text-center max-w-md">
+                <div className="bg-[#111624] p-8 rounded-2xl shadow-2xl text-center max-w-md">
                     <h2 className="text-2xl font-bold text-white mb-4">Login Required</h2>
                     <p className="text-gray-300 mb-6">
                         Please login to access the Refer & Earn program.
@@ -286,7 +286,7 @@ export default function ReferAndEarnPage() {
 
                     <button
                         onClick={copyToClipboard}
-                        className="flex-1 bg-gray-800 border border-gray-700 text-white font-bold py-4 rounded-full flex items-center justify-center gap-2 hover:bg-gray-700 transition-colors"
+                        className="flex-1 bg-[#111624] border border-gray-700 text-white font-bold py-4 rounded-full flex items-center justify-center gap-2 hover:bg-gray-700 transition-colors"
                     >
                         Copy link
                         <FaCopy />
@@ -337,13 +337,13 @@ export default function ReferAndEarnPage() {
                     <div className="flex w-full bg-[#080b14] rounded-full p-1 mb-6">
                         <button
                             onClick={() => setActiveTab('steps')}
-                            className={`flex-1 py-3 rounded-full text-sm font-bold transition-all ${activeTab === 'steps' ? 'bg-gray-800 text-white shadow-lg' : 'text-gray-400 hover:text-gray-200'}`}
+                            className={`flex-1 py-3 rounded-full text-sm font-bold transition-all ${activeTab === 'steps' ? 'bg-[#111624] text-white shadow-lg' : 'text-gray-400 hover:text-gray-200'}`}
                         >
                             Steps
                         </button>
                         <button
                             onClick={() => setActiveTab('rewards')}
-                            className={`flex-1 py-3 rounded-full text-sm font-bold transition-all ${activeTab === 'rewards' ? 'bg-gray-800 text-white shadow-lg' : 'text-gray-400 hover:text-gray-200'}`}
+                            className={`flex-1 py-3 rounded-full text-sm font-bold transition-all ${activeTab === 'rewards' ? 'bg-[#111624] text-white shadow-lg' : 'text-gray-400 hover:text-gray-200'}`}
                         >
                             Rewards
                         </button>
@@ -487,7 +487,7 @@ export default function ReferAndEarnPage() {
 
                                         {/* Progress Section */}
                                         {!isCompleted && !isFailed && progress && (
-                                            <div className="mt-3 bg-gray-800 rounded-lg p-3">
+                                            <div className="mt-3 bg-[#111624] rounded-lg p-3">
                                                 <div className="flex justify-between items-center mb-2">
                                                     <span className="text-xs text-gray-400">Challenge Progress</span>
                                                     <span className="text-xs text-yellow-400 font-bold">
@@ -557,7 +557,7 @@ export default function ReferAndEarnPage() {
                         <div className="flex gap-3">
                             <button
                                 onClick={() => setShowTransferModal(false)}
-                                className="flex-1 py-3 rounded-xl bg-gray-800 text-white font-semibold hover:bg-gray-700 transition"
+                                className="flex-1 py-3 rounded-xl bg-[#111624] text-white font-semibold hover:bg-gray-700 transition"
                                 disabled={transferring}
                             >
                                 Cancel

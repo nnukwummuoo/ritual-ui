@@ -65,7 +65,7 @@ export default function AdminVerifyDocumentPage() {
   const renderDocumentCard = (doc: any, isApproved = false) => (
     <div
       key={doc._id}
-      className="bg-gray-800 p-6 rounded-lg shadow-lg border border-gray-700"
+      className="bg-[#111624] p-6 rounded-lg shadow-lg border border-gray-700"
     >
       {/* Header Section */}
       <div className="flex flex-col items-start mb-4">
@@ -274,7 +274,7 @@ export default function AdminVerifyDocumentPage() {
             })()}
             <button
               onClick={handleClosePreview}
-              className="absolute top-4 right-4 bg-gray-800 text-white p-2 rounded-full hover:bg-gray-700"
+              className="absolute top-4 right-4 bg-[#111624] text-white p-2 rounded-full hover:bg-gray-700"
             >
               ✕
             </button>

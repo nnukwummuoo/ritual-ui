@@ -394,7 +394,7 @@ const formatRelativeTime = (timestamp: string | number | Date): string => {
 
 // Skeleton component for loading state
 const PostSkeleton = () => (
-  <div className="mx-auto max-w-[30rem] w-full bg-gray-800 rounded-md p-3 animate-pulse">
+  <div className="mx-auto max-w-[30rem] w-full bg-[#111624] rounded-md p-3 animate-pulse">
     <div className="flex items-center gap-3 mb-3">
       <div className="w-10 h-10 bg-gray-700 rounded-full"></div>
       <div className="flex-1">
@@ -701,7 +701,7 @@ const LazyPost: React.FC<LazyPostProps> = ({
   const uiIsFollowing = uiState.isFollowing ?? isFollowing;
 
   return (
-    <div ref={postRef} className="mx-auto max-w-[30rem] w-full bg-gray-800 rounded-md p-3">
+    <div ref={postRef} className="mx-auto max-w-[30rem] w-full bg-[#111624] rounded-md p-3">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-3 w-full">
           <div className="relative ">

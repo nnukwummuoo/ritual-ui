@@ -359,7 +359,7 @@ const VIPPage = () => {
           {/* Cancel Confirmation Modal */}
           {showCancelConfirm && (
             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-              <div className="bg-gray-800 rounded-lg p-6 max-w-md mx-4">
+              <div className="bg-[#111624] rounded-lg p-6 max-w-md mx-4">
                 <h3 className="text-xl font-bold text-white mb-4">Cancel VIP Auto-Renewal</h3>
                 <p className="text-gray-300 mb-6">
                   Are you sure you want to cancel VIP auto-renewal? Your VIP will remain active until it expires, but it won&apos;t automatically renew.
@@ -385,7 +385,7 @@ const VIPPage = () => {
           {/* Insufficient Gold Modal */}
           {showInsufficientGoldModal && (
             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-              <div className="bg-gray-800 rounded-lg p-6 max-w-md mx-4">
+              <div className="bg-[#111624] rounded-lg p-6 max-w-md mx-4">
                 <h3 className="text-xl font-bold text-white mb-4">Insufficient Gold Balance</h3>
                 <p className="text-gray-300 mb-6">
                   You need 100 gold to upgrade to VIP. You currently have {goldBalance} gold.

@@ -807,7 +807,7 @@ const PostlistComponent = ({
 
           {/* Image Post - Optimized */}
           {posttype === "image" && (
-            <div className="bg-gray-800 post image-post">
+            <div className="bg-[#111624] post image-post">
               <div className="authur">
                 <div
                   className="profilepic"
@@ -871,7 +871,7 @@ const PostlistComponent = ({
 
           {/* Text Post - Optimized */}
           {posttype === "text" && (
-            <div className="bg-gray-800 post text-post">
+            <div className="bg-[#111624] post text-post">
               <div className="authur">
                 <div
                   className="profilepic"
@@ -948,7 +948,7 @@ const PostlistComponent = ({
                 transition={{ duration: 0.2 }}
               >
                 <motion.div
-                  className="w-80 max-w-sm mx-4 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden"
+                  className="w-80 max-w-sm mx-4 bg-white dark:bg-[#111624] rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden"
                   role="menu"
                   aria-orientation="vertical"
                   aria-labelledby="menu-button"

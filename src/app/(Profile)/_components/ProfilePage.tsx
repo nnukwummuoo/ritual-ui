@@ -2746,7 +2746,7 @@ export const Profile = () => {
 
         {!isVideoLoaded && !posterSource && (
 
-          <div className="absolute inset-0 w-full h-full bg-gray-800 animate-pulse flex items-center justify-center">
+          <div className="absolute inset-0 w-full h-full bg-[#111624] animate-pulse flex items-center justify-center">
 
             <div className="w-16 h-16 bg-gray-600 rounded-full flex items-center justify-center">
 
@@ -3311,7 +3311,7 @@ export const Profile = () => {
 
                   data-post-id={post._id || post.postid || post.id}
 
-                  className="mx-auto max-w-[30rem] w-full bg-gray-800 rounded-md p-3"
+                  className="mx-auto max-w-[30rem] w-full bg-[#111624] rounded-md p-3"
 
                 >
 
@@ -5025,7 +5025,7 @@ export const Profile = () => {
 
                     data-post-id={post._id || post.postid || post.id}
 
-                    className="mx-auto max-w-[30rem] w-full bg-gray-800 rounded-md p-3"
+                    className="mx-auto max-w-[30rem] w-full bg-[#111624] rounded-md p-3"
 
                   >
 
@@ -5127,7 +5127,7 @@ export const Profile = () => {
                         </button>
                         {openDropdowns.has(String(postId)) && (
                           <div
-                            className="absolute right-0 top-full mt-2 w-48 rounded-md shadow-lg bg-gray-800 ring-1 ring-gray-600 ring-opacity-5 focus:outline-none z-50"
+                            className="absolute right-0 top-full mt-2 w-48 rounded-md shadow-lg bg-[#111624] ring-1 ring-gray-600 ring-opacity-5 focus:outline-none z-50"
                             role="menu"
                             aria-orientation="vertical"
                             onClick={(e) => e.stopPropagation()}
@@ -5236,9 +5236,9 @@ export const Profile = () => {
                     {
                       postType === "image" && src && (
 
-                        <div className="w-full aspect-[4/5] relative rounded overflow-hidden bg-gray-800">
+                        <div className="w-full aspect-[4/5] relative rounded overflow-hidden bg-[#111624]">
                           {isImageLoading && !imageError && (
-                            <div className="absolute inset-0 bg-gray-800 animate-pulse z-10">
+                            <div className="absolute inset-0 bg-[#111624] animate-pulse z-10">
                               <SkeletonTheme baseColor="#202020" highlightColor="#444">
                                 <Skeleton height="100%" width="100%" containerClassName="w-full h-full block" className="rounded" />
                               </SkeletonTheme>
@@ -5988,7 +5988,7 @@ export const Profile = () => {
 
                         <button
 
-                          className={`flex-1 bg-gray-800 cursor-pointer py-1.5 px-3 rounded-lg hover:bg-gray-700 transition-colors text-center`}
+                          className={`flex-1 bg-[#111624] cursor-pointer py-1.5 px-3 rounded-lg hover:bg-gray-700 transition-colors text-center`}
 
                           onClick={() => {
 
@@ -6158,7 +6158,7 @@ export const Profile = () => {
 
                       {Array.from({ length: 9 }).map((_, index) => (
 
-                        <div key={index} className="aspect-square bg-gray-800 rounded-sm animate-pulse">
+                        <div key={index} className="aspect-square bg-[#111624] rounded-sm animate-pulse">
 
                           <SkeletonTheme baseColor="#202020" highlightColor="#444">
 
@@ -6476,7 +6476,7 @@ export const Profile = () => {
 
                       {Array.from({ length: 9 }).map((_, index) => (
 
-                        <div key={index} className="aspect-square bg-gray-800 rounded-sm animate-pulse">
+                        <div key={index} className="aspect-square bg-[#111624] rounded-sm animate-pulse">
 
                           <SkeletonTheme baseColor="#202020" highlightColor="#444">
 
@@ -6500,7 +6500,7 @@ export const Profile = () => {
 
                         <div
 
-                          className="relative aspect-square group cursor-pointer rounded-sm overflow-hidden bg-gray-800 dark:bg-gray-700 border-2 border-dashed border-gray-600 dark:border-gray-500 hover:border-orange-500 dark:hover:border-orange-500 transition-colors flex items-center justify-center"
+                          className="relative aspect-square group cursor-pointer rounded-sm overflow-hidden bg-[#111624] dark:bg-gray-700 border-2 border-dashed border-gray-600 dark:border-gray-500 hover:border-orange-500 dark:hover:border-orange-500 transition-colors flex items-center justify-center"
 
                           onClick={() => router.push(`/${profileSlugForUrl}/upload-exclusive`)}
 
@@ -7459,9 +7459,9 @@ export const Profile = () => {
 
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75 p-4">
 
-          <div className="bg-[#080b14] dark:bg-gray-800 rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-[#080b14] dark:bg-[#111624] rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto">
 
-            <div className="sticky top-0 bg-[#080b14] dark:bg-gray-800 border-b border-gray-700 px-6 py-4 flex items-center justify-between">
+            <div className="sticky top-0 bg-[#080b14] dark:bg-[#111624] border-b border-gray-700 px-6 py-4 flex items-center justify-between">
 
               <h2 className="text-xl font-semibold text-white">Edit Exclusive Content</h2>
 
@@ -7715,7 +7715,7 @@ export const Profile = () => {
 
                   rows={3}
 
-                  className="w-full px-4 py-2 bg-gray-800 dark:bg-gray-700 border border-gray-600 dark:border-gray-500 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 resize-none"
+                  className="w-full px-4 py-2 bg-[#111624] dark:bg-gray-700 border border-gray-600 dark:border-gray-500 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 resize-none"
 
                 />
 
@@ -7749,7 +7749,7 @@ export const Profile = () => {
 
                   placeholder="0.00"
 
-                  className="w-full px-4 py-2 bg-gray-800 dark:bg-gray-700 border border-gray-600 dark:border-gray-500 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  className="w-full px-4 py-2 bg-[#111624] dark:bg-gray-700 border border-gray-600 dark:border-gray-500 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500"
 
                 />
 

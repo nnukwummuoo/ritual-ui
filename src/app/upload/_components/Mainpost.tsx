@@ -592,7 +592,7 @@ export const Mainpost = () => {
             {/* Scrollable Content */}
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
               <div
-                className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-gray-600 rounded-xl hover:bg-gray-800 cursor-pointer"
+                className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-gray-600 rounded-xl hover:bg-[#111624] cursor-pointer"
                 onClick={() => {
                   const el = document.getElementById('image-upload-modal') as HTMLInputElement | null;
                   if (el && !uploading) el.click();
@@ -710,7 +710,7 @@ export const Mainpost = () => {
             {/* Scrollable Content */}
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
               <div
-                className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-gray-600 rounded-xl hover:bg-gray-800 cursor-pointer"
+                className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-gray-600 rounded-xl hover:bg-[#111624] cursor-pointer"
                 onClick={() => {
                   const el = document.getElementById('video-upload-modal') as HTMLInputElement | null;
                   if (el && !videoUploading) el.click();
@@ -789,7 +789,7 @@ export const Mainpost = () => {
 
       {/* Video Upload Section */}
       <div
-        className="flex items-center gap-3 p-4 transition border border-gray-500 border-dashed rounded-lg cursor-pointer hover:bg-gray-800"
+        className="flex items-center gap-3 p-4 transition border border-gray-500 border-dashed rounded-lg cursor-pointer hover:bg-[#111624]"
         onClick={() => setShowVideoModal(true)}
       >
         <FaVideo className="text-xl text-purple-400" />
@@ -809,7 +809,7 @@ export const Mainpost = () => {
                   type="checkbox"
                   checked={agreedToPolicy}
                   onChange={(e) => setAgreedToPolicy(e.target.checked)}
-                  className="rounded border-gray-600 bg-gray-800 text-green-400 focus:ring-2 focus:ring-green-500"
+                  className="rounded border-gray-600 bg-[#111624] text-green-400 focus:ring-2 focus:ring-green-500"
                 />
                 <span>I understand and agree.</span>
               </label>

@@ -79,7 +79,7 @@ export const ForgetPasswordView = () => {
       }}
     >
       <ToastContainer position="top-center" theme="dark" />
-      <div className="bg-gray-800 rounded-lg shadow-lg p-6 w-full max-w-md">
+      <div className="bg-[#111624] rounded-lg shadow-lg p-6 w-full max-w-md">
         <h1 className="bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent text-3xl font-bold text-center">
           Reset Your Password
         </h1>

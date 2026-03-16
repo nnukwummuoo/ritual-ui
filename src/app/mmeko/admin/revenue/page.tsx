@@ -164,7 +164,7 @@ const RevenuePage = () => {
         </div>
 
         {/* Filters */}
-        <div className="bg-gray-800 rounded-lg shadow-sm border border-gray-700 p-6 mb-6">
+        <div className="bg-[#111624] rounded-lg shadow-sm border border-gray-700 p-6 mb-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
             {/* Month Filter */}
             <div>
@@ -218,7 +218,7 @@ const RevenuePage = () => {
 
         {/* Revenue Table */}
         <div
-          className="w-full bg-gray-800 rounded-lg shadow-sm border border-gray-700 overflow-hidden"
+          className="w-full bg-[#111624] rounded-lg shadow-sm border border-gray-700 overflow-hidden"
         >
           {loading ? (
             <div className="flex items-center justify-center py-12">

@@ -177,7 +177,7 @@ export const Listofblockusers: React.FC<ListOfBlockUsersProps> = ({ id, photolin
   };
 
   return (
-    <div className="bg-gray-800 rounded-lg p-4 mb-3 border border-gray-700">
+    <div className="bg-[#111624] rounded-lg p-4 mb-3 border border-gray-700">
       <div className="flex items-center justify-between">
         {/* User Info */}
         <div className="flex items-center space-x-3">

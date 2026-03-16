@@ -64,7 +64,7 @@ export default function PPVRequestsPage() {
             ) : (
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                     {requests.map(req => (
-                        <div key={req._id} className="bg-gray-800 rounded-xl p-4 flex flex-col gap-4">
+                        <div key={req._id} className="bg-[#111624] rounded-xl p-4 flex flex-col gap-4">
                             <div className="flex items-center gap-4">
                                 <div className="w-16 h-16 relative rounded-full overflow-hidden bg-gray-700">
                                     {req.photolink ? (

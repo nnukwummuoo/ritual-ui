@@ -1062,8 +1062,8 @@ export const Chat = () => {
               return (
                 <div key={index} className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-4 w-full`}>
                   <div className={`max-w-[75%] w-fit px-4 py-3 rounded-2xl ${isUser
-                    ? ' bg-gray-800 text-white rounded-br-md'
-                    : ' bg-gray-800/50 text-white rounded-bl-md border border-blue-700/30'
+                    ? ' bg-[#111624] text-white rounded-br-md'
+                    : ' bg-[#111624]/50 text-white rounded-bl-md border border-blue-700/30'
                     }`}>
                     <div className="flex items-center gap-2">
                       <svg className="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 24 24">
@@ -1086,7 +1086,7 @@ export const Chat = () => {
                 <div key={index} className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-4 w-full`}>
                   <div className={`max-w-[75%] w-fit px-4 py-3 rounded-2xl ${isUser
                     ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-br-md shadow-lg shadow-blue-500/30'
-                    : ' bg-gray-800/50 text-white rounded-bl-md border border-blue-700/30 shadow-lg shadow-blue-700/10'
+                    : ' bg-[#111624]/50 text-white rounded-bl-md border border-blue-700/30 shadow-lg shadow-blue-700/10'
                     }`}>
                     {/* VIP Badge for message sender */}
                     {!isUser && value.isVip && (
@@ -1182,7 +1182,7 @@ export const Chat = () => {
           {/* Typing indicator */}
           {otherUserTyping && (
             <div className="flex justify-start mb-4 w-full">
-              <div className="w-1/2 px-4 py-3 rounded-2xl  bg-gray-800/50 text-white rounded-bl-md border border-blue-700/30">
+              <div className="w-1/2 px-4 py-3 rounded-2xl  bg-[#111624]/50 text-white rounded-bl-md border border-blue-700/30">
                 <div className="flex items-center gap-2">
                   <div className="flex space-x-1">
                     <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce"></div>
@@ -1916,12 +1916,12 @@ export const Chat = () => {
       )}
 
       {/* Top Bar with Clean Design */}
-      <div className=" bg-gray-800 backdrop-blur-sm border-b border-blue-700/30 p-3 sm:p-4 sticky top-0 z-50 flex-shrink-0">
+      <div className=" bg-[#111624] backdrop-blur-sm border-b border-blue-700/30 p-3 sm:p-4 sticky top-0 z-50 flex-shrink-0">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button
               onClick={() => router.back()}
-              className="p-2 hover: bg-gray-800/50 rounded-full transition-colors"
+              className="p-2 hover: bg-[#111624]/50 rounded-full transition-colors"
             >
               <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -2023,7 +2023,7 @@ export const Chat = () => {
         {loading ? (
           <div className="space-y-4 w-full max-w-4xl mx-auto">
             <div className="flex justify-start mb-4 w-full">
-              <div className="w-1/2 px-4 py-3 rounded-2xl  bg-gray-800/50 text-white rounded-bl-md border border-blue-700/30">
+              <div className="w-1/2 px-4 py-3 rounded-2xl  bg-[#111624]/50 text-white rounded-bl-md border border-blue-700/30">
                 <div className="animate-pulse">
                   <div className="h-4 bg-gray-400 rounded w-3/4 mb-2"></div>
                   <div className="h-3 bg-gray-400 rounded w-1/2"></div>
@@ -2031,7 +2031,7 @@ export const Chat = () => {
               </div>
             </div>
             <div className="flex justify-end mb-4 w-full">
-              <div className="w-1/2 px-4 py-3 rounded-2xl  bg-gray-800 text-white rounded-br-md">
+              <div className="w-1/2 px-4 py-3 rounded-2xl  bg-[#111624] text-white rounded-br-md">
                 <div className="animate-pulse">
                   <div className="h-4 bg-gray-400 rounded w-3/4 mb-2"></div>
                   <div className="h-3 bg-gray-400 rounded w-1/2"></div>
@@ -2053,7 +2053,7 @@ export const Chat = () => {
 
       {/* File Preview Area - Mobile Optimized */}
       {previewFiles.length > 0 && (
-        <div className="bg-gray-800/50 border-t border-blue-700/30 sticky z-40" style={{
+        <div className="bg-[#111624]/50 border-t border-blue-700/30 sticky z-40" style={{
           bottom: 'calc(80px + env(safe-area-inset-bottom, 0px))',
           maxHeight: '200px',
           overflowY: 'auto'
@@ -2128,7 +2128,7 @@ export const Chat = () => {
       )}
 
       {/* Input Bar - Mobile Optimized */}
-      {/* <div className="flex items-center gap-2 sm:gap-3 p-3 sm:p-4 bg-gray-800 border-t border-blue-700/30 sticky bottom-0 z-50 flex-shrink-0 shadow-lg" style={{
+      {/* <div className="flex items-center gap-2 sm:gap-3 p-3 sm:p-4 bg-[#111624] border-t border-blue-700/30 sticky bottom-0 z-50 flex-shrink-0 shadow-lg" style={{
         paddingBottom: 'calc(1rem + env(safe-area-inset-bottom, 0px))',
         minHeight: 'calc(80px + env(safe-area-inset-bottom, 0px))'
       }}>
@@ -2141,7 +2141,7 @@ export const Chat = () => {
           className="hidden"
         />
 
-        <div className="flex items-center flex-1 px-4 py-2 bg-gray-800/50 border border-blue-600/50 rounded-full transition-all focus-within:ring-2 focus-within:ring-blue-500/20">
+        <div className="flex items-center flex-1 px-4 py-2 bg-[#111624]/50 border border-blue-600/50 rounded-full transition-all focus-within:ring-2 focus-within:ring-blue-500/20">
 
         
           <button
@@ -2211,7 +2211,7 @@ export const Chat = () => {
         <button
           onClick={() => send_chat(text)}
           disabled={(!text.trim() && selectedFiles.length === 0) || uploading}
-          className="flex-shrink-0 p-3  bg-gray-800 hover: bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-full transition-colors"
+          className="flex-shrink-0 p-3  bg-[#111624] hover: bg-[#111624] disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-full transition-colors"
         >
           {uploading ? (
             <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
@@ -2221,7 +2221,7 @@ export const Chat = () => {
         </button>
       </div> */}
 
-<div className="flex items-center gap-1.5 sm:gap-3 p-2 sm:p-4 bg-gray-800 border-t border-blue-700/30 sticky bottom-0 z-50 flex-shrink-0 shadow-lg" style={{
+<div className="flex items-center gap-1.5 sm:gap-3 p-2 sm:p-4 bg-[#111624] border-t border-blue-700/30 sticky bottom-0 z-50 flex-shrink-0 shadow-lg" style={{
   paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom, 0px))',
   minHeight: 'calc(64px + env(safe-area-inset-bottom, 0px))'
 }}>
@@ -2234,7 +2234,7 @@ export const Chat = () => {
     className="hidden"
   />
 
-  <div className="flex items-center flex-1 min-w-0 px-2 sm:px-4 py-2 bg-gray-800/50 border border-blue-600/50 rounded-full transition-all focus-within:ring-2 focus-within:ring-blue-500/20">
+  <div className="flex items-center flex-1 min-w-0 px-2 sm:px-4 py-2 bg-[#111624]/50 border border-blue-600/50 rounded-full transition-all focus-within:ring-2 focus-within:ring-blue-500/20">
 
     {/* Attachment Button */}
     <button
@@ -2420,7 +2420,7 @@ export const Chat = () => {
       {/* PPV Unlock Confirmation Modal */}
       {unlockConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
-          <div className="bg-gray-800 border border-yellow-500/30 rounded-2xl p-6 mx-4 max-w-sm w-full shadow-2xl animate-in zoom-in-95 fade-in duration-200">
+          <div className="bg-[#111624] border border-yellow-500/30 rounded-2xl p-6 mx-4 max-w-sm w-full shadow-2xl animate-in zoom-in-95 fade-in duration-200">
             <h3 className="text-white font-bold text-lg mb-2">Unlock Message</h3>
             <p className="text-gray-300 text-sm mb-6">
               Unlock this exclusive message for <span className="text-yellow-400 font-bold">{unlockConfirm.price} gold</span>?

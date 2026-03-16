@@ -36,7 +36,7 @@ export const Requestinfo: React.FC<requestInfoProps> = ({
 
   return (
     <fieldset
-      className="z-50 w-48 p-5 mx-auto bg-gray-800 rounded-lg h-fit"
+      className="z-50 w-48 p-5 mx-auto bg-[#111624] rounded-lg h-fit"
       style={{ width: "95%", maxWidth: 500 }}
     >
       <p className="pt-2 text-sm text-center text-white">

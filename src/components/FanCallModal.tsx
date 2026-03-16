@@ -1653,7 +1653,7 @@ export default function FanCallModal({
 
         {/* Picture in Picture */}
         {(localStream || remoteStream) && (
-          <div className="absolute bottom-20 right-4 w-24 h-36 bg-gray-800 rounded-lg overflow-hidden border-2 border-white">
+          <div className="absolute bottom-20 right-4 w-24 h-36 bg-[#111624] rounded-lg overflow-hidden border-2 border-white">
             {localStream ? (
               <video
                 ref={thumbnailVideoRef}

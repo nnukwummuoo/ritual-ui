@@ -16,7 +16,7 @@ export default function LoginPromptBanner() {
       <div className="flex gap-2 w-full sm:w-auto">
         <Link
           href="/auth/login"
-          className="flex-1 sm:flex-none text-center border border-gray-600 rounded-full px-5 py-2 text-sm font-medium text-gray-300 hover:bg-gray-800 transition-colors"
+          className="flex-1 sm:flex-none text-center border border-gray-600 rounded-full px-5 py-2 text-sm font-medium text-gray-300 hover:bg-[#111624] transition-colors"
         >
           Log in
         </Link>

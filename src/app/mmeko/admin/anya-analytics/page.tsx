@@ -367,7 +367,7 @@ export default function AnyaAnalyticsPage() {
 
                 {/* Most Liked & Most Viewed Stories */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
+                    <div className="bg-[#111624] rounded-lg p-6 border border-gray-700">
                         <div className="text-sm text-gray-400 mb-1">Most Liked Story</div>
                         <div className="text-lg font-bold text-white line-clamp-2 min-h-[3.5rem]">
                             {data?.summary.mostLikedStory?.title || 'N/A'}
@@ -381,7 +381,7 @@ export default function AnyaAnalyticsPage() {
                         </div>
                     </div>
 
-                    <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
+                    <div className="bg-[#111624] rounded-lg p-6 border border-gray-700">
                         <div className="text-sm text-gray-400 mb-1">Most Viewed Story</div>
                         <div className="text-lg font-bold text-white line-clamp-2 min-h-[3.5rem]">
                             {data?.summary.mostViewedStory?.title || 'N/A'}
@@ -397,7 +397,7 @@ export default function AnyaAnalyticsPage() {
                 </div>
 
                 {/* Daily Visits Chart */}
-                <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
+                <div className="bg-[#111624] rounded-lg p-6 border border-gray-700">
                     <h2 className="text-xl font-bold text-white mb-4">Daily Visits</h2>
                     {loading ? (
                         <div className="h-96 flex items-center justify-center">
@@ -435,7 +435,7 @@ export default function AnyaAnalyticsPage() {
 
                 {/* Top Visited Stories */}
                 {data?.topVisitedStories && data.topVisitedStories.length > 0 && (
-                    <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
+                    <div className="bg-[#111624] rounded-lg p-6 border border-gray-700">
                         <h2 className="text-xl font-bold text-white mb-4">All Stories (Sorted by Visits)</h2>
                         <div className="overflow-x-auto">
                             <table className="w-full">
@@ -490,7 +490,7 @@ export default function AnyaAnalyticsPage() {
 
                 {/* User Session Duration Analytics */}
                 {sessionData && (
-                    <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
+                    <div className="bg-[#111624] rounded-lg p-6 border border-gray-700">
                         <h2 className="text-xl font-bold text-white mb-6">User Session Duration</h2>
 
                         {/* Session Summary Cards */}
@@ -599,7 +599,7 @@ export default function AnyaAnalyticsPage() {
                 {/* Delete Confirmation Dialog */}
                 {storyToDelete && (
                     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                        <div className="bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4 border border-gray-700">
+                        <div className="bg-[#111624] rounded-lg p-6 max-w-md w-full mx-4 border border-gray-700">
                             <h3 className="text-xl font-bold text-white mb-4">Confirm Delete</h3>
                             <p className="text-gray-300 mb-2">
                                 Are you sure you want to delete this story?

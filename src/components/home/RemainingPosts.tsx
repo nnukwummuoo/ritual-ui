@@ -573,7 +573,7 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
         const uiIsFollowing = uiState.isFollowing ?? false;
 
         return (
-          <div key={`${p?.postid || p?.id || idx}`} className="mx-auto max-w-[30rem] w-full bg-gray-800 rounded-md p-3">
+          <div key={`${p?.postid || p?.id || idx}`} className="mx-auto max-w-[30rem] w-full bg-[#111624] rounded-md p-3">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-3">
                 <div className="relative">

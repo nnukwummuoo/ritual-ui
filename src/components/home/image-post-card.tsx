@@ -3,7 +3,7 @@ import React from "react";
 
 export default function ImagePostCard() {
   return (
-    <div className="h-[400px] mx-auto max-w-[30rem] overflow-y-hidden bg-gray-800 p-3 rounded-md">
+    <div className="h-[400px] mx-auto max-w-[30rem] overflow-y-hidden bg-[#111624] p-3 rounded-md">
       <div className="flex items-center gap-x-3">
         <div className="size-10 rounded-full overflow-hidden">
           <Image

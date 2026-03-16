@@ -256,7 +256,7 @@ export default function BackupManagement() {
         </div>
 
         {/* Backup History Table */}
-        <div className="bg-gray-800 rounded-lg border border-gray-700">
+        <div className="bg-[#111624] rounded-lg border border-gray-700">
           <div className="p-6 border-b border-gray-700">
             <h2 className="text-xl font-semibold">
               {activeTab === 'failed' ? 'Failed Backups' : 'Backup History'}
@@ -286,7 +286,7 @@ export default function BackupManagement() {
                   )}
                 </tr>
               </thead>
-              <tbody className="bg-gray-800 divide-y divide-gray-700">
+              <tbody className="bg-[#111624] divide-y divide-gray-700">
                 {displayedHistory.length === 0 ? (
                   <tr>
                     <td colSpan={activeTab === 'failed' ? 5 : 4} className="px-6 py-12 text-center text-gray-400">

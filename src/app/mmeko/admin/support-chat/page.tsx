@@ -660,7 +660,7 @@ const AdminSupportChat = () => {
                 placeholder="Search chats..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 text-sm md:text-base"
+                className="w-full pl-10 pr-4 py-2 bg-[#111624] border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 text-sm md:text-base"
               />
             </div>
 
@@ -735,7 +735,7 @@ const AdminSupportChat = () => {
                 <div
                   key={chat._id}
                   onClick={() => loadChatMessages(chat._id)}
-                  className={`p-3 md:p-4 border-b border-gray-700 cursor-pointer hover:bg-gray-800 transition-colors ${selectedChat?._id === chat._id ? 'bg-gray-800' : ''
+                  className={`p-3 md:p-4 border-b border-gray-700 cursor-pointer hover:bg-[#111624] transition-colors ${selectedChat?._id === chat._id ? 'bg-[#111624]' : ''
                     }`}
                 >
                   <div className="flex items-start gap-3">
@@ -804,7 +804,7 @@ const AdminSupportChat = () => {
           {selectedChat ? (
             <>
               {/* Chat Header */}
-              <div className="p-4 border-b border-gray-700 bg-gray-800 flex-shrink-0">
+              <div className="p-4 border-b border-gray-700 bg-[#111624] flex-shrink-0">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3 flex-1">
                     {/* Back button for mobile */}
@@ -956,7 +956,7 @@ const AdminSupportChat = () => {
 
               {/* File Preview Area */}
               {previewFiles.length > 0 && (
-                <div className="bg-gray-800/50 border-t border-gray-700 p-3 md:p-4">
+                <div className="bg-[#111624]/50 border-t border-gray-700 p-3 md:p-4">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-sm text-gray-300 font-medium">
                       {previewFiles.length} file{previewFiles.length > 1 ? 's' : ''} selected
@@ -1025,7 +1025,7 @@ const AdminSupportChat = () => {
               )}
 
               {/* Message Input */}
-              <div className="p-3 md:p-4 border-t border-gray-700 bg-gray-800 flex-shrink-0">
+              <div className="p-3 md:p-4 border-t border-gray-700 bg-[#111624] flex-shrink-0">
                 <div className="flex gap-2">
                   <input
                     type="file"

@@ -299,7 +299,7 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({ creator_portfolio_id: propC
 
         {opening && (
           <div
-            className="absolute right-0 mt-2 w-40 rounded-md shadow-lg bg-gray-800 border border-gray-700 focus:outline-none z-50"
+            className="absolute right-0 mt-2 w-40 rounded-md shadow-lg bg-[#111624] border border-gray-700 focus:outline-none z-50"
             role="menu"
             aria-orientation="vertical"
             aria-labelledby="menu-button"

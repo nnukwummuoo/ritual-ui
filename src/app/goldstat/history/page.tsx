@@ -33,7 +33,7 @@ interface Analytics {
 }
 
 const WithdrawRequestCard = ({ usd, onWithdrawClick }: { usd: number; onWithdrawClick: () => void }) => (
-  <div className="bg-gray-800 text-white p-4 rounded-lg mb-3 w-full">
+  <div className="bg-[#111624] text-white p-4 rounded-lg mb-3 w-full">
     <div className="flex justify-between items-center">
       <div>
         <p className="text-sm">Withdrawable Money</p>
@@ -530,7 +530,7 @@ const HistoryPage = () => {
       )}
 
       {/* Gold Card - Always show total current balance, not month-specific */}
-      <div className="bg-gray-800 rounded-lg px-4 py-3 mb-3">
+      <div className="bg-[#111624] rounded-lg px-4 py-3 mb-3">
         <div className="flex justify-between">
           <button
             className="text-sm text-blue-400 font-semibold focus:outline-none cursor-pointer"
@@ -572,7 +572,7 @@ const HistoryPage = () => {
 
       {/* Account Analytics - Show for selected month */}
       {analytics.request > 0 || analytics.gift > 0 || analytics.like > 0 || analytics.followers > 0 || analytics.earning > 0 ? (
-        <div className="bg-gray-800 rounded-lg px-4 py-3 mb-3">
+        <div className="bg-[#111624] rounded-lg px-4 py-3 mb-3">
           <div className="flex justify-between items-center mb-3">
             <p className="font-semibold text-sm">Account analytics</p>
             <div className="flex items-center gap-2">
@@ -632,7 +632,7 @@ const HistoryPage = () => {
           </div>
         </div>
       ) : (
-        <div className="bg-gray-800 rounded-lg px-4 py-3 mb-3">
+        <div className="bg-[#111624] rounded-lg px-4 py-3 mb-3">
           <div className="flex justify-between items-center mb-3">
             <p className="font-semibold text-sm">Account analytics</p>
             <div className="flex items-center gap-2">
@@ -680,7 +680,7 @@ const HistoryPage = () => {
 
       {/* Pending Withdrawals Section */}
       {pendingWithdrawals.length > 0 && (
-        <div className="bg-gray-800 rounded-lg px-4 py-3 mb-3">
+        <div className="bg-[#111624] rounded-lg px-4 py-3 mb-3">
           <div className="flex justify-between mb-3">
             <p className="font-semibold text-sm">Pending Withdrawals</p>
             <p className="text-xs text-yellow-400">{pendingWithdrawals.length} request{pendingWithdrawals.length !== 1 ? 's' : ''}</p>
@@ -734,7 +734,7 @@ const HistoryPage = () => {
       {/* Payment Account Modal - Redirect to separate page */}
       {showPaymentModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-gray-800 p-6 rounded-lg shadow-lg w-full max-w-md mx-4">
+          <div className="bg-[#111624] p-6 rounded-lg shadow-lg w-full max-w-md mx-4">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold text-white">Add Payment Account</h2>
               <button
@@ -771,7 +771,7 @@ const HistoryPage = () => {
       {/* Confirmation Modal */}
       {showConfirmModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-gray-800 p-8 rounded-lg shadow-lg text-center w-96">
+          <div className="bg-[#111624] p-8 rounded-lg shadow-lg text-center w-96">
             <h2 className="text-2xl font-bold mb-4 text-white">Confirm Withdrawal</h2>
 
             {/* Payment Account Details */}
@@ -851,7 +851,7 @@ const HistoryPage = () => {
       {/* Delete Account Confirmation Modal */}
       {showDeleteConfirm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-gray-800 p-8 rounded-lg shadow-lg text-center w-96">
+          <div className="bg-[#111624] p-8 rounded-lg shadow-lg text-center w-96">
             <h2 className="text-2xl font-bold mb-4 text-white">Delete Payment Account</h2>
             <p className="text-gray-300 mb-6">
               Are you sure you want to delete your payment account? You&apos;ll all need to add it again to make withdrawals.
@@ -878,7 +878,7 @@ const HistoryPage = () => {
       {/* Popup */}
       {showPopup && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-gray-800 p-8 rounded-lg shadow-lg text-center w-96">
+          <div className="bg-[#111624] p-8 rounded-lg shadow-lg text-center w-96">
             <div className="flex justify-center mb-6">
               <Image src="/icons/icons8.png" alt="gold" width={64} height={64} />
             </div>
@@ -899,7 +899,7 @@ const HistoryPage = () => {
       {/* Success Modal */}
       {showSuccessModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-gray-800 p-8 rounded-lg shadow-lg text-center w-96">
+          <div className="bg-[#111624] p-8 rounded-lg shadow-lg text-center w-96">
             <div className="flex justify-center mb-6">
               <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center">
                 <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">

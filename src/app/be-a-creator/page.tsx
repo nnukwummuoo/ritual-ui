@@ -141,7 +141,7 @@ export default function VerificationPage(){
             {features.map((feature, index) => (
               <div
                 key={index}
-                className="group bg-gray-800 rounded-xl p-6 border border-gray-700  transition-all duration-300"
+                className="group bg-[#111624] rounded-xl p-6 border border-gray-700  transition-all duration-300"
               >
                 <div className="flex flex-col items-center text-center">
                   <div className="bg-gray-700 p-4 rounded-full mb-4 group-hover:scale-110 transition-transform duration-300">

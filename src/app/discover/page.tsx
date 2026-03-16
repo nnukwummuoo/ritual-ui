@@ -328,7 +328,7 @@ function DiscoverPageContent() {
 
           {/* Search Bar */}
           <form onSubmit={handleSearch} className="relative">
-            <div className="flex items-center bg-gray-800 rounded-lg border border-gray-700 px-4 py-3">
+            <div className="flex items-center bg-[#111624] rounded-lg border border-gray-700 px-4 py-3">
               <FaSearch className="text-gray-400 mr-3" />
               <input
                 type="text"
@@ -401,7 +401,7 @@ function DiscoverPageContent() {
                     href={href}
                     className={`flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-colors cursor-pointer ${isCreatorEntry
                         ? 'bg-gradient-to-br from-purple-900/30 to-blue-900/30 border-purple-600 hover:border-purple-500'
-                        : 'bg-gray-800 border-gray-700 hover:border-gray-600'
+                        : 'bg-[#111624] border-gray-700 hover:border-gray-600'
                       }`}
                   >
                     <div className="relative">
@@ -715,7 +715,7 @@ function DiscoverPageContent() {
                   };
 
                   return (
-                    <div key={pid} className="mx-auto max-w-[30rem] w-full bg-gray-800 rounded-md p-3">
+                    <div key={pid} className="mx-auto max-w-[30rem] w-full bg-[#111624] rounded-md p-3">
                       <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center gap-3">
                           <div className="relative">
@@ -1482,7 +1482,7 @@ function DiscoverPageContent() {
                                     }
                                   }}
                                 />
-                                <div className="absolute inset-0 bg-gray-800 flex items-center justify-center" style={{ display: 'none' }}>
+                                <div className="absolute inset-0 bg-[#111624] flex items-center justify-center" style={{ display: 'none' }}>
                                   <FaCompass className="text-4xl text-gray-600" />
                                 </div>
                               </>
@@ -1490,7 +1490,7 @@ function DiscoverPageContent() {
                           }
 
                           return (
-                            <div className="w-full h-full bg-gray-800 flex items-center justify-center">
+                            <div className="w-full h-full bg-[#111624] flex items-center justify-center">
                               <FaCompass className="text-4xl text-gray-600" />
                             </div>
                           );

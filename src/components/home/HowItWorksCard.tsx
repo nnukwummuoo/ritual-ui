@@ -291,7 +291,7 @@ const HowItWorksCard: React.FC = () => {
                             key={slide.id}
                             className="flex-shrink-0 w-full snap-center"
                         >
-                            <div className="bg-gray-800/40 rounded-lg overflow-hidden border border-purple-500/10 hover:border-purple-500/30 transition-all duration-300 group">
+                            <div className="bg-[#111624]/40 rounded-lg overflow-hidden border border-purple-500/10 hover:border-purple-500/30 transition-all duration-300 group">
                                 {/* Image Container */}
                                 <div className="relative aspect-[4/3] bg-[#080b14]/50 overflow-hidden">
                                     <Image

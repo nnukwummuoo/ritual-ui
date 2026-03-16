@@ -66,7 +66,7 @@ const VideoComponent = React.memo(function VideoComponent({
   return (
     <div className="relative w-full h-[500px] rounded overflow-hidden">
       {!isVideoLoaded && (
-        <div className="absolute inset-0 w-full h-full bg-gray-800 animate-pulse flex items-center justify-center">
+        <div className="absolute inset-0 w-full h-full bg-[#111624] animate-pulse flex items-center justify-center">
           <div className="w-16 h-16 bg-gray-600 rounded-full flex items-center justify-center">
             <svg className="w-8 h-8 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
               <polygon points="5 3 19 12 5 21 5 3"></polygon>
@@ -237,7 +237,7 @@ const ImageCard: React.FC<ImageCardProps> = ({
 
   return (
     <div 
-      className="relative rounded-xl overflow-hidden shadow-lg bg-gray-800 cursor-pointer hover:opacity-90 transition-opacity"
+      className="relative rounded-xl overflow-hidden shadow-lg bg-[#111624] cursor-pointer hover:opacity-90 transition-opacity"
       onClick={onClick}
     >
       {!isLoaded && hasSrc && (
@@ -462,7 +462,7 @@ const Crush: React.FC<{
             return (
               <div 
                 key={String(creator_portfolio_id)} 
-                className="relative bg-gray-800 rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 cursor-pointer group"
+                className="relative bg-[#111624] rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 cursor-pointer group"
                 onClick={() => handleCreatorClick(it)}
               >
                 <div className="relative">

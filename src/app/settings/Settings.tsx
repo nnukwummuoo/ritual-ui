@@ -83,7 +83,7 @@ useEffect(() => {
         </header>
         <div className="pt-4">
           {/* Push Notifications Toggle */}
-          <div className="mb-6 p-4 bg-gray-800 rounded-lg">
+          <div className="mb-6 p-4 bg-[#111624] rounded-lg">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
                 <IoMdNotificationsOutline color="white" size={20} />

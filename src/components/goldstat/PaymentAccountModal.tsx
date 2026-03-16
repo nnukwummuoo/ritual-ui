@@ -238,7 +238,7 @@ const PaymentAccountModal: React.FC<PaymentAccountModalProps> = ({ accesstoken, 
 
   return (
     <>
-      <div className="bg-gray-800 w-full px-4 py-3 rounded-lg shadow-sm mb-3">
+      <div className="bg-[#111624] w-full px-4 py-3 rounded-lg shadow-sm mb-3">
         <div className="w-full flex flex-wrap items-center justify-between gap-2">
           {isFetchingAccount ? (
             <p className="text-sm text-gray-400 animate-pulse">Checking for account...</p>
@@ -286,7 +286,7 @@ const PaymentAccountModal: React.FC<PaymentAccountModalProps> = ({ accesstoken, 
 
       {showModal && (
         <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center px-4">
-          <div className="bg-gray-800 rounded-xl w-full max-w-md p-6 shadow-lg text-white">
+          <div className="bg-[#111624] rounded-xl w-full max-w-md p-6 shadow-lg text-white">
             <div className="bg-gradient-to-r from-purple-600 to-pink-500 p-4 rounded-t-xl mb-4">
               <h2 className="text-xl font-bold text-center">Cryptocurrency Account Info</h2>
             </div>

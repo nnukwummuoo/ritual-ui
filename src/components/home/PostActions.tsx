@@ -250,7 +250,7 @@ function DotsIcon({ post }: { post: any }) { // eslint-disable-line @typescript-
     {hasPop ? <div className="d-flex fixed bg-[#0e0e0e80] top-0 h-[100dvh] bottom-0 left-0 right-0" onClick={() => { 
         setHasPop(false);
       }}>
-      <div className="bg-gray-800 text-white p-4 rounded shadow-lg mt-[25vh] right-4 top-12 z-10 mx-auto my-auto min-w-[240px] max-w-[280px]" style={{
+      <div className="bg-[#111624] text-white p-4 rounded shadow-lg mt-[25vh] right-4 top-12 z-10 mx-auto my-auto min-w-[240px] max-w-[280px]" style={{
       
       }} >
         <div className="block w-full text-left px-4 py-2 hover:bg-gray-700 rounded" onClick={async() => {

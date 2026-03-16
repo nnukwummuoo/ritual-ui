@@ -133,7 +133,7 @@ export default function PPVSettingsPage() {
         <div className="min-h-screen bg-black text-white p-6">
             <div className="flex items-center justify-between mb-8">
                 <div className="flex items-center">
-                    <button onClick={() => router.back()} className="mr-4 p-2 bg-gray-800 rounded-full">
+                    <button onClick={() => router.back()} className="mr-4 p-2 bg-[#111624] rounded-full">
                         <FaChevronLeft size={16} />
                     </button>
                     <h1 className="text-xl font-bold">Pay-Per-View Settings</h1>
@@ -168,7 +168,7 @@ export default function PPVSettingsPage() {
                             <div className="w-11 h-6 bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
                         </label>
                     ) : (
-                        <div className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${enabled ? 'bg-green-500/20 text-green-500 border border-green-500/30' : 'bg-gray-800 text-gray-400'}`}>
+                        <div className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${enabled ? 'bg-green-500/20 text-green-500 border border-green-500/30' : 'bg-[#111624] text-gray-400'}`}>
                             {enabled ? 'Active' : 'Inactive'}
                         </div>
                     )}
@@ -189,7 +189,7 @@ export default function PPVSettingsPage() {
                                     value={price}
                                     onChange={(e) => setPrice(e.target.value === "" ? "" : Number(e.target.value))}
                                     placeholder="Enter price in Gold"
-                                    className="bg-gray-800 text-white p-4 rounded-lg w-full text-center text-xl font-bold border border-gray-700 focus:border-blue-500 outline-none placeholder-gray-600"
+                                    className="bg-[#111624] text-white p-4 rounded-lg w-full text-center text-xl font-bold border border-gray-700 focus:border-blue-500 outline-none placeholder-gray-600"
                                     min="1"
                                 />
                             </div>
@@ -215,7 +215,7 @@ export default function PPVSettingsPage() {
                     <div className="flex gap-3 mt-8">
                         <button
                             onClick={handleCancel}
-                            className="flex-1 bg-gray-800 hover:bg-gray-700 text-white font-bold py-4 rounded-xl transition-all"
+                            className="flex-1 bg-[#111624] hover:bg-gray-700 text-white font-bold py-4 rounded-xl transition-all"
                         >
                             Cancel
                         </button>

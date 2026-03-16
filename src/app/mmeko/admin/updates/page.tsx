@@ -63,7 +63,7 @@ export default function AdminUpdates() {
 
     return (
         <div className="min-h-screen bg-[#080b14] p-8">
-            <div className="max-w-2xl mx-auto bg-gray-800 rounded-lg shadow-lg p-6">
+            <div className="max-w-2xl mx-auto bg-[#111624] rounded-lg shadow-lg p-6">
                 <h1 className="text-2xl font-bold mb-6 text-white">Version Control</h1>
 
                 <div className="space-y-4">

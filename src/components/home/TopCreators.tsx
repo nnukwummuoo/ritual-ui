@@ -50,7 +50,7 @@ const CreatorCard: React.FC<CreatorCardProps> = ({ creator, index, handleCreator
 
                 {/* Ring around avatar */}
                 <div className="relative p-0.5 bg-gradient-to-br from-blue-400 via-purple-500 to-pink-500 rounded-full group-hover:scale-110 transition-transform duration-200">
-                    <div className="w-14 h-14 md:w-16 md:h-16 rounded-full overflow-hidden bg-gray-800 border-2 border-black">
+                    <div className="w-14 h-14 md:w-16 md:h-16 rounded-full overflow-hidden bg-[#111624] border-2 border-black">
                         {creator.photolink && creator.photolink.trim() && creator.photolink !== 'null' && creator.photolink !== 'undefined' ? (
                             <img
                                 src={getImageSource(creator.photolink, 'profilePhotos').src}

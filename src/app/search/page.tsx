@@ -91,7 +91,7 @@ const SearchBar: React.FC = () => {
             <input
             type="text"
             placeholder="Search..."
-            className="w-full px-12 py-3 m-auto text-white bg-gray-800 rounded-md focus:outline-none"
+            className="w-full px-12 py-3 m-auto text-white bg-[#111624] rounded-md focus:outline-none"
             onInput={handleSearchInput}
             />
         </div>

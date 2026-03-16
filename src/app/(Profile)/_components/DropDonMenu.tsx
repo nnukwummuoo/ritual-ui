@@ -185,7 +185,7 @@ const DropdownMenu = ({ userId, isOwnProfile = false }: DropdownMenuProps) => {
 
         {opening && (
           <div
-            className="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-gray-800 ring-1 ring-gray-600 ring-opacity-5 focus:outline-none z-50"
+            className="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-[#111624] ring-1 ring-gray-600 ring-opacity-5 focus:outline-none z-50"
             role="menu"
             aria-orientation="vertical"
             aria-labelledby="menu-button"

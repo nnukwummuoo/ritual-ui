@@ -234,7 +234,7 @@ const UserAnalytics: React.FC<UserAnalyticsProps> = ({ userId, userName, isOpen,
               {/* Statistics Tab */}
               {activeTab === 'stats' && stats && (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  <div className="bg-gray-800 p-4 rounded-lg">
+                  <div className="bg-[#111624] p-4 rounded-lg">
                     <h3 className="text-lg font-semibold text-yellow-500 mb-3">Session Data</h3>
                     <div className="space-y-2">
                       <div className="flex justify-between">
@@ -260,7 +260,7 @@ const UserAnalytics: React.FC<UserAnalyticsProps> = ({ userId, userName, isOpen,
                     </div>
                   </div>
 
-                  <div className="bg-gray-800 p-4 rounded-lg">
+                  <div className="bg-[#111624] p-4 rounded-lg">
                     <h3 className="text-lg font-semibold text-yellow-500 mb-3">Content Activity</h3>
                     <div className="space-y-2">
                       <div className="flex justify-between">
@@ -286,7 +286,7 @@ const UserAnalytics: React.FC<UserAnalyticsProps> = ({ userId, userName, isOpen,
                     </div>
                   </div>
 
-                  <div className="bg-gray-800 p-4 rounded-lg">
+                  <div className="bg-[#111624] p-4 rounded-lg">
                     <h3 className="text-lg font-semibold text-yellow-500 mb-3">Login Data</h3>
                     <div className="space-y-2">
                       <div className="flex justify-between">
@@ -304,7 +304,7 @@ const UserAnalytics: React.FC<UserAnalyticsProps> = ({ userId, userName, isOpen,
 
               {/* Sessions Tab */}
               {activeTab === 'sessions' && (
-                <div className="bg-gray-800 rounded-lg overflow-hidden">
+                <div className="bg-[#111624] rounded-lg overflow-hidden">
                   <div className="p-4 border-b border-gray-700">
                     <h3 className="text-lg font-semibold text-yellow-500">User Sessions</h3>
                   </div>
@@ -347,7 +347,7 @@ const UserAnalytics: React.FC<UserAnalyticsProps> = ({ userId, userName, isOpen,
 
               {/* Activities Tab */}
               {activeTab === 'activities' && (
-                <div className="bg-gray-800 rounded-lg overflow-hidden">
+                <div className="bg-[#111624] rounded-lg overflow-hidden">
                   <div className="p-4 border-b border-gray-700">
                     <h3 className="text-lg font-semibold text-yellow-500">Recent Activities</h3>
                   </div>

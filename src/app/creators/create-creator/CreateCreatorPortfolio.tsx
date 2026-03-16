@@ -367,7 +367,7 @@ export default function CreateCreatorPortfolio () {
 
             <div className="input-container">
               <label className="label">Location</label>
-              <div className="bg-gray-800 height-select">
+              <div className="bg-[#111624] height-select">
                 <CountrySelect onSelectCountry={getLocation} />
               </div>
             </div>
@@ -443,7 +443,7 @@ export default function CreateCreatorPortfolio () {
                     <option
                       key={value}
                       value={`${value} kg`}
-                      className="w-full mt-1 mb-1 bg-gray-800 border text-slate-100 rounded-2xl"
+                      className="w-full mt-1 mb-1 bg-[#111624] border text-slate-100 rounded-2xl"
                     >{`${value} kg`}</option>
                   );
                 })}
@@ -632,7 +632,7 @@ export default function CreateCreatorPortfolio () {
               <div className="mt-4">
                 <select
                   name="days"
-                  className="w-full p-3 mb-3 text-white bg-gray-800 focus:outline-none"
+                  className="w-full p-3 mb-3 text-white bg-[#111624] focus:outline-none"
                   onChange={(e) => setdays(e.currentTarget.value)}
                 >
                   <option value={`${duration}min`}>{duration} MIN</option>

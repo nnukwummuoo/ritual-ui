@@ -234,7 +234,7 @@ export const Commmentpage = ({
 
       <div className="fixed bottom-16 left-0 right-0 px-4 pb-2 bg-[#080b14] z-10 flex items-center gap-2">
         <textarea
-          className="textinpt placeholder:pt-1 w-full rounded-lg bg-gray-800 text-white border border-gray-600 py-2 px-3"
+          className="textinpt placeholder:pt-1 w-full rounded-lg bg-[#111624] text-white border border-gray-600 py-2 px-3"
           value={commentcontent}
           placeholder="What is on your mind?"
           onInput={(e) => {

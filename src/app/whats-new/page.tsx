@@ -139,7 +139,7 @@ const WhatsNewPage: React.FC = () => {
         <div className="flex items-center gap-4 mb-8">
           <button
             onClick={() => router.back()}
-            className="p-2 hover:bg-gray-800 rounded-full transition-colors"
+            className="p-2 hover:bg-[#111624] rounded-full transition-colors"
           >
             <FaAngleLeft className="w-6 h-6" />
           </button>
@@ -152,7 +152,7 @@ const WhatsNewPage: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Version Selector */}
           <div className="lg:col-span-1">
-            <div className="bg-gray-800 rounded-xl p-6">
+            <div className="bg-[#111624] rounded-xl p-6">
               <h2 className="text-xl font-semibold mb-4">Versions</h2>
               <div className="space-y-2">
                 {versions.map((version) => (
@@ -181,7 +181,7 @@ const WhatsNewPage: React.FC = () => {
 
           {/* Main Content */}
           <div className="lg:col-span-3">
-            <div className="bg-gray-800 rounded-xl p-6">
+            <div className="bg-[#111624] rounded-xl p-6">
               <div className="flex items-center justify-between mb-6">
                 <div>
                   <h2 className="text-2xl font-bold">{currentVersion.version}</h2>

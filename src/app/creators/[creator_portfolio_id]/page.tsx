@@ -901,7 +901,7 @@ export default function Creatorbyid() {
             <div className="max-w-4xl mx-auto space-y-6">
 
               {/* Header Section Skeleton */}
-              <div className="bg-gray-800 rounded-2xl p-6 shadow-2xl">
+              <div className="bg-[#111624] rounded-2xl p-6 shadow-2xl">
                 <div className="flex justify-between items-start mb-4">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-4">
@@ -922,7 +922,7 @@ export default function Creatorbyid() {
               </div>
 
               {/* Image Gallery Skeleton - Fixed size to match actual image */}
-              <div className="bg-gray-800 rounded-2xl p-6 shadow-2xl">
+              <div className="bg-[#111624] rounded-2xl p-6 shadow-2xl">
                 <div className="pt-2 pb-4 md:pt-60">
                   <div className="relative w-full h-[300px] overflow-hidden rounded-md">
                     <Skeleton
@@ -936,7 +936,7 @@ export default function Creatorbyid() {
               </div>
 
               {/* Action Buttons Skeleton */}
-              <div className="bg-gray-800 rounded-2xl p-6 shadow-2xl">
+              <div className="bg-[#111624] rounded-2xl p-6 shadow-2xl">
                 <div className="flex flex-col sm:flex-row gap-4">
                   <Skeleton width="100%" height={48} className="rounded-xl" />
                   <Skeleton width="100%" height={48} className="rounded-xl" />
@@ -945,7 +945,7 @@ export default function Creatorbyid() {
               </div>
 
               {/* Profile Information Skeleton */}
-              <div className="bg-gray-800 rounded-2xl p-6 shadow-2xl">
+              <div className="bg-[#111624] rounded-2xl p-6 shadow-2xl">
                 <Skeleton width={200} height={32} className="mx-auto mb-6" />
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -992,13 +992,13 @@ export default function Creatorbyid() {
               </div>
 
               {/* About Section Skeleton */}
-              <div className="bg-gray-800 rounded-2xl p-6 shadow-2xl">
+              <div className="bg-[#111624] rounded-2xl p-6 shadow-2xl">
                 <Skeleton width={120} height={32} className="mx-auto mb-4" />
                 <Skeleton width="100%" height={80} className="rounded-lg" />
               </div>
 
               {/* Safety Rules Skeleton */}
-              <div className="bg-gray-800 rounded-2xl p-6 shadow-2xl">
+              <div className="bg-[#111624] rounded-2xl p-6 shadow-2xl">
                 <Skeleton width={200} height={32} className="mx-auto mb-4" />
                 <div className="space-y-3">
                   <Skeleton width="100%" height={20} />
@@ -1008,7 +1008,7 @@ export default function Creatorbyid() {
               </div>
 
               {/* Reviews Section Skeleton */}
-              <div className="bg-gray-800 rounded-2xl p-6 shadow-2xl">
+              <div className="bg-[#111624] rounded-2xl p-6 shadow-2xl">
                 <Skeleton width="100%" height={56} className="rounded-xl" />
               </div>
             </div>
@@ -1063,7 +1063,7 @@ export default function Creatorbyid() {
             <div className="max-w-4xl mx-auto space-y-6">
 
               {/* Header Section Skeleton */}
-              <div className="bg-gray-800 rounded-2xl p-6 shadow-2xl">
+              <div className="bg-[#111624] rounded-2xl p-6 shadow-2xl">
                 <div className="flex justify-between items-start mb-4">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-4">
@@ -1084,7 +1084,7 @@ export default function Creatorbyid() {
               </div>
 
               {/* Image Gallery Skeleton - Fixed size to match actual image */}
-              <div className="bg-gray-800 rounded-2xl p-6 shadow-2xl">
+              <div className="bg-[#111624] rounded-2xl p-6 shadow-2xl">
                 <div className="pt-2 pb-4 md:pt-60">
                   <div className="relative w-full h-[300px] overflow-hidden rounded-md">
                     <Skeleton
@@ -1098,7 +1098,7 @@ export default function Creatorbyid() {
               </div>
 
               {/* Action Buttons Skeleton */}
-              <div className="bg-gray-800 rounded-2xl p-6 shadow-2xl">
+              <div className="bg-[#111624] rounded-2xl p-6 shadow-2xl">
                 <div className="flex flex-col sm:flex-row gap-4">
                   <Skeleton width="100%" height={48} className="rounded-xl" />
                   <Skeleton width="100%" height={48} className="rounded-xl" />
@@ -1107,7 +1107,7 @@ export default function Creatorbyid() {
               </div>
 
               {/* Profile Information Skeleton */}
-              <div className="bg-gray-800 rounded-2xl p-6 shadow-2xl">
+              <div className="bg-[#111624] rounded-2xl p-6 shadow-2xl">
                 <Skeleton width={200} height={32} className="mx-auto mb-6" />
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -1154,13 +1154,13 @@ export default function Creatorbyid() {
               </div>
 
               {/* About Section Skeleton */}
-              <div className="bg-gray-800 rounded-2xl p-6 shadow-2xl">
+              <div className="bg-[#111624] rounded-2xl p-6 shadow-2xl">
                 <Skeleton width={120} height={32} className="mx-auto mb-4" />
                 <Skeleton width="100%" height={80} className="rounded-lg" />
               </div>
 
               {/* Safety Rules Skeleton */}
-              <div className="bg-gray-800 rounded-2xl p-6 shadow-2xl">
+              <div className="bg-[#111624] rounded-2xl p-6 shadow-2xl">
                 <Skeleton width={200} height={32} className="mx-auto mb-4" />
                 <div className="space-y-3">
                   <Skeleton width="100%" height={20} />
@@ -1170,7 +1170,7 @@ export default function Creatorbyid() {
               </div>
 
               {/* Reviews Section Skeleton */}
-              <div className="bg-gray-800 rounded-2xl p-6 shadow-2xl">
+              <div className="bg-[#111624] rounded-2xl p-6 shadow-2xl">
                 <Skeleton width="100%" height={56} className="rounded-xl" />
               </div>
             </div>
@@ -1183,7 +1183,7 @@ export default function Creatorbyid() {
           <div className="max-w-4xl mx-auto space-y-6">
 
             {/* Header Section */}
-            <div className="relative bg-gray-800 rounded-2xl p-6 shadow-2xl">
+            <div className="relative bg-[#111624] rounded-2xl p-6 shadow-2xl">
               <div className="flex justify-between items-start mb-4">
                 <div className="flex-1">
                   <CreatorByIdNav
@@ -1274,7 +1274,7 @@ export default function Creatorbyid() {
             </div>
 
             {/* Image Gallery */}
-            <div className="bg-gray-800 rounded-2xl p-6 shadow-2xl relative">
+            <div className="bg-[#111624] rounded-2xl p-6 shadow-2xl relative">
               {checkimg()}
 
               {/* VIP Badge - positioned on top-left of creator image */}
@@ -1321,7 +1321,7 @@ export default function Creatorbyid() {
                 className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
                 onClick={(e) => e.stopPropagation()}
               >
-                <div className="bg-gray-800 p-6 rounded-lg text-white w-11/12 max-w-md">
+                <div className="bg-[#111624] p-6 rounded-lg text-white w-11/12 max-w-md">
                   <h2 className="text-lg font-bold mb-4">⚠ Warning</h2>
                   <p className="mb-4">
                     Deleting your portfolio will permanently remove all your views, and you may lose pending fan requests and unclaimed gold. Your visibility will also drop if you create a new portfolio.
@@ -1347,7 +1347,7 @@ export default function Creatorbyid() {
             )}
 
             {/* Action Buttons */}
-            <div className="bg-gray-800 rounded-2xl p-6 shadow-2xl">
+            <div className="bg-[#111624] rounded-2xl p-6 shadow-2xl">
               <div className="flex flex-col sm:flex-row gap-4">
                 {Cantchat() && (
                   <>
@@ -1412,7 +1412,7 @@ export default function Creatorbyid() {
               )}
             </div>
             {/* Profile Information */}
-            <div className="bg-gray-800 rounded-2xl p-6 shadow-2xl">
+            <div className="bg-[#111624] rounded-2xl p-6 shadow-2xl">
               <h2 className="text-2xl font-bold text-white mb-6 text-center">Portfolio Details</h2>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -1532,7 +1532,7 @@ export default function Creatorbyid() {
             </div>
 
             {/* About Section */}
-            <div className="bg-gray-800 rounded-2xl p-6 shadow-2xl">
+            <div className="bg-[#111624] rounded-2xl p-6 shadow-2xl">
               <h2 className="text-2xl font-bold text-white mb-4 text-center">About Me</h2>
               <div className="bg-gray-700 rounded-lg p-4">
                 <p className="text-gray-300 leading-relaxed text-center">
@@ -1543,7 +1543,7 @@ export default function Creatorbyid() {
 
             {/* Safety Rules Section - Only show for non-call requests */}
             {creator.hosttype !== "Fan call" && creator.hosttype !== "Fan Call" && (
-              <div className="bg-gray-800 rounded-2xl p-6 shadow-2xl">
+              <div className="bg-[#111624] rounded-2xl p-6 shadow-2xl">
                 <h2 className="text-2xl font-bold text-white mb-4 text-center">Safety Rules (Important!)</h2>
                 <div className="bg-gray-700 rounded-lg p-4">
                   <ul className="text-gray-300 space-y-3">
@@ -1573,7 +1573,7 @@ export default function Creatorbyid() {
 
             {/* Reviews Section - Only show for non-call requests */}
             {creator.hosttype !== "Fan call" && creator.hosttype !== "Fan Call" && (
-              <div className="bg-gray-800 rounded-2xl p-6 shadow-2xl">
+              <div className="bg-[#111624] rounded-2xl p-6 shadow-2xl">
                 <button
                   className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg"
                   onClick={(e) => {

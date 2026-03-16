@@ -795,7 +795,7 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, isOpen, onClose
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Basic Information */}
-            <div className="bg-gray-800 p-4 rounded-lg">
+            <div className="bg-[#111624] p-4 rounded-lg">
               <h3 className="text-lg font-semibold text-yellow-500 mb-4">Basic Information</h3>
               <div className="space-y-3">
                 <div>
@@ -869,7 +869,7 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, isOpen, onClose
             </div>
 
             {/* Financial Information */}
-            <div className="bg-gray-800 p-4 rounded-lg">
+            <div className="bg-[#111624] p-4 rounded-lg">
               <h3 className="text-lg font-semibold text-yellow-500 mb-4">Financial Information</h3>
               <div className="space-y-3">
                 {/* Account Balance - Always shown */}
@@ -955,7 +955,7 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, isOpen, onClose
             </div>
 
             {/* Account Status */}
-            <div className="bg-gray-800 p-4 rounded-lg">
+            <div className="bg-[#111624] p-4 rounded-lg">
               <h3 className="text-lg font-semibold text-yellow-500 mb-4">Account Status</h3>
               <div className="space-y-3">
                 {/* <div className="flex items-center gap-2">
@@ -1016,7 +1016,7 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, isOpen, onClose
             </div>
 
             {/* VIP Management */}
-            <div className="bg-gray-800 p-4 rounded-lg">
+            <div className="bg-[#111624] p-4 rounded-lg">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-semibold text-yellow-500">VIP Management</h3>
                 {!user.isVip && (
@@ -1124,7 +1124,7 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, isOpen, onClose
             </div>
 
             {/* PPV Access */}
-            <div className="bg-gray-800 p-4 rounded-lg">
+            <div className="bg-[#111624] p-4 rounded-lg">
               <h3 className="text-lg font-semibold text-yellow-500 mb-4">PPV Access</h3>
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
@@ -1183,7 +1183,7 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, isOpen, onClose
             </div>
 
             {/* Social Information */}
-            <div className="bg-gray-800 p-4 rounded-lg">
+            <div className="bg-[#111624] p-4 rounded-lg">
               <h3 className="text-lg font-semibold text-yellow-500 mb-4">Social Information</h3>
               <div className="space-y-3">
                 <div>
@@ -1223,7 +1223,7 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, isOpen, onClose
             </div>
 
             {/* Account Dates */}
-            <div className="bg-gray-800 p-4 rounded-lg">
+            <div className="bg-[#111624] p-4 rounded-lg">
               <h3 className="text-lg font-semibold text-yellow-500 mb-4">Account Dates</h3>
               <div className="space-y-3">
                 <div>
@@ -1254,7 +1254,7 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, isOpen, onClose
             </div>
 
             {/* Profile Photo */}
-            <div className="bg-gray-800 p-4 rounded-lg">
+            <div className="bg-[#111624] p-4 rounded-lg">
               <h3 className="text-lg font-semibold text-yellow-500 mb-4">Profile Photo</h3>
               <div className="flex justify-center">
                 {(() => {
@@ -1293,7 +1293,7 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, isOpen, onClose
             </div>
 
             {/* Request Analysis */}
-            <div className="bg-gray-800 p-4 rounded-lg">
+            <div className="bg-[#111624] p-4 rounded-lg">
               <h3 className="text-lg font-semibold text-yellow-500 mb-4">Request Analysis</h3>
               {(() => {
                 const total = userRequests.length;
@@ -1323,12 +1323,12 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, isOpen, onClose
                     <div className="bg-gray-700 p-3 rounded-lg">
                       <p className="text-gray-400 text-xs uppercase tracking-wider mb-3">Activity Breakdown</p>
                       <div className="grid grid-cols-2 gap-3">
-                        <div className="bg-gray-800 p-2 rounded text-center">
+                        <div className="bg-[#111624] p-2 rounded text-center">
                           <span className="block text-blue-400 font-bold text-lg">{requestsSent}</span>
                           <span className="text-gray-400 text-xs">Requests Sent</span>
                           <span className="block text-gray-500 text-xs mt-1">(As Fan)</span>
                         </div>
-                        <div className="bg-gray-800 p-2 rounded text-center">
+                        <div className="bg-[#111624] p-2 rounded text-center">
                           <span className="block text-purple-400 font-bold text-lg">{requestsReceived}</span>
                           <span className="text-gray-400 text-xs">Requests Received</span>
                           <span className="block text-gray-500 text-xs mt-1">(As Creator)</span>
@@ -1340,19 +1340,19 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, isOpen, onClose
                     <div className="bg-gray-700 p-3 rounded-lg">
                       <p className="text-gray-400 text-xs uppercase tracking-wider mb-3">Overall Status</p>
                       <div className="grid grid-cols-2 gap-3">
-                        <div className="flex justify-between items-center bg-gray-800 p-2 rounded">
+                        <div className="flex justify-between items-center bg-[#111624] p-2 rounded">
                           <span className="text-green-400 text-sm">Accepted</span>
                           <span className="text-white font-bold">{accepted}</span>
                         </div>
-                        <div className="flex justify-between items-center bg-gray-800 p-2 rounded">
+                        <div className="flex justify-between items-center bg-[#111624] p-2 rounded">
                           <span className="text-red-400 text-sm">Declined</span>
                           <span className="text-white font-bold">{declined}</span>
                         </div>
-                        <div className="flex justify-between items-center bg-gray-800 p-2 rounded">
+                        <div className="flex justify-between items-center bg-[#111624] p-2 rounded">
                           <span className="text-gray-400 text-sm">Expired</span>
                           <span className="text-white font-bold">{expired}</span>
                         </div>
-                        <div className="flex justify-between items-center bg-gray-800 p-2 rounded">
+                        <div className="flex justify-between items-center bg-[#111624] p-2 rounded">
                           <span className="text-blue-400 text-sm">Completed</span>
                           <span className="text-white font-bold">{completed}</span>
                         </div>
@@ -1363,11 +1363,11 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, isOpen, onClose
                     <div className="bg-gray-700 p-3 rounded-lg">
                       <p className="text-gray-400 text-xs uppercase tracking-wider mb-3">Creator Actions</p>
                       <div className="grid grid-cols-2 gap-3">
-                        <div className="bg-gray-800 p-2 rounded text-center">
+                        <div className="bg-[#111624] p-2 rounded text-center">
                           <span className="block text-green-400 font-bold text-lg">{creatorAccepted}</span>
                           <span className="text-gray-400 text-xs">Accepted</span>
                         </div>
-                        <div className="bg-gray-800 p-2 rounded text-center">
+                        <div className="bg-[#111624] p-2 rounded text-center">
                           <span className="block text-red-400 font-bold text-lg">{creatorDeclined}</span>
                           <span className="text-gray-400 text-xs">Declined</span>
                         </div>
@@ -1379,7 +1379,7 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, isOpen, onClose
             </div>
 
             {/* Referral Earnings */}
-            <div className="bg-gray-800 p-4 rounded-lg">
+            <div className="bg-[#111624] p-4 rounded-lg">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-semibold text-yellow-500">Referral Earnings</h3>
                 {!isEditingReferral ? (
@@ -1452,7 +1452,7 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, isOpen, onClose
                       step="0.01"
                       value={editedRewardBalance}
                       onChange={(e) => setEditedRewardBalance(parseFloat(e.target.value) || 0)}
-                      className="w-full bg-gray-800 text-white p-2 rounded border border-gray-600 focus:border-yellow-500 focus:outline-none"
+                      className="w-full bg-[#111624] text-white p-2 rounded border border-gray-600 focus:border-yellow-500 focus:outline-none"
                       placeholder="Enter reward balance"
                     />
                   ) : (
@@ -1476,7 +1476,7 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, isOpen, onClose
             </div>
 
             {/* Followers, Following, Posts, and Portfolio */}
-            <div className="bg-gray-800 p-4 rounded-lg md:col-span-2">
+            <div className="bg-[#111624] p-4 rounded-lg md:col-span-2">
               <h3 className="text-lg font-semibold text-yellow-500 mb-4">
                 {activeTab === 'posts' ? 'User Posts' :
                   activeTab === 'portfolio' ? 'Creator Portfolio' :
@@ -1855,7 +1855,7 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, isOpen, onClose
                               <textarea
                                 value={editingPostContent}
                                 onChange={(e) => setEditingPostContent(e.target.value)}
-                                className="w-full bg-gray-800 text-white p-3 rounded mb-3 min-h-[100px]"
+                                className="w-full bg-[#111624] text-white p-3 rounded mb-3 min-h-[100px]"
                                 placeholder="Post content..."
                               />
                             ) : (
@@ -2381,7 +2381,7 @@ export default function Users(): JSX.Element {
             </div>
           </div>
           <div className="flex-1 overflow-auto">
-            <table className="w-full bg-gray-800 rounded-lg overflow-hidden">
+            <table className="w-full bg-[#111624] rounded-lg overflow-hidden">
               <thead className="bg-gray-700">
                 <tr>
                   <th className="px-4 py-3 text-left text-yellow-500 font-semibold">Photo</th>
@@ -2515,7 +2515,7 @@ export default function Users(): JSX.Element {
 
           {/* Pagination Controls - Fixed at bottom */}
           {totalPages > 1 && (
-            <div className="flex justify-center items-center mt-4 space-x-2 bg-gray-800 p-4 rounded-lg">
+            <div className="flex justify-center items-center mt-4 space-x-2 bg-[#111624] p-4 rounded-lg">
               <button
                 onClick={() => handlePageChange(Math.max(currentPage - 1, 1))}
                 disabled={currentPage === 1 || loading}
@@ -2968,7 +2968,7 @@ export default function Users(): JSX.Element {
           <div className="flex-1 overflow-auto">
             <div className="space-y-4">
               {notifications.map((campaign) => (
-                <div key={campaign._id} className="bg-gray-800 rounded-lg p-4">
+                <div key={campaign._id} className="bg-[#111624] rounded-lg p-4">
                   <div className="flex justify-between items-start mb-3">
                     <div className="flex-1">
                       <h3 className="text-xl font-bold text-yellow-500 mb-2">{campaign.title}</h3>
@@ -3475,7 +3475,7 @@ export default function Users(): JSX.Element {
                 )}
 
                 {showUserSelector && (
-                  <div className="border border-gray-600 rounded-lg bg-gray-800">
+                  <div className="border border-gray-600 rounded-lg bg-[#111624]">
                     {/* Search Bar */}
                     <div className="p-3 border-b border-gray-600">
                       <div className="flex items-center gap-2">

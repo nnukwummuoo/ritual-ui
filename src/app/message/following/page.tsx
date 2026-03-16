@@ -266,7 +266,7 @@ const FollowingMessagesPage: React.FC = () => {
                 return (
                   <div
                     key={`following_${index}_${user.id}`}
-                    className="flex items-center gap-4 p-4 rounded-lg hover:bg-gray-800/30 transition-colors"
+                    className="flex items-center gap-4 p-4 rounded-lg hover:bg-[#111624]/30 transition-colors"
                   >
                     {/* Profile Picture */}
                     <div 

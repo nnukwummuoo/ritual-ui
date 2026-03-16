@@ -40,7 +40,7 @@ export const SupportForm: React.FC<SupportFormProps> = ({
   };
 
   return (
-    <div className="bg-gray-800 rounded-xl p-6">
+    <div className="bg-[#111624] rounded-xl p-6">
       <h2 className="text-2xl font-semibold mb-6 text-white">Send us a Message</h2>
       <p className="text-gray-300 mb-6">
         Your message will be sent to our support team and you&apos;ll be redirected to the support chat page to continue the conversation.

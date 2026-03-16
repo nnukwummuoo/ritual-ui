@@ -223,7 +223,7 @@ export const Acceptedlist = ({
           className="w-7 h-7 rounded-full object-cover"
         />
         <div className="flex flex-col ml-1 p-1">
-          <p className="text-xs bg-gray-800 text-white">
+          <p className="text-xs bg-[#111624] text-white">
             {`${name}`} {`${status}`} your {`${type}`} request on {`${date}`}{" "}
             {`${time}`}
           </p>

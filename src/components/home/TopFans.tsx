@@ -50,7 +50,7 @@ const FanCard: React.FC<FanCardProps> = ({ fan, index, handleFanClick }) => {
 
                 {/* Gold ring around avatar */}
                 <div className="relative p-0.5 bg-gradient-to-br from-yellow-400 via-amber-500 to-yellow-600 rounded-full group-hover:scale-110 transition-transform duration-200">
-                    <div className="w-14 h-14 md:w-16 md:h-16 rounded-full overflow-hidden bg-gray-800 border-2 border-black">
+                    <div className="w-14 h-14 md:w-16 md:h-16 rounded-full overflow-hidden bg-[#111624] border-2 border-black">
                         {fan.photolink && fan.photolink.trim() && fan.photolink !== 'null' && fan.photolink !== 'undefined' ? (
                             <img
                                 src={getImageSource(fan.photolink, 'profilePhotos').src}

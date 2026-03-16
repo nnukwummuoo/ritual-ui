@@ -543,7 +543,7 @@ export default function Editcreator () {
                   <option
                     key={value}
                     value={`${value} kg`}
-                    className="w-full mt-1 mb-1 bg-gray-800 border text-slate-100 rounded-2xl"
+                    className="w-full mt-1 mb-1 bg-[#111624] border text-slate-100 rounded-2xl"
                   >{`${value} kg`}</option>
                 ))}
               </select>
@@ -752,7 +752,7 @@ export default function Editcreator () {
               {/* <div className="mt-4">
                 <select
                   name="days"
-                  className="w-full p-3 mb-3 text-white bg-gray-800 focus:outline-none"
+                  className="w-full p-3 mb-3 text-white bg-[#111624] focus:outline-none"
                   value={days}
                   onChange={(e) => setdays(e.currentTarget.value)}
                 >
@@ -987,7 +987,7 @@ export default function Editcreator () {
             
             <div className="space-y-4">
               {/* Fan call */}
-              <div className="bg-gray-800 p-4 rounded-lg">
+              <div className="bg-[#111624] p-4 rounded-lg">
                 <div className="flex items-center gap-3 mb-2">
                   <div className="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center">
                     📱
@@ -999,7 +999,7 @@ export default function Editcreator () {
               </div>
 
               {/* Fan Meet */}
-              <div className="bg-gray-800 p-4 rounded-lg">
+              <div className="bg-[#111624] p-4 rounded-lg">
                 <div className="flex items-center gap-3 mb-2">
                   <div className="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center">
                     🤝
@@ -1011,7 +1011,7 @@ export default function Editcreator () {
               </div>
 
               {/* Fan Date */}
-              <div className="bg-gray-800 p-4 rounded-lg">
+              <div className="bg-[#111624] p-4 rounded-lg">
                 <div className="flex items-center gap-3 mb-2">
                   <div className="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center">
                     ❤️
@@ -1040,7 +1040,7 @@ export default function Editcreator () {
             <div className="bg-red-600 text-white font-bold text-lg px-4 py-3 rounded-t-lg -m-6 mb-4">
               File Too Large
             </div>
-            <div className="bg-gray-800 rounded-lg p-4 mb-4">
+            <div className="bg-[#111624] rounded-lg p-4 mb-4">
               <p className="text-white text-center">
                 Max size is 5 MB. Please trim or compress before uploading.
               </p>

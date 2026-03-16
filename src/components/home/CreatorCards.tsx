@@ -62,7 +62,7 @@ const CreatorCard: React.FC<CreatorCardProps> = ({
 
   return (
     <div
-      className="relative bg-gray-800 rounded-lg w-48 flex-shrink-0 cursor-pointer hover:bg-gray-750 transition-colors overflow-hidden flex flex-col"
+      className="relative bg-[#111624] rounded-lg w-48 flex-shrink-0 cursor-pointer hover:bg-gray-750 transition-colors overflow-hidden flex flex-col"
       onClick={handleCardClick}
     >
       {/* Close button */}

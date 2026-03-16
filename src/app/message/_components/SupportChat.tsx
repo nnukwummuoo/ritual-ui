@@ -615,7 +615,7 @@ export const SupportChat = () => {
       )}
 
       {/* Top Bar with Support Info */}
-      <div className="bg-gray-800 backdrop-blur-sm border-b border-gray-700/30 p-3 sm:p-4 sticky top-0 z-50 flex-shrink-0">
+      <div className="bg-[#111624] backdrop-blur-sm border-b border-gray-700/30 p-3 sm:p-4 sticky top-0 z-50 flex-shrink-0">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button 
@@ -670,7 +670,7 @@ export const SupportChat = () => {
                       ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-br-md' 
                       : isAdmin
                       ? 'bg-gradient-to-r from-green-500 to-teal-600 text-white rounded-bl-md'
-                      : 'bg-gray-800/50 text-white rounded-bl-md border border-gray-700/30'
+                      : 'bg-[#111624]/50 text-white rounded-bl-md border border-gray-700/30'
                   }`}>
                     <p className="text-sm">{message.content}</p>
                     
@@ -705,7 +705,7 @@ export const SupportChat = () => {
 
       {/* File Preview Area - Mobile Optimized */}
       {previewFiles.length > 0 && (
-        <div className="bg-gray-800/50 border-t border-gray-700/30 sticky z-40" style={{
+        <div className="bg-[#111624]/50 border-t border-gray-700/30 sticky z-40" style={{
           bottom: 'calc(80px + env(safe-area-inset-bottom, 0px))',
           maxHeight: '200px',
           overflowY: 'auto'
@@ -780,7 +780,7 @@ export const SupportChat = () => {
       )}
 
       {/* Input Bar - Mobile Optimized */}
-      <div className="flex items-center gap-2 sm:gap-3 p-3 sm:p-4 bg-gray-800 border-t border-gray-700/30 sticky bottom-0 z-50 flex-shrink-0 pb-safe">
+      <div className="flex items-center gap-2 sm:gap-3 p-3 sm:p-4 bg-[#111624] border-t border-gray-700/30 sticky bottom-0 z-50 flex-shrink-0 pb-safe">
         <input
           type="file"
           ref={fileInputRef}
@@ -792,12 +792,12 @@ export const SupportChat = () => {
         
         <button
           onClick={() => fileInputRef.current?.click()}
-          className="flex-shrink-0 p-3 bg-gray-800 hover:bg-gray-700 text-white rounded-full transition-colors"
+          className="flex-shrink-0 p-3 bg-[#111624] hover:bg-gray-700 text-white rounded-full transition-colors"
         >
           <Paperclip className="w-5 h-5" />
         </button>
 
-        <div className="flex items-center flex-1 px-4 py-3 bg-gray-800/50 border border-gray-600/50 rounded-full">
+        <div className="flex items-center flex-1 px-4 py-3 bg-[#111624]/50 border border-gray-600/50 rounded-full">
           <textarea
             className="flex-1 h-8 text-white placeholder-gray-300 bg-transparent outline-none resize-none"
             placeholder="Type your message..."
@@ -815,7 +815,7 @@ export const SupportChat = () => {
         <button
           onClick={() => send_chat(text)} 
           disabled={(!text.trim() && selectedFiles.length === 0) || uploading || isSending}
-          className="flex-shrink-0 p-3 bg-gray-800 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-full transition-colors"
+          className="flex-shrink-0 p-3 bg-[#111624] hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-full transition-colors"
         >
           {isSending ? (
             <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white"></div>

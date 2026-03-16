@@ -37,7 +37,7 @@ export default function BannedPage() {
         bodyClassName="!z-[999999]"
       />
       <div className="min-h-screen bg-[#080b14] flex items-center justify-center p-4">
-        <div className="max-w-md w-full bg-gray-800 rounded-lg shadow-xl p-8 text-center">
+        <div className="max-w-md w-full bg-[#111624] rounded-lg shadow-xl p-8 text-center">
         {/* Ban Icon */}
         <div className="mb-6">
           <div className="mx-auto w-20 h-20 bg-red-500 rounded-full flex items-center justify-center">

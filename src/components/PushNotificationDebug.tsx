@@ -41,7 +41,7 @@ const PushNotificationDebug: React.FC = () => {
   };
 
   return (
-    <div className="p-4 bg-gray-800 rounded-lg text-white max-w-2xl mx-auto">
+    <div className="p-4 bg-[#111624] rounded-lg text-white max-w-2xl mx-auto">
       <h3 className="text-lg font-bold mb-4">Push Notification Debug Info</h3>
       
       {/* Support Status */}

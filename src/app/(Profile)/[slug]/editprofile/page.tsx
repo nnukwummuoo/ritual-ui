@@ -1180,7 +1180,7 @@ const EditProfile: React.FC = () => {
                   </button>
 
                   <button
-                    className="bg-transparent border border-gray-600 text-gray-300 hover:bg-gray-800 transition-colors font-medium py-2 px-4 rounded-lg w-full text-center disabled:opacity-50"
+                    className="bg-transparent border border-gray-600 text-gray-300 hover:bg-[#111624] transition-colors font-medium py-2 px-4 rounded-lg w-full text-center disabled:opacity-50"
                     onClick={() => router.push(`/${routeSlug}`)}
                     disabled={loading}
                   >

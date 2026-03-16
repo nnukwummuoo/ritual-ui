@@ -337,7 +337,7 @@ Timestamp: ${new Date().toLocaleString()}`;
         <div className="flex items-center gap-4 mb-8">
           <button
             onClick={() => router.back()}
-            className="p-2 hover:bg-gray-800 rounded-full transition-colors"
+            className="p-2 hover:bg-[#111624] rounded-full transition-colors"
           >
             <FaAngleLeft className="w-6 h-6" />
           </button>
@@ -350,7 +350,7 @@ Timestamp: ${new Date().toLocaleString()}`;
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Contact Information */}
           <div className="lg:col-span-1">
-            <div className="bg-gray-800 rounded-xl p-6 mb-6">
+            <div className="bg-[#111624] rounded-xl p-6 mb-6">
               <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
                 <FaEnvelope className="w-5 h-5 text-blue-400" />
                 Contact Us
@@ -372,7 +372,7 @@ Timestamp: ${new Date().toLocaleString()}`;
             </div>
 
             {/* Quick Actions */}
-            <div className="bg-gray-800 rounded-xl p-6">
+            <div className="bg-[#111624] rounded-xl p-6">
               <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
                 <FaQuestionCircle className="w-5 h-5 text-green-400" />
                 Quick Actions
@@ -410,7 +410,7 @@ Timestamp: ${new Date().toLocaleString()}`;
           {/* Main Content */}
           <div className="lg:col-span-2">
             {/* FAQ Section */}
-            <div className="bg-gray-800 rounded-xl p-6 mb-6">
+            <div className="bg-[#111624] rounded-xl p-6 mb-6">
               <h2 className="text-2xl font-semibold mb-6">🙋 Help & Support (FAQ)</h2>
               <div className="space-y-8">
                 {faqs.map((section, sectionIndex) => (

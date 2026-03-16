@@ -356,7 +356,7 @@ const WebsiteAnalyticsPage = () => {
       </div>
 
       {/* Daily Visitors Bar Chart */}
-      <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
+      <div className="bg-[#111624] rounded-lg p-6 border border-gray-700">
         <h2 className="text-xl font-bold text-white mb-4">Daily Visitors</h2>
         {loading.all ? (
           <div className="h-96 flex items-center justify-center">
@@ -393,7 +393,7 @@ const WebsiteAnalyticsPage = () => {
       </div>
 
       {/* Tabs for User Ranking and Visitors */}
-      <div className="bg-gray-800 rounded-lg border border-gray-700">
+      <div className="bg-[#111624] rounded-lg border border-gray-700">
         <div className="border-b border-gray-700">
           <div className="flex">
             <button
@@ -790,7 +790,7 @@ const WebsiteAnalyticsPage = () => {
       {/* Additional Statistics */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Posts Chart */}
-        <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
+        <div className="bg-[#111624] rounded-lg p-6 border border-gray-700">
           <h2 className="text-xl font-bold text-white mb-4">Daily Posts</h2>
           {loading.all ? (
             <div className="h-64 flex items-center justify-center">

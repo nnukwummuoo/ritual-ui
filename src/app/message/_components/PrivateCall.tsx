@@ -561,7 +561,7 @@ export const PrivateCallPage = () => {
               className="w-full h-screen object-cover object-center"
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center bg-gray-800 text-white text-2xl">
+            <div className="w-full h-full flex items-center justify-center bg-[#111624] text-white text-2xl">
               Camera is off
             </div>
           )}

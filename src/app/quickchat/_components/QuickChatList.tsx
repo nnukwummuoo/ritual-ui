@@ -197,7 +197,7 @@ export const QuickChatList = ({ userid, isLoggedIn }: { userid: string; isLogged
           <div
             key={index}
             onClick={() => handleMessageClick(message.fromid, message.toid)}
-            className="flex items-center gap-3 p-3 hover:bg-gray-800/50 rounded-lg cursor-pointer transition-colors"
+            className="flex items-center gap-3 p-3 hover:bg-[#111624]/50 rounded-lg cursor-pointer transition-colors"
           >
             {/* Avatar */}
             <div className="relative">

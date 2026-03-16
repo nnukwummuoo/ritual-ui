@@ -599,7 +599,7 @@ function PostSingle() {
                                                             </div>
                                                         </div>
                                                         <div className="flex-1">
-                                                            <div className="bg-gray-800 rounded-lg p-3">
+                                                            <div className="bg-[#111624] rounded-lg p-3">
                                                                 <div className="flex items-center gap-2 mb-2">
                                                                     <p className="font-semibold text-sm text-white">
                                                                         {comment.commentusername || comment.user?.username || comment.username || 'User'}
@@ -656,7 +656,7 @@ function PostSingle() {
                                                         input: e.target.value
                                                     }))}
                                                     placeholder="Write a comment…"
-                                                    className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm outline-none focus:border-gray-500"
+                                                    className="flex-1 bg-[#111624] border border-gray-700 rounded-lg px-3 py-2 text-sm outline-none focus:border-gray-500"
                                                     onKeyPress={(e) => {
                                                         if (e.key === 'Enter' && !e.shiftKey) {
                                                             e.preventDefault();

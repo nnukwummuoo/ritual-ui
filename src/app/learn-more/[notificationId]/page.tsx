@@ -113,7 +113,7 @@ const LearnMorePage = () => {
   return (
     <div className="min-h-screen bg-[#080b14] py-8">
       <div className="max-w-4xl mx-auto px-4">
-        <div className="bg-gray-800 rounded-lg p-8">
+        <div className="bg-[#111624] rounded-lg p-8">
           <h1 className="text-3xl font-bold text-blue-500 mb-6">{notification.title}</h1>
           
           <div className="prose prose-invert max-w-none">

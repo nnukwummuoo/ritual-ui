@@ -97,7 +97,7 @@ export default function ReferralAnalysisPage() {
     return (
         <div className="w-full">
             {/* Tab Navigation */}
-            <div className="flex gap-2 mb-6 bg-gray-800 p-1 rounded-lg">
+            <div className="flex gap-2 mb-6 bg-[#111624] p-1 rounded-lg">
                 <button
                     onClick={() => setActiveTab('overview')}
                     className={`flex-1 py-3 px-4 rounded-md text-sm font-semibold transition-all ${activeTab === 'overview'
@@ -124,7 +124,7 @@ export default function ReferralAnalysisPage() {
                     {/* Overview Stats */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                         {/* Total Users */}
-                        <div className="bg-gray-800 p-6 rounded-xl border border-gray-700">
+                        <div className="bg-[#111624] p-6 rounded-xl border border-gray-700">
                             <div className="flex items-center justify-between mb-3">
                                 <span className="text-gray-400 text-sm font-medium">Total Users</span>
                                 <IoPeopleOutline className="text-blue-400" size={24} />
@@ -135,7 +135,7 @@ export default function ReferralAnalysisPage() {
                         </div>
 
                         {/* Users With Referral */}
-                        <div className="bg-gray-800 p-6 rounded-xl border border-gray-700">
+                        <div className="bg-[#111624] p-6 rounded-xl border border-gray-700">
                             <div className="flex items-center justify-between mb-3">
                                 <span className="text-gray-400 text-sm font-medium">With Referral</span>
                                 <IoTrendingUpOutline className="text-green-400" size={24} />
@@ -149,7 +149,7 @@ export default function ReferralAnalysisPage() {
                         </div>
 
                         {/* Users Without Referral */}
-                        <div className="bg-gray-800 p-6 rounded-xl border border-gray-700">
+                        <div className="bg-[#111624] p-6 rounded-xl border border-gray-700">
                             <div className="flex items-center justify-between mb-3">
                                 <span className="text-gray-400 text-sm font-medium">Without Referral</span>
                                 <IoTrendingUpOutline className="text-purple-400" size={24} />
@@ -163,7 +163,7 @@ export default function ReferralAnalysisPage() {
                         </div>
 
                         {/* Total Gold Spent */}
-                        <div className="bg-gray-800 p-6 rounded-xl border border-gray-700">
+                        <div className="bg-[#111624] p-6 rounded-xl border border-gray-700">
                             <div className="flex items-center justify-between mb-3">
                                 <span className="text-gray-400 text-sm font-medium">Gold Spent</span>
                                 <IoGiftOutline className="text-yellow-400" size={24} />
@@ -178,7 +178,7 @@ export default function ReferralAnalysisPage() {
                     </div>
 
                     {/* Visual Breakdown */}
-                    <div className="bg-gray-800 p-6 rounded-xl border border-gray-700">
+                    <div className="bg-[#111624] p-6 rounded-xl border border-gray-700">
                         <h3 className="text-lg font-semibold text-white mb-4">User Acquisition Breakdown</h3>
                         <div className="space-y-4">
                             {/* Referred Users Bar */}
@@ -218,7 +218,7 @@ export default function ReferralAnalysisPage() {
             ) : (
                 <div className="space-y-4">
                     {/* Top Referrers List */}
-                    <div className="bg-gray-800 p-6 rounded-xl border border-gray-700">
+                    <div className="bg-[#111624] p-6 rounded-xl border border-gray-700">
                         <div className="flex items-center gap-2 mb-6">
                             <IoTrophyOutline className="text-yellow-400" size={24} />
                             <h3 className="text-lg font-semibold text-white">

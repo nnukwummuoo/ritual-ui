@@ -131,7 +131,7 @@ const FilterModal: React.FC<FilterModalProps> = ({
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black bg-opacity-50 w-full h-full">
       <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 w-full h-full max-w-md mx-auto flex flex-col">
         {/* Header */}
-        <div className="bg-gray-800 flex items-center justify-between px-4 py-3 border-b border-gray-700">
+        <div className="bg-[#111624] flex items-center justify-between px-4 py-3 border-b border-gray-700">
           <h2 className="text-white text-lg font-semibold">Filter</h2>
           <button
             onClick={onClose}
@@ -324,7 +324,7 @@ const FilterModal: React.FC<FilterModalProps> = ({
                   className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
                 {showSuggestions && suggestions.length > 0 && (
-                  <div className="absolute z-10 w-full mt-1 bg-gray-800 border border-gray-700 rounded shadow-lg max-h-40 overflow-y-auto">
+                  <div className="absolute z-10 w-full mt-1 bg-[#111624] border border-gray-700 rounded shadow-lg max-h-40 overflow-y-auto">
                     {suggestions.map((suggestion, index) => (
                       <div
                         key={index}
@@ -342,7 +342,7 @@ const FilterModal: React.FC<FilterModalProps> = ({
         </div>
 
         {/* Action Buttons */}
-        <div className="px-4 py-3 bg-gray-800 border-t border-gray-700 flex gap-3">
+        <div className="px-4 py-3 bg-[#111624] border-t border-gray-700 flex gap-3">
           <button
             onClick={handleClearAll}
             className="flex-1 px-4 py-2 border border-gray-600 rounded-lg text-gray-200 hover:bg-gray-700 transition-colors"

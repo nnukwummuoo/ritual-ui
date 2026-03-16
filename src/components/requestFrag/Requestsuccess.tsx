@@ -2,7 +2,7 @@ import React from 'react'
 
 export const Requestsuccess = ({setrequested}: {setrequested : any}) => {
   return (
-    <div className='w-48 h-fit bg-gray-800 mx-auto p-5 rounded-lg z-50' style={{width:'95%',maxWidth:500}} >
+    <div className='w-48 h-fit bg-[#111624] mx-auto p-5 rounded-lg z-50' style={{width:'95%',maxWidth:500}} >
 
         <p className='text-center pt-2 text-sm text-white'><span className='text-bold text-green-600'>Request sent, </span>please wait for creator to accept your request</p>
 

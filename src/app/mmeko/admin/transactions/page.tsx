@@ -197,7 +197,7 @@ const TransactionsPage = () => {
         </div>
 
         {/* Filters and Search */}
-        <div className="bg-gray-800 rounded-lg shadow-sm border border-gray-700 p-6 mb-6">
+        <div className="bg-[#111624] rounded-lg shadow-sm border border-gray-700 p-6 mb-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             {/* Search */}
             <div className="relative">
@@ -250,7 +250,7 @@ const TransactionsPage = () => {
         </div>
 
         {/* Transactions Table */}
-        <div className="bg-gray-800 rounded-lg shadow-sm border border-gray-700 overflow-hidden">
+        <div className="bg-[#111624] rounded-lg shadow-sm border border-gray-700 overflow-hidden">
           {loading ? (
             <div className="flex items-center justify-center py-12">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
@@ -287,7 +287,7 @@ const TransactionsPage = () => {
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="bg-gray-800 divide-y divide-gray-700">
+                  <tbody className="bg-[#111624] divide-y divide-gray-700">
                     {paginatedTransactions.map((transaction) => (
                       <tr key={transaction._id} className="hover:bg-gray-700">
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-white">
@@ -339,7 +339,7 @@ const TransactionsPage = () => {
 
               {/* Pagination */}
               {totalPages > 1 && (
-                <div className="bg-gray-800 px-4 py-3 flex items-center justify-between border-t border-gray-700 sm:px-6">
+                <div className="bg-[#111624] px-4 py-3 flex items-center justify-between border-t border-gray-700 sm:px-6">
                   <div className="flex-1 flex justify-between sm:hidden">
                     <button
                       onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
@@ -392,7 +392,7 @@ const TransactionsPage = () => {
         {/* Transaction Details Modal */}
         {selectedTransaction && (
           <div className="fixed inset-0 bg-black bg-opacity-50 overflow-y-auto h-full w-full z-50">
-            <div className="relative top-20 mx-auto p-5 border border-gray-700 w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-gray-800 max-h-[85vh] overflow-y-auto">
+            <div className="relative top-20 mx-auto p-5 border border-gray-700 w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-[#111624] max-h-[85vh] overflow-y-auto">
               <div className="mt-3">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-lg font-medium text-white">Transaction Details</h3>
@@ -469,7 +469,7 @@ const TransactionsPage = () => {
         {/* Verification Modal */}
         {showVerifyModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 overflow-y-auto h-full w-full z-50">
-            <div className="relative top-20 mx-auto p-5 border border-gray-700 w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-gray-800">
+            <div className="relative top-20 mx-auto p-5 border border-gray-700 w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-[#111624]">
               <div className="mt-3">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-lg font-medium text-white flex items-center gap-2">

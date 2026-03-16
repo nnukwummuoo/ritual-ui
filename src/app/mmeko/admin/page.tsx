@@ -273,7 +273,7 @@ const AdminPage = () => {
           </div>
 
           {/* Push Notifications Toggle */}
-          <div className="mb-6 p-3 bg-gray-800 rounded-lg">
+          <div className="mb-6 p-3 bg-[#111624] rounded-lg">
             <div className="flex items-center justify-center md:justify-start gap-2 mb-2">
               <IoChatbubbleOutline color="white" size={20} />
               <span className="font-medium text-white hidden md:inline">Push Notifications</span>
@@ -284,7 +284,7 @@ const AdminPage = () => {
           </div>
 
           {/* Maintenance Toggle */}
-          <div className="mb-6 p-3 bg-gray-800 rounded-lg">
+          <div className="mb-6 p-3 bg-[#111624] rounded-lg">
             <div className="flex items-center justify-center md:justify-start gap-2 mb-2">
               <IoConstructOutline color="white" size={20} />
               <span className="font-medium text-white hidden md:inline">Maintenance</span>
@@ -295,7 +295,7 @@ const AdminPage = () => {
           </div>
 
           {/* Sort Creator Toggle */}
-          <div className="mb-6 p-3 bg-gray-800 rounded-lg">
+          <div className="mb-6 p-3 bg-[#111624] rounded-lg">
             <div className="flex items-center justify-center md:justify-start gap-2 mb-2">
               <IoTimerOutline color="white" size={20} />
               <span className="font-medium text-white hidden md:inline">Creator Sorting</span>

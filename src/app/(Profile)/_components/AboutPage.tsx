@@ -198,7 +198,7 @@ const AboutPage = () => {
       <div className="sticky top-0 bg-[#0e0f2a] border-b border-gray-700 px-4 py-3 flex items-center justify-between">
         <button
           onClick={() => router.back()}
-          className="p-2 hover:bg-gray-800 rounded-full transition-colors"
+          className="p-2 hover:bg-[#111624] rounded-full transition-colors"
         >
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -232,7 +232,7 @@ const AboutPage = () => {
                   if (profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined") {
                     const imageSource = getImageSource(profileImage, 'profile');
                     return (
-                      <div className="w-[120px] h-[120px] rounded-full overflow-hidden flex items-center justify-center bg-gray-800">
+                      <div className="w-[120px] h-[120px] rounded-full overflow-hidden flex items-center justify-center bg-[#111624]">
                         <Image
                           src={imageSource.src}
                           alt="Profile picture"

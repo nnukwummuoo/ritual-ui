@@ -11,7 +11,7 @@ export const CreatorsSkeleton = () => {
             {/* Creators grid skeleton */}
             <div className="grid grid-cols-2 gap-4">
                 {[1, 2, 3, 4, 5, 6].map((i) => (
-                    <div key={i} className="bg-gray-800 rounded-lg p-4 animate-pulse">
+                    <div key={i} className="bg-[#111624] rounded-lg p-4 animate-pulse">
                         {/* Avatar skeleton */}
                         <div className="w-20 h-20 bg-gray-700 rounded-full mx-auto mb-3"></div>
 
@@ -33,7 +33,7 @@ export const CreatorsSkeleton = () => {
 // Skeleton component for Rituals/Stories
 export const RitualsSkeleton = () => {
     return (
-        <div className="w-full bg-gray-800 rounded-lg p-4">
+        <div className="w-full bg-[#111624] rounded-lg p-4">
             {/* Header skeleton */}
             <div className="flex items-center justify-between mb-4">
                 <div className="h-6 w-28 bg-gray-700 rounded animate-pulse"></div>
@@ -46,7 +46,7 @@ export const RitualsSkeleton = () => {
                     <div key={i} className="flex-shrink-0 animate-pulse">
                         {/* Story circle skeleton */}
                         <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full p-[2px] mb-2">
-                            <div className="w-full h-full bg-gray-800 rounded-full"></div>
+                            <div className="w-full h-full bg-[#111624] rounded-full"></div>
                         </div>
 
                         {/* Story title skeleton */}
@@ -61,7 +61,7 @@ export const RitualsSkeleton = () => {
 // Skeleton component for Top Fans
 export const TopFansSkeleton = () => {
     return (
-        <div className="w-full bg-gray-800 rounded-lg p-4">
+        <div className="w-full bg-[#111624] rounded-lg p-4">
             {/* Header skeleton */}
             <div className="flex items-center justify-between mb-4">
                 <div className="h-6 w-32 bg-gray-700 rounded animate-pulse"></div>
@@ -130,7 +130,7 @@ export const TopFansSkeleton = () => {
 // General Post Skeleton (for lazy loading)
 export const PostSkeleton = () => {
     return (
-        <div className="w-full bg-gray-800 rounded-lg p-4 mb-4 animate-pulse">
+        <div className="w-full bg-[#111624] rounded-lg p-4 mb-4 animate-pulse">
             {/* Header with avatar and name */}
             <div className="flex items-center gap-3 mb-4">
                 <div className="w-12 h-12 bg-gray-700 rounded-full flex-shrink-0"></div>

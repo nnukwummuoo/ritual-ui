@@ -82,7 +82,7 @@ export const Pagination: React.FC<PaginationProps> = ({
         className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
           currentPage === 1
             ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
-            : 'bg-gray-800 text-white hover:bg-yellow-600 hover:scale-105'
+            : 'bg-[#111624] text-white hover:bg-yellow-600 hover:scale-105'
         }`}
         aria-label="Previous page"
       >
@@ -113,7 +113,7 @@ export const Pagination: React.FC<PaginationProps> = ({
                 className={`min-w-[40px] px-3 py-2 rounded-lg font-medium transition-all duration-200 ${
                   currentPage === page
                     ? 'bg-yellow-600 text-white scale-110 shadow-lg'
-                    : 'bg-gray-800 text-white hover:bg-gray-700 hover:scale-105'
+                    : 'bg-[#111624] text-white hover:bg-gray-700 hover:scale-105'
                 }`}
                 aria-label={`Page ${page}`}
                 aria-current={currentPage === page ? 'page' : undefined}
@@ -132,7 +132,7 @@ export const Pagination: React.FC<PaginationProps> = ({
         className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
           currentPage === totalPages
             ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
-            : 'bg-gray-800 text-white hover:bg-yellow-600 hover:scale-105'
+            : 'bg-[#111624] text-white hover:bg-yellow-600 hover:scale-105'
         }`}
         aria-label="Next page"
       >

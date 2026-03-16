@@ -38,7 +38,7 @@ const ContentFilterModal: React.FC<ContentFilterModalProps> = ({
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black bg-opacity-50 w-full h-full">
       <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 w-full max-w-md mx-4 rounded-lg shadow-xl flex flex-col max-h-[90vh]">
         {/* Header */}
-        <div className="bg-gray-800 flex items-center justify-between px-4 py-3 border-b border-gray-700 rounded-t-lg">
+        <div className="bg-[#111624] flex items-center justify-between px-4 py-3 border-b border-gray-700 rounded-t-lg">
           <h2 className="text-white text-lg font-semibold">Filter Content</h2>
           <button
             onClick={onClose}
@@ -71,7 +71,7 @@ const ContentFilterModal: React.FC<ContentFilterModalProps> = ({
         </div>
 
         {/* Action Buttons */}
-        <div className="px-4 py-3 bg-gray-800 border-t border-gray-700 flex gap-3 rounded-b-lg">
+        <div className="px-4 py-3 bg-[#111624] border-t border-gray-700 flex gap-3 rounded-b-lg">
           <button
             onClick={onClose}
             className="flex-1 px-4 py-2 border border-gray-600 rounded-lg text-gray-200 hover:bg-gray-700 transition-colors"

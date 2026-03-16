@@ -355,7 +355,7 @@ const FollowerCard: React.FC<FollowerCardProps> = ({ image, name, creator_portfo
 
   return (
     <div
-      className="flex items-center gap-3 w-full px-2 py-3 mb-3 rounded-lg hover:bg-gray-800/30 cursor-pointer transition-colors"
+      className="flex items-center gap-3 w-full px-2 py-3 mb-3 rounded-lg hover:bg-[#111624]/30 cursor-pointer transition-colors"
       onClick={handleProfileClick}
       data-userid={userId}
       data-following={isFollowing ? 'true' : 'false'}

@@ -61,7 +61,7 @@ export default function MaintenanceControl() {
                 </div>
             </div>
 
-            <div className="bg-gray-800/50 rounded-lg p-6 mb-8 border border-gray-700">
+            <div className="bg-[#111624]/50 rounded-lg p-6 mb-8 border border-gray-700">
                 <div className="flex items-start gap-3">
                     <IoWarning className="text-amber-500 mt-1 shrink-0" size={24} />
                     <div>
