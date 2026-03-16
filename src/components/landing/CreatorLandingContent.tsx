@@ -477,7 +477,7 @@ export default function CreatorLandingContent({ prefetchedCreators }: Props) {
 
       {/* NAV */}
       <nav style={{
-        position:"fixed", top:0, left:0, right:0, zIndex:100,
+        position:"fixed", top:0, left:0, width:"100vw", zIndex:100,
         padding:"0 20px", height:64,
         display:"flex", alignItems:"center", justifyContent:"space-between",
         background:"rgba(8,11,20,.98)",
@@ -486,7 +486,6 @@ export default function CreatorLandingContent({ prefetchedCreators }: Props) {
         borderBottom:"1px solid rgba(255,255,255,0.07)",
         fontFamily:"'Plus Jakarta Sans', sans-serif",
         boxSizing:"border-box",
-        overflow:"hidden",
       }}>
         {/* Logo */}
         <Link href="/" style={{ display:"flex", alignItems:"center", gap:10, textDecoration:"none", flexShrink:0 }}>
@@ -500,7 +499,7 @@ export default function CreatorLandingContent({ prefetchedCreators }: Props) {
         </Link>
 
         {/* Desktop links — hidden on mobile */}
-        <div className="lp-nav-links-inner" style={{ display:"flex", alignItems:"center", gap:8, flex:1, justifyContent:"center" }}>
+        <div className="lp-nav-links-inner" style={{ display:"flex", alignItems:"center", gap:8, justifyContent:"center", minWidth:0 }}>
           {[["Offerings","#offerings"],["How It Works","#how"],["Payments","#payments"],["Safety","#safety"],["Compare","#compare"],["FAQ","#faq"]].map(([l,h]) => (
             <a key={l} href={h} style={{ color:"#94a3b8", textDecoration:"none", fontSize:13.5, fontWeight:500, padding:"6px 12px", borderRadius:8, whiteSpace:"nowrap" }}>{l}</a>
           ))}
