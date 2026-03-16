@@ -340,7 +340,8 @@ const CSS = `
 
 /* RESPONSIVE */
 @media(max-width: 900px) {
-  .lp-nav { padding: 0 20px; }
+  .lp-nav-links-inner { display: none !important; }
+  .lp-nav-mobile-pad { padding: 0 20px !important; }
   .lp-nav .nav-links { display: none !important; }
   .lp-nav .nl { display: none; }
   .lp-nav .nav-divider { display: none; }
@@ -474,21 +475,50 @@ export default function CreatorLandingContent({ prefetchedCreators }: Props) {
     <>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
 
-      {/* NAV — outside .lp so position:fixed works correctly */}
-      <nav className={`lp-nav${scrolled ? " scrolled" : ""}`}>
-        <Link href="/" className="logo" style={{ display:"flex", alignItems:"center", gap:10, textDecoration:"none" }}>
-          <div className="logo-icon" style={{ width:34, height:34, borderRadius:9, background:"linear-gradient(135deg,#6c63ff,#9b59f5)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:15, fontWeight:800, color:"white" }}>M</div>
-          <span className="logo-name" style={{ fontSize:18, fontWeight:700, color:"#f1f5f9", letterSpacing:"-.3px" }}>mmeko</span>
+      {/* NAV */}
+      <nav style={{
+        position:"fixed", top:0, left:0, right:0, zIndex:100,
+        padding:"0 40px", height:64,
+        display:"flex", alignItems:"center", justifyContent:"space-between",
+        transition:"background .3s, borderColor .3s",
+        borderBottom: scrolled ? "1px solid rgba(255,255,255,0.07)" : "1px solid transparent",
+        background: scrolled ? "rgba(8,11,20,.95)" : "transparent",
+        backdropFilter: scrolled ? "blur(20px)" : "none",
+        WebkitBackdropFilter: scrolled ? "blur(20px)" : "none",
+        fontFamily:"'Plus Jakarta Sans', sans-serif",
+      }}>
+        <Link href="/" style={{ display:"flex", alignItems:"center", gap:10, textDecoration:"none" }}>
+          <div style={{
+            width:34, height:34, borderRadius:9,
+            background:"linear-gradient(135deg,#6c63ff,#9b59f5)",
+            display:"flex", alignItems:"center", justifyContent:"center",
+            fontSize:15, fontWeight:800, color:"white", letterSpacing:"-.5px",
+            flexShrink:0,
+          }}>M</div>
+          <span style={{ fontSize:18, fontWeight:700, color:"#f1f5f9", letterSpacing:"-.3px" }}>mmeko</span>
         </Link>
-        <div className="nav-links">
+
+        {/* Desktop links — hidden on mobile via CSS */}
+        <div className="lp-nav-links-inner" style={{ display:"flex", alignItems:"center", gap:8 }}>
           {[["Offerings","#offerings"],["How It Works","#how"],["Payments","#payments"],["Safety","#safety"],["Compare","#compare"],["FAQ","#faq"]].map(([l,h]) => (
-            <a key={l} href={h} className="nl">{l}</a>
+            <a key={l} href={h} style={{ color:"#94a3b8", textDecoration:"none", fontSize:13.5, fontWeight:500, padding:"6px 12px", borderRadius:8 }}>{l}</a>
           ))}
-          <div className="nav-divider" />
+          <div style={{ width:1, height:20, background:"rgba(255,255,255,0.07)", margin:"0 4px" }} />
         </div>
-        <div className="nav-btns">
-          <Link href="/auth/login" className="nav-btn nav-btn-ghost">Sign In</Link>
-          <Link href="/auth/register" className="nav-btn nav-btn-primary">Apply Now →</Link>
+
+        {/* Sign In + Apply — always visible */}
+        <div style={{ display:"flex", alignItems:"center", gap:8, flexShrink:0 }}>
+          <Link href="/auth/login" style={{
+            color:"#94a3b8", border:"1px solid rgba(255,255,255,0.07)",
+            padding:"8px 18px", borderRadius:8, fontSize:13.5, fontWeight:600,
+            textDecoration:"none", display:"inline-flex", alignItems:"center",
+          }}>Sign In</Link>
+          <Link href="/auth/register" style={{
+            background:"linear-gradient(135deg,#6c63ff,#9b59f5)", color:"white",
+            padding:"8px 18px", borderRadius:8, fontSize:13.5, fontWeight:600,
+            textDecoration:"none", display:"inline-flex", alignItems:"center",
+            boxShadow:"0 0 0 1px rgba(108,99,255,.3),0 4px 16px rgba(108,99,255,.25)",
+          }}>Apply Now →</Link>
         </div>
       </nav>
 
