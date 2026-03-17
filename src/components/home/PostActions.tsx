@@ -86,6 +86,15 @@ function CommentIconComponent() {
   );
 }
 
+function DotsIconSVG() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+      <circle cx="5" cy="12" r="1.5" fill="#64748b"/>
+      <circle cx="12" cy="12" r="1.5" fill="#64748b"/>
+      <circle cx="19" cy="12" r="1.5" fill="#64748b"/>
+    </svg>
+  );
+}
 
 
 function DotsIcon({ post }: { post: any }) { // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -307,16 +316,13 @@ function DotsIcon({ post }: { post: any }) { // eslint-disable-line @typescript-
     </div>
     </div>
     :<></>}
-    <Image 
-      src="/icons/current-3-dot-icon.png" 
-      alt="more options" 
-      width={28} 
-      height={28} 
-      className={iconBase} 
-      onClick={() => { 
-        setHasPop(!hasPop);
-      }}
-    />
+    <button
+  type="button"
+  className="flex items-center justify-center px-2 py-2 rounded hover:bg-gray-700/50 transition-colors duration-200"
+  onClick={() => setHasPop(!hasPop)}
+>
+  <DotsIconSVG />
+</button>
     </>
   );
 }
@@ -428,16 +434,9 @@ export default function PostActions({
         <span className="text-sm tabular-nums">{commentCount}</span>
       </button>
 
-      <button
-        type="button"
-        className="ml-auto px-3 py-2 rounded hover:bg-gray-700/50 transition-colors duration-200 text-gray-400 hover:text-gray-200"
-        onClick={() => {
-          // The DotsIcon component handles its own click events
-        }}
-        aria-label="More options"
-      >
-        <DotsIcon post={ post } />
-      </button>
+      <div className="ml-auto">
+  <DotsIcon post={post} />
+</div>
     </div>
   );
 }

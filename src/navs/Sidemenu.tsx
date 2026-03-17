@@ -185,13 +185,14 @@ const Sidemenu = () => {
           // ✅ No onClick here — was closing menu on any click inside
           className={`${
             open ? "show" : "hide"
-          } menu-width origin-top-right mr mt pt px-2 py-4 h-fit bg-[#080b14] text-white fixed rounded-l-lg rounded-r-2xl z-[100]`}
+          } menu-width origin-top-right mr mt pt px-2 py-4 h-fit bg-gray-900 text-white fixed rounded-l-lg rounded-r-2xl z-[100]`}
         >
-<div className="absolute top-3 right-3 z-[110] hidden lg:block">
-  <button
-    onClick={handleMenubar}
-    className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-700 hover:bg-gray-600 transition-colors duration-200"
-  >
+          {/* ✅ Close button — visible on ALL screen sizes */}
+          <div className="absolute top-3 right-3 z-[110]">
+            <button
+              onClick={handleMenubar}
+              className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-700 hover:bg-gray-600 transition-colors duration-200"
+            >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
                 <path
                   d="M18 6L6 18M6 6l12 12"
@@ -242,14 +243,14 @@ const Sidemenu = () => {
               <div className="cstm-flex gap-4 items-start w-full mt-4">
                 <button
                   className="flex gap-2 items-center text-black justify-center font-bold text-sm w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white py-3 rounded-lg transition-transform duration-300 hover:scale-105 shadow-md"
-                  onClick={() => router.push("/buy-gold")}
+                  onClick={() => { router.push("/buy-gold"); handleMenubar(); }}
                 >
                   <FaCoins /> <span>Get More Golds</span>
                 </button>
 
                 <button
                   className="cstm-boder w-full rounded-lg py-3 text-sm font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent bg-inherit flex gap-2 items-center justify-center transition-transform duration-300 hover:scale-105"
-                  onClick={() => router.push("/vip")}
+                  onClick={() => { router.push("/vip"); handleMenubar(); }}
                 >
                   <span>Upgrade Account</span>
                 </button>
