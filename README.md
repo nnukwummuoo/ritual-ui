@@ -44,7 +44,7 @@ The creator request system allows fans to request different types of interaction
 - **Purpose**: Accept fan requests by creators
 - **Features**:
   - Request status update (pending → accepted)
-  - 48-hour timer initialization for Fan Calls
+  - 24-hour timer initialization for Fan Calls
   - Real-time notifications to fans
   - Gold reservation and payment processing
   - Safety rules agreement for Fan Meets
@@ -129,7 +129,7 @@ The creator request system allows fans to request different types of interaction
 ###### Fan Call
 - **Video call functionality**: WebRTC integration for real-time video calls
 - **Billing**: Per-minute gold deduction during active calls
-- **Duration**: 48-hour window to start call after acceptance
+- **Duration**: 7-days window to start call after acceptance
 - **Features**: VIP badge display, call quality indicators
 - **Backend**: `payclient_PCALL.js` handles per-minute billing
 

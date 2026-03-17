@@ -185,7 +185,7 @@ const Sidemenu = () => {
           // ✅ No onClick here — was closing menu on any click inside
           className={`${
             open ? "show" : "hide"
-          } menu-width origin-top-right mr mt pt px-2 py-4 h-fit bg-gray-900 text-white fixed rounded-l-lg rounded-r-2xl z-[100]`}
+          } menu-width origin-top-right mr mt pt px-2 py-4 h-fit #080b14 text-white fixed rounded-l-lg rounded-r-2xl z-[100]`}
         >
           {/* ✅ Close button — visible on ALL screen sizes */}
           <div className="absolute top-3 right-3 z-[110]">

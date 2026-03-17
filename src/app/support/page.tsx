@@ -130,7 +130,7 @@ const SupportPage: React.FC = () => {
         },
         {
           question: "What if the fan didn't show up?",
-          answer: "❌ If the creator reports that the fan didn't show, the platform will investigate before the payment will be released to the creator."
+          answer: "❌ Don't worry — just contact mmeko Support directly through the platform. Our team reviews the situation using your on-platform chat history and releases your payment accordingly. We always have your back."
         },
         {
           question: "Why 14 days?",
@@ -159,7 +159,7 @@ const SupportPage: React.FC = () => {
           answer: "💰 No. Fan Call payments are only deducted during the live call, not before."
         },
         {
-          question: "Why is there a 48-hour limit?",
+          question: "Why is there a 7-days limit?",
           answer: "⏳ This helps fans and creators stay active and ensures requests don't pile up or get forgotten."
         }
       ]
