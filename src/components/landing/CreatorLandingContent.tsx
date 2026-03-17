@@ -542,7 +542,7 @@ export default function CreatorLandingContent({ prefetchedCreators }: Props) {
           <p className="hero-sub">The premium platform for <strong>structured fan meets, calls &amp; dates</strong> — plus PPV content, locked messages, and exclusive content sales. You keep 100%. Always.</p>
           <div className="hero-ctas">
             <button className="btn-primary" onClick={() => router.push("/auth/register")}>Become a Creator <span>→</span></button>
-            <button className="btn-secondary" onClick={() => router.push("/")}>Explore as Fan</button>
+            <button className="btn-secondary" onClick={() => router.push("/auth/register")}>Explore as Fan</button>
           </div>
           <div className="hero-trust">
             <div className="trust-item"><span>✓</span> 0% commission</div>
@@ -718,7 +718,7 @@ export default function CreatorLandingContent({ prefetchedCreators }: Props) {
           <p className="final-sub">Join creators who are building real, meaningful fan relationships — safely, instantly, and on their own terms.</p>
           <div className="final-ctas">
             <button className="btn-primary" onClick={() => router.push("/auth/register")}>Apply as Creator →</button>
-            <button className="btn-secondary" onClick={() => router.push("/")}>Explore as Fan</button>
+            <button className="btn-secondary" onClick={() => router.push("/auth/register")}>Explore as Fan</button>
           </div>
           <div className="final-trust">
             <div className="ft-item"><div className="ft-icon">✓</div> Fully protected</div>
