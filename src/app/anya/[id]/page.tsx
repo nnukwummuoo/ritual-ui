@@ -223,28 +223,58 @@ function RitualRow({
               </button>
             )}
 
-            {/* First panel swipe hint — animated chevrons */}
+            {/* First panel swipe hint — cascading chevrons left + right like reference image */}
             {index === 0 && story.panels.length > 1 && isActive && (
               <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.8, duration: 0.5 }}
-                className="absolute bottom-10 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-1 pointer-events-none"
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 1, duration: 0.5 }}
+                className="absolute bottom-10 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-2 pointer-events-none"
               >
-                <svg width="80" height="44" viewBox="0 0 80 44" xmlns="http://www.w3.org/2000/svg">
-                  <style>{`
-                    @keyframes swipeFlow{0%{opacity:.12}100%{opacity:1}}
-                    .ch1{animation:swipeFlow 1.1s 0s ease-in-out infinite alternate}
-                    .ch2{animation:swipeFlow 1.1s .18s ease-in-out infinite alternate}
-                    .ch3{animation:swipeFlow 1.1s .36s ease-in-out infinite alternate}
-                    .ch4{animation:swipeFlow 1.1s .54s ease-in-out infinite alternate}
-                  `}</style>
-                  <polyline className="ch1" points="4,4 20,22 4,40"   fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-                  <polyline className="ch2" points="20,4 36,22 20,40" fill="none" stroke="white" strokeWidth="3"   strokeLinecap="round" strokeLinejoin="round"/>
-                  <polyline className="ch3" points="36,4 52,22 36,40" fill="none" stroke="white" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"/>
-                  <polyline className="ch4" points="52,4 68,22 52,40" fill="none" stroke="white" strokeWidth="4"   strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-                <span style={{ fontSize: 10, color: "rgba(255,255,255,.35)", letterSpacing: "0.12em", textTransform: "uppercase" }}>swipe</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+
+                  {/* ← Left arrows (mirror of right, pointing left — fading right→left) */}
+                  <svg width="68" height="36" viewBox="0 0 68 36">
+                    <style>{`
+                      @keyframes chaseLeft {
+                        0%,100% { opacity: 1 }
+                        50%     { opacity: 0.15 }
+                      }
+                      .cl1 { animation: chaseLeft 1.2s 0.54s ease-in-out infinite }
+                      .cl2 { animation: chaseLeft 1.2s 0.36s ease-in-out infinite }
+                      .cl3 { animation: chaseLeft 1.2s 0.18s ease-in-out infinite }
+                      .cl4 { animation: chaseLeft 1.2s 0s   ease-in-out infinite }
+                    `}</style>
+                    {/* Leftmost = darkest (bold), fading rightward */}
+                    <polyline className="cl1" points="4,3  14,18 4,33"  fill="none" stroke="white" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    <polyline className="cl2" points="18,3 28,18 18,33" fill="none" stroke="white" strokeWidth="3"   strokeLinecap="round" strokeLinejoin="round"/>
+                    <polyline className="cl3" points="32,3 42,18 32,33" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    <polyline className="cl4" points="46,3 56,18 46,33" fill="none" stroke="white" strokeWidth="2"   strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+
+                  <span style={{ fontSize: 10, color: 'rgba(255,255,255,.4)', letterSpacing: '0.15em', textTransform: 'uppercase', flexShrink: 0 }}>
+                    swipe
+                  </span>
+
+                  {/* → Right arrows (fading left→right, darkest on right like the image) */}
+                  <svg width="68" height="36" viewBox="0 0 68 36">
+                    <style>{`
+                      @keyframes chaseRight {
+                        0%,100% { opacity: 1 }
+                        50%     { opacity: 0.15 }
+                      }
+                      .cr1 { animation: chaseRight 1.2s 0s   ease-in-out infinite }
+                      .cr2 { animation: chaseRight 1.2s 0.18s ease-in-out infinite }
+                      .cr3 { animation: chaseRight 1.2s 0.36s ease-in-out infinite }
+                      .cr4 { animation: chaseRight 1.2s 0.54s ease-in-out infinite }
+                    `}</style>
+                    {/* Lightest on left, darkest on right — exactly like the reference image */}
+                    <polyline className="cr1" points="4,3  14,18 4,33"  fill="none" stroke="white" strokeWidth="2"   strokeLinecap="round" strokeLinejoin="round"/>
+                    <polyline className="cr2" points="18,3 28,18 18,33" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    <polyline className="cr3" points="32,3 42,18 32,33" fill="none" stroke="white" strokeWidth="3"   strokeLinecap="round" strokeLinejoin="round"/>
+                    <polyline className="cr4" points="46,3 56,18 46,33" fill="none" stroke="white" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </div>
               </motion.div>
             )}
 
@@ -335,18 +365,15 @@ export default function StoryViewPage() {
       try {
         setLoading(true);
 
-        // Fetch both sources in parallel
-        const [aiRes, creatorRes] = await Promise.allSettled([
-          axios.get('/api/proxy/api/ai-story/stories'),
+        // Fetch creator rituals only
+        const creatorRes = await Promise.allSettled([
           axios.get('/api/proxy/api/creator-rituals/feed'),
         ]);
 
-        const aiStories: Story[] = aiRes.status === 'fulfilled'
-          ? (aiRes.value.data.stories || [])
-          : [];
+        const aiStories: Story[] = [];
 
-        const creatorRituals: Story[] = creatorRes.status === 'fulfilled'
-          ? (creatorRes.value.data.rituals || []).map((r: any) => ({
+        const creatorRituals: Story[] = creatorRes[0].status === 'fulfilled'
+          ? (creatorRes[0].value.data.rituals || []).map((r: any) => ({
               _id: r._id,
               story_number: 0,
               title: r.title,
@@ -366,8 +393,7 @@ export default function StoryViewPage() {
             }))
           : [];
 
-        // Merge: creator rituals first, then AI
-        const all = [...creatorRituals, ...aiStories];
+        const all = [...creatorRituals];
         setStories(all);
 
         // Find the clicked story and scroll to it
@@ -544,6 +570,6 @@ export default function StoryViewPage() {
         userId={userId}
         username={username}
       />
-    </div>cd 
+    </div>
   );
 }

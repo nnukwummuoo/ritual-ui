@@ -94,19 +94,7 @@ export default function AnyaPage() {
         createdAt: r.createdAt, isCreatorRitual: true,
       }));
       tryRedirect(rituals);
-      // Also store for grid fallback
-      if (!redirected) setStories(prev => [...rituals, ...prev]);
-    }).catch(() => {});
-
-    axios.get('/api/proxy/api/ai-story/stories').then(res => {
-      const aiStories: Story[] = res.data.stories || [];
-      tryRedirect(aiStories);
-      setStories(prev => {
-        const ids = new Set(prev.map(s => s._id));
-        const merged = [...prev, ...aiStories.filter(s => !ids.has(s._id))];
-        if (!redirected) tryRedirect(merged);
-        return merged;
-      });
+      setStories(rituals);
       setLoading(false);
     }).catch(() => { setLoading(false); });
   }, []);
@@ -115,25 +103,18 @@ export default function AnyaPage() {
   const fetchStories = async () => {
     try {
       setLoading(true);
-      const [aiRes, creatorRes] = await Promise.allSettled([
-        axios.get('/api/proxy/api/ai-story/stories'),
-        axios.get('/api/proxy/api/creator-rituals/feed'),
-      ]);
-      const ai: Story[] = aiRes.status === 'fulfilled' ? (aiRes.value.data.stories || []) : [];
-      const creator: Story[] = creatorRes.status === 'fulfilled'
-        ? (creatorRes.value.data.rituals || []).map((r: any) => ({
-            _id: r._id, story_number: 0, title: r.title, emotional_core: '',
-            panels: (r.panels || []).map((p: any) => ({
-              panel_number: p.panel_number, text: p.subtitle || '', imageUrl: p.imageUrl || null,
-            })),
-            coverImage: r.coverImage || null, views: r.views || 0, likes: r.likes || 0,
-            likedBy: r.likedBy || [], comments: r.comments || [],
-            createdAt: r.createdAt, isCreatorRitual: true,
-          }))
-        : [];
-      const all = [...creator, ...ai];
-      setStories(all);
-      all.forEach(s => refreshStoryData(s._id));
+      const res = await axios.get('/api/proxy/api/creator-rituals/feed');
+      const rituals: Story[] = (res.data.rituals || []).map((r: any) => ({
+        _id: r._id, story_number: 0, title: r.title, emotional_core: '',
+        panels: (r.panels || []).map((p: any) => ({
+          panel_number: p.panel_number, text: p.subtitle || '', imageUrl: p.imageUrl || null,
+        })),
+        coverImage: r.coverImage || null, views: r.views || 0, likes: r.likes || 0,
+        likedBy: r.likedBy || [], comments: r.comments || [],
+        createdAt: r.createdAt, isCreatorRitual: true,
+      }));
+      setStories(rituals);
+      rituals.forEach(s => refreshStoryData(s._id));
     } catch {}
     finally { setLoading(false); }
   };
