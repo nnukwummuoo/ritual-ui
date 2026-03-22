@@ -378,8 +378,8 @@ const CSS = `
 // ── FAQ data ──────────────────────────────────────────────────────────────────
 
 const FAQ_CREATORS = [
-  { q: "What are Fan Meet and Fan Date for?", a: "🤝 Fan Meet – A short, casual meeting where you can greet your favorite creator, chat, and even take a selfie. It's about making a quick personal connection - limited to 30 minutes maximum for safety and fairness. 🍽 Fan Date – A slightly more relaxed session where you spend time together in a safe public place — like grabbing coffee, eating, or walking — but still limited to 30 minutes maximum for safety and fairness." },
-  { q: "What counts as a valid public space for meets?", a: "Any open, publicly accessible venue — cafés, restaurants, hotel lobbies, shopping malls, parks, or similar spaces. Private residences, cars, and secluded locations are never permitted. If you're unsure about a specific venue, contact mmeko Support before confirming the booking." },
+  { q: "What are Fan Meet and Fan Date?", a: "🤝 Fan Meet &amp; Greets – A short, casual meeting where you can greet your favorite creator, chat, and even take a selfie. It's about making a quick personal connection - limited to 30 minutes maximum for safety and fairness. 🍽 Fan Date – A slightly more relaxed session where you spend time together in a safe public place — like grabbing coffee, eating, or walking — but still limited to 30 minutes maximum for safety and fairness." },
+  { q: "What counts as a valid public space for meet &amp; greets?", a: "Any open, publicly accessible venue — cafés, restaurants, hotel lobbies, shopping malls, parks, or similar spaces. Private residences, cars, and secluded locations are never permitted. If you're unsure about a specific venue, contact mmeko Support before confirming the booking." },
   { q: "What if the fan doesn't show up to the meet?", a: "Contact mmeko Support immediately through the platform. Since all communication is required to stay on-platform, our team has full visibility of your booking history and can review the situation and release your payment accordingly. Keep all your conversations on mmeko — this is your protection." },
   { q: "What if the fan doesn't mark the meet as complete?", a: "Reach out to mmeko Support directly via the platform. Our team will review your on-platform chat history and meeting details, and release your payment accordingly. We always have your back — you will not be left unpaid for a meet you showed up to." },
   { q: "Can I cancel or decline a fan request?", a: "Yes — you have full control over fan request. You can decline any fan request before confirming it, and cancellations are possible subject to mmeko's cancellation policy. You're never obligated to accept a fan request you're not comfortable with." },
@@ -539,7 +539,7 @@ export default function CreatorLandingContent({ prefetchedCreators }: Props) {
             <span className="av-txt">Trusted by <strong>1,000+</strong> verified creators</span>
           </div>
           <h1>Where Fans Meet Creators<br /><span className="grad">Safely. Instantly. Fully.</span></h1>
-          <p className="hero-sub">The premium platform for <strong>structured fan meets, calls &amp; dates</strong> — plus PPV content, locked messages, and exclusive content sales. You keep 100%. Always.</p>
+          <p className="hero-sub">The premium platform for <strong>fan meet &amp; greets, calls &amp; dates</strong> — plus PPV content, locked messages, and exclusive content sales. You keep 100%. Always.</p>
           <div className="hero-ctas">
             <button className="btn-primary" onClick={() => router.push("/auth/register")}>Become a Creator <span>→</span></button>
             <button className="btn-secondary" onClick={() => router.push("/auth/register")}>Explore as Fan</button>
@@ -572,13 +572,13 @@ export default function CreatorLandingContent({ prefetchedCreators }: Props) {
               <div className="off-hero-left">
                 <div className="off-tag tag-purple">⭐ Core Offering</div>
                 <span className="off-icon">🤝</span>
-                <div className="off-title">Structured Fan Meets &amp; Dates</div>
-                <div className="off-desc">mmeko&apos;s flagship experience. Offer real-world meet-ups, virtual dates, and exclusive one-on-one time with your fans — structured, safe, and fully on your terms. Every meet is protected, every payment is instant.</div>
+                <div className="off-title">Structured Fan Meet &amp; Greets</div>
+                <div className="off-desc">mmeko&apos;s flagship experience. Offer real-world meet &amp; greets, virtual dates, and exclusive one-on-one time with your fans — structured, safe, and fully on your terms. Every meet is protected, every payment is instant.</div>
               </div>
               <div className="off-hero-right">
                 <div className="off-feat-row"><div className="off-feat-icon fi-purple">📅</div><div><div className="off-feat-title">You set the schedule</div><div className="off-feat-desc">When, where, and how — total control over your availability</div></div></div>
                 <div className="off-feat-row"><div className="off-feat-icon fi-teal">🛡</div><div><div className="off-feat-title">Structured safety</div><div className="off-feat-desc">Every interaction governed by mmeko&apos;s protection framework</div></div></div>
-                <div className="off-feat-row"><div className="off-feat-icon fi-rose">💸</div><div><div className="off-feat-title">Instant payment on booking</div><div className="off-feat-desc">Funds secured the moment a fan request</div></div></div>
+                <div className="off-feat-row"><div className="off-feat-icon fi-rose">💸</div><div><div className="off-feat-title">Instant payment on fan request</div><div className="off-feat-desc">Funds secured the moment a fan request</div></div></div>
               </div>
             </div>
             <div className="off-grid">
@@ -663,7 +663,7 @@ export default function CreatorLandingContent({ prefetchedCreators }: Props) {
                   </tr>
                 </thead>
                 <tbody>
-                  <tr><td className="td-feature">Structured Fan Meets &amp; Dates</td><td className="td-mmeko"><span className="ck">✓ Core feature</span></td><td className="td-other"><span className="cx">✗ Not offered</span></td></tr>
+                  <tr><td className="td-feature">Structured Fan Meet &amp; Greets</td><td className="td-mmeko"><span className="ck">✓ Core feature</span></td><td className="td-other"><span className="cx">✗ Not offered</span></td></tr>
                   <tr><td className="td-feature">30-Min Meet Cap (Creator Safety)</td><td className="td-mmeko"><span className="ck">✓ Enforced</span></td><td className="td-other"><span className="cx">✗ Not applicable</span></td></tr>
                   <tr><td className="td-feature">Public Venue Requirement</td><td className="td-mmeko"><span className="ck">✓ Always</span></td><td className="td-other"><span className="cx">✗ Not applicable</span></td></tr>
                   <tr><td className="td-feature">All Chats On-Platform</td><td className="td-mmeko"><span className="ck">✓ Required</span></td><td className="td-other"><span className="cx">✗ Not enforced</span></td></tr>
