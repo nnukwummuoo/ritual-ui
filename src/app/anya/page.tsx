@@ -265,7 +265,6 @@ export default function AnyaPage() {
         </motion.button>
       </div>
 
-      {/* Comment modal */}
       <CommentModal
         isOpen={commentModalOpen}
         onClose={() => setCommentModalOpen(false)}

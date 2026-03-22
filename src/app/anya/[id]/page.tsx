@@ -539,7 +539,6 @@ export default function StoryViewPage() {
         </div>
       </div>
 
-      {/* VERTICAL SNAP CONTAINER — one full-screen row per ritual */}
       <div
         ref={verticalRef}
         className="h-screen w-full flex flex-col snap-y snap-mandatory overflow-y-scroll"
