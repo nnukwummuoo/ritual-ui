@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import axios from 'axios';
 import { motion } from 'framer-motion';
 import { IoHeartOutline, IoHeart, IoShareSocialOutline, IoChatbubbleOutline, IoHome } from 'react-icons/io5';
@@ -15,611 +15,535 @@ import { useAnyaPageTracking } from '@/hooks/useAnyaPageTracking';
 import { useAnyaSessionTracking } from '@/hooks/useAnyaSessionTracking';
 import CommentModal from '@/components/CommentModal';
 
-interface Panel {
-    panel_number: number;
-    text: string;
-    imageUrl: string | null;
-}
-
+interface Panel { panel_number: number; text: string; imageUrl: string | null; }
 interface Story {
-    _id: string;
-    story_number: number;
-    title: string;
-    emotional_core: string;
-    panels: Panel[];
-    coverImage: string | null;
-    views: number;
-    likes: number;
-    likedBy?: string[];
-    comments?: Array<{
-        userId: string;
-        username: string;
-        text: string;
-        createdAt: string;
-    }>;
-    createdAt: string;
+  _id: string; story_number: number; title: string; emotional_core: string;
+  panels: Panel[]; coverImage: string | null; views: number; likes: number;
+  likedBy?: string[];
+  comments?: Array<{ userId: string; username: string; text: string; createdAt: string; }>;
+  createdAt: string;
+  isCreatorRitual?: boolean;
 }
 
-export default function StoryViewPage() {
-    const params = useParams();
-    const router = useRouter();
-    const storyId = params.id as string;
+// ── Per-ritual state (panel index + like count) ───────────────────────────────
+function RitualRow({
+  story,
+  isActive,
+  userId,
+  onComment,
+  toggleLike,
+  likedStories,
+  commentCounts,
+}: {
+  story: Story;
+  isActive: boolean;
+  userId: string;
+  onComment: (story: Story) => void;
+  toggleLike: (id: string, uid: string) => Promise<void>;
+  likedStories: Set<string>;
+  commentCounts: Map<string, number>;
+}) {
+  const [panelIndex, setPanelIndex] = useState(0);
+  const [likeCount, setLikeCount]   = useState(story.likes || 0);
+  const trackRef   = useRef<HTMLDivElement>(null);
+  const touchStartX = useRef(0);
+  const touchStartY = useRef(0);
+  const router = useRouter();
 
-    const [story, setStory] = useState<Story | null>(null);
-    const [loading, setLoading] = useState(true);
-    const [currentPanelIndex, setCurrentPanelIndex] = useState(0);
-    const [localLikeCount, setLocalLikeCount] = useState(0);
-    const containerRef = useRef<HTMLDivElement>(null);
+  const liked = likedStories.has(story._id);
 
-    // Story Context for likes and comments
-    const { likedStories, commentCounts, toggleLike, refreshStoryData } = useStory();
-
-    // Initialize background music (different random track than main page)
-    useAnyaMusic();
-
-    // Track page visit
-    useAnyaPageTracking('story', storyId);
-
-    // Track session duration
-    useAnyaSessionTracking('story', storyId);
-
-    // Get user ID from Redux
-    const reduxUserId = useSelector((state: RootState) => state.register.userID);
-
-    // Fallback to localStorage if Redux doesn't have it
-    const [userId, setUserId] = useState<string>('');
-    const [username, setUsername] = useState<string>('');
-
-    // Comment Modal State
-    const [commentModalOpen, setCommentModalOpen] = useState(false);
-
-    useEffect(() => {
-        if (reduxUserId) {
-            setUserId(reduxUserId);
-        }
-
-        if (typeof window !== 'undefined') {
-            try {
-                const loginData = localStorage.getItem('login');
-                if (loginData) {
-                    const parsed = JSON.parse(loginData);
-                    if (!reduxUserId) {
-                        setUserId(parsed.userID || '');
-                    }
-                    setUsername(parsed.username || '');
-                }
-            } catch (error) {
-                console.error('Error reading login data:', error);
-            }
-        }
-    }, [reduxUserId]);
-
-    // Compute liked state from context
-    const liked = likedStories.has(storyId);
-
-    // Prevent this detail page from being saved as a referrer
-    useEffect(() => {
-        if (typeof window !== 'undefined') {
-            const currentUrl = window.location.href;
-            const savedReferrer = sessionStorage.getItem('anya_referrer');
-
-            // If somehow this page got saved as referrer, remove it
-            if (savedReferrer && savedReferrer.includes('/anya')) {
-                sessionStorage.removeItem('anya_referrer');
-            }
-        }
-    }, []);
-
-    const [nextStory, setNextStory] = useState<Story | null>(null);
-    const [allStories, setAllStories] = useState<Story[]>([]);
-    const [currentStoryIndex, setCurrentStoryIndex] = useState<number>(-1);
-
-    // ... existing hooks ...
-
-    useEffect(() => {
-        if (storyId) {
-            fetchStoriesAndSetup();
-            refreshStoryData(storyId);
-        }
-    }, [storyId]);
-
-    const fetchStoriesAndSetup = async () => {
-        try {
-            setLoading(true);
-
-            // Fetch all stories first
-            const allStoriesRes = await axios.get('/api/proxy/api/ai-story/stories');
-            const stories = allStoriesRes.data.stories || [];
-            setAllStories(stories);
-
-            // Find current story index in the array
-            const currentIndex = stories.findIndex((s: Story) => s._id === storyId);
-            setCurrentStoryIndex(currentIndex);
-
-            if (currentIndex === -1) {
-                setLoading(false);
-                return;
-            }
-
-            // Fetch current story details
-            const res = await axios.get(`/api/proxy/api/ai-story/stories/${storyId}`);
-            const storyData = res.data.story;
-
-            setStory(storyData);
-            setLocalLikeCount(storyData?.likes || 0);
-
-            // Determine next story by array index
-            const nextIndex = currentIndex + 1;
-            if (nextIndex < stories.length) {
-                const next = stories[nextIndex];
-                setNextStory(next);
-            } else {
-                setNextStory(null);
-            }
-
-        } catch (error) {
-            console.error('❌ [RITUAL ERROR] Failed to fetch stories:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    // Detect which panel is in view and handle scroll
-    useEffect(() => {
-        let lastScrollTop = 0;
-        let scrollTimeout: NodeJS.Timeout | null = null;
-
-        const handleScroll = () => {
-            if (!containerRef.current || !story) return;
-
-            const container = containerRef.current;
-            const scrollPosition = container.scrollTop;
-            const windowHeight = window.innerHeight;
-
-            // Use a more accurate calculation with threshold
-            // Add 0.3 * windowHeight as threshold to avoid premature index changes
-            const rawIndex = (scrollPosition + (windowHeight * 0.3)) / windowHeight;
-            const panelIndex = Math.floor(rawIndex);
-
-            setCurrentPanelIndex(panelIndex);
-
-            // Index logic:
-            // 0..N-1 : Panels
-            // N : End Page
-            // N+1 : Next Story Preview (if exists)
-
-            const endPageIndex = story.panels.length;
-            const nextStoryIndex = nextStory ? endPageIndex + 1 : -1;
-
-            // Clear any pending navigation
-            if (scrollTimeout) {
-                clearTimeout(scrollTimeout);
-            }
-
-            // 1. Navigation to Next Story
-            // Only navigate when scroll has settled on the next story index
-            if (nextStory && panelIndex === nextStoryIndex) {
-                scrollTimeout = setTimeout(() => {
-                    router.push(`/anya/${nextStory._id}`);
-                }, 300); // Small delay to ensure user intended to navigate
-                return;
-            }
-
-            // 2. "Scroll Up" Loop (Commented out again as it might confusion standard scrolling)
-            /*
-            const isScrollingUp = scrollPosition < lastScrollTop;
-
-            if (panelIndex === endPageIndex && isScrollingUp) {
-                // User wants to go back to start?
-                isScrollingToTop = true;
-                container.scrollTo({ top: 0, behavior: 'smooth' });
-                
-                setTimeout(() => {
-                    isScrollingToTop = false;
-                }, 1000);
-                return;
-            }
-            */
-
-            lastScrollTop = scrollPosition;
-        };
-
-        const container = containerRef.current;
-        if (container) {
-            container.addEventListener('scroll', handleScroll, { passive: true });
-            return () => {
-                container.removeEventListener('scroll', handleScroll);
-                if (scrollTimeout) {
-                    clearTimeout(scrollTimeout);
-                }
-            };
-        }
-    }, [story, nextStory, router]); // Add router dependency
-
-
-
-    const handleLike = async () => {
-        if (!userId) {
-            console.warn('User not logged in');
-            return;
-        }
-
-        // Optimistic UI update
-        const isCurrentlyLiked = liked;
-        setLocalLikeCount(prev => isCurrentlyLiked ? prev - 1 : prev + 1);
-
-        // Call the actual API
-        await toggleLike(storyId, userId);
-    };
-
-    const handleShare = async () => {
-        if (navigator.share) {
-            try {
-                await navigator.share({
-                    title: story?.title,
-                    text: `Check out this AI-generated story: ${story?.title}`,
-                    url: window.location.href,
-                });
-            } catch (error) {
-                console.log('Error sharing:', error);
-            }
-        } else {
-            navigator.clipboard.writeText(window.location.href);
-            alert('Link copied to clipboard!');
-        }
-    };
-
-    const handleComment = () => {
-        setCommentModalOpen(true);
-    };
-
-    if (loading) {
-        return (
-            <div className="min-h-screen bg-black flex items-center justify-center">
-                <div className="text-center">
-                    <div className="w-16 h-16 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                    <p className="text-white">Loading rituals...</p>
-                </div>
-            </div>
-        );
+  // Reset to panel 0 when this row becomes active
+  useEffect(() => {
+    if (isActive) {
+      setPanelIndex(0);
+      trackRef.current?.scrollTo({ left: 0, behavior: 'instant' as any });
     }
+  }, [isActive]);
 
-    if (!story) {
-        return (
-            <div className="min-h-screen bg-black flex items-center justify-center">
-                <div className="text-center text-white">
-                    <h2 className="text-2xl font-bold mb-4">This Ritual has passed, You missed it</h2>
-                    <button
-                        onClick={() => router.push('/anya')}
-                        className="px-6 py-3 bg-purple-600 rounded-full hover:bg-purple-700 transition-colors"
-                    >
-                        Back to Rituals
-                    </button>
-                </div>
-            </div>
-        );
+  // Sync panel index on manual horizontal scroll
+  useEffect(() => {
+    const el = trackRef.current;
+    if (!el) return;
+    const onScroll = () => {
+      const idx = Math.round(el.scrollLeft / window.innerWidth);
+      setPanelIndex(idx);
+    };
+    el.addEventListener('scroll', onScroll, { passive: true });
+    return () => el.removeEventListener('scroll', onScroll);
+  }, []);
+
+  const goToPanel = (index: number) => {
+    const c = Math.max(0, Math.min(index, story.panels.length - 1));
+    setPanelIndex(c);
+    trackRef.current?.scrollTo({ left: c * window.innerWidth, behavior: 'smooth' });
+  };
+
+  // Horizontal swipe inside this row
+  const onTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+    touchStartY.current = e.touches[0].clientY;
+  };
+  const onTouchEnd = (e: React.TouchEvent) => {
+    const dx = e.changedTouches[0].clientX - touchStartX.current;
+    const dy = e.changedTouches[0].clientY - touchStartY.current;
+    // Only handle horizontal swipes here; vertical falls through to parent snap
+    if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 40) {
+      e.stopPropagation();
+      goToPanel(dx < 0 ? panelIndex + 1 : panelIndex - 1);
     }
+  };
 
-    return (
-        <div className="h-screen bg-black text-white overflow-hidden overflow-x-hidden relative">
-            {/* Fixed Header */}
-            <div className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-b from-black/80 to-transparent backdrop-blur-sm">
-                <div className="max-w-7xl mx-auto px-4 py-4">
-                    <div className="flex items-center justify-between">
-                        <button
-                            onClick={() => router.push('/anya?view=grid')}
-                            className="flex items-center justify-center"
-                            aria-label="Back to Rituals"
-                        >
-                            <FaThLarge className="w-8 h-8 text-gray-400" />
-                        </button>
+  const handleLike = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!userId) return;
+    setLikeCount(p => liked ? p - 1 : p + 1);
+    if (story.isCreatorRitual) {
+      try {
+        await axios.post(`/api/proxy/api/creator-rituals/${story._id}/like`, { userId });
+      } catch {
+        setLikeCount(p => liked ? p + 1 : p - 1);
+      }
+    } else {
+      await toggleLike(story._id, userId);
+    }
+  };
 
-                        <div className="flex-1 mx-4 text-center">
-                            <h1 className="text-lg md:text-xl font-bold line-clamp-1">{story.title}</h1>
-                            <p className="text-sm text-gray-400">Episode {story.story_number}</p>
-                        </div>
+  const handleShare = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const url = `${window.location.origin}/anya/${story._id}?type=${story.isCreatorRitual ? 'creator' : 'ai'}`;
+    if (navigator.share) {
+      try { await navigator.share({ title: story.title, url }); } catch {}
+    } else {
+      navigator.clipboard.writeText(url);
+      alert('Link copied!');
+    }
+  };
 
-                        <button
-                            onClick={() => router.push('/')}
-                            className="flex items-center justify-center"
-                            aria-label="Go to Home"
-                        >
-                            <IoHome className="w-8 h-8 text-gray-400" />
-                        </button>
-                    </div>
-                </div>
-            </div>
+  return (
+    <div
+      className="h-screen w-full snap-start snap-always relative flex-shrink-0"
+      onTouchStart={onTouchStart}
+      onTouchEnd={onTouchEnd}
+    >
+      {/* PANEL PROGRESS BAR */}
+      <div className="absolute top-[68px] left-0 right-0 z-20 flex gap-1 px-4">
+        {story.panels.map((_, i) => (
+          <button
+            key={i}
+            onClick={() => goToPanel(i)}
+            style={{
+              height: 3, borderRadius: 2, border: 'none', cursor: 'pointer',
+              transition: 'flex .3s, background .3s',
+              flex: i === panelIndex ? 2 : 1,
+              background: i <= panelIndex ? 'white' : 'rgba(255,255,255,.25)',
+            }}
+          />
+        ))}
+      </div>
 
-            {/* Action Bar - Side (Like Original Anya Page) */}
-            <div className="fixed right-4 bottom-48 z-50 flex flex-col gap-6">
-                {/* Like Button */}
-                <motion.button
-                    whileTap={{ scale: 0.9 }}
-                    onClick={handleLike}
-                    className="flex flex-col items-center gap-1"
-                >
-                    <div className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center hover:bg-white/20 transition-all">
-                        {liked ? (
-                            <IoHeart className="w-6 h-6 text-red-500" />
-                        ) : (
-                            <IoHeartOutline className="w-6 h-6" />
-                        )}
-                    </div>
-                    <span className="text-xs font-medium">{localLikeCount}</span>
-                </motion.button>
-
-                {/* Comment Button */}
-                <motion.button
-                    whileTap={{ scale: 0.9 }}
-                    onClick={handleComment}
-                    className="flex flex-col items-center gap-1"
-                >
-                    <div className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center hover:bg-white/20 transition-all">
-                        <IoChatbubbleOutline className="w-6 h-6" />
-                    </div>
-                    <span className="text-xs font-medium">{commentCounts.get(storyId) || story.comments?.length || 0}</span>
-                </motion.button>
-
-                {/* Share Button */}
-                <motion.button
-                    whileTap={{ scale: 0.9 }}
-                    onClick={handleShare}
-                    className="flex flex-col items-center gap-1"
-                >
-                    <div className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center hover:bg-white/20 transition-all">
-                        <IoShareSocialOutline className="w-6 h-6" />
-                    </div>
-                    <span className="text-xs font-medium">Share</span>
-                </motion.button>
-            </div>
-
-            {/* Scrollable Container - Like Reels */}
-            <div
-                ref={containerRef}
-                className="h-screen overflow-y-scroll overflow-x-hidden snap-y snap-mandatory scroll-smooth"
-                style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-            >
-                {story.panels.map((panel, index) => (
-                    <div
-                        key={panel.panel_number}
-                        className="h-screen w-full snap-start snap-always relative flex items-center justify-center"
-                    >
-                        {/* Background Image - Full Cover */}
-                        {panel.imageUrl ? (
-                            <div className="absolute inset-0 z-0 w-full h-full">
-                                <img
-                                    src={getImageSource(panel.imageUrl, 'stories').src}
-                                    alt={`Scene ${panel.panel_number}`}
-                                    className="w-full h-full object-cover"
-                                    onError={(e) => {
-                                        console.error('Image failed to load:', panel.imageUrl);
-                                        e.currentTarget.src = 'https://images.unsplash.com/photo-1469122312224-c5846569af2c?q=80&w=2000&auto=format&fit=crop';
-                                    }}
-                                />
-                                {/* Dark Gradient Overlay */}
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/60"></div>
-                            </div>
-                        ) : (
-                            <div className="absolute inset-0 z-0 bg-gradient-to-br from-purple-900/20 to-pink-900/20"></div>
-                        )}
-
-                        {/* Scene Badge - Positioned relative to full screen */}
-                        <motion.div
-                            initial={{ opacity: 0, y: -20 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true }}
-                            transition={{ duration: 0.4 }}
-                            className="absolute top-28 left-2/5 -translate-x-1/2 z-20"
-                        >
-                            <span className="px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full text-sm font-medium">
-                                Scene {panel.panel_number} / {story.panels.length}
-                            </span>
-                        </motion.div>
-
-                        {/* Content Overlay */}
-                        <div className="relative z-10 max-w-4xl mx-auto px-6 text-center h-full flex flex-col justify-end pb-32">
-                            {/* Scene Text - Bottom Positioned */}
-                            <motion.div
-                                initial={{ opacity: 0, y: 30 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                viewport={{ once: true }}
-                                transition={{ duration: 0.6 }}
-                            >
-                                <p className="text-lg md:text-xl lg:text-2xl  leading-tight drop-shadow-2xl">
-                                    {panel.text}
-                                </p>
-                            </motion.div>
-                        </div>
-
-                        {/* Scroll Hint (only on first panel) */}
-                        {index === 0 && story.panels.length > 1 && (
-                            <motion.div
-                                initial={{ opacity: 0, y: -10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{
-                                    delay: 1,
-                                    repeat: Infinity,
-                                    repeatType: "reverse",
-                                    duration: 1.5
-                                }}
-                                className="absolute bottom-12 left-2/5 -translate-x-1/2 z-20"
-                            >
-                                <div className="flex flex-col items-center gap-1 text-white/50">
-                                    <span className="text-xs font-medium">Scroll for more</span>
-                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-                                    </svg>
-                                </div>
-                            </motion.div>
-                        )}
-
-                        {/* End Card (on last panel) */}
-                        {index === story.panels.length - 1 && (
-                            <motion.div
-                                initial={{ opacity: 0, scale: 0.9 }}
-                                whileInView={{ opacity: 1, scale: 1 }}
-                                viewport={{ once: true }}
-                                transition={{ delay: 0.5, duration: 0.6 }}
-                                className="absolute bottom-16 left-1/2 -translate-x-1/2 z-20"
-                            >
-                                <button
-                                    onClick={() => router.push('/anya?view=grid')}
-                                    className="px-6 py-2.5 bg-white/10 backdrop-blur-md border border-white/20 rounded-full text-sm font-medium hover:bg-white/20 transition-all"
-                                >
-                                    Explore More Rituals
-                                </button>
-                            </motion.div>
-                        )}
-                    </div>
-                ))}
-
-                {/* End Page - Final Screen */}
-                <div className="h-screen w-full snap-start snap-always relative flex items-center justify-center">
-                    {/* Background Gradient */}
-                    <div className="absolute inset-0 z-0 bg-gradient-to-br from-purple-900/40 via-black to-pink-900/40">
-                        <div className="absolute inset-0 opacity-20">
-                            <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl animate-pulse"></div>
-                            <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-pink-500 rounded-full mix-blend-multiply filter blur-3xl animate-pulse delay-1000"></div>
-                        </div>
-                    </div>
-
-                    {/* End Content */}
-                    <div className="relative z-10 max-w-2xl mx-auto px-6 text-center">
-                        <div
-                            className="space-y-8"
-                        >
-                            {/* The End Badge */}
-                            <motion.div
-                                animate={{
-                                    scale: [1, 1.05, 1],
-                                }}
-                                transition={{
-                                    duration: 2,
-                                    repeat: Infinity,
-                                    ease: "easeInOut"
-                                }}
-                            >
-                                <div className="inline-block px-8 py-3 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full mb-6">
-                                    <span className="text-2xl font-bold">The End</span>
-                                </div>
-                            </motion.div>
-
-                            {/* Story Title */}
-                            <h2 className="text-3xl md:text-5xl font-bold leading-tight mb-4">
-                                {story.title}
-                            </h2>
-                            <p className="text-gray-400 text-lg mb-6">Episode {story.story_number}</p>
-
-                            {/* Story Stats */}
-                            <div className="flex items-center justify-center gap-8 text-gray-300 mb-8">
-                                <div className="flex items-center gap-2">
-                                    <IoHeart className="w-5 h-5 text-red-500" />
-                                    <span className="text-lg">{localLikeCount} Likes</span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <IoChatbubbleOutline className="w-5 h-5" />
-                                    <span className="text-lg">{story.comments?.length || 0} Comments</span>
-                                </div>
-                            </div>
-
-                            {/* Navigation Buttons */}
-                            <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
-                                <motion.button
-                                    whileHover={{ scale: 1.05 }}
-                                    whileTap={{ scale: 0.95 }}
-                                    onClick={() => router.push('/anya?view=grid')}
-                                    className="px-6 py-2 sm:px-8 sm:py-3 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full text-sm sm:text-base font-semibold hover:from-purple-700 hover:to-pink-700 transition-all"
-                                >
-                                    Explore More Rituals
-                                </motion.button>
-                                <motion.button
-                                    whileHover={{ scale: 1.05 }}
-                                    whileTap={{ scale: 0.95 }}
-                                    onClick={() => router.push('/')}
-                                    className="px-6 py-2 sm:px-8 sm:py-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-full text-sm sm:text-base font-semibold hover:bg-white/20 transition-all"
-                                >
-                                    Go Home
-                                </motion.button>
-                            </div>
-
-                            {/* Next Ritual Button (Explicit Fallback) */}
-                            {/* {nextStory && (
-                                <motion.div
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ delay: 1 }}
-                                    className="mt-6"
-                                >
-                                    <button
-                                        onClick={() => router.push(`/anya/${nextStory._id}`)}
-                                        className="px-8 py-4 bg-gradient-to-r from-purple-500 to-indigo-600 rounded-full text-white font-bold text-lg shadow-lg hover:shadow-purple-500/30 transition-all transform hover:scale-105"
-                                    >
-                                        Start Next Ritual
-                                    </button>
-                                </motion.div>
-                            )} */}
-
-                            {/* Thank You Message */}
-                            <p className="text-gray-400 text-sm mt-6">
-                                Thank you for experiencing this ritual ✨
-                            </p>
-
-                            {/* Arrow down if next story exists */}
-                            {nextStory && (
-                                <motion.div
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1, y: [0, 10, 0] }}
-                                    transition={{ duration: 2, repeat: Infinity }}
-                                    className="mt-12 text-gray-500 text-sm"
-                                >
-                                    <p>Scroll for Next Ritual</p>
-                                    <div className="mx-auto w-6 h-6 mt-2">
-                                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7" /></svg>
-                                    </div>
-                                </motion.div>
-                            )}
-                        </div>
-                    </div>
-                </div>
-
-                {/* Next Ritual Preview (Ghost Slide) */}
-                {nextStory && nextStory.panels && nextStory.panels[0] && (
-                    <div className="h-screen w-full snap-start snap-always relative flex items-center justify-center bg-black">
-                        {/* Overlay to indicate loading/transition */}
-                        <div className="absolute inset-0 z-50 bg-black/60 flex items-center justify-center">
-                            <span className="text-2xl font-bold text-white tracking-widest uppercase">Next Ritual</span>
-                        </div>
-
-                        {/* Background Image of Next Story First Panel */}
-                        {(nextStory.panels[0].imageUrl || nextStory.coverImage) && (
-                            <div className="absolute inset-0 z-0 w-full h-full opacity-50">
-                                <img
-                                    src={getImageSource(nextStory.panels[0].imageUrl || nextStory.coverImage || '', 'stories').src}
-                                    alt="Next Story"
-                                    className="w-full h-full object-cover blur-sm"
-                                />
-                            </div>
-                        )}
-                    </div>
-                )}
-            </div>
-
-            {/* Hide Scrollbar */}
-            <style jsx>{`
-                div::-webkit-scrollbar {
-                    display: none;
-                }
-            `}</style>
-
-            {/* Comment Modal */}
-            <CommentModal
-                isOpen={commentModalOpen}
-                onClose={() => setCommentModalOpen(false)}
-                storyId={storyId}
-                storyTitle={story.title}
-                userId={userId}
-                username={username}
-            />
+      {/* RITUAL TITLE (shown when on panel 0) */}
+      {panelIndex === 0 && (
+        <div className="absolute top-[84px] left-0 right-0 z-20 text-center px-8 pt-2">
+          <p className="text-white/60 text-xs font-medium tracking-wide">{story.title}</p>
         </div>
+      )}
+
+      {/* HORIZONTAL PANELS */}
+      <div
+        ref={trackRef}
+        className="h-full w-full flex snap-x snap-mandatory"
+        style={{
+          overflowX: 'scroll', overflowY: 'hidden', scrollbarWidth: 'none',
+          animation: isActive ? 'ritualEnter .4s ease both' : 'none',
+        }}
+      >
+        <style jsx>{`
+          div::-webkit-scrollbar{display:none}
+          @keyframes ritualEnter{from{opacity:.4;transform:scale(.98)}to{opacity:1;transform:scale(1)}}
+        `}</style>
+
+        {story.panels.map((panel, index) => (
+          <div
+            key={panel.panel_number}
+            className="h-full flex-shrink-0 snap-start snap-always relative"
+            style={{ width: '100vw' }}
+          >
+            {/* Background image */}
+            {panel.imageUrl ? (
+              <div className="absolute inset-0 z-0">
+                <img
+                  src={getImageSource(panel.imageUrl, 'stories').src}
+                  alt={`Scene ${panel.panel_number}`}
+                  className="w-full h-full object-cover"
+                  onError={e => {
+                    e.currentTarget.src = 'https://images.unsplash.com/photo-1469122312224-c5846569af2c?q=80&w=2000&auto=format&fit=crop';
+                  }}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/60" />
+              </div>
+            ) : (
+              <div className="absolute inset-0 z-0 bg-gradient-to-br from-purple-900/20 to-pink-900/20" />
+            )}
+
+            {/* Scene badge */}
+            <div className="absolute top-28 left-1/2 -translate-x-1/2 z-10">
+              <span className="px-3 py-1.5 bg-white/10 backdrop-blur-md border border-white/20 rounded-full text-xs font-medium">
+                Scene {panel.panel_number} / {story.panels.length}
+              </span>
+            </div>
+
+            {/* Panel text */}
+            <div className="relative z-10 h-full flex flex-col justify-end pb-36 px-6 text-center max-w-2xl mx-auto w-full">
+              <motion.p
+                key={`${story._id}-panel-${index}`}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: index === panelIndex ? 1 : 0.4, y: 0 }}
+                transition={{ duration: 0.4 }}
+                className="text-lg md:text-xl lg:text-2xl leading-relaxed drop-shadow-2xl"
+              >
+                {panel.text}
+              </motion.p>
+            </div>
+
+            {/* Desktop arrows */}
+            {index > 0 && (
+              <button onClick={() => goToPanel(index - 1)}
+                className="absolute left-3 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-white/10 backdrop-blur-md border border-white/20 items-center justify-center hover:bg-white/20 transition-all hidden md:flex">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+            )}
+            {index < story.panels.length - 1 && (
+              <button onClick={() => goToPanel(index + 1)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-white/10 backdrop-blur-md border border-white/20 items-center justify-center hover:bg-white/20 transition-all hidden md:flex">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            )}
+
+            {/* First panel swipe hint — animated chevrons */}
+            {index === 0 && story.panels.length > 1 && isActive && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.8, duration: 0.5 }}
+                className="absolute bottom-10 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-1 pointer-events-none"
+              >
+                <svg width="80" height="44" viewBox="0 0 80 44" xmlns="http://www.w3.org/2000/svg">
+                  <style>{`
+                    @keyframes swipeFlow{0%{opacity:.12}100%{opacity:1}}
+                    .ch1{animation:swipeFlow 1.1s 0s ease-in-out infinite alternate}
+                    .ch2{animation:swipeFlow 1.1s .18s ease-in-out infinite alternate}
+                    .ch3{animation:swipeFlow 1.1s .36s ease-in-out infinite alternate}
+                    .ch4{animation:swipeFlow 1.1s .54s ease-in-out infinite alternate}
+                  `}</style>
+                  <polyline className="ch1" points="4,4 20,22 4,40"   fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  <polyline className="ch2" points="20,4 36,22 20,40" fill="none" stroke="white" strokeWidth="3"   strokeLinecap="round" strokeLinejoin="round"/>
+                  <polyline className="ch3" points="36,4 52,22 36,40" fill="none" stroke="white" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  <polyline className="ch4" points="52,4 68,22 52,40" fill="none" stroke="white" strokeWidth="4"   strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                <span style={{ fontSize: 10, color: "rgba(255,255,255,.35)", letterSpacing: "0.12em", textTransform: "uppercase" }}>swipe</span>
+              </motion.div>
+            )}
+
+            {/* Last panel: swipe up hint */}
+            {index === story.panels.length - 1 && (
+              <motion.div
+                animate={{ y: [0, -6, 0] }} transition={{ duration: 2, repeat: Infinity }}
+                className="absolute bottom-10 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-1 text-white/40 text-xs pointer-events-none"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                </svg>
+                Swipe up for next ritual
+              </motion.div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {/* ACTION BAR — right side */}
+      <div className="absolute right-4 bottom-48 z-20 flex flex-col gap-6">
+        <motion.button whileTap={{ scale: 0.9 }} onClick={handleLike} className="flex flex-col items-center gap-1">
+          <div className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center">
+            {liked ? <IoHeart className="w-6 h-6 text-red-500" /> : <IoHeartOutline className="w-6 h-6" />}
+          </div>
+          <span className="text-xs text-white">{likeCount}</span>
+        </motion.button>
+
+        <motion.button whileTap={{ scale: 0.9 }} onClick={(e) => { e.stopPropagation(); onComment(story); }} className="flex flex-col items-center gap-1">
+          <div className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center">
+            <IoChatbubbleOutline className="w-6 h-6 text-white" />
+          </div>
+          <span className="text-xs text-white">{commentCounts.get(story._id) || story.comments?.length || 0}</span>
+        </motion.button>
+
+        <motion.button whileTap={{ scale: 0.9 }} onClick={handleShare} className="flex flex-col items-center gap-1">
+          <div className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center">
+            <IoShareSocialOutline className="w-6 h-6 text-white" />
+          </div>
+          <span className="text-xs text-white">Share</span>
+        </motion.button>
+      </div>
+    </div>
+  );
+}
+
+// ── Main page ─────────────────────────────────────────────────────────────────
+export default function StoryViewPage() {
+  const params       = useParams();
+  const router       = useRouter();
+  const searchParams = useSearchParams();
+  const storyId      = params.id as string;
+  const isCreator    = searchParams.get('type') === 'creator';
+
+  const [stories, setStories]           = useState<Story[]>([]);
+  const [loading, setLoading]           = useState(true);
+  const [activeIndex, setActiveIndex]   = useState(0);
+  const [commentModalOpen, setCommentModalOpen] = useState(false);
+  const [commentStory, setCommentStory] = useState<Story | null>(null);
+
+  // Vertical snap container
+  const verticalRef = useRef<HTMLDivElement>(null);
+
+  const { likedStories, commentCounts, toggleLike, refreshStoryData } = useStory();
+  useAnyaMusic();
+  useAnyaPageTracking('story', storyId);
+  useAnyaSessionTracking('story', storyId);
+
+  const reduxUserId = useSelector((state: RootState) => state.register.userID);
+  const [userId, setUserId]     = useState('');
+  const [username, setUsername] = useState('');
+
+  useEffect(() => {
+    if (reduxUserId) setUserId(reduxUserId);
+    if (typeof window !== 'undefined') {
+      try {
+        const d = JSON.parse(localStorage.getItem('login') || '{}');
+        if (!reduxUserId && d.userID) setUserId(d.userID);
+        if (d.username) setUsername(d.username);
+      } catch {}
+    }
+  }, [reduxUserId]);
+
+  // ── Load all rituals, scroll to the clicked one ───────────────────────────
+  useEffect(() => {
+    if (!storyId) return;
+    (async () => {
+      try {
+        setLoading(true);
+
+        // Fetch both sources in parallel
+        const [aiRes, creatorRes] = await Promise.allSettled([
+          axios.get('/api/proxy/api/ai-story/stories'),
+          axios.get('/api/proxy/api/creator-rituals/feed'),
+        ]);
+
+        const aiStories: Story[] = aiRes.status === 'fulfilled'
+          ? (aiRes.value.data.stories || [])
+          : [];
+
+        const creatorRituals: Story[] = creatorRes.status === 'fulfilled'
+          ? (creatorRes.value.data.rituals || []).map((r: any) => ({
+              _id: r._id,
+              story_number: 0,
+              title: r.title,
+              emotional_core: '',
+              panels: (r.panels || []).map((p: any) => ({
+                panel_number: p.panel_number,
+                text: p.subtitle || '',
+                imageUrl: p.imageUrl || null,
+              })),
+              coverImage: r.coverImage || null,
+              views: r.views || 0,
+              likes: r.likes || 0,
+              likedBy: r.likedBy || [],
+              comments: r.comments || [],
+              createdAt: r.createdAt,
+              isCreatorRitual: true,
+            }))
+          : [];
+
+        // Merge: creator rituals first, then AI
+        const all = [...creatorRituals, ...aiStories];
+        setStories(all);
+
+        // Find the clicked story and scroll to it
+        const targetIdx = all.findIndex(s => s._id === storyId);
+        const scrollTo  = Math.max(0, targetIdx);
+        setActiveIndex(scrollTo);
+
+        // Scroll vertically to the correct ritual
+        setTimeout(() => {
+          if (verticalRef.current) {
+            verticalRef.current.scrollTo({
+              top: scrollTo * window.innerHeight,
+              behavior: 'instant' as any,
+            });
+          }
+        }, 50);
+
+        all.forEach(s => refreshStoryData(s._id));
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, [storyId]);
+
+  // Track active ritual as user scrolls vertically
+  useEffect(() => {
+    const el = verticalRef.current;
+    if (!el) return;
+    const onScroll = () => {
+      const idx = Math.round(el.scrollTop / window.innerHeight);
+      setActiveIndex(idx);
+    };
+    el.addEventListener('scroll', onScroll, { passive: true });
+    return () => el.removeEventListener('scroll', onScroll);
+  }, [stories]);
+
+  const activeStory = stories[activeIndex] || null;
+
+  if (loading) {
+    return (
+      <div style={{
+        position: 'fixed', inset: 0, zIndex: 9999,
+        background: '#080b14',
+        display: 'flex', flexDirection: 'column',
+        alignItems: 'center', justifyContent: 'center',
+        gap: 40, fontFamily: "'Plus Jakarta Sans', sans-serif",
+      }}>
+        {/* bg glow */}
+        <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', background: 'radial-gradient(ellipse 60% 60% at 50% 50%, rgba(108,99,255,.06) 0%, transparent 70%)', animation: 'bgBreath 3s ease-in-out infinite' }} />
+
+        {/* rings + logo */}
+        <div style={{ position: 'relative', width: 160, height: 160, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ position: 'absolute', inset: 0, borderRadius: '50%', border: '1.5px solid rgba(108,99,255,.12)', animation: 'ringRotate 3s linear infinite' }}>
+            <div style={{ position: 'absolute', inset: -1.5, borderRadius: '50%', border: '1.5px solid transparent', borderTopColor: '#6c63ff', borderRightColor: 'rgba(155,89,245,.5)', animation: 'ringRotate 1.8s cubic-bezier(.5,0,.5,1) infinite', filter: 'drop-shadow(0 0 6px rgba(108,99,255,.6))' }} />
+          </div>
+          <div style={{ position: 'absolute', inset: 14, borderRadius: '50%', border: '1px solid rgba(108,99,255,.07)' }}>
+            <div style={{ position: 'absolute', inset: -1, borderRadius: '50%', border: '1px solid transparent', borderBottomColor: '#9b59f5', borderLeftColor: 'rgba(108,99,255,.4)', animation: 'ringRotate 2.4s cubic-bezier(.5,0,.5,1) infinite reverse', filter: 'drop-shadow(0 0 4px rgba(155,89,245,.5))' }} />
+          </div>
+          <div style={{ position: 'absolute', inset: 30, borderRadius: '50%', border: '1px solid rgba(108,99,255,.05)' }}>
+            <div style={{ position: 'absolute', inset: -1, borderRadius: '50%', border: '1px solid transparent', borderTopColor: 'rgba(212,168,83,.6)', animation: 'ringRotate 1.2s cubic-bezier(.5,0,.5,1) infinite', filter: 'drop-shadow(0 0 4px rgba(212,168,83,.4))' }} />
+          </div>
+          {/* orbit dots */}
+          <div style={{ position: 'absolute', inset: 0, animation: 'ringRotate 2.5s linear infinite' }}><div style={{ position: 'absolute', top: '50%', left: '50%', width: 6, height: 6, borderRadius: '50%', background: '#6c63ff', boxShadow: '0 0 8px #6c63ff', transform: 'translate(-50%,-50%) translateY(-76px)' }} /></div>
+          <div style={{ position: 'absolute', inset: 0, animation: 'ringRotate 3.5s linear infinite reverse' }}><div style={{ position: 'absolute', top: '50%', left: '50%', width: 4, height: 4, borderRadius: '50%', background: '#9b59f5', boxShadow: '0 0 6px #9b59f5', transform: 'translate(-50%,-50%) translateY(-68px)' }} /></div>
+          <div style={{ position: 'absolute', inset: 0, animation: 'ringRotate 4.5s linear infinite' }}><div style={{ position: 'absolute', top: '50%', left: '50%', width: 5, height: 5, borderRadius: '50%', background: 'rgba(212,168,83,.8)', boxShadow: '0 0 8px rgba(212,168,83,.6)', transform: 'translate(-50%,-50%) translateY(-60px)' }} /></div>
+          {/* logo */}
+          <div style={{ position: 'relative', zIndex: 10, animation: 'logoPulse 2s ease-in-out infinite' }}>
+            <div style={{ width: 72, height: 72, borderRadius: '22.6%', overflow: 'hidden', position: 'relative' }}>
+              <svg width="72" height="72" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <linearGradient id="ll" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#6c63ff"/><stop offset="100%" stopColor="#9b59f5"/></linearGradient>
+                  <linearGradient id="ls" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#fff" stopOpacity=".15"/><stop offset="100%" stopColor="#fff" stopOpacity="0"/></linearGradient>
+                </defs>
+                <rect width="512" height="512" rx="116" fill="url(#ll)"/>
+                <rect width="512" height="256" rx="116" fill="url(#ls)"/>
+                <text x="256" y="345" textAnchor="middle" fontFamily="Georgia,serif" fontSize="300" fontWeight="700" fill="white">M</text>
+              </svg>
+              <div style={{ position: 'absolute', top: '-100%', left: '-100%', width: '60%', height: '200%', background: 'linear-gradient(105deg,transparent 40%,rgba(255,255,255,.15) 50%,transparent 60%)', animation: 'shineSweep 3s ease-in-out infinite', transform: 'skewX(-15deg)', pointerEvents: 'none' }} />
+            </div>
+          </div>
+        </div>
+
+        {/* text */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
+          <div style={{ fontSize: 22, fontWeight: 700, letterSpacing: '-.01em', color: '#f1f5f9', opacity: 0, animation: 'fadeInUp .8s .4s ease forwards' }}>mmeko</div>
+          <div style={{ width: 120, height: 2, background: 'rgba(255,255,255,.06)', borderRadius: 2, overflow: 'hidden', opacity: 0, animation: 'fadeInUp .8s .6s ease forwards' }}>
+            <div style={{ height: '100%', background: 'linear-gradient(90deg,#6c63ff,#9b59f5)', borderRadius: 2, boxShadow: '0 0 8px rgba(108,99,255,.6)', animation: 'progressLoad 3s cubic-bezier(.4,0,.2,1) .8s infinite' }} />
+          </div>
+          <div style={{ display: 'flex', gap: 6, opacity: 0, animation: 'fadeInUp .8s .8s ease forwards' }}>
+            {[0,1,2].map(i => <div key={i} style={{ width: 4, height: 4, borderRadius: '50%', background: '#475569', animation: `dotBounce 1.4s ${i*.2}s ease-in-out infinite` }} />)}
+          </div>
+        </div>
+
+        <style>{`
+          @keyframes bgBreath{0%,100%{opacity:.5;transform:scale(1)}50%{opacity:1;transform:scale(1.05)}}
+          @keyframes ringRotate{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+          @keyframes logoPulse{0%,100%{transform:scale(1);filter:drop-shadow(0 0 12px rgba(108,99,255,.4))}50%{transform:scale(1.04);filter:drop-shadow(0 0 24px rgba(108,99,255,.7))}}
+          @keyframes shineSweep{0%{left:-100%;top:-100%}30%{left:150%;top:-100%}100%{left:150%;top:-100%}}
+          @keyframes fadeInUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+          @keyframes progressLoad{0%{width:0%;opacity:1}70%{width:100%;opacity:1}90%{width:100%;opacity:0}100%{width:0%;opacity:0}}
+          @keyframes dotBounce{0%,80%,100%{transform:scale(1);background:#475569}40%{transform:scale(1.4);background:#6c63ff}}
+        `}</style>
+      </div>
     );
+  }
+
+  if (stories.length === 0) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-center text-white">
+          <h2 className="text-2xl font-bold mb-4">This Ritual has passed</h2>
+          <button onClick={() => router.push('/anya?view=grid')}
+            className="px-6 py-3 bg-purple-600 rounded-full hover:bg-purple-700 transition-colors">
+            Back to Rituals
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="h-screen bg-black text-white overflow-hidden relative">
+
+      {/* FIXED HEADER */}
+      <div className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-b from-black/80 to-transparent backdrop-blur-sm">
+        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+          <button onClick={() => router.push('/anya?view=grid')} aria-label="Grid view">
+            <FaThLarge className="w-8 h-8 text-gray-400" />
+          </button>
+          <div className="flex-1 mx-4 text-center">
+            <h1 className="text-lg font-bold line-clamp-1">
+              {activeStory?.title || 'Rituals'}
+            </h1>
+            {activeStory && activeStory.story_number > 0 && (
+              <p className="text-sm text-gray-400">Episode {activeStory.story_number}</p>
+            )}
+          </div>
+          <button onClick={() => router.push('/')} aria-label="Home">
+            <IoHome className="w-8 h-8 text-gray-400" />
+          </button>
+        </div>
+      </div>
+
+      {/* VERTICAL SNAP CONTAINER — one full-screen row per ritual */}
+      <div
+        ref={verticalRef}
+        className="h-screen w-full flex flex-col snap-y snap-mandatory overflow-y-scroll"
+        style={{ scrollbarWidth: 'none' }}
+      >
+        <style jsx>{`div::-webkit-scrollbar{display:none}`}</style>
+
+        {stories.map((story, idx) => (
+          <RitualRow
+            key={story._id}
+            story={story}
+            isActive={idx === activeIndex}
+            userId={userId}
+            onComment={(s) => { setCommentStory(s); setCommentModalOpen(true); }}
+            toggleLike={toggleLike}
+            likedStories={likedStories}
+            commentCounts={commentCounts}
+          />
+        ))}
+      </div>
+
+      {/* COMMENT MODAL */}
+      <CommentModal
+        isOpen={commentModalOpen}
+        onClose={() => setCommentModalOpen(false)}
+        storyId={commentStory?._id || ''}
+        storyTitle={commentStory?.title || ''}
+        userId={userId}
+        username={username}
+      />
+    </div>cd 
+  );
 }
