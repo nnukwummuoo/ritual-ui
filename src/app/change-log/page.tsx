@@ -7,10 +7,10 @@ const changelog = [
     date: "July 2025",
     intro: "Welcome to Mmeko, where real fans connect with real creators safely, privately, and globally. We're always improving to make your experience smoother, smarter, and more rewarding. Here's what's new and working right now:",
     updates: [
-      { type: "current", text: "🔮 Rituals - Once a day, a single visual story appears — designed to be felt, not rushed. Each Ritual lives for a limited time. Some are unsettling. Some are calm. They exist to slow the feed and reset attention." },
+      { type: "current", text: "🔮 Rituals - Your daily 15-panel story. Share how a fan meet went, post reaction photos, go behind the scenes — in your own words, with your own photos. Lives for 24 hours. Archives to your profile forever." },
       { type: "current", text: "Fan Call - Connect 1-on-1 via secure video call. Creators earn per minute, fans get real-time connection." },
-      { type: "current", text: "Fan Meet - Meet verified creators in person with transport fare paid in advance. Safe, secure, and scheduled." },
-      { type: "current", text: "Fan Date - Set up fun, exclusive dates. Creators set their availability, fans request and cover all cost, everyone wins." },
+      { type: "current", text: "Fan Meet - A short, casual meeting where you can greet your favorite creator, chat, and even take a selfie. It's about making a quick personal connection - limited to 30 minutes maximum for safety and fairness." },
+      { type: "current", text: "Fan Date -  Fan Date – A slightly more relaxed session where you spend time together in a safe public place — like grabbing coffee, eating, or walking — but still limited to 30 minutes maximum for safety and fairness." },
       { type: "current", text: "VIP Accounts - Premium fan features like a lion badge, priority support, and extra attention from creators." },
       { type: "current", text: "Messaging - Private in-app chat lets fans and creators talk freely — no charges." },
       { type: "current", text: "Gold Wallet - Use gold coins to pay for anything: calls, dates. Fans buy gold, creators earn it." },

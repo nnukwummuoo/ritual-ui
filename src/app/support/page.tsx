@@ -101,7 +101,7 @@ const SupportPage: React.FC = () => {
         },
         {
           question: "How is the transport fare decided?",
-          answer: "🚌 It's calculated based on distance, transportation rates, and local conditions. The exact fare is displayed before you confirm the request."
+          answer: "🚌 It's calculated based on distance, transportation rates, and local conditions. Creators may include any reasonable expenses in their transport fare price. The exact fare is displayed before you confirm the request."
         },
         {
           question: "Do I still pay if the creator cancels?",

@@ -242,7 +242,7 @@ export default function UploadRitualPage() {
             A <strong style={{ color: '#f1f5f9' }}>Ritual</strong> is your daily story — told in{' '}
             <strong style={{ color: '#f1f5f9' }}>15 panels</strong> with subtitles.
             Share how a fan meet or date went, post reaction photos, go behind the scenes — anything
-            real, anything yours. Rituals live for <strong style={{ color: '#f1f5f9' }}>24 hours</strong> and keep your fans coming back every day.
+            real, anything yours. Rituals live for <strong style={{ color: '#f1f5f9' }}>24 hours</strong>, archives to your profile forever and keep your fans coming back every day.
           </p>
 
           <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
