@@ -16,12 +16,54 @@ interface PanelData {
 
 const EMPTY_PANEL = (): PanelData => ({ file: null, preview: null, subtitle: '' });
 
+// ── Library songs: Pixabay CDN URLs used for both preview AND stored as song field ──
 const SONGS = [
-  { id: 'after-hours',   name: 'After Hours',   artist: 'Ambient · Chill',     duration: '3:24', emoji: '🌙', bg: 'linear-gradient(135deg,#1a0830,#0a0418)' },
-  { id: 'golden-hour',   name: 'Golden Hour',   artist: 'Soft R&B · Warm',     duration: '2:58', emoji: '✨', bg: 'linear-gradient(135deg,#1a1000,#0a0800)' },
-  { id: 'midnight-city', name: 'Midnight City', artist: 'Electronic · Dreamy', duration: '4:01', emoji: '🌊', bg: 'linear-gradient(135deg,#001a1a,#000a0a)' },
-  { id: 'tender',        name: 'Tender',        artist: 'Soul · Emotional',    duration: '3:47', emoji: '💜', bg: 'linear-gradient(135deg,#1a0010,#0a0008)' },
-  { id: 'vibes',         name: 'Just Vibes',    artist: 'Afrobeat · Upbeat',   duration: '3:12', emoji: '🌿', bg: 'linear-gradient(135deg,#001a10,#000a08)' },
+  {
+    id: 'aesthetic-fashion',
+    name: 'Aesthetic Fashion',
+    artist: 'Chill · Vibes',
+    duration: '2:20',
+    emoji: '🌙',
+    bg: 'linear-gradient(135deg,#1a0830,#0a0418)',
+    // Full URL stored in backend as the song field
+    url: 'https://cdn.pixabay.com/audio/2022/10/16/audio_12a7fc56c7.mp3',
+  },
+  {
+    id: 'lofi-study',
+    name: 'Lofi Study',
+    artist: 'Lo-Fi · Calm',
+    duration: '2:49',
+    emoji: '✨',
+    bg: 'linear-gradient(135deg,#1a1000,#0a0800)',
+    url: 'https://cdn.pixabay.com/audio/2022/01/18/audio_d0c6ff1c43.mp3',
+  },
+  {
+    id: 'sweet-memories',
+    name: 'Sweet Memories',
+    artist: 'Soft · Warm',
+    duration: '3:10',
+    emoji: '💜',
+    bg: 'linear-gradient(135deg,#1a0010,#0a0008)',
+    url: 'https://cdn.pixabay.com/audio/2022/03/15/audio_3e01ccbcfe.mp3',
+  },
+  {
+    id: 'afrobeat-summer',
+    name: 'Afrobeat Summer',
+    artist: 'Afro · Upbeat',
+    duration: '2:35',
+    emoji: '🌿',
+    bg: 'linear-gradient(135deg,#001a10,#000a08)',
+    url: 'https://cdn.pixabay.com/audio/2023/04/05/audio_7c9b20db96.mp3',
+  },
+  {
+    id: 'cinematic-mood',
+    name: 'Cinematic Mood',
+    artist: 'Epic · Dreamy',
+    duration: '2:58',
+    emoji: '🌊',
+    bg: 'linear-gradient(135deg,#001a1a,#000a0a)',
+    url: 'https://cdn.pixabay.com/audio/2022/08/04/audio_2dde668d05.mp3',
+  },
 ];
 
 // ── Page ─────────────────────────────────────────────────────────────────────
@@ -32,19 +74,40 @@ export default function UploadRitualPage() {
 
   const [title, setTitle]   = useState('');
   const [panels, setPanels] = useState<PanelData[]>(Array.from({ length: 15 }, EMPTY_PANEL));
-  const [selectedSong, setSelectedSong] = useState<string | null>(null);
   const [songTab, setSongTab] = useState<'library' | 'upload'>('library');
+
+  // ── selectedSongUrl: the URL that will be sent to the backend ──
+  // For library songs → Pixabay CDN URL
+  // For uploaded audio → null (audioFile is sent as a binary field instead)
+  const [selectedSongUrl, setSelectedSongUrl] = useState<string | null>(null);
+
+  // ── selectedSongId: only used for UI highlight in library tab ──
+  const [selectedSongId, setSelectedSongId] = useState<string | null>(null);
+
+  // ── audioFile: the actual File object from the Upload tab ──
+  // This is what gets appended to FormData as 'audioFile'
   const [audioFile, setAudioFile] = useState<File | null>(null);
+
   const [publishing, setPublishing] = useState(false);
   const [published, setPublished]   = useState(false);
+
+  // ── playingId: which library song is currently previewing ──
+  const [playingId, setPlayingId] = useState<string | null>(null);
+
+  const [exampleTab, setExampleTab] = useState<'Fan Meet' | 'Reactions'>('Fan Meet');
 
   const activePanelRef = useRef<number | null>(null);
   const fileInputRef   = useRef<HTMLInputElement>(null);
   const audioInputRef  = useRef<HTMLInputElement>(null);
 
-  const filledCount  = panels.filter(p => p.file !== null).length;
-  const progress     = (filledCount / 15) * 100;
-  const canPublish   = filledCount === 15 && title.trim().length > 0;
+  // ── Single shared Audio element for library previews ──
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  const filledCount = panels.filter(p => p.file !== null).length;
+  const progress    = (filledCount / 15) * 100;
+
+  // canPublish: need all 15 panels + a title. Song is optional.
+  const canPublish = filledCount === 15 && title.trim().length > 0 && title.length <= 30;
 
   // ── Panel handlers ──────────────────────────────────────────────────────
   const openFilePicker = (index: number) => {
@@ -79,17 +142,74 @@ export default function UploadRitualPage() {
   };
 
   const updateSubtitle = (index: number, value: string) => {
+    const clean = value.replace(/  +/g, ' ').slice(0, 12);
     setPanels(prev => {
       const next = [...prev];
-      next[index] = { ...next[index], subtitle: value };
+      next[index] = { ...next[index], subtitle: clean };
       return next;
     });
   };
 
-  // ── Audio handlers ──────────────────────────────────────────────────────
+  // ── Library song preview ────────────────────────────────────────────────
+  // Streams real audio from the Pixabay CDN URL
+  const handlePreview = (song: typeof SONGS[0]) => {
+    // Already playing this song → pause it
+    if (playingId === song.id) {
+      audioRef.current?.pause();
+      setPlayingId(null);
+      return;
+    }
+
+    // Stop any currently playing audio cleanly
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.src = '';
+    }
+
+    // Create a new Audio element pointing to the Pixabay CDN URL
+    const audio = new Audio(song.url);
+    audio.volume = 0.8;
+    audioRef.current = audio;
+
+    audio.play().catch(err => {
+      console.warn('[RitualSongPreview] Could not play audio:', err.message);
+      setPlayingId(null);
+    });
+
+    setPlayingId(song.id);
+
+    // Reset when the clip finishes naturally
+    audio.addEventListener('ended', () => setPlayingId(null));
+  };
+
+  // ── Select a library song ───────────────────────────────────────────────
+  // Stores the full Pixabay URL so it goes to the backend as the `song` field
+  const handleSelectLibrarySong = (song: typeof SONGS[0]) => {
+    setSelectedSongId(song.id);
+    setSelectedSongUrl(song.url);  // ← full URL sent to backend
+    setAudioFile(null);            // clear any previously uploaded file
+  };
+
+  // ── Custom audio upload ─────────────────────────────────────────────────
   const handleAudioChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) { setAudioFile(file); setSelectedSong(file.name); }
+    if (!file) return;
+
+    // Validate size (20MB matches backend multer limit)
+    if (file.size > 20 * 1024 * 1024) {
+      alert('Audio file must be under 20MB');
+      e.target.value = '';
+      return;
+    }
+
+    setAudioFile(file);            // ← File object appended to FormData
+    setSelectedSongUrl(null);      // uploaded file takes priority; no URL needed
+    setSelectedSongId(null);       // deselect any library song
+    e.target.value = '';
+  };
+
+  const removeAudioFile = () => {
+    setAudioFile(null);
   };
 
   // ── Publish ─────────────────────────────────────────────────────────────
@@ -98,12 +218,11 @@ export default function UploadRitualPage() {
     setPublishing(true);
 
     try {
-      // ── Resolve userId + token from every possible source ─────────────────
+      // ── Resolve userId + token from every source ───────────────────────
       let userId = reduxUserId;
       let token  = reduxToken;
 
       if (typeof window !== 'undefined') {
-        // Try 'login' key first (primary)
         const loginRaw = localStorage.getItem('login');
         if (loginRaw) {
           try {
@@ -112,13 +231,9 @@ export default function UploadRitualPage() {
             if (!token)  token  = d.refreshtoken || d.accesstoken || d.token || '';
           } catch {}
         }
-
-        // Fallback: try individual keys some apps store separately
         if (!userId) userId = localStorage.getItem('userID') || localStorage.getItem('userId') || '';
         if (!token)  token  = localStorage.getItem('token') || localStorage.getItem('accessToken') || '';
       }
-
-      console.log('[UploadRitual] userId resolved:', userId);
 
       if (!userId) {
         alert('You must be logged in to publish a ritual.');
@@ -132,17 +247,26 @@ export default function UploadRitualPage() {
       formData.append('userId', userId);
       formData.append('title', title.trim());
 
-      // Optional song
-      if (selectedSong) formData.append('song', selectedSong);
-      if (audioFile)    formData.append('audioFile', audioFile);
+      // ── Song field logic ───────────────────────────────────────────────
+      // Case 1: user uploaded a custom audio file
+      //   → append binary as 'audioFile'; multer picks it up as req.files['audioFile']
+      //   → backend uploads it to Storj and stores the Storj URL
+      // Case 2: user selected a library song
+      //   → append its CDN URL as 'song'; backend stores it directly
+      // Case 3: no song → nothing appended; backend stores null
+      if (audioFile) {
+        formData.append('audioFile', audioFile, audioFile.name);
+      } else if (selectedSongUrl) {
+        formData.append('song', selectedSongUrl);
+      }
 
-      // 15 panels — image file + subtitle for each
+      // 15 panel images + subtitles
       panels.forEach((p, i) => {
         if (p.file) formData.append(`panel_${i + 1}_image`, p.file, p.file.name);
         formData.append(`panel_${i + 1}_subtitle`, p.subtitle || '');
       });
 
-      // Let the browser set Content-Type with boundary automatically
+      // Let axios + FormData set Content-Type with the correct boundary automatically
       const uploadRes = await axios.post(
         `${API_URL}/api/creator-rituals/upload`,
         formData,
@@ -172,6 +296,13 @@ export default function UploadRitualPage() {
       setPublishing(false);
     }
   };
+
+  // ── Derived: display label for publish bar ───────────────────────────────
+  const songLabel = audioFile
+    ? audioFile.name
+    : selectedSongId
+      ? SONGS.find(s => s.id === selectedSongId)?.name ?? null
+      : null;
 
   // ── Render ───────────────────────────────────────────────────────────────
   return (
@@ -261,10 +392,67 @@ export default function UploadRitualPage() {
 
         <div style={{ height: 1, background: 'rgba(255,255,255,.07)', margin: '32px 0' }} />
 
-        {/* FORM */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
 
-          {/* Title */}
+          {/* ── WHAT CAN YOU SHARE ── */}
+          <div style={{ marginBottom: 32 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '.1em', textTransform: 'uppercase', color: '#475569', marginBottom: 14, display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div style={{ width: 16, height: 2, background: '#6c63ff', borderRadius: 2 }} />
+              What can you share
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              {[
+                { badge: 'FAN MEETS', badgeColor: '#a89cff', badgeBg: 'rgba(108,99,255,.15)', icon: '🤝', title: 'How your fan meet or date went', desc: 'Take your fans through the experience — where you met, how it felt, what you talked about.' },
+                { badge: 'REACTIONS', badgeColor: '#2dd4bf', badgeBg: 'rgba(45,212,191,.12)', icon: '📸', title: 'Reaction photos with subtitles', desc: 'Capture the moments — fan reactions, your reactions, the venue, the vibe. Each photo gets a subtitle.' },
+              ].map((card, ci) => (
+                <div key={ci} style={{ background: '#111624', border: '1px solid rgba(255,255,255,.07)', borderRadius: 14, padding: '22px 20px', position: 'relative', overflow: 'hidden' }}>
+                  <div style={{ position: 'absolute', top: 14, right: 14, padding: '3px 9px', borderRadius: 6, fontSize: 10, fontWeight: 700, letterSpacing: '.04em', background: card.badgeBg, color: card.badgeColor }}>{card.badge}</div>
+                  <div style={{ fontSize: 28, marginBottom: 12 }}>{card.icon}</div>
+                  <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 6 }}>{card.title}</div>
+                  <div style={{ fontSize: 13, color: '#94a3b8', lineHeight: 1.6 }}>{card.desc}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* ── EXAMPLES ── */}
+          <div style={{ marginBottom: 32 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '.1em', textTransform: 'uppercase', color: '#475569', display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div style={{ width: 16, height: 2, background: '#6c63ff', borderRadius: 2 }} />
+                Examples
+              </div>
+              {(['Fan Meet', 'Reactions'] as const).map(tab => (
+                <button key={tab} onClick={() => setExampleTab(tab)} style={{ padding: '3px 10px', borderRadius: 6, fontSize: 10, fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase', cursor: 'pointer', border: '1px solid', fontFamily: 'inherit', background: exampleTab === tab ? (tab === 'Fan Meet' ? 'rgba(108,99,255,.15)' : 'rgba(244,114,182,.12)') : 'transparent', color: exampleTab === tab ? (tab === 'Fan Meet' ? '#a89cff' : '#f472b6') : '#475569', borderColor: exampleTab === tab ? (tab === 'Fan Meet' ? 'rgba(108,99,255,.2)' : 'rgba(244,114,182,.2)') : 'rgba(255,255,255,.04)' }}>{tab}</button>
+              ))}
+            </div>
+            <div style={{ display: 'flex', gap: 10, overflowX: 'auto', paddingBottom: 8 }}>
+              {(exampleTab === 'Fan Meet' ? [
+                { num: 1, sub: 'Arrived at the café 10 mins early 😅', bg: 'linear-gradient(180deg,#1a1030,#0a0818)' },
+                { num: 2, sub: 'Saw them walking in — recognized me instantly!', bg: 'linear-gradient(180deg,#0a1830,#060e20)' },
+                { num: 3, sub: 'First 5 mins were a little awkward ngl 😂', bg: 'linear-gradient(180deg,#1a0a20,#100612)' },
+                { num: 4, sub: 'We talked for the full 30 mins — time flew', bg: 'linear-gradient(180deg,#0a1820,#060e14)' },
+                { num: 5, sub: 'Left feeling genuinely happy. 10/10 🙌', bg: 'linear-gradient(180deg,#1a1020,#0e0818)' },
+              ] : [
+                { num: 1, sub: 'When they realized it was actually me 😭', bg: 'linear-gradient(180deg,#1a0a20,#100612)' },
+                { num: 2, sub: 'This reaction was everything to me honestly', bg: 'linear-gradient(180deg,#0a1830,#060e20)' },
+                { num: 3, sub: 'They brought me a handwritten letter. I cried 🥲', bg: 'linear-gradient(180deg,#1a1020,#0e0818)' },
+                { num: 4, sub: 'We had to take a photo together of course 📸', bg: 'linear-gradient(180deg,#1a1030,#0a0818)' },
+                { num: 5, sub: 'This is why I do this. Pure love 💜', bg: 'linear-gradient(180deg,#0a1820,#060e14)' },
+              ]).map(p => (
+                <div key={p.num} style={{ flexShrink: 0, width: 110, borderRadius: 12, overflow: 'hidden', border: '1px solid rgba(255,255,255,.07)' }}>
+                  <div style={{ width: '100%', height: 160, background: p.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+                    <div style={{ position: 'absolute', top: 8, left: 8, width: 20, height: 20, borderRadius: '50%', background: 'rgba(0,0,0,.5)', border: '1px solid rgba(255,255,255,.1)', fontSize: 9, fontWeight: 700, color: 'rgba(255,255,255,.6)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{p.num}</div>
+                    <svg width='50' height='80' viewBox='0 0 70 110' fill='none'><circle cx='35' cy='26' r='12' fill='rgba(255,255,255,.25)'/><path d='M14 90Q14 54 35 54Q56 54 56 90' fill='rgba(255,255,255,.18)'/></svg>
+                  </div>
+                  <div style={{ background: 'rgba(0,0,0,.7)', padding: '7px 8px', fontSize: 9, color: 'rgba(255,255,255,.6)', lineHeight: 1.4 }}>{p.sub}</div>
+                </div>
+              ))}
+              <div style={{ flexShrink: 0, width: 110, height: 190, borderRadius: 12, border: '1px dashed rgba(108,99,255,.2)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 11, color: 'rgba(108,99,255,.5)', fontWeight: 600, background: 'rgba(108,99,255,.04)' }}><span style={{ fontSize: 20 }}>+10</span><span>more panels</span></div>
+            </div>
+          </div>
+
+          {/* ── TITLE ── */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             <label style={{ fontSize: 13, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
               Ritual Title
@@ -273,8 +461,12 @@ export default function UploadRitualPage() {
             <input
               type="text"
               value={title}
-              onChange={e => setTitle(e.target.value)}
-              maxLength={60}
+              onChange={e => {
+                let v = e.target.value.replace(/  +/g, ' ');
+                if (v.length <= 30) setTitle(v);
+              }}
+              onKeyDown={e => { if (e.key === 'Enter') e.preventDefault(); }}
+              maxLength={30}
               placeholder="e.g. My first fan meet in Lagos 🔥"
               style={{
                 background: '#111624', border: '1px solid rgba(255,255,255,.07)',
@@ -282,9 +474,12 @@ export default function UploadRitualPage() {
                 fontSize: 14, color: '#f1f5f9', fontFamily: 'inherit', outline: 'none', width: '100%',
               }}
             />
+            <div style={{ fontSize: 11, color: title.length >= 28 ? '#ef4444' : '#475569', textAlign: 'right', marginTop: 4 }}>
+              {title.length} / 30
+            </div>
           </div>
 
-          {/* Panels */}
+          {/* ── PANELS ── */}
           <div>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
               <label style={{ fontSize: 13, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -300,7 +495,7 @@ export default function UploadRitualPage() {
                   fontSize: 12, fontWeight: 600,
                   color: filledCount === 15 ? '#22c55e' : '#a89cff',
                 }}>
-                  {filledCount} / 15 panels
+                  {filledCount} / 15 panels · {panels.filter(p => p.subtitle.trim()).length} subtitles
                 </span>
                 <div style={{ width: 120, height: 4, background: 'rgba(255,255,255,.07)', borderRadius: 2, overflow: 'hidden' }}>
                   <div style={{ height: '100%', borderRadius: 2, background: 'linear-gradient(90deg,#6c63ff,#9b59f5)', width: `${progress}%`, transition: 'width .3s' }} />
@@ -308,21 +503,20 @@ export default function UploadRitualPage() {
               </div>
             </div>
 
-            {/* 5-column grid */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 10 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }} className="panels-grid">
+              <style>{`@media(min-width:640px){.panels-grid{grid-template-columns:repeat(5,1fr)!important}}`}</style>
               {panels.map((panel, i) => (
                 <div
                   key={i}
                   onClick={() => !panel.file && openFilePicker(i)}
                   style={{
-                    position: 'relative', aspectRatio: '9/14',
+                    position: 'relative',
                     borderRadius: 10, overflow: 'hidden', cursor: panel.file ? 'default' : 'pointer',
                     border: panel.file ? '1px solid rgba(108,99,255,.3)' : '1px dashed rgba(108,99,255,.2)',
                     background: '#111624', display: 'flex', flexDirection: 'column',
-                    transition: 'border-color .2s',
+                    transition: 'border-color .2s', minHeight: 180,
                   }}
                 >
-                  {/* Panel number badge */}
                   <div style={{
                     position: 'absolute', top: 6, left: 6, zIndex: 2,
                     width: 18, height: 18, borderRadius: '50%', fontSize: 8, fontWeight: 700,
@@ -334,20 +528,14 @@ export default function UploadRitualPage() {
 
                   {panel.preview ? (
                     <>
-                      {/* Preview image */}
-                      <img
-                        src={panel.preview}
-                        alt={`Panel ${i + 1}`}
-                        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
-                      />
-                      {/* Remove button */}
+                      <img src={panel.preview} alt={`Panel ${i + 1}`} style={{ width: '100%', height: 130, objectFit: 'cover', display: 'block', flexShrink: 0 }} />
                       <button
                         onClick={e => removePanel(i, e)}
                         style={{
                           position: 'absolute', top: 4, right: 4, zIndex: 3,
-                          width: 18, height: 18, borderRadius: '50%',
-                          background: 'rgba(239,68,68,.8)', border: 'none', cursor: 'pointer',
-                          fontSize: 8, color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          width: 20, height: 20, borderRadius: '50%',
+                          background: 'rgba(239,68,68,.85)', border: 'none', cursor: 'pointer',
+                          fontSize: 9, color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700,
                         }}
                       >✕</button>
                     </>
@@ -360,31 +548,37 @@ export default function UploadRitualPage() {
                     </div>
                   )}
 
-                  {/* Subtitle textarea */}
-                  <textarea
-                    value={panel.subtitle}
-                    onChange={e => updateSubtitle(i, e.target.value)}
-                    onClick={e => e.stopPropagation()}
-                    placeholder="Add subtitle..."
-                    rows={2}
-                    style={{
-                      background: 'transparent', border: 'none',
-                      borderTop: '1px solid rgba(255,255,255,.04)',
-                      padding: '5px 6px', fontSize: 9, color: '#94a3b8',
-                      fontFamily: 'inherit', outline: 'none', width: '100%',
-                      resize: 'none', lineHeight: 1.4, minHeight: 30,
-                      position: 'relative', zIndex: 2,
-                    }}
-                  />
+                  <div style={{ position: 'relative', flexShrink: 0, zIndex: 2 }}>
+                    <input
+                      type="text"
+                      value={panel.subtitle}
+                      onChange={e => {
+                        let v = e.target.value.replace(/  +/g, ' ');
+                        if (v.length <= 12) updateSubtitle(i, v);
+                      }}
+                      onKeyDown={e => { if (e.key === 'Enter') e.preventDefault(); }}
+                      onClick={e => e.stopPropagation()}
+                      placeholder="Subtitle..."
+                      maxLength={12}
+                      style={{
+                        background: 'rgba(0,0,0,.4)', border: 'none',
+                        borderTop: '1px solid rgba(255,255,255,.06)',
+                        padding: '6px 6px 4px', fontSize: 9, color: '#94a3b8',
+                        fontFamily: 'inherit', outline: 'none', width: '100%', lineHeight: 1.4,
+                      }}
+                    />
+                    <div style={{ position: 'absolute', bottom: 2, right: 4, fontSize: 7, color: panel.subtitle.length >= 11 ? '#ef4444' : 'rgba(255,255,255,.2)', pointerEvents: 'none' }}>
+                      {panel.subtitle.length}/12
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>
 
-            {/* Hidden file input */}
             <input ref={fileInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleFileChange} />
           </div>
 
-          {/* Song Picker */}
+          {/* ── SONG PICKER ── */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             <label style={{ fontSize: 13, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
               Add a Song
@@ -392,13 +586,21 @@ export default function UploadRitualPage() {
             </label>
 
             <div style={{ background: '#111624', border: '1px solid rgba(255,255,255,.07)', borderRadius: 14, overflow: 'hidden' }}>
-              {/* Header */}
+
+              {/* Card header */}
               <div style={{ padding: '16px 20px', borderBottom: '1px solid rgba(255,255,255,.07)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: 14, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>🎵 Add a soundtrack to your Ritual</span>
+                <span style={{ fontSize: 14, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
+                  🎵 Add a soundtrack to your Ritual
+                  {songLabel && (
+                    <span style={{ fontSize: 11, fontWeight: 500, color: '#22c55e', background: 'rgba(34,197,94,.08)', border: '1px solid rgba(34,197,94,.2)', borderRadius: 6, padding: '2px 8px' }}>
+                      ✓ {songLabel.length > 22 ? songLabel.slice(0, 22) + '…' : songLabel}
+                    </span>
+                  )}
+                </span>
                 <span style={{ fontSize: 11, color: '#475569' }}>Optional</span>
               </div>
 
-              {/* Tabs */}
+              {/* Tab switcher */}
               <div style={{ display: 'flex', gap: 2, padding: '12px 20px', borderBottom: '1px solid rgba(255,255,255,.04)' }}>
                 {(['library', 'upload'] as const).map(tab => (
                   <button key={tab} onClick={() => setSongTab(tab)} style={{
@@ -412,72 +614,193 @@ export default function UploadRitualPage() {
                 ))}
               </div>
 
-              {/* Library */}
+              {/* ── Library tab ── */}
               {songTab === 'library' && (
                 <div style={{ padding: '12px 20px', display: 'flex', flexDirection: 'column', gap: 4 }}>
-                  {SONGS.map(song => (
-                    <div
-                      key={song.id}
-                      onClick={() => setSelectedSong(song.id)}
-                      style={{
-                        display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px',
-                        borderRadius: 10, cursor: 'pointer',
-                        background: selectedSong === song.id ? 'rgba(108,99,255,.08)' : 'transparent',
-                        border: selectedSong === song.id ? '1px solid rgba(108,99,255,.2)' : '1px solid transparent',
-                      }}
-                    >
-                      <div style={{ width: 38, height: 38, borderRadius: 8, background: song.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}>
-                        {song.emoji}
+                  <p style={{ fontSize: 11, color: '#475569', margin: '0 0 8px' }}>
+                    Hit ▶ to preview a song · click the row to select it for your Ritual
+                  </p>
+
+                  {SONGS.map(song => {
+                    const isSelected = selectedSongId === song.id;
+                    const isPlaying  = playingId === song.id;
+
+                    return (
+                      <div
+                        key={song.id}
+                        onClick={() => handleSelectLibrarySong(song)}
+                        style={{
+                          display: 'flex', alignItems: 'center', gap: 12,
+                          padding: '10px 12px', borderRadius: 10, cursor: 'pointer',
+                          background: isSelected ? 'rgba(108,99,255,.08)' : 'transparent',
+                          border: isSelected ? '1px solid rgba(108,99,255,.2)' : '1px solid transparent',
+                          transition: 'background .15s, border-color .15s',
+                        }}
+                      >
+                        {/* Artwork thumbnail */}
+                        <div style={{
+                          width: 38, height: 38, borderRadius: 8, background: song.bg,
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          fontSize: 18, flexShrink: 0, position: 'relative',
+                        }}>
+                          {song.emoji}
+                          {isPlaying && (
+                            <div style={{
+                              position: 'absolute', inset: -2, borderRadius: 10,
+                              border: '2px solid #6c63ff',
+                              animation: 'pulse-ring 1s ease-in-out infinite',
+                            }} />
+                          )}
+                        </div>
+
+                        {/* Name + artist */}
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 2, display: 'flex', alignItems: 'center', gap: 6 }}>
+                            {song.name}
+                            {isPlaying && (
+                              <span style={{
+                                fontSize: 9, fontWeight: 700, color: '#6c63ff',
+                                background: 'rgba(108,99,255,.12)', border: '1px solid rgba(108,99,255,.2)',
+                                borderRadius: 4, padding: '1px 5px', letterSpacing: '.04em',
+                              }}>
+                                PLAYING
+                              </span>
+                            )}
+                          </div>
+                          <div style={{ fontSize: 11, color: '#475569' }}>{song.artist} · {song.duration}</div>
+                        </div>
+
+                        {/* Selected checkmark */}
+                        {isSelected && (
+                          <div style={{ fontSize: 14, color: '#22c55e', fontWeight: 800, flexShrink: 0 }}>✓</div>
+                        )}
+
+                        {/* Play / Pause button */}
+                        <button
+                          onClick={e => { e.stopPropagation(); handlePreview(song); }}
+                          style={{
+                            width: 32, height: 32, borderRadius: '50%',
+                            background: isPlaying ? 'rgba(108,99,255,.25)' : 'rgba(108,99,255,.12)',
+                            border: isPlaying ? '1px solid rgba(108,99,255,.4)' : '1px solid transparent',
+                            cursor: 'pointer',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            fontSize: 12, color: '#a89cff', flexShrink: 0,
+                            transition: 'background .15s',
+                          }}
+                          title={isPlaying ? 'Pause preview' : 'Play 30s preview'}
+                        >
+                          {isPlaying ? '⏸' : '▶'}
+                        </button>
                       </div>
-                      <div style={{ flex: 1 }}>
-                        <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 2 }}>{song.name}</div>
-                        <div style={{ fontSize: 11, color: '#475569' }}>{song.artist}</div>
-                      </div>
-                      <span style={{ fontSize: 11, color: '#475569', fontWeight: 500 }}>{song.duration}</span>
-                      <div style={{ width: 30, height: 30, borderRadius: '50%', background: 'rgba(108,99,255,.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, color: selectedSong === song.id ? '#22c55e' : '#a89cff' }}>
-                        {selectedSong === song.id ? '✓' : '▶'}
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
+
+                  {/* Keyframe for pulsing ring on artwork while playing */}
+                  <style>{`
+                    @keyframes pulse-ring {
+                      0%   { opacity: 1;  transform: scale(1); }
+                      50%  { opacity: .5; transform: scale(1.08); }
+                      100% { opacity: 1;  transform: scale(1); }
+                    }
+                  `}</style>
                 </div>
               )}
 
-              {/* Upload audio */}
+              {/* ── Upload Audio tab ── */}
               {songTab === 'upload' && (
-                <div style={{ margin: '12px 20px' }}>
+                <div style={{ margin: '16px 20px 20px' }}>
                   {audioFile ? (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px', borderRadius: 10, background: 'rgba(108,99,255,.08)', border: '1px solid rgba(108,99,255,.2)' }}>
-                      <div style={{ width: 38, height: 38, borderRadius: 8, background: 'linear-gradient(135deg,#1a0830,#0a0418)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>🎵</div>
-                      <div style={{ flex: 1 }}>
-                        <div style={{ fontSize: 13, fontWeight: 600 }}>{audioFile.name}</div>
-                        <div style={{ fontSize: 11, color: '#475569' }}>{(audioFile.size / (1024 * 1024)).toFixed(1)} MB</div>
+                    /* File chosen — preview row with native audio player */
+                    <div style={{
+                      display: 'flex', alignItems: 'center', gap: 12,
+                      padding: '12px 14px', borderRadius: 10,
+                      background: 'rgba(108,99,255,.08)', border: '1px solid rgba(108,99,255,.2)',
+                      flexWrap: 'wrap',
+                    }}>
+                      <div style={{
+                        width: 40, height: 40, borderRadius: 8, flexShrink: 0,
+                        background: 'linear-gradient(135deg,#1a0830,#0a0418)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18,
+                      }}>🎵</div>
+
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 13, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {audioFile.name}
+                        </div>
+                        <div style={{ fontSize: 11, color: '#475569', marginTop: 2 }}>
+                          {(audioFile.size / (1024 * 1024)).toFixed(2)} MB · ready to upload with your Ritual
+                        </div>
                       </div>
-                      <button onClick={() => { setAudioFile(null); setSelectedSong(null); }}
-                        style={{ width: 30, height: 30, borderRadius: '50%', background: 'rgba(239,68,68,.12)', border: 'none', cursor: 'pointer', color: '#ef4444', fontSize: 12 }}>✕</button>
+
+                      {/*
+                        Native <audio> element gives the user a real in-browser preview
+                        of their uploaded file via an object URL.
+                        The file itself is sent to the backend via FormData on publish.
+                      */}
+                      <audio
+                        controls
+                        src={URL.createObjectURL(audioFile)}
+                        style={{ height: 28, maxWidth: 160, flexShrink: 0, opacity: .85 }}
+                      />
+
+                      {/* Remove the file */}
+                      <button
+                        onClick={removeAudioFile}
+                        style={{
+                          width: 28, height: 28, borderRadius: '50%',
+                          background: 'rgba(239,68,68,.12)', border: '1px solid rgba(239,68,68,.2)',
+                          cursor: 'pointer', color: '#ef4444', fontSize: 12,
+                          display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                        }}
+                        title="Remove audio"
+                      >✕</button>
                     </div>
                   ) : (
+                    /* Drop-zone / click-to-choose */
                     <div
                       onClick={() => audioInputRef.current?.click()}
                       style={{
-                        padding: 24, border: '1px dashed rgba(108,99,255,.2)', borderRadius: 10,
+                        padding: '32px 24px',
+                        border: '1px dashed rgba(108,99,255,.25)', borderRadius: 12,
                         textAlign: 'center', cursor: 'pointer',
+                        background: 'rgba(108,99,255,.03)',
+                        transition: 'border-color .15s, background .15s',
+                      }}
+                      onMouseEnter={e => {
+                        (e.currentTarget as HTMLDivElement).style.borderColor = 'rgba(108,99,255,.5)';
+                        (e.currentTarget as HTMLDivElement).style.background   = 'rgba(108,99,255,.06)';
+                      }}
+                      onMouseLeave={e => {
+                        (e.currentTarget as HTMLDivElement).style.borderColor = 'rgba(108,99,255,.25)';
+                        (e.currentTarget as HTMLDivElement).style.background   = 'rgba(108,99,255,.03)';
                       }}
                     >
-                      <div style={{ fontSize: 28, marginBottom: 8, opacity: .5 }}>🎵</div>
-                      <div style={{ fontSize: 13, color: '#475569' }}>
-                        <strong style={{ color: '#a89cff' }}>Click to upload</strong> your audio file<br/>
-                        MP3, AAC or WAV · Max 20MB
+                      <div style={{ fontSize: 32, marginBottom: 10, opacity: .55 }}>🎵</div>
+                      <div style={{ fontSize: 14, color: '#94a3b8', marginBottom: 6 }}>
+                        <strong style={{ color: '#a89cff' }}>Click to choose</strong> your audio file
                       </div>
-                      <input ref={audioInputRef} type="file" accept="audio/*" style={{ display: 'none' }} onChange={handleAudioChange} />
+                      <div style={{ fontSize: 11, color: '#475569' }}>MP3, AAC, WAV or OGG · Max 20MB</div>
                     </div>
                   )}
+
+                  {/*
+                    Hidden input — accepts only audio MIME types that match the
+                    backend multer fileFilter, preventing browser camera/image pickers.
+                  */}
+                  <input
+                    ref={audioInputRef}
+                    type="file"
+                    accept="audio/mpeg,audio/mp3,audio/aac,audio/wav,audio/ogg,audio/mp4"
+                    style={{ display: 'none' }}
+                    onChange={handleAudioChange}
+                  />
                 </div>
               )}
             </div>
           </div>
         </div>
 
-        {/* SUBMIT */}
+        {/* ── SUBMIT BAR ── */}
         <div style={{ height: 1, background: 'rgba(255,255,255,.07)', margin: '32px 0' }} />
 
         <div style={{
@@ -488,10 +811,20 @@ export default function UploadRitualPage() {
         }}>
           <div>
             <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 4 }}>
-              {published ? '✓ Published!' : canPublish ? "You're ready to publish! 🔥" : filledCount === 15 ? 'Almost there — add a title' : 'Complete your Ritual to publish'}
+              {published
+                ? '✓ Published!'
+                : canPublish
+                  ? "You're ready to publish! 🔥"
+                  : filledCount === 15
+                    ? 'Almost there — add a title'
+                    : 'Complete your Ritual to publish'}
             </div>
             <div style={{ fontSize: 12, color: '#475569' }}>
-              {published ? 'Your Ritual is now live for 24 hours' : canPublish ? 'Your Ritual will go live for 24 hours' : `${filledCount}/15 panels uploaded${title.trim() ? ' · Title ✓' : ' · No title yet'}`}
+              {published
+                ? 'Your Ritual is now live for 24 hours'
+                : canPublish
+                  ? `Your Ritual will go live for 24 hours${songLabel ? ` · 🎵 ${songLabel.length > 18 ? songLabel.slice(0, 18) + '…' : songLabel}` : ' · No song'}`
+                  : `${filledCount}/15 panels${title.trim() ? ' · Title ✓' : ' · No title yet'}`}
             </div>
           </div>
 
@@ -510,8 +843,11 @@ export default function UploadRitualPage() {
               disabled={!canPublish || publishing || published}
               style={{
                 padding: '12px 28px', borderRadius: 10, fontSize: 13, fontWeight: 700,
-                background: published ? 'linear-gradient(135deg,#22c55e,#16a34a)' : 'linear-gradient(135deg,#6c63ff,#9b59f5)',
-                color: 'white', border: 'none', cursor: canPublish && !publishing ? 'pointer' : 'not-allowed',
+                background: published
+                  ? 'linear-gradient(135deg,#22c55e,#16a34a)'
+                  : 'linear-gradient(135deg,#6c63ff,#9b59f5)',
+                color: 'white', border: 'none',
+                cursor: canPublish && !publishing ? 'pointer' : 'not-allowed',
                 fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 8,
                 opacity: (!canPublish || publishing) && !published ? 0.4 : 1,
                 boxShadow: '0 4px 16px rgba(108,99,255,.3)',
@@ -521,6 +857,7 @@ export default function UploadRitualPage() {
             </button>
           </div>
         </div>
+
       </div>
     </div>
   );

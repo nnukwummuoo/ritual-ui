@@ -41,9 +41,8 @@ const NewRitualCard: React.FC = () => {
     const formatTime = (val: number) => val.toString().padStart(2, "0");
 
     return (
-        <div className="w-full bg-[#0a0a1a] rounded-xl overflow-hidden relative border border-purple-500/20 shadow-lg shadow-purple-900/20">
+        <div className="">
             {/* Glow effects */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-purple-600/20 rounded-full blur-[50px] pointer-events-none"></div>
 
             <div className="relative z-10 p-4 md:p-6 flex items-center justify-between gap-2 md:gap-4">
                 {/* Left Text */}
@@ -54,10 +53,7 @@ const NewRitualCard: React.FC = () => {
 
                 {/* Center Icon */}
                 <div className="relative flex items-center justify-center">
-                    <div className="w-12 h-12 md:w-16 md:h-16 rounded-full border-2 border-purple-400 bg-transparent flex items-center justify-center shadow-[0_0_15px_rgba(168,85,247,0.5)]">
-                        {/* Inner diamond shape implies an eye pupil or similar */}
-                        <IoEyeOutline className="text-[#F5E6CC] w-6 h-6 md:w-8 md:h-8 drop-shadow-[0_0_8px_rgba(245,230,204,0.8)]" />
-                    </div>
+                  
                     {/* Ring Glow */}
                     <div className="absolute inset-0 rounded-full border border-blue-500/50 shadow-[0_0_20px_rgba(59,130,246,0.3)] animate-pulse"></div>
                 </div>
