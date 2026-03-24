@@ -10,7 +10,6 @@ import { useStory } from '@/contexts/StoryContext';
 import { useSelector } from 'react-redux';
 import type { RootState } from '@/store/store';
 import CommentModal from '@/components/CommentModal';
-import { useAnyaMusic } from '@/hooks/useAnyaMusic';
 import { useAnyaPageTracking } from '@/hooks/useAnyaPageTracking';
 import { useAnyaSessionTracking } from '@/hooks/useAnyaSessionTracking';
 import AnyaEmptyState from './AnyaEmptyState';
@@ -48,7 +47,6 @@ export default function AnyaPage() {
 
   const { likedStories, commentCounts, likeCounts, toggleLike, refreshStoryData } = useStory();
 
-  useAnyaMusic();
   useAnyaPageTracking('main');
   useAnyaSessionTracking('main');
 
@@ -265,6 +263,7 @@ export default function AnyaPage() {
         </motion.button>
       </div>
 
+      {/* Comment modal */}
       <CommentModal
         isOpen={commentModalOpen}
         onClose={() => setCommentModalOpen(false)}

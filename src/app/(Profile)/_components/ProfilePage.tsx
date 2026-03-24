@@ -10,6 +10,8 @@ import Skeleton, { SkeletonTheme } from "react-loading-skeleton";
 
 import "react-loading-skeleton/dist/skeleton.css";
 
+import ProfileRitualsTab from "@/components/ProfileRitualsTab";
+
 import Tabs from "./Tabs";
 
 import DropdownMenu from "./DropDonMenu";
@@ -333,6 +335,7 @@ export const Profile = () => {
   const [userPosts, setUserPosts] = useState<any[]>([]);
 
   const [isLoadingPosts, setIsLoadingPosts] = useState(false);
+  const [ritualCount, setRitualCount] = useState(0);
 
 
 
@@ -1860,6 +1863,10 @@ export const Profile = () => {
         // but likely locked content won't be viewable. 
         // However, we want to show the LOCKED posts.
         fetchExclusivePosts(String(targetUserId));
+
+        axios.get(`/api/proxy/api/creator-rituals/user/${targetUserId}`)
+  .then(res => setRitualCount((res.data.rituals || []).length))
+  .catch(() => setRitualCount(0));
 
 
 
@@ -6859,6 +6866,20 @@ export const Profile = () => {
 
             },
 
+            {
+              id: "rituals",
+              icon: ({ className }: { className?: string }) => (
+                <svg className={className} viewBox="0 0 512 512" fill="none">
+                  <rect x="60" y="310" width="392" height="60" rx="30" fill="currentColor" opacity=".6"/>
+                  <rect x="60" y="390" width="392" height="60" rx="30" fill="currentColor"/>
+                  <path d="M256 50C256 50 196 130 196 200C196 234 224 262 256 262C288 262 316 234 316 200C316 130 256 50 256 50Z" fill="currentColor"/>
+                </svg>
+              ),
+              count: ritualCount,
+              content: (
+                <ProfileRitualsTab userId={String(targetUserId || "")} />
+              ),
+            },
             // Show reviews tab for all users (both creator and fan ratings)
 
             {

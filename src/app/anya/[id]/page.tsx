@@ -10,7 +10,6 @@ import { getImageSource } from '@/lib/imageUtils';
 import { useStory } from '@/contexts/StoryContext';
 import { useSelector } from 'react-redux';
 import type { RootState } from '@/store/store';
-import { useAnyaMusic } from '@/hooks/useAnyaMusic';
 import { useAnyaPageTracking } from '@/hooks/useAnyaPageTracking';
 import { useAnyaSessionTracking } from '@/hooks/useAnyaSessionTracking';
 import CommentModal from '@/components/CommentModal';
@@ -125,21 +124,7 @@ function RitualRow({
       onTouchStart={onTouchStart}
       onTouchEnd={onTouchEnd}
     >
-      {/* PANEL PROGRESS BAR */}
-      <div className="absolute top-[68px] left-0 right-0 z-20 flex gap-1 px-4">
-        {story.panels.map((_, i) => (
-          <button
-            key={i}
-            onClick={() => goToPanel(i)}
-            style={{
-              height: 3, borderRadius: 2, border: 'none', cursor: 'pointer',
-              transition: 'flex .3s, background .3s',
-              flex: i === panelIndex ? 2 : 1,
-              background: i <= panelIndex ? 'white' : 'rgba(255,255,255,.25)',
-            }}
-          />
-        ))}
-      </div>
+
 
       {/* RITUAL TITLE (shown when on panel 0) */}
       {panelIndex === 0 && (
@@ -339,7 +324,6 @@ export default function StoryViewPage() {
   const verticalRef = useRef<HTMLDivElement>(null);
 
   const { likedStories, commentCounts, toggleLike, refreshStoryData } = useStory();
-  useAnyaMusic();
   useAnyaPageTracking('story', storyId);
   useAnyaSessionTracking('story', storyId);
 
@@ -539,6 +523,7 @@ export default function StoryViewPage() {
         </div>
       </div>
 
+      {/* VERTICAL SNAP CONTAINER — one full-screen row per ritual */}
       <div
         ref={verticalRef}
         className="h-screen w-full flex flex-col snap-y snap-mandatory overflow-y-scroll"
