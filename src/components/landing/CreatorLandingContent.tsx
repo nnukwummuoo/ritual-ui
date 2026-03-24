@@ -611,9 +611,9 @@ export default function CreatorLandingContent({ prefetchedCreators }: Props) {
             <div className="sec-subtitle reveal d2">We know payment transparency matters. Here&apos;s exactly how every fan request works — no surprises, no fine print.</div>
             <div className="pay-grid reveal d2">
               <div className="pay-card"><div className="pay-num">1</div><div className="pay-icon-wrap">📅</div><div className="pay-title">Fan Request</div><div className="pay-desc">Fan pays upfront. mmeko holds the payment securely — the money is locked in and guaranteed.</div></div>
-              <div className="pay-card"><div className="pay-num">2</div><div className="pay-icon-wrap">☕</div><div className="pay-title">Meet Happens</div><div className="pay-desc">You show up, connect in a public venue for up to 30 minutes. All chats stay on the mmeko platform.</div></div>
+              <div className="pay-card"><div className="pay-num">2</div><div className="pay-icon-wrap">☕</div><div className="pay-title">Meet Happens</div><div className="pay-desc">You show up, connect in a public venue for up to 30 minutes. No pressure, no overstay — just a real connection on your terms.</div></div>
               <div className="pay-card"><div className="pay-num">3</div><div className="pay-icon-wrap">✅</div><div className="pay-title">Fan Confirms</div><div className="pay-desc">Fan marks the meet complete — payment releases instantly. 100% of it. No deductions whatsoever.</div></div>
-              <div className="pay-card"><div className="pay-num">4</div><div className="pay-icon-wrap">⚡</div><div className="pay-title">You Get Paid</div><div className="pay-desc">Funds hit your wallet immediately. Support reviews any issues using your on-platform chat history.</div></div>
+              <div className="pay-card"><div className="pay-num">4</div><div className="pay-icon-wrap">⚡</div><div className="pay-title">You Get Paid</div><div className="pay-desc">Funds hit your wallet immediately. No waiting, no limits. You keep 100%, always.</div></div>
             </div>
             <div className="pay-callout reveal d3">
               <div className="pay-callout-icon">💡</div>

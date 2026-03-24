@@ -705,7 +705,7 @@ export const Loginview = () => {
       </div>
 
       {/* Login Form */}
-      <div className="rounded-lg shadow-lg p-6 w-full" style={{ backgroundColor: '#191e37' }}>
+      <div className="rounded-lg shadow-lg p-6 w-full" style={{ backgroundColor: '#111624' }}>
         <h2 className="bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent text-3xl font-bold text-center mb-2">
           Welcome Back
         </h2>
