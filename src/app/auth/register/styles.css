@@ -74,7 +74,7 @@
     width: 20px;
     height: 20px;
     border-radius: 50%;
-    background-color: #1e233f;
+    background-color: #111624;
     cursor: pointer;
 }
 
@@ -123,7 +123,7 @@
     transition: 0.2s ease all;
     color: #bec8fa;
     pointer-events: none;
-    background-color: #191e37 !important;
+    background-color: #111624 !important;
     width: 95%;
     height: 30px;
     text-align: left;
@@ -137,7 +137,7 @@
     top: -0.5rem;
     font-size: 0.75rem;
     color: #bec8fa;
-    background-color: #191e37 !important;
+    background-color: #111624 !important;
     width: fit-content;
     height: fit-content;
     text-align: left;
@@ -150,7 +150,7 @@
     top: -0.5rem;
     font-size: 0.75rem;
     color: #bec8fa;
-    background-color: #191e37 !important;
+    background-color: #111624 !important;
     width: fit-content;
     height: fit-content;
     text-align: left;
@@ -181,7 +181,7 @@
 }
 
 .form-container-wrapper select {
-    background-color: #191e37;
+    background-color: #111624;
     /* Forest green */
     color: white;
 
@@ -219,7 +219,7 @@
 /* When checkbox is checked */
 .custom-checkbox input:checked+.checkmark {
     background-color: #3b82f6;
-    border-color: #191e37;
+    border-color: #111624;
 }
 
 .custom-checkbox .checkmark::after {

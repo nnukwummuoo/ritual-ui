@@ -36,7 +36,7 @@
 
 }
 .form-container-wrapper form{
-    background-color: #191e37;
+    background-color: #111624;
     height: 100%;
     width: 40%;
     text-align: center;
@@ -104,7 +104,7 @@
     transition: 0.2s ease all;
     color: #bec8fa;
     pointer-events: none;
-    background-color: #191e37 !important;
+    background-color: #111624 !important;
     width: 95%;
     height: 30px;
     text-align: left;
@@ -118,7 +118,7 @@
     top: -0.5rem;
     font-size: 0.75rem;
     color: #bec8fa;
-    background-color: #191e37 !important;
+    background-color: #111624 !important;
     width: fit-content;
     height: fit-content;
     text-align: left;
@@ -147,7 +147,7 @@
     justify-content: center;
 }
 .form-container-wrapper select {
-background-color: #191e37; /* Forest green */
+background-color: #111624; /* Forest green */
 color: white;
 
 }
@@ -181,7 +181,7 @@ transition: all 0.2s ease;
 /* When checkbox is checked */
 .custom-checkbox input:checked + .checkmark {
 background-color: #ff8a23;
-border-color: #191e37;
+border-color: #111624;
 }
 
 .custom-checkbox .checkmark::after {
