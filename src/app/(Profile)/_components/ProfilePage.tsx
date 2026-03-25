@@ -6053,7 +6053,7 @@ export const Profile = () => {
 
                           return (
                             <button
-                              className="flex-1 bg-gradient-to-r from-orange-500 to-red-600 cursor-pointer py-1.5 px-3 rounded-lg hover:from-orange-600 hover:to-red-700 transition-all duration-200 hover:scale-105 text-center"
+                              className="flex-1 bg-[#111624] cursor-pointer py-1.5 px-3 rounded-lg hover:from-orange-600 hover:to-red-700 transition-all duration-200 hover:scale-105 text-center"
                               onClick={() => {
                                 // Navigate to creator profile using the actual creator ID
                                 router.push(`/creators/${creator_portfolio_id}`);
