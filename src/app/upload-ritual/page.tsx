@@ -19,50 +19,49 @@ const EMPTY_PANEL = (): PanelData => ({ file: null, preview: null, subtitle: '' 
 // ── Library songs: Pixabay CDN URLs used for both preview AND stored as song field ──
 const SONGS = [
   {
-    id: 'aesthetic-fashion',
-    name: 'Aesthetic Fashion',
-    artist: 'Chill · Vibes',
-    duration: '2:20',
+    id: 'hanging-lanterns',
+    name: 'Hanging Lanterns',
+    artist: 'Kalaido · Chill · Dreamy',
+    duration: '3:30',
     emoji: '🌙',
     bg: 'linear-gradient(135deg,#1a0830,#0a0418)',
-    // Full URL stored in backend as the song field
-    url: 'https://cdn.pixabay.com/audio/2022/10/16/audio_12a7fc56c7.mp3',
+    url: 'https://archive.org/download/kalaido-hanging-lanterns_202101/Kalaido%20-%20Hanging%20Lanterns.mp3',
   },
   {
-    id: 'lofi-study',
-    name: 'Lofi Study',
-    artist: 'Lo-Fi · Calm',
-    duration: '2:49',
+    id: 'lofi-rain',
+    name: 'Rain Beat',
+    artist: 'Lo-Fi · Rainy · Calm',
+    duration: '2:58',
     emoji: '✨',
     bg: 'linear-gradient(135deg,#1a1000,#0a0800)',
-    url: 'https://cdn.pixabay.com/audio/2022/01/18/audio_d0c6ff1c43.mp3',
+    url: 'https://archive.org/download/kalaido-hanging-lanterns_202101/%28FREE%29%20Lo-fi%20Type%20Beat%20-%20Rain.mp3',
   },
   {
-    id: 'sweet-memories',
-    name: 'Sweet Memories',
-    artist: 'Soft · Warm',
-    duration: '3:10',
+    id: 'herbal-tea',
+    name: 'Herbal Tea',
+    artist: 'Artificial.Music · Lo-Fi · Soft',
+    duration: '3:22',
     emoji: '💜',
     bg: 'linear-gradient(135deg,#1a0010,#0a0008)',
-    url: 'https://cdn.pixabay.com/audio/2022/03/15/audio_3e01ccbcfe.mp3',
+    url: 'https://archive.org/download/kalaido-hanging-lanterns_202101/%5BNon%20Copyrighted%20Music%5D%20Artificial.Music%20-%20Herbal%20Tea%20%5BLo-fi%5D.mp3',
   },
   {
-    id: 'afrobeat-summer',
-    name: 'Afrobeat Summer',
-    artist: 'Afro · Upbeat',
-    duration: '2:35',
+    id: 'bread-jazz',
+    name: 'Bread',
+    artist: 'Lukrembo · Jazz · Warm',
+    duration: '2:15',
     emoji: '🌿',
     bg: 'linear-gradient(135deg,#001a10,#000a08)',
-    url: 'https://cdn.pixabay.com/audio/2023/04/05/audio_7c9b20db96.mp3',
+    url: 'https://archive.org/download/kalaido-hanging-lanterns_202101/%28no%20copyright%20music%29%20jazz%20type%20beat%20bread%20royalty%20free%20youtube%20music%20prod.%20by%20lukrembo.mp3',
   },
   {
-    id: 'cinematic-mood',
-    name: 'Cinematic Mood',
-    artist: 'Epic · Dreamy',
-    duration: '2:58',
+    id: 'first-snow',
+    name: 'First Snow',
+    artist: 'Kerusu · Ambient · Gentle',
+    duration: '2:45',
     emoji: '🌊',
     bg: 'linear-gradient(135deg,#001a1a,#000a0a)',
-    url: 'https://cdn.pixabay.com/audio/2022/08/04/audio_2dde668d05.mp3',
+    url: 'https://archive.org/download/kalaido-hanging-lanterns_202101/Kerusu%20-%20First%20Snow.mp3',
   },
 ];
 
@@ -75,6 +74,9 @@ export default function UploadRitualPage() {
   const [title, setTitle]   = useState('');
   const [panels, setPanels] = useState<PanelData[]>(Array.from({ length: 15 }, EMPTY_PANEL));
   const [songTab, setSongTab] = useState<'library' | 'upload'>('library');
+
+  const [showBanWarning, setShowBanWarning] = useState(false);
+const [agreedToPolicy, setAgreedToPolicy] = useState(false);
 
   // ── selectedSongUrl: the URL that will be sent to the backend ──
   // For library songs → Pixabay CDN URL
@@ -141,8 +143,8 @@ export default function UploadRitualPage() {
     });
   };
 
-  const updateSubtitle = (index: number, value: string) => {
-    const clean = value.replace(/  +/g, ' ').slice(0, 12);
+ const updateSubtitle = (index: number, value: string) => {
+  const clean = value.replace(/  +/g, ' ').slice(0, 40);
     setPanels(prev => {
       const next = [...prev];
       next[index] = { ...next[index], subtitle: clean };
@@ -152,35 +154,49 @@ export default function UploadRitualPage() {
 
   // ── Library song preview ────────────────────────────────────────────────
   // Streams real audio from the Pixabay CDN URL
-  const handlePreview = (song: typeof SONGS[0]) => {
-    // Already playing this song → pause it
-    if (playingId === song.id) {
-      audioRef.current?.pause();
-      setPlayingId(null);
-      return;
-    }
 
-    // Stop any currently playing audio cleanly
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.src = '';
-    }
+// 2. Replace handlePreview with this:
+const handlePreview = (song: typeof SONGS[0]) => {
+  // ── Toggle: clicking the already-playing song pauses it ──
+  if (playingId === song.id) {
+    audioRef.current?.pause();
+    setPlayingId(null);
+    return;
+  }
 
-    // Create a new Audio element pointing to the Pixabay CDN URL
-    const audio = new Audio(song.url);
-    audio.volume = 0.8;
-    audioRef.current = audio;
+  // ── Stop & wipe whatever was playing before ──
+  if (audioRef.current) {
+    audioRef.current.pause();
+    audioRef.current.onended = null;   // kill stale listener immediately
+    audioRef.current.onerror = null;
+    audioRef.current.src = '';
+  }
 
-    audio.play().catch(err => {
-      console.warn('[RitualSongPreview] Could not play audio:', err.message);
-      setPlayingId(null);
-    });
+  // ── Create a fresh Audio instance for the new track ──
+  const audio = new Audio();
+  audio.crossOrigin = 'anonymous';     // needed for archive.org CORS
+  audio.volume = 0.8;
+  audio.preload = 'auto';
+  audio.src = song.url;
 
-    setPlayingId(song.id);
-
-    // Reset when the clip finishes naturally
-    audio.addEventListener('ended', () => setPlayingId(null));
+  // ── Wire ended/error BEFORE calling play() ──
+  audio.onended = () => setPlayingId(null);
+  audio.onerror = (e) => {
+    console.warn('[RitualSongPreview] Audio error on:', song.name, e);
+    setPlayingId(null);
   };
+
+  audioRef.current = audio;
+
+  // ── Update UI immediately so the button flips to ⏸ right away ──
+  setPlayingId(song.id);
+
+  audio.play().catch((err) => {
+    console.warn('[RitualSongPreview] play() rejected:', err.message);
+    audioRef.current = null;
+    setPlayingId(null);
+  });
+};
 
   // ── Select a library song ───────────────────────────────────────────────
   // Stores the full Pixabay URL so it goes to the backend as the `song` field
@@ -309,42 +325,33 @@ export default function UploadRitualPage() {
     <div style={{ background: '#080b14', minHeight: '100vh', color: '#f1f5f9', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
 
       {/* TOP NAV */}
-      <nav style={{
-        position: 'sticky', top: 0, zIndex: 100,
-        background: 'rgba(8,11,20,.95)', backdropFilter: 'blur(20px)',
-        borderBottom: '1px solid rgba(255,255,255,.07)',
-        padding: '0 24px', height: 60,
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
-          <div style={{
-            width: 30, height: 30, borderRadius: 8,
-            background: 'linear-gradient(135deg,#6c63ff,#9b59f5)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 13, fontWeight: 800, color: 'white',
-          }}>M</div>
-          <span style={{ fontSize: 16, fontWeight: 700 }}>mmeko</span>
-        </div>
+<div style={{
+  position: 'sticky', top: 0, zIndex: 100,
+  background: 'rgba(8,11,20,.95)', backdropFilter: 'blur(20px)',
+  borderBottom: '1px solid rgba(255,255,255,.07)',
+  padding: '0 24px', height: 60,
+  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+}}>
+ 
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, fontWeight: 600, color: '#94a3b8' }}>
-          <div style={{
-            width: 28, height: 28, borderRadius: 7,
-            background: 'linear-gradient(135deg,#6c63ff,#9b59f5)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13,
-          }}>🔥</div>
-          Create a Ritual
-        </div>
+  <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, fontWeight: 600, color: '#94a3b8' }}>
+    <div style={{
+      width: 28, height: 28, borderRadius: 7,
+      background: 'linear-gradient(135deg,#6c63ff,#9b59f5)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13,
+    }}>🔥</div>
+    Create a Ritual
+  </div>
 
-        <button
-          onClick={() => router.back()}
-          style={{
-            padding: '7px 14px', borderRadius: 8, fontSize: 12, fontWeight: 600,
-            color: '#94a3b8', background: 'rgba(255,255,255,.05)',
-            border: '1px solid rgba(255,255,255,.07)', cursor: 'pointer',
-          }}
-        >← Back</button>
-      </nav>
-
+   <button
+    onClick={() => router.back()}
+    style={{
+      padding: '7px 14px', borderRadius: 8, fontSize: 12, fontWeight: 600,
+      color: '#94a3b8', background: 'rgba(255,255,255,.05)',
+      border: '1px solid rgba(255,255,255,.07)', cursor: 'pointer',
+    }}
+  >← Back</button>
+</div>
       <div style={{ maxWidth: 900, margin: '0 auto', padding: '40px 24px 100px' }}>
 
         {/* HERO */}
@@ -426,30 +433,180 @@ export default function UploadRitualPage() {
                 <button key={tab} onClick={() => setExampleTab(tab)} style={{ padding: '3px 10px', borderRadius: 6, fontSize: 10, fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase', cursor: 'pointer', border: '1px solid', fontFamily: 'inherit', background: exampleTab === tab ? (tab === 'Fan Meet' ? 'rgba(108,99,255,.15)' : 'rgba(244,114,182,.12)') : 'transparent', color: exampleTab === tab ? (tab === 'Fan Meet' ? '#a89cff' : '#f472b6') : '#475569', borderColor: exampleTab === tab ? (tab === 'Fan Meet' ? 'rgba(108,99,255,.2)' : 'rgba(244,114,182,.2)') : 'rgba(255,255,255,.04)' }}>{tab}</button>
               ))}
             </div>
-            <div style={{ display: 'flex', gap: 10, overflowX: 'auto', paddingBottom: 8 }}>
-              {(exampleTab === 'Fan Meet' ? [
-                { num: 1, sub: 'Arrived at the café 10 mins early 😅', bg: 'linear-gradient(180deg,#1a1030,#0a0818)' },
-                { num: 2, sub: 'Saw them walking in — recognized me instantly!', bg: 'linear-gradient(180deg,#0a1830,#060e20)' },
-                { num: 3, sub: 'First 5 mins were a little awkward ngl 😂', bg: 'linear-gradient(180deg,#1a0a20,#100612)' },
-                { num: 4, sub: 'We talked for the full 30 mins — time flew', bg: 'linear-gradient(180deg,#0a1820,#060e14)' },
-                { num: 5, sub: 'Left feeling genuinely happy. 10/10 🙌', bg: 'linear-gradient(180deg,#1a1020,#0e0818)' },
-              ] : [
-                { num: 1, sub: 'When they realized it was actually me 😭', bg: 'linear-gradient(180deg,#1a0a20,#100612)' },
-                { num: 2, sub: 'This reaction was everything to me honestly', bg: 'linear-gradient(180deg,#0a1830,#060e20)' },
-                { num: 3, sub: 'They brought me a handwritten letter. I cried 🥲', bg: 'linear-gradient(180deg,#1a1020,#0e0818)' },
-                { num: 4, sub: 'We had to take a photo together of course 📸', bg: 'linear-gradient(180deg,#1a1030,#0a0818)' },
-                { num: 5, sub: 'This is why I do this. Pure love 💜', bg: 'linear-gradient(180deg,#0a1820,#060e14)' },
-              ]).map(p => (
-                <div key={p.num} style={{ flexShrink: 0, width: 110, borderRadius: 12, overflow: 'hidden', border: '1px solid rgba(255,255,255,.07)' }}>
-                  <div style={{ width: '100%', height: 160, background: p.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
-                    <div style={{ position: 'absolute', top: 8, left: 8, width: 20, height: 20, borderRadius: '50%', background: 'rgba(0,0,0,.5)', border: '1px solid rgba(255,255,255,.1)', fontSize: 9, fontWeight: 700, color: 'rgba(255,255,255,.6)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{p.num}</div>
-                    <svg width='50' height='80' viewBox='0 0 70 110' fill='none'><circle cx='35' cy='26' r='12' fill='rgba(255,255,255,.25)'/><path d='M14 90Q14 54 35 54Q56 54 56 90' fill='rgba(255,255,255,.18)'/></svg>
-                  </div>
-                  <div style={{ background: 'rgba(0,0,0,.7)', padding: '7px 8px', fontSize: 9, color: 'rgba(255,255,255,.6)', lineHeight: 1.4 }}>{p.sub}</div>
-                </div>
-              ))}
-              <div style={{ flexShrink: 0, width: 110, height: 190, borderRadius: 12, border: '1px dashed rgba(108,99,255,.2)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 11, color: 'rgba(108,99,255,.5)', fontWeight: 600, background: 'rgba(108,99,255,.04)' }}><span style={{ fontSize: 20 }}>+10</span><span>more panels</span></div>
-            </div>
+           <div style={{ display: 'flex', gap: 10, overflowX: 'auto', paddingBottom: 8 }}>
+
+  {exampleTab === 'Fan Meet' ? (<>
+    {/* Panel 1 */}
+    <div style={{ flexShrink: 0, width: 110, borderRadius: 12, overflow: 'hidden', border: '1px solid rgba(255,255,255,.07)' }}>
+      <div style={{ width: '100%', height: 160, background: 'linear-gradient(180deg,#1a1030,#0a0818)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+        <div style={{ position: 'absolute', top: 8, left: 8, width: 20, height: 20, borderRadius: '50%', background: 'rgba(0,0,0,.5)', border: '1px solid rgba(255,255,255,.1)', fontSize: 9, fontWeight: 700, color: 'rgba(255,255,255,.6)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>1</div>
+        <svg width="70" height="110" viewBox="0 0 70 110" fill="none">
+          <rect x="15" y="72" width="40" height="4" rx="2" fill="rgba(255,255,255,.15)"/>
+          <rect x="31" y="76" width="8" height="18" rx="2" fill="rgba(255,255,255,.1)"/>
+          <rect x="28" y="58" width="14" height="13" rx="3" fill="rgba(255,255,255,.2)"/>
+          <rect x="30" y="55" width="10" height="4" rx="2" fill="rgba(255,255,255,.12)"/>
+          <circle cx="35" cy="22" r="10" fill="rgba(255,255,255,.25)"/>
+          <path d="M18 70 Q18 44 35 44 Q52 44 52 70" fill="rgba(255,255,255,.2)"/>
+        </svg>
+      </div>
+      <div style={{ background: 'rgba(0,0,0,.7)', padding: '7px 8px', fontSize: 9, color: 'rgba(255,255,255,.6)', lineHeight: 1.4 }}>Arrived at the café 10 mins early 😅</div>
+    </div>
+
+    {/* Panel 2 */}
+    <div style={{ flexShrink: 0, width: 110, borderRadius: 12, overflow: 'hidden', border: '1px solid rgba(255,255,255,.07)' }}>
+      <div style={{ width: '100%', height: 160, background: 'linear-gradient(180deg,#0a1830,#060e20)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+        <div style={{ position: 'absolute', top: 8, left: 8, width: 20, height: 20, borderRadius: '50%', background: 'rgba(0,0,0,.5)', border: '1px solid rgba(255,255,255,.1)', fontSize: 9, fontWeight: 700, color: 'rgba(255,255,255,.6)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>2</div>
+        <svg width="70" height="110" viewBox="0 0 70 110" fill="none">
+          <rect x="42" y="20" width="22" height="60" rx="2" fill="rgba(255,255,255,.06)"/>
+          <circle cx="50" cy="35" r="7" fill="rgba(255,255,255,.18)"/>
+          <path d="M38 80 Q38 56 50 56 Q62 56 62 80" fill="rgba(255,255,255,.14)"/>
+          <circle cx="20" cy="30" r="9" fill="rgba(255,255,255,.28)"/>
+          <path d="M7 75 Q7 52 20 52 Q33 52 33 75" fill="rgba(255,255,255,.22)"/>
+        </svg>
+      </div>
+      <div style={{ background: 'rgba(0,0,0,.7)', padding: '7px 8px', fontSize: 9, color: 'rgba(255,255,255,.6)', lineHeight: 1.4 }}>Saw them walking in — recognized me instantly!</div>
+    </div>
+
+    {/* Panel 3 */}
+    <div style={{ flexShrink: 0, width: 110, borderRadius: 12, overflow: 'hidden', border: '1px solid rgba(255,255,255,.07)' }}>
+      <div style={{ width: '100%', height: 160, background: 'linear-gradient(180deg,#1a0a20,#100612)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+        <div style={{ position: 'absolute', top: 8, left: 8, width: 20, height: 20, borderRadius: '50%', background: 'rgba(0,0,0,.5)', border: '1px solid rgba(255,255,255,.1)', fontSize: 9, fontWeight: 700, color: 'rgba(255,255,255,.6)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>3</div>
+        <svg width="70" height="110" viewBox="0 0 70 110" fill="none">
+          <rect x="20" y="62" width="30" height="3" rx="1.5" fill="rgba(255,255,255,.15)"/>
+          <rect x="32" y="65" width="6" height="15" rx="1.5" fill="rgba(255,255,255,.1)"/>
+          <rect x="22" y="52" width="9" height="9" rx="2" fill="rgba(255,255,255,.18)"/>
+          <rect x="39" y="52" width="9" height="9" rx="2" fill="rgba(255,255,255,.18)"/>
+          <circle cx="18" cy="26" r="9" fill="rgba(255,255,255,.28)"/>
+          <path d="M5 65 Q5 44 18 44 Q31 44 31 65" fill="rgba(255,255,255,.2)"/>
+          <circle cx="52" cy="26" r="9" fill="rgba(255,255,255,.22)"/>
+          <path d="M39 65 Q39 44 52 44 Q65 44 65 65" fill="rgba(255,255,255,.16)"/>
+        </svg>
+      </div>
+      <div style={{ background: 'rgba(0,0,0,.7)', padding: '7px 8px', fontSize: 9, color: 'rgba(255,255,255,.6)', lineHeight: 1.4 }}>First 5 mins were a little awkward ngl 😂</div>
+    </div>
+
+    {/* Panel 4 */}
+    <div style={{ flexShrink: 0, width: 110, borderRadius: 12, overflow: 'hidden', border: '1px solid rgba(255,255,255,.07)' }}>
+      <div style={{ width: '100%', height: 160, background: 'linear-gradient(180deg,#0a1820,#060e14)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+        <div style={{ position: 'absolute', top: 8, left: 8, width: 20, height: 20, borderRadius: '50%', background: 'rgba(0,0,0,.5)', border: '1px solid rgba(255,255,255,.1)', fontSize: 9, fontWeight: 700, color: 'rgba(255,255,255,.6)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>4</div>
+        <svg width="70" height="110" viewBox="0 0 70 110" fill="none">
+          <rect x="18" y="64" width="34" height="3" rx="1.5" fill="rgba(255,255,255,.15)"/>
+          <circle cx="17" cy="24" r="9" fill="rgba(255,255,255,.3)"/>
+          <path d="M4 67 Q6 44 17 44 Q30 46 32 67" fill="rgba(255,255,255,.22)"/>
+          <circle cx="53" cy="24" r="9" fill="rgba(255,255,255,.24)"/>
+          <path d="M38 67 Q40 44 53 44 Q66 46 66 67" fill="rgba(255,255,255,.18)"/>
+          <rect x="22" y="8" width="26" height="12" rx="6" fill="rgba(108,99,255,.3)"/>
+          <path d="M35 20 L33 26 L38 20" fill="rgba(108,99,255,.3)"/>
+        </svg>
+      </div>
+      <div style={{ background: 'rgba(0,0,0,.7)', padding: '7px 8px', fontSize: 9, color: 'rgba(255,255,255,.6)', lineHeight: 1.4 }}>We talked for the full 30 mins — time flew</div>
+    </div>
+
+    {/* Panel 5 */}
+    <div style={{ flexShrink: 0, width: 110, borderRadius: 12, overflow: 'hidden', border: '1px solid rgba(255,255,255,.07)' }}>
+      <div style={{ width: '100%', height: 160, background: 'linear-gradient(180deg,#1a1020,#0e0818)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+        <div style={{ position: 'absolute', top: 8, left: 8, width: 20, height: 20, borderRadius: '50%', background: 'rgba(0,0,0,.5)', border: '1px solid rgba(255,255,255,.1)', fontSize: 9, fontWeight: 700, color: 'rgba(255,255,255,.6)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>5</div>
+        <svg width="70" height="110" viewBox="0 0 70 110" fill="none">
+          <circle cx="25" cy="26" r="10" fill="rgba(255,255,255,.3)"/>
+          <path d="M10 78 Q10 50 25 50 Q40 50 40 78" fill="rgba(255,255,255,.22)"/>
+          <line x1="40" y1="42" x2="47" y2="28" stroke="rgba(255,255,255,.22)" strokeWidth="4" strokeLinecap="round"/>
+          <circle cx="47" cy="26" r="9" fill="rgba(255,255,255,.24)"/>
+          <path d="M34 78 Q34 52 47 52 Q60 52 60 78" fill="rgba(255,255,255,.18)"/>
+          <line x1="24" y1="42" x2="17" y2="29" stroke="rgba(255,255,255,.3)" strokeWidth="4" strokeLinecap="round"/>
+        </svg>
+      </div>
+      <div style={{ background: 'rgba(0,0,0,.7)', padding: '7px 8px', fontSize: 9, color: 'rgba(255,255,255,.6)', lineHeight: 1.4 }}>Left feeling genuinely happy. 10/10 🙌</div>
+    </div>
+  </>) : (<>
+
+    {/* Reaction Panel 1 */}
+    <div style={{ flexShrink: 0, width: 110, borderRadius: 12, overflow: 'hidden', border: '1px solid rgba(255,255,255,.07)' }}>
+      <div style={{ width: '100%', height: 160, background: 'linear-gradient(180deg,#1a0a20,#100612)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+        <div style={{ position: 'absolute', top: 8, left: 8, width: 20, height: 20, borderRadius: '50%', background: 'rgba(0,0,0,.5)', border: '1px solid rgba(255,255,255,.1)', fontSize: 9, fontWeight: 700, color: 'rgba(255,255,255,.6)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>1</div>
+        <svg width="70" height="110" viewBox="0 0 70 110" fill="none">
+          <circle cx="35" cy="32" r="13" fill="rgba(255,255,255,.28)"/>
+          <path d="M16 88 Q16 58 35 58 Q54 58 54 88" fill="rgba(255,255,255,.2)"/>
+          <path d="M16 52 Q20 44 27 46" stroke="rgba(255,255,255,.3)" strokeWidth="5" strokeLinecap="round"/>
+          <path d="M54 52 Q50 44 43 46" stroke="rgba(255,255,255,.3)" strokeWidth="5" strokeLinecap="round"/>
+          <circle cx="35" cy="36" r="3" fill="rgba(0,0,0,.3)"/>
+        </svg>
+      </div>
+      <div style={{ background: 'rgba(0,0,0,.7)', padding: '7px 8px', fontSize: 9, color: 'rgba(255,255,255,.6)', lineHeight: 1.4 }}>When they realized it was actually me 😭</div>
+    </div>
+
+    {/* Reaction Panel 2 */}
+    <div style={{ flexShrink: 0, width: 110, borderRadius: 12, overflow: 'hidden', border: '1px solid rgba(255,255,255,.07)' }}>
+      <div style={{ width: '100%', height: 160, background: 'linear-gradient(180deg,#0a1830,#060e20)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+        <div style={{ position: 'absolute', top: 8, left: 8, width: 20, height: 20, borderRadius: '50%', background: 'rgba(0,0,0,.5)', border: '1px solid rgba(255,255,255,.1)', fontSize: 9, fontWeight: 700, color: 'rgba(255,255,255,.6)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>2</div>
+        <svg width="70" height="110" viewBox="0 0 70 110" fill="none">
+          <circle cx="35" cy="30" r="13" fill="rgba(255,255,255,.28)"/>
+          <path d="M16 86 Q16 56 35 56 Q54 56 54 86" fill="rgba(255,255,255,.2)"/>
+          <path d="M22 60 Q25 70 35 72 Q45 70 48 60" stroke="rgba(255,255,255,.25)" strokeWidth="5" strokeLinecap="round" fill="none"/>
+          <path d="M28 34 Q35 40 42 34" stroke="rgba(255,255,255,.4)" strokeWidth="2.5" strokeLinecap="round" fill="none"/>
+        </svg>
+      </div>
+      <div style={{ background: 'rgba(0,0,0,.7)', padding: '7px 8px', fontSize: 9, color: 'rgba(255,255,255,.6)', lineHeight: 1.4 }}>This reaction was everything to me honestly</div>
+    </div>
+
+    {/* Reaction Panel 3 */}
+    <div style={{ flexShrink: 0, width: 110, borderRadius: 12, overflow: 'hidden', border: '1px solid rgba(255,255,255,.07)' }}>
+      <div style={{ width: '100%', height: 160, background: 'linear-gradient(180deg,#1a1020,#0e0818)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+        <div style={{ position: 'absolute', top: 8, left: 8, width: 20, height: 20, borderRadius: '50%', background: 'rgba(0,0,0,.5)', border: '1px solid rgba(255,255,255,.1)', fontSize: 9, fontWeight: 700, color: 'rgba(255,255,255,.6)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>3</div>
+        <svg width="70" height="110" viewBox="0 0 70 110" fill="none">
+          <circle cx="18" cy="26" r="9" fill="rgba(255,255,255,.28)"/>
+          <path d="M5 72 Q5 48 18 48 Q31 50 33 72" fill="rgba(255,255,255,.2)"/>
+          <circle cx="52" cy="26" r="9" fill="rgba(255,255,255,.22)"/>
+          <path d="M37 72 Q39 48 52 48 Q65 50 65 72" fill="rgba(255,255,255,.16)"/>
+          <rect x="26" y="48" width="18" height="13" rx="2" fill="rgba(255,255,255,.18)"/>
+          <line x1="29" y1="52" x2="41" y2="52" stroke="rgba(255,255,255,.3)" strokeWidth="1.5"/>
+          <line x1="29" y1="55" x2="38" y2="55" stroke="rgba(255,255,255,.2)" strokeWidth="1.5"/>
+          <line x1="29" y1="58" x2="40" y2="58" stroke="rgba(255,255,255,.2)" strokeWidth="1.5"/>
+        </svg>
+      </div>
+      <div style={{ background: 'rgba(0,0,0,.7)', padding: '7px 8px', fontSize: 9, color: 'rgba(255,255,255,.6)', lineHeight: 1.4 }}>They brought me a handwritten letter. I cried 🥲</div>
+    </div>
+
+    {/* Reaction Panel 4 */}
+    <div style={{ flexShrink: 0, width: 110, borderRadius: 12, overflow: 'hidden', border: '1px solid rgba(255,255,255,.07)' }}>
+      <div style={{ width: '100%', height: 160, background: 'linear-gradient(180deg,#1a1030,#0a0818)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+        <div style={{ position: 'absolute', top: 8, left: 8, width: 20, height: 20, borderRadius: '50%', background: 'rgba(0,0,0,.5)', border: '1px solid rgba(255,255,255,.1)', fontSize: 9, fontWeight: 700, color: 'rgba(255,255,255,.6)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>4</div>
+        <svg width="70" height="110" viewBox="0 0 70 110" fill="none">
+          <circle cx="22" cy="26" r="9" fill="rgba(255,255,255,.28)"/>
+          <path d="M9 74 Q9 50 22 50 Q35 50 35 74" fill="rgba(255,255,255,.2)"/>
+          <circle cx="48" cy="26" r="9" fill="rgba(255,255,255,.22)"/>
+          <path d="M35 74 Q35 50 48 50 Q61 50 61 74" fill="rgba(255,255,255,.16)"/>
+          <rect x="26" y="10" width="18" height="14" rx="2" fill="rgba(255,255,255,.12)"/>
+          <circle cx="35" cy="17" r="4" fill="rgba(255,255,255,.2)"/>
+          <rect x="26" y="10" width="18" height="3" rx="1" fill="rgba(255,255,255,.15)"/>
+        </svg>
+      </div>
+      <div style={{ background: 'rgba(0,0,0,.7)', padding: '7px 8px', fontSize: 9, color: 'rgba(255,255,255,.6)', lineHeight: 1.4 }}>We had to take a photo together of course 📸</div>
+    </div>
+
+    {/* Reaction Panel 5 */}
+    <div style={{ flexShrink: 0, width: 110, borderRadius: 12, overflow: 'hidden', border: '1px solid rgba(255,255,255,.07)' }}>
+      <div style={{ width: '100%', height: 160, background: 'linear-gradient(180deg,#0a1820,#060e14)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+        <div style={{ position: 'absolute', top: 8, left: 8, width: 20, height: 20, borderRadius: '50%', background: 'rgba(0,0,0,.5)', border: '1px solid rgba(255,255,255,.1)', fontSize: 9, fontWeight: 700, color: 'rgba(255,255,255,.6)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>5</div>
+        <svg width="70" height="110" viewBox="0 0 70 110" fill="none">
+          <circle cx="35" cy="28" r="13" fill="rgba(255,255,255,.28)"/>
+          <path d="M16 84 Q16 54 35 54 Q54 54 54 84" fill="rgba(255,255,255,.2)"/>
+          <path d="M24 32 Q35 42 46 32" stroke="rgba(255,255,255,.5)" strokeWidth="2.5" strokeLinecap="round" fill="none"/>
+          <path d="M20 50 Q16 42 20 36" stroke="rgba(255,255,255,.25)" strokeWidth="4" strokeLinecap="round" fill="none"/>
+          <path d="M50 50 Q54 42 50 36" stroke="rgba(255,255,255,.25)" strokeWidth="4" strokeLinecap="round" fill="none"/>
+          <circle cx="35" cy="12" r="4" fill="rgba(244,114,182,.5)"/>
+          <path d="M33 10 L31 4 M35 9 L35 3 M37 10 L39 4" stroke="rgba(244,114,182,.4)" strokeWidth="1.5" strokeLinecap="round"/>
+        </svg>
+      </div>
+      <div style={{ background: 'rgba(0,0,0,.7)', padding: '7px 8px', fontSize: 9, color: 'rgba(255,255,255,.6)', lineHeight: 1.4 }}>This is why I do this. Pure love 💜</div>
+    </div>
+  </>)}
+
+  <div style={{ flexShrink: 0, width: 110, height: 190, borderRadius: 12, border: '1px dashed rgba(108,99,255,.2)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 11, color: 'rgba(108,99,255,.5)', fontWeight: 600, background: 'rgba(108,99,255,.04)' }}>
+    <span style={{ fontSize: 20 }}>+10</span>
+    <span>more panels</span>
+  </div>
+
+</div>
           </div>
 
           {/* ── TITLE ── */}
@@ -553,13 +710,13 @@ export default function UploadRitualPage() {
                       type="text"
                       value={panel.subtitle}
                       onChange={e => {
-                        let v = e.target.value.replace(/  +/g, ' ');
-                        if (v.length <= 12) updateSubtitle(i, v);
-                      }}
+  let v = e.target.value.replace(/  +/g, ' ');
+  if (v.length <= 40) updateSubtitle(i, v);
+}}
                       onKeyDown={e => { if (e.key === 'Enter') e.preventDefault(); }}
                       onClick={e => e.stopPropagation()}
                       placeholder="Subtitle..."
-                      maxLength={12}
+                      maxLength={40}
                       style={{
                         background: 'rgba(0,0,0,.4)', border: 'none',
                         borderTop: '1px solid rgba(255,255,255,.06)',
@@ -567,8 +724,8 @@ export default function UploadRitualPage() {
                         fontFamily: 'inherit', outline: 'none', width: '100%', lineHeight: 1.4,
                       }}
                     />
-                    <div style={{ position: 'absolute', bottom: 2, right: 4, fontSize: 7, color: panel.subtitle.length >= 11 ? '#ef4444' : 'rgba(255,255,255,.2)', pointerEvents: 'none' }}>
-                      {panel.subtitle.length}/12
+                    <div style={{ position: 'absolute', bottom: 2, right: 4, fontSize: 7, color: panel.subtitle.length >= 39 ? '#ef4444' : 'rgba(255,255,255,.2)', pointerEvents: 'none' }}>
+                      {panel.subtitle.length}/40
                     </div>
                   </div>
                 </div>
@@ -839,7 +996,11 @@ export default function UploadRitualPage() {
             >Cancel</button>
 
             <button
-              onClick={handlePublish}
+              onClick={() => {
+                      if (!canPublish || publishing || published) return;
+                      setAgreedToPolicy(false);
+                      setShowBanWarning(true);
+                    }}
               disabled={!canPublish || publishing || published}
               style={{
                 padding: '12px 28px', borderRadius: 10, fontSize: 13, fontWeight: 700,
@@ -859,6 +1020,46 @@ export default function UploadRitualPage() {
         </div>
 
       </div>
+      {showBanWarning && (
+  <div className="fixed inset-0 flex items-center justify-center bg-black/60" style={{ zIndex: 1001 }}>
+    <div className="w-full max-w-lg mx-4 bg-[#0b0f1f] border border-gray-700 rounded-2xl shadow-2xl">
+      <div className="flex items-center justify-between p-4 border-b border-gray-700 bg-red-800 rounded-t-2xl">
+        <span className="text-white font-semibold">Warning: Permanent Ban Policy</span>
+      </div>
+      <div className="p-4 space-y-4 text-white">
+        <p>Uploading explicit, sexual, or pornographic content is strictly forbidden. 1st violation → permanent ban. No second chances.</p>
+        <label className="flex items-center gap-2 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={agreedToPolicy}
+            onChange={(e) => setAgreedToPolicy(e.target.checked)}
+            className="rounded border-gray-600 bg-[#111624] text-green-400 focus:ring-2 focus:ring-green-500"
+          />
+          <span>I understand and agree.</span>
+        </label>
+      </div>
+      <div className="flex items-center justify-end gap-3 p-4 border-t border-gray-700">
+        <button
+          onClick={() => setShowBanWarning(false)}
+          className="px-4 py-2 text-gray-300 hover:text-white transition"
+        >
+          Cancel
+        </button>
+        <button
+          onClick={() => {
+            if (!agreedToPolicy) return;
+            setShowBanWarning(false);
+            handlePublish();
+          }}
+          disabled={!agreedToPolicy}
+          className="px-4 py-2 font-semibold text-white bg-orange-600 rounded-lg hover:bg-orange-500 disabled:opacity-60"
+        >
+          Continue
+        </button>
+      </div>
+    </div>
+  </div>
+)}
     </div>
   );
 }

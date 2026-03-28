@@ -7,10 +7,10 @@ interface StoryContextType {
     likedStories: Set<string>;
     commentCounts: Map<string, number>;
     likeCounts: Map<string, number>;
-    toggleLike: (storyId: string, userId: string) => Promise<void>;
-    addComment: (storyId: string, userId: string, username: string, text: string) => Promise<void>;
-    refreshStoryData: (storyId: string) => Promise<void>;
-    getStoryComments: (storyId: string) => Promise<any[]>;
+    toggleLike: (storyId: string, userId: string, isCreatorRitual?: boolean) => Promise<void>;
+    addComment: (storyId: string, userId: string, username: string, text: string, isCreatorRitual?: boolean) => Promise<void>;
+    refreshStoryData: (storyId: string, isCreatorRitual?: boolean) => Promise<void>;
+    getStoryComments: (storyId: string, isCreatorRitual?: boolean) => Promise<any[]>;
 }
 
 const StoryContext = createContext<StoryContextType | undefined>(undefined);
@@ -38,100 +38,100 @@ export function StoryProvider({ children }: { children: React.ReactNode }) {
         localStorage.setItem('anya_liked_stories', JSON.stringify(Array.from(likedStories)));
     }, [likedStories]);
 
-    const toggleLike = async (storyId: string, userId: string) => {
-        try {
-            const response = await axios.post(`/api/proxy/api/ai-story/stories/${storyId}/like`, {
-                userId
-            });
-
-            if (response.data.success) {
-                setLikedStories(prev => {
-                    const newSet = new Set(prev);
-                    if (response.data.liked) {
-                        newSet.add(storyId);
-                    } else {
-                        newSet.delete(storyId);
-                    }
-                    return newSet;
-                });
-
-                // Update like count
-                setLikeCounts(prev => {
-                    const newMap = new Map(prev);
-                    newMap.set(storyId, response.data.likes);
-                    return newMap;
-                });
-            }
-        } catch (error) {
-            console.error('Error toggling like:', error);
+const toggleLike = async (storyId: string, userId: string, isCreatorRitual = false) => {
+    try {
+        if (isCreatorRitual) {
+            // Creator rituals have their own endpoint — handled directly in RitualRow
+            // This branch is a no-op; RitualRow calls axios directly with username
+            return;
         }
-    };
+        const response = await axios.post(`/api/proxy/api/ai-story/stories/${storyId}/like`, { userId });
+        if (response.data.success) {
+            setLikedStories(prev => {
+                const newSet = new Set(prev);
+                if (response.data.liked) newSet.add(storyId);
+                else newSet.delete(storyId);
+                return newSet;
+            });
+            setLikeCounts(prev => new Map(prev).set(storyId, response.data.likes));
+        }
+    } catch (error) {
+        console.error('Error toggling like:', error);
+    }
+};
 
-    const addComment = async (storyId: string, userId: string, username: string, text: string) => {
-        try {
+const addComment = async (storyId: string, userId: string, username: string, text: string, isCreatorRitual = false) => {
+    try {
+        if (isCreatorRitual) {
+            const response = await axios.post(`/api/proxy/api/creator-rituals/${storyId}/comment`, {
+                userId,
+                username,
+                text
+            });
+            if (response.data.ok) {
+                setCommentCounts(prev => new Map(prev).set(storyId, response.data.totalComments));
+            }
+        } else {
             const response = await axios.post(`/api/proxy/api/ai-story/stories/${storyId}/comment`, {
                 userId,
                 username,
                 text
             });
-
             if (response.data.success) {
-                setCommentCounts(prev => {
-                    const newMap = new Map(prev);
-                    newMap.set(storyId, response.data.totalComments);
-                    return newMap;
-                });
+                setCommentCounts(prev => new Map(prev).set(storyId, response.data.totalComments));
             }
-        } catch (error) {
-            console.error('Error adding comment:', error);
         }
-    };
+    } catch (error) {
+        console.error('Error adding comment:', error);
+    }
+};
 
-    const refreshStoryData = async (storyId: string) => {
-        try {
+const refreshStoryData = async (storyId: string, isCreatorRitual = false) => {
+    try {
+        let likedBy: string[] = [];
+        let commentCount = 0;
+
+        if (isCreatorRitual) {
+            const response = await axios.get(`/api/proxy/api/creator-rituals/${storyId}`);
+            const ritual = response.data.ritual;
+            likedBy = ritual.likedBy || [];
+            commentCount = ritual.comments?.length || 0;
+        } else {
             const response = await axios.get(`/api/proxy/api/ai-story/stories/${storyId}`);
             const story = response.data.story;
-
-            // Update comment count
-            if (story.comments) {
-                setCommentCounts(prev => {
-                    const newMap = new Map(prev);
-                    newMap.set(storyId, story.comments.length);
-                    return newMap;
-                });
-            }
-
-            // Update liked status - try to get userId from localStorage
-            let userId = '';
-            if (typeof window !== 'undefined') {
-                try {
-                    const loginData = localStorage.getItem('login');
-                    if (loginData) {
-                        const parsed = JSON.parse(loginData);
-                        userId = parsed.userID || '';
-                    }
-                } catch (error) {
-                    console.error('Error reading login data:', error);
-                }
-            }
-
-            if (userId && story.likedBy && story.likedBy.includes(userId)) {
-                setLikedStories(prev => new Set(prev).add(storyId));
-            }
-        } catch (error) {
-            console.error('Error refreshing story data:', error);
+            likedBy = story.likedBy || [];
+            commentCount = story.comments?.length || 0;
         }
-    };
 
-    const getStoryComments = async (storyId: string) => {
+        setCommentCounts(prev => new Map(prev).set(storyId, commentCount));
+
+        let userId = '';
         try {
-            const response = await axios.get(`/api/proxy/api/ai-story/stories/${storyId}`);
-            return response.data.story.comments || [];
-        } catch (error) {
-            console.error('Error fetching story comments:', error);
-            return [];
+            const parsed = JSON.parse(localStorage.getItem('login') || '{}');
+            userId = parsed.userID || '';
+        } catch {}
+
+        if (userId && likedBy.includes(userId)) {
+            setLikedStories(prev => new Set(prev).add(storyId));
         }
-    };
+    } catch (error) {
+        console.error('Error refreshing story data:', error);
+    }
+};
+
+const getStoryComments = async (storyId: string, isCreatorRitual = false) => {
+    try {
+        if (isCreatorRitual) {
+            const response = await axios.get(`/api/proxy/api/creator-rituals/${storyId}`);
+            return response.data.ritual?.comments || [];
+        }
+        const response = await axios.get(`/api/proxy/api/ai-story/stories/${storyId}`);
+        return response.data.story?.comments || [];
+    } catch (error) {
+        console.error('Error fetching comments:', error);
+        return [];
+    }
+};
 
     return (
         <StoryContext.Provider value={{ likedStories, commentCounts, likeCounts, toggleLike, addComment, refreshStoryData, getStoryComments }}>
