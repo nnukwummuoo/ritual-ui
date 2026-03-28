@@ -738,7 +738,7 @@ export default function PostsCard() {
                     <NewRitualCard />
                   </div> */}
                     <div className=" mx-auto max-w-[30rem] w-full">
-                      <NewRitualCard />
+                      {/* <NewRitualCard /> */}
                     </div>
                     {/* <div className="lg:hidden">
                       <TopFans />

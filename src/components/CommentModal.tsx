@@ -19,9 +19,10 @@ interface CommentModalProps {
     storyTitle: string;
     userId: string;
     username: string;
+    isCreatorRitual?: boolean;  // ← add this
 }
 
-export default function CommentModal({ isOpen, onClose, storyId, storyTitle, userId, username }: CommentModalProps) {
+export default function CommentModal({ isOpen, onClose, storyId, storyTitle, userId, username, isCreatorRitual = false }: CommentModalProps) {
     const [comments, setComments] = useState<Comment[]>([]);
     const [newComment, setNewComment] = useState('');
     const [loading, setLoading] = useState(false);
@@ -41,7 +42,8 @@ export default function CommentModal({ isOpen, onClose, storyId, storyTitle, use
     const loadComments = async () => {
         setLoading(true);
         try {
-            const fetchedComments = await getStoryComments(storyId);
+            await addComment(storyId, userId, username, newComment.trim(), isCreatorRitual);
+
             setComments(fetchedComments);
         } catch (error) {
             console.error('Error loading comments:', error);

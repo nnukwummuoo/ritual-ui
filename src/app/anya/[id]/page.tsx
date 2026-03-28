@@ -16,6 +16,7 @@ import CommentModal from '@/components/CommentModal';
 
 interface Panel { panel_number: number; text: string; imageUrl: string | null; }
 interface Story {
+   userId?: string;
   _id: string; story_number: number; title: string; emotional_core: string;
   panels: Panel[]; coverImage: string | null; views: number; likes: number;
   likedBy?: string[];
@@ -33,6 +34,8 @@ function RitualRow({
   toggleLike,
   likedStories,
   commentCounts,
+  onMore,
+  username,
 }: {
   story: Story;
   isActive: boolean;
@@ -41,6 +44,8 @@ function RitualRow({
   toggleLike: (id: string, uid: string) => Promise<void>;
   likedStories: Set<string>;
   commentCounts: Map<string, number>;
+  onMore: (story: Story) => void;
+  username: string; 
 }) {
   const [panelIndex, setPanelIndex] = useState(0);
   const [likeCount, setLikeCount]   = useState(story.likes || 0);
@@ -48,8 +53,32 @@ function RitualRow({
   const touchStartX = useRef(0);
   const touchStartY = useRef(0);
   const router = useRouter();
+  const [moreMenuStory, setMoreMenuStory] = useState<Story | null>(null);
+  const [localLiked, setLocalLiked] = useState(() => likedStories.has(story._id));
+
+  const [creatorPhoto, setCreatorPhoto] = useState<string | null>(null);
+const [creatorName, setCreatorName] = useState<string | null>(null);
+
 
   const liked = likedStories.has(story._id);
+
+  useEffect(() => {
+  if (!story.userId || !isActive) return;
+  axios.get(`/api/proxy/api/creator-rituals/user/${story.userId}`)
+    .then(() => {}) // we don't need rituals here
+    .catch(() => {});
+
+  // Fetch actual profile
+  import('@/api/config').then(({ URL: API_URL }) => {
+    axios.post(`${API_URL}/getprofilebyID`, { userid: story.userId })
+      .then(res => {
+        const user = res.data?.user || res.data?.profile || res.data;
+        setCreatorPhoto(user?.photolink || null);
+        setCreatorName(`${user?.firstname || ''} ${user?.lastname || ''}`.trim() || user?.username || null);
+      })
+      .catch(() => {});
+  });
+}, [story.userId, isActive]);
 
   // Reset to panel 0 when this row becomes active
   useEffect(() => {
@@ -92,20 +121,27 @@ function RitualRow({
     }
   };
 
-  const handleLike = async (e: React.MouseEvent) => {
+ useEffect(() => {
+    setLocalLiked(likedStories.has(story._id));
+}, [likedStories, story._id]);
+
+const handleLike = async (e: React.MouseEvent) => {
     e.stopPropagation();
     if (!userId) return;
-    setLikeCount(p => liked ? p - 1 : p + 1);
+    const wasLiked = localLiked;
+    setLocalLiked(!wasLiked);
+    setLikeCount(p => wasLiked ? p - 1 : p + 1);
     if (story.isCreatorRitual) {
-      try {
-        await axios.post(`/api/proxy/api/creator-rituals/${story._id}/like`, { userId });
-      } catch {
-        setLikeCount(p => liked ? p + 1 : p - 1);
-      }
+        try {
+            await axios.post(`/api/proxy/api/creator-rituals/${story._id}/like`, { userId, username });
+        } catch {
+            setLocalLiked(wasLiked);
+            setLikeCount(p => wasLiked ? p + 1 : p - 1);
+        }
     } else {
-      await toggleLike(story._id, userId);
+        await toggleLike(story._id, userId);
     }
-  };
+};
 
   const handleShare = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -127,11 +163,13 @@ function RitualRow({
 
 
       {/* RITUAL TITLE (shown when on panel 0) */}
-      {panelIndex === 0 && (
+      {/* {panelIndex === 0 && (
         <div className="absolute top-[84px] left-0 right-0 z-20 text-center px-8 pt-2">
           <p className="text-white/60 text-xs font-medium tracking-wide">{story.title}</p>
         </div>
-      )}
+      )} */}
+
+
 
       {/* HORIZONTAL PANELS */}
       <div
@@ -201,7 +239,7 @@ function RitualRow({
             )}
             {index < story.panels.length - 1 && (
               <button onClick={() => goToPanel(index + 1)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-white/10 backdrop-blur-md border border-white/20 items-center justify-center hover:bg-white/20 transition-all hidden md:flex">
+  className="absolute right-20 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-white/10 backdrop-blur-md border border-white/20 items-center justify-center hover:bg-white/20 transition-all hidden md:flex">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                 </svg>
@@ -280,13 +318,56 @@ function RitualRow({
       </div>
 
       {/* ACTION BAR — right side */}
-      <div className="absolute right-4 bottom-48 z-20 flex flex-col gap-6">
+<div className="absolute right-4 md:right-6 bottom-48 md:bottom-1/3 z-20 flex flex-col gap-6">
+         {/* CREATOR AVATAR — now inside action bar */}
+  {isActive && (
+    <motion.div
+      className="flex flex-col items-center gap-1 cursor-pointer"
+      onClick={(e) => { e.stopPropagation(); router.push(`/${story.userId}`); }}
+    >
+      <div className="w-12 h-12 rounded-full p-[2px]"
+        style={{ background: 'linear-gradient(135deg,#6c63ff,#9b59f5)' }}>
+        <div className="w-full h-full rounded-full overflow-hidden bg-black">
+          {creatorPhoto ? (
+            <img
+              src={getImageSource(creatorPhoto, 'profile').src}
+              alt="Creator"
+              className="w-full h-full object-cover"
+              onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-white text-sm font-bold"
+              style={{ background: 'linear-gradient(135deg,#1a0830,#0a0418)' }}>
+              {story.title?.[0]?.toUpperCase() || '?'}
+            </div>
+          )}
+        </div>
+      </div>
+      <span className="text-white/60 text-[10px] text-center leading-tight">Profile</span>
+    </motion.div>
+  )}
+
         <motion.button whileTap={{ scale: 0.9 }} onClick={handleLike} className="flex flex-col items-center gap-1">
-          <div className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center">
-            {liked ? <IoHeart className="w-6 h-6 text-red-500" /> : <IoHeartOutline className="w-6 h-6" />}
-          </div>
-          <span className="text-xs text-white">{likeCount}</span>
-        </motion.button>
+    <div className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center">
+       {localLiked ? (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <defs>
+            <linearGradient id="heartGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#6c63ff" />
+                <stop offset="100%" stopColor="#9b59f5" />
+            </linearGradient>
+        </defs>
+        <path
+            d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
+            fill="url(#heartGrad)"
+        />
+    </svg>
+) : (
+    <IoHeartOutline className="w-6 h-6 text-white" />
+)}
+    </div>
+    <span className="text-xs text-white">{likeCount}</span>
+</motion.button>
 
         <motion.button whileTap={{ scale: 0.9 }} onClick={(e) => { e.stopPropagation(); onComment(story); }} className="flex flex-col items-center gap-1">
           <div className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center">
@@ -294,6 +375,14 @@ function RitualRow({
           </div>
           <span className="text-xs text-white">{commentCounts.get(story._id) || story.comments?.length || 0}</span>
         </motion.button>
+
+        <motion.button whileTap={{ scale: 0.9 }} onClick={(e) => { e.stopPropagation(); onMore(story); }} className="flex flex-col items-center gap-1">
+  <div className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center">
+    <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+      <circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/>
+    </svg>
+  </div>
+</motion.button>
 
         <motion.button whileTap={{ scale: 0.9 }} onClick={handleShare} className="flex flex-col items-center gap-1">
           <div className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center">
@@ -319,6 +408,8 @@ export default function StoryViewPage() {
   const [activeIndex, setActiveIndex]   = useState(0);
   const [commentModalOpen, setCommentModalOpen] = useState(false);
   const [commentStory, setCommentStory] = useState<Story | null>(null);
+
+  const [moreMenuStory, setMoreMenuStory] = useState<Story | null>(null);
 
   // Vertical snap container
   const verticalRef = useRef<HTMLDivElement>(null);
@@ -351,34 +442,68 @@ export default function StoryViewPage() {
 
         // Fetch creator rituals only
         const creatorRes = await Promise.allSettled([
-          axios.get('/api/proxy/api/creator-rituals/feed'),
-        ]);
+  axios.get('/api/proxy/api/creator-rituals/feed'),
+]);
 
-        const aiStories: Story[] = [];
+let creatorRituals: Story[] = creatorRes[0].status === 'fulfilled'
+  ? (creatorRes[0].value.data.rituals || []).map((r: any) => ({
+      _id: r._id,
+      userId: r.userId || '', 
+      story_number: 0,
+      title: r.title,
+      emotional_core: '',
+      panels: (r.panels || []).map((p: any) => ({
+        panel_number: p.panel_number,
+        text: p.subtitle || '',
+        imageUrl: p.imageUrl || null,
+      })),
+      coverImage: r.coverImage || null,
+      views: r.views || 0,
+      likes: r.likes || 0,
+      likedBy: r.likedBy || [],
+      comments: r.comments || [],
+      createdAt: r.createdAt,
+      isCreatorRitual: true,
+    }))
+  : [];
 
-        const creatorRituals: Story[] = creatorRes[0].status === 'fulfilled'
-          ? (creatorRes[0].value.data.rituals || []).map((r: any) => ({
-              _id: r._id,
-              story_number: 0,
-              title: r.title,
-              emotional_core: '',
-              panels: (r.panels || []).map((p: any) => ({
-                panel_number: p.panel_number,
-                text: p.subtitle || '',
-                imageUrl: p.imageUrl || null,
-              })),
-              coverImage: r.coverImage || null,
-              views: r.views || 0,
-              likes: r.likes || 0,
-              likedBy: r.likedBy || [],
-              comments: r.comments || [],
-              createdAt: r.createdAt,
-              isCreatorRitual: true,
-            }))
-          : [];
+// If the target ritual isn't in the active feed (expired),
+// fetch it directly by ID so profile viewers can still watch it
+const foundInFeed = creatorRituals.some(s => s._id === storyId);
+if (!foundInFeed) {
+  try {
+    const single = await axios.get(`/api/proxy/api/creator-rituals/${storyId}`);
+    const r = single.data.ritual;
+    if (r) {
+      const singleStory: Story = {
+        _id: r._id,
+        userId: r.userId || '', 
+        story_number: 0,
+        title: r.title,
+        emotional_core: '',
+        panels: (r.panels || []).map((p: any) => ({
+          panel_number: p.panel_number,
+          text: p.subtitle || '',
+          imageUrl: p.imageUrl || null,
+        })),
+        coverImage: r.coverImage || null,
+        views: r.views || 0,
+        likes: r.likes || 0,
+        likedBy: r.likedBy || [],
+        comments: r.comments || [],
+        createdAt: r.createdAt,
+        isCreatorRitual: true,
+      };
+      // Put it at the front so it's index 0
+      creatorRituals = [singleStory, ...creatorRituals];
+    }
+  } catch (err) {
+    console.warn('[StoryViewPage] Could not fetch single ritual:', err);
+  }
+}
 
-        const all = [...creatorRituals];
-        setStories(all);
+const all = [...creatorRituals];
+setStories(all);
 
         // Find the clicked story and scroll to it
         const targetIdx = all.findIndex(s => s._id === storyId);
@@ -395,7 +520,7 @@ export default function StoryViewPage() {
           }
         }, 50);
 
-        all.forEach(s => refreshStoryData(s._id));
+        all.forEach(s => refreshStoryData(s._id, s.isCreatorRitual));
       } catch (err) {
         console.error(err);
       } finally {
@@ -506,7 +631,7 @@ export default function StoryViewPage() {
       {/* FIXED HEADER */}
       <div className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-b from-black/80 to-transparent backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-          <button onClick={() => router.push('/anya?view=grid')} aria-label="Grid view">
+          <button onClick={() => router.push('/anya')} aria-label="Grid view">
             <FaThLarge className="w-8 h-8 text-gray-400" />
           </button>
           <div className="flex-1 mx-4 text-center">
@@ -531,29 +656,98 @@ export default function StoryViewPage() {
       >
         <style jsx>{`div::-webkit-scrollbar{display:none}`}</style>
 
-        {stories.map((story, idx) => (
-          <RitualRow
-            key={story._id}
-            story={story}
-            isActive={idx === activeIndex}
-            userId={userId}
-            onComment={(s) => { setCommentStory(s); setCommentModalOpen(true); }}
-            toggleLike={toggleLike}
-            likedStories={likedStories}
-            commentCounts={commentCounts}
-          />
-        ))}
+      {stories.map((story, idx) => (
+    <RitualRow
+        key={story._id}
+        story={story}
+        isActive={idx === activeIndex}
+        userId={userId}
+        username={username}   // ← add this
+        onComment={(s) => { setCommentStory(s); setCommentModalOpen(true); }}
+        toggleLike={toggleLike}
+        likedStories={likedStories}
+        commentCounts={commentCounts}
+        onMore={(s) => setMoreMenuStory(s)}
+    />
+))}
       </div>
 
       {/* COMMENT MODAL */}
-      <CommentModal
-        isOpen={commentModalOpen}
-        onClose={() => setCommentModalOpen(false)}
-        storyId={commentStory?._id || ''}
-        storyTitle={commentStory?.title || ''}
-        userId={userId}
-        username={username}
-      />
+     <CommentModal
+    isOpen={commentModalOpen}
+    onClose={() => setCommentModalOpen(false)}
+    storyId={commentStory?._id || ''}
+    storyTitle={commentStory?.title || ''}
+    userId={userId}
+    username={username}
+    isCreatorRitual={commentStory?.isCreatorRitual ?? false}  // ← add this
+/>
+
+      {/* MORE MENU MODAL */}
+{moreMenuStory && (
+  <div
+    className="fixed inset-0 z-50 flex items-end justify-center"
+    style={{ background: 'rgba(0,0,0,0.6)' }}
+    onClick={() => setMoreMenuStory(null)}
+  >
+    <div
+      className="w-full max-w-lg mb-6 mx-4 rounded-2xl overflow-hidden"
+      style={{ background: '#161b2e', border: '1px solid rgba(255,255,255,.1)' }}
+      onClick={e => e.stopPropagation()}
+    >
+      {/* Handle bar */}
+      <div className="flex justify-center pt-3 pb-1">
+        <div style={{ width: 36, height: 4, borderRadius: 2, background: 'rgba(255,255,255,.2)' }} />
+      </div>
+
+      {/* Title */}
+      <div className="px-5 py-3 border-b" style={{ borderColor: 'rgba(255,255,255,.07)' }}>
+        <p className="text-white font-semibold text-sm line-clamp-1">{moreMenuStory.title}</p>
+      </div>
+
+      {/* Delete option — only show if it's the user's own ritual */}
+      {moreMenuStory.userId === userId ? (
+        <button
+          className="w-full flex items-center gap-3 px-5 py-4 hover:bg-white/5 transition-colors text-left"
+          onClick={async () => {
+            if (!confirm('Delete this ritual? This cannot be undone.')) return;
+            try {
+              await axios.post(`/api/proxy/api/creator-rituals/${moreMenuStory._id}/delete`, { userId });
+              setMoreMenuStory(null);
+              // Remove from local list
+              setStories(prev => prev.filter(s => s._id !== moreMenuStory._id));
+            } catch (err: any) {
+              alert(err?.response?.data?.message || 'Failed to delete ritual');
+            }
+          }}
+        >
+          <div className="w-9 h-9 rounded-full flex items-center justify-center" style={{ background: 'rgba(239,68,68,.12)' }}>
+            <svg className="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+          </div>
+          <div>
+            <p className="text-red-400 font-semibold text-sm">Delete Ritual</p>
+            <p className="text-gray-500 text-xs">Permanently remove this ritual</p>
+          </div>
+        </button>
+      ) : (
+        <div className="px-5 py-4 text-gray-500 text-sm">No actions available</div>
+      )}
+
+      {/* Cancel */}
+      <div className="px-4 pb-4 pt-1">
+        <button
+          onClick={() => setMoreMenuStory(null)}
+          className="w-full py-3 rounded-xl text-sm font-semibold text-gray-300 hover:text-white transition"
+          style={{ background: 'rgba(255,255,255,.06)', border: '1px solid rgba(255,255,255,.07)' }}
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+)}
     </div>
   );
 }

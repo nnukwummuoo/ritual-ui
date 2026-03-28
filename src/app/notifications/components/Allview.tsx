@@ -131,20 +131,24 @@ export const Allview = () => {
   const token = session?.token;
 
   // Get user ID from localStorage
-  const [userID, setUserID] = useState<string>('');
+const { notifications, notifications_stats } = useSelector(
+  (state: RootState) => state.profile
+);
+const reduxProfileUserId = useSelector((state: RootState) => state.profile.userId);
+const reduxRegisterUserId = useSelector((state: RootState) => state.register.userID);
+const [localUserId, setLocalUserId] = useState<string>('');
 
-  useEffect(() => {
-    const userData = localStorage.getItem('user');
-    if (userData) {
-      const parsedUser = JSON.parse(userData);
-      setUserID(parsedUser.userID || '');
+useEffect(() => {
+  try {
+    const raw = localStorage.getItem('login');
+    if (raw) {
+      const d = JSON.parse(raw);
+      setLocalUserId(d.userID || d.userId || '');
     }
-  }, []);
+  } catch {}
+}, []);
 
-  const { notifications, notifications_stats } = useSelector(
-    (state: RootState) => state.profile
-  );
-  const userId = useSelector((state: RootState) => state.profile.userId);
+const userId = reduxProfileUserId || reduxRegisterUserId || localUserId;
 
   // Get notification indicator data
   const { hasUnread, unreadCount, totalCount } = useNotificationIndicator();
@@ -233,8 +237,14 @@ export const Allview = () => {
         } else if (message.includes("like")) {
           title = "Like Notification";
         } else if (message.includes("comment")) {
-          title = "Comment Notification";
-        } else if (message.includes("message")) {
+  title = "Comment Notification";
+} else if (message.includes("ritual")) {
+  if (message.includes("liked") || message.includes("like")) {
+    title = "Like Notification";
+  } else if (message.includes("comment")) {
+    title = "Comment Notification";
+  }
+} else if (message.includes("message")) {
           title = "Message Notification";
         }
         else if (message.includes("purchased")) {
