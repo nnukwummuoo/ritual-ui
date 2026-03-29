@@ -45,7 +45,16 @@ const Community = () => {
             </section>
 
             <section className="mb-6">
-                <h2 className="text-xl font-semibold text-gray-300">🤝 2. Respect Boundaries</h2>
+                <h2 className="text-xl font-semibold text-gray-300">🤝 2. Meet & Greet Rules</h2>
+                <ul className="mt-2 text-gray-400 list-disc list-inside">
+                <li>All in-person meetups are 30 minutes maximum.</li>
+                <li>Meetups must take place in public venues such as cafes, restaurants, or other safe public locations.</li>
+                <li>These rules are designed to ensure safety, clarity, and a professional environment for both creators and fans.</li>
+                </ul>
+            </section>
+
+            <section className="mb-6">
+                <h2 className="text-xl font-semibold text-gray-300">🤝 3. Respect Boundaries</h2>
                 <ul className="mt-2 text-gray-400 list-disc list-inside">
                 <li>Do not pressure anyone into meeting, chatting, or sharing private content.</li>
                 <li>Harassment, threats, or coercion will result in immediate account suspension.</li>
@@ -54,7 +63,7 @@ const Community = () => {
             </section>
 
             <section className="mb-6">
-                <h2 className="text-xl font-semibold text-gray-300">🛡️ 3. No Prostitution or Escorting</h2>
+                <h2 className="text-xl font-semibold text-gray-300">🛡️ 4. No Prostitution or Escorting</h2>
                 <ul className="mt-2 text-gray-400 list-disc list-inside">
                 <li>Offering or requesting sexual services in exchange for money, gifts, or “transport fare” is strictly forbidden.</li>
                 <li>"Fan Dates" and "Fan Meets" must remain non-sexual in both agreement and intent.</li>
@@ -63,7 +72,7 @@ const Community = () => {
             </section>
 
             <section className="mb-6">
-                <h2 className="text-xl font-semibold text-gray-300">📷 4. Content Guidelines</h2>
+                <h2 className="text-xl font-semibold text-gray-300">📷 5. Content Guidelines</h2>
                 <ul className="mt-2 text-gray-400 list-disc list-inside">
                 <li>Do not post: Pornographic material, Gore or violence, Hate speech or discriminatory content, Child exploitation (real or implied)</li>
                 <li>All uploaded content must be original or you must have legal rights to share it.</li>
@@ -71,7 +80,7 @@ const Community = () => {
             </section>
 
             <section className="mb-6">
-                <h2 className="text-xl font-semibold text-gray-300">🧑‍⚖️ 5. Protect Personal Safety</h2>
+                <h2 className="text-xl font-semibold text-gray-300">🧑‍⚖️ 6. Protect Personal Safety</h2>
                 <ul className="mt-2 text-gray-400 list-disc list-inside">
                 <li>Never share personal info like full address, phone number, or financial data in public.</li>
                 <li>Always meet in safe, public places for in-person fan events.</li>
@@ -79,7 +88,7 @@ const Community = () => {
             </section>
 
             <section className="mb-6">
-                <h2 className="text-xl font-semibold text-gray-300">🚨 6. Zero Tolerance for Illegal Activity</h2>
+                <h2 className="text-xl font-semibold text-gray-300">🚨 7. Zero Tolerance for Illegal Activity</h2>
                 <ul className="mt-2 text-gray-400 list-disc list-inside">
                 <li>No drugs, underage content, weapons, or fraud.</li>
                 <li>Accounts involved in illegal activity will be banned permanently and may be reported to law enforcement.</li>
@@ -87,7 +96,7 @@ const Community = () => {
             </section>
 
             <section className="mb-6">
-                <h2 className="text-xl font-semibold text-gray-300">🧾 7. Be Truthful</h2>
+                <h2 className="text-xl font-semibold text-gray-300">🧾 8. Be Truthful</h2>
                 <ul className="mt-2 text-gray-400 list-disc list-inside">
                 <li>Do not misrepresent your identity, age, or intentions.</li>
                 <li>Catfishing or using stolen content will result in immediate removal.</li>
@@ -95,7 +104,7 @@ const Community = () => {
             </section>
 
             <section className="mb-6">
-                <h2 className="text-xl font-semibold text-gray-300">💬 8. Use Messaging Responsibly</h2>
+                <h2 className="text-xl font-semibold text-gray-300">💬 9. Use Messaging Responsibly</h2>
                 <ul className="mt-2 text-gray-400 list-disc list-inside">
                 <li>No spamming or unsolicited promotion in DMs.</li>
                 <li>No harassment or sexually aggressive language.</li>
