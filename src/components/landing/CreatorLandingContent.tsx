@@ -105,18 +105,13 @@ const CSS = `
   align-items: center; justify-content: center;
   padding: 100px 24px 80px; text-align: center;
   position: relative; overflow: hidden;
-  background-image: url('/images/hero-date.png');
-  background-size: cover;
-  background-position: center top;
-  background-repeat: no-repeat;
 }
 .lp .hero-bg {
   position: absolute; inset: 0; pointer-events: none;
   background:
-    rgba(8,11,20,0.62),
-    radial-gradient(ellipse 80% 50% at 20% 20%, rgba(108,99,255,.15) 0%, transparent 60%),
-    radial-gradient(ellipse 60% 40% at 80% 80%, rgba(155,89,245,.12) 0%, transparent 60%),
-    radial-gradient(ellipse 40% 30% at 50% 50%, rgba(45,212,191,.06) 0%, transparent 60%);
+    radial-gradient(ellipse 80% 50% at 20% 20%, rgba(108,99,255,.12) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 80% 80%, rgba(155,89,245,.1) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 30% at 50% 50%, rgba(45,212,191,.05) 0%, transparent 60%);
 }
 .lp .hero-grid {
   position: absolute; inset: 0; pointer-events: none; opacity: .025;
@@ -544,10 +539,8 @@ export default function CreatorLandingContent({ prefetchedCreators }: Props) {
             <span className="av-txt">Trusted by <strong>1,000+</strong> verified creators</span>
           </div>
           <h1>Where Fans Meet Creators<br /><span className="grad">Safely. Instantly. Fully.</span></h1>
-          <p className="hero-sub">The premium platform for <strong>fan meets, calls &amp; dates</strong> — plus PPV content, locked messages, and exclusive content sales. You keep 100%. Always.</p>
-
-
-<div className="hero-ctas">
+          <p className="hero-sub">The premium platform for <strong>structured fan meets, calls &amp; dates</strong> — plus PPV content, locked messages, and exclusive content sales. You keep 100%. Always.</p>
+          <div className="hero-ctas">
             <button className="btn-primary" onClick={() => router.push("/auth/register")}>Become a Creator <span>→</span></button>
             <button className="btn-secondary" onClick={() => router.push("/auth/register")}>Explore as Fan</button>
           </div>
