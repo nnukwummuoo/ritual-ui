@@ -109,8 +109,8 @@ const [agreedToPolicy, setAgreedToPolicy] = useState(false);
   const progress    = (filledCount / 15) * 100;
 
   // canPublish: need all 15 panels + a title. Song is optional.
-  const canPublish = filledCount === 15 && title.trim().length > 0 && title.length <= 30;
-
+  const allSubtitlesFilled = panels.every(p => p.subtitle.trim().length > 0);
+const canPublish = filledCount === 15 && title.trim().length > 0 && title.length <= 30 && allSubtitlesFilled;
   // ── Panel handlers ──────────────────────────────────────────────────────
   const openFilePicker = (index: number) => {
     activePanelRef.current = index;
@@ -330,8 +330,9 @@ const handlePreview = (song: typeof SONGS[0]) => {
   background: 'rgba(8,11,20,.95)', backdropFilter: 'blur(20px)',
   borderBottom: '1px solid rgba(255,255,255,.07)',
   padding: '0 24px', height: 60,
-  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-}}>
+  alignItems: 'center', justifyContent: 'space-between',
+  display: 'none',
+}} className="md:!flex">
  
 
   <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, fontWeight: 600, color: '#94a3b8' }}>
@@ -652,7 +653,7 @@ const handlePreview = (song: typeof SONGS[0]) => {
                   fontSize: 12, fontWeight: 600,
                   color: filledCount === 15 ? '#22c55e' : '#a89cff',
                 }}>
-                  {filledCount} / 15 panels · {panels.filter(p => p.subtitle.trim()).length} subtitles
+{filledCount} / 15 panels · {panels.filter(p => p.subtitle.trim()).length} / 15 subtitles
                 </span>
                 <div style={{ width: 120, height: 4, background: 'rgba(255,255,255,.07)', borderRadius: 2, overflow: 'hidden' }}>
                   <div style={{ height: '100%', borderRadius: 2, background: 'linear-gradient(90deg,#6c63ff,#9b59f5)', width: `${progress}%`, transition: 'width .3s' }} />
@@ -705,29 +706,33 @@ const handlePreview = (song: typeof SONGS[0]) => {
                     </div>
                   )}
 
-                  <div style={{ position: 'relative', flexShrink: 0, zIndex: 2 }}>
-                    <input
-                      type="text"
-                      value={panel.subtitle}
-                      onChange={e => {
-  let v = e.target.value.replace(/  +/g, ' ');
-  if (v.length <= 40) updateSubtitle(i, v);
-}}
-                      onKeyDown={e => { if (e.key === 'Enter') e.preventDefault(); }}
-                      onClick={e => e.stopPropagation()}
-                      placeholder="Subtitle..."
-                      maxLength={40}
-                      style={{
-                        background: 'rgba(0,0,0,.4)', border: 'none',
-                        borderTop: '1px solid rgba(255,255,255,.06)',
-                        padding: '6px 6px 4px', fontSize: 9, color: '#94a3b8',
-                        fontFamily: 'inherit', outline: 'none', width: '100%', lineHeight: 1.4,
-                      }}
-                    />
-                    <div style={{ position: 'absolute', bottom: 2, right: 4, fontSize: 7, color: panel.subtitle.length >= 39 ? '#ef4444' : 'rgba(255,255,255,.2)', pointerEvents: 'none' }}>
-                      {panel.subtitle.length}/40
-                    </div>
-                  </div>
+                
+<div style={{ position: 'relative', flexShrink: 0, zIndex: 2 }}>
+  <textarea
+    value={panel.subtitle}
+    onChange={e => {
+      let v = e.target.value.replace(/  +/g, ' ');
+      if (v.length <= 40) updateSubtitle(i, v);
+    }}
+    onKeyDown={e => { if (e.key === 'Enter') e.preventDefault(); }}
+    onClick={e => e.stopPropagation()}
+    placeholder="Subtitle... (required)"
+    maxLength={40}
+    rows={2}
+    style={{
+      background: panel.subtitle.trim() ? 'rgba(0,0,0,.4)' : 'rgba(239,68,68,.05)',
+      border: 'none',
+      borderTop: `1px solid ${panel.subtitle.trim() ? 'rgba(255,255,255,.06)' : 'rgba(239,68,68,.2)'}`,
+      padding: '6px 6px 14px', fontSize: 9, color: '#94a3b8',
+      fontFamily: 'inherit', outline: 'none', width: '100%', lineHeight: 1.4,
+      resize: 'none', display: 'block', overflowY: 'hidden',
+      boxSizing: 'border-box',
+    }}
+  />
+  <div style={{ position: 'absolute', bottom: 2, right: 4, fontSize: 7, color: panel.subtitle.length >= 39 ? '#ef4444' : 'rgba(255,255,255,.2)', pointerEvents: 'none' }}>
+    {panel.subtitle.length}/40
+  </div>
+</div>
                 </div>
               ))}
             </div>
@@ -972,16 +977,18 @@ const handlePreview = (song: typeof SONGS[0]) => {
                 ? '✓ Published!'
                 : canPublish
                   ? "You're ready to publish! 🔥"
-                  : filledCount === 15
-                    ? 'Almost there — add a title'
-                    : 'Complete your Ritual to publish'}
+                 : filledCount === 15 && !allSubtitlesFilled
+  ? 'Almost there — add subtitles to all panels'
+  : filledCount === 15
+    ? 'Almost there — add a title'
+    : 'Complete your Ritual to publish'}
             </div>
             <div style={{ fontSize: 12, color: '#475569' }}>
               {published
                 ? 'Your Ritual is now live for 24 hours'
                 : canPublish
                   ? `Your Ritual will go live for 24 hours${songLabel ? ` · 🎵 ${songLabel.length > 18 ? songLabel.slice(0, 18) + '…' : songLabel}` : ' · No song'}`
-                  : `${filledCount}/15 panels${title.trim() ? ' · Title ✓' : ' · No title yet'}`}
+                  : `${filledCount}/15 panels · ${panels.filter(p=>p.subtitle.trim()).length}/15 subtitles${title.trim() ? ' · Title ✓' : ''}`}
             </div>
           </div>
 
