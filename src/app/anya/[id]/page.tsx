@@ -631,7 +631,7 @@ setStories(all);
       {/* FIXED HEADER */}
       <div className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-b from-black/80 to-transparent backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-          <button onClick={() => router.push('/anya')} aria-label="Grid view">
+<button onClick={() => router.push('/anya?view=grid')} aria-label="Grid view">
             <FaThLarge className="w-8 h-8 text-gray-400" />
           </button>
           <div className="flex-1 mx-4 text-center">

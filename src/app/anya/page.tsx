@@ -69,18 +69,10 @@ export default function AnyaPage() {
   }, [reduxUserId]);
 
   // ── Race both APIs — redirect the instant the first one returns anything ──
-  useEffect(() => {
-    let redirected = false;
-
-    const tryRedirect = (stories: Story[]) => {
-      if (redirected || stories.length === 0) return;
-      redirected = true;
-      const story = stories[Math.floor(Math.random() * Math.min(stories.length, 5))];
-      const type = story.isCreatorRitual ? 'creator' : 'ai';
-      router.replace(`/anya/${story._id}?type=${type}`);
-    };
-
-    // Fire both fetches simultaneously — whoever responds first wins
+// ── Race both APIs — redirect the instant the first one returns anything ──
+useEffect(() => {
+  // ✅ If coming from grid button, skip redirect and just show grid
+  if (searchParams.get('view') === 'grid') {
     axios.get('/api/proxy/api/creator-rituals/feed').then(res => {
       const rituals: Story[] = (res.data.rituals || []).map((r: any) => ({
         _id: r._id, story_number: 0, title: r.title, emotional_core: '',
@@ -91,11 +83,37 @@ export default function AnyaPage() {
         likedBy: r.likedBy || [], comments: r.comments || [],
         createdAt: r.createdAt, isCreatorRitual: true,
       }));
-      tryRedirect(rituals);
       setStories(rituals);
       setLoading(false);
     }).catch(() => { setLoading(false); });
-  }, []);
+    return; // ← don't auto-redirect
+  }
+
+  let redirected = false;
+
+  const tryRedirect = (stories: Story[]) => {
+    if (redirected || stories.length === 0) return;
+    redirected = true;
+    const story = stories[Math.floor(Math.random() * Math.min(stories.length, 5))];
+    const type = story.isCreatorRitual ? 'creator' : 'ai';
+    router.replace(`/anya/${story._id}?type=${type}`);
+  };
+
+  axios.get('/api/proxy/api/creator-rituals/feed').then(res => {
+    const rituals: Story[] = (res.data.rituals || []).map((r: any) => ({
+      _id: r._id, story_number: 0, title: r.title, emotional_core: '',
+      panels: (r.panels || []).map((p: any) => ({
+        panel_number: p.panel_number, text: p.subtitle || '', imageUrl: p.imageUrl || null,
+      })),
+      coverImage: r.coverImage || null, views: r.views || 0, likes: r.likes || 0,
+      likedBy: r.likedBy || [], comments: r.comments || [],
+      createdAt: r.createdAt, isCreatorRitual: true,
+    }));
+    tryRedirect(rituals);
+    setStories(rituals);
+    setLoading(false);
+  }).catch(() => { setLoading(false); });
+}, []);
 
   // fetchStories kept for grid refresh on pull-to-refresh
   const fetchStories = async () => {
