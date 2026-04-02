@@ -331,8 +331,9 @@ const handlePreview = (song: typeof SONGS[0]) => {
   borderBottom: '1px solid rgba(255,255,255,.07)',
   padding: '0 24px', height: 60,
   alignItems: 'center', justifyContent: 'space-between',
-  display: 'none',
-}} className="md:!flex">
+  display: 'flex',
+zIndex: 50,
+}}>
  
 
   <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, fontWeight: 600, color: '#94a3b8' }}>
@@ -988,7 +989,7 @@ const handlePreview = (song: typeof SONGS[0]) => {
                 ? 'Your Ritual is now live for 24 hours'
                 : canPublish
                   ? `Your Ritual will go live for 24 hours${songLabel ? ` · 🎵 ${songLabel.length > 18 ? songLabel.slice(0, 18) + '…' : songLabel}` : ' · No song'}`
-                  : `${filledCount}/15 panels · ${panels.filter(p=>p.subtitle.trim()).length}/15 subtitles${title.trim() ? ' · Title ✓' : ''}`}
+                  : `${filledCount}/15 panels · ${panels.filter(p=>p.subtitle.trim()).length}/15 subtitles${title.trim() ? ' · Title ✓' : ' · No title yet'}`}
             </div>
           </div>
 

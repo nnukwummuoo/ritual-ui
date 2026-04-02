@@ -105,6 +105,10 @@ const CSS = `
   align-items: center; justify-content: center;
   padding: 100px 24px 80px; text-align: center;
   position: relative; overflow: hidden;
+  background-image: url('/images/hero-date.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 .lp .hero-bg {
   position: absolute; inset: 0; pointer-events: none;
