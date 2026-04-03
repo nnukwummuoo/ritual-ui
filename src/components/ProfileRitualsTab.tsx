@@ -32,7 +32,9 @@ interface ProfileRitualsTabProps {
 const ProfileRitualsTab: React.FC<ProfileRitualsTabProps> = ({ userId }) => {
   const router = useRouter();
   const [rituals, setRituals] = useState<Ritual[]>([]);
-  const [loading, setLoading] = useState(true);
+const [loading, setLoading] = useState(true);
+const [likedIds, setLikedIds] = useState<Set<string>>(new Set());
+const [likeCounts, setLikeCounts] = useState<Record<string, number>>({});
 
   useEffect(() => {
     if (!userId) return;
@@ -45,6 +47,9 @@ const ProfileRitualsTab: React.FC<ProfileRitualsTabProps> = ({ userId }) => {
       // Fetch ALL rituals for this user (active + expired — permanent)
       const res = await axios.get(`/api/proxy/api/creator-rituals/user/${userId}`);
       setRituals(res.data.rituals || []);
+      const counts: Record<string, number> = {};
+(res.data.rituals || []).forEach((r: Ritual) => { counts[r._id] = r.likes || 0; });
+setLikeCounts(counts);
     } catch {
       setRituals([]);
     } finally {
@@ -55,6 +60,49 @@ const ProfileRitualsTab: React.FC<ProfileRitualsTabProps> = ({ userId }) => {
   const handleClick = (ritual: Ritual) => {
     router.push(`/anya/${ritual._id}?type=creator`);
   };
+
+  const handleLike = async (e: React.MouseEvent, ritualId: string) => {
+  e.stopPropagation();
+
+  let userId = "";
+  try {
+    const raw = localStorage.getItem("login");
+    if (raw) {
+      const d = JSON.parse(raw);
+      userId = d.userID || d.userId || d.id || "";
+    }
+  } catch {}
+
+  if (!userId) return;
+
+  const alreadyLiked = likedIds.has(ritualId);
+
+  // Optimistic update
+  setLikedIds(prev => {
+    const next = new Set(prev);
+    alreadyLiked ? next.delete(ritualId) : next.add(ritualId);
+    return next;
+  });
+  setLikeCounts(prev => ({
+    ...prev,
+    [ritualId]: Math.max(0, (prev[ritualId] || 0) + (alreadyLiked ? -1 : 1))
+  }));
+
+  try {
+    await axios.post(`/api/proxy/api/creator-rituals/${ritualId}/like`, { userId });
+  } catch {
+    // Revert on error
+    setLikedIds(prev => {
+      const next = new Set(prev);
+      alreadyLiked ? next.add(ritualId) : next.delete(ritualId);
+      return next;
+    });
+    setLikeCounts(prev => ({
+      ...prev,
+      [ritualId]: Math.max(0, (prev[ritualId] || 0) + (alreadyLiked ? 1 : -1))
+    }));
+  }
+};
 
   // ── Loading ──────────────────────────────────────────────────────────────
   if (loading) {
@@ -137,20 +185,24 @@ const ProfileRitualsTab: React.FC<ProfileRitualsTabProps> = ({ userId }) => {
             )}
 
             {/* Bottom info — visible on hover */}
-            <div className="absolute bottom-0 left-0 right-0 p-2 opacity-0 group-hover:opacity-100 transition-opacity">
-              <p className="text-white text-[9px] font-semibold line-clamp-1 mb-0.5">{ritual.title}</p>
-              <div className="flex items-center gap-2 text-[8px] text-gray-300">
-                <span className="flex items-center gap-0.5">
-                  <IoHeartOutline className="w-2.5 h-2.5" />
-                  {ritual.likes || 0}
-                </span>
-                <span className="flex items-center gap-0.5">
-                  <IoEyeOutline className="w-2.5 h-2.5" />
-                  {ritual.views || 0}
-                </span>
-                <span>{ritual.panels?.length || 0} panels</span>
-              </div>
-            </div>
+<div className="absolute bottom-0 left-0 right-0 p-2 opacity-0 group-hover:opacity-100 transition-opacity">
+  <p className="text-white text-[9px] font-semibold line-clamp-1 mb-0.5">{ritual.title}</p>
+  <div className="flex items-center gap-2 text-[8px] text-gray-300">
+    <button
+      onClick={(e) => handleLike(e, ritual._id)}
+      className="flex items-center gap-0.5 transition-colors"
+      style={{ color: likedIds.has(ritual._id) ? '#ef4444' : undefined }}
+    >
+      <IoHeartOutline className="w-2.5 h-2.5" />
+      {likeCounts[ritual._id] ?? ritual.likes ?? 0}
+    </button>
+    <span className="flex items-center gap-0.5">
+      <IoEyeOutline className="w-2.5 h-2.5" />
+      {ritual.views || 0}
+    </span>
+    <span>{ritual.panels?.length || 0} panels</span>
+  </div>
+</div>
 
             {/* Hover tint */}
             <div className="absolute inset-0 bg-purple-600/0 group-hover:bg-purple-600/10 transition-colors duration-300" />
