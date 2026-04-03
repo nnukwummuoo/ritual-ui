@@ -379,6 +379,8 @@ export const Profile = () => {
 
   const [clickedPostId, setClickedPostId] = useState<string | null>(null);
 
+  const [ritualTotalLikes, setRitualTotalLikes] = useState(0);
+
   // Get current user profile data (for side menu and current user info)
 
   const currentUserProfile = useSelector((s: RootState) => s.profile);
@@ -563,6 +565,8 @@ export const Profile = () => {
 
   React.useEffect(() => {
 
+
+    
     if (typeof window !== "undefined") {
 
       try {
@@ -984,11 +988,9 @@ export const Profile = () => {
 
     // Calculate total likes from all user posts
 
-    const totalLikes = userPosts.reduce((sum, post) => {
-
-      return sum + (post.totalLikes || post.likeCount || post.likes?.length || 0);
-
-    }, 0);
+  const totalLikes = userPosts.reduce((sum, post) => {
+  return sum + (post.totalLikes || post.likeCount || post.likes?.length || 0);
+}, 0) + ritualTotalLikes; 
 
 
 
@@ -1865,8 +1867,16 @@ export const Profile = () => {
         fetchExclusivePosts(String(targetUserId));
 
         axios.get(`/api/proxy/api/creator-rituals/user/${targetUserId}`)
-  .then(res => setRitualCount((res.data.rituals || []).length))
-  .catch(() => setRitualCount(0));
+  .then(res => {
+    const rituals = res.data.rituals || [];
+    setRitualCount(rituals.length);
+    const totalRitualLikes = rituals.reduce((sum: number, r: any) => sum + (r.likes || 0), 0);
+    setRitualTotalLikes(totalRitualLikes);
+  })
+  .catch(() => {
+    setRitualCount(0);
+    setRitualTotalLikes(0);
+  });
 
 
 

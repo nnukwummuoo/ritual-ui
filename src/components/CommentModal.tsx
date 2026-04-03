@@ -39,34 +39,32 @@ export default function CommentModal({ isOpen, onClose, storyId, storyTitle, use
         }
     }, [isOpen, storyId]);
 
-    const loadComments = async () => {
-        setLoading(true);
-        try {
-            await addComment(storyId, userId, username, newComment.trim(), isCreatorRitual);
-
-            setComments(fetchedComments);
-        } catch (error) {
-            console.error('Error loading comments:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
+   const loadComments = async () => {
+    setLoading(true);
+    try {
+        const fetchedComments = await getStoryComments(storyId, isCreatorRitual);
+        setComments(fetchedComments || []);
+    } catch (error) {
+        console.error('Error loading comments:', error);
+    } finally {
+        setLoading(false);
+    }
+};
     const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!newComment.trim() || submitting) return;
+    e.preventDefault();
+    if (!newComment.trim() || submitting) return;
 
-        setSubmitting(true);
-        try {
-            await addComment(storyId, userId, username, newComment.trim());
-            setNewComment('');
-            await loadComments(); // Reload comments
-        } catch (error) {
-            console.error('Error submitting comment:', error);
-        } finally {
-            setSubmitting(false);
-        }
-    };
+    setSubmitting(true);
+    try {
+        await addComment(storyId, userId, username, newComment.trim(), isCreatorRitual);
+        setNewComment('');
+        await loadComments();
+    } catch (error) {
+        console.error('Error submitting comment:', error);
+    } finally {
+        setSubmitting(false);
+    }
+};
 
     const formatDate = (dateString: string) => {
         const date = new Date(dateString);
