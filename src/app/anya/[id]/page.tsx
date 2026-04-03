@@ -89,16 +89,38 @@ const [creatorName, setCreatorName] = useState<string | null>(null);
   }, [isActive]);
 
   // Sync panel index on manual horizontal scroll
-  useEffect(() => {
-    const el = trackRef.current;
-    if (!el) return;
-    const onScroll = () => {
-      const idx = Math.round(el.scrollLeft / window.innerWidth);
-      setPanelIndex(idx);
-    };
-    el.addEventListener('scroll', onScroll, { passive: true });
-    return () => el.removeEventListener('scroll', onScroll);
-  }, []);
+ useEffect(() => {
+  const el = trackRef.current;
+  if (!el) return;
+
+  const onScroll = () => {
+    const idx = Math.round(el.scrollLeft / window.innerWidth);
+    setPanelIndex(idx);
+  };
+
+  const onTouchStart = (e: TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+    touchStartY.current = e.touches[0].clientY;
+  };
+
+  const onTouchMove = (e: TouchEvent) => {
+    const dx = e.touches[0].clientX - touchStartX.current;
+    const dy = e.touches[0].clientY - touchStartY.current;
+    if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 8) {
+      e.stopPropagation();
+    }
+  };
+
+  el.addEventListener('scroll', onScroll, { passive: true });
+  el.addEventListener('touchstart', onTouchStart, { passive: true });
+  el.addEventListener('touchmove', onTouchMove, { passive: false });
+
+  return () => {
+    el.removeEventListener('scroll', onScroll);
+    el.removeEventListener('touchstart', onTouchStart);
+    el.removeEventListener('touchmove', onTouchMove);
+  };
+}, []);
 
   const goToPanel = (index: number) => {
     const c = Math.max(0, Math.min(index, story.panels.length - 1));
@@ -155,11 +177,7 @@ const handleLike = async (e: React.MouseEvent) => {
   };
 
   return (
-    <div
-      className="h-screen w-full snap-start snap-always relative flex-shrink-0"
-      onTouchStart={onTouchStart}
-      onTouchEnd={onTouchEnd}
-    >
+    <div className="h-screen w-full snap-start snap-always relative flex-shrink-0">
 
 
       {/* RITUAL TITLE (shown when on panel 0) */}
@@ -172,14 +190,17 @@ const handleLike = async (e: React.MouseEvent) => {
 
 
       {/* HORIZONTAL PANELS */}
-      <div
-        ref={trackRef}
-        className="h-full w-full flex snap-x snap-mandatory"
-        style={{
-          overflowX: 'scroll', overflowY: 'hidden', scrollbarWidth: 'none',
-          animation: isActive ? 'ritualEnter .4s ease both' : 'none',
-        }}
-      >
+     <div
+  ref={trackRef}
+  className="h-full w-full flex snap-x snap-mandatory"
+  style={{
+    overflowX: 'scroll',
+    overflowY: 'hidden',
+    scrollbarWidth: 'none',
+    touchAction: 'pan-x',  // ← ADD THIS
+    animation: isActive ? 'ritualEnter .4s ease both' : 'none',
+  }}
+>
         <style jsx>{`
           div::-webkit-scrollbar{display:none}
           @keyframes ritualEnter{from{opacity:.4;transform:scale(.98)}to{opacity:1;transform:scale(1)}}
@@ -649,11 +670,11 @@ setStories(all);
       </div>
 
       {/* VERTICAL SNAP CONTAINER — one full-screen row per ritual */}
-      <div
-        ref={verticalRef}
-        className="h-screen w-full flex flex-col snap-y snap-mandatory overflow-y-scroll"
-        style={{ scrollbarWidth: 'none' }}
-      >
+     <div
+  ref={verticalRef}
+  className="h-screen w-full flex flex-col snap-y snap-mandatory overflow-y-scroll"
+  style={{ scrollbarWidth: 'none', touchAction: 'pan-y' }}
+>
         <style jsx>{`div::-webkit-scrollbar{display:none}`}</style>
 
       {stories.map((story, idx) => (
