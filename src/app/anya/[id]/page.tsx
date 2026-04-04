@@ -359,7 +359,7 @@ const handleLike = async (e: React.MouseEvent) => {
           ) : (
             <div className="w-full h-full flex items-center justify-center text-white text-sm font-bold"
               style={{ background: 'linear-gradient(135deg,#1a0830,#0a0418)' }}>
-              {story.title?.[0]?.toUpperCase() || '?'}
+              {creatorName?.[0]?.toUpperCase() || story.title?.[0]?.toUpperCase() || '?'}
             </div>
           )}
         </div>
