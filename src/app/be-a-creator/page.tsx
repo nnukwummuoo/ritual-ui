@@ -80,13 +80,6 @@ export default function VerificationPage(){
       "Dropping exclusive photos, videos, or bundles? Fans pay upfront through the platform — no subscriptions, no cuts, no chargebacks. Every sale is pure profit, 100% yours, with delivery handled automatically so your content stays protected and respected.",
     },
     {
-        icon: FaCompass,
-        title: "Algorithm Boost = More Eyes, More Impact",
-        subtitle: "Reach the Fans Who Actually Care.",
-        description:
-          "Get discovered naturally by the algorithm and land on fans’ feeds who are most likely to engage. No tricks, no waiting — just optimized exposure that increases your reach. Every post has a chance to trend, every interaction counts, and your content works for you. Instant visibility. Real growth. Full control.",
-    },
-    {
       icon: FaUsers,
       title: "Built for Connection, Not Just Content",
       subtitle: "Authentic Engagement",
@@ -168,7 +161,7 @@ export default function VerificationPage(){
           <div className="mt-12 text-center bg-gradient-to-r from-blue-500/10 to-purple-600/10 p-6 rounded-xl border border-blue-500/20">
             <h3 className="text-xl font-bold mb-2">Ready to Start Earning?</h3>
             <p className="text-gray-400 mb-4">
-              Join thousands of successful creators on our platform.
+              Join creators who are building real, meaningful fan relationships — safely, instantly, and on their own terms.
             </p>
             <button
               onClick={() => router.push("/be-a-creator/apply")}

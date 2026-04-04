@@ -394,7 +394,7 @@ const FAQ_FANS = [
   { q: "Where do fan meets take place?", a: "All in-person fan meets happen in public venues — cafés, restaurants, hotel lobbies, parks, and similar spaces. Private locations are never permitted on mmeko. This rule protects both you and the creator." },
   { q: "How long do fan meets last?", a: "All fan meets on mmeko are capped at 30 minutes. This is a platform-wide rule with no exceptions — it ensures a clear, comfortable experience for everyone involved." },
   { q: "What if the creator doesn't show up?", a: "Contact mmeko Support immediately through the platform. Since all bookings and communications are on-platform, our team has full visibility and will review the situation. If the creator was a no-show, you will receive a full refund." },
-  { q: "How do I mark a meet as complete?", a: "After the meet ends, you'll receive a prompt in the app to mark it as complete. Doing so releases the payment to the creator instantly. If you experienced any issues during the meet, contact Support before marking it complete so we can assist you." },
+  { q: "How do I mark a meet as complete?", a: "After the creator accepts your fan meet request, you'll receive a prompt in the app to mark it as complete. Doing so releases the payment to the creator instantly. If you experienced any issues during the meet, contact Support before marking it complete so we can assist you." },
   { q: "Can I message a creator before booking?", a: "Yes — mmeko has built-in messaging so you can connect with creators directly on the platform. All conversations must stay on mmeko; sharing external contact details is against platform rules and exists to protect both parties." },
 ];
 
