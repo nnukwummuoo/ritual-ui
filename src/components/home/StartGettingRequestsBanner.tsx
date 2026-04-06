@@ -52,7 +52,7 @@ const profileUrl = `https://mmeko.com/@${cleanUsername}`;
         {/* Steps */}
         <div className="flex flex-col gap-2.5 mb-3.5">
           {[
-            ["Set up your Fan Meet portfolio", "add your availability, price and location preference"],
+            ["Set up your Fan Meet or Fan Call portfolio", "add your availability, price and location preference"],
             ["Copy your profile link", "your unique mmeko link is ready instantly"],
             ["Share it with your fans", "on your other platforms"],
           ].map(([bold, rest], i) => (
