@@ -1,238 +1,257 @@
-/* Dark theme base styles */
-body {
+/* ─── Base ─────────────────────────────────────────────── */
+body, html {
   background-color: #0e0f2a;
 }
 
-html {
-  background-color: #0e0f2a;
-}
-
+/* ─── Sidebar shell ─────────────────────────────────────── */
 .sidebar {
   position: sticky;
   top: 20px;
-  list-style: none;
-  padding: 10px;
   width: 100%;
-  max-width: 300px;
+  max-width: 260px;
   max-height: calc(100vh - 40px);
   height: 100%;
-  color: white;
-  font-family: Arial;
-  border-radius: 10px;
-  z-index: 900;
-}
-
-@media (max-width: 640px) {
-  .sidebar {
-    max-height: 100vh;
-    height: 100vh;
-  }
-}
-
-.sidebar ul {
-  border-bottom: 1px solid #44444430;
-  margin-top: 10px;
   display: flex;
   flex-direction: column;
-  flex: 1;
+  padding: 12px 8px;
+  border-radius: 10px;
+  color: white;
+  font-family: Arial, sans-serif;
+  z-index: 900;
   overflow-y: auto;
+}
+
+/* ─── Logo ──────────────────────────────────────────────── */
+.sidebar-logo-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 12px 8px;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+.sidebar-logo-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  background: linear-gradient(135deg, #6c63ff, #9b59f5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 800;
+  color: white;
+  flex-shrink: 0;
+}
+
+.sidebar-logo-text {
+  font-size: 18px;
+  font-weight: 700;
+  color: #f1f5f9;
+  letter-spacing: -0.3px;
+  display: none;
+}
+
+/* ─── Mobile toggle button ──────────────────────────────── */
+.navBtn {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  align-self: flex-end;
+}
+
+/* ─── Nav list ──────────────────────────────────────────── */
+.sidebar-nav-list {
+  list-style: none;
+  margin: 8px 0 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  border-top: 1px solid #44444430;
+  padding-top: 8px;
+  overflow-y: auto;
+  flex: 1;
   min-height: 0;
 }
 
-.sidebar li {
-  padding: 0 15px;
-  height: 50px;
-  text-align: left;
-  margin: 0;
-  transition: all 0.5s ease;
+/* ─── Each nav row ──────────────────────────────────────── */
+.sidebar-nav-item-wrapper {
   display: flex;
   align-items: center;
-}
-
-.sidebar li a,
-.sidebar li button {
-  color: white;
-  text-decoration: none;
-  font-size: 12px;
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-  gap: 16px;
   width: 100%;
-  padding: 5px;
-  height: 100%;
   border-radius: 8px;
-  transition: background-color 0.3s ease;
+  transition: background-color 0.25s ease;
 }
 
-.sidebar li:hover {
+.sidebar-nav-item-wrapper:hover {
   background-color: #3b83f621;
 }
 
-.sidebar li a:hover,
-.sidebar li button:hover {
+/* ─── The actual link / button inside each row ──────────── */
+.sidebar-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  height: 48px;
+  padding: 0 12px;
+  color: white;
+  text-decoration: none;
+  font-size: 15px;
+  background: none;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: color 0.2s ease;
+  white-space: nowrap;
+}
+
+.sidebar-nav-item:hover {
   color: #3b82f6;
 }
 
-.logo,
-.sidebar-logo {
-  display: none;
+/* ─── Icon wrapper (keeps icon size stable) ─────────────── */
+.sidebar-nav-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
 }
 
-.navBtn {
-  opacity: 0;
-  visibility: hidden;
+/* ─── Label text ────────────────────────────────────────── */
+.sidebar-nav-label {
+  font-size: 15px;
+  line-height: 1;
 }
 
-.brand-logo {
-  display: block;
-}
-
-.mobile-header {
-  display: none;
-}
-
-.top-bar-visibility {
-  padding: 1rem;
-}
-
-/* ── Medium desktop: icon + text, slightly narrower ── */
+/* ─── Medium desktop: slightly narrower ────────────────── */
 @media (max-width: 1280px) and (min-width: 1001px) {
   .sidebar {
     max-width: 220px;
   }
+
+  .sidebar-logo-text {
+    display: block;
+  }
 }
 
-/* ── Collapsed icon-only sidebar (1000px and below, above 850px) ── */
+/* ─── Wide desktop ──────────────────────────────────────── */
+@media (min-width: 1024px) {
+  .sidebar-logo-text {
+    display: block;
+    font-size: 22px;
+  }
+
+  .sidebar-logo-icon {
+    width: 42px;
+    height: 42px;
+    font-size: 20px;
+    border-radius: 11px;
+  }
+}
+
+/* ─── Collapsed icon-only (851px–1000px) ───────────────── */
 @media (max-width: 1000px) and (min-width: 851px) {
   .sidebar {
     width: 70px;
     min-width: 70px;
     max-width: 70px;
     padding: 10px 0;
-  }
-
-  .sidebar li {
-    padding: 0;
-    width: 70px;
-    display: flex;
     align-items: center;
-    justify-content: center;
   }
 
-  .sidebar li p {
+  .sidebar-logo-text {
     display: none;
   }
 
-  .sidebar li a,
-  .sidebar li button {
+  .sidebar-logo-link {
+    justify-content: center;
+    padding: 12px 0;
+  }
+
+  .sidebar-nav-list {
+    align-items: center;
+    width: 100%;
+  }
+
+  .sidebar-nav-item-wrapper {
+    justify-content: center;
+    width: 50px;
+  }
+
+  .sidebar-nav-item {
     width: 44px;
     height: 44px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     padding: 0;
-    border-radius: 10px;
+    justify-content: center;
     gap: 0;
   }
 
-  .sidebar ul {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-    gap: 4px;
-  }
-
-  .logo {
-    display: block;
-    width: 50px;
-    object-fit: cover;
-  }
-
-  .sidebar-logo {
-    display: block;
-    width: 40px;
-    object-fit: cover;
-  }
-
-  .brand-logo {
+  .sidebar-nav-label {
     display: none;
   }
 }
 
-@media (max-width: 890px) and (min-width: 851px) {
-  .sidebar ul li a svg,
-  .sidebar ul li button svg {
-    font-size: 24px;
-    min-width: 24px;
+/* ─── Mobile drawer (≤850px) ───────────────────────────── */
+@media (max-width: 850px) {
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 85%;
+    max-width: 280px;
+    height: 100vh;
+    max-height: 100vh;
+    border-radius: 0;
+    padding: 16px 10px;
+    transition: transform 0.35s ease-in-out;
+    z-index: 1000;
+  }
+
+  .sidebar-open  { transform: translateX(0%); }
+  .sidebar-closed { transform: translateX(-100%); }
+
+  .navBtn {
+    display: flex;
+  }
+
+  .sidebar-logo-text {
+    display: block;
+  }
+
+  .sidebar-nav-list {
+    align-items: flex-start;
+    width: 100%;
+  }
+
+  .sidebar-nav-item-wrapper {
+    width: 100%;
+  }
+
+  .sidebar-nav-item {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .sidebar-nav-label {
+    display: block;
   }
 }
 
+/* ─── Misc ──────────────────────────────────────────────── */
 .main-page-container {
   flex: 1;
 }
 
-/* ── Mobile drawer ── */
-@media (max-width: 850px) {
-  .sidebar {
-    display: block;
-    transition: transform 0.4s ease-in-out;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 1000;
-    width: 90%;
-    max-width: 300px;
-    height: 100vh;
-    max-height: 100vh;
-    padding: 10px;
-  }
-
-  .sidebar-open {
-    display: block;
-    transform: translateX(0%);
-  }
-
-  .sidebar-closed {
-    transform: translateX(-100%);
-  }
-
-  .sidebar li {
-    padding: 0 10px;
-    width: 100%;
-    display: flex;
-    align-items: center;
-  }
-
-  .sidebar ul {
-    align-items: flex-start;
-    justify-content: flex-start;
-  }
-
-  .sidebar ul li a,
-  .sidebar ul li button,
-  .sidebar li {
-    width: 100%;
-  }
-
-  .sidebar li p {
-    display: block;
-  }
-
-  .navBtn {
-    opacity: 1;
-    visibility: visible;
-  }
-
-  .top-bar-visibility {
-    display: block;
-  }
-
-  .sidebar-logo {
-    display: none;
-  }
+.mobile-header {
+  display: none;
 }
 
 @media (max-width: 750px) {
@@ -247,27 +266,13 @@ html {
     width: 57%;
     z-index: 2000;
   }
-
-  .logo {
-    display: block;
-    width: 30px;
-  }
-
-  .sidebar li span {
-    display: inline-block;
-  }
-
-  .sidebar .logo {
-    display: none;
-  }
 }
 
-.slide {
-  animation: slideShow 24s infinite;
-  background-size: cover;
-  background-position: center;
+.top-bar-visibility {
+  padding: 1rem;
 }
 
+/* ─── Button loader ─────────────────────────────────────── */
 .btn-loader {
   width: 24px;
   height: 24px;
@@ -294,8 +299,15 @@ html {
 }
 
 @keyframes rotation {
-  0% { transform: rotate(0deg); }
+  0%   { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+
+/* ─── Slideshow ─────────────────────────────────────────── */
+.slide {
+  animation: slideShow 24s infinite;
+  background-size: cover;
+  background-position: center;
 }
 
 @keyframes slideShow {

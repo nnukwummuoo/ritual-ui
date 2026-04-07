@@ -144,7 +144,7 @@ const canPublish = filledCount === 15 && title.trim().length > 0 && title.length
   };
 
  const updateSubtitle = (index: number, value: string) => {
-  const clean = value.replace(/  +/g, ' ').slice(0, 40);
+  const clean = value.replace(/  +/g, ' ').slice(0, 60);
     setPanels(prev => {
       const next = [...prev];
       next[index] = { ...next[index], subtitle: clean };
@@ -712,13 +712,13 @@ zIndex: 50,
   <textarea
     value={panel.subtitle}
     onChange={e => {
-      let v = e.target.value.replace(/  +/g, ' ');
-      if (v.length <= 40) updateSubtitle(i, v);
-    }}
+  let v = e.target.value.replace(/  +/g, ' ');
+  if (v.length <= 60) updateSubtitle(i, v);
+}}
     onKeyDown={e => { if (e.key === 'Enter') e.preventDefault(); }}
     onClick={e => e.stopPropagation()}
     placeholder="Subtitle... (required)"
-    maxLength={40}
+   maxLength={60}
     rows={2}
     style={{
       background: panel.subtitle.trim() ? 'rgba(0,0,0,.4)' : 'rgba(239,68,68,.05)',
@@ -730,8 +730,8 @@ zIndex: 50,
       boxSizing: 'border-box',
     }}
   />
-  <div style={{ position: 'absolute', bottom: 2, right: 4, fontSize: 7, color: panel.subtitle.length >= 39 ? '#ef4444' : 'rgba(255,255,255,.2)', pointerEvents: 'none' }}>
-    {panel.subtitle.length}/40
+  <div style={{ position: 'absolute', bottom: 2, right: 4, fontSize: 7, color:panel.subtitle.length >= 59 ? '#ef4444' : 'rgba(255,255,255,.2)', pointerEvents: 'none' }}>
+    {panel.subtitle.length}/60
   </div>
 </div>
                 </div>
