@@ -144,7 +144,7 @@ const canPublish = filledCount === 15 && title.trim().length > 0 && title.length
   };
 
  const updateSubtitle = (index: number, value: string) => {
-  const clean = value.replace(/  +/g, ' ').slice(0, 60); 40);
+  const clean = value.replace(/  +/g, ' ').slice(0, 60);
     setPanels(prev => {
       const next = [...prev];
       next[index] = { ...next[index], subtitle: clean };
