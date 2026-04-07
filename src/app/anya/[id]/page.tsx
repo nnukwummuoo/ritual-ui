@@ -197,7 +197,7 @@ const handleLike = async (e: React.MouseEvent) => {
     overflowX: 'scroll',
     overflowY: 'hidden',
     scrollbarWidth: 'none',
-    touchAction: 'pan-x',  // ← ADD THIS
+    touchAction: 'pan-x',  
     animation: isActive ? 'ritualEnter .4s ease both' : 'none',
   }}
 >
@@ -229,14 +229,12 @@ const handleLike = async (e: React.MouseEvent) => {
               <div className="absolute inset-0 z-0 bg-gradient-to-br from-purple-900/20 to-pink-900/20" />
             )}
 
-            {/* Scene badge */}
             <div className="absolute top-28 left-1/2 -translate-x-1/2 z-10">
               <span className="px-3 py-1.5 bg-white/10 backdrop-blur-md border border-white/20 rounded-full text-xs font-medium">
                 Scene {panel.panel_number} / {story.panels.length}
               </span>
             </div>
 
-            {/* Panel text */}
             <div className="relative z-10 h-full flex flex-col justify-end pb-36 px-6 text-center max-w-2xl mx-auto w-full">
               <motion.p
                 key={`${story._id}-panel-${index}`}
