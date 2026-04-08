@@ -133,7 +133,7 @@ export default function UploadChoiceModal({ isOpen, onClose }: UploadChoiceModal
               <OptionCard
                 emoji="🔥"
                 title="Upload Ritual"
-                desc="Fan meet stories & reactions — 15 panels, lives 24 hours"
+                desc="Fan meet stories & reactions — 15 panels"
                 gradient="linear-gradient(135deg,rgba(212,168,83,.10),rgba(244,114,182,.06))"
                 border="rgba(212,168,83,.25)"
                 accentColor="#d4a853"
