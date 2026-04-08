@@ -74,6 +74,13 @@ interface golds {
 //     }
 // ]
 export const golds = [
+   {
+    id: "pack_20000",
+    amount: "$949.99",
+    value: "20000",
+    price: `${20000}`,
+    tag: "Premium Access",
+  },
   {
     id: "pack_10000",
     amount: "$499.99",

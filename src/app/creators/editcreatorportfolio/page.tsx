@@ -722,7 +722,7 @@ export default function Editcreator () {
                   type="button"
                   onClick={() => setShowPriceGuide(true)}
                   className="w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold hover:bg-blue-700 transition-colors"
-                  title="View recommended prices"
+                  title="View Suggested Rates"
                 >
                   ?
                 </button>
@@ -983,7 +983,7 @@ export default function Editcreator () {
             >
               ×
             </button>
-            <h3 className="text-xl font-bold text-white mb-4">Recommended Prices</h3>
+            <h3 className="text-xl font-bold text-white mb-4">Suggested Rates</h3>
             
             <div className="space-y-4">
               {/* Fan call */}
@@ -994,8 +994,8 @@ export default function Editcreator () {
                   </div>
                   <h4 className="text-white font-semibold">Fan call (online)</h4>
                 </div>
-                <p className="text-yellow-400 font-bold text-lg">10 - 20 gold / min</p>
-                <p className="text-gray-300 text-sm">(≈ $0.40 - $0.80 / min)</p>
+                <p className="text-yellow-400 font-bold text-lg">100 gold / min</p>
+                <p className="text-gray-300 text-sm">(≈ $4 / min)</p>
               </div>
 
               {/* Fan Meet */}
@@ -1006,8 +1006,8 @@ export default function Editcreator () {
                   </div>
                   <h4 className="text-white font-semibold">Fan Meet (in person)</h4>
                 </div>
-                <p className="text-yellow-400 font-bold text-lg">750 - 1,250 gold</p>
-                <p className="text-gray-300 text-sm">(≈ $30 - $50)</p>
+                <p className="text-yellow-400 font-bold text-lg">10,000 gold</p>
+                <p className="text-gray-300 text-sm">(≈ $400)</p>
               </div>
 
               {/* Fan Date */}
@@ -1018,8 +1018,8 @@ export default function Editcreator () {
                   </div>
                   <h4 className="text-white font-semibold">Fan Date (in person)</h4>
                 </div>
-                <p className="text-yellow-400 font-bold text-lg">1,250 - 2,500 gold</p>
-                <p className="text-gray-300 text-sm">(≈ $50 - $100)</p>
+                <p className="text-yellow-400 font-bold text-lg">15,000 gold</p>
+                <p className="text-gray-300 text-sm">(≈ $600)</p>
               </div>
             </div>
 

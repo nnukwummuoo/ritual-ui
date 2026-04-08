@@ -22,6 +22,7 @@ const tagIcons: Record<string, React.ReactNode> = {
   "Best Value": <span role="img" aria-label="key">🔑</span>,
   "VIP Access": <span role="img" aria-label="diamond">💎</span>,
   "Elite Access": <span role="img" aria-label="crown">👑</span>,
+  "Premuim Access": <span role="img" aria-label="briefcase">💼</span>,
 };
 
 const Topup: React.FC = () => {
