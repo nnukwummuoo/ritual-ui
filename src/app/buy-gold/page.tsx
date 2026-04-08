@@ -18,6 +18,8 @@ const tagIcons: Record<string, React.ReactNode> = {
   "Most Popular": <span role="img" aria-label="star">⭐</span>,
   "Fan Favorite": <span role="img" aria-label="heart">💖</span>,
   "Best Value": <span role="img" aria-label="key">🔑</span>,
+  "VIP Access": <span role="img" aria-label="diamond">💎</span>,
+  "Elite Access": <span role="img" aria-label="crown">👑</span>,
 };
 
 const Topup: React.FC = () => {
