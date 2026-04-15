@@ -558,10 +558,10 @@ export default function CreatorLandingContent({ prefetchedCreators }: Props) {
 
         {/* STATS */}
         <div className="stats">
-          <div className="stat reveal"><div className="stat-1">Keep<span className="sec-title reveal d1"><em>100%</em></span></div><div className="stat-l">of your earnings</div></div>
-          <div className="stat reveal d1"><div className="stat-l">Instant payout</div><div className="sec-title reveal d1"><em>zero delay</em></div></div>
-          <div className="stat reveal d2"><div className="stat-l">Every meet capped at</div><div className="sec-title reveal d1"><em>30 minutes</em></div></div>
-          <div className="stat reveal d3"><div className="stat-l">All meet held in</div><div className="sec-title reveal d1"><em>public places</em></div></div>
+          <div className="stat reveal"><div className="stat-n">100%</div><div className="stat-l">Earnings you keep</div></div>
+          <div className="stat reveal d1"><div className="stat-n">0s</div><div className="stat-l">Payout delay</div></div>
+          <div className="stat reveal d2"><div className="stat-n">100%</div><div className="stat-l">30 minutes maximum for meets</div></div>
+          <div className="stat reveal d3"><div className="stat-n">100%</div><div className="stat-l">All meets are in public places</div></div>
         </div>
 
         {/* OFFERINGS */}
