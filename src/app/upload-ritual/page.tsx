@@ -381,8 +381,8 @@ zIndex: 50,
           <p style={{ fontSize: 15, color: '#94a3b8', lineHeight: 1.75, maxWidth: 620, marginBottom: 28 }}>
             A <strong style={{ color: '#f1f5f9' }}>Ritual</strong> is your daily story — told in{' '}
             <strong style={{ color: '#f1f5f9' }}>15 panels</strong> with subtitles.
-            Share how a fan meet or date went, post reaction photos, go behind the scenes — anything
-            real, anything yours. Rituals live for <strong style={{ color: '#f1f5f9' }}>24 hours</strong>, archives to your profile forever and keep your fans coming back every day.
+             Share the before, during and after of a fan meet or date, post reaction photos, go behind the scenes — anything
+            real, anything yours. Rituals live for <strong style={{ color: '#f1f5f9' }}>24 hours</strong>, and are archived to your profile forever, keeping your fans coming back every day.
           </p>
 
           <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>

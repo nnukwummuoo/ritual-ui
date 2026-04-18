@@ -105,10 +105,6 @@ const CSS = `
   align-items: center; justify-content: center;
   padding: 100px 24px 80px; text-align: center;
   position: relative; overflow: hidden;
-  background-image: url('/images/hero-date.png');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
 }
 .lp .hero-bg {
   position: absolute; inset: 0; pointer-events: none;
@@ -382,7 +378,7 @@ const CSS = `
 // ── FAQ data ──────────────────────────────────────────────────────────────────
 
 const FAQ_CREATORS = [
-  { q: "How does mmeko make money if creators keep 100%?", a: "Mmeko earns revenue through a small fee when fans purchase Gold, the in-app currency used to request meetups, unlock messages, and buy content. Creators keep 100% of what they earn, with no subscriptions or hidden commissions. This model keeps things simple, transparent, and creator-first." },
+  { q: "How does mmeko make money if creators keep 100%?", a: "Mmeko earns revenue through a processing fee when fans purchase Gold, the in-app currency used to request meetups, unlock messages, and buy content. Creators keep 100% of what they earn, with no subscriptions or hidden commissions. This model keeps things simple, transparent, and creator-first." },
   { q: "What are Fan Meet and Fan Date?", a: "🤝 Fan Meet – A short, casual meeting where you can greet your favorite creator, chat, and even take a selfie. It's about making a quick personal connection - limited to 30 minutes maximum for safety and fairness. 🍽 Fan Date – A slightly more relaxed session where you spend time together in a safe public place — like grabbing coffee, eating, or walking — but still limited to 30 minutes maximum for safety and fairness." },
   { q: "What counts as a valid public space for meets?", a: "Any open, publicly accessible venue — cafés, restaurants, hotel lobbies, shopping malls, parks, or similar spaces. Private residences, cars, and secluded locations are never permitted. If you're unsure about a specific venue, contact mmeko Support before confirming the booking." },
   { q: "What if the fan doesn't show up to the meet?", a: "Contact mmeko Support immediately through the platform. Since all communication is required to stay on-platform, our team has full visibility of your booking history and can review the situation and release your payment accordingly. Keep all your conversations on mmeko — this is your protection." },
@@ -398,7 +394,7 @@ const FAQ_FANS = [
   { q: "Where do fan meets take place?", a: "All in-person fan meets happen in public venues — cafés, restaurants, hotel lobbies, parks, and similar spaces. Private locations are never permitted on mmeko. This rule protects both you and the creator." },
   { q: "How long do fan meets last?", a: "All fan meets on mmeko are capped at 30 minutes. This is a platform-wide rule with no exceptions — it ensures a clear, comfortable experience for everyone involved." },
   { q: "What if the creator doesn't show up?", a: "Contact mmeko Support immediately through the platform. Since all bookings and communications are on-platform, our team has full visibility and will review the situation. If the creator was a no-show, you will receive a full refund." },
-  { q: "How do I mark a meet as complete?", a: "After the meet ends, you'll receive a prompt in the app to mark it as complete. Doing so releases the payment to the creator instantly. If you experienced any issues during the meet, contact Support before marking it complete so we can assist you." },
+  { q: "How do I mark a meet as complete?", a: "After the creator accepts your fan meet request, you'll receive a prompt in the app to mark it as complete. Doing so releases the payment to the creator instantly. If you experienced any issues during the meet, contact Support before marking it complete so we can assist you." },
   { q: "Can I message a creator before booking?", a: "Yes — mmeko has built-in messaging so you can connect with creators directly on the platform. All conversations must stay on mmeko; sharing external contact details is against platform rules and exists to protect both parties." },
 ];
 
@@ -564,8 +560,8 @@ export default function CreatorLandingContent({ prefetchedCreators }: Props) {
         <div className="stats">
           <div className="stat reveal"><div className="stat-n">100%</div><div className="stat-l">Earnings you keep</div></div>
           <div className="stat reveal d1"><div className="stat-n">0s</div><div className="stat-l">Payout delay</div></div>
-          <div className="stat reveal d2"><div className="stat-n">1K+</div><div className="stat-l">Verified creators</div></div>
-          <div className="stat reveal d3"><div className="stat-n">0</div><div className="stat-l">Chargebacks lost</div></div>
+          <div className="stat reveal d2"><div className="stat-n">100%</div><div className="stat-l">30 minutes maximum for meets</div></div>
+          <div className="stat reveal d3"><div className="stat-n">100%</div><div className="stat-l">All meets are in public places</div></div>
         </div>
 
         {/* OFFERINGS */}
@@ -601,7 +597,7 @@ export default function CreatorLandingContent({ prefetchedCreators }: Props) {
             <div className="sec-title reveal d1">From sign-up to<br /><em>first fan request.</em></div>
             <div className="steps-grid reveal d2">
               <div className="step"><div className="step-num">Step 01</div><div className="step-icon">✍️</div><div className="step-title">Apply &amp; Get Verified</div><div className="step-desc">Submit your application and get verified in under 10 minutes. Fast-track screening with premium creator status unlocked instantly.</div></div>
-              <div className="step"><div className="step-num">Step 02</div><div className="step-icon">🎨</div><div className="step-title">Build Your Profile</div><div className="step-desc">Set up your creator page. Choose what you offer — meets, calls, PPV, locked messages, exclusive content — and set your own rates for each.</div></div>
+              <div className="step"><div className="step-num">Step 02</div><div className="step-icon">🎨</div><div className="step-title">Build Your Portfolio</div><div className="step-desc">Choose what you offer — Fan Meet, Fan Call, or Fan Date — and set your own rates.</div></div>
               <div className="step"><div className="step-num">Step 03</div><div className="step-icon">☕</div><div className="step-title">Meet in Public, Safely</div><div className="step-desc">All fan meets happen in public venues — cafés, restaurants, parks. Every meet is capped at 30 minutes. No pressure, no overstay — just a real connection on your terms.</div></div>
               <div className="step"><div className="step-num">Step 04</div><div className="step-icon">💸</div><div className="step-title">Fan Pays, You&apos;re Secured</div><div className="step-desc">When a fan request, payment is held securely by mmeko — locked in before you even show up. Once complete, funds release instantly. Guaranteed.</div></div>
             </div>
@@ -647,8 +643,7 @@ export default function CreatorLandingContent({ prefetchedCreators }: Props) {
               <div className="safety-card reveal d2"><div className="safety-icon-wrap">☕</div><div className="safety-title">Public Spaces Only</div><div className="safety-desc">Every fan meet must take place in a public venue — cafés, restaurants, public parks. Private locations are never permitted. Your safety is non-negotiable.</div></div>
               <div className="safety-card reveal"><div className="safety-icon-wrap">💬</div><div className="safety-title">All Chats On-Platform</div><div className="safety-desc">Every conversation between creators and fans must happen through mmeko&apos;s built-in messaging. This keeps a full record of all interactions — protecting you if Support ever needs to review.</div></div>
               <div className="safety-card reveal d1"><div className="safety-icon-wrap">✅</div><div className="safety-title">Optional Fan Verification</div><div className="safety-desc">Creators can request fan verification before confirming a meet booking. While not mandatory, it&apos;s a powerful tool — verified fans give you extra confidence about who you&apos;re meeting in person.</div></div>
-              <div className="safety-card reveal d2"><div className="safety-icon-wrap">🛡</div><div className="safety-title">Chargeback Protection</div><div className="safety-desc">Every transaction is fully covered. If a fan attempts a chargeback, mmeko absorbs the risk entirely — your earnings are never clawed back.</div></div>
-              <div className="safety-card reveal"><div className="safety-icon-wrap">🌍</div><div className="safety-title">Geo-Blocking Controls</div><div className="safety-desc">Block any region or country from viewing your profile. Full privacy and location control, always on your terms.</div></div>
+              <div className="safety-card reveal d2"><div className="safety-icon-wrap">🛡</div><div className="safety-title">No Chargebacks</div><div className="safety-desc">All payments are final. Once a fan pays, your earnings are secured — no reversals, no disputes, no clawbacks.</div></div>
             </div>
           </div>
         </div>
@@ -677,9 +672,8 @@ export default function CreatorLandingContent({ prefetchedCreators }: Props) {
                   <tr><td className="td-feature">Fan Verification</td><td className="td-mmeko"><span className="ck">✓ Optional</span></td><td className="td-other"><span className="cx">✗</span></td></tr>
                   <tr><td className="td-feature">Locked Message Replies (PPV)</td><td className="td-mmeko"><span className="ck">✓ Built in</span></td><td className="td-other"><span className="cx">✗ Not offered</span></td></tr>
                   <tr><td className="td-feature">Exclusive Content Sales (Individual)</td><td className="td-mmeko"><span className="ck">✓</span></td><td className="td-other"><span className="cm">Subscription only</span></td></tr>
-                  <tr><td className="td-feature">Chargeback Protection</td><td className="td-mmeko"><span className="ck">✓ Fully covered</span></td><td className="td-other"><span className="cx">Creator&apos;s risk</span></td></tr>
+                  <tr><td className="td-feature">No Chargeback</td><td className="td-mmeko"><span className="ck">✓ No chargebacks</span></td><td className="td-other"><span className="cx">Creator&apos;s risk</span></td></tr>
                   <tr><td className="td-feature">Video / Voice Fan Calls</td><td className="td-mmeko"><span className="ck">✓ Built in</span></td><td className="td-other"><span className="cm">Limited / third-party</span></td></tr>
-                  <tr><td className="td-feature">Geo-Blocking</td><td className="td-mmeko"><span className="ck">✓ Full control</span></td><td className="td-other"><span className="cm">Limited</span></td></tr>
                   <tr><td className="td-feature">Verification Speed</td><td className="td-mmeko"><span className="ck">&lt; 10 minutes</span></td><td className="td-other"><span className="cm">3–7 days</span></td></tr>
                   <tr><td className="td-feature">Minimum Payout</td><td className="td-mmeko"><span className="ck">$5</span></td><td className="td-other"><span className="cm">$20–$100</span></td></tr>
                 </tbody>

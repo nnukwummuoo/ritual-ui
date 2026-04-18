@@ -255,7 +255,7 @@ const SupportPage: React.FC = () => {
             },
             {
               question: "How does mmeko make money if creators keep 100%?",
-              answer: "Mmeko earns revenue through a small fee when fans purchase Gold, the in-app currency used to request meetups, unlock messages, and buy content. Creators keep 100% of what they earn, with no subscriptions or hidden commissions. This model keeps things simple, transparent, and creator-first."
+              answer: "Mmeko earns revenue through a processing fee when fans purchase Gold, the in-app currency used to request meetups, unlock messages, and buy content. Creators keep 100% of what they earn, with no subscriptions or hidden commissions. This model keeps things simple, transparent, and creator-first."
             }
           ]
         },

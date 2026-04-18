@@ -14,7 +14,7 @@ export default function Profile({ name, firstname, lastname, src, url, gold_bala
       onClick();
     }
   }}>
-    <p className='italic'>Welcome back!</p>
+    <p className='italic'>Welcome home!</p>
     <div className={`flex gap-4 group w-full`}>
       <div className="relative w-12 h-12 flex-shrink-0">
         {(() => {
