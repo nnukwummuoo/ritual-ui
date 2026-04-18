@@ -145,7 +145,7 @@ const CSS = `
   -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
 }
 .lp .hero-sub {
-  font-size: 17px; color: var(--text2); max-width: 480px; margin: 20px auto 44px;
+  font-size: 17px; color: var(--text2); max-width: 480px; margin: 20px auto 12px;
   font-weight: 400; line-height: 1.75;
   animation: lp-fadeUp .7s .14s ease both;
 }
@@ -541,10 +541,31 @@ export default function CreatorLandingContent({ prefetchedCreators }: Props) {
           </div>
           <h1>Where Fans Meet Creators<br /><span className="grad">Safely. Instantly. Fully.</span></h1>
           <p className="hero-sub">The premium platform for <strong>fan meet &amp; greets, calls &amp; dates</strong> — plus PPV content, locked messages, and exclusive content sales. You keep 100%. Always.</p>
+                  {/* Hero Image */}
+{/* Hero Image */}
+<div style={{
+  width: "100%",
+  maxWidth: 680,
+  margin: "0 auto 0",   // was 40px, now 16px
+  position: "relative",
+  animation: "lp-fadeUp .7s .26s ease both",
+}}>
+  <img
+    src="/images/hero-landing-meetup.png"
+    alt="Fan meet experience"
+    style={{ 
+      width:"100%", 
+      display:"block", 
+    }}
+  />
+</div>
           <div className="hero-ctas">
             <button className="btn-primary" onClick={() => router.push("/auth/register")}>Become a Creator <span>→</span></button>
             <button className="btn-secondary" onClick={() => router.push("/auth/register")}>Explore as Fan</button>
           </div>
+
+
+
           <div className="hero-trust">
             <div className="trust-item"><span>✓</span> 0% commission</div>
             <div className="trust-dot" />
