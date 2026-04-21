@@ -1038,7 +1038,6 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, isOpen, onClose
               </div>
             </div>
 
-            {/* VIP Management */}
             <div className="bg-[#111624] p-4 rounded-lg">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-semibold text-yellow-500">VIP Management</h3>
