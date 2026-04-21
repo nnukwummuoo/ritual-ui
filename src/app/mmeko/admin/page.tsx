@@ -51,6 +51,7 @@ import PushNotificationToggle from "@/components/PushNotificationToggle";
 import MaintenanceToggle from "@/components/admin/MaintenanceToggle";
 import MaintenanceControl from "@/components/admin/MaintenanceControl";
 import SortToggle from "@/components/admin/SortToggle";
+import AdminFanVerificationPage from "./adminfan-verification/page";
 
 const AdminPage = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -211,10 +212,15 @@ const AdminPage = () => {
       component: <AdminSupportChat />,
     },
     {
-      name: "Creator Verification",
-      icon: <IoShieldCheckmarkOutline size={22} />,
-      component: <AdminVerifyDocumentPage />,
-    },
+  name: "Creator Verification",
+  icon: <IoShieldCheckmarkOutline size={22} />,
+  component: <AdminVerifyDocumentPage />,
+},
+{
+  name: "Fan Verification",
+  icon: <IoShieldCheckmarkOutline size={22} />,
+  component: <AdminFanVerificationPage />,  // 👈 replace this
+},
     {
       name: "Withdrawal Requests",
       icon: <IoCashOutline size={22} />,

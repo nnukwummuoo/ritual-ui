@@ -6111,19 +6111,26 @@ export const Profile = () => {
 
                     ) : (
 
-                      <button
+                     <div className="flex items-center gap-2">
 
-                        className="p-2 flex items-center justify-center gap-x-1 bg-gradient-to-r !from-blue-500 !to-purple-600 text-center text-sm rounded-lg mt-4"
+                       <button
+    className="p-2 flex items-center justify-center gap-x-1 bg-gradient-to-r !from-blue-500 !to-purple-600 text-center text-sm rounded-lg mt-4"
+    onClick={() => router.push(`/${profileSlugForUrl}/fan-verification`)}
+  >
+    <BadgeCheck className="w-4 h-4" />
+    Fan Verification
+  </button>
+  
+  <button
+    className="p-2 flex items-center justify-center gap-x-1 bg-gradient-to-r !from-blue-500 !to-purple-600 text-center text-sm rounded-lg mt-4"
+    onClick={() => router.push(`/${profileSlugForUrl}/editprofile`)}
+  >
+    <BiPencil />
+    Edit Profile
+  </button>
 
-                        onClick={() => router.push(`/${profileSlugForUrl}/editprofile`)}
-
-                      >
-
-                        <BiPencil />
-
-                        Edit Profile
-
-                      </button>
+ 
+</div>
 
                     )}
 
