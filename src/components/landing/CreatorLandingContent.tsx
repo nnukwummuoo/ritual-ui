@@ -176,11 +176,10 @@ const CSS = `
 
 /* STATS */
 .lp .stats { display: grid; grid-template-columns: repeat(4,1fr); background: var(--bg2); border-bottom: 1px solid var(--border); }
-.lp .stat { padding: 32px 24px; text-align: center; border-right: 1px solid var(--border); }
+.lp .stat { padding: 32px 24px; text-align: center; border-right: 1px solid var(--border); max-width: 200px; margin: 0 auto; }
 .lp .stat:last-child { border-right: none; }
-.lp .stat-n { font-size: 36px; font-weight: 800; letter-spacing: -.03em; margin-bottom: 6px; background: linear-gradient(135deg, #6c63ff, #9b59f5); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-.lp .stat-l { font-size: 12px; color: var(--text2); font-weight: 500; letter-spacing: .02em; }
-
+.lp .stat-n { font-size: 16px; font-weight: 800; letter-spacing: -.03em; background: linear-gradient(135deg, #6c63ff, #9b59f5); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; display: inline; }
+.lp .stat-l { font-size: 16px; font-weight: 800; letter-spacing: -.03em; color: var(--text); display: inline; }
 /* SECTION */
 .lp .section { padding: 96px 40px; max-width: 1140px; margin: 0 auto; }
 .lp .section-alt { background: var(--bg2); }
@@ -578,12 +577,23 @@ export default function CreatorLandingContent({ prefetchedCreators }: Props) {
         </section>
 
         {/* STATS */}
-        <div className="stats">
-          <div className="stat reveal"><div className="stat-n">100%</div><div className="stat-l">Earnings you keep</div></div>
-          <div className="stat reveal d1"><div className="stat-n">0s</div><div className="stat-l">Payout delay</div></div>
-          <div className="stat reveal d2"><div className="stat-n">100%</div><div className="stat-l">30 minutes maximum for meets</div></div>
-          <div className="stat reveal d3"><div className="stat-n">100%</div><div className="stat-l">All meets are in public places</div></div>
-        </div>
+   <div className="stats">
+<div className="stat reveal">
+  <div className="stat-l">Keep <span className="stat-n">100%</span> of your earnings</div>
+</div>
+
+<div className="stat reveal d1">
+  <div className="stat-l">Instant payouts — <span className="stat-n">zero delay</span></div>
+</div>
+
+<div className="stat reveal d2">
+  <div className="stat-l">Every meet capped at <span className="stat-n">30 minutes</span></div>
+</div>
+
+<div className="stat reveal d3">
+  <div className="stat-l">All meets held in <span className="stat-n">public spaces</span></div>
+</div>
+</div>
 
         {/* OFFERINGS */}
         <div id="offerings">

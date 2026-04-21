@@ -1,421 +1,420 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import React, { useState, useEffect } from "react";
-import { FaPlus } from "react-icons/fa";
-import TextInput from "../../../components/textinput";
-import FileInput from "../../../components/fileUpload";
-import PacmanLoader from "react-spinners/ClockLoader";
-import Checklist from "../../../components/checklist";
-import Ruleslist from "../../../components/ruleslist";
+import React, { useState, useEffect, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { post_exclusive_docs } from "@/store/creatorSlice";
-import '@/styles/VerificationForm.css';
-import { formVerificationConstants } from "@/constants/formVerificationConstants";
-import HeaderBackNav from "@/navs/HeaderBackNav";
 import { useRouter } from "next/navigation";
-import { RootState, AppDispatch } from "@/store/store";
-import { toast, ToastContainer } from "react-toastify";
+import { post_exclusive_docs } from "@/store/creatorSlice";
 import { checkApplicationStatus } from "@/store/profile";
 import { useAuth } from "@/lib/context/auth-context";
 import { useAuthToken } from "@/lib/hooks/useAuthToken";
+import { toast, ToastContainer } from "react-toastify";
+import { RootState, AppDispatch } from "@/store/store";
+import { formVerificationConstants } from "@/constants/formVerificationConstants";
+import ClockLoader from "react-spinners/ClockLoader";
+
+/* ─── tiny reusable pieces ─── */
+const S = {
+  bg:     "#080b14", bg2: "#0b0f1c", bg3: "#0e1220",
+  card:   "#111624", card2: "#161b2e",
+  border: "rgba(255,255,255,0.07)", border2: "rgba(255,255,255,0.04)",
+  accent: "#6c63ff", accent2: "#9b59f5",
+  teal:   "#2dd4bf", success: "#22c55e",
+  text:   "#f1f5f9", text2: "#94a3b8", text3: "#475569",
+};
+
+const css = (obj: React.CSSProperties) => obj;
+
+/* ─── sub-components ─── */
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <div style={css({ display:"flex", alignItems:"center", gap:8, fontSize:11, fontWeight:700, letterSpacing:".1em", textTransform:"uppercase", color:S.text3, marginBottom:14 })}>
+      <span style={{ display:"block", width:16, height:2, background:S.accent, borderRadius:2 }} />
+      {children}
+    </div>
+  );
+}
+
+function FormInput({ label, required: req, children }: { label: string; required?: boolean; children: React.ReactNode }) {
+  return (
+    <div style={{ display:"flex", flexDirection:"column", gap:7, marginBottom:14 }}>
+      <label style={{ fontSize:12.5, fontWeight:600, color:S.text2 }}>
+        {label} {req && <span style={{ color:"#ef4444", fontSize:11 }}>*</span>}
+      </label>
+      {children}
+    </div>
+  );
+}
+
+const inputStyle = css({
+  background: S.card, border: `1px solid ${S.border}`, borderRadius:10,
+  padding:"12px 14px", fontSize:13.5, color: S.text, fontFamily:"inherit",
+  outline:"none", width:"100%", transition:"border-color .2s",
+});
+
+function InstrCard({ icon, title, items, color }: { icon:string; title:string; items:string[]; color:string }) {
+  return (
+    <div style={{ background:S.card2, border:`1px solid ${S.border}`, borderRadius:14, overflow:"hidden", marginBottom:20 }}>
+      <div style={{ padding:"14px 18px", borderBottom:`1px solid ${S.border2}`, display:"flex", alignItems:"center", gap:8, fontSize:13, fontWeight:700 }}>
+        <span style={{ fontSize:16 }}>{icon}</span> {title}
+      </div>
+      <div style={{ padding:"14px 18px", display:"flex", flexDirection:"column", gap:10 }}>
+        {items.map((txt, i) => (
+          <div key={i} style={{ display:"flex", alignItems:"flex-start", gap:10 }}>
+            <div style={{ width:18, height:18, borderRadius:"50%", flexShrink:0, marginTop:1, display:"flex", alignItems:"center", justifyContent:"center", fontSize:9, background:`${color}20`, color }}>✓</div>
+            <div style={{ fontSize:12, color:S.text2, lineHeight:1.5 }} dangerouslySetInnerHTML={{ __html: txt }} />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function UploadSlot({ label, sub, icon, name, filled, onChange }: {
+  label: string; sub: string; icon: string; name: string; filled: boolean; onChange: (e:any)=>void;
+}) {
+  const ref = useRef<HTMLInputElement>(null);
+  return (
+    <div
+      onClick={() => ref.current?.click()}
+      style={{
+        background: filled ? "rgba(34,197,94,.03)" : S.card,
+        border: `1.5px ${filled?"solid":"dashed"} ${filled?"rgba(34,197,94,.3)":"rgba(108,99,255,.25)"}`,
+        borderRadius:14, padding:"24px 20px", display:"flex", flexDirection:"column",
+        alignItems:"center", gap:10, textAlign:"center", cursor:"pointer",
+        marginBottom:14, position:"relative", transition:"border-color .2s, background .2s",
+      }}
+    >
+      {filled && (
+        <div style={{ position:"absolute", top:12, right:12, width:22, height:22, borderRadius:"50%", background:S.success, display:"flex", alignItems:"center", justifyContent:"center", fontSize:11, color:"white" }}>✓</div>
+      )}
+      <div style={{ width:48, height:48, borderRadius:12, background: filled?"rgba(34,197,94,.1)":"rgba(108,99,255,.1)", border:`1px solid ${filled?"rgba(34,197,94,.2)":"rgba(108,99,255,.2)"}`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:22 }}>
+        {filled ? "✓" : icon}
+      </div>
+      <div style={{ fontSize:14, fontWeight:700 }}>{label}</div>
+      <div style={{ fontSize:11.5, color:S.text3, lineHeight:1.5 }}>{sub}</div>
+      <button
+        type="button"
+        onClick={e => { e.stopPropagation(); ref.current?.click(); }}
+        style={{ padding:"8px 20px", borderRadius:8, background: filled?"rgba(34,197,94,.1)":"rgba(108,99,255,.1)", border:`1px solid ${filled?"rgba(34,197,94,.2)":"rgba(108,99,255,.2)"}`, color: filled?S.success:"#a89cff", fontSize:12, fontWeight:700, fontFamily:"inherit", cursor:"pointer" }}
+      >
+        {filled ? "Uploaded ✓" : "Choose File"}
+      </button>
+      <input ref={ref} type="file" name={name} accept="image/png,image/jpeg" style={{ display:"none" }} onChange={onChange} />
+    </div>
+  );
+}
+
+/* ─── progress step labels ─── */
+const STEPS = ["Profile","Verification","Review"];
 
 export default function VerifiedUserForm() {
-  const dispatch: AppDispatch = useDispatch();
-  const router = useRouter();
-  const userId = useSelector((state: RootState) => state.profile.userId);
+  const dispatch = useDispatch<AppDispatch>();
+  const router   = useRouter();
+  const userId   = useSelector((s: RootState) => s.profile.userId);
   const { session } = useAuth();
-  const token = useAuthToken() || session?.token;
+  const token    = useAuthToken() || session?.token;
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const [step, setStep]   = useState(1);
   const [loading, setLoading] = useState(false);
-  const [color] = useState("#d49115");
-  const [step, setStep] = useState(1);
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [applicationStatus, setApplicationStatus] = useState<"pending" | "rejected" | "none">("none");
-  const containerRef = React.useRef<HTMLDivElement>(null);
+  const [termsAgreed, setTerms] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [appStatus, setAppStatus] = useState<"pending"|"rejected"|"none">("none");
 
-  const nextStep = () => setStep((prev) => Math.min(prev + 1, 3));
-  const prevStep = () => setStep((prev) => Math.max(prev - 1, 1));
-
-  const [formData, setFormData] = useState<formVerificationConstants>({
-    firstName: "",
-    lastName: "",
-    email: "",
-    dob: "",
-    country: "",
-    city: "",
-    address: "",
-    idPhotofile: null,
-    holdingIdPhotofile: null,
-    userid: userId || "",
-    documentType: "",
-    idexpire: "",
+  const [form, setForm] = useState<formVerificationConstants>({
+    firstName:"", lastName:"", email:"", dob:"", country:"",
+    city:"", address:"", idPhotofile:null, holdingIdPhotofile:null,
+    userid: userId||"", documentType:"", idexpire:"",
   });
 
+  /* scroll top on step change */
   useEffect(() => {
-    if (!userId || !token) {
-      toast.error("User ID or token not found. Please log in again.");
-      router.push("/");
-      return;
-    }
-
-    dispatch(checkApplicationStatus({ userid: userId, token }))
-      .unwrap()
-      .then((result) => {
-        setApplicationStatus(result.status);
-        if (result.status === "pending") setShowSuccessModal(true);
-      })
-      .catch((error) => {
-        toast.error(error.message || "Failed to check application status");
-        setApplicationStatus("none");
-      });
-  }, [userId, token, dispatch, router]);
-
-  // Scroll to top whenever step changes - scroll the parent scrollable container
-  useEffect(() => {
-    const scrollToTop = () => {
-      // Find the scrollable parent container (from ConditionalLayout with overflow-y-auto)
-      let scrollableContainer: HTMLElement | null = null;
-      
-      // Try to find the container by class name (scrollbar overflow-y-auto)
-      scrollableContainer = document.querySelector('.scrollbar.overflow-y-auto') as HTMLElement;
-      
-      // Fallback: find parent element with overflow-y-auto
-      if (!scrollableContainer && containerRef.current) {
-        let parent = containerRef.current.parentElement;
-        while (parent) {
-          const styles = window.getComputedStyle(parent);
-          if (styles.overflowY === 'auto' || styles.overflowY === 'scroll') {
-            scrollableContainer = parent;
-            break;
-          }
-          parent = parent.parentElement;
-        }
-      }
-      
-      // If we found the scrollable container, scroll it to top
-      if (scrollableContainer) {
-        scrollableContainer.scrollTop = 0;
-      } else {
-        // Fallback to window scroll if container not found
-        window.scrollTo(0, 0);
-        document.documentElement.scrollTop = 0;
-        document.body.scrollTop = 0;
-      }
-    };
-    
-    // Scroll immediately
-    scrollToTop();
-    
-    // Also scroll after DOM update to ensure it works
-    requestAnimationFrame(() => {
-      scrollToTop();
-      // One more time after a tiny delay to catch any layout changes
-      setTimeout(scrollToTop, 10);
-    });
+    const el = document.querySelector(".scrollbar.overflow-y-auto") as HTMLElement
+      || (() => { let p = containerRef.current?.parentElement; while(p){ const s=window.getComputedStyle(p); if(s.overflowY==="auto"||s.overflowY==="scroll") return p; p=p.parentElement; } return null; })();
+    el ? (el.scrollTop=0) : window.scrollTo(0,0);
   }, [step]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value, type, checked, files } = e.target as any;
-    if (type === "file") {
-      setFormData((prev) => ({ ...prev, [name]: files[0] }));
-    } else {
-      setFormData((prev) => ({ ...prev, [name]: type === "checkbox" ? checked : value }));
-    }
+  /* check existing application */
+  useEffect(() => {
+    if (!userId || !token) { toast.error("Please log in again."); router.push("/"); return; }
+    dispatch(checkApplicationStatus({ userid:userId, token })).unwrap()
+      .then(r => { setAppStatus(r.status); if(r.status==="pending") setShowModal(true); })
+      .catch(e => { toast.error(e.message||"Failed to check application status"); setAppStatus("none"); });
+  }, [userId, token, dispatch, router]);
+
+  const handleChange = (e: React.ChangeEvent<any>) => {
+    const { name, value, type, files } = e.target;
+    setForm(p => ({ ...p, [name]: type==="file" ? files[0] : value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    // Prevent multiple submissions
-    if (loading) {
-      return;
-    }
-
-    if (!(formData.idPhotofile instanceof File) || !(formData.holdingIdPhotofile instanceof File)) {
-      toast.error("Please upload both ID photo and holding ID photo.");
-      return;
-    }
-
-    if (!formData.firstName || !formData.lastName || !formData.email || !formData.dob || 
-        !formData.country || !formData.city || !formData.address || !formData.documentType || !formData.idexpire) {
-      toast.error("Please fill in all required fields.");
-      return;
-    }
-
-    const today = new Date();
-    const dobDate = new Date(formData.dob);
-    const idexpireDate = new Date(formData.idexpire);
-
-    if (isNaN(dobDate.getTime()) || isNaN(idexpireDate.getTime())) {
-      toast.error("Invalid date format.");
-      return;
-    }
-    const minAgeDate = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate());
-    if (dobDate > minAgeDate) {
-      toast.error("You must be at least 18 years old");
-      return;
-    }
-    if (idexpireDate < today) {
-      toast.error("ID expiration date must be in the future");
-      return;
-    }
-
+    if (loading) return;
+    if (!(form.idPhotofile instanceof File) || !(form.holdingIdPhotofile instanceof File))
+      return toast.error("Please upload both ID photo and selfie with ID.");
+    const req = ["firstName","lastName","email","dob","country","city","address","documentType","idexpire"];
+    if (req.some(k => !(form as any)[k])) return toast.error("Please fill in all required fields.");
+    const today = new Date(), dob = new Date(form.dob), exp = new Date(form.idexpire);
+    if (dob > new Date(today.getFullYear()-18, today.getMonth(), today.getDate())) return toast.error("You must be at least 18 years old.");
+    if (exp < today) return toast.error("ID expiration date must be in the future.");
     setLoading(true);
     try {
-      await dispatch(post_exclusive_docs({
-        ...formData,
-        idPhotofile: formData.idPhotofile,
-        holdingIdPhotofile: formData.holdingIdPhotofile,
-      })).unwrap();
-      toast.success("Application submitted successfully!");
-      setApplicationStatus("pending");
-      setShowSuccessModal(true);
-    } catch (error: any) {
-      toast.error(error || "Failed to submit application. Please try again.");
-    } finally {
-      setLoading(false);
-    }
+      await dispatch(post_exclusive_docs(form)).unwrap();
+      toast.success("Application submitted!"); setAppStatus("pending"); setShowModal(true);
+    } catch(err:any) { toast.error(err || "Failed to submit. Please try again."); }
+    finally { setLoading(false); }
   };
 
-  const handleModalClose = () => {
-    setShowSuccessModal(false);
-    router.push("/");
-  };
+  /* ─── pending screen ─── */
+  if (appStatus === "pending") return (
+    <div style={{ minHeight:"100vh", background:S.bg, display:"flex", alignItems:"center", justifyContent:"center", color:S.text, fontFamily:"'Plus Jakarta Sans',sans-serif" }}>
+      <ToastContainer position="top-center" theme="dark"/>
+      <div style={{ background:S.card, border:`1px solid ${S.border}`, borderRadius:20, padding:"40px 32px", textAlign:"center", maxWidth:360 }}>
+        <div style={{ width:56, height:56, borderRadius:"50%", background:"rgba(234,179,8,.15)", border:"1px solid rgba(234,179,8,.3)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:24, margin:"0 auto 20px" }}>⏳</div>
+        <h2 style={{ fontSize:20, fontWeight:800, marginBottom:8 }}>Application Pending</h2>
+        <p style={{ color:S.text2, fontSize:13.5, lineHeight:1.65, marginBottom:24 }}>Your application is now under review. You&apos;ll hear from us within a few hours.</p>
+        <button onClick={() => router.push("/")} style={{ padding:"12px 28px", borderRadius:10, background:`linear-gradient(135deg,${S.accent},${S.accent2})`, border:"none", color:"white", fontWeight:700, fontSize:14, fontFamily:"inherit", cursor:"pointer" }}>Back to Home</button>
+      </div>
+    </div>
+  );
 
-  if (applicationStatus === "pending") {
-    return (
-      <div className="text-white flex items-center justify-center min-h-screen bg-[#080b14]">
-        <ToastContainer position="top-center" theme="dark" />
-        <div className="bg-[#080b14] rounded-xl shadow-md p-6 text-center max-w-sm">
-          <div className="flex justify-center mb-4">
-            <div className="w-12 h-12 bg-yellow-500 rounded-full flex items-center justify-center">
-              <span className="text-white font-bold">⏳</span>
+  /* ─── ID instruction items ─── */
+  const idRules = [
+    "<strong>Image must be clear</strong> — no blur, shadows or glare",
+    "<strong>ID must be fully in frame</strong> — all four corners visible",
+    "<strong>Must be in color</strong> — black and white photos are not accepted",
+    "<strong>Text must be clearly visible</strong> — name, date of birth and expiry must be readable",
+    "<strong>Background must be minimal</strong> — plain surface preferred",
+    "<strong>Image must not be edited, resized or rotated</strong> — original capture only",
+    "<strong>File must be PNG or JPG</strong> — under 7MB in size",
+    "<strong>ID must be valid and not expired</strong> — we do not accept expired documents",
+  ];
+  const selfieRules = [
+    "<strong>Photo must be clear and in color</strong> — good lighting, no filters",
+    "<strong>ID must be fully in frame</strong> — held next to your face, both clearly visible",
+    "<strong>Facial verification required</strong> — your face must be clear, unobscured and looking at the camera",
+    "<strong>Image must not be edited</strong> — no cropping, filters or adjustments of any kind",
+    "<strong>File must be PNG or JPG</strong> — under 7MB in size",
+  ];
+
+  /* ─── main form ─── */
+  return (
+    <div ref={containerRef} style={{ fontFamily:"'Plus Jakarta Sans',sans-serif", color:S.text, background:S.bg, minHeight:"100vh" }}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        input[type=date]::-webkit-calendar-picker-indicator { filter:invert(.5); }
+        .vf-input:focus { border-color:rgba(108,99,255,.45) !important; }
+        .vf-slot:hover { border-color:rgba(108,99,255,.5) !important; background:rgba(108,99,255,.03) !important; }
+        .vf-nav-back:hover { color:#f1f5f9 !important; }
+        .vf-btn-prev:hover { border-color:${S.accent} !important; color:#a89cff !important; }
+        .vf-btn-next:hover { box-shadow:0 8px 28px rgba(108,99,255,.5) !important; transform:translateY(-1px); }
+        .vf-btn-submit:not(:disabled):hover { box-shadow:0 8px 28px rgba(108,99,255,.5) !important; transform:translateY(-2px); }
+        .vf-cancel:hover { background:rgba(255,255,255,.04) !important; color:${S.text} !important; }
+      `}</style>
+
+      <ToastContainer position="top-center" theme="dark"/>
+
+      {/* NAV */}
+      <nav style={{ position:"sticky", top:0, zIndex:100, background:"rgba(8,11,20,.97)", backdropFilter:"blur(20px)", borderBottom:`1px solid ${S.border}`, padding:"0 24px", height:56, display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+        <a href="/" style={{ display:"flex", alignItems:"center", gap:8, textDecoration:"none" }}>
+          <div style={{ width:28, height:28, borderRadius:7, background:`linear-gradient(135deg,${S.accent},${S.accent2})`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:12, fontWeight:800, color:"white" }}>M</div>
+          <span style={{ fontSize:15, fontWeight:700, color:S.text }}>mmeko</span>
+        </a>
+        <button className="vf-nav-back" onClick={() => router.back()} style={{ display:"flex", alignItems:"center", gap:6, color:S.text2, fontSize:13, fontWeight:600, background:"none", border:"none", fontFamily:"inherit", cursor:"pointer", transition:"color .2s" }}>← Back</button>
+      </nav>
+
+      <div style={{ maxWidth:520, margin:"0 auto", padding:"32px 20px 80px" }}>
+
+        {/* HEADER */}
+        <div style={{ display:"inline-flex", alignItems:"center", gap:7, background:"rgba(108,99,255,.1)", border:"1px solid rgba(108,99,255,.2)", borderRadius:100, padding:"5px 12px", marginBottom:14, fontSize:11, fontWeight:700, color:"#a89cff", letterSpacing:".06em", textTransform:"uppercase" as const }}>
+          ✦ Creator Verification
+        </div>
+        <h1 style={{ fontSize:22, fontWeight:800, letterSpacing:"-.02em", marginBottom:8 }}>Verify Your Identity</h1>
+        <p style={{ fontSize:13.5, color:S.text2, lineHeight:1.65, marginBottom:32 }}>Complete identity verification to start accepting fan requests. Your information is encrypted and never shared.</p>
+
+        {/* PROGRESS */}
+        <div style={{ marginBottom:32 }}>
+          <div style={{ display:"flex", alignItems:"center" }}>
+            {STEPS.map((label, i) => {
+              const sn = i+1;
+              const done   = step > sn;
+              const active = step === sn;
+              return (
+                <div key={label} style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", position:"relative" }}>
+                  {i < STEPS.length-1 && (
+                    <div style={{ position:"absolute", top:14, left:"50%", width:"100%", height:2, background: done?"rgba(108,99,255,.3)":S.border2, zIndex:0 }} />
+                  )}
+                  <div style={{ width:28, height:28, borderRadius:"50%", zIndex:1, display:"flex", alignItems:"center", justifyContent:"center", fontSize:11, fontWeight:700,
+                    background: done?"rgba(108,99,255,.15)": active?`linear-gradient(135deg,${S.accent},${S.accent2})` :S.bg3,
+                    border: done?"1px solid rgba(108,99,255,.3)": active?"none":`1px solid ${S.border}`,
+                    color: done?"#a89cff": active?"white":S.text3,
+                  }}>{done ? "✓" : sn}</div>
+                  <div style={{ fontSize:10, fontWeight:600, color: active?"#a89cff": done?S.text2:S.text3, marginTop:6 }}>{label}</div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        <fieldset disabled={loading} style={{ border:"none", padding:0 }}>
+          <form onSubmit={handleSubmit}>
+
+            {/* ── STEP 1: Personal Info ── */}
+            {step === 1 && (
+              <>
+                <SectionLabel>Personal Information</SectionLabel>
+                <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
+                  <FormInput label="First Name" required>
+                    <input className="vf-input" style={inputStyle} name="firstName" placeholder="e.g. Sofia" value={form.firstName} onChange={handleChange}/>
+                  </FormInput>
+                  <FormInput label="Last Name" required>
+                    <input className="vf-input" style={inputStyle} name="lastName" placeholder="e.g. Rodriguez" value={form.lastName} onChange={handleChange}/>
+                  </FormInput>
+                </div>
+                <FormInput label="Email Address" required>
+                  <input className="vf-input" style={inputStyle} type="email" name="email" placeholder="your@email.com" value={form.email} onChange={handleChange}/>
+                </FormInput>
+                <FormInput label="Date of Birth" required>
+                  <input className="vf-input" style={inputStyle} type="date" name="dob" value={form.dob} onChange={handleChange}/>
+                </FormInput>
+                <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
+                  <FormInput label="Country" required>
+                    <select className="vf-input" name="country" value={form.country} onChange={handleChange}
+                      style={{ ...inputStyle, cursor:"pointer", appearance:"none" as any, backgroundImage:"url(\"data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23475569' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E\")", backgroundRepeat:"no-repeat", backgroundPosition:"right 14px center", paddingRight:36 }}>
+                      <option value="">Select country</option>
+                      {["United States","United Kingdom","Nigeria","Canada","Australia","Ghana","South Africa","Kenya","Germany","France","Philippines","Other"].map(c => <option key={c}>{c}</option>)}
+                    </select>
+                  </FormInput>
+                  <FormInput label="City" required>
+                    <input className="vf-input" style={inputStyle} name="city" placeholder="e.g. Lagos" value={form.city} onChange={handleChange}/>
+                  </FormInput>
+                </div>
+                <FormInput label="Residential Address" required>
+                  <input className="vf-input" style={inputStyle} name="address" placeholder="Street address" value={form.address} onChange={handleChange}/>
+                </FormInput>
+              </>
+            )}
+
+            {/* ── STEP 2: Rules / Instructions ── */}
+            {step === 2 && (
+              <>
+                <SectionLabel>Requirements</SectionLabel>
+                <InstrCard icon="🪪" title="Government ID — Requirements" items={idRules} color={S.accent}/>
+                <InstrCard icon="🤳" title="Selfie with ID — Requirements" items={selfieRules} color={S.teal}/>
+              </>
+            )}
+
+            {/* ── STEP 3: Document Upload ── */}
+            {step === 3 && (
+              <>
+                <SectionLabel>Identity Documents</SectionLabel>
+
+                {/* Document type + expiry */}
+                <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12, marginBottom:4 }}>
+                  <FormInput label="Document Type" required>
+                    <select className="vf-input" name="documentType" value={form.documentType} onChange={handleChange}
+                      style={{ ...inputStyle, cursor:"pointer", appearance:"none" as any, backgroundImage:"url(\"data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23475569' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E\")", backgroundRepeat:"no-repeat", backgroundPosition:"right 14px center", paddingRight:36 }}>
+                      <option value="">Select type</option>
+                      <option value="passport">Passport</option>
+                      <option value="nationalId">ID Card</option>
+                      <option value="driversLicense">Driver&apos;s License</option>
+                    </select>
+                  </FormInput>
+                  <FormInput label="ID Expiry Date" required>
+                    <input className="vf-input" style={inputStyle} type="date" name="idexpire" value={form.idexpire} onChange={handleChange}/>
+                  </FormInput>
+                </div>
+
+                <div style={{ height:1, background:S.border, margin:"20px 0" }}/>
+
+                <InstrCard icon="🪪" title="Government ID — Requirements" items={idRules} color={S.accent}/>
+                <UploadSlot
+                  label="Upload Government-issued ID"
+                  sub="Passport, driver's licence, or national ID card"
+                  icon="🪪" name="idPhotofile"
+                  filled={form.idPhotofile instanceof File}
+                  onChange={handleChange}
+                />
+
+                <InstrCard icon="🤳" title="Selfie with ID — Requirements" items={selfieRules} color={S.teal}/>
+                <UploadSlot
+                  label="Upload photo holding your ID"
+                  sub="Your face and ID must both be clearly visible"
+                  icon="🤳" name="holdingIdPhotofile"
+                  filled={form.holdingIdPhotofile instanceof File}
+                  onChange={handleChange}
+                />
+
+                {/* Privacy note */}
+                <div style={{ display:"flex", alignItems:"flex-start", gap:10, background:S.bg3, border:`1px solid ${S.border2}`, borderRadius:10, padding:"12px 14px", marginTop:4, marginBottom:28 }}>
+                  <div style={{ fontSize:14, flexShrink:0, marginTop:1 }}>🔒</div>
+                  <div style={{ fontSize:11.5, color:S.text3, lineHeight:1.6 }}>Your documents are encrypted end-to-end and used solely for identity verification. They are never visible to fans, other creators, or third parties.</div>
+                </div>
+
+                {/* Terms checkbox */}
+                <div
+                  onClick={() => setTerms(t => !t)}
+                  style={{ display:"flex", alignItems:"flex-start", gap:12, background: termsAgreed?"rgba(108,99,255,.04)":S.card, border:`1px solid ${termsAgreed?"rgba(108,99,255,.3)":S.border}`, borderRadius:12, padding:16, marginBottom:24, cursor:"pointer", transition:"border-color .2s" }}
+                >
+                  <div style={{ width:20, height:20, borderRadius:5, flexShrink:0, marginTop:1, border: termsAgreed?"none":`1.5px solid ${S.border}`, background: termsAgreed?S.accent:S.bg3, display:"flex", alignItems:"center", justifyContent:"center", fontSize:11, color:"white", transition:"all .2s" }}>
+                    {termsAgreed && "✓"}
+                  </div>
+                  <div style={{ fontSize:12.5, color:S.text2, lineHeight:1.6 }}>
+                    I confirm that all information provided is accurate and the documents submitted are genuine and belong to me. I agree to mmeko&apos;s{" "}
+                    <a href="#" style={{ color:"#a89cff", textDecoration:"none" }} onClick={e=>e.stopPropagation()}>Terms of Service</a> and{" "}
+                    <a href="#" style={{ color:"#a89cff", textDecoration:"none" }} onClick={e=>e.stopPropagation()}>Privacy Policy</a>.
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* ── NAV BUTTONS ── */}
+            <div style={{ display:"flex", justifyContent:"space-between", gap:12, marginTop: step===3?0:32 }}>
+              {step > 1 ? (
+                <button type="button" className="vf-btn-prev" onClick={() => setStep(s=>s-1)}
+                  style={{ padding:"13px 24px", borderRadius:12, background:"transparent", border:`1px solid ${S.border}`, color:S.text2, fontWeight:700, fontSize:14, fontFamily:"inherit", cursor:"pointer", transition:"all .2s" }}>
+                  ← Previous
+                </button>
+              ) : <span/>}
+
+              {step < 3 ? (
+                <button type="button" className="vf-btn-next" onClick={() => setStep(s=>s+1)}
+                  style={{ marginLeft:"auto", padding:"13px 28px", borderRadius:12, background:`linear-gradient(135deg,${S.accent},${S.accent2})`, border:"none", color:"white", fontWeight:700, fontSize:14, fontFamily:"inherit", cursor:"pointer", boxShadow:"0 4px 20px rgba(108,99,255,.35)", transition:"all .25s" }}>
+                  Next →
+                </button>
+              ) : (
+                <button type="submit" className="vf-btn-submit" disabled={loading || !termsAgreed}
+                  style={{ flex:1, padding:15, borderRadius:12, background: `linear-gradient(135deg,${S.accent},${S.accent2})`, border:"none", color:"white", fontWeight:700, fontSize:14, fontFamily:"inherit", cursor: loading||!termsAgreed?"not-allowed":"pointer", opacity: loading||!termsAgreed ? .45:1, boxShadow:"0 4px 20px rgba(108,99,255,.35)", transition:"all .25s", display:"flex", alignItems:"center", justifyContent:"center", gap:8 }}>
+                  {loading ? <><ClockLoader color="#fff" size={16}/> Submitting…</> : "Submit for Verification"}
+                </button>
+              )}
+            </div>
+
+            {step === 3 && (
+              <button type="button" className="vf-cancel" onClick={() => router.back()}
+                style={{ width:"100%", marginTop:12, padding:14, borderRadius:12, background:"transparent", border:`1px solid ${S.border}`, color:S.text2, fontSize:14, fontWeight:600, fontFamily:"inherit", cursor:"pointer", transition:"all .2s" }}>
+                Cancel
+              </button>
+            )}
+
+          </form>
+        </fieldset>
+
+        {/* SUCCESS MODAL */}
+        {showModal && (
+          <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.6)", backdropFilter:"blur(6px)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:50 }}>
+            <div style={{ background:S.card, border:`1px solid ${S.border}`, borderRadius:20, padding:"40px 32px", textAlign:"center", maxWidth:360, width:"90%" }}>
+              <div style={{ width:56, height:56, borderRadius:"50%", background:"rgba(34,197,94,.15)", border:"1px solid rgba(34,197,94,.3)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:26, margin:"0 auto 20px" }}>✓</div>
+              <h2 style={{ fontSize:20, fontWeight:800, marginBottom:8 }}>Application Submitted</h2>
+              <p style={{ color:S.text2, fontSize:13.5, lineHeight:1.65, marginBottom:24 }}>Your application is now under review. You will hear from us within a few hours.</p>
+              <button onClick={() => { setShowModal(false); router.push("/"); }}
+                style={{ padding:"12px 28px", borderRadius:10, background:`linear-gradient(135deg,${S.accent},${S.accent2})`, border:"none", color:"white", fontWeight:700, fontSize:14, fontFamily:"inherit", cursor:"pointer" }}>
+                OK
+              </button>
             </div>
           </div>
-          <h2 className="text-xl font-semibold mb-2">Application Status</h2>
-          <p className="text-slate-400 mb-4">
-              Your application has been submitted and is now pending review. You&apos;ll hear from us within a few hours.
-          </p>
-          <button
-            onClick={handleModalClose}
-            className="bg-gray-700 text-white px-5 py-2 rounded-lg hover:bg-gray-600 transition duration-300"
-          >
-            Back
-          </button>
-        </div>
+        )}
       </div>
-    );
-  }
-
-  if (applicationStatus === "rejected" || applicationStatus === "none") {
-    return (
-      <div ref={containerRef} className="text-white">
-        <ToastContainer position="top-center" theme="dark" />
-        <HeaderBackNav title="Verification" />
-        <div className="w-full md:w-5/4 flex flex-col mb-12">
-          <div className="p-4" style={{ maxWidth: "700px" }}>
-            <h1 className="text-2xl font-semibold text-center mb-4">
-              Verified User Application
-            </h1>
-            <p className="text-slate-400 mb-6">
-              Please provide us with information for verification. Once verified,
-              you&apos;ll be able to start a creator account.
-            </p>
-            {loading && (
-              <div className="flex flex-col items-center mt-16 w-full z-10 relative top-3/4">
-                <PacmanLoader
-                  color={color}
-                  loading={loading}
-                  size={30}
-                  aria-label="Loading Spinner"
-                  data-testid="loader"
-                />
-                <p className="jost text-yellow-500 font-bold">submitting...</p>
-              </div>
-            )}
-
-            <fieldset disabled={loading}>
-              <form onSubmit={handleSubmit} className="max-w-2xl mx-auto bg-[#080b14] rounded-xl shadow-md p-6">
-                {step === 1 && (
-                  <div className="verify step1 mb-6">
-                    <h4 className="font-bold text-md mb-4 text-center">Personal Information</h4>
-                    <div className="input-container">
-                      <TextInput
-                        label="First Name"
-                        name="firstName"
-                        value={formData.firstName}
-                        onChange={handleChange}
-                      />
-                      <TextInput
-                        label="Last Name"
-                        name="lastName"
-                        value={formData.lastName}
-                        onChange={handleChange}
-                      />
-                    </div>
-                    <div className="input-container">
-                      <TextInput
-                        label="Email Address"
-                        name="email"
-                        type="email"
-                        value={formData.email}
-                        onChange={handleChange}
-                      />
-                      <TextInput
-                        label="Date of Birth"
-                        name="dob"
-                        type="date"
-                        value={formData.dob}
-                        onChange={handleChange}
-                      />
-                    </div>
-                    <div className="input-container">
-                      <TextInput
-                        label="Country"
-                        name="country"
-                        value={formData.country}
-                        onChange={handleChange}
-                      />
-                      <TextInput
-                        label="City"
-                        name="city"
-                        value={formData.city}
-                        onChange={handleChange}
-                      />
-                    </div>
-                    <TextInput
-                      label="Residential Address"
-                      name="address"
-                      type="textarea"
-                      value={formData.address}
-                      onChange={handleChange}
-                    />
-                  </div>
-                )}
-
-                {step === 2 && (
-                  <div className="verify step2 mb-6">
-                    <Ruleslist />
-                  </div>
-                )}
-
-                {step === 3 && (
-                  <div className="verify step3 mb-6">
-                    <h4 className="font-bold text-md my-4">Document Upload</h4>
-                    <img
-                      src="/icons/verificationImage2.jpeg"
-                      alt="Verification Example"
-                      className="w-full mb-4 h-80"
-                      style={{ objectFit: "cover", borderRadius: "8px" }}
-                    />
-                    <div className="mb-4">
-                      <label htmlFor="documentType" className="block text-sm font-medium mb-2">
-                        Document Type:
-                      </label>
-                      <select
-                        id="documentType"
-                        name="documentType"
-                        value={formData.documentType}
-                        onChange={handleChange}
-                        className="w-full p-3 border border-gray-300 rounded-md focus:outline-none bg-black text-white"
-                      >
-                      <option className="bg-black text-white" value="">Select Document Type</option>
-                      <option className="bg-black text-white" value="passport">Passport</option>
-                      <option className="bg-black text-white" value="nationalId">ID Card</option>
-                      <option className="bg-black text-white" value="driversLicense">Driver&apos;s License</option>
-                      </select>
-                    </div>
-                    <FileInput
-                      label="Photo of ID"
-                      name="idPhotofile"
-                      icon={<FaPlus />}
-                      onChange={handleChange}
-                    />
-                    <FileInput
-                      label="Photo of You Holding ID with Handwritten Note"
-                      name="holdingIdPhotofile"
-                      icon={<FaPlus />}
-                      onChange={handleChange}
-                    />
-                    <div className="input-container">
-                      <TextInput
-                        label="ID Expiration Date"
-                        name="idexpire"
-                        type="date"
-                        value={formData.idexpire}
-                        onChange={handleChange}
-                        style={{ width: "100%" }}
-                      />
-                    </div>
-                    <Checklist />
-                  </div>
-                )}
-
-                <div className="flex justify-between mt-6">
-                  {step > 1 && (
-                    <button
-                      type="button"
-                      onClick={prevStep}
-                      className="bg-[#1a1e3f] text-white px-5 py-2 rounded-lg border border-transparent hover:border-orange-500 hover:text-orange-400 transition duration-300"
-                    >
-                      Previous
-                    </button>
-                  )}
-                  {step < 3 ? (
-                    <button
-                      type="button"
-                      onClick={nextStep}
-                      className="ml-auto bg-gradient-to-r from-orange-500 to-orange-600 text-white px-5 py-2 rounded-lg hover:from-orange-600 hover:to-orange-700 transition duration-300"
-                    >
-                      Next
-                    </button>
-                  ) : (
-                    <button
-                      type="submit"
-                      disabled={loading}
-                      className="ml-auto bg-gradient-to-r from-green-600 to-green-700 text-white px-5 py-2 rounded-lg hover:from-green-700 hover:to-green-800 transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                    >
-                      {loading && (
-                        <PacmanLoader
-                          color="#ffffff"
-                          loading={true}
-                          size={12}
-                          aria-label="Loading Spinner"
-                          data-testid="button-loader"
-                        />
-                      )}
-                      {loading ? "Submitting Application..." : "Submit Application"}
-                    </button>
-                  )}
-                </div>
-              </form>
-            </fieldset>
-
-            {showSuccessModal && (
-              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                <div className="bg-[#080b14] rounded-xl shadow-md p-6 text-center max-w-sm">
-                  <div className="flex justify-center mb-4">
-                    <div className="w-12 h-12 bg-green-600 rounded-full flex items-center justify-center">
-                      <svg width="24" height="24" fill="white" viewBox="0 0 24 24">
-                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-                      </svg>
-                    </div>
-                  </div>
-                  <h2 className="text-xl font-semibold mb-2">Application Successful</h2>
-                  <p className="text-slate-400 mb-4">Your application has been submitted and is now in review. You will hear from us within a few hours.</p>
-                  <button
-                    onClick={handleModalClose}
-                    className="bg-gray-700 text-white px-5 py-2 rounded-lg hover:bg-gray-600 transition duration-300"
-                  >
-                    OK
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  return null; // Fallback in case of unexpected status
+    </div>
+  );
 }

@@ -40,6 +40,8 @@ interface User {
   creator_portfolio?: boolean;
   Creator_Application_status?: string;
   creator_portfolio_id?: string;
+  fan_verified?: boolean;
+fan_application_status?: string;
   followers?: string[];
   following?: string[];
   isVip?: boolean;
@@ -1009,9 +1011,30 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, isOpen, onClose
                   )}
                 </div>
                 <div>
-                  <label className="text-gray-300 text-sm">Creator Application Status</label>
-                  <p className="text-white capitalize">{user.Creator_Application_status || "None"}</p>
-                </div>
+  <label className="text-gray-300 text-sm">Creator Application Status</label>
+  <p className="text-white capitalize">{user.Creator_Application_status || "None"}</p>
+</div>
+
+{/* ── Fan Verified ── */}
+<div className="flex items-center gap-2">
+  <label className="text-gray-300 text-sm">Fan Verified:</label>
+  {isEditing ? (
+    <input
+      type="checkbox"
+      checked={editedUser.fan_verified || false}
+      onChange={(e) => setEditedUser({ ...editedUser, fan_verified: e.target.checked })}
+      className="w-4 h-4"
+    />
+  ) : (
+    <span className={`px-2 py-1 rounded text-xs ${user.fan_verified ? "bg-green-500" : "bg-gray-500"}`}>
+      {user.fan_verified ? "Verified" : "Not Verified"}
+    </span>
+  )}
+</div>
+<div>
+  <label className="text-gray-300 text-sm">Fan Application Status</label>
+  <p className="text-white capitalize">{user.fan_application_status || "None"}</p>
+</div>
               </div>
             </div>
 

@@ -94,7 +94,9 @@ const initialState = {
   fllowmsg: "",
   getAllUsers_stats: "idle",
   getAllUsers_data: [] as any[],
+  fan_verification_stats: "idle",
   postexIMG: "",
+  fan_verification_message: "",
   thumbimg: "",
   posteximgStats: "idle",
   postexstats: "idle",
@@ -631,7 +633,7 @@ export const delete_exclusive_thumb = createAsyncThunk<
 
 
 export const checkApplicationStatus = createAsyncThunk<
-  { status: "pending" | "rejected" | "none" },
+  { status: "pending" | "rejected" | "none" | "approved" },
   { userid: string; token: string },
   { rejectValue: { message: string } }
 >(
@@ -647,6 +649,32 @@ export const checkApplicationStatus = createAsyncThunk<
     } catch (err) {
       const message = getErrorMessageWithNetworkFallback(err);
       return thunkAPI.rejectWithValue({ message });
+    }
+  }
+);
+
+export const post_fan_verification = createAsyncThunk<
+  { message: string },
+  { userid: string; token: string; idPhotofile: File; holdingIdPhotofile: File }
+>(
+  "profile/post_fan_verification",
+  async (data, thunkAPI) => {
+    try {
+      const formData = new FormData();
+      formData.append("data", JSON.stringify({ userid: data.userid }));
+      formData.append("idPhotofile", data.idPhotofile);
+      formData.append("holdingIdPhotofile", data.holdingIdPhotofile);
+ 
+      const response = await axios.put(`${URL}/postfandocument`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          ...(data.token ? { Authorization: `Bearer ${data.token}` } : {}),
+        },
+      });
+ 
+      return response.data;
+    } catch (err) {
+      return thunkAPI.rejectWithValue({ message: getErrorMessageWithNetworkFallback(err) });
     }
   }
 );
@@ -1252,6 +1280,19 @@ const profile = createSlice({
         state.status = "failed";
         state.error = (action.payload as any)?.message ?? "Failed to check application status";
       })
+// ── Fan Verification ──
+.addCase(post_fan_verification.pending, (state) => {
+  state.fan_verification_stats = "loading";
+})
+.addCase(post_fan_verification.fulfilled, (state, action) => {
+  state.fan_verification_stats = "succeeded";
+  state.fan_verification_message = action.payload.message;
+})
+.addCase(post_fan_verification.rejected, (state, action) => {
+  state.fan_verification_stats = "failed";
+  state.fan_verification_message =
+    (action.payload as any)?.message ?? "Failed to submit verification";
+})
       .addCase(getsearch.pending, (state, action) => {
         state.searchstats = "loading";
       })

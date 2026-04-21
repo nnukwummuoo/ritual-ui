@@ -116,6 +116,8 @@ export const createcreator = createAsyncThunk<any, CreateCreatorPayload>(
   }
 );
 
+
+
 export const createACreator=async (data: any) => {
   try {
       const fd=new FormData()
@@ -604,6 +606,30 @@ export const rejectdocument = createAsyncThunk<any, { userid: string; docid: str
         throw "check internet connection";
       }
       throw err.response.data.message;
+    }
+  }
+);
+
+export const verifyfan = createAsyncThunk<any, { userid: string; docid: string; token?: string }>(
+  "creator/verifyfan",
+  async (data) => {
+    try {
+      const response = await axios.post(`${URL}/verifyfan`, data);
+      return response.data;
+    } catch (err: any) {
+      throw err.response?.data?.message || "check internet connection";
+    }
+  }
+);
+
+export const rejectfan = createAsyncThunk<any, { userid: string; docid: string }>(
+  "creator/rejectfan",
+  async (data) => {
+    try {
+      const response = await axios.post(`${URL}/rejectfan`, data);
+      return response.data;
+    } catch (err: any) {
+      throw err.response?.data?.message || "check internet connection";
     }
   }
 );
