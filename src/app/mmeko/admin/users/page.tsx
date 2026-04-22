@@ -17,6 +17,7 @@ import { checkUserBanStatus } from "@/utils/banCheck";
 import { useVideoAutoPlay } from "@/hooks/useVideoAutoPlayNew";
 import { URL as API_BASE } from "@/api/config";
 const PROD_BASE = process.env.NEXT_PUBLIC_API || "";
+import { verifyfan, rejectfan } from "@/store/creatorSlice";
 
 interface User {
   _id: string;
@@ -143,6 +144,133 @@ interface UserDetailModalProps {
   onClose: () => void;
   onUpdateUser: (userId: string, updates: Partial<User>) => Promise<void>;
 }
+
+const FanVerificationSection: React.FC<{
+  user: User;
+  token: string;
+  onUpdateUser: (userId: string, updates: Partial<User>) => Promise<void>;
+}> = ({ user, token, onUpdateUser }) => {
+  const dispatch = useDispatch<AppDispatch>();
+  const [actioning, setActioning] = useState(false);
+  const [fanDoc, setFanDoc] = useState<{ _id: string } | null>(null);
+  const [loadingDoc, setLoadingDoc] = useState(false);
+
+  // Fetch this user's fan doc so we have a docid to pass
+  useEffect(() => {
+    if (!user._id) return;
+    setLoadingDoc(true);
+    fetch(`${URL}/getdocument`)
+      .then((r) => r.json())
+      .then((data) => {
+        const docs: any[] = data.documents || [];
+        const match = docs.find((d: any) => d.userid === user._id);
+        setFanDoc(match || null);
+      })
+      .catch(() => setFanDoc(null))
+      .finally(() => setLoadingDoc(false));
+  }, [user._id]);
+
+  const handleVerify = async () => {
+    if (!fanDoc) {
+      toast.error("No pending fan document found for this user");
+      return;
+    }
+    if (!window.confirm("Approve fan verification for this user?")) return;
+    setActioning(true);
+    try {
+      await dispatch(verifyfan({ userid: user._id, docid: fanDoc._id, token })).unwrap();
+      await onUpdateUser(user._id, { fan_verified: true, fan_application_status: "approved" });
+      toast.success("Fan verified successfully");
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to verify fan");
+    } finally {
+      setActioning(false);
+    }
+  };
+
+  const handleReject = async () => {
+    if (!fanDoc) {
+      toast.error("No pending fan document found for this user");
+      return;
+    }
+    if (!window.confirm("Decline fan verification for this user?")) return;
+    setActioning(true);
+    try {
+      await dispatch(rejectfan({ userid: user._id, docid: fanDoc._id })).unwrap();
+      await onUpdateUser(user._id, { fan_verified: false, fan_application_status: "declined" });
+      setFanDoc(null);
+      toast.success("Fan verification declined");
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to reject fan");
+    } finally {
+      setActioning(false);
+    }
+  };
+
+  return (
+    <>
+      <div className="flex items-center gap-2">
+        <label className="text-gray-300 text-sm">Fan Verified:</label>
+        <span className={`px-2 py-1 rounded text-xs ${user.fan_verified ? "bg-green-500" : "bg-gray-500"}`}>
+          {user.fan_verified ? "Verified" : "Not Verified"}
+        </span>
+      </div>
+      <div>
+        <label className="text-gray-300 text-sm">Fan Application Status</label>
+        <p className="text-white capitalize">{user.fan_application_status || "None"}</p>
+      </div>
+
+      {/* Action buttons — only show if there's a pending doc or user is not yet verified */}
+      {!user.fan_verified && (
+        <div className="mt-2">
+          {loadingDoc ? (
+            <p className="text-gray-400 text-xs">Checking for fan document...</p>
+          ) : fanDoc ? (
+            <div className="flex gap-2">
+              <button
+                onClick={handleVerify}
+                disabled={actioning}
+                className="bg-green-500 text-white px-3 py-1.5 rounded text-xs hover:bg-green-600 disabled:opacity-50"
+              >
+                {actioning ? "Processing..." : "✓ Approve Fan"}
+              </button>
+              <button
+                onClick={handleReject}
+                disabled={actioning}
+                className="bg-red-500 text-white px-3 py-1.5 rounded text-xs hover:bg-red-600 disabled:opacity-50"
+              >
+                {actioning ? "Processing..." : "✕ Decline Fan"}
+              </button>
+            </div>
+          ) : (
+            <p className="text-gray-500 text-xs italic">No pending verification document</p>
+          )}
+        </div>
+      )}
+
+      {user.fan_verified && (
+        <button
+          onClick={async () => {
+            if (!window.confirm("Revoke fan verification for this user?")) return;
+            setActioning(true);
+            try {
+              await onUpdateUser(user._id, { fan_verified: false, fan_application_status: "none" });
+              toast.success("Fan verification revoked");
+            } catch {
+              toast.error("Failed to revoke fan verification");
+            } finally {
+              setActioning(false);
+            }
+          }}
+          disabled={actioning}
+          className="mt-2 bg-red-500 text-white px-3 py-1.5 rounded text-xs hover:bg-red-600 disabled:opacity-50"
+        >
+          Revoke Fan Verification
+        </button>
+      )}
+    </>
+  );
+};
 
 const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, isOpen, onClose, onUpdateUser }) => {
   const [isEditing, setIsEditing] = useState(false);
@@ -1016,25 +1144,7 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, isOpen, onClose
 </div>
 
 {/* ── Fan Verified ── */}
-<div className="flex items-center gap-2">
-  <label className="text-gray-300 text-sm">Fan Verified:</label>
-  {isEditing ? (
-    <input
-      type="checkbox"
-      checked={editedUser.fan_verified || false}
-      onChange={(e) => setEditedUser({ ...editedUser, fan_verified: e.target.checked })}
-      className="w-4 h-4"
-    />
-  ) : (
-    <span className={`px-2 py-1 rounded text-xs ${user.fan_verified ? "bg-green-500" : "bg-gray-500"}`}>
-      {user.fan_verified ? "Verified" : "Not Verified"}
-    </span>
-  )}
-</div>
-<div>
-  <label className="text-gray-300 text-sm">Fan Application Status</label>
-  <p className="text-white capitalize">{user.fan_application_status || "None"}</p>
-</div>
+<FanVerificationSection user={user} token={token} onUpdateUser={onUpdateUser} />
               </div>
             </div>
 
