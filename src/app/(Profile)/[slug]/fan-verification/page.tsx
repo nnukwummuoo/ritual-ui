@@ -136,13 +136,13 @@ useEffect(() => {
       <ToastContainer position="top-center" theme="dark"/>
 
       {/* NAV */}
-      <nav style={{ position:"sticky", top:0, zIndex:100, background:"rgba(8,11,20,.97)", backdropFilter:"blur(20px)", borderBottom:`1px solid ${S.border}`, padding:"0 24px", height:56, display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+      <div style={{ position:"sticky", top:0, zIndex:80, background:"rgba(8,11,20,.97)", backdropFilter:"blur(20px)", borderBottom:`1px solid ${S.border}`, padding:"0 24px", height:56, display:"flex", alignItems:"center", justifyContent:"space-between" }}>
         <a href="/" style={{ display:"flex", alignItems:"center", gap:8, textDecoration:"none" }}>
           <div style={{ width:28, height:28, borderRadius:7, background:`linear-gradient(135deg,${S.accent},${S.accent2})`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:12, fontWeight:800, color:"white" }}>M</div>
           <span style={{ fontSize:15, fontWeight:700, color:S.text }}>mmeko</span>
         </a>
         <button className="fv-nav-back" onClick={() => router.back()} style={{ display:"flex", alignItems:"center", gap:6, color:S.text2, fontSize:13, fontWeight:600, background:"none", border:"none", fontFamily:"inherit", cursor:"pointer", transition:"color .2s" }}>← Back</button>
-      </nav>
+      </div>
 
       <div style={{ maxWidth:480, margin:"0 auto", padding:"32px 20px 60px" }}>
 

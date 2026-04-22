@@ -452,6 +452,7 @@ export const Profile = () => {
 
   const [isCheckingPurchase, setIsCheckingPurchase] = useState(false);
 
+  const [isFanVerified, setIsFanVerified] = useState<boolean>(false);
 
 
   // Slug from URL (username or user id for backward compatibility); usernames may include @ (e.g. @folashade)
@@ -635,6 +636,8 @@ export const Profile = () => {
   // Track the last fetched profile to prevent infinite loops
 
   const lastFetchedProfileRef = useRef<string | null>(null);
+
+  const [showFanVerifiedModal, setShowFanVerifiedModal] = useState(false);
 
 
 
@@ -1908,6 +1911,20 @@ export const Profile = () => {
   }, [loggedInUserId, token, fetchUserBalance]);
 
 
+
+  useEffect(() => {
+  if (loggedInUserId && token) {
+    axios.post(`${API_URL}/getprofilebyID`, 
+      { userid: loggedInUserId },
+      { headers: { Authorization: `Bearer ${token}` } }
+    ).then((res) => {
+      if (res.data?.ok) {
+        const user = res.data?.user || res.data?.profile || {};
+        setIsFanVerified(user.fan_verified === true);
+      }
+    }).catch(() => {});
+  }
+}, [loggedInUserId, token]);
 
   // Separate effect for creator ratings to avoid infinite loops
 
@@ -5923,11 +5940,127 @@ export const Profile = () => {
 
                     <div className="flex flex-col items-start pl-7 gap-2 w-2/3">
 
-                      <p className="pt-2 text-base sm:text-xl font-bold text-slate-200">
+                      <p className="pt-2 text-base sm:text-xl font-bold text-slate-200 flex items-center gap-1">
+  {firstname} {lastname}
+  {/* Fan Verified Badge */}
+{isFanVerified && (
+  <>
+    <span
+      title="Fan Verified"
+      className="inline-flex items-center justify-center ml-1 cursor-pointer"
+      style={{ flexShrink: 0 }}
+      onClick={(e) => {
+        e.stopPropagation();
+        setShowFanVerifiedModal(true);
+      }}
+    >
+      <svg
+        viewBox="0 0 24 24"
+        width="28"
+        height="28"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <defs>
+          <linearGradient id="fanBadgeGrad" x1="4" y1="2" x2="20" y2="21" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stopColor="#7C3AED" />
+            <stop offset="100%" stopColor="#4F46E5" />
+          </linearGradient>
+        </defs>
+        <path
+          d="M12 1L3 5V11C3 15.836 6.978 20.489 12 22C17.022 20.489 21 15.836 21 11V5L12 1Z"
+          fill="white"
+        />
+        <path
+          d="M12 2.8L4.5 6V11C4.5 15.2 7.9 19.4 12 20.6C16.1 19.4 19.5 15.2 19.5 11V6L12 2.8Z"
+          fill="url(#fanBadgeGrad)"
+        />
+        <path
+          d="M12 7l1.2 2.4 2.6.4-1.9 1.85.45 2.6L12 13.1l-2.35 1.15.45-2.6L8.2 9.8l2.6-.4L12 7z"
+          fill="white"
+        />
+      </svg>
+    </span>
 
-                        {firstname} {lastname}
+    {/* Fan Verified Modal */}
+    {showFanVerifiedModal && (
+      <div
+        className="fixed inset-0 z-[9999] flex items-center justify-center bg-black bg-opacity-75 p-4"
+        onClick={() => setShowFanVerifiedModal(false)}
+      >
+        <div
+          className="relative max-w-sm w-full rounded-2xl overflow-hidden"
+          style={{ background: "#111624", border: "1px solid rgba(255,255,255,0.07)", fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* Top gradient bar */}
+          <div style={{ height: 3, background: "linear-gradient(90deg,#6c63ff,#9b59f5,#2dd4bf)" }} />
 
-                      </p>
+          <div className="p-6 flex flex-col items-center text-center">
+            {/* Big shield badge */}
+            <div className="mb-4">
+              <svg viewBox="0 0 24 24" width="72" height="72" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <linearGradient id="fanModalGrad" x1="4" y1="2" x2="20" y2="21" gradientUnits="userSpaceOnUse">
+                    <stop offset="0%" stopColor="#7C3AED" />
+                    <stop offset="100%" stopColor="#4F46E5" />
+                  </linearGradient>
+                </defs>
+                <path d="M12 1L3 5V11C3 15.836 6.978 20.489 12 22C17.022 20.489 21 15.836 21 11V5L12 1Z" fill="white" />
+                <path d="M12 2.8L4.5 6V11C4.5 15.2 7.9 19.4 12 20.6C16.1 19.4 19.5 15.2 19.5 11V6L12 2.8Z" fill="url(#fanModalGrad)" />
+                <path d="M12 7l1.2 2.4 2.6.4-1.9 1.85.45 2.6L12 13.1l-2.35 1.15.45-2.6L8.2 9.8l2.6-.4L12 7z" fill="white" />
+              </svg>
+            </div>
+
+            {/* Title */}
+            <h2 style={{ fontSize: 20, fontWeight: 800, color: "#f1f5f9", marginBottom: 6, letterSpacing: "-0.02em" }}>
+              Verified Fan
+            </h2>
+
+            {/* Username */}
+            <p style={{ fontSize: 13, color: "#94a3b8", marginBottom: 16 }}>
+              {isViewingOwnProfile ? username : profileData?.username || ""}
+            </p>
+
+            {/* Divider */}
+            <div style={{ width: "100%", height: 1, background: "rgba(255,255,255,0.07)", marginBottom: 16 }} />
+
+            {/* Benefits list */}
+            <div className="w-full space-y-3 mb-6">
+              {[
+                { icon: "⚡", text: "Priority access to creator requests" },
+                { icon: "📈", text: "2× more likely to be accepted" },
+                { icon: "✅", text: "Trusted & verified identity" },
+                { icon: "🔓", text: "Access to exclusive creators" },
+              ].map((b) => (
+                <div key={b.text} className="flex items-center gap-3 text-left">
+                  <div style={{ width: 30, height: 30, borderRadius: 8, background: "rgba(108,99,255,0.12)", border: "1px solid rgba(108,99,255,0.2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, flexShrink: 0 }}>
+                    {b.icon}
+                  </div>
+                  <span style={{ fontSize: 13, color: "#cbd5e1" }}>{b.text}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Footer note */}
+            <div style={{ background: "rgba(108,99,255,0.08)", border: "1px solid rgba(108,99,255,0.18)", borderRadius: 10, padding: "10px 14px", fontSize: 12, color: "#94a3b8", lineHeight: 1.55, marginBottom: 20, width: "100%" }}>
+              🛡 This user has verified their identity with a government-issued ID. Their identity is confirmed by mmeko.
+            </div>
+
+            {/* Close button */}
+            <button
+              onClick={() => setShowFanVerifiedModal(false)}
+              style={{ width: "100%", padding: "12px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#6c63ff,#9b59f5)", color: "white", fontSize: 14, fontWeight: 700, fontFamily: "inherit", cursor: "pointer" }}
+            >
+              Got it
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+  </>
+)}
+</p>
 
                       <div className="flex justify-start gap-4 w-full">
 
@@ -6113,13 +6246,15 @@ export const Profile = () => {
 
                      <div className="flex items-center gap-2">
 
-                       <button
-    className="p-2 flex items-center justify-center gap-x-1 bg-gradient-to-r !from-blue-500 !to-purple-600 text-center text-sm rounded-lg mt-4"
-    onClick={() => router.push(`/${profileSlugForUrl}/fan-verification`)}
-  >
-    <BadgeCheck className="w-4 h-4" />
-    Fan Verification
-  </button>
+{!isFanVerified && (
+    <button
+      className="p-2 flex items-center justify-center gap-x-1 bg-gradient-to-r !from-blue-500 !to-purple-600 text-center text-sm rounded-lg mt-4"
+      onClick={() => router.push(`/${profileSlugForUrl}/fan-verification`)}
+    >
+      <BadgeCheck className="w-4 h-4" />
+      Fan Verification
+    </button>
+  )}
   
   <button
     className="p-2 flex items-center justify-center gap-x-1 bg-gradient-to-r !from-blue-500 !to-purple-600 text-center text-sm rounded-lg mt-4"

@@ -977,6 +977,36 @@ const creator = createSlice({
       .addCase(rejectdocument.pending, (state) => {
         state.rejectdocumentstatus = "loading";
       })
+      .addCase(verifyfan.pending, (state) => {
+  state.getdocumentstatus = "loading";
+})
+.addCase(verifyfan.fulfilled, (state, action) => {
+  state.getdocumentstatus = "succeeded";
+  state.message = action.payload?.message ?? state.message;
+  // Mark the doc as approved in local documents list
+  const docId = action.meta.arg.docid;
+  state.documents = state.documents.map((d) =>
+    d._id === docId ? { ...d, verify: true, status: "approved" } : d
+  );
+})
+.addCase(verifyfan.rejected, (state, action) => {
+  state.getdocumentstatus = "failed";
+  state.message = action.error.message ?? "Check internet connection";
+})
+.addCase(rejectfan.pending, (state) => {
+  state.rejectdocumentstatus = "loading";
+})
+.addCase(rejectfan.fulfilled, (state, action) => {
+  state.rejectdocumentstatus = "succeeded";
+  state.message = action.payload?.message ?? state.message;
+  // Remove the rejected doc from local documents list
+  const docId = action.meta.arg.docid;
+  state.documents = state.documents.filter((d) => d._id !== docId);
+})
+.addCase(rejectfan.rejected, (state, action) => {
+  state.rejectdocumentstatus = "failed";
+  state.message = action.error.message ?? "Check internet connection";
+})
       .addCase(rejectdocument.fulfilled, (state, action) => {
         state.rejectdocumentstatus = "succeeded";
         state.message = action.payload.message ?? state.message;
