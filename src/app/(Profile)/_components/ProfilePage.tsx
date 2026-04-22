@@ -641,7 +641,6 @@ export const Profile = () => {
 
 
 
-  // Reset fetch tracking and clear viewing profile only when slug changes (not on every effect run)
   useEffect(() => {
     lastFetchedProfileRef.current = null;
     dispatch(clearViewingProfile());
