@@ -297,6 +297,98 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, isOpen, onClose
   const [editedRewardBalance, setEditedRewardBalance] = useState(0);
   const token = useSelector((s: RootState) => s.register.refreshtoken);
 
+
+  const FanDocsViewer: React.FC<{ userId: string; token: string }> = ({ userId, token }) => {
+  const [doc, setDoc] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [lightbox, setLightbox] = useState<string>("");
+
+  useEffect(() => {
+    if (!userId) return;
+    fetch(`${URL}/getdocument`)
+      .then(r => r.json())
+      .then(data => {
+        const docs: any[] = data.documents || [];
+        const match = docs.find((d: any) => d.userid === userId && d.verify === true);
+        setDoc(match || null);
+      })
+      .catch(() => setDoc(null))
+      .finally(() => setLoading(false));
+  }, [userId]);
+
+  if (loading) return <p className="text-gray-400 text-sm">Loading documents…</p>;
+
+  if (!doc) return (
+    <div className="bg-gray-700 rounded-lg p-4 text-center">
+      <p className="text-gray-400 text-sm">No approved verification documents found.</p>
+    </div>
+  );
+
+  const idUrl      = doc.idPhotofile?.idPhotofilelink;
+  const selfieUrl  = doc.holdingIdPhotofile?.holdingIdPhotofilelink;
+
+  return (
+    <>
+      {/* Lightbox */}
+      {lightbox && (
+        <div
+          className="fixed inset-0 z-[9999] bg-black/90 flex items-center justify-center p-6"
+          onClick={() => setLightbox("")}
+        >
+          <button
+            onClick={() => setLightbox("")}
+            className="absolute top-5 right-5 w-10 h-10 rounded-full bg-white/10 text-white flex items-center justify-center text-lg hover:bg-white/20"
+          >✕</button>
+          <img
+            src={lightbox}
+            alt="Document"
+            className="max-w-full max-h-[90vh] rounded-xl border border-white/10"
+            onClick={e => e.stopPropagation()}
+          />
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {[
+          { label: "Government-issued ID", icon: "🪪", url: idUrl },
+          { label: "Photo holding ID",     icon: "🤳", url: selfieUrl },
+        ].map(slot => (
+          <div key={slot.label} className="bg-gray-700 rounded-lg p-3">
+            <label className="text-gray-400 text-xs uppercase tracking-wider block mb-2">
+              {slot.icon} {slot.label}
+            </label>
+            {slot.url ? (
+              <div
+                className="relative aspect-[4/3] rounded-lg overflow-hidden cursor-pointer group"
+                onClick={() => setLightbox(slot.url!)}
+              >
+                <img
+                  src={slot.url}
+                  alt={slot.label}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                />
+                <div className="absolute bottom-2 right-2 bg-black/60 rounded px-2 py-0.5 text-xs text-white/70">
+                  Click to expand
+                </div>
+              </div>
+            ) : (
+              <div className="aspect-[4/3] rounded-lg bg-gray-600 flex items-center justify-center">
+                <p className="text-gray-400 text-xs">No document on file</p>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      <div className="mt-3 bg-green-900/20 border border-green-500/20 rounded-lg p-3">
+        <p className="text-green-300 text-xs">
+          ✓ These documents were verified and approved. Submitted {doc.createdAt ? new Date(doc.createdAt).toLocaleDateString() : "N/A"}.
+        </p>
+      </div>
+    </>
+  );
+};
+
   const fetchUserFollows = async (userId: string) => {
     setLoadingFollows(true);
     try {
@@ -1313,6 +1405,104 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, isOpen, onClose
                 </div>
               </div>
             </div>
+
+            {/* ── Fan Verification Documents (only shown after approval) ── */}
+{user.fan_verified && (
+  <div className="bg-[#111624] p-4 rounded-lg md:col-span-2">
+    <div className="flex items-center gap-3 mb-4">
+      {/* Shield badge */}
+      <svg viewBox="0 0 24 24" width="26" height="26" fill="none">
+        <defs>
+          <linearGradient id="fvGrad" x1="4" y1="2" x2="20" y2="21" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stopColor="#7C3AED"/>
+            <stop offset="100%" stopColor="#4F46E5"/>
+          </linearGradient>
+        </defs>
+        <path d="M12 1L3 5V11C3 15.836 6.978 20.489 12 22C17.022 20.489 21 15.836 21 11V5L12 1Z" fill="white"/>
+        <path d="M12 2.8L4.5 6V11C4.5 15.2 7.9 19.4 12 20.6C16.1 19.4 19.5 15.2 19.5 11V6L12 2.8Z" fill="url(#fvGrad)"/>
+        <path d="M12 7l1.2 2.4 2.6.4-1.9 1.85.45 2.6L12 13.1l-2.35 1.15.45-2.6L8.2 9.8l2.6-.4L12 7z" fill="white"/>
+      </svg>
+      <h3 className="text-lg font-semibold text-yellow-500">Fan Verification Documents</h3>
+      <span className="px-2 py-1 rounded text-xs bg-green-500 text-white">Approved</span>
+    </div>
+
+    <FanDocsViewer userId={user._id} token={token} />
+  </div>
+)}
+
+{/* ── Creator Verification Section (only shown after approval) ── */}
+{user.creator_verified && (
+  <div className="bg-[#111624] p-4 rounded-lg md:col-span-2">
+    <div className="flex items-center gap-3 mb-4">
+      <span className="text-2xl">✅</span>
+      <h3 className="text-lg font-semibold text-yellow-500">Creator Verification Details</h3>
+      <span className="px-2 py-1 rounded text-xs bg-blue-500 text-white">Verified Creator</span>
+    </div>
+
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="space-y-3">
+        <div className="bg-gray-700 rounded-lg p-3">
+          <label className="text-gray-400 text-xs uppercase tracking-wider block mb-1">Full Name</label>
+          <p className="text-white font-medium">{user.firstname} {user.lastname}</p>
+        </div>
+        <div className="bg-gray-700 rounded-lg p-3">
+          <label className="text-gray-400 text-xs uppercase tracking-wider block mb-1">Username</label>
+          <p className="text-white">@{user.username || "N/A"}</p>
+        </div>
+        <div className="bg-gray-700 rounded-lg p-3">
+          <label className="text-gray-400 text-xs uppercase tracking-wider block mb-1">Gender</label>
+          <p className="text-white capitalize">{user.gender || "N/A"}</p>
+        </div>
+        <div className="bg-gray-700 rounded-lg p-3">
+          <label className="text-gray-400 text-xs uppercase tracking-wider block mb-1">Country</label>
+          <p className="text-white">{user.country || "N/A"}</p>
+        </div>
+      </div>
+      <div className="space-y-3">
+        <div className="bg-gray-700 rounded-lg p-3">
+          <label className="text-gray-400 text-xs uppercase tracking-wider block mb-1">Application Status</label>
+          <span className={`px-2 py-1 rounded text-xs font-semibold capitalize ${
+            user.Creator_Application_status === "approved" ? "bg-green-500 text-white" :
+            user.Creator_Application_status === "pending"  ? "bg-yellow-500 text-black" :
+            "bg-gray-500 text-white"
+          }`}>
+            {user.Creator_Application_status || "None"}
+          </span>
+        </div>
+        <div className="bg-gray-700 rounded-lg p-3">
+          <label className="text-gray-400 text-xs uppercase tracking-wider block mb-1">Portfolio ID</label>
+          <p className="text-white font-mono text-xs break-all">{user.creator_portfolio_id || "N/A"}</p>
+        </div>
+        <div className="bg-gray-700 rounded-lg p-3">
+          <label className="text-gray-400 text-xs uppercase tracking-wider block mb-1">Verified Since</label>
+          <p className="text-white">{user.updatedAt ? new Date(user.updatedAt).toLocaleDateString() : "N/A"}</p>
+        </div>
+      </div>
+    </div>
+
+    {/* Profile photo */}
+    <div className="mt-4 bg-gray-700 rounded-lg p-3">
+      <label className="text-gray-400 text-xs uppercase tracking-wider block mb-3">Profile Photo (submitted)</label>
+      <div className="flex items-center gap-4">
+        {user.photolink && user.photolink !== "null" ? (
+          <img
+            src={user.photolink}
+            alt="Creator profile"
+            className="w-24 h-24 rounded-xl object-cover border border-gray-600"
+          />
+        ) : (
+          <div className="w-24 h-24 rounded-xl bg-gray-600 flex items-center justify-center text-white text-2xl font-bold">
+            {user.firstname?.[0]}{user.lastname?.[0]}
+          </div>
+        )}
+        <div className="text-gray-400 text-sm">
+          <p>This is the profile photo on file</p>
+          <p className="text-xs mt-1">for this verified creator account.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+)}
 
             {/* Social Information */}
             <div className="bg-[#111624] p-4 rounded-lg">
