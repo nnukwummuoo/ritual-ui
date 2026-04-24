@@ -89,7 +89,7 @@ function UploadSlot({ label, sub, icon, imgSrc, name, filled, onChange }: {
       {filled && (
         <div style={{ position:"absolute", top:12, right:12, width:22, height:22, borderRadius:"50%", background:S.success, display:"flex", alignItems:"center", justifyContent:"center", fontSize:11, color:"white" }}>✓</div>
       )}
-      <div style={{ width:160, height:160, borderRadius:12, background: filled?"rgba(34,197,94,.1)":"rgba(108,99,255,.1)", border:`1px solid ${filled?"rgba(34,197,94,.2)":"rgba(108,99,255,.2)"}`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:22, overflow:"hidden" }}>
+      <div style={{ width:60, height:60, borderRadius:12, background: filled?"rgba(34,197,94,.1)":"rgba(108,99,255,.1)", border:`1px solid ${filled?"rgba(34,197,94,.2)":"rgba(108,99,255,.2)"}`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:22, overflow:"hidden" }}>
         {filled ? "✓" : imgSrc ? <img src={imgSrc} alt="" style={{ width:"100%", height:"100%", objectFit:"cover", borderRadius:11 }}/> : icon}
       </div>
       <div style={{ fontSize:14, fontWeight:700 }}>{label}</div>
@@ -324,23 +324,29 @@ export default function VerifiedUserForm() {
 
             <div style={{ height:1, background:S.border, margin:"20px 0" }} />
 
-            <InstrCard icon="🪪" title="Government ID — Requirements" items={idRules} color={S.accent}/>
-            <UploadSlot
-              label="Upload Government-issued ID"
-              sub="Passport, driver's licence, or national ID card"
-              icon="🪪" name="idPhotofile"
-              filled={form.idPhotofile instanceof File}
-              onChange={handleChange}
-            />
+           <InstrCard icon="🪪" title="Government ID — Requirements" items={idRules} color={S.accent}/>
+<UploadSlot
+  label="Upload Government-issued ID"
+  sub="Passport, driver's licence, or national ID card"
+  icon="🪪" name="idPhotofile"
+  filled={form.idPhotofile instanceof File}
+  onChange={handleChange}
+/>
 
-            <InstrCard icon="🤳" imgSrc="/icons/verificationImage2.jpeg" title="Selfie with ID — Requirements" items={selfieRules} color={S.teal}/>
-            <UploadSlot
-              label="Upload photo holding your ID"
-              sub="Your face and ID must both be clearly visible"
-              icon="🤳" imgSrc="/icons/verificationImage2.jpeg" name="holdingIdPhotofile"
-              filled={form.holdingIdPhotofile instanceof File}
-              onChange={handleChange}
-            />
+
+
+<InstrCard icon="🤳" title="Selfie with ID — Requirements" items={selfieRules} color={S.teal}/>
+    <img
+  src="/icons/verificationImage2.jpeg"
+  alt="ID verification example"
+style={{ width: "100%", height: 380, borderRadius: 12, objectFit: "cover", margin: "8px 0 20px" }}/>
+<UploadSlot
+  label="Upload photo holding your ID"
+  sub="Your face and ID must both be clearly visible"
+  icon="🤳" name="holdingIdPhotofile"
+  filled={form.holdingIdPhotofile instanceof File}
+  onChange={handleChange}
+/>
 
             {/* Privacy note */}
             <div style={{ display:"flex", alignItems:"flex-start", gap:10, background:S.bg3, border:`1px solid ${S.border2}`, borderRadius:10, padding:"12px 14px", marginTop:4, marginBottom:28 }}>

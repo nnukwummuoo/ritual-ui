@@ -197,6 +197,10 @@ useEffect(() => {
         <UploadSlot icon="🪪" title="Government-issued ID"
           sub="Passport, driver's licence, or national ID card.<br/>Must be valid and clearly readable."
           accept="image/*,.pdf" filled={!!idFile} onChange={setIdFile}/>
+          <img
+  src="/icons/verificationImage2.jpeg"
+  alt="ID verification example"
+style={{ width: "100%", height: 380, borderRadius: 12, objectFit: "cover", margin: "8px 0 14px" }}/>
 
         <UploadSlot icon="🤳" title="Photo holding your ID"
           sub="Take a clear photo of yourself holding your ID next to your face. Both must be visible."
