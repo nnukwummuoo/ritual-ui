@@ -64,6 +64,11 @@ fan_application_status?: string;
   ppvStatus?: string;
   ppvEnabled?: boolean;
   ppvPrice?: number;
+  email?: string;
+city?: string;
+address?: string;
+documentType?: string;
+idexpire?: string;
 }
 
 
@@ -296,7 +301,19 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, isOpen, onClose
   const [isEditingReferral, setIsEditingReferral] = useState(false);
   const [editedRewardBalance, setEditedRewardBalance] = useState(0);
   const token = useSelector((s: RootState) => s.register.refreshtoken);
+const [creatorVerificationDoc, setCreatorVerificationDoc] = useState<any>(null);
 
+useEffect(() => {
+  if (!user?._id || !user?.creator_verified) return;
+  fetch(`${URL}/getdocument`)
+    .then(r => r.json())
+    .then(data => {
+      const docs: any[] = data.documents || [];
+      const match = docs.find((d: any) => d.userid === user._id);
+      setCreatorVerificationDoc(match || null);
+    })
+    .catch(() => setCreatorVerificationDoc(null));
+}, [user?._id, user?.creator_verified]);
 
   const FanDocsViewer: React.FC<{ userId: string; token: string }> = ({ userId, token }) => {
   const [doc, setDoc] = useState<any>(null);
@@ -1439,7 +1456,7 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, isOpen, onClose
       <span className="px-2 py-1 rounded text-xs bg-blue-500 text-white">Verified Creator</span>
     </div>
 
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div className="space-y-3">
         <div className="bg-gray-700 rounded-lg p-3">
           <label className="text-gray-400 text-xs uppercase tracking-wider block mb-1">Full Name</label>
@@ -1478,10 +1495,29 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, isOpen, onClose
           <p className="text-white">{user.updatedAt ? new Date(user.updatedAt).toLocaleDateString() : "N/A"}</p>
         </div>
       </div>
+    </div> */}
+
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+  {[
+    { label: "First Name",     value: user.firstname },
+    { label: "Last Name",      value: user.lastname },
+    { label: "Email",          value: creatorVerificationDoc?.email },
+    { label: "Date of Birth",  value: creatorVerificationDoc?.dob || user.dob },
+    { label: "Country",        value: creatorVerificationDoc?.country || user.country },
+    { label: "City",           value: creatorVerificationDoc?.city },
+    { label: "Address",        value: creatorVerificationDoc?.address },
+    { label: "Document Type",  value: creatorVerificationDoc?.documentType },
+    { label: "ID Expiry Date", value: creatorVerificationDoc?.idexpire },
+  ].map(({ label, value }) => (
+    <div key={label} className="bg-gray-700 rounded-lg p-3">
+      <label className="text-gray-400 text-xs uppercase tracking-wider block mb-1">{label}</label>
+      <p className="text-white font-medium">{value || "N/A"}</p>
     </div>
+  ))}
+</div>
 
     {/* Profile photo */}
-    <div className="mt-4 bg-gray-700 rounded-lg p-3">
+    {/* <div className="mt-4 bg-gray-700 rounded-lg p-3">
       <label className="text-gray-400 text-xs uppercase tracking-wider block mb-3">Profile Photo (submitted)</label>
       <div className="flex items-center gap-4">
         {user.photolink && user.photolink !== "null" ? (
@@ -1500,7 +1536,7 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, isOpen, onClose
           <p className="text-xs mt-1">for this verified creator account.</p>
         </div>
       </div>
-    </div>
+    </div> */}
   </div>
 )}
 

@@ -6247,12 +6247,38 @@ export const Profile = () => {
 
 {!isFanVerified && (
     <button
-      className="p-2 flex items-center justify-center gap-x-1 bg-gradient-to-r !from-blue-500 !to-purple-600 text-center text-sm rounded-lg mt-4"
-      onClick={() => router.push(`/${profileSlugForUrl}/fan-verification`)}
-    >
-      <BadgeCheck className="w-4 h-4" />
-      Fan Verification
-    </button>
+  className="p-2 flex items-center justify-center gap-x-1 bg-gradient-to-r !from-blue-500 !to-purple-600 text-center text-sm rounded-lg mt-4"
+  onClick={() => router.push(`/${profileSlugForUrl}/fan-verification`)}
+>
+  <svg
+    viewBox="0 0 24 24"
+    width="16"
+    height="16"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <defs>
+      <linearGradient id="fanBtnGrad2" x1="4" y1="2" x2="20" y2="21" gradientUnits="userSpaceOnUse">
+  <stop offset="0%" stopColor="#c4b5fd" />  {/* very light purple */}
+  <stop offset="100%" stopColor="#a5b4fc" />  {/* very light indigo */}
+</linearGradient>
+    </defs>
+    <path
+      d="M12 1L3 5V11C3 15.836 6.978 20.489 12 22C17.022 20.489 21 15.836 21 11V5L12 1Z"
+      fill="white"
+      opacity="0.3"
+    />
+    <path
+      d="M12 2.8L4.5 6V11C4.5 15.2 7.9 19.4 12 20.6C16.1 19.4 19.5 15.2 19.5 11V6L12 2.8Z"
+      fill="url(#fanBtnGrad)"
+    />
+    <path
+      d="M12 7l1.2 2.4 2.6.4-1.9 1.85.45 2.6L12 13.1l-2.35 1.15.45-2.6L8.2 9.8l2.6-.4L12 7z"
+      fill="white"
+    />
+  </svg>
+  Fan Verification
+</button>
   )}
   
   <button
