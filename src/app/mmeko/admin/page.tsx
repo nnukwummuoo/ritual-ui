@@ -219,7 +219,7 @@ const AdminPage = () => {
 {
   name: "Fan Verification",
   icon: <IoShieldCheckmarkOutline size={22} />,
-  component: <AdminFanVerificationPage />,  // 👈 replace this
+  component: <AdminFanVerificationPage />,
 },
     {
       name: "Withdrawal Requests",
@@ -330,6 +330,11 @@ const AdminPage = () => {
                     {docCount}
                   </span>
                 )}
+                {item.name === "Fan Verification" && docCount > 0 && (
+  <span className="ml-2 bg-red-500 text-white px-1.5 py-1 rounded-full text-xs">
+    {docCount}
+  </span>
+)}
                 {item.name === "Support Chat" && supportChatCount > 0 && (
                   <span className="ml-2 bg-red-500 text-white px-1.5 py-1 rounded-full text-xs">
                     {supportChatCount}

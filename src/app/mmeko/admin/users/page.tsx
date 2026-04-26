@@ -1515,6 +1515,10 @@ useEffect(() => {
     </div>
   ))}
 </div>
+<div className="mt-8">
+<FanDocsViewer userId={user._id} token={token} />
+</div>
+
 
     {/* Profile photo */}
     {/* <div className="mt-4 bg-gray-700 rounded-lg p-3">

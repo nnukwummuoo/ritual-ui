@@ -176,7 +176,7 @@ const CSS = `
 
 /* STATS */
 .lp .stats { display: grid; grid-template-columns: repeat(4,1fr); background: var(--bg2); border-bottom: 1px solid var(--border); }
-.lp .stat { padding: 32px 24px; text-align: center; border-right: 1px solid var(--border); max-width: 200px; margin: 0 auto; }
+.lp .stat { padding: 32px 24px; text-align: center; border-right: 1px solid var(--border); width: 100%; }
 .lp .stat:last-child { border-right: none; }
 .lp .stat-n { font-size: 16px; font-weight: 800; letter-spacing: -.03em; background: linear-gradient(135deg, #6c63ff, #9b59f5); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; display: inline; }
 .lp .stat-l { font-size: 16px; font-weight: 800; letter-spacing: -.03em; color: var(--text); display: inline; }
@@ -577,21 +577,21 @@ export default function CreatorLandingContent({ prefetchedCreators }: Props) {
         </section>
 
         {/* STATS */}
-   <div className="stats">
+   <div className="stats" style={{ fontFamily: "'DM Sans', sans-serif" }}>
 <div className="stat reveal">
-  <div className="stat-l">Keep <span className="stat-n">100%</span> of your earnings</div>
+  <div className="stat-l">Keep <span className="stat-n" style={{ fontSize: "24px" }}>100%</span><br /> of your earnings</div>
 </div>
 
 <div className="stat reveal d1">
-  <div className="stat-l">Instant payouts — <span className="stat-n">zero delay</span></div>
+  <div className="stat-l">Instant payouts — <br /><span className="stat-n">zero delay</span></div>
 </div>
 
 <div className="stat reveal d2">
-  <div className="stat-l">Every meet capped at <span className="stat-n">30 minutes</span></div>
+  <div className="stat-l">Every meet  <br /> at <span className="stat-n" style={{ fontSize: "24px" }}>30 minutes</span></div>
 </div>
 
 <div className="stat reveal d3">
-  <div className="stat-l">All meets held in <span className="stat-n">public spaces</span></div>
+  <div className="stat-l">All meets held in <br /><span className="stat-n">public spaces</span></div>
 </div>
 </div>
 
