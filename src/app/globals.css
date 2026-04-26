@@ -1,7 +1,7 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@700;800&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
 :root {
   --background: #080b14;
   --secondary: #0d1120;
@@ -11,6 +11,12 @@
   :root {
     --background: #080b14;
   }
+}
+
+@media(max-width: 900px) {
+  .lp .stat:nth-child(2) { border-right: none; }
+  .lp .stat:nth-child(3) { border-top: 1px solid var(--border); }
+  .lp .stat:nth-child(4) { border-top: 1px solid var(--border); border-right: none; }
 }
 
 .lp *, .lp *::before, .lp *::after {
