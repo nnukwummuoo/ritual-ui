@@ -588,7 +588,7 @@ export default function CreatorLandingContent({ prefetchedCreators }: Props) {
   </div>
 
 <div className="stat reveal d2" style={{ display:"flex", alignItems:"center", justifyContent:"center" }}>
-  <div className="stat-l">Every meet <br /> capped at <span className="stat-n" style={{ fontSize: "22px" }}>30 minutes</span></div>
+  <div className="stat-l">Every meet capped <br /> at <span className="stat-n" style={{ fontSize: "22px" }}>30 minutes</span></div>
 </div>
 
   <div className="stat reveal d3" style={{ display:"flex", alignItems:"center", justifyContent:"center" }}>
