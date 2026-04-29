@@ -576,23 +576,23 @@ export default function CreatorLandingContent({ prefetchedCreators }: Props) {
           </div>
         </section>
 
-        {/* STATS */}
-   <div className="stats" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-<div className="stat reveal">
-  <div className="stat-l">Keep <span className="stat-n" style={{ fontSize: "24px" }}>100%</span><br /> of your earnings</div>
+{/* STATS */}
+<div className="stats" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+  <div className="stat reveal" style={{ display:"flex", alignItems:"center", justifyContent:"center" }}>
+    <div className="stat-l">Keep <span className="stat-n" style={{ fontSize: "24px" }}>100%</span><br /> of your earnings</div>
+  </div>
+
+  <div className="stat reveal d1" style={{ display:"flex", alignItems:"center", justifyContent:"center" }}>
+    <div className="stat-l">Instant payouts — <br /><span className="stat-n">zero delay</span></div>
+  </div>
+
+<div className="stat reveal d2" style={{ display:"flex", alignItems:"center", justifyContent:"center" }}>
+  <div className="stat-l">Every meet <br /> at <span className="stat-n" style={{ fontSize: "22px" }}>30 minutes</span></div>
 </div>
 
-<div className="stat reveal d1">
-  <div className="stat-l">Instant payouts — <br /><span className="stat-n">zero delay</span></div>
-</div>
-
-<div className="stat reveal d2">
-  <div className="stat-l">Every meet  <br /> at <span className="stat-n" style={{ fontSize: "24px" }}>30 minutes</span></div>
-</div>
-
-<div className="stat reveal d3">
-  <div className="stat-l">All meets held in <br /><span className="stat-n">public spaces</span></div>
-</div>
+  <div className="stat reveal d3" style={{ display:"flex", alignItems:"center", justifyContent:"center" }}>
+    <div className="stat-l">All meets held in <br /><span className="stat-n">public spaces</span></div>
+  </div>
 </div>
 
         {/* OFFERINGS */}

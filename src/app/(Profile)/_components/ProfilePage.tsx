@@ -6245,7 +6245,7 @@ export const Profile = () => {
 
                      <div className="flex items-center gap-2">
 
-{!isFanVerified && (
+{!isFanVerified && !creator_verified && (
     <button
   className="p-2 flex items-center justify-center gap-x-1 bg-gradient-to-r !from-blue-500 !to-purple-600 text-center text-sm rounded-lg mt-4"
   onClick={() => router.push(`/${profileSlugForUrl}/fan-verification`)}

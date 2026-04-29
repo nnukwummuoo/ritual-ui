@@ -139,26 +139,29 @@ const Sidemenu = () => {
       console.error("Error accessing localStorage in Sidemenu:", error);
     }
   }
+const isFanVerified = (profile as any).fan_verified === true;
 
-  const getCreatorButton = () => {
-    if (profile.creator_portfolio_id) {
-      return (
-        <MenuIconImg
-          src="/icons/icons8-creator.png"
-          name="My Portfolio"
-          url={`/creators/${profile.creator_portfolio_id}`}
-        />
-      );
-    }
-    if (profile.creator_verified) {
-      return (
-        <MenuIconImg
-          src="/icons/icons8-plus.png"
-          name="Create Portfolio"
-          url="/creator/create"
-        />
-      );
-    }
+const getCreatorButton = () => {
+  if (profile.creator_portfolio_id) {
+    return (
+      <MenuIconImg
+        src="/icons/icons8-creator.png"
+        name="My Portfolio"
+        url={`/creators/${profile.creator_portfolio_id}`}
+      />
+    );
+  }
+  if (profile.creator_verified) {
+    return (
+      <MenuIconImg
+        src="/icons/icons8-plus.png"
+        name="Create Portfolio"
+        url="/creator/create"
+      />
+    );
+  }
+  // Only show "Become a creator" if NOT fan verified
+  if (!isFanVerified) {
     return (
       <MenuIconImg
         src="/icons/icons-become-a-creator.png"
@@ -166,7 +169,10 @@ const Sidemenu = () => {
         url="/be-a-creator"
       />
     );
-  };
+  }
+  return null;
+};
+
 
   return (
     <div className="fixed z-[110]">

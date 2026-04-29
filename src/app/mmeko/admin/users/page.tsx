@@ -1253,8 +1253,39 @@ useEffect(() => {
 </div>
 
 {/* ── Fan Verified ── */}
-<FanVerificationSection user={user} token={token} onUpdateUser={onUpdateUser} />
-              </div>
+{/* ── Fan Verified ── */}
+<div className="flex items-center gap-2">
+  <label className="text-gray-300 text-sm">Fan Verified:</label>
+  {isEditing ? (
+    <div className="flex items-center gap-2">
+      <input
+  type="checkbox"
+  checked={editedUser.fan_verified || false}
+  onChange={(e) => {
+    const checked = e.target.checked;
+    setEditedUser({ 
+      ...editedUser, 
+      fan_verified: checked, 
+      fan_application_status: checked ? "approved" : "none" 
+    });
+  }}
+  className="w-4 h-4 cursor-pointer"
+/>
+<span className="text-gray-400 text-xs">
+  {editedUser.fan_verified ? "Verified" : "Not Verified"}
+</span>
+    </div>
+  ) : (
+    <span className={`px-2 py-1 rounded text-xs ${user.fan_verified ? "bg-green-500" : "bg-gray-500"}`}>
+      {user.fan_verified ? "Verified" : "Not Verified"}
+    </span>
+  )}
+</div>
+<div>
+  <label className="text-gray-300 text-sm">Fan Application Status</label>
+  <p className="text-white capitalize">{user.fan_application_status || "None"}</p>
+</div>         
+</div>
             </div>
 
             <div className="bg-[#111624] p-4 rounded-lg">
