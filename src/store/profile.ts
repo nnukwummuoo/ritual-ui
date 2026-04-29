@@ -898,6 +898,7 @@ const profile = createSlice({
         state.status = "succeeded";
 
         const p = action.payload?.profile ?? {};
+        (state as any).fan_verified = (p as any).fan_verified ?? false;
         state.userId = p.userId ?? p._id ?? "";
         state.firstname = p.firstname ?? "";
         state.lastname = p.lastname ?? "";

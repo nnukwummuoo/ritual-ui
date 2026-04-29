@@ -7,14 +7,18 @@ const DISMISS_KEY = "sgr_banner_dismissed";
 
 export default function StartGettingRequestsBanner() {
   const username = useSelector((s: RootState) => s.profile.username);
+  const isFanVerified = useSelector((s: RootState) => (s.profile as any).fan_verified === true);
   const [copied, setCopied] = useState(false);
-  const [dismissed, setDismissed] = useState(true); // start hidden to avoid flash
+  const [dismissed, setDismissed] = useState(true);
 
   useEffect(() => {
     setDismissed(localStorage.getItem(DISMISS_KEY) === "1");
   }, []);
 
   if (dismissed) return null;
+  if (isFanVerified) return null;
+
+
 
   const cleanUsername = (username || "you").replace(/^@+/, "");
 const profileUrl = `https://mmeko.com/@${cleanUsername}`;
