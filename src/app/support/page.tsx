@@ -114,7 +114,7 @@ const SupportPage: React.FC = () => {
         {
           question: "Can a fan cancel a request I already accepted?",
           answer: "❌ No. Once a creator accepts a request, it is final. If a fan does not show up, contact Support immediately and we will review and release your payment accordingly. If Support is not contacted within 10 days from the appointment date, the payment will be automatically refunded to the fan.."
-        }
+        },
         {
           question: "Is this safe?",
           answer: "🛡 Yes. All Fan Meet and Fan Date sessions are limited to 30 minutes maximum, must take place in a public location, and transport fare ensures the creator can arrive and return safely."
