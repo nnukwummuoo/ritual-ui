@@ -64,7 +64,7 @@ const PromotionalBanner: React.FC = () => {
         </div>
 
         <button
-          onClick={() => { setApplied(true); router.push("/be-a-creator"); }}
+          onClick={() => { setApplied(true); router.push("/be-a-creator/apply"); }}
           className="flex-shrink-0 text-white font-bold rounded-[10px] transition-all active:scale-95"
           style={{
             padding: "9px 16px", fontSize: 12, letterSpacing: ".01em",

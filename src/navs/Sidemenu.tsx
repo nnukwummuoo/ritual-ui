@@ -166,7 +166,7 @@ const getCreatorButton = () => {
       <MenuIconImg
         src="/icons/icons-become-a-creator.png"
         name="Become a creator"
-        url="/be-a-creator"
+        url="/be-a-creator/apply"
       />
     );
   }

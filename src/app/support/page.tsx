@@ -112,6 +112,10 @@ const SupportPage: React.FC = () => {
           answer: "✅ Yes, if you cancel before the creator accepts your request → full refund.\n⚠ No, you can't cancel after the creator accepts your request → transport fare is non-refundable."
         },
         {
+          question: "Can a fan cancel a request I already accepted?",
+          answer: "❌ No. Once a creator accepts a request, it is final. If a fan does not show up, contact Support immediately and we will review and release your payment accordingly. If Support is not contacted within 10 days from the appointment date, the payment will be automatically refunded to the fan.."
+        }
+        {
           question: "Is this safe?",
           answer: "🛡 Yes. All Fan Meet and Fan Date sessions are limited to 30 minutes maximum, must take place in a public location, and transport fare ensures the creator can arrive and return safely."
         }
@@ -122,20 +126,17 @@ const SupportPage: React.FC = () => {
       questions: [
         {
           question: "What happens if the meet or date doesn't happen within 14 days?",
-          answer: "🕒 If 14 days pass and the fan didn't marks it as complete, the system automatically refunds the fan's transport fare (unless a creator complaint was filed)."
+          answer: "🕒 If 14 days pass and the fan didn't marks it as complete, the system automatically refunds the fan's transport fare (unless a creator complaint was filed within 10 days)."
         },
         {
           question: "What if the creator didn't show up?",
-          answer: "🚫 The fan will automatically receive a refund after 14 days if the meet/date was not completed and no creator complaint was made."
+          answer: "🚫 If a creator does not attend the scheduled appointment, the fan will automatically receive a full refund. Refunds are released to the fan automatically on the 14th day from the appointment date."
         },
         {
           question: "What if the fan didn't show up?",
-          answer: "❌ Don't worry — just contact mmeko Support directly through the platform. Our team reviews the situation using your on-platform chat history and releases your payment accordingly. We always have your back."
+          answer: "❌ Don't worry — just contact mmeko Support directly through the platform. Our team reviews the situation using your on-platform chat history and releases your payment accordingly. If Support is not contacted within 10 days from the appointment date, the payment will be automatically refunded to the fan."
         },
-        {
-          question: "Why 14 days?",
-          answer: "📅 14 days gives both sides enough time to reschedule once while keeping requests active and organized."
-        }
+    
       ]
     },
     {
