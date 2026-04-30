@@ -20,6 +20,7 @@ interface ViewingProfileState {
   creatorphotolink: string;
   hosttype: string;
   creator_verified: boolean;
+  fan_verified: boolean;
   createdAt: string;
   balance: string;
   admin: boolean;
@@ -63,6 +64,7 @@ const initialState: ViewingProfileState = {
   creatorphotolink: "",
   hosttype: "Fan meet",
   creator_verified: false,
+  fan_verified: false,
   createdAt: "",
   balance: "",
   admin: false,
@@ -186,6 +188,7 @@ const viewingProfileSlice = createSlice({
         state.bio = (p as any).bio ?? "";
         state.admin = p.admin ?? false;
         state.creator_verified = (p as any).exclusive ?? (p as any).creator_verified ?? false;
+        state.fan_verified = (p as any).fan_verified ?? false;
         state.createdAt = (p as any).createdAt ?? "";
       })
       .addCase(getViewingProfile.rejected, (state, action) => {

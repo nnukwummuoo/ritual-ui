@@ -2,12 +2,15 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/context/auth-context";
+import { useSelector } from "react-redux";
+import type { RootState } from "@/store/store";
 
 const DISMISS_KEY = "promotionalBannerDismissed";
 
 const PromotionalBanner: React.FC = () => {
   const router = useRouter();
   const { session } = useAuth();
+  const isFanVerified = useSelector((s: RootState) => (s.profile as any).fan_verified === true);
   const [visible, setVisible] = useState(false);
   const [applied, setApplied] = useState(false);
 
@@ -17,6 +20,7 @@ const PromotionalBanner: React.FC = () => {
   }, []);
 
   if (session?.creator_verified) return null;
+  if (isFanVerified) return null;
   if (!visible) return null;
 
   const handleDismiss = () => {

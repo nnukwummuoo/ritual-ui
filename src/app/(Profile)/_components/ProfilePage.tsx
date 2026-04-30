@@ -452,8 +452,6 @@ export const Profile = () => {
 
   const [isCheckingPurchase, setIsCheckingPurchase] = useState(false);
 
-  const [isFanVerified, setIsFanVerified] = useState<boolean>(false);
-
 
   // Slug from URL (username or user id for backward compatibility); usernames may include @ (e.g. @folashade)
   // Decode so %40 becomes @ (Next.js passes path segments encoded)
@@ -472,8 +470,9 @@ export const Profile = () => {
   const profileSlugForUrl = (isViewingOwnProfile ? currentUserProfile.username : viewingProfile?.username) || viewingUserId || slug;
 
   const profileData = isViewingOwnProfile ? currentUserProfile : viewingProfile;
-
-
+const isFanVerified = isViewingOwnProfile
+  ? !!(currentUserProfile as any)?.fan_verified
+  : !!(viewingProfile as any)?.fan_verified;
 
   const {
 
@@ -1911,19 +1910,19 @@ export const Profile = () => {
 
 
 
-  useEffect(() => {
-  if (loggedInUserId && token) {
-    axios.post(`${API_URL}/getprofilebyID`, 
-      { userid: loggedInUserId },
-      { headers: { Authorization: `Bearer ${token}` } }
-    ).then((res) => {
-      if (res.data?.ok) {
-        const user = res.data?.user || res.data?.profile || {};
-        setIsFanVerified(user.fan_verified === true);
-      }
-    }).catch(() => {});
-  }
-}, [loggedInUserId, token]);
+//   useEffect(() => {
+//   if (loggedInUserId && token) {
+//     axios.post(`${API_URL}/getprofilebyID`, 
+//       { userid: loggedInUserId },
+//       { headers: { Authorization: `Bearer ${token}` } }
+//     ).then((res) => {
+//       if (res.data?.ok) {
+//         const user = res.data?.user || res.data?.profile || {};
+//         setIsFanVerified(user.fan_verified === true);
+//       }
+//     }).catch(() => {});
+//   }
+// }, [loggedInUserId, token]);
 
   // Separate effect for creator ratings to avoid infinite loops
 
