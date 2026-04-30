@@ -7,7 +7,7 @@ const changelog = [
     date: "July 2025",
     intro: "Welcome to Mmeko, where real fans connect with real creators safely, privately, and globally. We're always improving to make your experience smoother, smarter, and more rewarding. Here's what's new and working right now:",
     updates: [
-      { type: "current", text: "🔮 Rituals - Your daily 15-panel story. Share how a fan meet went, post reaction photos, go behind the scenes — in your own words, with your own photos. Lives for 24 hours. Archives to your profile forever." },
+      { type: "current", text: "🔮 Rituals - Your daily 15-panel story. Share how a fan meet went, post reaction photos, go behind the scenes — in your own words, with your own photos. Lives for 30 days. Archives to your profile forever." },
       { type: "current", text: "Fan Call - Connect 1-on-1 via secure video call. Creators earn per minute, fans get real-time connection." },
       { type: "current", text: "Fan Meet - A short, casual meeting where you can greet your favorite creator, chat, and even take a selfie. It's about making a quick personal connection - limited to 30 minutes maximum for safety and fairness." },
       { type: "current", text: "Fan Date -  Fan Date – A slightly more relaxed session where you spend time together in a safe public place — like grabbing coffee, eating, or walking — but still limited to 30 minutes maximum for safety and fairness." },

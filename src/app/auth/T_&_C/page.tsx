@@ -1,22 +1,13 @@
-"use client"
 import Head from "@/components/Head";
-import { useRouter } from "next/navigation";
-import { FaAngleLeft } from "react-icons/fa";
+
 
 const TermsAndConditions = () => {
-const router = useRouter();
+
   return (
     <div className="w-screen mx-auto sm:w-11/12 md:w-10/12 lg:w-9/12 xl:w-8/12">
      
     <div className="flex flex-col w-full px-4 text-gray-400 md:px-0">
-     <FaAngleLeft
-           color="white"
-           size={30}
-           className="cursor-pointer hover:opacity-70 transition-opacity mb-4"
-           onClick={() => router.back()}
-         />
-        <p className="mb-6 text-gray-500">Terms And Condition
-</p>
+        <Head heading="✅ Terms and Conditions" />
         <p className="mb-6 text-gray-500">Effective Date: 23th October 2025
 </p>
         
@@ -109,10 +100,10 @@ const router = useRouter();
 
           
            <p className="mb-6">
-         If a fan fails to appear at the agreed meeting time and location,
-          and the creator has already arrived or waited at the designated spot,
-           the fan forfeits any refund entitlement. The transport fare will automatically
-            be credited to the creator as compensation for time and travel.
+        If a fan does not attend the scheduled appointment, the creator must contact Support immediately. 
+        Support will review the case and release the creator’s payment accordingly as compensation for time and travel. Creators must contact Support within 10 days from the appointment date. 
+        If Support is not contacted within this window, the payment will be automatically refunded to the fan.  
+
 
           </p>
 
@@ -124,10 +115,8 @@ const router = useRouter();
 
           
            <p className="mb-6">
-         If a creator fails to appear for a scheduled Fan Meet or Fan Date, 
-         or cancels without valid notice, the fan will receive a full refund of
-          the transport fare. Repeated no-shows or misuse by creators may result
-           in temporary suspension or permanent removal from the Fan Meet/Fan Date program.
+        If a creator does not attend the scheduled appointment, the fan will automatically receive a full refund. 
+        Refunds are released to the fan automatically on the 14th day from the appointment date, without requiring any action.
 
           </p>
 
@@ -140,7 +129,7 @@ const router = useRouter();
           
            <p className="mb-6">
          If the fan didn't mark the meet or date as “Completed” within 14 days after the scheduled event,
-        and no complaint or dispute has been filed by the creator, the fan will automatically receive a full refund of the transport fare.
+        and no complaint or dispute has been filed by the creator within 10 days from the appointment date, the fan will automatically receive a full refund of the transport fare.
          This ensures fairness and protects both parties in cases where no meeting occurred.
 
 
@@ -148,22 +137,9 @@ const router = useRouter();
           </p>
 
           
-           <p className="mb-6">
-         4. Dispute Handling
-
-          </p>
-
           
            <p className="mb-6">
-        If either the fan or creator submits a dispute within 5 days of the scheduled time,
-         the refund process will be temporarily paused until the platform verifies attendance 
-         records and resolves the matter.
-
-          </p>
-
-          
-           <p className="mb-6">
-         5. Proof of Attendance
+         4. Proof of Attendance
 
           </p>
 
@@ -184,7 +160,7 @@ const router = useRouter();
 
               <p className="mb-6">
          If a meeting does not happen and the fan didn't mark it as complete within 14 days, the system
-          will automatically refund the fan in full — provided no complaint was filed by the creator.
+          will automatically refund the fan in full — provided no complaint was filed by the creator within 10 days from the appointment date.
 
           </p>
 

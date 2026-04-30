@@ -382,11 +382,11 @@ zIndex: 50,
             A <strong style={{ color: '#f1f5f9' }}>Ritual</strong> is your daily story — told in{' '}
             <strong style={{ color: '#f1f5f9' }}>15 panels</strong> with subtitles.
              Share the before, during and after of a fan meet or date, post reaction photos, go behind the scenes — anything
-            real, anything yours. Rituals live for <strong style={{ color: '#f1f5f9' }}>24 hours</strong>, and are archived to your profile forever, keeping your fans coming back every day.
+            real, anything yours. Rituals live for <strong style={{ color: '#f1f5f9' }}>30 days</strong>, and are archived to your profile forever, keeping your fans coming back every day.
           </p>
 
           <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-            {[['🖼', 'Exactly 15 panels'], ['📝', 'Each panel has a subtitle'], ['⏰', 'Lives for 24 hours'], ['🎵', 'Add a song']].map(([icon, label]) => (
+            {[['🖼', 'Exactly 15 panels'], ['📝', 'Each panel has a subtitle'], ['⏰', 'Lives for 30 days'], ['🎵', 'Add a song']].map(([icon, label]) => (
               <div key={label} style={{
                 display: 'flex', alignItems: 'center', gap: 8,
                 background: '#0e1220', border: '1px solid rgba(255,255,255,.07)',
@@ -986,9 +986,9 @@ zIndex: 50,
             </div>
             <div style={{ fontSize: 12, color: '#475569' }}>
               {published
-                ? 'Your Ritual is now live for 24 hours'
+                ? 'Your Ritual is now live for 30 days'
                 : canPublish
-                  ? `Your Ritual will go live for 24 hours${songLabel ? ` · 🎵 ${songLabel.length > 18 ? songLabel.slice(0, 18) + '…' : songLabel}` : ' · No song'}`
+                  ? `Your Ritual will go live for 30 days${songLabel ? ` · 🎵 ${songLabel.length > 18 ? songLabel.slice(0, 18) + '…' : songLabel}` : ' · No song'}`
                   : `${filledCount}/15 panels · ${panels.filter(p=>p.subtitle.trim()).length}/15 subtitles${title.trim() ? ' · Title ✓' : ' · No title yet'}`}
             </div>
           </div>
