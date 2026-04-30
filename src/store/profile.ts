@@ -87,6 +87,7 @@ const initialState = {
   deposit_stats: "idle",
   deposit_message: "",
   creator_verified: false,
+  fan_verified: false,
   follow_stats: "idle",
   unfollow_stats: "idle",
   getfollow_data: {} as FollowData,
@@ -665,7 +666,7 @@ export const post_fan_verification = createAsyncThunk<
       formData.append("idPhotofile", data.idPhotofile);
       formData.append("holdingIdPhotofile", data.holdingIdPhotofile);
  
-      const response = await axios.put(`${URL}/postfandocument`, formData, {
+      const response = await axios.put(`${URL}/postdocument/fan`, formData, { // 👈 only change this line
         headers: {
           "Content-Type": "multipart/form-data",
           ...(data.token ? { Authorization: `Bearer ${data.token}` } : {}),
@@ -898,8 +899,7 @@ const profile = createSlice({
         state.status = "succeeded";
 
         const p = action.payload?.profile ?? {};
-        (state as any).fan_verified = (p as any).fan_verified ?? false;
-        state.userId = p.userId ?? p._id ?? "";
+state.fan_verified = (p as any).fan_verified ?? false;        state.userId = p.userId ?? p._id ?? "";
         state.firstname = p.firstname ?? "";
         state.lastname = p.lastname ?? "";
         state.username = p.username ?? "";

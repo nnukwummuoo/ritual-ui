@@ -218,7 +218,35 @@ const AdminPage = () => {
 },
 {
   name: "Fan Verification",
-  icon: <IoShieldCheckmarkOutline size={22} />,
+  icon: (
+    <svg
+      viewBox="0 0 24 24"
+      width="22"
+      height="22"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <defs>
+        <linearGradient id="fanNavGrad" x1="4" y1="2" x2="20" y2="21" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="#7C3AED" />
+          <stop offset="100%" stopColor="#4F46E5" />
+        </linearGradient>
+      </defs>
+      <path
+        d="M12 1L3 5V11C3 15.836 6.978 20.489 12 22C17.022 20.489 21 15.836 21 11V5L12 1Z"
+        fill="white"
+        opacity="0.3"
+      />
+      <path
+        d="M12 2.8L4.5 6V11C4.5 15.2 7.9 19.4 12 20.6C16.1 19.4 19.5 15.2 19.5 11V6L12 2.8Z"
+        fill="url(#fanNavGrad)"
+      />
+      <path
+        d="M12 7l1.2 2.4 2.6.4-1.9 1.85.45 2.6L12 13.1l-2.35 1.15.45-2.6L8.2 9.8l2.6-.4L12 7z"
+        fill="white"
+      />
+    </svg>
+  ),
   component: <AdminFanVerificationPage />,
 },
     {
