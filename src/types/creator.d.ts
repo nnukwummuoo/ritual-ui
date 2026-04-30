@@ -37,6 +37,8 @@ export interface CreatorState {
     getdocumentstatus: string;
     documents: any[],
     rejectdocumentstatus: string
+    fanDocuments: any[];         
+    getFanDocumentsstatus: string;
 }  
 
 interface CreateCreatorPayload {

@@ -48,6 +48,8 @@ const initialState: CreatorState = {
   exclusive_holdphoto: "",
   exclusive_ids_stats: "idle",
   exclusive_docs_stats: "idle",
+  fanDocuments: [] as any[],
+getFanDocumentsstatus: "idle",
   delete_docs_stats: "idle",
   getdocumentstatus: "idle", // New: for getdocument thunk
   documents: [] as any[], // New: to store fetched documents
@@ -594,6 +596,19 @@ export const getdocument = createAsyncThunk("creator/getdocument", async () => {
   }
 });
 
+// Add this new thunk
+export const getFanDocuments = createAsyncThunk("creator/getFanDocuments", async () => {
+  try {
+    const response = await axios.get(`${URL}/getdocument/fan`);  // 👈 fix this
+    return response.data;
+  } catch (err: any) {
+    if (!err.response?.data?.message) {
+      throw "Check internet connection";
+    }
+    throw err.response.data.message;
+  }
+});
+
 // New thunk: rejectdocument (POST /rejectdocument, body: { userid, docid })
 export const rejectdocument = createAsyncThunk<any, { userid: string; docid: string }>(
   "creator/rejectdocument",
@@ -728,6 +743,7 @@ const creator = createSlice({
           state.message = action.error.message ?? state.message;
         }
       })
+      
       .addCase(deletecreator.pending, (state, action) => {
         state.creatordeletestatus = "loading";
       })
@@ -786,6 +802,17 @@ const creator = createSlice({
           state.message = action.error.message ?? state.message;
         }
       })
+      .addCase(getFanDocuments.pending, (state) => {
+  state.getFanDocumentsstatus = "loading";
+})
+.addCase(getFanDocuments.fulfilled, (state, action) => {
+  state.getFanDocumentsstatus = "succeeded";
+  state.fanDocuments = action.payload.documents || [];  // 👈 fanDocuments, not documents
+})
+.addCase(getFanDocuments.rejected, (state, action) => {
+  state.getFanDocumentsstatus = "failed";
+  state.message = action.error.message ?? "Check internet connection";
+})
       .addCase(rejectcreator.pending, (state, action) => {
         state.rejectcreatorstatus = "loading";
       })
@@ -977,15 +1004,14 @@ const creator = createSlice({
       .addCase(rejectdocument.pending, (state) => {
         state.rejectdocumentstatus = "loading";
       })
-      .addCase(verifyfan.pending, (state) => {
+.addCase(verifyfan.pending, (state) => {
   state.getdocumentstatus = "loading";
 })
 .addCase(verifyfan.fulfilled, (state, action) => {
   state.getdocumentstatus = "succeeded";
   state.message = action.payload?.message ?? state.message;
-  // Mark the doc as approved in local documents list
   const docId = action.meta.arg.docid;
-  state.documents = state.documents.map((d) =>
+  state.fanDocuments = state.fanDocuments.map((d) =>
     d._id === docId ? { ...d, verify: true, status: "approved" } : d
   );
 })
@@ -999,9 +1025,8 @@ const creator = createSlice({
 .addCase(rejectfan.fulfilled, (state, action) => {
   state.rejectdocumentstatus = "succeeded";
   state.message = action.payload?.message ?? state.message;
-  // Remove the rejected doc from local documents list
   const docId = action.meta.arg.docid;
-  state.documents = state.documents.filter((d) => d._id !== docId);
+  state.fanDocuments = state.fanDocuments.filter((d) => d._id !== docId);
 })
 .addCase(rejectfan.rejected, (state, action) => {
   state.rejectdocumentstatus = "failed";
