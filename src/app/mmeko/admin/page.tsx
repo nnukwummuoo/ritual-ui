@@ -24,7 +24,7 @@ import {
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "@/store/store";
 import { adminnotify } from "@/store/admin";
-import { getdocument } from "@/store/creatorSlice";
+import { getdocument, getFanDocuments } from "@/store/creatorSlice";
 import axios from "axios";
 import { URL } from "@/api/config";
 import { useAuthToken } from "@/lib/hooks/useAuthToken";
@@ -68,6 +68,10 @@ const AdminPage = () => {
     (state: RootState) =>
       state.creator.documents.filter((doc: { verify?: string }) => !doc.verify || doc.verify === "pending").length
   );
+  const fanDocCount = useSelector(
+  (state: RootState) =>
+    state.creator.fanDocuments.filter((doc: { verify?: boolean }) => !doc.verify).length
+);
 
   // State for pending withdrawal requests count
   const [pendingWithdrawalsCount, setPendingWithdrawalsCount] = useState(0);
@@ -96,9 +100,10 @@ const AdminPage = () => {
   }, [dispatch, token, userID]);
 
   // Fetch documents on mount to get the count
-  useEffect(() => {
-    dispatch(getdocument());
-  }, [dispatch]);
+useEffect(() => {
+  dispatch(getdocument());
+  dispatch(getFanDocuments()); // 👈 add this
+}, [dispatch]);
 
   // Fetch pending withdrawals count on mount and periodically
   useEffect(() => {
@@ -358,9 +363,9 @@ const AdminPage = () => {
                     {docCount}
                   </span>
                 )}
-                {item.name === "Fan Verification" && docCount > 0 && (
+{item.name === "Fan Verification" && fanDocCount > 0 && (
   <span className="ml-2 bg-red-500 text-white px-1.5 py-1 rounded-full text-xs">
-    {docCount}
+    {fanDocCount}
   </span>
 )}
                 {item.name === "Support Chat" && supportChatCount > 0 && (

@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/store/store";
-import { getdocument, verifyfan, rejectfan } from "@/store/creatorSlice";
+import { getFanDocuments, verifyfan, rejectfan } from "@/store/creatorSlice";
 import { useAuth } from "@/lib/context/auth-context";
 import { useAuthToken } from "@/lib/hooks/useAuthToken";
 import { toast, ToastContainer } from "react-toastify";
@@ -246,37 +246,30 @@ export default function AdminFanVerificationPage() {
   const [actioning, setActioning] = useState(false);
 
   /* ─── fetch all docs on mount ─── */
-  useEffect(() => {
-    dispatch(getdocument())
-      .unwrap()
-      .then((res: any) => {
-        const raw: any[] = res.documents || res || [];
- console.log("FIRST DOC RAW:", JSON.stringify(raw[0], null, 2));
-  console.log("ALL DOCS:", JSON.stringify(raw, null, 2));
-        // ✅ FIX: map backend shape → internal FanDoc shape
-        // backend verify: true = approved, false/undefined = pending
-        // declined docs are DELETED on backend so they never appear here
-        const mapped: FanDoc[] = raw.map((d: any) => ({
-          _id:                d._id,
-          userid:             d.userid,
-          firstname:          d.firstname,
-          lastname:           d.lastname,
-          username:           d.username,
-          photolink:          d.photolink,
-          idPhotofile:        d.idPhotofile,        // ✅ keep nested object as-is
-          holdingIdPhotofile: d.holdingIdPhotofile, // ✅ keep nested object as-is
-          createdAt:          d.createdAt,
-          documentType:       d.documentType,
-          verify:             d.verify,
-          // ✅ FIX: derive status from boolean verify field
-          status: d.verify === true ? "approved" : "pending",
-        }));
-
-        setDocs(mapped);
-      })
-      .catch((err: any) => toast.error(err?.message || "Failed to load documents"))
-      .finally(() => setLoadingDocs(false));
-  }, [dispatch]);
+useEffect(() => {
+  dispatch(getFanDocuments())
+    .unwrap()
+    .then((res: any) => {
+      const raw: any[] = res.documents || [];
+      const mapped: FanDoc[] = raw.map((d: any) => ({
+        _id:                d._id,
+        userid:             d.userid,
+        firstname:          d.firstname,
+        lastname:           d.lastname,
+        username:           d.username,
+        photolink:          d.photolink,
+        idPhotofile:        d.idPhotofile,
+        holdingIdPhotoFile: d.holdingIdPhotofile,
+        createdAt:          d.createdAt,
+        documentType:       d.documentType,
+        verify:             d.verify,
+        status: d.verify === true ? "approved" : "pending",
+      }));
+      setDocs(mapped);
+    })
+    .catch((err: any) => toast.error(err?.message || "Failed to load documents"))
+    .finally(() => setLoadingDocs(false));
+}, [dispatch]);
 
   const pendingCount = docs.filter(d => d.status === "pending").length;
   const filtered     = filter === "all" ? docs : docs.filter(d => d.status === filter);

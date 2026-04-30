@@ -4,7 +4,7 @@ import React, { useRef, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/store/store";
-import { post_fan_verification, checkApplicationStatus } from "@/store/profile";
+import { post_fan_verification, checkFanApplicationStatus } from "@/store/profile";
 import { useAuth } from "@/lib/context/auth-context";
 import { useAuthToken } from "@/lib/hooks/useAuthToken";
 import { toast, ToastContainer } from "react-toastify";
@@ -69,16 +69,13 @@ export default function FanVerificationPage() {
   /* check if already pending */
 useEffect(() => {
   if (!userId || !token) return;
-  dispatch(checkApplicationStatus({ userid: userId, token }))
+  dispatch(checkFanApplicationStatus({ userid: userId, token }))
     .unwrap()
     .then(r => {
-      console.log("🔍 checkApplicationStatus response:", r);  // ADD THIS
       if (r.status === "approved") setAppStatus("approved");
       else if (r.status === "pending") setAppStatus("pending");
     })
-    .catch((err) => {
-      console.log("❌ checkApplicationStatus error:", err);  // ADD THIS
-    });
+    .catch(() => {});
 }, [userId, token, dispatch]);
 
   const handleSubmit = async () => {

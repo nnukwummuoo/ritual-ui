@@ -633,6 +633,7 @@ export const delete_exclusive_thumb = createAsyncThunk<
 
 
 
+// Keep existing one for CREATOR page
 export const checkApplicationStatus = createAsyncThunk<
   { status: "pending" | "rejected" | "none" | "approved" },
   { userid: string; token: string },
@@ -641,7 +642,29 @@ export const checkApplicationStatus = createAsyncThunk<
   "profile/checkApplicationStatus",
   async (data, thunkAPI) => {
     try {
-      const response = await axios.get(`${URL}/checkdocumentstatus/${data.userid}`, {  // Changed to path param
+      const response = await axios.get(`${URL}/checkdocumentstatus/${data.userid}?type=creator`, {
+        headers: data.token
+          ? { Authorization: `Bearer ${data.token}`, "Content-Type": "application/json" }
+          : { "Content-Type": "application/json" },
+      });
+      return response.data;
+    } catch (err) {
+      const message = getErrorMessageWithNetworkFallback(err);
+      return thunkAPI.rejectWithValue({ message });
+    }
+  }
+);
+
+// NEW one for FAN page
+export const checkFanApplicationStatus = createAsyncThunk<
+  { status: "pending" | "rejected" | "none" | "approved" },
+  { userid: string; token: string },
+  { rejectValue: { message: string } }
+>(
+  "profile/checkFanApplicationStatus",
+  async (data, thunkAPI) => {
+    try {
+      const response = await axios.get(`${URL}/checkdocumentstatus/${data.userid}?type=fan`, {
         headers: data.token
           ? { Authorization: `Bearer ${data.token}`, "Content-Type": "application/json" }
           : { "Content-Type": "application/json" },
@@ -1301,10 +1324,22 @@ state.fan_verified = (p as any).fan_verified ?? false;        state.userId = p.u
         state.searchstats = "succeeded";
         state.search_users = action.payload.users;
       })
+      .addCase(checkFanApplicationStatus.pending, (state) => {
+  state.status = "loading";
+})
+.addCase(checkFanApplicationStatus.fulfilled, (state, action) => {
+  state.status = "succeeded";
+  state.checkApplicationStatus = action.payload.status;
+})
+.addCase(checkFanApplicationStatus.rejected, (state, action) => {
+  state.status = "failed";
+  state.error = (action.payload as any)?.message ?? "Failed to check fan application status";
+})
       .addCase(getsearch.rejected, (state, action) => {
         state.searchstats = "failed";
         state.testmsg = action.error?.message ?? "Check internet connection";
       });
+      
   },
 });
 
