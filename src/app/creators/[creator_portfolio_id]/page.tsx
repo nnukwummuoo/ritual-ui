@@ -1455,7 +1455,7 @@ export default function Creatorbyid() {
                 <div className="space-y-4">
                   <div className="flex justify-between items-center p-3 bg-gray-700 rounded-lg">
                     <span className="text-gray-300 font-medium">
-                      {creator.hosttype === "Fan call" || creator.hosttype === "Fan Call" ? "📞 Call Rate" : "🚗 Transport Fare"}
+                      {creator.hosttype === "Fan call" || creator.hosttype === "Fan Call" ? "📞 Call Rate" : "🚗 Rate"}
                     </span>
                     <span className="text-yellow-400 font-bold">
                       {creator.hosttype === "Fan call" || creator.hosttype === "Fan Call"

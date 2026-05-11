@@ -110,7 +110,7 @@ const TermCondition = () => {
            <p className="mb-6">
          If a fan fails to appear at the agreed meeting time and location,
           and the creator has already arrived or waited at the designated spot,
-           the fan forfeits any refund entitlement. The transport fare will automatically
+           the fan forfeits any refund entitlement. The payment will automatically
             be credited to the creator as compensation for time and travel.
 
           </p>
@@ -125,7 +125,7 @@ const TermCondition = () => {
            <p className="mb-6">
          If a creator fails to appear for a scheduled Fan Meet or Fan Date, 
          or cancels without valid notice, the fan will receive a full refund of
-          the transport fare. Repeated no-shows or misuse by creators may result
+          the payment. Repeated no-shows or misuse by creators may result
            in temporary suspension or permanent removal from the Fan Meet/Fan Date program.
 
           </p>
@@ -139,7 +139,7 @@ const TermCondition = () => {
           
            <p className="mb-6">
          If the fan didn't mark the meet or date as “Completed” within 14 days after the scheduled event,
-        and no complaint or dispute has been filed by the creator, the fan will automatically receive a full refund of the transport fare.
+        and no complaint or dispute has been filed by the creator, the fan will automatically receive a full refund of the payment.
          This ensures fairness and protects both parties in cases where no meeting occurred.
 
 
@@ -190,7 +190,7 @@ const TermCondition = () => {
 
             <p className="mb-6">
          After the 14 days, if there’s no confirmation or complaint, 
-         the request will expire automatically and the pending transport fare is released back to the fan.
+         the request will expire automatically and the pending payment is released back to the fan.
 
 
           </p>
@@ -282,7 +282,7 @@ const TermCondition = () => {
           </p>
 
            <p className="mb-6">
-         Fans must pay transport fare upfront.
+         Fans must pay upfront.
           </p>
 
            <p className="mb-6">

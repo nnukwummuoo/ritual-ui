@@ -65,7 +65,7 @@ const Community = () => {
             <section className="mb-6">
                 <h2 className="text-xl font-semibold text-gray-300">🛡️ 4. No Prostitution or Escorting</h2>
                 <ul className="mt-2 text-gray-400 list-disc list-inside">
-                <li>Offering or requesting sexual services in exchange for money, gifts, or “transport fare” is strictly forbidden.</li>
+                <li>Offering or requesting sexual services in exchange for money, or gifts,” is strictly forbidden.</li>
                 <li>"Fan Dates" and "Fan Meets" must remain non-sexual in both agreement and intent.</li>
                 <li>Using euphemisms (e.g., “spoiling,” “hookup,” “overnight fun”) to imply paid sex is a violation.</li>
                 </ul>

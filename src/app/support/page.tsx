@@ -93,23 +93,23 @@ const SupportPage: React.FC = () => {
       ]
     },
     {
-      section: "🚌 Transport Fare",
+      section: "🚌 Rate",
       questions: [
         {
-          question: "Why do I have to pay for transport fare?",
+          question: "Why do I have to pay?",
           answer: "💡 Creators give their time to meet fans. To keep it fair and safe, fans cover their travel costs so creators don't lose money when showing up."
         },
         {
-          question: "How is the transport fare decided?",
-          answer: "🚌 It's calculated based on distance, transportation rates, and local conditions. Creators may include any reasonable expenses in their transport fare price. The exact fare is displayed before you confirm the request."
+          question: "How is the meet-up rate decided?",
+          answer: "🚌 Meet-up prices are set by each creator individually. Creators have full control over their rates, and fans simply send a paid request based on the price listed. There are no negotiations through the platform — the price shown is the price for the booking."
         },
         {
           question: "Do I still pay if the creator cancels?",
-          answer: "❌ No. If the creator cancels, you'll get your transport fare refunded."
+          answer: "❌ No. If the creator cancels, you'll get your payment refunded."
         },
         {
           question: "Do I get a refund if I cancel?",
-          answer: "✅ Yes, if you cancel before the creator accepts your request → full refund.\n⚠ No, you can't cancel after the creator accepts your request → transport fare is non-refundable."
+          answer: "✅ Yes, if you cancel before the creator accepts your request → full refund.\n⚠ No, you can't cancel after the creator accepts your request → payment is non-refundable."
         },
         {
           question: "Can a fan cancel a request I already accepted?",
@@ -117,7 +117,7 @@ const SupportPage: React.FC = () => {
         },
         {
           question: "Is this safe?",
-          answer: "🛡 Yes. All Fan Meet and Fan Date sessions are limited to 30 minutes maximum, must take place in a public location, and transport fare ensures the creator can arrive and return safely."
+          answer: "🛡 Yes. All Fan Meet and Fan Date sessions are limited to 30 minutes maximum, and must take place in a public location."
         }
       ]
     },
@@ -126,7 +126,7 @@ const SupportPage: React.FC = () => {
       questions: [
         {
           question: "What happens if the meet or date doesn't happen within 14 days?",
-          answer: "🕒 If 14 days pass and the fan didn't marks it as complete, the system automatically refunds the fan's transport fare (unless a creator complaint was filed within 10 days)."
+          answer: "🕒 If 14 days pass and the fan didn't marks it as complete, the system automatically refunds the fan's payment (unless a creator complaint was filed within 10 days)."
         },
         {
           question: "What if the creator didn't show up?",
@@ -170,11 +170,11 @@ const SupportPage: React.FC = () => {
       questions: [
         {
           question: "What if a fan doesn't show up for a Fan Meet or Fan Date?",
-          answer: "🚫 If a fan fails to show up at the agreed time and location, the transport fare is automatically sent to the creator to cover her time and travel.\nNo refund will be issued to the fan once the creator has already arrived or waited at the meeting spot."
+          answer: "🚫 If a fan fails to show up at the agreed time and location, the payment is automatically released to the creator to cover her time and travel.\nNo refund will be issued to the fan once the creator has already arrived or waited at the meeting spot."
         },
         {
           question: "What if a creator doesn't show up for a Fan Meet or Fan Date?",
-          answer: "⚠ If a creator fails to appear or cancels last-minute, the fan will receive a full refund of the transport fare.\nRepeated no-shows by creators may result in account suspension or removal from the Fan Meet/Fan Date program."
+          answer: "⚠ If a creator fails to appear or cancels last-minute, the fan will receive a full refund of the payment.\nRepeated no-shows by creators may result in account suspension or removal from the Fan Meet/Fan Date program."
         },
         {
           question: "How do both sides stay protected?",
@@ -244,7 +244,7 @@ const SupportPage: React.FC = () => {
           questions: [
             {
               question: "How do Fan Meet / Fan Date payments work?",
-              answer: "Fans pay transport fare upfront. The money is held in a pending account until the fan taps \"Mark as Complete.\" Once confirmed, the payment is instantly released to the Creator."
+              answer: "Fans pay upfront. The money is held in a pending account until the fan taps \"Mark as Complete.\" Once confirmed, the payment is instantly released to the Creator."
             },
             {
               question: "How does Fan Call payment work?",

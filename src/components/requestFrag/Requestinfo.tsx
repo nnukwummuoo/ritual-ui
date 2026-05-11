@@ -23,7 +23,7 @@ export const Requestinfo: React.FC<requestInfoProps> = ({
 
     if (normalizedType) {
       if (normalizedType === "fan meet" || normalizedType === "fan date") {
-        return "will be deducted from your balance, to be allocated to a pending status for creator's transport fare. These funds will be disbursed to the creator upon your confirmation of task completion";
+        return "will be deducted from your balance and held until the booking is completed. Once you confirm completion, the payment is released to the creator.";
       }
       if (normalizedType === "private show") {
         return "will be deducted from your balance per minute  Fan call";

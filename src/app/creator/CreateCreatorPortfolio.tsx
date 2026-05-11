@@ -664,8 +664,8 @@ export default function CreateCreatorPortfolio() {
               <div className="flex items-center gap-2">
                 <label className="text-slate-300">
                   {hosttype === "Fan call"
-                    ? "Set how much fans pay per minute for your Fan call"
-                    : "Enter transport fare fans will pay you"
+                    ? "Enter your call rate per minute"
+                    : "Enter rate for the Meet in GOLD"
                   }
                 </label>
                 <button

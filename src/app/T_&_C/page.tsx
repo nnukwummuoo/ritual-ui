@@ -70,7 +70,7 @@ const TermsAndConditions = () => {
         </p>
 
         <p className="mb-6">
-         Creator sets availability; fans cover transport.
+         Creator sets availability; fans cover rate.
           </p>
 
 
@@ -129,7 +129,7 @@ const TermsAndConditions = () => {
           
            <p className="mb-6">
          If the fan didn't mark the meet or date as “Completed” within 14 days after the scheduled event,
-        and no complaint or dispute has been filed by the creator within 10 days from the appointment date, the fan will automatically receive a full refund of the transport fare.
+        and no complaint or dispute has been filed by the creator within 10 days from the appointment date, the fan will automatically receive a full refund of the payment.
          This ensures fairness and protects both parties in cases where no meeting occurred.
 
 
@@ -167,7 +167,7 @@ const TermsAndConditions = () => {
 
             <p className="mb-6">
          After the 14 days, if there’s no confirmation or complaint, 
-         the request will expire automatically and the pending transport fare is released back to the fan.
+         the request will expire automatically and the pending payment is released back to the fan.
 
 
           </p>
@@ -259,7 +259,7 @@ const TermsAndConditions = () => {
           </p>
 
            <p className="mb-6">
-         Fans must pay transport fare upfront.
+         Fans must pay upfront.
           </p>
 
            <p className="mb-6">
