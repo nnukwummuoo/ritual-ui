@@ -290,7 +290,6 @@
 //     age: Number(m.age || 0),
 //     gender: m.gender || "",
 //     location: m.location || "",
-//     interest: m.interestedin || m.interests || [],
 //     amount: amountNum,
 //     creator_portfolio_id: m.hostid || m._id || m.id || m.creator_portfolio_id || "",
 //     userid: m.userid || m.hostid || m.ownerId || "",

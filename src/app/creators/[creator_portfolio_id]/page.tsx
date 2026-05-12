@@ -74,12 +74,6 @@ interface RootState {
     location: string;
     price: string;
     duration: string;
-    bodytype: string;
-    smoke: string;
-    drink: string;
-    interestedin: string;
-    height: string;
-    weight: string;
     description: string;
     gender: string;
     timeava: string;
@@ -106,12 +100,6 @@ interface RootState {
       location: string;
       price: string;
       duration: string;
-      bodytype: string;
-      smoke: string;
-      drink: string;
-      interestedin: string;
-      height: string;
-      weight: string;
       description: string;
       gender: string;
       timeava: string;
@@ -1439,16 +1427,6 @@ export default function Creatorbyid() {
                     <span className="text-gray-300 font-medium">⚖️ Gender</span>
                     <span className="text-white font-semibold">{creator.gender}</span>
                   </div>
-
-                  <div className="flex justify-between items-center p-3 bg-gray-700 rounded-lg">
-                    <span className="text-gray-300 font-medium">📏 Height</span>
-                    <span className="text-white font-semibold">{creator.height}</span>
-                  </div>
-
-                  <div className="flex justify-between items-center p-3 bg-gray-700 rounded-lg">
-                    <span className="text-gray-300 font-medium">⚖️ Weight</span>
-                    <span className="text-white font-semibold">{creator.weight}</span>
-                  </div>
                 </div>
 
                 {/* Service Info */}
@@ -1469,24 +1447,10 @@ export default function Creatorbyid() {
                     <span className="text-white font-semibold">{creator.duration} min</span>
                   </div>
 
-                  <div className="flex justify-between items-center p-3 bg-gray-700 rounded-lg">
-                    <span className="text-gray-300 font-medium">🏃 Body Type</span>
-                    <span className="text-white font-semibold">{creator.bodytype}</span>
-                  </div>
+                  
 
-                  <div className="flex justify-between items-center p-3 bg-gray-700 rounded-lg">
-                    <span className="text-gray-300 font-medium">🚭 Smoke</span>
-                    <span className={`font-semibold ${creator.smoke === 'Yes' ? 'text-red-400' : 'text-green-400'}`}>
-                      {creator.smoke}
-                    </span>
-                  </div>
-
-                  <div className="flex justify-between items-center p-3 bg-gray-700 rounded-lg">
-                    <span className="text-gray-300 font-medium">🍷 Drink</span>
-                    <span className={`font-semibold ${creator.drink === 'Yes' ? 'text-red-400' : 'text-green-400'}`}>
-                      {creator.drink}
-                    </span>
-                  </div>
+                 
+                  
 
                   <div className="flex justify-between items-center p-3 bg-gray-700 rounded-lg">
                     <span className="text-gray-300 font-medium">✅ Status</span>
@@ -1497,17 +1461,7 @@ export default function Creatorbyid() {
                 </div>
               </div>
 
-              {/* Interests */}
-              <div className="mt-6">
-                <h3 className="text-lg font-semibold text-white mb-3">💕 Interested In</h3>
-                <div className="flex flex-wrap gap-2">
-                  {creator.interestedin?.split(" ").map((interest: string, index: number) => (
-                    <span key={index} className="px-3 py-1 bg-purple-600 text-white rounded-full text-sm">
-                      {interest.charAt(0).toUpperCase() + interest.slice(1).toLowerCase()}
-                    </span>
-                  ))}
-                </div>
-              </div>
+             
 
               {/* Availability */}
               <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">

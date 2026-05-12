@@ -27,7 +27,6 @@ import { useAuth } from "@/lib/context/auth-context";
 
 let times: any[] = [];
 let hours: any[] = [];
-let Interested: any[] = [];
 let MIN = "";
 
 // Simple client-side image compression via canvas
@@ -84,12 +83,7 @@ export default function CreateCreatorPortfolio () {
   const [name, setname] = useState(``);
   const [age, setage] = useState("18");
   const [location, setlocation] = useState("");
-  const [bodytype, setbodytype] = useState("Slim");
-  const [height, setheight] = useState("");
-  const [weight, setweight] = useState("");
   const [gender, setgender] = useState("Man");
-  const [smoke, setsmoke] = useState("Yes");
-  const [drink, setdrink] = useState("Yes");
   const [pm, setpm] = useState("PM");
   const [duration, setduration] = useState("1");
   const [days, setdays] = useState("1hour");
@@ -146,11 +140,9 @@ export default function CreateCreatorPortfolio () {
           toast.error(`Location is required`);
           return false;
         }
-        if (!height) {
-          toast.error(`Height is required`);
-          return false;
-        }
-        return true;
+
+         return true;
+       
 
       case 2:
         if (!priceValue) {
@@ -161,10 +153,7 @@ export default function CreateCreatorPortfolio () {
           toast.error(`Select host type`);
           return false;
         }
-        if (Interested.length <= 0) {
-          toast.error(`Please select what you're interested in`);
-          return false;
-        }
+      
         if (!discription) {
           toast.error(`Write your description`);
           return false;
@@ -201,14 +190,7 @@ export default function CreateCreatorPortfolio () {
       toast.error(`Price is required`);
       return;
     }
-    if (!height) {
-      toast.error(`Height is required`);
-      return;
-    }
-    if (Interested.length <= 0) {
-      toast.error(`Please select what you're interested in`);
-      return;
-    }
+   
     if (!discription) {
       toast.error(`Write your description`);
       return;
@@ -238,12 +220,6 @@ export default function CreateCreatorPortfolio () {
         displayPrice: price,
         priceValue,
         duration: days,
-        bodytype,
-        smoke,
-        drink,
-        interestedin: Interested.map((v) => String(v).toLowerCase()),
-        height,
-        weight,
         description: discription,
         gender,
         timeava: times,
@@ -387,68 +363,8 @@ export default function CreateCreatorPortfolio () {
               </div>
             </div>
 
-            <div className="input-container">
-              <label htmlFor="bodytype" className="select-label">
-                Select body type:
-              </label>
-              <select
-                name="bodytype"
-                className="height-select"
-                onChange={(e) => setbodytype(e.currentTarget.value)}
-              >
-                <option value="Slim">Slim</option>
-                <option value="Curvy">Curvy</option>
-                <option value="Chubby">Chubby</option>
-                <option value="Normal">Normal</option>
-                <option value="Muscular">Muscular</option>
-                <option value="Althetic">Althetic</option>
-                <option value="Skinny">Skinny</option>
-              </select>
-            </div>
 
-            <div className="input-container">
-              <div>
-                <label htmlFor="height-select" className="height-label">
-                  What is your height?{" "}
-                  <span className="height-value">{height}</span>
-                </label>
-              </div>
-              <select
-                id="height-select"
-                className="height-select"
-                onChange={(e) => setheight(e.currentTarget.value)}
-              >
-                {Array.from({ length: 200 }, (_, i) => i + 57).map((value) => (
-                  <option key={value} value={`${value} cm`}>
-                    {value} cm
-                  </option>
-                ))}
-              </select>
-            </div>
 
-            <div className="input-container">
-              <div>
-                <label className="height-label">
-                  What is your weight? {weight}
-                </label>
-              </div>
-              <select
-                className="height-select"
-                onChange={(e) => {
-                  setweight(e.currentTarget.value);
-                }}
-              >
-                {Array.from({ length: 120 }, (_, i) => i + 40).map((value, i) => {
-                  return (
-                    <option
-                      key={value}
-                      value={`${value} kg`}
-                      className="w-full mt-1 mb-1 bg-[#111624] border text-slate-100 rounded-2xl"
-                    >{`${value} kg`}</option>
-                  );
-                })}
-              </select>
-            </div>
 
             <div className="input-container">
               <div className="form-group">
@@ -468,35 +384,7 @@ export default function CreateCreatorPortfolio () {
                 </select>
               </div>
 
-              <div className="input-container">
-                <label htmlFor="smoke" className="form-label">
-                  Do You Smoke?{" "}
-                </label>
-                <select
-                  id="smoke"
-                  name="smoke"
-                  className="form-select"
-                  onChange={(e) => setsmoke(e.currentTarget.value)}
-                >
-                  <option value="Yes">Yes</option>
-                  <option value="No">No</option>
-                </select>
-              </div>
 
-              <div className="input-container">
-                <label htmlFor="drink" className="form-label">
-                  Do you Drink ?
-                </label>
-                <select
-                  id="drink"
-                  name="drink"
-                  className="form-select"
-                  onChange={(e) => setdrink(e.currentTarget.value)}
-                >
-                  <option value="Yes">Yes</option>
-                  <option value="No">No</option>
-                </select>
-              </div>
             </div>
           </fieldset>
 
@@ -684,35 +572,6 @@ export default function CreateCreatorPortfolio () {
               ></input>
             </div>
 
-            <div className="input-container">
-              <label className="mb-2 font-medium text-slate-300">
-                Interested In
-              </label>
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
-                {["Men", "Women", "Couples", "Trans"].map((value) => (
-                  <label
-                    key={value}
-                    className="flex items-center px-3 py-2 space-x-2 text-white transition rounded-lg cursor-pointer bg-slate-700 hover:bg-slate-600"
-                  >
-                    <input
-                      type="checkbox"
-                      value={value}
-                      className="accent-orange-500"
-                      onClick={(e) => {
-                        const input = e.currentTarget.value;
-                        const check = Interested.findIndex((v) => v === input);
-                        if (check !== -1) {
-                          Interested.splice(check, 1);
-                        } else {
-                          Interested.push(input);
-                        }
-                      }}
-                    />
-                    <span>{value}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
 
             <div className="input-container">
               <label className="mb-2 font-medium text-slate-300">

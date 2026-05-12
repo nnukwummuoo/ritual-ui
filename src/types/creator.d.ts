@@ -49,12 +49,6 @@ interface CreateCreatorPayload {
     location: string;
     price: number;
     duration: string;
-    bodytype: string;
-    smoke: boolean;
-    drink: boolean;
-    interestedin: string;
-    height: number;
-    weight: number;
     discription: string;
     gender: string;
     timeava: string;
@@ -70,12 +64,6 @@ export interface UpdateCreatorPayload {
     location: string;
     price: number;
     duration: string;
-    bodytype: string;
-    smoke: boolean;
-    drink: boolean;
-    interestedin: string;
-    height: number;
-    weight: number;
     description: string;
     gender: string;
     timeava: string;

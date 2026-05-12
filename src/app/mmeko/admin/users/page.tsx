@@ -119,12 +119,6 @@ interface CreatorPortfolio {
   location?: string;
   price?: string;
   duration?: string;
-  bodytype?: string;
-  smoke?: string;
-  drink?: string;
-  interestedin?: string;
-  height?: string;
-  weight?: string;
   description?: string;
   gender?: string;
   timeava?: string;
@@ -2084,18 +2078,6 @@ useEffect(() => {
                               <span className="text-gray-300">Gender:</span>
                               <span className="text-white capitalize">{creatorPortfolio.gender || "N/A"}</span>
                             </div>
-                            <div className="flex justify-between">
-                              <span className="text-gray-300">Height:</span>
-                              <span className="text-white">{creatorPortfolio.height || "N/A"}</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-gray-300">Weight:</span>
-                              <span className="text-white">{creatorPortfolio.weight || "N/A"}</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-gray-300">Body Type:</span>
-                              <span className="text-white">{creatorPortfolio.bodytype || "N/A"}</span>
-                            </div>
                           </div>
                           <div className="space-y-2">
                             <div className="flex justify-between">
@@ -2106,18 +2088,7 @@ useEffect(() => {
                               <span className="text-gray-300">Duration:</span>
                               <span className="text-white">{creatorPortfolio.duration || "N/A"} min</span>
                             </div>
-                            <div className="flex justify-between">
-                              <span className="text-gray-300">Smoke:</span>
-                              <span className={`font-semibold ${creatorPortfolio.smoke === 'Yes' ? 'text-red-400' : 'text-green-400'}`}>
-                                {creatorPortfolio.smoke || "N/A"}
-                              </span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-gray-300">Drink:</span>
-                              <span className={`font-semibold ${creatorPortfolio.drink === 'Yes' ? 'text-red-400' : 'text-green-400'}`}>
-                                {creatorPortfolio.drink || "N/A"}
-                              </span>
-                            </div>
+  
                             <div className="flex justify-between">
                               <span className="text-gray-300">Views:</span>
                               <span className="text-white">{creatorPortfolio.views || 0}</span>
@@ -2128,20 +2099,6 @@ useEffect(() => {
                             </div>
                           </div>
                         </div>
-
-                        {/* Interests */}
-                        {creatorPortfolio.interestedin && (
-                          <div className="mt-4">
-                            <h5 className="text-gray-300 mb-2">Interested In:</h5>
-                            <div className="flex flex-wrap gap-2">
-                              {creatorPortfolio.interestedin.split(" ").map((interest: string, index: number) => (
-                                <span key={index} className="px-2 py-1 bg-purple-600 text-white rounded-full text-xs">
-                                  {interest}
-                                </span>
-                              ))}
-                            </div>
-                          </div>
-                        )}
 
                         {/* Availability */}
                         {(creatorPortfolio.timeava || creatorPortfolio.daysava) && (

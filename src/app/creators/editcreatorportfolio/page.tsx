@@ -48,12 +48,7 @@ export default function Editcreator () {
   const [name, setname] = useState("");
   const [age, setage] = useState( "");
   const [location, setlocation] = useState("");
-  const [bodytype, setbodytype] = useState("");
-  const [height, setheight] = useState("");
-  const [weight, setweight] = useState("");
   const [gender, setgender] = useState("");
-  const [smoke, setsmoke] = useState("");
-  const [drink, setdrink] = useState("");
   const [pm, setpm] = useState("PM");
   const [duration, setduration] = useState("");
   const [days, setdays] = useState("");
@@ -72,9 +67,6 @@ export default function Editcreator () {
   );
   const [hours, setHours] = useState<string[]>(
     []
-  );
-  const [interested, setInterested] = useState<string[]>(
-     []
   );
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const hosttypeInitialized = useRef(false);
@@ -113,12 +105,7 @@ export default function Editcreator () {
     setname(creator.name || "");
     setage(creator.age || "");
     setlocation(creator.location || "");
-    setbodytype(creator.bodytype || "");
-    setheight(creator.height || "");
-    setweight(creator.weight || "");
     setgender(creator.gender || "");
-    setsmoke(creator.smoke || "");
-    setdrink(creator.drink || "");
     setdescription(creator.description || "");
     // Only set hosttype if it hasn't been initialized yet (avoid overriding user changes)
     if (creator.hosttype && !hosttypeInitialized.current) {
@@ -149,16 +136,7 @@ export default function Editcreator () {
     };
     
     // Only set if not already set to avoid overriding user changes
-    if (creator.interestedin && !interested.length) {
-      const rawInterested = toArray(creator.interestedin);
-      
-      // Convert to proper case for display (capitalize first letter)
-      const properCaseInterested = [...new Set(rawInterested.map(item => 
-        item.charAt(0).toUpperCase() + item.slice(1).toLowerCase()
-      ))];
-      
-      setInterested(properCaseInterested);
-    }
+  
     if (creator.timeava && !times.length) {
       setTimes(toArray(creator.timeava));
     }
@@ -175,7 +153,7 @@ export default function Editcreator () {
         : [];
       setExistingImages(existingImgArray);
     }
-  }, [creator, creator_portfolio_id, router, dispatch, hosttype, profile.firstname, profile.status, reduxUserId, userid, interested.length, times.length, hours.length]);
+  }, [creator, creator_portfolio_id, router, dispatch, hosttype, profile.firstname, profile.status, reduxUserId, userid, times.length, hours.length]);
 
   // 🔥 Autofill full name from user profile (like side menu)
   useEffect(() => {
@@ -282,7 +260,6 @@ export default function Editcreator () {
       totalImages: newImages.length + existingImages.length,
       location,
       price,
-      height,
       description,
       userid,
       token: token ? "present" : "missing",
@@ -297,7 +274,6 @@ export default function Editcreator () {
       });
     if (!location) return toast.error(`Location Empty`, { autoClose: 2000 });
     if (!price) return toast.error(`Price Empty`, { autoClose: 2000 });
-    if (!height) return toast.error(`Height Empty`, { autoClose: 2000 });
     if (!description)
       return toast.error(`Write your description`, { autoClose: 2000 });
 
@@ -332,12 +308,6 @@ export default function Editcreator () {
         location,
         price,
         duration: days,
-        bodytype,
-        smoke,
-        drink,
-        interestedin: interested.length > 0 ? interested.map((v) => String(v).toLowerCase()) : creator?.interestedin || [],
-        height,
-        weight,
         description,
         gender,
         timeava: times.length > 0 ? times : creator?.timeava || [],
@@ -489,65 +459,8 @@ export default function Editcreator () {
                 />
               </div>
             </div>
-            <div className="input-container">
-              <label htmlFor="bodytype" className="select-label">
-                Select body type:
-              </label>
-              <select
-                name="bodytype"
-                className="custom-select"
-                value={bodytype}
-                onChange={(e) => setbodytype(e.currentTarget.value)}
-              >
-                <option value="">Select</option>
-                <option value="Slim">Slim</option>
-                <option value="Curvy">Curvy</option>
-                <option value="Chubby">Chubby</option>
-                <option value="Normal">Normal</option>
-                <option value="Muscular">Muscular</option>
-                <option value="Althetic">Althetic</option>
-                <option value="Skinny">Skinny</option>
-              </select>
-            </div>
-            <div className="input-container">
-              <div>
-                <label htmlFor="height-select" className="height-label">
-                  Edit height? <span className="height-value">{height}</span>
-                </label>
-              </div>
-              <select
-                id="height-select"
-                className="height-select"
-                value={height}
-                onChange={(e) => setheight(e.currentTarget.value)}
-              >
-                <option value="">Select</option>
-                {Array.from({ length: 200 }, (_, i) => i + 57).map((value) => (
-                  <option key={value} value={`${value} cm`}>
-                    {value} cm
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="input-container">
-              <div>
-                <label className="height-label">Edit weight? {weight}</label>
-              </div>
-              <select
-                className="height-select"
-                value={weight}
-                onChange={(e) => setweight(e.currentTarget.value)}
-              >
-                <option value="">Select</option>
-                {Array.from({ length: 120 }, (_, i) => i + 40).map((value) => (
-                  <option
-                    key={value}
-                    value={`${value} kg`}
-                    className="w-full mt-1 mb-1 bg-[#111624] border text-slate-100 rounded-2xl"
-                  >{`${value} kg`}</option>
-                ))}
-              </select>
-            </div>
+           
+          
             <div className="input-container">
               <div className="form-group">
                 <label htmlFor="gender" className="form-label">
@@ -568,38 +481,8 @@ export default function Editcreator () {
                 </select>
               </div>
             </div>
-            <div className="input-container">
-              <label htmlFor="smoke" className="form-label">
-                Do You Smoke?
-              </label>
-              <select
-                id="smoke"
-                name="smoke"
-                className="form-select"
-                onChange={(e) => setsmoke(e.currentTarget.value)}
-                value={smoke}
-              >
-                <option value="">Select</option>
-                <option value="Yes">Yes</option>
-                <option value="No">No</option>
-              </select>
-            </div>
-            <div className="input-container">
-              <label htmlFor="drink" className="form-label">
-                Do you Drink?
-              </label>
-              <select
-                id="drink"
-                name="drink"
-                className="form-select"
-                onChange={(e) => setdrink(e.currentTarget.value)}
-                value={drink}
-              >
-                <option value="">Select</option>
-                <option value="Yes">Yes</option>
-                <option value="No">No</option>
-              </select>
-            </div>
+            
+           
           </fieldset>
           <fieldset
             style={{ display: step === 2 ? "flex" : "none" }}
@@ -763,34 +646,8 @@ export default function Editcreator () {
                 </select>
               </div> */}
             </div>
-            <div className="input-container">
-              <label className="mb-2 font-medium text-slate-300">
-                Interested In
-              </label>
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
-                {["Men", "Women", "Couples", "Trans"].map((value) => (
-                  <label
-                    key={value}
-                    className="flex items-center px-3 py-2 space-x-2 text-white transition rounded-lg cursor-pointer bg-slate-700 hover:bg-slate-600"
-                  >
-                    <input
-                      type="checkbox"
-                      value={value}
-                      className="accent-orange-500"
-                      checked={interested.includes(value)}
-                      onChange={() =>
-                        setInterested((prev: any) =>
-                          prev.includes(value)
-                            ? prev.filter((i: any) => i !== value)
-                            : [...prev, value]
-                        )
-                      }
-                    />
-                    <span>{value}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
+            
+          
             <div className="input-container">
               <label className="mb-2 font-medium text-slate-300">
                 About Me

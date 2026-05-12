@@ -24,7 +24,6 @@ import { uploadToStorj } from "@/lib/storj";
 
 let times: any[] = [];
 let hours: any[] = [];
-let Interested: any[] = [];
 let MIN = "";
 
 // 🔥 Convert remote URL → File object
@@ -57,12 +56,7 @@ export default function CreateCreatorPortfolio() {
   const [name, setname] = useState("");
   const [age, setage] = useState("18");
   const [location, setlocation] = useState("");
-  const [bodytype, setbodytype] = useState("");
-  const [height, setheight] = useState("");
-  const [weight, setweight] = useState("");
   const [gender, setgender] = useState("");
-  const [smoke, setsmoke] = useState("");
-  const [drink, setdrink] = useState("");
   const [pm, setpm] = useState("PM");
   const [duration, setduration] = useState("1");
   //const [days, setdays] = useState("1hour");
@@ -228,8 +222,6 @@ export default function CreateCreatorPortfolio() {
     if (photolink.length <= 0) return toast.error("Please upload at least one image");
     if (!location) return toast.error("Location is required");
     if (!priceValue) return toast.error("Price is required");
-    if (!height) return toast.error("Height is required");
-    if (Interested.length <= 0) return toast.error("Please select what you're interested in");
     if (!discription) return toast.error("Write your description");
     if (!userid) return toast.error("Missing user, please login again");
     if (!token) return toast.error("Missing token");
@@ -253,12 +245,6 @@ export default function CreateCreatorPortfolio() {
         price: priceValue != null ? String(priceValue) : "",
         displayPrice: price,
         duration,
-        bodytype,
-        smoke,
-        drink,
-        interestedin: Interested.map((v) => String(v).toLowerCase()),
-        height,
-        weight,
         description: discription.trim(),
         gender,
         timeava: times,
@@ -321,12 +307,12 @@ export default function CreateCreatorPortfolio() {
         }
         if (!age) { toast.error("Age is required"); return false; }
         if (!location) { toast.error("Location is required"); return false; }
-        if (!height) { toast.error("Height is required"); return false; }
+    
         return true;
       case 2:
         if (!priceValue) { toast.error("Price is required"); return false; }
         if (!hosttype) { toast.error("Select host type"); return false; }
-        if (Interested.length <= 0) { toast.error("Please select what you're interested in"); return false; }
+      
         if (!discription) { toast.error("Write your description"); return false; }
         return true;
       default: return true;
@@ -401,75 +387,6 @@ export default function CreateCreatorPortfolio() {
             </div>
 
             <div className="input-container">
-              <label htmlFor="bodytype" className="select-label">
-                Select body type:
-              </label>
-              <select
-                name="bodytype"
-                className="height-select"
-                value={bodytype}
-                onChange={(e) => setbodytype(e.currentTarget.value)}
-              >
-                <option value="">Select body type</option>
-                <option value="Slim">Slim</option>
-                <option value="Curvy">Curvy</option>
-                <option value="Chubby">Chubby</option>
-                <option value="Normal">Normal</option>
-                <option value="Muscular">Muscular</option>
-                <option value="Althetic">Althetic</option>
-                <option value="Skinny">Skinny</option>
-              </select>
-            </div>
-
-            <div className="input-container">
-              <div>
-                <label htmlFor="height-select" className="height-label">
-                  What is your height?{" "}
-                  <span className="height-value">{height}</span>
-                </label>
-              </div>
-              <select
-                id="height-select"
-                className="height-select"
-                value={height}
-                onChange={(e) => setheight(e.currentTarget.value)}
-              >
-                <option value="">Select height</option>
-                {Array.from({ length: 200 }, (_, i) => i + 57).map((value) => (
-                  <option key={value} value={`${value} cm`}>
-                    {value} cm
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="input-container">
-              <div>
-                <label className="height-label">
-                  What is your weight? {weight}
-                </label>
-              </div>
-              <select
-                className="height-select"
-                value={weight}
-                onChange={(e) => {
-                  setweight(e.currentTarget.value);
-                }}
-              >
-                <option value="">Select weight</option>
-                {Array.from({ length: 120 }, (_, i) => i + 40).map((value, i) => {
-                  return (
-                    <option
-                      key={value}
-                      value={`${value} kg`}
-                      className="w-full mt-1 mb-1 bg-[#111624] border text-slate-100 rounded-2xl"
-                    >{`${value} kg`}</option>
-                  );
-                })}
-              </select>
-            </div>
-
-            <div className="input-container">
               <div className="form-group">
                 <label htmlFor="gender" className="form-label">
                   What is your Gender?{" "}
@@ -489,39 +406,6 @@ export default function CreateCreatorPortfolio() {
                 </select>
               </div>
 
-              <div className="input-container">
-                <label htmlFor="smoke" className="form-label">
-                  Do You Smoke?{" "}
-                </label>
-                <select
-                  id="smoke"
-                  name="smoke"
-                  className="form-select"
-                  value={smoke}
-                  onChange={(e) => setsmoke(e.currentTarget.value)}
-                >
-                  <option value="">Select option</option>
-                  <option value="Yes">Yes</option>
-                  <option value="No">No</option>
-                </select>
-              </div>
-
-              <div className="input-container">
-                <label htmlFor="drink" className="form-label">
-                  Do you Drink ?
-                </label>
-                <select
-                  id="drink"
-                  name="drink"
-                  className="form-select"
-                  value={drink}
-                  onChange={(e) => setdrink(e.currentTarget.value)}
-                >
-                  <option value="">Select option</option>
-                  <option value="Yes">Yes</option>
-                  <option value="No">No</option>
-                </select>
-              </div>
             </div>
           </fieldset>
 
@@ -707,36 +591,6 @@ export default function CreateCreatorPortfolio() {
                   value={duration}
                   onChange={(e) => setduration(e.currentTarget.value)}
                 />
-              </div>
-            </div>
-
-            <div className="input-container">
-              <label className="mb-2 font-medium text-slate-300">
-                Interested In
-              </label>
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
-                {["Men", "Women", "Couples", "Trans"].map((value) => (
-                  <label
-                    key={value}
-                    className="flex items-center px-3 py-2 space-x-2 text-white transition rounded-lg cursor-pointer bg-slate-700 hover:bg-slate-600"
-                  >
-                    <input
-                      type="checkbox"
-                      value={value}
-                      className="accent-orange-500"
-                      onClick={(e) => {
-                        const input = e.currentTarget.value;
-                        const check = Interested.findIndex((v) => v === input);
-                        if (check !== -1) {
-                          Interested.splice(check, 1);
-                        } else {
-                          Interested.push(input);
-                        }
-                      }}
-                    />
-                    <span>{value}</span>
-                  </label>
-                ))}
               </div>
             </div>
 
