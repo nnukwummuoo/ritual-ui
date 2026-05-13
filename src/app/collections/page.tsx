@@ -226,10 +226,7 @@ const ImageCard: React.FC<ImageCardProps> = ({
   
   // Process image source similar to post components
   const mediaRef: any = src || "";
-  const asString =
-  typeof mediaRef === "object" && mediaRef
-    ? mediaRef.public_id
-    : mediaRef;
+  const asString = typeof mediaRef === "string" ? mediaRef : (typeof mediaRef === "object" && mediaRef ? (mediaRef.publicId || mediaRef.public_id || mediaRef.url || "") : "");
   const imageSource = getImageSource(asString, 'post');
   const imageSrc = imageSource.src;
   
