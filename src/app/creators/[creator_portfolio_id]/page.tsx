@@ -9,6 +9,7 @@ import { useRouter, useParams } from "next/navigation";
 import optionicon from "@/icons/editcommenticon.svg";
 import editIcon from "@/icons/edit.svg";
 import deleteicon from "@/icons/deleteicon.svg";
+import goldIcon from "@/icons/goldIcon.svg";
 import PacmanLoader1 from "react-spinners/ClockLoader";
 import { toast, ToastContainer } from "material-react-toastify";
 import { Requestinfo } from "@/components/requestFrag/Requestinfo";
@@ -19,8 +20,8 @@ import closeIcon from "@/icons/closeIcon.svg";
 import { getViews } from "@/store/creatorSlice";
 import { getAllCreatorRatings } from "@/store/profile";
 import { CreatorReview } from "./_components/Creator_review";
-import { IoCheckmarkCircleOutline } from 'react-icons/io5';
-import { BadgeCheck } from 'lucide-react';
+import { IoArrowBack, IoCheckmarkCircleOutline } from "react-icons/io5";
+import { BadgeCheck, ArrowLeftSquare, Coins } from "lucide-react";
 
 import { useSelector, useDispatch } from "react-redux";
 import {
@@ -50,10 +51,12 @@ import { AppDispatch } from "@/store/store";
 import { useUserId } from "@/lib/hooks/useUserId";
 import { useAuth } from "@/lib/context/auth-context";
 import VIPBadge from "@/components/VIPBadge";
-import { checkVipCelebration, markVipCelebrationViewed } from "@/api/vipCelebration";
+import {
+  checkVipCelebration,
+  markVipCelebrationViewed,
+} from "@/api/vipCelebration";
 import { checkVipStatus } from "@/store/vip";
 import { URL } from "@/api/config";
-
 
 // Types
 interface RootState {
@@ -88,7 +91,14 @@ interface RootState {
     creatorbyidstatus: string;
     getreviewstats: string;
     creatordeletestatus: string;
-    reviewList: Array<{ content: string; name: string; photolink: string; posttime: string; id: string; userid: string }>;
+    reviewList: Array<{
+      content: string;
+      name: string;
+      photolink: string;
+      posttime: string;
+      id: string;
+      userid: string;
+    }>;
     addcrush_stats: string;
     remove_crush_stats: string;
     creatorbyid: {
@@ -115,7 +125,6 @@ interface RootState {
     };
   };
 }
-
 
 export default function Creatorbyid() {
   const params = useParams<{ creator_portfolio_id: string }>();
@@ -152,7 +161,9 @@ export default function Creatorbyid() {
       }
     }
   }, [useridFromHook, session?._id, reduxUserid]);
-  const reduxToken = useSelector((state: RootState) => state.register.refreshtoken);
+  const reduxToken = useSelector(
+    (state: RootState) => state.register.refreshtoken,
+  );
 
   // Get token from Redux, session, or localStorage as fallback
   const [token, setToken] = useState<string>("");
@@ -177,29 +188,39 @@ export default function Creatorbyid() {
   }, [reduxToken, session?.token]);
   const message = useSelector((state: RootState) => state.creator.message);
   const creatorbyidstatus = useSelector(
-    (state: RootState) => state.creator.creatorbyidstatus
+    (state: RootState) => state.creator.creatorbyidstatus,
   );
   const getreviewstats = useSelector(
-    (state: RootState) => state.creator.getreviewstats
+    (state: RootState) => state.creator.getreviewstats,
   );
   const creatordeletestatus = useSelector(
-    (state: RootState) => state.creator.creatordeletestatus
+    (state: RootState) => state.creator.creatordeletestatus,
   );
   const reviewList = useSelector(
-    (state: RootState) => state.creator.reviewList || []
+    (state: RootState) => state.creator.reviewList || [],
   );
 
   // Get ratings from profile store (new 5-star rating system)
-  const ratings = useSelector((s: RootState) => (s.profile as any).ratings || []);
-  const ratings_stats = useSelector((s: RootState) => (s.profile as any).ratings_stats || 'idle');
-  const totalRatings = useSelector((s: RootState) => (s.profile as any).totalRatings || 0);
-  const averageRating = useSelector((s: RootState) => (s.profile as any).averageRating || 0);
-  const ratingCounts = useSelector((s: RootState) => (s.profile as any).ratingCounts || {});
+  const ratings = useSelector(
+    (s: RootState) => (s.profile as any).ratings || [],
+  );
+  const ratings_stats = useSelector(
+    (s: RootState) => (s.profile as any).ratings_stats || "idle",
+  );
+  const totalRatings = useSelector(
+    (s: RootState) => (s.profile as any).totalRatings || 0,
+  );
+  const averageRating = useSelector(
+    (s: RootState) => (s.profile as any).averageRating || 0,
+  );
+  const ratingCounts = useSelector(
+    (s: RootState) => (s.profile as any).ratingCounts || {},
+  );
   const addcrush_stats = useSelector(
-    (state: RootState) => state.creator.addcrush_stats
+    (state: RootState) => state.creator.addcrush_stats,
   );
   const remove_crush_stats = useSelector(
-    (state: RootState) => state.creator.remove_crush_stats
+    (state: RootState) => state.creator.remove_crush_stats,
   );
   const creator = useSelector((state: RootState) => state.creator.creatorbyid);
   const profile = useSelector((state: RootState) => state.profile);
@@ -208,11 +229,12 @@ export default function Creatorbyid() {
   const vipStatus = useSelector((s: any) => s.vip?.vipStatus);
 
   // Get VIP status directly from creator data (like creators page)
-  const vipStatusFromCreator = creator?.isVip ? {
-    isVip: creator.isVip,
-    vipEndDate: creator.vipEndDate
-  } : null;
-
+  const vipStatusFromCreator = creator?.isVip
+    ? {
+        isVip: creator.isVip,
+        vipEndDate: creator.vipEndDate,
+      }
+    : null;
 
   // State
   const [user, setUser] = useState<{ refreshtoken: string } | null>(null);
@@ -246,6 +268,9 @@ export default function Creatorbyid() {
   const [vipCelebrationShown, setVipCelebrationShown] = useState(false);
   const [celebrationChecked, setCelebrationChecked] = useState(false);
 
+  // Profile image fallback state
+  const [profileImageFailed, setProfileImageFailed] = useState(false);
+
   // ✅ Replace navigate
   const navigate = (path: string) => {
     router.push(path);
@@ -264,7 +289,7 @@ export default function Creatorbyid() {
           currentUserId = data?.userID || data?.userid || data?.id || "";
         }
       } catch (error) {
-        console.error('Error getting userid from localStorage:', error);
+        console.error("Error getting userid from localStorage:", error);
       }
     }
 
@@ -272,28 +297,33 @@ export default function Creatorbyid() {
   };
 
   // Check VIP celebration status (database-based)
-  const checkVipCelebrationStatus = React.useCallback(async (userId: string, viewerId: string) => {
-    if (!userId || !viewerId || !token) return false;
+  const checkVipCelebrationStatus = React.useCallback(
+    async (userId: string, viewerId: string) => {
+      if (!userId || !viewerId || !token) return false;
 
-    try {
-      const response = await checkVipCelebration(userId, viewerId, token);
-      return response.shouldShowCelebration;
-    } catch (error) {
-      return false;
-    }
-  }, [token]);
+      try {
+        const response = await checkVipCelebration(userId, viewerId, token);
+        return response.shouldShowCelebration;
+      } catch (error) {
+        return false;
+      }
+    },
+    [token],
+  );
 
   // Mark VIP celebration as viewed (database-based)
-  const markVipCelebrationAsViewed = React.useCallback(async (userId: string, viewerId: string) => {
-    if (!userId || !viewerId || !token) return;
+  const markVipCelebrationAsViewed = React.useCallback(
+    async (userId: string, viewerId: string) => {
+      if (!userId || !viewerId || !token) return;
 
-    try {
-      await markVipCelebrationViewed(userId, viewerId, token);
-    } catch (error) {
-      // Silent fail
-    }
-  }, [token]);
-
+      try {
+        await markVipCelebrationViewed(userId, viewerId, token);
+      } catch (error) {
+        // Silent fail
+      }
+    },
+    [token],
+  );
 
   // Check VIP status for the creator's userid (not portfolio_id)
   useEffect(() => {
@@ -318,12 +348,21 @@ export default function Creatorbyid() {
       const isVip = vipStatus?.isVip || vipStatusFromCreator?.isVip;
 
       // Only proceed if VIP status is confirmed and we have both user IDs
-      if (isVip === true && creatorbyidstatus === "succeeded" && creatorUserId && currentUserId && !celebrationChecked) {
+      if (
+        isVip === true &&
+        creatorbyidstatus === "succeeded" &&
+        creatorUserId &&
+        currentUserId &&
+        !celebrationChecked
+      ) {
         setCelebrationChecked(true);
 
         try {
           // Use creator's userid, not portfolio_id
-          const shouldShow = await checkVipCelebrationStatus(creatorUserId, currentUserId);
+          const shouldShow = await checkVipCelebrationStatus(
+            creatorUserId,
+            currentUserId,
+          );
 
           if (shouldShow) {
             setShowVipCelebration(true);
@@ -344,7 +383,16 @@ export default function Creatorbyid() {
     };
 
     checkCelebration();
-  }, [vipStatus, vipStatusFromCreator, creatorbyidstatus, creator?.userid, userid, celebrationChecked, checkVipCelebrationStatus, markVipCelebrationAsViewed]);
+  }, [
+    vipStatus,
+    vipStatusFromCreator,
+    creatorbyidstatus,
+    creator?.userid,
+    userid,
+    celebrationChecked,
+    checkVipCelebrationStatus,
+    markVipCelebrationAsViewed,
+  ]);
 
   // Reset VIP celebration tracking when switching creators (use creator.userid instead of portfolio_id)
   useEffect(() => {
@@ -366,7 +414,7 @@ export default function Creatorbyid() {
           hostid: Creator[0],
           token,
           userid: currentUserId,
-        })
+        }),
       );
     }
 
@@ -376,7 +424,7 @@ export default function Creatorbyid() {
         getAllCreatorRatings({
           creatorId: Creator[0],
           token,
-        })
+        }),
       );
     }
   }, [userid, Creator[0], token]);
@@ -389,21 +437,33 @@ export default function Creatorbyid() {
 
       // Prefer new shape from backend: creator.creatorfiles[].creatorfilelink
       // Fallback to legacy creator.photolink (string or string[])
-      const linksimg = Array.isArray((creator as any).creatorfiles) && (creator as any).creatorfiles.length > 0
-        ? (creator as any).creatorfiles
-          .map((f: any) => f?.creatorfilelink)
-          .filter((url: string) => typeof url === 'string' && url.trim())
-        : (typeof creator.photolink === "string" && creator.photolink.trim())
-          ? creator.photolink.split(",").filter((url: string) => url.trim())
-          : (Array.isArray(creator.photolink) && creator.photolink.length > 0)
-            ? (creator.photolink as string[]).filter((url: string) => typeof url === 'string' && url.trim())
-            : [];
+      const linksimg =
+        Array.isArray((creator as any).creatorfiles) &&
+        (creator as any).creatorfiles.length > 0
+          ? (creator as any).creatorfiles
+              .map((f: any) => f?.creatorfilelink)
+              .filter((url: string) => typeof url === "string" && url.trim())
+          : typeof creator.photolink === "string" && creator.photolink.trim()
+            ? creator.photolink.split(",").filter((url: string) => url.trim())
+            : Array.isArray(creator.photolink) && creator.photolink.length > 0
+              ? (creator.photolink as string[]).filter(
+                  (url: string) => typeof url === "string" && url.trim(),
+                )
+              : [];
 
       try {
-        console.log('[CreatorPortfolio][images] derived linksimg:', linksimg);
-        console.log('[CreatorPortfolio][images] from creatorfiles:', Array.isArray((creator as any).creatorfiles) ? (creator as any).creatorfiles : 'no creatorfiles');
-        console.log('[CreatorPortfolio][images] legacy photolink:', creator.photolink);
-      } catch { }
+        console.log("[CreatorPortfolio][images] derived linksimg:", linksimg);
+        console.log(
+          "[CreatorPortfolio][images] from creatorfiles:",
+          Array.isArray((creator as any).creatorfiles)
+            ? (creator as any).creatorfiles
+            : "no creatorfiles",
+        );
+        console.log(
+          "[CreatorPortfolio][images] legacy photolink:",
+          creator.photolink,
+        );
+      } catch {}
 
       setphotocount(linksimg.length);
 
@@ -452,7 +512,8 @@ export default function Creatorbyid() {
         }
 
         // Ensure payload is a valid JSON string
-        const parsed = typeof payload === "string" ? JSON.parse(payload) : payload;
+        const parsed =
+          typeof payload === "string" ? JSON.parse(payload) : payload;
         setViews(parsed?.views ?? 0);
       } catch (err) {
         setViews(0);
@@ -514,7 +575,6 @@ export default function Creatorbyid() {
     }
   };
 
-
   useEffect(() => {
     if (creatordeletestatus === "succeeded") {
       dispatch(changecreatorstatus("idle"));
@@ -547,15 +607,65 @@ export default function Creatorbyid() {
   const getStatus = (type: string) => {
     const normalizedHosttype = type;
     if (normalizedHosttype == "Fan meet") {
-      return ("Meet and Greet with");
+      return "Meet and Greet with";
     } else if (normalizedHosttype == "Fan date") {
-      return ("Exclusive Date with");
-    } else if (normalizedHosttype == "Fan call" || normalizedHosttype == "Fan Call") {
-      return ("A Private Conversation with");
+      return "Exclusive Date with";
+    } else if (
+      normalizedHosttype == "Fan call" ||
+      normalizedHosttype == "Fan Call"
+    ) {
+      return "A Private Conversation with";
     } else {
-      return ("Engage with");
+      return "Engage with";
     }
   };
+
+  const isFanDateCreator =
+    String(creator?.hosttype || "")
+      .trim()
+      .toLowerCase() === "fan date";
+
+  const normalizedCreatorHosttype = String(creator?.hosttype || "")
+    .trim()
+    .toLowerCase();
+  const isFanCallCreator = normalizedCreatorHosttype === "fan call";
+  const creatorServiceTitle = isFanCallCreator
+    ? "Fan Call"
+    : isFanDateCreator
+      ? "Fan Date"
+      : "Fan Meet & Greet";
+  const creatorServiceNoun = isFanCallCreator
+    ? "call"
+    : isFanDateCreator
+      ? "date"
+      : "meet";
+  const creatorDetailsTitle = isFanCallCreator
+    ? "Call Details"
+    : isFanDateCreator
+      ? "Date Details"
+      : "Meet Details";
+  const creatorPriceValue = formatCreatorPrices(creator?.price || "") || "0";
+  const creatorRateSuffix = isFanCallCreator
+    ? "/min"
+    : isFanDateCreator
+      ? "/date"
+      : "/meet";
+  const creatorDurationText = isFanCallCreator
+    ? "Billed per minute"
+    : `${formatCreatorPrices(String(creator?.duration || "")) || "30"} minutes`;
+  const availabilityDays = String(creator?.daysava || "")
+    .split(/[\s,]+/)
+    .map((day) => day.trim())
+    .filter(Boolean);
+  const availabilityHours = String(creator?.timeava || "")
+    .split(/[\s,]+/)
+    .map((time) =>
+      time
+        .trim()
+        .replace(/(AM|PM)$/i, " $1")
+        .toUpperCase(),
+    )
+    .filter(Boolean);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState("");
@@ -588,21 +698,34 @@ export default function Creatorbyid() {
           <div className="pt-2 pb-4 md:pt-60">
             <div className="relative w-full h-[300px] overflow-hidden rounded-md">
               {(() => {
-                const original = String(imglist[currentImageIndex] || '').trim();
-                const isStorj = original.startsWith('https://gateway.storjshare.io/');
+                const original = String(
+                  imglist[currentImageIndex] || "",
+                ).trim();
+                const isStorj = original.startsWith(
+                  "https://gateway.storjshare.io/",
+                );
                 const key = (() => {
-                  try { const parts = original.split('/'); return parts[parts.length - 1]; } catch { return ''; }
+                  try {
+                    const parts = original.split("/");
+                    return parts[parts.length - 1];
+                  } catch {
+                    return "";
+                  }
                 })();
                 // For Storj gateway (403 on direct), always proxy through backend
-                const src = isStorj && key
-                  ? (() => {
-                    // Extract bucket name from the original URL
-                    const urlParts = original.split('/');
-                    const bucketIndex = urlParts.findIndex(part => part === 'gateway.storjshare.io') + 1;
-                    const bucket = urlParts[bucketIndex] || 'post'; // Default to 'post' for legacy images
-                    return `${API_BASE}/api/image/view?publicId=${encodeURIComponent(key)}&bucket=${bucket}`;
-                  })()
-                  : original;
+                const src =
+                  isStorj && key
+                    ? (() => {
+                        // Extract bucket name from the original URL
+                        const urlParts = original.split("/");
+                        const bucketIndex =
+                          urlParts.findIndex(
+                            (part) => part === "gateway.storjshare.io",
+                          ) + 1;
+                        const bucket = urlParts[bucketIndex] || "post"; // Default to 'post' for legacy images
+                        return `${API_BASE}/api/image/view?publicId=${encodeURIComponent(key)}&bucket=${bucket}`;
+                      })()
+                    : original;
                 // Render image (use <img> to avoid optimizer issues)
                 if (imgError || isStorj) {
                   return (
@@ -613,8 +736,23 @@ export default function Creatorbyid() {
                       src={src}
                       className="object-cover w-full h-full cursor-pointer hover:opacity-90 transition-opacity duration-200"
                       onClick={() => openModal(src)}
-                      onLoad={() => { try { console.log('[CreatorPortfolio][img] onLoad src:', src); } catch { } }}
-                      onError={() => { try { console.warn('[CreatorPortfolio][img] onError src:', src); } catch { }; setImgError(true); }}
+                      onLoad={() => {
+                        try {
+                          console.log(
+                            "[CreatorPortfolio][img] onLoad src:",
+                            src,
+                          );
+                        } catch {}
+                      }}
+                      onError={() => {
+                        try {
+                          console.warn(
+                            "[CreatorPortfolio][img] onError src:",
+                            src,
+                          );
+                        } catch {}
+                        setImgError(true);
+                      }}
                     />
                   );
                 }
@@ -627,8 +765,23 @@ export default function Creatorbyid() {
                     className="object-cover w-full h-full cursor-pointer hover:opacity-90 transition-opacity duration-200"
                     onClick={() => openModal(src)}
                     unoptimized
-                    onLoadingComplete={() => { try { console.log('[CreatorPortfolio][next-image] loaded src:', src); } catch { } }}
-                    onError={() => { try { console.warn('[CreatorPortfolio][next-image] onError src:', src); } catch { }; setImgError(true); }}
+                    onLoadingComplete={() => {
+                      try {
+                        console.log(
+                          "[CreatorPortfolio][next-image] loaded src:",
+                          src,
+                        );
+                      } catch {}
+                    }}
+                    onError={() => {
+                      try {
+                        console.warn(
+                          "[CreatorPortfolio][next-image] onError src:",
+                          src,
+                        );
+                      } catch {}
+                      setImgError(true);
+                    }}
                     priority
                   />
                 );
@@ -641,7 +794,7 @@ export default function Creatorbyid() {
                     onClick={(e) => {
                       e.stopPropagation();
                       setCurrentImageIndex((prev) =>
-                        prev === 0 ? imglist.length - 1 : prev - 1
+                        prev === 0 ? imglist.length - 1 : prev - 1,
                       );
                     }}
                     className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-70 transition-all duration-200"
@@ -652,7 +805,7 @@ export default function Creatorbyid() {
                     onClick={(e) => {
                       e.stopPropagation();
                       setCurrentImageIndex((prev) =>
-                        prev === imglist.length - 1 ? 0 : prev + 1
+                        prev === imglist.length - 1 ? 0 : prev + 1,
                       );
                     }}
                     className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-70 transition-all duration-200"
@@ -683,11 +836,13 @@ export default function Creatorbyid() {
           oldlink,
           documentlink,
           photocount,
-          photolink: Array.isArray(creator.photolink) ? creator.photolink : [creator.photolink].filter(Boolean),
+          photolink: Array.isArray(creator.photolink)
+            ? creator.photolink
+            : [creator.photolink].filter(Boolean),
           hostid: creator.hostid,
           token,
           docCount,
-        })
+        }),
       );
     }
   };
@@ -732,7 +887,11 @@ export default function Creatorbyid() {
 
   const show_review = () => {
     if (loading1 === false) {
-      console.log('🔍 [CreatorPortfolio] Showing reviews:', { ratings: ratings.length, totalRatings, averageRating });
+      console.log("🔍 [CreatorPortfolio] Showing reviews:", {
+        ratings: ratings.length,
+        totalRatings,
+        averageRating,
+      });
 
       if (ratings.length > 0) {
         return ratings.map((rating: any, index: number) => {
@@ -769,34 +928,58 @@ export default function Creatorbyid() {
   const addTocrush = () => {
     const currentUserId = getCurrentUserId();
 
-    console.log('🔍 [addTocrush] Debug:', {
+    console.log("🔍 [addTocrush] Debug:", {
       addcrush_stats,
       removeCrush,
       userid: currentUserId,
-      token: token ? 'present' : 'missing',
+      token: token ? "present" : "missing",
       creator_hostid: creator.hostid,
-      creator_userid: creator.userid
+      creator_userid: creator.userid,
     });
 
     if (addcrush_stats !== "loading" && removeCrush === false) {
       set_dcb(true);
       set_crush_text("adding to crush list...");
-      console.log('🔍 [addTocrush] Dispatching addcrush:', { userid: currentUserId, token, creator_portfolio_id: creator.hostid });
-      dispatch(addcrush({ userid: currentUserId, token, creator_portfolio_id: creator.hostid }));
+      console.log("🔍 [addTocrush] Dispatching addcrush:", {
+        userid: currentUserId,
+        token,
+        creator_portfolio_id: creator.hostid,
+      });
+      dispatch(
+        addcrush({
+          userid: currentUserId,
+          token,
+          creator_portfolio_id: creator.hostid,
+        }),
+      );
     }
 
     if (remove_crush_stats !== "loading" && removeCrush === true) {
       set_dcb(true);
       set_crush_text("removing crush from list...");
-      console.log('🔍 [addTocrush] Dispatching remove_Crush:', { userid: currentUserId, token, creator_portfolio_id: creator.hostid });
-      dispatch(remove_Crush({ userid: currentUserId, token, creator_portfolio_id: creator.hostid }));
+      console.log("🔍 [addTocrush] Dispatching remove_Crush:", {
+        userid: currentUserId,
+        token,
+        creator_portfolio_id: creator.hostid,
+      });
+      dispatch(
+        remove_Crush({
+          userid: currentUserId,
+          token,
+          creator_portfolio_id: creator.hostid,
+        }),
+      );
     }
   };
 
-  const handleRequestDetailsSubmit = async (details: { date: string; time: string; venue: string }) => {
+  const handleRequestDetailsSubmit = async (details: {
+    date: string;
+    time: string;
+    venue: string;
+  }) => {
     const currentUserId = getCurrentUserId();
 
-    console.log('Sending request with:', {
+    console.log("Sending request with:", {
       userid: currentUserId,
       creator_portfolio_id: creator.hostid,
       creatorUserid: creator.userid,
@@ -804,7 +987,7 @@ export default function Creatorbyid() {
       date: details.date,
       time: details.time,
       place: details.venue,
-      price: parseFloat(creator.price) || 0
+      price: parseFloat(creator.price) || 0,
     });
 
     // Check if user has enough gold balance (skip for Fan call requests)
@@ -813,20 +996,26 @@ export default function Creatorbyid() {
 
     // Only check balance for Fan meet and Fan date, not for Fan call
     // Allow exact matches (userBalance === requiredAmount is valid)
-    if (creator.hosttype !== "Fan call" && creator.hosttype !== "Fan Call" && userBalance < requiredAmount) {
-      toast.error(`Insufficient gold! You need ${requiredAmount} gold but only have ${userBalance} gold.`);
+    if (
+      creator.hosttype !== "Fan call" &&
+      creator.hosttype !== "Fan Call" &&
+      userBalance < requiredAmount
+    ) {
+      toast.error(
+        `Insufficient gold! You need ${requiredAmount} gold but only have ${userBalance} gold.`,
+      );
       // Redirect to buy-gold page
       setTimeout(() => {
-        navigate('/buy-gold');
+        navigate("/buy-gold");
       }, 2000);
       return;
     }
 
     try {
       const response = await fetch(`${URL}/requesthost`, {
-        method: 'PUT',
+        method: "PUT",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           userid: currentUserId,
@@ -835,8 +1024,8 @@ export default function Creatorbyid() {
           date: details.date,
           time: details.time,
           place: details.venue,
-          price: parseFloat(creator.price) || 0
-        })
+          price: parseFloat(creator.price) || 0,
+        }),
       });
 
       if (response.ok) {
@@ -846,15 +1035,15 @@ export default function Creatorbyid() {
         toast.success(`${serviceType} request sent successfully!`);
         // Optionally navigate to notifications
         setTimeout(() => {
-          navigate('/notifications/activity');
+          navigate("/notifications/activity");
         }, 2000);
       } else {
         const errorData = await response.json();
-        toast.error(errorData.message || 'Failed to send request');
+        toast.error(errorData.message || "Failed to send request");
       }
     } catch (error) {
-      console.error('Error sending request:', error);
-      toast.error('Error sending request');
+      console.error("Error sending request:", error);
+      toast.error("Error sending request");
     }
   };
 
@@ -866,14 +1055,13 @@ export default function Creatorbyid() {
     }
   };
 
-
   if (!loading && creator?.userid && !creator?.hosttype && !creator?.price) {
-    const tst = toast.loading("Curating your creator, please wait!")
-    navigate("/creators/editcreatorportfolio")
-    setLoading(true)
+    const tst = toast.loading("Curating your creator, please wait!");
+    navigate("/creators/editcreatorportfolio");
+    setLoading(true);
     setTimeout(() => {
-      toast.dismiss(tst)
-    }, 5000)
+      toast.dismiss(tst);
+    }, 5000);
   }
 
   const psPrice = creator?.price?.replace(/(GOLD)(per)/, "$1 $2");
@@ -881,13 +1069,17 @@ export default function Creatorbyid() {
     ? psPrice
     : `${psPrice} Gold/min`;
   // Don't render if creator data is not available or still loading
-  if (loading || creatorbyidstatus === "loading" || !creator || Object.keys(creator).length === 0) {
+  if (
+    loading ||
+    creatorbyidstatus === "loading" ||
+    !creator ||
+    Object.keys(creator).length === 0
+  ) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
         <SkeletonTheme baseColor="#202020" highlightColor="#444">
           <div className="container mx-auto px-4 py-8">
             <div className="max-w-4xl mx-auto space-y-6">
-
               {/* Header Section Skeleton */}
               <div className="bg-[#111624] rounded-2xl p-6 shadow-2xl">
                 <div className="flex justify-between items-start mb-4">
@@ -917,7 +1109,7 @@ export default function Creatorbyid() {
                       width="100%"
                       height={300}
                       className="rounded-md"
-                      style={{ maxWidth: '400px', margin: '0 auto' }}
+                      style={{ maxWidth: "400px", margin: "0 auto" }}
                     />
                   </div>
                 </div>
@@ -929,7 +1121,11 @@ export default function Creatorbyid() {
                   <Skeleton width="100%" height={48} className="rounded-xl" />
                   <Skeleton width="100%" height={48} className="rounded-xl" />
                 </div>
-                <Skeleton width="100%" height={56} className="rounded-xl mt-4" />
+                <Skeleton
+                  width="100%"
+                  height={56}
+                  className="rounded-xl mt-4"
+                />
               </div>
 
               {/* Profile Information Skeleton */}
@@ -938,21 +1134,31 @@ export default function Creatorbyid() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-4">
-                    {Array(6).fill(0).map((_, index) => (
-                      <div key={index} className="flex justify-between items-center p-3 bg-gray-700 rounded-lg">
-                        <Skeleton width={80} height={20} />
-                        <Skeleton width={100} height={20} />
-                      </div>
-                    ))}
+                    {Array(6)
+                      .fill(0)
+                      .map((_, index) => (
+                        <div
+                          key={index}
+                          className="flex justify-between items-center p-3 bg-gray-700 rounded-lg"
+                        >
+                          <Skeleton width={80} height={20} />
+                          <Skeleton width={100} height={20} />
+                        </div>
+                      ))}
                   </div>
 
                   <div className="space-y-4">
-                    {Array(6).fill(0).map((_, index) => (
-                      <div key={index} className="flex justify-between items-center p-3 bg-gray-700 rounded-lg">
-                        <Skeleton width={80} height={20} />
-                        <Skeleton width={100} height={20} />
-                      </div>
-                    ))}
+                    {Array(6)
+                      .fill(0)
+                      .map((_, index) => (
+                        <div
+                          key={index}
+                          className="flex justify-between items-center p-3 bg-gray-700 rounded-lg"
+                        >
+                          <Skeleton width={80} height={20} />
+                          <Skeleton width={100} height={20} />
+                        </div>
+                      ))}
                   </div>
                 </div>
 
@@ -960,9 +1166,16 @@ export default function Creatorbyid() {
                 <div className="mt-6">
                   <Skeleton width={120} height={24} className="mb-3" />
                   <div className="flex flex-wrap gap-2">
-                    {Array(4).fill(0).map((_, index) => (
-                      <Skeleton key={index} width={60} height={32} className="rounded-full" />
-                    ))}
+                    {Array(4)
+                      .fill(0)
+                      .map((_, index) => (
+                        <Skeleton
+                          key={index}
+                          width={60}
+                          height={32}
+                          className="rounded-full"
+                        />
+                      ))}
                   </div>
                 </div>
 
@@ -1012,10 +1225,15 @@ export default function Creatorbyid() {
       <div className="pt-5 md:pt-0">
         <div className="relative w-full pb-16 mx-auto overflow-auto md:max-w-md sm:ml-8 md:mt-5 md:mr-auto md:ml-24 xl:ml-42 2xl:ml-52">
           <div className="flex flex-col items-center justify-center p-8 text-center">
-            <h2 className="text-xl font-bold text-red-400 mb-4">Creator Not Found</h2>
-            <p className="text-gray-400 mb-4">The creator you&apos;re looking for doesn&apos;t exist or has been removed.</p>
+            <h2 className="text-xl font-bold text-red-400 mb-4">
+              Creator Not Found
+            </h2>
+            <p className="text-gray-400 mb-4">
+              The creator you&apos;re looking for doesn&apos;t exist or has been
+              removed.
+            </p>
             <button
-              onClick={() => router.push('/creators')}
+              onClick={() => router.push("/creators")}
               className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
             >
               Back to Creators
@@ -1049,7 +1267,6 @@ export default function Creatorbyid() {
         <SkeletonTheme baseColor="#202020" highlightColor="#444">
           <div className="container mx-auto px-4 py-8">
             <div className="max-w-4xl mx-auto space-y-6">
-
               {/* Header Section Skeleton */}
               <div className="bg-[#111624] rounded-2xl p-6 shadow-2xl">
                 <div className="flex justify-between items-start mb-4">
@@ -1079,7 +1296,7 @@ export default function Creatorbyid() {
                       width="100%"
                       height={300}
                       className="rounded-md"
-                      style={{ maxWidth: '400px', margin: '0 auto' }}
+                      style={{ maxWidth: "400px", margin: "0 auto" }}
                     />
                   </div>
                 </div>
@@ -1091,7 +1308,11 @@ export default function Creatorbyid() {
                   <Skeleton width="100%" height={48} className="rounded-xl" />
                   <Skeleton width="100%" height={48} className="rounded-xl" />
                 </div>
-                <Skeleton width="100%" height={56} className="rounded-xl mt-4" />
+                <Skeleton
+                  width="100%"
+                  height={56}
+                  className="rounded-xl mt-4"
+                />
               </div>
 
               {/* Profile Information Skeleton */}
@@ -1100,21 +1321,31 @@ export default function Creatorbyid() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-4">
-                    {Array(6).fill(0).map((_, index) => (
-                      <div key={index} className="flex justify-between items-center p-3 bg-gray-700 rounded-lg">
-                        <Skeleton width={80} height={20} />
-                        <Skeleton width={100} height={20} />
-                      </div>
-                    ))}
+                    {Array(6)
+                      .fill(0)
+                      .map((_, index) => (
+                        <div
+                          key={index}
+                          className="flex justify-between items-center p-3 bg-gray-700 rounded-lg"
+                        >
+                          <Skeleton width={80} height={20} />
+                          <Skeleton width={100} height={20} />
+                        </div>
+                      ))}
                   </div>
 
                   <div className="space-y-4">
-                    {Array(6).fill(0).map((_, index) => (
-                      <div key={index} className="flex justify-between items-center p-3 bg-gray-700 rounded-lg">
-                        <Skeleton width={80} height={20} />
-                        <Skeleton width={100} height={20} />
-                      </div>
-                    ))}
+                    {Array(6)
+                      .fill(0)
+                      .map((_, index) => (
+                        <div
+                          key={index}
+                          className="flex justify-between items-center p-3 bg-gray-700 rounded-lg"
+                        >
+                          <Skeleton width={80} height={20} />
+                          <Skeleton width={100} height={20} />
+                        </div>
+                      ))}
                   </div>
                 </div>
 
@@ -1122,9 +1353,16 @@ export default function Creatorbyid() {
                 <div className="mt-6">
                   <Skeleton width={120} height={24} className="mb-3" />
                   <div className="flex flex-wrap gap-2">
-                    {Array(4).fill(0).map((_, index) => (
-                      <Skeleton key={index} width={60} height={32} className="rounded-full" />
-                    ))}
+                    {Array(4)
+                      .fill(0)
+                      .map((_, index) => (
+                        <Skeleton
+                          key={index}
+                          width={60}
+                          height={32}
+                          className="rounded-full"
+                        />
+                      ))}
                   </div>
                 </div>
 
@@ -1167,116 +1405,172 @@ export default function Creatorbyid() {
       )}
 
       {showmode && (
-        <div className="container mx-auto px-4 py-8">
-          <div className="max-w-4xl mx-auto space-y-6">
+        <div className="w-full max-w-4xl mx-auto overflow-hidden bg-[#111624] text-white shadow-2xl">
+          <ul className="sticky top-0 z-40 flex h-[52px] items-center justify-between px-4 py-3 bg-[#070b15]">
+            <li>
+              <div onClick={() => router.back()} className="cursor-pointer">
+                <IoArrowBack className="w-5 h-5 text-slate-300" />
+              </div>
+            </li>
+            <li>
+              <div className="font-bold text-white flex items-center gap-2">
+                <span className="bg-gradient-to-r from-[#6c63ff] to-[#9b59f5] text-white px-2 py-1 rounded-full">
+                  M
+                </span>
+                <span>mmeko</span>
+              </div>
+            </li>
+            <li>
+              {checkuser() && (
+                <div className="relative ml-4">
+                  <button
+                    onClick={(e) => {
+                      setcloseOption(!closeOption);
+                      e.stopPropagation();
+                    }}
+                    className="p-2 bg-gray-700 hover:bg-gray-600 rounded-full transition-colors duration-200"
+                  >
+                    <Image className="w-5 h-5" alt="options" src={optionicon} />
+                  </button>
 
-            {/* Header Section */}
-            <div className="relative bg-[#111624] rounded-2xl p-6 shadow-2xl">
-              <div className="flex justify-between items-start mb-4">
-                <div className="flex-1">
-                  <CreatorByIdNav
-                    views={views}
-                    creatorName={(creator?.name || " ").split(" ")[0]}
-                    followingUser={creator.followingUser}
-                    id={creator.userid}
-                    creator_portfolio_id={creator.hostid}
-                    checkuser={checkuser()}
-                  />
+                  {closeOption && (
+                    <div className="absolute right-0 top-12 bg-gray-700 rounded-lg shadow-xl border border-gray-600 z-50 min-w-[120px]">
+                      <button
+                        onClick={(e) => {
+                          navigate("/creators/editcreatorportfolio");
+                          setcloseOption(false);
+                        }}
+                        className="w-full px-4 py-3 text-left text-white hover:bg-gray-600 rounded-t-lg transition-colors duration-200 flex items-center gap-2"
+                      >
+                        <Image src={editIcon} alt="edit" className="w-4 h-4" />
+                        Edit
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          confirmDelete();
+                          setcloseOption(false);
+                        }}
+                        className="w-full px-4 py-3 text-left text-red-400 hover:bg-gray-600 rounded-b-lg transition-colors duration-200 flex items-center gap-2"
+                      >
+                        <Image
+                          src={deleteicon}
+                          alt="delete"
+                          className="w-4 h-4"
+                        />
+                        Delete
+                      </button>
+                    </div>
+                  )}
                 </div>
+              )}
+            </li>
+          </ul>
+          {/* Image Gallery */}
+          <div className="relative bg-[#111624]">
+            {checkimg()}
 
-                {checkuser() && (
-                  <div className="relative ml-4">
-                    <button
-                      onClick={(e) => {
-                        setcloseOption(!closeOption);
-                        e.stopPropagation();
-                      }}
-                      className="p-2 bg-gray-700 hover:bg-gray-600 rounded-full transition-colors duration-200"
-                    >
-                      <Image
-                        className="w-5 h-5"
-                        alt="options"
-                        src={optionicon}
-                      />
-                    </button>
-
-                    {closeOption && (
-                      <div className="absolute right-0 top-12 bg-gray-700 rounded-lg shadow-xl border border-gray-600 z-50 min-w-[120px]">
-                        <button
-                          onClick={(e) => {
-                            navigate("/creators/editcreatorportfolio");
-                            setcloseOption(false);
-                          }}
-                          className="w-full px-4 py-3 text-left text-white hover:bg-gray-600 rounded-t-lg transition-colors duration-200 flex items-center gap-2"
-                        >
-                          <Image src={editIcon} alt="edit" className="w-4 h-4" />
-                          Edit
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            confirmDelete();
-                            setcloseOption(false);
-                          }}
-                          className="w-full px-4 py-3 text-left text-red-400 hover:bg-gray-600 rounded-b-lg transition-colors duration-200 flex items-center gap-2"
-                        >
-                          <Image src={deleteicon} alt="delete" className="w-4 h-4" />
-                          Delete
-                        </button>
-                      </div>
-                    )}
-                  </div>
+            {/* Profile summary */}
+            <div className="relative px-5 pt-12 pb-5 bg-[#111624]">
+              <div className="absolute left-5 -top-10">
+                <div className="relative rounded-full w-20 h-20 overflow-hidden">
+                  {creator.photolink &&
+                  creator.photolink[0] &&
+                  !profileImageFailed ? (
+                    <Image
+                      src={creator.photolink[0]}
+                      alt="Profile Picture"
+                      width={80}
+                      height={80}
+                      className="object-cover w-full h-full"
+                      onError={() => setProfileImageFailed(true)}
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-r from-[#6c63ff] to-[#9b59f5] flex items-center justify-center">
+                      <span className="text-white text-3xl font-bold">
+                        {(creator.name || "M").charAt(0).toUpperCase()}
+                      </span>
+                    </div>
+                  )}
+                </div>
+                {/* Online indicator on the right */}
+                {checkOnline() === "online" && (
+                  <div className="absolute bottom-1 right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-gray-800"></div>
                 )}
+
+                {/* VIP Badge - positioned on top-left of creator image */}
+                {(() => {
+                  // Check VIP status from both Redux store and creator data
+                  const isVip = vipStatus?.isVip || vipStatusFromCreator?.isVip;
+                  const vipEndDate =
+                    vipStatus?.vipEndDate || vipStatusFromCreator?.vipEndDate;
+                  return (
+                    isVip === true && (
+                      <div className="absolute bottom-8 left-7 z-20">
+                        <VIPBadge
+                          size="xl"
+                          isVip={isVip}
+                          vipEndDate={vipEndDate}
+                        />
+                      </div>
+                    )
+                  );
+                })()}
               </div>
 
-              {/* Status Badge - Only show when online */}
-              {checkOnline() === 'online' && (
-                <div className="flex items-center justify-center w-full gap-2 mb-4">
-                  <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                  <span className="text-sm text-gray-300 capitalize">online</span>
+              <div className="ml-28 sm:ml-32 grid grid-cols-3 items-end gap-2 sm:gap-4">
+                <div className="text-center flex flex-col items-center">
+                  <p className="text-xl font-bold text-white">{views}</p>
+                  <p className="text-xs text-slate-400 mt-2">Views</p>
+                </div>
+
+                <div className="text-center flex flex-col items-center">
+                  <div className="text-sm mb-2 flex gap-1">
+                    {[...Array(5)].map((_, i) => (
+                      <span key={i} className="text-yellow-400">
+                        {i < Math.round(averageRating || 0) ? "⭐" : "☆"}
+                      </span>
+                    ))}
+                  </div>
+                  <p className="text-xs text-slate-400">Rating</p>
+                </div>
+
+                <div className="text-center flex flex-col items-center">
+                  <p className="text-xl font-bold text-white">
+                    {totalRatings}
+                  </p>
+                  <p className="text-xs text-slate-400 mt-2">Reviews</p>
+                </div>
+              </div>
+
+              <div className="mt-5">
+                <h1 className="flex items-center gap-2 text-2xl font-bold text-white">
+                  {creator.name?.split(" ")[0] || "Creator"}
                   {creator.verify && (
-                    <span className="px-2 py-1 bg-blue-600 text-white text-xs rounded-full">Verified</span>
+                    <span className="inline-flex items-center gap-1 rounded bg-cyan-950/80 px-2 py-1 text-xs font-semibold text-cyan-300 ring-1 ring-cyan-500/60">
+                      <IoCheckmarkCircleOutline className="h-3.5 w-3.5" />
+                      Verified
+                    </span>
                   )}
-                </div>
-              )}
-
-              {/* Verified badge only - show when offline but verified */}
-              {checkOnline() !== 'online' && creator.verify && (
-                <div className="flex items-center justify-center w-full gap-2 mb-4">
-                  <span className="px-2 py-1 bg-blue-600 text-white text-xs rounded-full">Verified</span>
-                </div>
-              )}
-
-              {/* Main Content */}
-              <div className="text-center">
-                <h1 className="text-xl font-bold text-white mb-2 flex items-center justify-center gap-1">
-                  {getStatus(String(creator?.hosttype))} {creator.name.split(" ")[0]}
-
                 </h1>
-                <p className="text-gray-300 text-1xl flex items-center justify-center gap-1">
-                  {creator.username}
-                  {creator.verify && (
-                    <BadgeCheck size={17} className="text-black inline flex-shrink-0" fill="white" />
-                  )}
+                {isFanDateCreator && (
+                  <span className="mt-2 inline-flex items-center rounded border border-pink-500/70 bg-pink-950/70 px-2 py-1 text-xs font-semibold text-pink-200">
+                    Exclusive
+                  </span>
+                )}
+                {creator.username && (
+                  <p className="mt-2 text-sm font-semibold text-slate-400">
+                    {creator.username}
+                  </p>
+                )}
+                <p className="mt-3 text-sm font-semibold text-slate-300">
+                  {getStatus(String(creator?.hosttype))}{" "}
+                  {creator.name?.split(" ")[0] || "creator"}
                 </p>
               </div>
             </div>
-
-            {/* Image Gallery */}
-            <div className="bg-[#111624] rounded-2xl p-6 shadow-2xl relative">
-              {checkimg()}
-
-              {/* VIP Badge - positioned on top-left of creator image */}
-              {(() => {
-                // Check VIP status from both Redux store and creator data
-                const isVip = vipStatus?.isVip || vipStatusFromCreator?.isVip;
-                const vipEndDate = vipStatus?.vipEndDate || vipStatusFromCreator?.vipEndDate;
-                return isVip === true && (
-                  <div className="absolute top-2 left-20">
-                    <VIPBadge size="xxl" isVip={isVip} vipEndDate={vipEndDate} />
-                  </div>
-                );
-              })()}
-            </div>
+          </div>
+          <div className="px-4 pt-3 pb-8">
+            <div className="space-y-6">
 
             {isModalOpen && (
               <div
@@ -1312,8 +1606,12 @@ export default function Creatorbyid() {
                 <div className="bg-[#111624] p-6 rounded-lg text-white w-11/12 max-w-md">
                   <h2 className="text-lg font-bold mb-4">⚠ Warning</h2>
                   <p className="mb-4">
-                    Deleting your portfolio will permanently remove all your views, and you may lose pending fan requests and unclaimed gold. Your visibility will also drop if you create a new portfolio.
-                    <br /><br />
+                    Deleting your portfolio will permanently remove all your
+                    views, and you may lose pending fan requests and unclaimed
+                    gold. Your visibility will also drop if you create a new
+                    portfolio.
+                    <br />
+                    <br />
                     Are you certain you want to proceed?
                   </p>
                   <div className="flex justify-end gap-4">
@@ -1335,10 +1633,9 @@ export default function Creatorbyid() {
             )}
 
             {/* Action Buttons */}
-            <div className="bg-[#111624] rounded-2xl p-6 shadow-2xl">
-              <div className="flex flex-col sm:flex-row gap-4">
-                {Cantchat() && (
-                  <>
+            {Cantchat() && (
+              <div className="bg-[#111624] rounded-2xl p-6 shadow-2xl">
+                <div className="flex flex-col sm:flex-row gap-4">
                     <button
                       className="flex-1 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg"
                       onClick={(e) => {
@@ -1378,11 +1675,8 @@ export default function Creatorbyid() {
                     >
                       {dcb ? "⏳ Processing..." : crush_text}
                     </button>
-                  </>
-                )}
-              </div>
+                </div>
 
-              {Cantchat() && (
                 <button
                   className="w-full mt-4 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-bold py-4 px-6 rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg"
                   onClick={(e) => {
@@ -1397,139 +1691,199 @@ export default function Creatorbyid() {
                 >
                   🎯 Request {creator.hosttype}
                 </button>
-              )}
-            </div>
-            {/* Profile Information */}
-            <div className="bg-[#111624] rounded-2xl p-6 shadow-2xl">
-              <h2 className="text-2xl font-bold text-white mb-6 text-center">Portfolio Details</h2>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Basic Info */}
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center p-3 bg-gray-700 rounded-lg">
-                    <span className="text-gray-300 font-medium">👤 Name</span>
-                    <span className="text-white font-semibold text-sm sm:text-base">{creator.name}  {creator.verify && (
-                      <BadgeCheck size={17} className="text-black inline flex-shrink-0" fill="white" />
-                    )}</span>
-                  </div>
-
-                  <div className="flex justify-between items-center p-3 bg-gray-700 rounded-lg">
-                    <span className="text-gray-300 font-medium">🎂 Age</span>
-                    <span className="text-white font-semibold">{creator.age} years</span>
-                  </div>
-
-                  <div className="flex justify-between items-center p-3 bg-gray-700 rounded-lg">
-                    <span className="text-gray-300 font-medium">📍 Location</span>
-                    <span className="text-white font-semibold">{creator.location}</span>
-                  </div>
-
-                  <div className="flex justify-between items-center p-3 bg-gray-700 rounded-lg">
-                    <span className="text-gray-300 font-medium">⚖️ Gender</span>
-                    <span className="text-white font-semibold">{creator.gender}</span>
-                  </div>
-                </div>
-
-                {/* Service Info */}
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center p-3 bg-gray-700 rounded-lg">
-                    <span className="text-gray-300 font-medium">
-                      {creator.hosttype === "Fan call" || creator.hosttype === "Fan Call" ? "📞 Call Rate" : "🚗 Rate"}
-                    </span>
-                    <span className="text-yellow-400 font-bold">
-                      {creator.hosttype === "Fan call" || creator.hosttype === "Fan Call"
-                        ? fmtPSPrice
-                        : `${formatCreatorPrices(creator.price)} GOLD`}
-                    </span>
-                  </div>
-
-                  <div className="flex justify-between items-center p-3 bg-gray-700 rounded-lg">
-                    <span className="text-gray-300 font-medium">⏱️ Duration</span>
-                    <span className="text-white font-semibold">{creator.duration} min</span>
-                  </div>
-
-                  
-
-                 
-                  
-
-                  <div className="flex justify-between items-center p-3 bg-gray-700 rounded-lg">
-                    <span className="text-gray-300 font-medium">✅ Status</span>
-                    <span className={`font-semibold ${creator.verify ? 'text-green-400' : 'text-yellow-400'}`}>
-                      {creator.verify ? "Verified" : "Not verified"}
-                    </span>
-                  </div>
-                </div>
+              </div>
+            )}
+            {/* Meet Card */}
+            <div className="rounded-2xl border border-violet-500/60 bg-[#111426] p-5 shadow-2xl ring-1 ring-cyan-400/20">
+              <div className="mb-5 flex items-start justify-between gap-4">
+                <p className="text-xs font-bold uppercase tracking-wide text-violet-300">
+                  {creatorServiceTitle}
+                </p>
+                <span className="rounded-md border border-emerald-500/40 bg-emerald-500/10 px-3 py-1 text-xs font-bold text-emerald-300">
+                  ✓ Available Today
+                </span>
               </div>
 
-             
-
-              {/* Availability */}
-              <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <h3 className="text-lg font-semibold text-white mb-3">🕐 Available Hours</h3>
-                  <div className="p-3 bg-gray-700 rounded-lg">
-                    <span className="text-gray-300 text-sm">
-                      {creator.timeava?.split(" ").join(", ") || "Not specified"}
-                    </span>
-                  </div>
-                </div>
-
-                <div>
-                  <h3 className="text-lg font-semibold text-white mb-3">📅 Available Days</h3>
-                  <div className="p-3 bg-gray-700 rounded-lg">
-                    <span className="text-gray-300 text-sm">
-                      {creator.daysava?.split(" ").join(", ") || "Not specified"}
-                    </span>
-                  </div>
-                </div>
+              <div className="flex flex-wrap items-end gap-2">
+               <Coins className="h-10 w-10 text-yellow-400" />
+                <span className="text-4xl font-black leading-none text-white">
+                  {creatorPriceValue}
+                </span>
+                <span className="pb-1 text-base font-semibold text-slate-300">
+                  {creatorRateSuffix}
+                </span>
               </div>
-            </div>
+              <p className="mt-2 text-sm text-slate-500">
+                Fan pays upfront - you keep 100%
+              </p>
 
-            {/* About Section */}
-            <div className="bg-[#111624] rounded-2xl p-6 shadow-2xl">
-              <h2 className="text-2xl font-bold text-white mb-4 text-center">About Me</h2>
-              <div className="bg-gray-700 rounded-lg p-4">
-                <p className="text-gray-300 leading-relaxed text-center">
-                  {creator.description}
+              <div className="mt-5 space-y-3 text-sm text-slate-300">
+                <p className="flex items-center gap-3">
+                  <span className="flex h-5 w-5 items-center justify-center rounded-full border border-violet-500/50 bg-violet-500/10 text-xs text-violet-300">
+                    ✓
+                  </span>
+                  {creatorDurationText}
+                  {!isFanCallCreator && ", public venue only"}
+                </p>
+                <p className="flex items-center gap-3">
+                  <span className="flex h-5 w-5 items-center justify-center rounded-full border border-violet-500/50 bg-violet-500/10 text-xs text-violet-300">
+                    ✓
+                  </span>
+                  Payment secured before the {creatorServiceNoun}
+                </p>
+                <p className="flex items-center gap-3">
+                  <span className="flex h-5 w-5 items-center justify-center rounded-full border border-violet-500/50 bg-violet-500/10 text-xs text-violet-300">
+                    ✓
+                  </span>
+                  All communication on-platform
                 </p>
               </div>
             </div>
 
-            {/* Safety Rules Section - Only show for non-call requests */}
-            {creator.hosttype !== "Fan call" && creator.hosttype !== "Fan Call" && (
-              <div className="bg-[#111624] rounded-2xl p-6 shadow-2xl">
-                <h2 className="text-2xl font-bold text-white mb-4 text-center">Safety Rules (Important!)</h2>
-                <div className="bg-gray-700 rounded-lg p-4">
-                  <ul className="text-gray-300 space-y-3">
-                    <li className="flex items-start">
-                      <span className="text-red-400 mr-3 mt-1">•</span>
-                      <span>All {creator.hosttype?.toLowerCase() || 'meets'} are limited to 30 minutes.</span>
-                    </li>
-                    <li className="flex items-start">
-                      <span className="text-red-400 mr-3 mt-1">•</span>
-                      <span>{creator.hosttype?.toLowerCase() || 'Meets'} must happen in a public place only.</span>
-                    </li>
-                  </ul>
-                  <div className="mt-4 p-3 bg-yellow-900/20 border border-yellow-600/30 rounded-lg">
-                    <p className="text-yellow-300 text-sm text-center">
-                      <strong>What happens after 30 minutes is outside the platform&apos;s responsibility.</strong>
-                    </p>
+            {/* Meet Details */}
+            <section className="space-y-3">
+              <h2 className="flex items-center gap-2 text-xs font-black uppercase tracking-wide text-white">
+                <span className="h-0.5 w-3 bg-violet-500"></span>
+                {creatorDetailsTitle}
+              </h2>
+
+              <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                <div className="rounded-lg border border-slate-700 bg-[#111827] p-4">
+                  <p className="text-xs font-bold uppercase text-slate-600">
+                    👤 Creator
+                  </p>
+                  <p className="mt-1 font-bold text-white">{creator.name}</p>
+                </div>
+                <div className="rounded-lg border border-slate-700 bg-[#111827] p-4">
+                  <p className="text-xs font-bold uppercase text-slate-600">
+                    📍 Location
+                  </p>
+                  <p className="mt-1 font-bold text-white">
+                    {isFanCallCreator
+                      ? "On-platform video call"
+                      : creator.location || "Not specified"}
+                  </p>
+                </div>
+                <div className="rounded-lg border border-slate-700 bg-[#111827] p-4">
+                  <p className="text-xs font-bold uppercase text-slate-600">
+                    ⏱ Duration
+                  </p>
+                  <p className="mt-1 font-bold text-white">
+                    {creatorDurationText}
+                  </p>
+                </div>
+                <div className="rounded-lg border border-slate-700 bg-[#111827] p-4">
+                  <p className="text-xs font-bold uppercase text-slate-600">
+                    ✅ Status
+                  </p>
+                  <p
+                    className={`mt-1 font-bold ${creator.verify ? "text-cyan-300" : "text-yellow-300"}`}
+                  >
+                    {creator.verify ? "✓ Verified Creator" : "Not verified"}
+                  </p>
+                </div>
+              </div>
+
+              <div className="rounded-lg border border-slate-700 bg-[#111827] p-4">
+                <p className="text-xs font-bold uppercase text-slate-600">
+                  📅 Available Days
+                </p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {availabilityDays.length > 0 ? (
+                    availabilityDays.map((day) => (
+                      <span
+                        key={day}
+                        className="rounded-md border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-xs font-bold uppercase text-emerald-300"
+                      >
+                        {day}
+                      </span>
+                    ))
+                  ) : (
+                    <span className="text-sm text-slate-400">
+                      Not specified
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              <div className="rounded-lg border border-slate-700 bg-[#111827] p-4">
+                <p className="text-xs font-bold uppercase text-slate-600">
+                  🕘 Available Hours
+                </p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {availabilityHours.length > 0 ? (
+                    availabilityHours.map((time) => (
+                      <span
+                        key={time}
+                        className="rounded-md bg-[#0c1220] px-4 py-2 text-sm font-semibold text-slate-300 ring-1 ring-slate-800"
+                      >
+                        {time}
+                      </span>
+                    ))
+                  ) : (
+                    <span className="text-sm text-slate-400">
+                      Not specified
+                    </span>
+                  )}
+                </div>
+              </div>
+            </section>
+
+            {/* About Section */}
+            <section className="space-y-6">
+              <div>
+                <h2 className="mb-4 flex items-center gap-2 text-xs font-black uppercase tracking-wide text-white">
+                  <span className="h-0.5 w-3 bg-violet-500"></span>
+                  About {creator.name?.split(" ")[0] || "Creator"}
+                </h2>
+                <p className="text-sm leading-7 text-slate-300">
+                  {creator.description || "No description yet."}
+                </p>
+              </div>
+
+              {!isFanCallCreator && (
+                <div className="overflow-hidden rounded-2xl border border-yellow-600/30 bg-[#171d30]">
+                  <div className="border-b border-yellow-600/20 px-5 py-4">
+                    <h3 className="font-bold text-yellow-400">
+                      ⚠ Safety Rules - Important
+                    </h3>
                   </div>
-                  <div className="flex mt-4 justify-center gap-2">
-                    <IoCheckmarkCircleOutline className="text-green-500 text-lg" />
-                    <p className="text-white text-xs text-center">
+                  <div className="space-y-4 p-5 text-sm text-slate-300">
+                    <p className="flex gap-3">
+                      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-yellow-600/60 text-xs text-yellow-400">
+                        1
+                      </span>
+                      All {creatorServiceTitle.toLowerCase()} sessions are
+                      limited to{" "}
+                      <strong className="text-white">30 minutes.</strong>
+                    </p>
+                    <p className="flex gap-3">
+                      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-yellow-600/60 text-xs text-yellow-400">
+                        2
+                      </span>
+                      {creatorServiceTitle} must happen in a{" "}
+                      <strong className="text-white">public place only</strong>
+                      {" "}- cafes, restaurants, or similar venues.
+                    </p>
+                    <p className="flex gap-3">
+                      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-yellow-600/60 text-xs text-yellow-400">
+                        3
+                      </span>
+                      What happens after 30 minutes is{" "}
+                      <strong className="text-white">
+                        outside the platform&apos;s responsibility.
+                      </strong>
+                    </p>
+                    <p className="border-t border-slate-700 pt-4 text-xs text-slate-500">
                       By sending a request, you agree to follow these rules.
                     </p>
                   </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {/* Reviews Section - Only show for non-call requests */}
-            {creator.hosttype !== "Fan call" && creator.hosttype !== "Fan Call" && (
-              <div className="bg-[#111624] rounded-2xl p-6 shadow-2xl">
+              {!isFanCallCreator && (
                 <button
-                  className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg"
+                  className="flex w-full items-center justify-between rounded-2xl border border-slate-800 bg-[#111827] p-5 text-left transition-colors duration-200 hover:border-violet-500/40"
                   onClick={(e) => {
                     if (!userid) {
                       toast.info("login to access this operation", {
@@ -1540,20 +1894,27 @@ export default function Creatorbyid() {
                     Check_review();
                   }}
                 >
-                  <div className="flex items-center justify-center gap-2">
-                    <span>⭐</span>
-                    <span>View Reviews</span>
-                    <span className="bg-white text-blue-600 px-2 py-1 rounded-full text-sm font-bold">
-                      {totalRatings}
-                    </span>
+                  <div className="flex items-center gap-4">
+                    <span className="text-4xl text-yellow-400">★</span>
+                    <div>
+                      <p className="text-xl font-black text-white">
+                        {totalRatings} Reviews
+                      </p>
+                      <p className="text-sm text-slate-500">
+                        {totalRatings > 0
+                          ? "See what fans are saying"
+                          : "No reviews yet - be the first"}
+                      </p>
+                    </div>
                   </div>
+                  <span className="text-2xl text-slate-600">›</span>
                 </button>
-              </div>
-            )}
+              )}
+            </section>
 
             {review_click && (
               <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
-                <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[80vh] overflow-hidden">
+                <div className="bg-gray-800 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[80vh] overflow-hidden">
                   <div className="flex justify-between items-center p-6 border-b border-gray-200">
                     <h2 className="text-2xl font-bold text-black">Reviews</h2>
                     <button
@@ -1598,7 +1959,10 @@ export default function Creatorbyid() {
                 className="fixed inset-0 z-[9999] flex items-center justify-center bg-black bg-opacity-50 w-full h-full"
                 onClick={() => setrequestclick(false)}
               >
-                <div className="w-full h-full flex items-center justify-center p-4" onClick={(e) => e.stopPropagation()}>
+                <div
+                  className="w-full h-full flex items-center justify-center p-4"
+                  onClick={(e) => e.stopPropagation()}
+                >
                   <Requestinfo
                     setrequestclick={setrequestclick}
                     amount={creator.price}
@@ -1614,7 +1978,10 @@ export default function Creatorbyid() {
                 className="fixed inset-0 z-[9999] flex items-center justify-center bg-black bg-opacity-50 w-full h-full"
                 onClick={() => setsuccess(false)}
               >
-                <div className="w-full h-full flex items-center justify-center p-4" onClick={(e) => e.stopPropagation()}>
+                <div
+                  className="w-full h-full flex items-center justify-center p-4"
+                  onClick={(e) => e.stopPropagation()}
+                >
                   <Requestform
                     setsuccess={setsuccess}
                     price={Number(creator.price) || 0}
@@ -1633,7 +2000,10 @@ export default function Creatorbyid() {
                 className="fixed inset-0 z-[9999] flex items-center justify-center bg-black bg-opacity-50 w-full h-full"
                 onClick={() => setrequested(false)}
               >
-                <div className="w-full h-full flex items-center justify-center p-4" onClick={(e) => e.stopPropagation()}>
+                <div
+                  className="w-full h-full flex items-center justify-center p-4"
+                  onClick={(e) => e.stopPropagation()}
+                >
                   <Requestsuccess setrequested={setrequested} />
                 </div>
               </div>
@@ -1650,7 +2020,8 @@ export default function Creatorbyid() {
             )}
           </div>
         </div>
+        </div>
       )}
     </div>
   );
-};
+}
