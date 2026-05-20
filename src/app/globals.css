@@ -1,10 +1,28 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@700;800&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@700;800&display=swap");
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 :root {
   --background: #080b14;
   --secondary: #0d1120;
+  /* Mmeko Template Color Palette */
+  --bg: #080b14;
+  --bg2: #0b0f1c;
+  --bg3: #0e1220;
+  --card: #111624;
+  --card2: #161b2e;
+  --border: rgba(255, 255, 255, 0.07);
+  --border2: rgba(255, 255, 255, 0.04);
+  --accent: #6c63ff;
+  --accent2: #9b59f5;
+  --teal: #2dd4bf;
+  --rose: #f472b6;
+  --success: #22c55e;
+  --gold: #f59e0b;
+  --text: #f1f5f9;
+  --text2: #94a3b8;
+  --text3: #475569;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -13,13 +31,22 @@
   }
 }
 
-@media(max-width: 900px) {
-  .lp .stat:nth-child(2) { border-right: none; }
-  .lp .stat:nth-child(3) { border-top: 1px solid var(--border); }
-  .lp .stat:nth-child(4) { border-top: 1px solid var(--border); border-right: none; }
+@media (max-width: 900px) {
+  .lp .stat:nth-child(2) {
+    border-right: none;
+  }
+  .lp .stat:nth-child(3) {
+    border-top: 1px solid var(--border);
+  }
+  .lp .stat:nth-child(4) {
+    border-top: 1px solid var(--border);
+    border-right: none;
+  }
 }
 
-.lp *, .lp *::before, .lp *::after {
+.lp *,
+.lp *::before,
+.lp *::after {
   border-color: rgba(255, 255, 255, 0.07);
 }
 
@@ -32,7 +59,7 @@ html {
 
 body {
   background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: "Plus Jakarta Sans", Arial, Helvetica, sans-serif;
   overflow: hidden;
   height: 100%;
 }
@@ -69,8 +96,6 @@ body {
     height: 100vh;
   }
 }
-
-
 
 .bg-img {
   background-image: url("/register.png");
@@ -217,7 +242,8 @@ body .Toastify__toast-body {
 
 /* Landing page headline gradient shimmer */
 @keyframes gradient-shift {
-  0%, 100% {
+  0%,
+  100% {
     background-position: 0% 50%;
   }
   50% {

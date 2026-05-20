@@ -36,6 +36,7 @@ import Skeleton, { SkeletonTheme } from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 
 import CreatorByIdNav from "./_components/CreatorByIdNav";
+import FollowStrip from "./_components/FollowStrip";
 import { formatCreatorPrices } from "./_utils/formatCreatorPrices";
 
 //import addcrush({inputs  : creator_portfolio_id and userid})
@@ -428,6 +429,7 @@ export default function Creatorbyid() {
       );
     }
   }, [userid, Creator[0], token]);
+
 
   useEffect(() => {
     if (creatorbyidstatus === "succeeded") {
@@ -868,6 +870,25 @@ export default function Creatorbyid() {
     }
   };
 
+  const handleShare = async () => {
+    const shareUrl = typeof window !== "undefined" ? window.location.href : "";
+    const shareTitle = `${creator.name || "Creator"} on Mmeko`;
+
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: shareTitle,
+          url: shareUrl,
+        });
+      } else if (navigator.clipboard && shareUrl) {
+        await navigator.clipboard.writeText(shareUrl);
+        toast.success("Profile link copied", { autoClose: 2000 });
+      }
+    } catch (error) {
+      // User cancelled native share sheet.
+    }
+  };
+
   const Check_review = () => {
     setreview_click(true);
     if (ratings_stats === "loading") {
@@ -1068,6 +1089,108 @@ export default function Creatorbyid() {
   const fmtPSPrice = psPrice?.includes("per minute")
     ? psPrice
     : `${psPrice} Gold/min`;
+
+  const renderShowmodeSkeleton = () => (
+    <SkeletonTheme baseColor="#202020" highlightColor="#444">
+      <div className="w-full max-w-4xl mx-auto overflow-hidden bg-[#111624] text-white shadow-2xl">
+        <div className="sticky top-0 z-40 flex h-[52px] items-center justify-between px-4 py-3 bg-[#070b15]">
+          <Skeleton width={22} height={22} />
+          <div className="flex items-center gap-2">
+            <Skeleton width={28} height={28} className="rounded-lg" />
+            <Skeleton width={70} height={18} />
+          </div>
+          <div className="flex items-center gap-2">
+            <Skeleton width={66} height={32} className="rounded-lg" />
+            <Skeleton width={34} height={34} className="rounded-full" />
+          </div>
+        </div>
+
+        <div className="relative bg-[#111624]">
+          <Skeleton width="100%" height={300} />
+
+          <div className="relative px-5 pt-12 pb-5 bg-[#111624]">
+            <div className="absolute left-5 -top-10">
+              <Skeleton circle width={80} height={80} />
+            </div>
+
+            <div className="ml-28 sm:ml-32 grid grid-cols-3 items-end gap-2 sm:gap-4">
+              {Array(3)
+                .fill(0)
+                .map((_, index) => (
+                  <div key={index} className="flex flex-col items-center gap-2">
+                    <Skeleton width={36} height={20} />
+                    <Skeleton width={54} height={12} />
+                  </div>
+                ))}
+            </div>
+
+            <div className="mt-5 space-y-3">
+              <div className="flex items-center gap-2">
+                <Skeleton width={120} height={28} />
+                <Skeleton width={76} height={24} className="rounded" />
+              </div>
+              <Skeleton width={92} height={16} />
+              <Skeleton width={210} height={18} />
+            </div>
+          </div>
+        </div>
+
+        <div className="px-4 pt-3 pb-8">
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <Skeleton width="100%" height={42} className="rounded-xl" />
+              <Skeleton width="100%" height={42} className="rounded-xl" />
+            </div>
+
+            <div className="rounded-2xl border border-violet-500/40 bg-[#111426] p-5">
+              <div className="mb-5 flex items-center justify-between">
+                <Skeleton width={120} height={16} />
+                <Skeleton width={108} height={26} className="rounded-md" />
+              </div>
+              <div className="flex items-end gap-3">
+                <Skeleton width={40} height={40} className="rounded-full" />
+                <Skeleton width={96} height={42} />
+                <Skeleton width={48} height={18} />
+              </div>
+              <Skeleton width={220} height={16} className="mt-3" />
+              <div className="mt-5 space-y-3">
+                <Skeleton width="70%" height={18} />
+                <Skeleton width="64%" height={18} />
+                <Skeleton width="60%" height={18} />
+              </div>
+            </div>
+
+            <Skeleton width="100%" height={56} className="rounded-xl" />
+
+            <div className="space-y-3">
+              <Skeleton width={130} height={16} />
+              <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                {Array(4)
+                  .fill(0)
+                  .map((_, index) => (
+                    <Skeleton
+                      key={index}
+                      width="100%"
+                      height={66}
+                      className="rounded-lg"
+                    />
+                  ))}
+              </div>
+              <Skeleton width="100%" height={88} className="rounded-lg" />
+              <Skeleton width="100%" height={88} className="rounded-lg" />
+            </div>
+
+            <div className="space-y-4">
+              <Skeleton width={160} height={16} />
+              <Skeleton width="100%" height={70} />
+              <Skeleton width="100%" height={160} className="rounded-2xl" />
+              <Skeleton width="100%" height={80} className="rounded-2xl" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </SkeletonTheme>
+  );
   // Don't render if creator data is not available or still loading
   if (
     loading ||
@@ -1077,144 +1200,7 @@ export default function Creatorbyid() {
   ) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
-        <SkeletonTheme baseColor="#202020" highlightColor="#444">
-          <div className="container mx-auto px-4 py-8">
-            <div className="max-w-4xl mx-auto space-y-6">
-              {/* Header Section Skeleton */}
-              <div className="bg-[#111624] rounded-2xl p-6 shadow-2xl">
-                <div className="flex justify-between items-start mb-4">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-4">
-                      <Skeleton circle width={40} height={40} />
-                      <div className="space-y-2">
-                        <Skeleton width={120} height={20} />
-                        <Skeleton width={80} height={16} />
-                      </div>
-                    </div>
-                  </div>
-                  <Skeleton width={40} height={40} className="rounded-full" />
-                </div>
-
-                <div className="text-center">
-                  <Skeleton width={200} height={24} className="mx-auto mb-2" />
-                  <Skeleton width={150} height={20} className="mx-auto" />
-                </div>
-              </div>
-
-              {/* Image Gallery Skeleton - Fixed size to match actual image */}
-              <div className="bg-[#111624] rounded-2xl p-6 shadow-2xl">
-                <div className="pt-2 pb-4 md:pt-60">
-                  <div className="relative w-full h-[300px] overflow-hidden rounded-md">
-                    <Skeleton
-                      width="100%"
-                      height={300}
-                      className="rounded-md"
-                      style={{ maxWidth: "400px", margin: "0 auto" }}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Action Buttons Skeleton */}
-              <div className="bg-[#111624] rounded-2xl p-6 shadow-2xl">
-                <div className="flex flex-col sm:flex-row gap-4">
-                  <Skeleton width="100%" height={48} className="rounded-xl" />
-                  <Skeleton width="100%" height={48} className="rounded-xl" />
-                </div>
-                <Skeleton
-                  width="100%"
-                  height={56}
-                  className="rounded-xl mt-4"
-                />
-              </div>
-
-              {/* Profile Information Skeleton */}
-              <div className="bg-[#111624] rounded-2xl p-6 shadow-2xl">
-                <Skeleton width={200} height={32} className="mx-auto mb-6" />
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-4">
-                    {Array(6)
-                      .fill(0)
-                      .map((_, index) => (
-                        <div
-                          key={index}
-                          className="flex justify-between items-center p-3 bg-gray-700 rounded-lg"
-                        >
-                          <Skeleton width={80} height={20} />
-                          <Skeleton width={100} height={20} />
-                        </div>
-                      ))}
-                  </div>
-
-                  <div className="space-y-4">
-                    {Array(6)
-                      .fill(0)
-                      .map((_, index) => (
-                        <div
-                          key={index}
-                          className="flex justify-between items-center p-3 bg-gray-700 rounded-lg"
-                        >
-                          <Skeleton width={80} height={20} />
-                          <Skeleton width={100} height={20} />
-                        </div>
-                      ))}
-                  </div>
-                </div>
-
-                {/* Interests Skeleton */}
-                <div className="mt-6">
-                  <Skeleton width={120} height={24} className="mb-3" />
-                  <div className="flex flex-wrap gap-2">
-                    {Array(4)
-                      .fill(0)
-                      .map((_, index) => (
-                        <Skeleton
-                          key={index}
-                          width={60}
-                          height={32}
-                          className="rounded-full"
-                        />
-                      ))}
-                  </div>
-                </div>
-
-                {/* Availability Skeleton */}
-                <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Skeleton width={120} height={24} className="mb-3" />
-                    <Skeleton width="100%" height={60} className="rounded-lg" />
-                  </div>
-                  <div>
-                    <Skeleton width={120} height={24} className="mb-3" />
-                    <Skeleton width="100%" height={60} className="rounded-lg" />
-                  </div>
-                </div>
-              </div>
-
-              {/* About Section Skeleton */}
-              <div className="bg-[#111624] rounded-2xl p-6 shadow-2xl">
-                <Skeleton width={120} height={32} className="mx-auto mb-4" />
-                <Skeleton width="100%" height={80} className="rounded-lg" />
-              </div>
-
-              {/* Safety Rules Skeleton */}
-              <div className="bg-[#111624] rounded-2xl p-6 shadow-2xl">
-                <Skeleton width={200} height={32} className="mx-auto mb-4" />
-                <div className="space-y-3">
-                  <Skeleton width="100%" height={20} />
-                  <Skeleton width="100%" height={20} />
-                  <Skeleton width="100%" height={40} className="rounded-lg" />
-                </div>
-              </div>
-
-              {/* Reviews Section Skeleton */}
-              <div className="bg-[#111624] rounded-2xl p-6 shadow-2xl">
-                <Skeleton width="100%" height={56} className="rounded-xl" />
-              </div>
-            </div>
-          </div>
-        </SkeletonTheme>
+        {renderShowmodeSkeleton()}
       </div>
     );
   }
@@ -1245,7 +1231,10 @@ export default function Creatorbyid() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
+    <div
+      className="min-h-screen bg-[#080b14] text-[#f1f5f9]"
+      style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+    >
       <ToastContainer position="top-center" theme="dark" />
 
       {/* VIP Celebration Animation */}
@@ -1263,157 +1252,21 @@ export default function Creatorbyid() {
         </div>
       )}
 
-      {loading && (
-        <SkeletonTheme baseColor="#202020" highlightColor="#444">
-          <div className="container mx-auto px-4 py-8">
-            <div className="max-w-4xl mx-auto space-y-6">
-              {/* Header Section Skeleton */}
-              <div className="bg-[#111624] rounded-2xl p-6 shadow-2xl">
-                <div className="flex justify-between items-start mb-4">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-4">
-                      <Skeleton circle width={40} height={40} />
-                      <div className="space-y-2">
-                        <Skeleton width={120} height={20} />
-                        <Skeleton width={80} height={16} />
-                      </div>
-                    </div>
-                  </div>
-                  <Skeleton width={40} height={40} className="rounded-full" />
-                </div>
-
-                <div className="text-center">
-                  <Skeleton width={200} height={24} className="mx-auto mb-2" />
-                  <Skeleton width={150} height={20} className="mx-auto" />
-                </div>
-              </div>
-
-              {/* Image Gallery Skeleton - Fixed size to match actual image */}
-              <div className="bg-[#111624] rounded-2xl p-6 shadow-2xl">
-                <div className="pt-2 pb-4 md:pt-60">
-                  <div className="relative w-full h-[300px] overflow-hidden rounded-md">
-                    <Skeleton
-                      width="100%"
-                      height={300}
-                      className="rounded-md"
-                      style={{ maxWidth: "400px", margin: "0 auto" }}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Action Buttons Skeleton */}
-              <div className="bg-[#111624] rounded-2xl p-6 shadow-2xl">
-                <div className="flex flex-col sm:flex-row gap-4">
-                  <Skeleton width="100%" height={48} className="rounded-xl" />
-                  <Skeleton width="100%" height={48} className="rounded-xl" />
-                </div>
-                <Skeleton
-                  width="100%"
-                  height={56}
-                  className="rounded-xl mt-4"
-                />
-              </div>
-
-              {/* Profile Information Skeleton */}
-              <div className="bg-[#111624] rounded-2xl p-6 shadow-2xl">
-                <Skeleton width={200} height={32} className="mx-auto mb-6" />
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-4">
-                    {Array(6)
-                      .fill(0)
-                      .map((_, index) => (
-                        <div
-                          key={index}
-                          className="flex justify-between items-center p-3 bg-gray-700 rounded-lg"
-                        >
-                          <Skeleton width={80} height={20} />
-                          <Skeleton width={100} height={20} />
-                        </div>
-                      ))}
-                  </div>
-
-                  <div className="space-y-4">
-                    {Array(6)
-                      .fill(0)
-                      .map((_, index) => (
-                        <div
-                          key={index}
-                          className="flex justify-between items-center p-3 bg-gray-700 rounded-lg"
-                        >
-                          <Skeleton width={80} height={20} />
-                          <Skeleton width={100} height={20} />
-                        </div>
-                      ))}
-                  </div>
-                </div>
-
-                {/* Interests Skeleton */}
-                <div className="mt-6">
-                  <Skeleton width={120} height={24} className="mb-3" />
-                  <div className="flex flex-wrap gap-2">
-                    {Array(4)
-                      .fill(0)
-                      .map((_, index) => (
-                        <Skeleton
-                          key={index}
-                          width={60}
-                          height={32}
-                          className="rounded-full"
-                        />
-                      ))}
-                  </div>
-                </div>
-
-                {/* Availability Skeleton */}
-                <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Skeleton width={120} height={24} className="mb-3" />
-                    <Skeleton width="100%" height={60} className="rounded-lg" />
-                  </div>
-                  <div>
-                    <Skeleton width={120} height={24} className="mb-3" />
-                    <Skeleton width="100%" height={60} className="rounded-lg" />
-                  </div>
-                </div>
-              </div>
-
-              {/* About Section Skeleton */}
-              <div className="bg-[#111624] rounded-2xl p-6 shadow-2xl">
-                <Skeleton width={120} height={32} className="mx-auto mb-4" />
-                <Skeleton width="100%" height={80} className="rounded-lg" />
-              </div>
-
-              {/* Safety Rules Skeleton */}
-              <div className="bg-[#111624] rounded-2xl p-6 shadow-2xl">
-                <Skeleton width={200} height={32} className="mx-auto mb-4" />
-                <div className="space-y-3">
-                  <Skeleton width="100%" height={20} />
-                  <Skeleton width="100%" height={20} />
-                  <Skeleton width="100%" height={40} className="rounded-lg" />
-                </div>
-              </div>
-
-              {/* Reviews Section Skeleton */}
-              <div className="bg-[#111624] rounded-2xl p-6 shadow-2xl">
-                <Skeleton width="100%" height={56} className="rounded-xl" />
-              </div>
-            </div>
-          </div>
-        </SkeletonTheme>
-      )}
+      {loading && renderShowmodeSkeleton()}
 
       {showmode && (
-        <div className="w-full max-w-4xl mx-auto overflow-hidden bg-[#111624] text-white shadow-2xl">
-          <ul className="sticky top-0 z-40 flex h-[52px] items-center justify-between px-4 py-3 bg-[#070b15]">
+        <div className="w-full max-w-4xl mx-auto overflow-hidden bg-[#111624] text-[#f1f5f9] shadow-2xl">
+          <ul className="sticky top-0 z-40 flex h-[52px] items-center justify-between px-4 py-3 bg-[#080b14] border-b border-white/7">
             <li>
-              <div onClick={() => router.back()} className="cursor-pointer">
-                <IoArrowBack className="w-5 h-5 text-slate-300" />
+              <div
+                onClick={() => router.back()}
+                className="cursor-pointer text-[#94a3b8] hover:text-[#f1f5f9] transition-colors"
+              >
+                <IoArrowBack className="w-5 h-5" />
               </div>
             </li>
             <li>
-              <div className="font-bold text-white flex items-center gap-2">
+              <div className="font-bold text-[#f1f5f9] flex items-center gap-2">
                 <span className="bg-gradient-to-r from-[#6c63ff] to-[#9b59f5] text-white px-2 py-1 rounded-full">
                   M
                 </span>
@@ -1421,48 +1274,65 @@ export default function Creatorbyid() {
               </div>
             </li>
             <li>
-              {checkuser() && (
-                <div className="relative ml-4">
-                  <button
-                    onClick={(e) => {
-                      setcloseOption(!closeOption);
-                      e.stopPropagation();
-                    }}
-                    className="p-2 bg-gray-700 hover:bg-gray-600 rounded-full transition-colors duration-200"
-                  >
-                    <Image className="w-5 h-5" alt="options" src={optionicon} />
-                  </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleShare}
+                  className="rounded-lg border border-white/7 bg-white/5 px-4 py-2 text-sm font-semibold text-[#94a3b8] transition-all duration-200 hover:bg-white/10 hover:text-[#f1f5f9]"
+                >
+                  Share
+                </button>
 
-                  {closeOption && (
-                    <div className="absolute right-0 top-12 bg-gray-700 rounded-lg shadow-xl border border-gray-600 z-50 min-w-[120px]">
-                      <button
-                        onClick={(e) => {
-                          navigate("/creators/editcreatorportfolio");
-                          setcloseOption(false);
-                        }}
-                        className="w-full px-4 py-3 text-left text-white hover:bg-gray-600 rounded-t-lg transition-colors duration-200 flex items-center gap-2"
-                      >
-                        <Image src={editIcon} alt="edit" className="w-4 h-4" />
-                        Edit
-                      </button>
-                      <button
-                        onClick={(e) => {
-                          confirmDelete();
-                          setcloseOption(false);
-                        }}
-                        className="w-full px-4 py-3 text-left text-red-400 hover:bg-gray-600 rounded-b-lg transition-colors duration-200 flex items-center gap-2"
-                      >
-                        <Image
-                          src={deleteicon}
-                          alt="delete"
-                          className="w-4 h-4"
-                        />
-                        Delete
-                      </button>
-                    </div>
-                  )}
-                </div>
-              )}
+                {checkuser() && (
+                  <div className="relative">
+                    <button
+                      onClick={(e) => {
+                        setcloseOption(!closeOption);
+                        e.stopPropagation();
+                      }}
+                      className="p-2 bg-[#161b2e] hover:bg-[#1e2335] rounded-full transition-colors duration-200"
+                    >
+                      <Image
+                        className="w-5 h-5"
+                        alt="options"
+                        src={optionicon}
+                      />
+                    </button>
+
+                    {closeOption && (
+                      <div className="absolute right-0 top-12 bg-[#161b2e] rounded-lg shadow-xl border border-white/7 z-50 min-w-[120px]">
+                        <button
+                          onClick={(e) => {
+                            navigate("/creators/editcreatorportfolio");
+                            setcloseOption(false);
+                          }}
+                          className="w-full px-4 py-3 text-left text-[#f1f5f9] hover:bg-[#1e2335] rounded-t-lg transition-colors duration-200 flex items-center gap-2"
+                        >
+                          <Image
+                            src={editIcon}
+                            alt="edit"
+                            className="w-4 h-4"
+                          />
+                          Edit
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            confirmDelete();
+                            setcloseOption(false);
+                          }}
+                          className="w-full px-4 py-3 text-left text-[#f472b6] hover:bg-[#1e2335] rounded-b-lg transition-colors duration-200 flex items-center gap-2"
+                        >
+                          <Image
+                            src={deleteicon}
+                            alt="delete"
+                            className="w-4 h-4"
+                          />
+                          Delete
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
             </li>
           </ul>
           {/* Image Gallery */}
@@ -1486,7 +1356,7 @@ export default function Creatorbyid() {
                     />
                   ) : (
                     <div className="w-full h-full bg-gradient-to-r from-[#6c63ff] to-[#9b59f5] flex items-center justify-center">
-                      <span className="text-white text-3xl font-bold">
+                      <span className="text-[#f1f5f9] text-3xl font-bold">
                         {(creator.name || "M").charAt(0).toUpperCase()}
                       </span>
                     </div>
@@ -1494,7 +1364,7 @@ export default function Creatorbyid() {
                 </div>
                 {/* Online indicator on the right */}
                 {checkOnline() === "online" && (
-                  <div className="absolute bottom-1 right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-gray-800"></div>
+                  <div className="absolute bottom-1 right-1 w-4 h-4 bg-[#22c55e] rounded-full border-2 border-[#111624]"></div>
                 )}
 
                 {/* VIP Badge - positioned on top-left of creator image */}
@@ -1519,50 +1389,52 @@ export default function Creatorbyid() {
 
               <div className="ml-28 sm:ml-32 grid grid-cols-3 items-end gap-2 sm:gap-4">
                 <div className="text-center flex flex-col items-center">
-                  <p className="text-xl font-bold text-white">{views}</p>
-                  <p className="text-xs text-slate-400 mt-2">Views</p>
+                  <p className="text-xl font-bold text-[#f1f5f9]">{views}</p>
+                  <p className="text-xs text-[#94a3b8] mt-2">Views</p>
                 </div>
 
                 <div className="text-center flex flex-col items-center">
                   <div className="text-sm mb-2 flex gap-1">
                     {[...Array(5)].map((_, i) => (
-                      <span key={i} className="text-yellow-400">
+                      <span key={i} className="text-[#f59e0b]">
                         {i < Math.round(averageRating || 0) ? "⭐" : "☆"}
                       </span>
                     ))}
                   </div>
-                  <p className="text-xs text-slate-400">Rating</p>
+                  <p className="text-xs text-[#94a3b8]">Rating</p>
                 </div>
 
                 <div className="text-center flex flex-col items-center">
-                  <p className="text-xl font-bold text-white">
+                  <p className="text-xl font-bold text-[#f1f5f9]">
                     {totalRatings}
                   </p>
-                  <p className="text-xs text-slate-400 mt-2">Reviews</p>
+                  <p className="text-xs text-[#94a3b8] mt-2">Reviews</p>
                 </div>
               </div>
 
               <div className="mt-5">
-                <h1 className="flex items-center gap-2 text-2xl font-bold text-white">
-                  {creator.name?.split(" ")[0] || "Creator"}
-                  {creator.verify && (
-                    <span className="inline-flex items-center gap-1 rounded bg-cyan-950/80 px-2 py-1 text-xs font-semibold text-cyan-300 ring-1 ring-cyan-500/60">
-                      <IoCheckmarkCircleOutline className="h-3.5 w-3.5" />
-                      Verified
+                <div className="flex flex-col-2 gap-2">
+                  <h1 className="flex items-center gap-2 text-2xl font-bold text-[#f1f5f9]">
+                    {creator.name?.split(" ")[0] || "Creator"}
+                    {creator.verify && (
+                      <span className="inline-flex items-center gap-1 rounded bg-cyan-950/80 px-2 py-1 text-xs font-semibold text-[#2dd4bf] ring-1 ring-cyan-500/60">
+                        <IoCheckmarkCircleOutline className="h-3.5 w-3.5" />
+                        Verified
+                      </span>
+                    )}
+                  </h1>
+                  {isFanDateCreator && (
+                    <span className="mt-2 inline-flex items-center rounded border border-[#f472b6]/70 bg-pink-950/70 px-2 py-1 text-xs font-semibold text-[#f472b6]">
+                      Exclusive
                     </span>
                   )}
-                </h1>
-                {isFanDateCreator && (
-                  <span className="mt-2 inline-flex items-center rounded border border-pink-500/70 bg-pink-950/70 px-2 py-1 text-xs font-semibold text-pink-200">
-                    Exclusive
-                  </span>
-                )}
+                </div>
                 {creator.username && (
-                  <p className="mt-2 text-sm font-semibold text-slate-400">
+                  <p className="mt-2 text-sm font-semibold text-[#94a3b8]">
                     {creator.username}
                   </p>
                 )}
-                <p className="mt-3 text-sm font-semibold text-slate-300">
+                <p className="mt-3 text-sm font-semibold text-[#94a3b8]">
                   {getStatus(String(creator?.hosttype))}{" "}
                   {creator.name?.split(" ")[0] || "creator"}
                 </p>
@@ -1571,114 +1443,177 @@ export default function Creatorbyid() {
           </div>
           <div className="px-4 pt-3 pb-8">
             <div className="space-y-6">
-
-            {isModalOpen && (
-              <div
-                className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-10 p-4"
-                onClick={handleModalClick}
-              >
-                <button
-                  onClick={closeModal}
-                  className="absolute top-4 right-4 text-white text-3xl hover:text-gray-300 transition-colors duration-200 z-10"
-                  aria-label="Close modal"
+              {isModalOpen && (
+                <div
+                  className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-10 p-4"
+                  onClick={handleModalClick}
                 >
-                  ×
-                </button>
+                  <button
+                    onClick={closeModal}
+                    className="absolute top-4 right-4 text-white text-3xl hover:text-gray-300 transition-colors duration-200 z-10"
+                    aria-label="Close modal"
+                  >
+                    ×
+                  </button>
 
-                <div className="relative max-w-full max-h-full">
-                  <Image
-                    src={selectedImage}
-                    alt="Fullscreen view"
-                    width={800}
-                    height={600}
-                    className="max-w-full max-h-full object-contain rounded-lg"
-                    onClick={(e) => e.stopPropagation()}
-                  />
-                </div>
-              </div>
-            )}
-
-            {showDeleteModal && (
-              <div
-                className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <div className="bg-[#111624] p-6 rounded-lg text-white w-11/12 max-w-md">
-                  <h2 className="text-lg font-bold mb-4">⚠ Warning</h2>
-                  <p className="mb-4">
-                    Deleting your portfolio will permanently remove all your
-                    views, and you may lose pending fan requests and unclaimed
-                    gold. Your visibility will also drop if you create a new
-                    portfolio.
-                    <br />
-                    <br />
-                    Are you certain you want to proceed?
-                  </p>
-                  <div className="flex justify-end gap-4">
-                    <button
-                      onClick={() => handleDeleteConfirm(false)}
-                      className="px-4 py-2 bg-gray-600 rounded hover:bg-gray-700"
-                    >
-                      No
-                    </button>
-                    <button
-                      onClick={() => handleDeleteConfirm(true)}
-                      className="px-4 py-2 bg-red-600 rounded hover:bg-red-700"
-                    >
-                      Yes
-                    </button>
+                  <div className="relative max-w-full max-h-full">
+                    <Image
+                      src={selectedImage}
+                      alt="Fullscreen view"
+                      width={800}
+                      height={600}
+                      className="max-w-full max-h-full object-contain rounded-lg"
+                      onClick={(e) => e.stopPropagation()}
+                    />
                   </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {/* Action Buttons */}
-            {Cantchat() && (
-              <div className="bg-[#111624] rounded-2xl p-6 shadow-2xl">
-                <div className="flex flex-col sm:flex-row gap-4">
-                    <button
-                      className="flex-1 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg"
-                      onClick={(e) => {
-                        if (!userid) {
-                          toast.info("login to access this operation", {
-                            autoClose: 2000,
-                          });
-                          return;
-                        }
-                        navigate(`/message/${creator.userid}`);
-                      }}
-                    >
-                      💬 Message
-                    </button>
+              {showDeleteModal && (
+                <div
+                  className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className="bg-[#111624] p-6 rounded-lg text-white w-11/12 max-w-md">
+                    <h2 className="text-lg font-bold mb-4">⚠ Warning</h2>
+                    <p className="mb-4">
+                      Deleting your portfolio will permanently remove all your
+                      views, and you may lose pending fan requests and unclaimed
+                      gold. Your visibility will also drop if you create a new
+                      portfolio.
+                      <br />
+                      <br />
+                      Are you certain you want to proceed?
+                    </p>
+                    <div className="flex justify-end gap-4">
+                      <button
+                        onClick={() => handleDeleteConfirm(false)}
+                        className="px-4 py-2 bg-gray-600 rounded hover:bg-gray-700"
+                      >
+                        No
+                      </button>
+                      <button
+                        onClick={() => handleDeleteConfirm(true)}
+                        className="px-4 py-2 bg-red-600 rounded hover:bg-red-700"
+                      >
+                        Yes
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
 
-                    <button
-                      className="flex-1 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg disabled:opacity-50"
-                      onClick={(e) => {
-                        if (!userid) {
-                          toast.info("login to access this operation", {
-                            autoClose: 2000,
-                          });
-                          return;
-                        }
-                        if (removeCrush) {
-                          // If already in crush list, remove it
-                          addTocrush();
-                        } else {
-                          // If not in crush list, add it and navigate to collections
-                          addTocrush();
-                          setTimeout(() => {
-                            navigate("/collections");
-                          }, 1000); // Small delay to show the success state
-                        }
-                      }}
-                      disabled={dcb}
-                    >
-                      {dcb ? "⏳ Processing..." : crush_text}
-                    </button>
+              {/* Follow Strip */}
+              {!checkuser() && (
+                <FollowStrip
+                  creatorName={creator.name || "Creator"}
+                  creatorId={creator.hostid || ""}
+                  creatorUserId={creator.userid || ""}
+                  followingUser={creator.followingUser || false}
+                  checkuser={checkuser()}
+                />
+              )}
+
+              {/* Action Buttons */}
+              {Cantchat() && (
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <button
+                    className="rounded-xl border border-white/7 bg-[#111827] px-6 py-3 text-sm font-bold text-[#f1f5f9] transition-all duration-200 hover:border-white/20 hover:bg-[#151d2e]"
+                    onClick={(e) => {
+                      if (!userid) {
+                        toast.info("login to access this operation", {
+                          autoClose: 2000,
+                        });
+                        return;
+                      }
+                      navigate(`/message/${creator.userid}`);
+                    }}
+                  >
+                    💬 Message
+                  </button>
+
+                  <button
+                    className="rounded-xl border border-[#f472b6]/40 bg-[#f472b6]/10 px-6 py-3 text-sm font-bold text-[#f472b6] transition-all duration-200 hover:border-[#f472b6]/70 hover:bg-[#f472b6]/20 disabled:opacity-50"
+                    onClick={(e) => {
+                      if (!userid) {
+                        toast.info("login to access this operation", {
+                          autoClose: 2000,
+                        });
+                        return;
+                      }
+                      if (removeCrush) {
+                        // If already in crush list, remove it
+                        addTocrush();
+                      } else {
+                        // If not in crush list, add it and navigate to collections
+                        addTocrush();
+                        setTimeout(() => {
+                          navigate("/collections");
+                        }, 1000); // Small delay to show the success state
+                      }
+                    }}
+                    disabled={dcb}
+                  >
+                    {dcb ? "⏳ Processing..." : `🎯 ${crush_text}`}
+                  </button>
+                </div>
+              )}
+              {/* Meet Card */}
+              <div className="rounded-2xl border border-[#6c63ff]/60 bg-[#111426] p-5 shadow-2xl ring-1 ring-[#2dd4bf]/20">
+                <div className="mb-5 flex items-start justify-between gap-4">
+                  <p className="text-xs font-bold uppercase tracking-wide text-[#a89cff]">
+                    {creatorServiceTitle}
+                  </p>
+                  <span
+                    className={`rounded-md border px-3 py-1 text-xs font-bold ${
+                      checkOnline() === "online"
+                        ? "border-[#22c55e]/40 bg-[#22c55e]/10 text-[#22c55e]"
+                        : "border-0"
+                    }`}
+                  >
+                    {checkOnline() === "online" ? "🟢 Online Now" : ""}
+                  </span>
                 </div>
 
+                <div className="flex flex-wrap items-end gap-2">
+                  <Coins className="h-10 w-10 text-[#f59e0b]" />
+                  <span className="text-4xl font-black leading-none text-[#f1f5f9]">
+                    {creatorPriceValue}
+                  </span>
+                  <span className="pb-1 text-base font-semibold text-[#94a3b8]">
+                    {creatorRateSuffix}
+                  </span>
+                </div>
+                <p className="mt-2 text-sm text-[#94a3b8]">
+                  Fan pays upfront - you keep 100%
+                </p>
+
+                <div className="mt-5 space-y-3 text-sm text-[#94a3b8]">
+                  <p className="flex items-center gap-3">
+                    <span className="flex h-5 w-5 items-center justify-center rounded-full border border-[#6c63ff]/50 bg-[#6c63ff]/10 text-xs text-[#a89cff]">
+                      ✓
+                    </span>
+                    {creatorDurationText}
+                    {!isFanCallCreator && ", public venue only"}
+                  </p>
+                  <p className="flex items-center gap-3">
+                    <span className="flex h-5 w-5 items-center justify-center rounded-full border border-[#6c63ff]/50 bg-[#6c63ff]/10 text-xs text-[#a89cff]">
+                      ✓
+                    </span>
+                    Payment secured before the {creatorServiceNoun}
+                  </p>
+                  <p className="flex items-center gap-3">
+                    <span className="flex h-5 w-5 items-center justify-center rounded-full border border-[#6c63ff]/50 bg-[#6c63ff]/10 text-xs text-[#a89cff]">
+                      ✓
+                    </span>
+                    All communication on-platform
+                  </p>
+                </div>
+              </div>
+
+              {Cantchat() && (
                 <button
-                  className="w-full mt-4 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-bold py-4 px-6 rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg"
+                  className="w-full rounded-xl bg-gradient-to-r from-[#6c63ff] to-[#9b59f5] px-6 py-4 text-base font-black text-[#f1f5f9] shadow-lg transition-all duration-200 hover:scale-[1.01] disabled:opacity-50"
                   onClick={(e) => {
                     if (!userid) {
                       toast.info("login to access this operation", {
@@ -1689,337 +1624,296 @@ export default function Creatorbyid() {
                     setShowRequestDetails(true);
                   }}
                 >
-                  🎯 Request {creator.hosttype}
+                  🎯 Request {creatorServiceTitle}
                 </button>
-              </div>
-            )}
-            {/* Meet Card */}
-            <div className="rounded-2xl border border-violet-500/60 bg-[#111426] p-5 shadow-2xl ring-1 ring-cyan-400/20">
-              <div className="mb-5 flex items-start justify-between gap-4">
-                <p className="text-xs font-bold uppercase tracking-wide text-violet-300">
-                  {creatorServiceTitle}
-                </p>
-                <span className="rounded-md border border-emerald-500/40 bg-emerald-500/10 px-3 py-1 text-xs font-bold text-emerald-300">
-                  ✓ Available Today
-                </span>
-              </div>
-
-              <div className="flex flex-wrap items-end gap-2">
-               <Coins className="h-10 w-10 text-yellow-400" />
-                <span className="text-4xl font-black leading-none text-white">
-                  {creatorPriceValue}
-                </span>
-                <span className="pb-1 text-base font-semibold text-slate-300">
-                  {creatorRateSuffix}
-                </span>
-              </div>
-              <p className="mt-2 text-sm text-slate-500">
-                Fan pays upfront - you keep 100%
-              </p>
-
-              <div className="mt-5 space-y-3 text-sm text-slate-300">
-                <p className="flex items-center gap-3">
-                  <span className="flex h-5 w-5 items-center justify-center rounded-full border border-violet-500/50 bg-violet-500/10 text-xs text-violet-300">
-                    ✓
-                  </span>
-                  {creatorDurationText}
-                  {!isFanCallCreator && ", public venue only"}
-                </p>
-                <p className="flex items-center gap-3">
-                  <span className="flex h-5 w-5 items-center justify-center rounded-full border border-violet-500/50 bg-violet-500/10 text-xs text-violet-300">
-                    ✓
-                  </span>
-                  Payment secured before the {creatorServiceNoun}
-                </p>
-                <p className="flex items-center gap-3">
-                  <span className="flex h-5 w-5 items-center justify-center rounded-full border border-violet-500/50 bg-violet-500/10 text-xs text-violet-300">
-                    ✓
-                  </span>
-                  All communication on-platform
-                </p>
-              </div>
-            </div>
-
-            {/* Meet Details */}
-            <section className="space-y-3">
-              <h2 className="flex items-center gap-2 text-xs font-black uppercase tracking-wide text-white">
-                <span className="h-0.5 w-3 bg-violet-500"></span>
-                {creatorDetailsTitle}
-              </h2>
-
-              <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-                <div className="rounded-lg border border-slate-700 bg-[#111827] p-4">
-                  <p className="text-xs font-bold uppercase text-slate-600">
-                    👤 Creator
-                  </p>
-                  <p className="mt-1 font-bold text-white">{creator.name}</p>
-                </div>
-                <div className="rounded-lg border border-slate-700 bg-[#111827] p-4">
-                  <p className="text-xs font-bold uppercase text-slate-600">
-                    📍 Location
-                  </p>
-                  <p className="mt-1 font-bold text-white">
-                    {isFanCallCreator
-                      ? "On-platform video call"
-                      : creator.location || "Not specified"}
-                  </p>
-                </div>
-                <div className="rounded-lg border border-slate-700 bg-[#111827] p-4">
-                  <p className="text-xs font-bold uppercase text-slate-600">
-                    ⏱ Duration
-                  </p>
-                  <p className="mt-1 font-bold text-white">
-                    {creatorDurationText}
-                  </p>
-                </div>
-                <div className="rounded-lg border border-slate-700 bg-[#111827] p-4">
-                  <p className="text-xs font-bold uppercase text-slate-600">
-                    ✅ Status
-                  </p>
-                  <p
-                    className={`mt-1 font-bold ${creator.verify ? "text-cyan-300" : "text-yellow-300"}`}
-                  >
-                    {creator.verify ? "✓ Verified Creator" : "Not verified"}
-                  </p>
-                </div>
-              </div>
-
-              <div className="rounded-lg border border-slate-700 bg-[#111827] p-4">
-                <p className="text-xs font-bold uppercase text-slate-600">
-                  📅 Available Days
-                </p>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {availabilityDays.length > 0 ? (
-                    availabilityDays.map((day) => (
-                      <span
-                        key={day}
-                        className="rounded-md border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-xs font-bold uppercase text-emerald-300"
-                      >
-                        {day}
-                      </span>
-                    ))
-                  ) : (
-                    <span className="text-sm text-slate-400">
-                      Not specified
-                    </span>
-                  )}
-                </div>
-              </div>
-
-              <div className="rounded-lg border border-slate-700 bg-[#111827] p-4">
-                <p className="text-xs font-bold uppercase text-slate-600">
-                  🕘 Available Hours
-                </p>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {availabilityHours.length > 0 ? (
-                    availabilityHours.map((time) => (
-                      <span
-                        key={time}
-                        className="rounded-md bg-[#0c1220] px-4 py-2 text-sm font-semibold text-slate-300 ring-1 ring-slate-800"
-                      >
-                        {time}
-                      </span>
-                    ))
-                  ) : (
-                    <span className="text-sm text-slate-400">
-                      Not specified
-                    </span>
-                  )}
-                </div>
-              </div>
-            </section>
-
-            {/* About Section */}
-            <section className="space-y-6">
-              <div>
-                <h2 className="mb-4 flex items-center gap-2 text-xs font-black uppercase tracking-wide text-white">
-                  <span className="h-0.5 w-3 bg-violet-500"></span>
-                  About {creator.name?.split(" ")[0] || "Creator"}
-                </h2>
-                <p className="text-sm leading-7 text-slate-300">
-                  {creator.description || "No description yet."}
-                </p>
-              </div>
-
-              {!isFanCallCreator && (
-                <div className="overflow-hidden rounded-2xl border border-yellow-600/30 bg-[#171d30]">
-                  <div className="border-b border-yellow-600/20 px-5 py-4">
-                    <h3 className="font-bold text-yellow-400">
-                      ⚠ Safety Rules - Important
-                    </h3>
-                  </div>
-                  <div className="space-y-4 p-5 text-sm text-slate-300">
-                    <p className="flex gap-3">
-                      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-yellow-600/60 text-xs text-yellow-400">
-                        1
-                      </span>
-                      All {creatorServiceTitle.toLowerCase()} sessions are
-                      limited to{" "}
-                      <strong className="text-white">30 minutes.</strong>
-                    </p>
-                    <p className="flex gap-3">
-                      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-yellow-600/60 text-xs text-yellow-400">
-                        2
-                      </span>
-                      {creatorServiceTitle} must happen in a{" "}
-                      <strong className="text-white">public place only</strong>
-                      {" "}- cafes, restaurants, or similar venues.
-                    </p>
-                    <p className="flex gap-3">
-                      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-yellow-600/60 text-xs text-yellow-400">
-                        3
-                      </span>
-                      What happens after 30 minutes is{" "}
-                      <strong className="text-white">
-                        outside the platform&apos;s responsibility.
-                      </strong>
-                    </p>
-                    <p className="border-t border-slate-700 pt-4 text-xs text-slate-500">
-                      By sending a request, you agree to follow these rules.
-                    </p>
-                  </div>
-                </div>
               )}
 
-              {!isFanCallCreator && (
-                <button
-                  className="flex w-full items-center justify-between rounded-2xl border border-slate-800 bg-[#111827] p-5 text-left transition-colors duration-200 hover:border-violet-500/40"
-                  onClick={(e) => {
-                    if (!userid) {
-                      toast.info("login to access this operation", {
-                        autoClose: 2000,
-                      });
-                      return;
-                    }
-                    Check_review();
-                  }}
-                >
-                  <div className="flex items-center gap-4">
-                    <span className="text-4xl text-yellow-400">★</span>
-                    <div>
-                      <p className="text-xl font-black text-white">
-                        {totalRatings} Reviews
+              {/* Meet Details */}
+              <section className="space-y-3">
+                <h2 className="flex items-center gap-2 text-xs font-black uppercase tracking-wide text-[#f1f5f9]">
+                  <span className="h-0.5 w-3 bg-[#6c63ff]"></span>
+                  {creatorDetailsTitle}
+                </h2>
+
+                <div className="grid grid-cols-2 gap-3 md:grid-cols-2">
+                  <div className="rounded-lg border border-white/7 bg-[#111827] p-4">
+                    <p className="text-xs font-bold uppercase text-[#94a3b8]">
+                      👤 Creator
+                    </p>
+                    <p className="mt-1 font-bold text-[#f1f5f9]">
+                      {creator.name}
+                    </p>
+                  </div>
+                  <div className="rounded-lg border border-white/7 bg-[#111827] p-4">
+                    <p className="text-xs font-bold uppercase text-[#94a3b8]">
+                      📍 Location
+                    </p>
+                    <p className="mt-1 font-bold text-[#f1f5f9]">
+                      {creator.location || "Not specified"}
+                    </p>
+                  </div>
+
+                  {!isFanCallCreator && (
+                    <div className="rounded-lg border border-white/7 bg-[#111827] p-4">
+                      <p className="text-xs font-bold uppercase text-[#94a3b8]">
+                        ⏱ Duration
                       </p>
-                      <p className="text-sm text-slate-500">
-                        {totalRatings > 0
-                          ? "See what fans are saying"
-                          : "No reviews yet - be the first"}
+                      <p className="mt-1 font-bold text-[#f1f5f9]">
+                        {creatorDurationText}
+                      </p>
+                    </div>
+                  )}
+                  <div className="rounded-lg border border-white/7 bg-[#111827] p-4">
+                    <p className="text-xs font-bold uppercase text-[#94a3b8]">
+                      ✅ Status
+                    </p>
+                    <p
+                      className={`mt-1 font-bold ${creator.verify ? "text-[#2dd4bf]" : "text-[#f59e0b]"}`}
+                    >
+                      {creator.verify ? "✓ Verified Creator" : "Not verified"}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="rounded-lg border border-white/7 bg-[#111827] p-4">
+                  <p className="text-xs font-bold uppercase text-[#94a3b8]">
+                    📅 Available Days
+                  </p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {availabilityDays.length > 0 ? (
+                      availabilityDays.map((day) => (
+                        <span
+                          key={day}
+                          className="rounded-md border border-[#22c55e] px-4 py-2 text-xs font-bold uppercase text-[#22c55e]"
+                        >
+                          {day}
+                        </span>
+                      ))
+                    ) : (
+                      <span className="text-sm text-[#94a3b8]">
+                        Not specified
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="rounded-lg border border-white/7 bg-[#111827] p-4">
+                  <p className="text-xs font-bold uppercase text-[#94a3b8]">
+                    🕘 Available Hours
+                  </p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {availabilityHours.length > 0 ? (
+                      availabilityHours.map((time) => (
+                        <span
+                          key={time}
+                          className="rounded-md bg-[#0e1220] px-4 py-2 text-sm font-semibold text-[#94a3b8] ring-1 ring-white/4"
+                        >
+                          {time}
+                        </span>
+                      ))
+                    ) : (
+                      <span className="text-sm text-[#94a3b8]">
+                        Not specified
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </section>
+
+              {/* About Section */}
+              <section className="space-y-6">
+                <div>
+                  <h2 className="mb-4 flex items-center gap-2 text-xs font-black uppercase tracking-wide text-[#f1f5f9]">
+                    <span className="h-0.5 w-3 bg-[#6c63ff]"></span>
+                    About {creator.name?.split(" ")[0] || "Creator"}
+                  </h2>
+                  <p className="text-sm leading-7 text-[#94a3b8]">
+                    {creator.description || "No description yet."}
+                  </p>
+                </div>
+
+                {!isFanCallCreator && (
+                  <div className="overflow-hidden rounded-2xl border border-[#f59e0b]/30 bg-[#171d30]">
+                    <div className="border-b border-[#f59e0b]/20 px-5 py-4">
+                      <h3 className="font-bold text-[#f59e0b]">
+                        ⚠ Safety Rules - Important
+                      </h3>
+                    </div>
+                    <div className="space-y-4 p-5 text-sm text-[#94a3b8]">
+                      <p className="flex gap-3">
+                        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-[#f59e0b]/60 text-xs text-[#f59e0b]">
+                          1
+                        </span>
+                        All {creatorServiceTitle.toLowerCase()} sessions are
+                        limited to{" "}
+                        <strong className="text-[#f1f5f9]">30 minutes.</strong>
+                      </p>
+                      <p className="flex gap-3">
+                        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-[#f59e0b]/60 text-xs text-[#f59e0b]">
+                          2
+                        </span>
+                        {creatorServiceTitle} must happen in a{" "}
+                        <strong className="text-[#f1f5f9]">
+                          public place only
+                        </strong>{" "}
+                        - cafes, restaurants, or similar venues.
+                      </p>
+                      <p className="flex gap-3">
+                        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-[#f59e0b]/60 text-xs text-[#f59e0b]">
+                          3
+                        </span>
+                        What happens after 30 minutes is{" "}
+                        <strong className="text-[#f1f5f9]">
+                          outside the platform&apos;s responsibility.
+                        </strong>
+                      </p>
+                      <p className="border-t border-white/4 pt-4 text-xs text-[#94a3b8]">
+                        By sending a request, you agree to follow these rules.
                       </p>
                     </div>
                   </div>
-                  <span className="text-2xl text-slate-600">›</span>
-                </button>
-              )}
-            </section>
+                )}
 
-            {review_click && (
-              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
-                <div className="bg-gray-800 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[80vh] overflow-hidden">
-                  <div className="flex justify-between items-center p-6 border-b border-gray-200">
-                    <h2 className="text-2xl font-bold text-black">Reviews</h2>
-                    <button
-                      onClick={(e) => {
-                        setreview_click(false);
-                      }}
-                      className="p-2 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors duration-200"
-                    >
-                      <Image
-                        alt="closeIcon"
-                        src={closeIcon}
-                        className="w-5 h-5"
-                      />
-                    </button>
-                  </div>
+                {
+                  //show reviews button regardless of whether the creator is a Fan Call creator or not.
+                  <button
+                    className="flex w-full items-center justify-between rounded-2xl border border-white/4 bg-[#111827] p-5 text-left transition-colors duration-200 hover:border-[#6c63ff]/40"
+                    onClick={(e) => {
+                      if (!userid) {
+                        toast.info("login to access this operation", {
+                          autoClose: 2000,
+                        });
+                        return;
+                      }
+                      Check_review();
+                    }}
+                  >
+                    <div className="flex items-center gap-4">
+                      <span className="text-4xl text-[#f59e0b]">★</span>
+                      <div>
+                        <p className="text-xl font-black text-[#f1f5f9]">
+                          {totalRatings} Reviews
+                        </p>
+                        <p className="text-sm text-[#94a3b8]">
+                          {totalRatings > 0
+                            ? "See what fans are saying"
+                            : "No reviews yet - be the first"}
+                        </p>
+                      </div>
+                    </div>
+                    <span className="text-2xl text-[#94a3b8]">›</span>
+                  </button>
+                }
+              </section>
 
-                  <div className="p-6">
-                    {loading1 && (
-                      <div className="flex flex-col items-center justify-center py-12">
-                        <PacmanLoader1
-                          color={color1}
-                          loading={loading1}
-                          size={25}
-                          aria-label="Loading Spinner"
-                          data-testid="loader"
+              {review_click && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+                  <div className="bg-gray-800 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[80vh] overflow-hidden">
+                    <div className="flex justify-between items-center p-6 border-b border-gray-200">
+                      <h2 className="text-2xl font-bold text-black">Reviews</h2>
+                      <button
+                        onClick={(e) => {
+                          setreview_click(false);
+                        }}
+                        className="p-2 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors duration-200"
+                      >
+                        <Image
+                          alt="closeIcon"
+                          src={closeIcon}
+                          className="w-5 h-5"
                         />
-                        <p className="text-black mt-4">Loading reviews...</p>
-                      </div>
-                    )}
+                      </button>
+                    </div>
 
-                    {display_review() && (
-                      <div className="space-y-4 max-h-96 overflow-y-auto">
-                        {show_review()}
-                      </div>
-                    )}
+                    <div className="p-6">
+                      {loading1 && (
+                        <div className="flex flex-col items-center justify-center py-12">
+                          <PacmanLoader1
+                            color={color1}
+                            loading={loading1}
+                            size={25}
+                            aria-label="Loading Spinner"
+                            data-testid="loader"
+                          />
+                          <p className="text-black mt-4">Loading reviews...</p>
+                        </div>
+                      )}
+
+                      {display_review() && (
+                        <div className="space-y-4 max-h-96 overflow-y-auto">
+                          {show_review()}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
-            {requestclick && (
-              <div
-                className="fixed inset-0 z-[9999] flex items-center justify-center bg-black bg-opacity-50 w-full h-full"
-                onClick={() => setrequestclick(false)}
-              >
+              )}
+              {requestclick && (
                 <div
-                  className="w-full h-full flex items-center justify-center p-4"
-                  onClick={(e) => e.stopPropagation()}
+                  className="fixed inset-0 z-[9999] flex items-center justify-center bg-black bg-opacity-50 w-full h-full"
+                  onClick={() => setrequestclick(false)}
                 >
-                  <Requestinfo
-                    setrequestclick={setrequestclick}
-                    amount={creator.price}
-                    setsuccess={setsuccess}
-                    type={creator.hosttype}
-                  />
+                  <div
+                    className="w-full h-full flex items-center justify-center p-4"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <Requestinfo
+                      setrequestclick={setrequestclick}
+                      amount={creator.price}
+                      setsuccess={setsuccess}
+                      type={creator.hosttype}
+                    />
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {success && (
-              <div
-                className="fixed inset-0 z-[9999] flex items-center justify-center bg-black bg-opacity-50 w-full h-full"
-                onClick={() => setsuccess(false)}
-              >
+              {success && (
                 <div
-                  className="w-full h-full flex items-center justify-center p-4"
-                  onClick={(e) => e.stopPropagation()}
+                  className="fixed inset-0 z-[9999] flex items-center justify-center bg-black bg-opacity-50 w-full h-full"
+                  onClick={() => setsuccess(false)}
                 >
-                  <Requestform
-                    setsuccess={setsuccess}
-                    price={Number(creator.price) || 0}
-                    toast={toast}
-                    creator_portfolio_id={creator.hostid}
-                    type={creator.hosttype}
-                    setrequested={setrequested}
-                    creator={creator}
-                  />
+                  <div
+                    className="w-full h-full flex items-center justify-center p-4"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <Requestform
+                      setsuccess={setsuccess}
+                      price={Number(creator.price) || 0}
+                      toast={toast}
+                      creator_portfolio_id={creator.hostid}
+                      type={creator.hosttype}
+                      setrequested={setrequested}
+                      creator={creator}
+                    />
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {requested && (
-              <div
-                className="fixed inset-0 z-[9999] flex items-center justify-center bg-black bg-opacity-50 w-full h-full"
-                onClick={() => setrequested(false)}
-              >
+              {requested && (
                 <div
-                  className="w-full h-full flex items-center justify-center p-4"
-                  onClick={(e) => e.stopPropagation()}
+                  className="fixed inset-0 z-[9999] flex items-center justify-center bg-black bg-opacity-50 w-full h-full"
+                  onClick={() => setrequested(false)}
                 >
-                  <Requestsuccess setrequested={setrequested} />
+                  <div
+                    className="w-full h-full flex items-center justify-center p-4"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <Requestsuccess setrequested={setrequested} />
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {showRequestDetails && (
-              <RequestDetailsForm
-                onDone={handleRequestDetailsSubmit}
-                onCancel={() => setShowRequestDetails(false)}
-                creatorName={creator.name}
-                creatorType={creator.hosttype}
-                price={parseFloat(creator.price) || 0}
-              />
-            )}
+              {showRequestDetails && (
+                <RequestDetailsForm
+                  onDone={handleRequestDetailsSubmit}
+                  onCancel={() => setShowRequestDetails(false)}
+                  creatorName={creator.name}
+                  creatorType={creator.hosttype}
+                  price={parseFloat(creator.price) || 0}
+                />
+              )}
+            </div>
           </div>
-        </div>
         </div>
       )}
     </div>
