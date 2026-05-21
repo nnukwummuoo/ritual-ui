@@ -430,7 +430,6 @@ export default function Creatorbyid() {
     }
   }, [userid, Creator[0], token]);
 
-
   useEffect(() => {
     if (creatorbyidstatus === "succeeded") {
       setLoading(false);
@@ -1255,8 +1254,8 @@ export default function Creatorbyid() {
       {loading && renderShowmodeSkeleton()}
 
       {showmode && (
-        <div className="w-full max-w-4xl mx-auto overflow-hidden bg-[#111624] text-[#f1f5f9] shadow-2xl">
-          <ul className="sticky top-0 z-40 flex h-[52px] items-center justify-between px-4 py-3 bg-[#080b14] border-b border-white/7">
+        <div className="w-full max-w-4xl mx-auto overflow-hidden bg-[#080b14] text-[#f1f5f9] shadow-2xl">
+          <ul className="sticky top-0 z-40 flex h-[52px] items-center justify-between px-4 py-3 bg-[#080b14] border border-gray-900">
             <li>
               <div
                 onClick={() => router.back()}
@@ -1277,13 +1276,13 @@ export default function Creatorbyid() {
               <div className="flex items-center gap-2">
                 <button
                   onClick={handleShare}
-                  className="rounded-lg border border-white/7 bg-white/5 px-4 py-2 text-sm font-semibold text-[#94a3b8] transition-all duration-200 hover:bg-white/10 hover:text-[#f1f5f9]"
+                  className="rounded-lg border border-gray-800 bg-white/5 px-4 py-2 text-sm font-semibold text-[#94a3b8] transition-all duration-200 hover:bg-white/10 hover:text-[#f1f5f9]"
                 >
                   Share
                 </button>
 
                 {checkuser() && (
-                  <div className="relative">
+                  <div className="relative bg-[#080b14]">
                     <button
                       onClick={(e) => {
                         setcloseOption(!closeOption);
@@ -1336,11 +1335,11 @@ export default function Creatorbyid() {
             </li>
           </ul>
           {/* Image Gallery */}
-          <div className="relative bg-[#111624]">
+          <div className="relative bg-[#080b14]">
             {checkimg()}
 
             {/* Profile summary */}
-            <div className="relative px-5 pt-12 pb-5 bg-[#111624]">
+            <div className="relative px-5 pt-12 pb-5">
               <div className="absolute left-5 -top-10">
                 <div className="relative rounded-full w-20 h-20 overflow-hidden">
                   {creator.photolink &&
@@ -1503,22 +1502,11 @@ export default function Creatorbyid() {
                 </div>
               )}
 
-              {/* Follow Strip */}
-              {!checkuser() && (
-                <FollowStrip
-                  creatorName={creator.name || "Creator"}
-                  creatorId={creator.hostid || ""}
-                  creatorUserId={creator.userid || ""}
-                  followingUser={creator.followingUser || false}
-                  checkuser={checkuser()}
-                />
-              )}
-
               {/* Action Buttons */}
               {Cantchat() && (
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div className="grid grid-cols-2 gap-3">
                   <button
-                    className="rounded-xl border border-white/7 bg-[#111827] px-6 py-3 text-sm font-bold text-[#f1f5f9] transition-all duration-200 hover:border-white/20 hover:bg-[#151d2e]"
+                    className="rounded-xl border border-white/7 bg-[#111827] px-3 py-2 lg:px-6 lg:py-3 text-xs lg:text-sm font-bold text-[#f1f5f9] transition-all duration-200 hover:border-white/20 hover:bg-[#151d2e]"
                     onClick={(e) => {
                       if (!userid) {
                         toast.info("login to access this operation", {
@@ -1533,7 +1521,7 @@ export default function Creatorbyid() {
                   </button>
 
                   <button
-                    className="rounded-xl border border-[#f472b6]/40 bg-[#f472b6]/10 px-6 py-3 text-sm font-bold text-[#f472b6] transition-all duration-200 hover:border-[#f472b6]/70 hover:bg-[#f472b6]/20 disabled:opacity-50"
+                    className="rounded-xl border border-[#f472b6]/40 bg-[#f472b6]/10 px-3 py-2 lg:px-6 lg:py-3 text-xs lg:text-sm font-bold text-[#f472b6] transition-all duration-200 hover:border-[#f472b6]/70 hover:bg-[#f472b6]/20 disabled:opacity-50"
                     onClick={(e) => {
                       if (!userid) {
                         toast.info("login to access this operation", {
@@ -1559,7 +1547,7 @@ export default function Creatorbyid() {
                 </div>
               )}
               {/* Meet Card */}
-              <div className="rounded-2xl border border-[#6c63ff]/60 bg-[#111426] p-5 shadow-2xl ring-1 ring-[#2dd4bf]/20">
+              <div className="rounded-2xl border  border-[#6c63ff]/60 bg-[#111426] p-5 shadow-2xl ring-1 ring-[#2dd4bf]/20">
                 <div className="mb-5 flex items-start justify-between gap-4">
                   <p className="text-xs font-bold uppercase tracking-wide text-[#a89cff]">
                     {creatorServiceTitle}
@@ -1585,7 +1573,7 @@ export default function Creatorbyid() {
                   </span>
                 </div>
                 <p className="mt-2 text-sm text-[#94a3b8]">
-                  Fan pays upfront - you keep 100%
+                  Fan pays {isFanCallCreator ? "per minute" : "upfront"} - you keep 100%
                 </p>
 
                 <div className="mt-5 space-y-3 text-sm text-[#94a3b8]">
@@ -1627,7 +1615,16 @@ export default function Creatorbyid() {
                   🎯 Request {creatorServiceTitle}
                 </button>
               )}
-
+              {/* Follow Strip */}
+              {!checkuser() && (
+                <FollowStrip
+                  creatorName={creator.name || "Creator"}
+                  creatorId={creator.hostid || ""}
+                  creatorUserId={creator.userid || ""}
+                  followingUser={creator.followingUser || false}
+                  checkuser={checkuser()}
+                />
+              )}
               {/* Meet Details */}
               <section className="space-y-3">
                 <h2 className="flex items-center gap-2 text-xs font-black uppercase tracking-wide text-[#f1f5f9]">
@@ -1636,46 +1633,46 @@ export default function Creatorbyid() {
                 </h2>
 
                 <div className="grid grid-cols-2 gap-3 md:grid-cols-2">
-                  <div className="rounded-lg border border-white/7 bg-[#111827] p-4">
+                  <div className="rounded-lg border border-gray-800 bg-[#111827] p-4">
                     <p className="text-xs font-bold uppercase text-[#94a3b8]">
                       👤 Creator
                     </p>
-                    <p className="mt-1 font-bold text-[#f1f5f9]">
+                    <p className="mt-1 font-bold text-[#f1f5f9] text-[12px] lg:text-xs">
                       {creator.name}
                     </p>
                   </div>
-                  <div className="rounded-lg border border-white/7 bg-[#111827] p-4">
+                  <div className="rounded-lg border border-gray-800 bg-[#111827] p-4">
                     <p className="text-xs font-bold uppercase text-[#94a3b8]">
                       📍 Location
                     </p>
-                    <p className="mt-1 font-bold text-[#f1f5f9]">
+                    <p className="mt-1 font-bold text-[#f1f5f9] text-[12px] lg:text-xs">
                       {creator.location || "Not specified"}
                     </p>
                   </div>
 
                   {!isFanCallCreator && (
-                    <div className="rounded-lg border border-white/7 bg-[#111827] p-4">
+                    <div className="rounded-lg border border-gray-800 bg-[#111827] p-4">
                       <p className="text-xs font-bold uppercase text-[#94a3b8]">
                         ⏱ Duration
                       </p>
-                      <p className="mt-1 font-bold text-[#f1f5f9]">
+                      <p className="mt-1 font-bold text-[#f1f5f9] text-[12px] lg:text-xs">
                         {creatorDurationText}
                       </p>
                     </div>
                   )}
-                  <div className="rounded-lg border border-white/7 bg-[#111827] p-4">
+                  <div className="rounded-lg border border-gray-800 bg-[#111827] p-4">
                     <p className="text-xs font-bold uppercase text-[#94a3b8]">
                       ✅ Status
                     </p>
                     <p
-                      className={`mt-1 font-bold ${creator.verify ? "text-[#2dd4bf]" : "text-[#f59e0b]"}`}
+                      className={`mt-1 font-bold text-[12px] lg:text-xs ${creator.verify ? "text-[#2dd4bf]" : "text-[#f59e0b]"}`}
                     >
                       {creator.verify ? "✓ Verified Creator" : "Not verified"}
                     </p>
                   </div>
                 </div>
 
-                <div className="rounded-lg border border-white/7 bg-[#111827] p-4">
+                <div className="rounded-lg border border-gray-800 bg-[#111827] p-4">
                   <p className="text-xs font-bold uppercase text-[#94a3b8]">
                     📅 Available Days
                   </p>
@@ -1690,14 +1687,14 @@ export default function Creatorbyid() {
                         </span>
                       ))
                     ) : (
-                      <span className="text-sm text-[#94a3b8]">
+                      <span className="text-xs lg:text-sm text-[#94a3b8]">
                         Not specified
                       </span>
                     )}
                   </div>
                 </div>
 
-                <div className="rounded-lg border border-white/7 bg-[#111827] p-4">
+                <div className="rounded-lg border border-gray-800 bg-[#111827] p-4">
                   <p className="text-xs font-bold uppercase text-[#94a3b8]">
                     🕘 Available Hours
                   </p>
@@ -1706,7 +1703,7 @@ export default function Creatorbyid() {
                       availabilityHours.map((time) => (
                         <span
                           key={time}
-                          className="rounded-md bg-[#0e1220] px-4 py-2 text-sm font-semibold text-[#94a3b8] ring-1 ring-white/4"
+                          className="rounded-md bg-[#0e1220] px-3 py-1 text-xs lg:text-sm font-semibold text-[#94a3b8] ring-1 ring-gray-800"
                         >
                           {time}
                         </span>
@@ -1777,7 +1774,7 @@ export default function Creatorbyid() {
                 {
                   //show reviews button regardless of whether the creator is a Fan Call creator or not.
                   <button
-                    className="flex w-full items-center justify-between rounded-2xl border border-white/4 bg-[#111827] p-5 text-left transition-colors duration-200 hover:border-[#6c63ff]/40"
+                    className="flex w-full items-center justify-between rounded-2xl border border-gray-800 bg-[#111827] p-5 text-left transition-colors duration-200 hover:border-[#6c63ff]/40"
                     onClick={(e) => {
                       if (!userid) {
                         toast.info("login to access this operation", {
