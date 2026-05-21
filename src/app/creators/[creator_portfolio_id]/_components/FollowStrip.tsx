@@ -223,14 +223,14 @@ const FollowStrip: React.FC<FollowStripProps> = ({
     <div className="mb-6 px-4 py-3 rounded-lg border border-purple-400 flex items-center justify-between gap-3">
       <div className="flex-1">
         <p className="text-xs sm:text-sm text-gray-300 leading-relaxed">
-          <strong className="text-gray-100">Like what you see?</strong> Follow{" "}
+          <strong className="text-gray-100 text-xs lg:text-sm">Like what you see?</strong> Follow{" "}
           {creatorName} to get notified when she&apos;s available.
         </p>
       </div>
       <button
         onClick={handleFollowClick}
         disabled={isProcessing}
-        className={`flex-shrink-0 px-3 sm:px-4 py-2 rounded-lg font-semibold text-xs sm:text-sm whitespace-nowrap transition-all duration-200 ${
+        className={`flex-shrink-0 px-3  py-2 rounded-lg font-semibold text-[12px] lg:text-sm whitespace-nowrap transition-all duration-200 ${
           isFollowing
             ? "bg-purple-400/20 border border-purple-400/40 text-purple-200 hover:bg-purple-400/30"
             : "bg-gradient-to-r from-purple-600 to-purple-500 text-white hover:from-purple-700 hover:to-purple-600"
