@@ -224,7 +224,7 @@ const FollowStrip: React.FC<FollowStripProps> = ({
       <div className="flex-1">
         <p className="text-xs sm:text-sm text-gray-300 leading-relaxed">
           <strong className="text-gray-100 text-xs lg:text-sm">Like what you see?</strong> Follow{" "}
-          {creatorName} to get notified when she&apos;s available.
+          {creatorName.split(" ")[0]} to get notified when she&apos;s available.
         </p>
       </div>
       <button
