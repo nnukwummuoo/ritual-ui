@@ -870,7 +870,14 @@ export default function Creatorbyid() {
   };
 
   const handleShare = async () => {
-    const shareUrl = typeof window !== "undefined" ? window.location.href : "";
+    let shareUrl = "";
+    if (typeof window !== "undefined") {
+      // Replace creator portfolio ID with creator name in the URL
+      shareUrl = window.location.href.replace(
+        Creator[0],
+        encodeURIComponent(creator.name || "creator"),
+      );
+    }
     const shareTitle = `${creator.name || "Creator"} on Mmeko`;
 
     try {
@@ -1374,7 +1381,7 @@ export default function Creatorbyid() {
                     vipStatus?.vipEndDate || vipStatusFromCreator?.vipEndDate;
                   return (
                     isVip === true && (
-                      <div className="absolute bottom-8 left-7 z-20">
+                      <div className="absolute bottom-8 left-7">
                         <VIPBadge
                           size="xl"
                           isVip={isVip}
@@ -1461,8 +1468,8 @@ export default function Creatorbyid() {
                       alt="Fullscreen view"
                       width={800}
                       height={600}
-                      className="max-w-full max-h-full object-contain rounded-lg"
-                      onClick={(e) => e.stopPropagation()}
+                      className="max-w-full max-h-full object-contain rounded-lg cursor-pointer"
+                      onClick={closeModal}
                     />
                   </div>
                 </div>
@@ -1573,7 +1580,8 @@ export default function Creatorbyid() {
                   </span>
                 </div>
                 <p className="mt-2 text-sm text-[#94a3b8]">
-                  Fan pays {isFanCallCreator ? "per minute" : "upfront"} - you keep 100%
+                  Fan pays {isFanCallCreator ? "per minute" : "upfront"} - you
+                  keep 100%
                 </p>
 
                 <div className="mt-5 space-y-3 text-sm text-[#94a3b8]">
@@ -1765,7 +1773,9 @@ export default function Creatorbyid() {
                         </strong>
                       </p>
                       <p className="border-t border-white/4 pt-4 text-xs text-[#94a3b8]">
-                        By sending a request, you agree to follow these rules.
+                        {checkuser()
+                          ? "By creating this portfolio you agree to follow these rules."
+                          : "By sending a request, you agree to follow these rules."}
                       </p>
                     </div>
                   </div>
