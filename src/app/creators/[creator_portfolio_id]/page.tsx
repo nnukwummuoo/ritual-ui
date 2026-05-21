@@ -269,9 +269,6 @@ export default function Creatorbyid() {
   const [vipCelebrationShown, setVipCelebrationShown] = useState(false);
   const [celebrationChecked, setCelebrationChecked] = useState(false);
 
-  // Profile image fallback state
-  const [profileImageFailed, setProfileImageFailed] = useState(false);
-
   // ✅ Replace navigate
   const navigate = (path: string) => {
     router.push(path);
@@ -1349,24 +1346,19 @@ export default function Creatorbyid() {
             <div className="relative px-5 pt-12 pb-5">
               <div className="absolute left-5 -top-10">
                 <div className="relative rounded-full w-20 h-20 overflow-hidden">
-                  {creator.photolink &&
-                  creator.photolink[0] &&
-                  !profileImageFailed ? (
-                    <Image
-                      src={creator.photolink[0]}
-                      alt="Profile Picture"
-                      width={80}
-                      height={80}
-                      className="object-cover w-full h-full"
-                      onError={() => setProfileImageFailed(true)}
-                    />
-                  ) : (
-                    <div className="w-full h-full bg-gradient-to-r from-[#6c63ff] to-[#9b59f5] flex items-center justify-center">
-                      <span className="text-[#f1f5f9] text-3xl font-bold">
-                        {(creator.name || "M").charAt(0).toUpperCase()}
-                      </span>
-                    </div>
-                  )}
+                  <div className="w-full h-full bg-gradient-to-r from-[#6c63ff] to-[#9b59f5] flex items-center justify-center">
+                    <span className="text-[#f1f5f9] text-3xl font-bold">
+                      {(() => {
+                        const source =
+                          String(creator.name || creator.username || "M").trim();
+                        const parts = source.split(/\s+/).filter(Boolean);
+                        if (parts.length >= 2) {
+                          return `${parts[0].charAt(0)}${parts[1].charAt(0)}`.toUpperCase();
+                        }
+                        return source.charAt(0).toUpperCase();
+                      })()}
+                    </span>
+                  </div>
                 </div>
                 {/* Online indicator on the right */}
                 {checkOnline() === "online" && (
