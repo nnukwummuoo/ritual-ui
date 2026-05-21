@@ -875,10 +875,10 @@ export default function Creatorbyid() {
       // Replace creator portfolio ID with creator name in the URL
       shareUrl = window.location.href.replace(
         Creator[0],
-        encodeURIComponent(creator.name || "creator"),
+        encodeURIComponent(creator.username || "creator"),
       );
     }
-    const shareTitle = `${creator.name || "Creator"} on Mmeko`;
+    const shareTitle = `${creator.username || "Creator"} on Mmeko`;
 
     try {
       if (navigator.share) {
