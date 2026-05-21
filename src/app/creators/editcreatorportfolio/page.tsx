@@ -48,6 +48,8 @@ const CATEGORY_OPTIONS = [
   },
 ];
 
+const MAX_PHOTOS = 9;
+
 export default function Editcreator() {
   const userid = useUserId();
   const creator = useSelector((state: any) => state.creator.creatorbyid);
@@ -118,13 +120,8 @@ export default function Editcreator() {
       file,
     }));
 
-    const combinedSlots = [...existingSlots, ...newSlots];
-    const slotCount = Math.max(6, combinedSlots.length + 1);
-
-    return Array.from(
-      { length: slotCount },
-      (_, index) => combinedSlots[index] || null,
-    );
+    const combinedSlots = [...existingSlots, ...newSlots].slice(0, MAX_PHOTOS);
+    return Array.from({ length: MAX_PHOTOS }, (_, index) => combinedSlots[index] || null);
   }, [existingImages, newImages]);
 
   const rateSubtitle =
@@ -355,9 +352,12 @@ export default function Editcreator() {
     setExistingImages((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const handleImageUpload = (files: any) => {
+  const handleImageUpload = (files: FileList) => {
     if (files?.length) {
-      const oversizedFiles = Array.from(files).filter(
+      const selectedFiles = Array.from(files).filter((f) =>
+        f.type.startsWith("image/"),
+      );
+      const oversizedFiles = selectedFiles.filter(
         (f: any) => f.size > 5 * 1024 * 1024,
       );
       if (oversizedFiles.length > 0) {
@@ -365,7 +365,18 @@ export default function Editcreator() {
         return;
       }
 
-      setNewImages((prev: any) => [...prev, ...files]);
+      const availableSlots = MAX_PHOTOS - (existingImages.length + newImages.length);
+      if (availableSlots <= 0) {
+        toast.info(`Maximum of ${MAX_PHOTOS} photos reached`);
+        return;
+      }
+
+      const filesToAdd = selectedFiles.slice(0, availableSlots);
+      if (filesToAdd.length < selectedFiles.length) {
+        toast.info(`Only ${MAX_PHOTOS} photos are allowed`);
+      }
+
+      setNewImages((prev: any) => [...prev, ...filesToAdd]);
     }
   };
 
@@ -389,9 +400,7 @@ export default function Editcreator() {
     >
       <ToastContainer position="top-center" theme="dark" />
 
-      <div
-        className="sticky top-0 z-40 h-14 border-b border-white/10 bg-[#080b14]/95 px-4"
-      >
+      <div className="sticky top-0 z-40 h-14 border-b border-white/10 bg-[#080b14]/95 px-4">
         <div className="mx-auto flex h-full w-full max-w-[520px] items-center gap-3">
           <button
             type="button"
@@ -592,7 +601,7 @@ export default function Editcreator() {
               </button>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 p-3">
+            <div className="grid grid-cols-3 sm:grid-cols-3 gap-2 p-3">
               {hourValues.map((value) => {
                 const selected = times.includes(value);
                 return (
@@ -705,45 +714,47 @@ export default function Editcreator() {
         </section>
 
         <div className="h-px bg-white/10 mb-8" />
+       {/* only show if hosttype is not fancall */}
+        {hosttype !== "Fan call" && (
+          <section className="mb-8">
+            <h2 className="mb-4 text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500 flex items-center gap-2">
+              <span className="block h-[2px] w-4 rounded bg-[#6c63ff]" />
+              Duration
+            </h2>
 
-        <section className="mb-8">
-          <h2 className="mb-4 text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500 flex items-center gap-2">
-            <span className="block h-[2px] w-4 rounded bg-[#6c63ff]" />
-            Duration
-          </h2>
-
-          <div className="flex items-center gap-3">
-            <button
-              type="button"
-              onClick={() => updateDuration(durationValue - 1)}
-              className="h-10 w-10 rounded-full border border-white/10 bg-[#111624] text-xl text-slate-300 hover:border-[#6c63ff]/35"
-            >
-              -
-            </button>
-            <div className="flex-1 rounded-xl border border-white/10 bg-[#111624] py-3 text-center text-2xl font-extrabold">
-              {durationValue} min
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => updateDuration(durationValue - 1)}
+                className="h-10 w-10 rounded-full border border-white/10 bg-[#111624] text-xl text-slate-300 hover:border-[#6c63ff]/35"
+              >
+                -
+              </button>
+              <div className="flex-1 rounded-xl border border-white/10 bg-[#111624] py-3 text-center text-2xl font-extrabold">
+                {durationValue} min
+              </div>
+              <button
+                type="button"
+                onClick={() => updateDuration(durationValue + 1)}
+                className="h-10 w-10 rounded-full border border-white/10 bg-[#111624] text-xl text-slate-300 hover:border-[#6c63ff]/35"
+              >
+                +
+              </button>
             </div>
-            <button
-              type="button"
-              onClick={() => updateDuration(durationValue + 1)}
-              className="h-10 w-10 rounded-full border border-white/10 bg-[#111624] text-xl text-slate-300 hover:border-[#6c63ff]/35"
-            >
-              +
-            </button>
-          </div>
 
-          <input
-            type="range"
-            min="1"
-            max="30"
-            value={durationValue}
-            onChange={(e) => updateDuration(Number(e.currentTarget.value))}
-            className="mt-4 w-full accent-[#7f6bff]"
-          />
-          <p className="mt-2 text-center text-xs text-slate-500">
-            Maximum 30 minutes per session
-          </p>
-        </section>
+            <input
+              type="range"
+              min="1"
+              max="30"
+              value={durationValue}
+              onChange={(e) => updateDuration(Number(e.currentTarget.value))}
+              className="mt-4 w-full accent-[#7f6bff]"
+            />
+            <p className="mt-2 text-center text-xs text-slate-500">
+              Maximum 30 minutes per session
+            </p>
+          </section>
+        )}
 
         <div className="h-px bg-white/10 mb-8" />
 
@@ -781,9 +792,14 @@ export default function Editcreator() {
                     key={`empty-${slotIndex}`}
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
-                    className="aspect-square rounded-2xl border border-dashed border-[#6c63ff]/30 bg-[#111624] text-slate-500 hover:border-[#6c63ff]/55"
+                    className="group flex aspect-square flex-col items-center justify-center gap-1.5 rounded-2xl border-[1.5px] border-dashed border-[#6c63ff]/25 bg-[#111624] transition hover:border-[#6c63ff]/50 hover:bg-[#6c63ff]/[0.04]"
                   >
-                    <span className="text-xs font-semibold">Add Photo</span>
+                    <span aria-hidden className="text-2xl opacity-40 text-slate-400">
+                      📷
+                    </span>
+                    <span className="text-[10px] font-semibold text-slate-500">
+                      Add Photo
+                    </span>
                   </button>
                 );
               }
