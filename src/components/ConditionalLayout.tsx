@@ -46,6 +46,10 @@ export default function ConditionalLayout({ children, isAuthenticated }: Conditi
   // Check if it's the notifications route
   const isNotificationsRoute = pathname.startsWith('/notifications');
 
+  // ✅ NEW: Check if it's a creator profile route — needs full width
+  const isCreatorProfileRoute =
+    pathname.startsWith('/creators/') && pathname.split('/').length > 2;
+
   // Set mounted to true after component mounts (client-side only)
   useEffect(() => {
     setMounted(true);
@@ -62,96 +66,11 @@ export default function ConditionalLayout({ children, isAuthenticated }: Conditi
   }, [isAuthenticated, isHomeRoute]);
 
   // Reset scroll position when navigating to specific routes
-  // Home page preserves scroll for better UX when browsing posts
-  // All other pages start at top when navigated to
   useEffect(() => {
     if (pathname !== '/' && scrollContainerRef.current) {
       scrollContainerRef.current.scrollTop = 0;
     }
   }, [pathname]);
-
-  // Optimized scroll handler with throttling for smooth performance
-  // DISABLED: Navbar should stay fixed and visible at all times
-  /*
-  useEffect(() => {
-    const scrollContainer = scrollContainerRef.current;
-    if (!scrollContainer) return;
-
-    let ticking = false;
-
-    const handleScroll = () => {
-      if (!ticking) {
-        requestAnimationFrame(() => {
-          const currentScrollY = scrollContainer.scrollTop;
-          const reachedBottom =
-            scrollContainer.scrollTop + scrollContainer.clientHeight >=
-            scrollContainer.scrollHeight - 8;
-
-          // Only handle on mobile screens
-          if (window.innerWidth >= 768) {
-            setShowNavbar(true);
-            ticking = false;
-            return;
-          }
-
-          // Show navbar when scrolling up, hide when scrolling down
-          if (currentScrollY < lastScrollY && !reachedBottom) {
-            // Scrolling up
-            setShowNavbar(true);
-          } else if (currentScrollY > lastScrollY && currentScrollY > 100) {
-            // Scrolling down and past 100px
-            setShowNavbar(false);
-          } else if (reachedBottom) {
-            // Keep navbar hidden when the user is pushing against the bottom
-            setShowNavbar(false);
-          }
-
-          // Always show navbar at the top
-          if (currentScrollY < 10) {
-            setShowNavbar(true);
-          }
-
-          setLastScrollY(currentScrollY);
-          ticking = false;
-        });
-        ticking = true;
-      }
-    };
-
-    scrollContainer.addEventListener('scroll', handleScroll, { passive: true });
-
-    return () => {
-      scrollContainer.removeEventListener('scroll', handleScroll);
-    };
-  }, [lastScrollY]);
-
-  // Apply transform to navbar's fixed div (client-side only) - only for mobile/tablet
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-
-    // Check if we're on md or larger screen - if so, don't apply transform
-    if (window.innerWidth >= 768) {
-      // Ensure navbar is visible on md+ screens
-      const navbarElement = document.querySelector('.top-bar-visibility') as HTMLElement;
-      if (navbarElement) {
-        navbarElement.classList.remove('navbar-hidden');
-        navbarElement.classList.add('navbar-visible');
-      }
-      return;
-    }
-
-    const navbarElement = document.querySelector('.top-bar-visibility') as HTMLElement;
-    if (navbarElement) {
-      if (showNavbar) {
-        navbarElement.classList.remove('navbar-hidden');
-        navbarElement.classList.add('navbar-visible');
-      } else {
-        navbarElement.classList.remove('navbar-visible');
-        navbarElement.classList.add('navbar-hidden');
-      }
-    }
-  }, [showNavbar]);
-  */
 
   // If it's a QuickChat [userid] route, admin route, or anya route, render without main layout
   if (isQuickChatRoute || isAdminRoute || isAnyaRoute) {
@@ -159,18 +78,18 @@ export default function ConditionalLayout({ children, isAuthenticated }: Conditi
   }
 
   // Unauthenticated home — render landing page with NO layout chrome
-if (!isAuthenticated && isHomeRoute) {
-  return (
-    <>
-      <Navbar isAuthenticated={false} />
-      {children}
-    </>
-  );
-}
+  if (!isAuthenticated && isHomeRoute) {
+    return (
+      <>
+        <Navbar isAuthenticated={false} />
+        {children}
+      </>
+    );
+  }
 
   // Otherwise, render with main layout
   return (
-  <main className="flex overflow-hidden h-screen relative" style={{ background: "#080b14" }}>
+    <main className="flex overflow-hidden h-screen relative" style={{ background: "#080b14" }}>
       {/* Sidebar - only shown when authenticated */}
       {isAuthenticated && (
         <>
@@ -207,33 +126,39 @@ if (!isAuthenticated && isHomeRoute) {
         </button>
       )}
 
-     
-
       <div className={`flex-1 flex flex-col overflow-hidden transition-all duration-300 min-w-0 min-h-0 md:mt-0 mt-12`}>
         <div
           ref={scrollContainerRef}
-          key={isMessageRoute ? 'message-scroll' : 'scroll-container'} // Keep the key to ensure state reset on route change
+          key={isMessageRoute ? 'message-scroll' : 'scroll-container'}
           className="flex-1 scrollbar overflow-y-auto overflow-x-hidden w-full min-w-0"
           style={{ background: "#080b14", minHeight: 0 }}
         >
-          <div className="grid grid-cols-[60fr_40fr] max-[1200px]:grid-cols-[75fr_25fr] max-[600px]:grid-cols-1 gap-4 min-h-0">
-            <div className="w-full max-w-full min-w-0 overflow-x-hidden">
+          {/* ✅ Creator profile gets full width — no grid, no right panel */}
+          {isCreatorProfileRoute ? (
+            <div className="w-full min-h-0">
               {children}
             </div>
-            {/* Show CreatorCards only on home route when authenticated */}
-            {isHomeRoute && isAuthenticated && (
-              <div className="w-full h-full max-[1000px]:w-0 lg:block hidden">
-                <div className="sticky top-28 self-start -mr-16 space-y-4">
-                  <div className="w-[25rem] mx-auto max-[600px]:w-[90%] rounded-2xl px-4 pt-4 pb-2 bg-[#080b14]">
-                    <CreatorCards />
-                  </div>
-                  <div className="w-[25rem] mx-auto max-[600px]:w-[90%] rounded-2xl px-4 pt-4 pb-2 bg-[#080b14]">
-                    <RitualsCard />
+          ) : (
+            <div className="grid grid-cols-[60fr_40fr] max-[1200px]:grid-cols-[75fr_25fr] max-[600px]:grid-cols-1 gap-4 min-h-0">
+              <div className="w-full max-w-full min-w-0 overflow-x-hidden">
+                {children}
+              </div>
+              {/* Show CreatorCards only on home route when authenticated */}
+              {isHomeRoute && isAuthenticated && (
+                <div className="w-full h-full max-[1000px]:w-0 lg:block hidden">
+                  <div className="sticky top-28 self-start -mr-16 space-y-4">
+                    <div className="w-[25rem] mx-auto max-[600px]:w-[90%] rounded-2xl px-4 pt-4 pb-2 bg-[#080b14]">
+                      <CreatorCards />
+                    </div>
+                    <div className="w-[25rem] mx-auto max-[600px]:w-[90%] rounded-2xl px-4 pt-4 pb-2 bg-[#080b14]">
+                      <RitualsCard />
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+          )}
+
           {isAuthenticated && !isMessageRoute && <div className="h-24 md:h-0"></div>}
         </div>
         {isAuthenticated && <BottomNavBar />}
