@@ -85,6 +85,8 @@ export default function Creatorbyid() {
   const { session } = useAuth();
   const reduxUserid = useSelector((state: RootState) => state.register.userID);
   const [userid, setUserid] = useState<string>("");
+  const [showSharePopup, setShowSharePopup] = useState(false);
+const [urlCopied, setUrlCopied] = useState(false);
 
   useEffect(() => {
     if (useridFromHook) setUserid(useridFromHook);
@@ -100,6 +102,8 @@ export default function Creatorbyid() {
       } catch {}
     }
   }, [useridFromHook, session?._id, reduxUserid]);
+
+
 
   const reduxToken = useSelector((state: RootState) => state.register.refreshtoken);
   const [token, setToken] = useState<string>("");
@@ -199,6 +203,22 @@ export default function Creatorbyid() {
     const creatorUserId = creator?.userid;
     if (creatorUserId) dispatch(checkVipStatus(creatorUserId) as any);
   }, [creator?.userid, dispatch]);
+
+    useEffect(() => {
+  // Only auto-show to the owner of this portfolio
+  if (!checkuser()) return;
+
+  // Check if they've already dismissed it permanently
+  const dismissedKey = `share_popup_dismissed_${creator.hostid}`;
+  const alreadyDismissed = localStorage.getItem(dismissedKey);
+  if (alreadyDismissed) return;
+
+  // Auto-open on ?new=1 (redirect here after portfolio creation)
+  const searchParams = new URLSearchParams(window.location.search);
+  if (searchParams.get("new") === "1") {
+    setTimeout(() => setShowSharePopup(true), 600);
+  }
+}, [creator.hostid, userid]); // re-run once userid resolves
 
   useEffect(() => {
     const checkCelebration = async () => {
@@ -380,16 +400,7 @@ export default function Creatorbyid() {
     return creator.userid !== currentUserId;
   };
 
-  const handleShare = async () => {
-    let shareUrl = "";
-    if (typeof window !== "undefined") {
-      shareUrl = window.location.href.replace(Creator[0], encodeURIComponent(creator.username || "creator"));
-    }
-    try {
-      if (navigator.share) { await navigator.share({ title: `${creator.username || "Creator"} on Mmeko`, url: shareUrl }); }
-      else if (navigator.clipboard && shareUrl) { await navigator.clipboard.writeText(shareUrl); toast.success("Profile link copied", { autoClose: 2000 }); }
-    } catch {}
-  };
+  const handleShare = () => setShowSharePopup(true);
 
   const Check_review = () => {
     setreview_click(true);
@@ -740,7 +751,14 @@ export default function Creatorbyid() {
           <div className="mcp-sec-title">{creatorDetailsTitle}</div>
           <div className="mcp-details-grid">
             <div className="mcp-di"><div className="mcp-dk">👤 Creator</div><div className="mcp-dv">{creator.name}</div></div>
-            <div className="mcp-di"><div className="mcp-dk">📍 Location</div><div className="mcp-dv">{creator.location || "Not specified"}</div></div>
+            <div className="mcp-di">
+  <div className="mcp-dk">📍 Country</div>
+  <div className="mcp-dv">{creator.location?.split(",")[0]?.trim() || "Not specified"}</div>
+</div>
+<div className="mcp-di">
+  <div className="mcp-dk">🏙️ State</div>
+  <div className="mcp-dv">{creator.location?.split(",")[1]?.trim() || "Not specified"}</div>
+</div>
             {!isFanCallCreator && <div className="mcp-di"><div className="mcp-dk">⏱️ Duration</div><div className="mcp-dv">{creatorDurationText}</div></div>}
             <div className="mcp-di"><div className="mcp-dk">✅ Status</div><div className="mcp-dv" style={{ color: creator.verify ? "var(--mcp-teal)" : "#f59e0b" }}>{creator.verify ? "✓ Verified Creator" : "Not verified"}</div></div>
             <div className="mcp-di full">
@@ -859,6 +877,87 @@ export default function Creatorbyid() {
         {showRequestDetails && (
           <RequestDetailsForm onDone={handleRequestDetailsSubmit} onCancel={() => setShowRequestDetails(false)} creatorName={creator.name} creatorType={creator.hosttype} price={parseFloat(creator.price) || 0} />
         )}
+
+        {showSharePopup && (
+  <div
+    className="fixed inset-0 z-[300] flex items-end justify-center"
+    style={{ background: "rgba(0,0,0,.65)", backdropFilter: "blur(6px)" }}
+    onClick={() => setShowSharePopup(false)}
+  >
+    <div
+      className="w-full max-w-lg overflow-hidden"
+      style={{ background: "#111824", borderRadius: "22px 22px 0 0", borderTop: "1px solid rgba(255,255,255,.08)", paddingBottom: 40 }}
+      onClick={e => e.stopPropagation()}
+    >
+      {/* accent line */}
+      <div style={{ height: 2, background: "linear-gradient(90deg,#6c63ff,#9b59f5,#2dd4bf)" }} />
+      <div style={{ width: 36, height: 4, borderRadius: 2, background: "rgba(255,255,255,.12)", margin: "14px auto 0" }} />
+
+      <div style={{ padding: "24px 22px 0" }}>
+        {/* icon */}
+        <div style={{ width: 60, height: 60, borderRadius: "50%", background: "linear-gradient(135deg,rgba(108,99,255,.2),rgba(155,89,245,.15))", border: "1px solid rgba(108,99,255,.3)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26, marginBottom: 18 }}>🔗</div>
+
+        <div style={{ fontSize: 19, fontWeight: 800, letterSpacing: "-.02em", marginBottom: 8 }}>Your portfolio is live!</div>
+        <div style={{ fontSize: 13.5, color: "#94a3b8", lineHeight: 1.7, marginBottom: 22 }}>
+          Share your profile link with fans so they can discover you and send booking requests. The more you share, <strong style={{ color: "#f1f5f9", fontWeight: 600 }}>the more requests you get.</strong>
+        </div>
+
+        {/* URL box */}
+        <div style={{ display: "flex", background: "#0d1120", border: "1px solid rgba(108,99,255,.25)", borderRadius: 11, overflow: "hidden", marginBottom: 20 }}>
+          <div style={{ flex: 1, padding: "12px 14px", fontSize: 12.5, color: "#94a3b8", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+            mmeko.com/{creator.username || ""}
+          </div>
+          <button
+            onClick={async () => {
+              await navigator.clipboard.writeText(
+  `https://mmeko.com/${creator.username || ""}`
+).catch(() => {});
+              setUrlCopied(true);
+              setTimeout(() => setUrlCopied(false), 2500);
+            }}
+            style={{ padding: "0 16px", minHeight: 46, background: urlCopied ? "rgba(34,197,94,.15)" : "rgba(108,99,255,.15)", border: "none", borderLeft: `1px solid ${urlCopied ? "rgba(34,197,94,.2)" : "rgba(108,99,255,.2)"}`, color: urlCopied ? "#22c55e" : "#a89cff", fontSize: 12, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap", flexShrink: 0 }}
+          >
+            {urlCopied ? "✓ Copied!" : "📋 Copy"}
+          </button>
+        </div>
+
+        {/* tip */}
+        <div style={{ display: "flex", alignItems: "flex-start", gap: 10, background: "rgba(108,99,255,.06)", border: "1px solid rgba(108,99,255,.12)", borderRadius: 10, padding: "12px 14px", marginBottom: 22 }}>
+          <span style={{ fontSize: 14, flexShrink: 0, marginTop: 1 }}>💡</span>
+          <div style={{ fontSize: 12, color: "#94a3b8", lineHeight: 1.6 }}>
+            <strong style={{ color: "#a89cff", fontWeight: 600 }}>Pro tip:</strong> Post your link in your Instagram bio, TikTok profile, or OnlyFans page to reach your existing fans instantly.
+          </div>
+        </div>
+
+        {/* actions */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          <button
+            onClick={async () => {
+              const url = `https://mmeko.com/${creator.username || ""}`;
+              if (navigator.share) await navigator.share({ title: `Book a meet with me on mmeko`, url });
+              else { await navigator.clipboard.writeText(url).catch(() => {}); toast.success("Link copied!", { autoClose: 2000 }); }
+            }}
+            style={{ width: "100%", padding: 14, borderRadius: 12, background: "linear-gradient(135deg,#6c63ff,#9b59f5)", border: "none", color: "white", fontSize: 14, fontWeight: 800, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: "0 4px 20px rgba(108,99,255,.35)" }}
+          >
+            🔗 Share My Portfolio
+          </button>
+          <button
+  onClick={() => {
+    // Permanently remember that this creator dismissed the popup
+    if (creator.hostid) {
+      localStorage.setItem(`share_popup_dismissed_${creator.hostid}`, "true");
+    }
+    setShowSharePopup(false);
+  }}
+  style={{ width: "100%", padding: 13, borderRadius: 12, background: "transparent", border: "1px solid rgba(255,255,255,.07)", color: "#94a3b8", fontSize: 14, fontWeight: 600, cursor: "pointer" }}
+>
+  OK, got it
+</button>
+        </div>
+      </div>
+    </div>
+  </div>
+)}
       </div>
     </>
   );
