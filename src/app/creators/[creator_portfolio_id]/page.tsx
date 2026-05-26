@@ -53,7 +53,7 @@ import { URL } from "@/api/config";
 // Types
 interface RootState {
   register: { userID: string; logedin: boolean; refreshtoken: string };
-  profile: { creator_portfolio_id: string; balance: string };
+  profile: { creator_portfolio_id: string; balance: string; photolink?: string };
   creator: {
     userid: string; hostid: string; name: string; age: string;
     location: string; price: string; duration: string; description: string;
@@ -87,6 +87,7 @@ export default function Creatorbyid() {
   const [userid, setUserid] = useState<string>("");
   const [showSharePopup, setShowSharePopup] = useState(false);
 const [urlCopied, setUrlCopied] = useState(false);
+  const [userResolved, setUserResolved] = useState(false);
 
   useEffect(() => {
     if (useridFromHook) setUserid(useridFromHook);
@@ -246,6 +247,10 @@ const [urlCopied, setUrlCopied] = useState(false);
     setShowVipCelebration(false);
     setCelebrationChecked(false);
   }, [creator?.userid, Creator[0]]);
+
+  useEffect(() => {
+  if (userid) setUserResolved(true);
+}, [userid]);
 
   useEffect(() => {
     const currentUserId = getCurrentUserId();
@@ -509,13 +514,15 @@ const [urlCopied, setUrlCopied] = useState(false);
       {/* ── Scoped styles ── */}
       <style>{`
         .mcp-root{--mcp-bg:#080b14;--mcp-bg2:#0b0f1c;--mcp-bg3:#0e1220;--mcp-card:#111624;--mcp-card2:#161b2e;--mcp-border:rgba(255,255,255,0.07);--mcp-border2:rgba(255,255,255,0.04);--mcp-accent:#6c63ff;--mcp-teal:#2dd4bf;--mcp-rose:#f472b6;--mcp-success:#22c55e;--mcp-gold:#f59e0b;--mcp-text:#f1f5f9;--mcp-text2:#94a3b8;--mcp-text3:#475569;background:var(--mcp-bg);color:var(--mcp-text);font-family:'Plus Jakarta Sans',sans-serif;min-height:100vh;overflow-x:hidden;-webkit-font-smoothing:antialiased;}
-        .mcp-nav{position:sticky;top:0;z-index:200;background:rgba(8,11,20,.92);backdrop-filter:blur(20px);border-bottom:1px solid var(--mcp-border);padding:0 20px;height:54px;display:flex;align-items:center;justify-content:space-between;}
-        .mcp-nav-logo{display:flex;align-items:center;gap:8px;text-decoration:none;}
+        .mcp-nav{position:sticky;top:0;z-index:50;overflow:visible;background:rgba(8,11,20,.92);backdrop-filter:blur(20px);border-bottom:1px solid var(--mcp-border);padding:0 16px;height:54px;display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.mcp-nav-logo{display:flex;align-items:center;gap:6px;text-decoration:none;flex-shrink:0;}
+.mcp-nav-actions{display:flex;align-items:center;gap:8px;flex-shrink:0;margin-left:auto;}
+        
         .mcp-nav-logo-icon{width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,#6c63ff,#9b59f5);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:white;}
         .mcp-nav-logo-name{font-size:15px;font-weight:700;color:var(--mcp-text);}
         .mcp-nav-back{background:none;border:none;color:var(--mcp-text2);font-size:22px;cursor:pointer;padding:4px 8px;border-radius:8px;transition:color .2s;line-height:1;}
         .mcp-nav-back:hover{color:var(--mcp-text);}
-        .mcp-nav-actions{display:flex;align-items:center;gap:8px;}
+
         .mcp-nav-share{background:rgba(255,255,255,.06);border:1px solid var(--mcp-border);color:var(--mcp-text2);font-size:13px;font-weight:600;padding:7px 14px;border-radius:8px;cursor:pointer;font-family:inherit;transition:all .2s;}
         .mcp-nav-share:hover{color:var(--mcp-text);}
         .mcp-carousel-wrap{position:relative;width:100%;height:340px;background:var(--mcp-bg3);overflow:hidden;}
@@ -608,34 +615,39 @@ const [urlCopied, setUrlCopied] = useState(false);
         )}
 
         {/* ── NAV ── */}
-        <nav className="mcp-nav">
-          <button className="mcp-nav-back" onClick={() => router.back()}>←</button>
-          <a href="#" className="mcp-nav-logo">
-            <div className="mcp-nav-logo-icon">M</div>
-            <span className="mcp-nav-logo-name">mmeko</span>
-          </a>
-          <div className="mcp-nav-actions">
-            <button className="mcp-nav-share" onClick={handleShare}>Share</button>
-            {checkuser() && (
-              <div style={{ position: "relative" }}>
-                <button onClick={(e) => { setcloseOption(!closeOption); e.stopPropagation(); }} style={{ padding: "8px", background: "var(--mcp-card2)", borderRadius: "50%", border: "none", cursor: "pointer" }}>
-                  <Image className="w-5 h-5" alt="options" src={optionicon} />
-                </button>
-                {closeOption && (
-                  <div style={{ position: "absolute", right: 0, top: 44, background: "var(--mcp-card2)", borderRadius: 8, boxShadow: "0 8px 24px rgba(0,0,0,.4)", border: "1px solid var(--mcp-border)", zIndex: 50, minWidth: 120 }}>
-                    <button onClick={() => { navigate("/creators/editcreatorportfolio"); setcloseOption(false); }} style={{ width: "100%", padding: "12px 16px", textAlign: "left", color: "var(--mcp-text)", background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 8, fontSize: 13 }}>
-                      <Image src={editIcon} alt="edit" className="w-4 h-4" /> Edit
-                    </button>
-                    <button onClick={() => { confirmDelete(); setcloseOption(false); }} style={{ width: "100%", padding: "12px 16px", textAlign: "left", color: "var(--mcp-rose)", background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 8, fontSize: 13 }}>
-                      <Image src={deleteicon} alt="delete" className="w-4 h-4" /> Delete
-                    </button>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        </nav>
-
+       <nav className="mcp-nav">
+  <button className="mcp-nav-back" onClick={() => router.back()}>←</button>
+  <a href="#" className="mcp-nav-logo">
+    <div className="mcp-nav-logo-icon">M</div>
+    <span className="mcp-nav-logo-name">mmeko</span>
+  </a>
+  <div className="mcp-nav-actions">
+    <button className="mcp-nav-share" onClick={handleShare}>Share</button>
+    {checkuser() && (
+      <div style={{ position: "relative" }}>
+        <button
+          onClick={(e) => { e.stopPropagation(); setcloseOption(prev => !prev); }}
+          style={{ padding: "8px", background: "var(--mcp-card2)", borderRadius: "50%", border: "none", cursor: "pointer" }}
+        >
+          <Image className="w-5 h-5" alt="options" src={optionicon} />
+        </button>
+        {closeOption && (
+          <>
+            <div style={{ position: "fixed", inset: 0, zIndex: 9998 }} onClick={() => setcloseOption(false)} />
+            <div style={{ position: "fixed", right: 16, top: 60, background: "var(--mcp-card2)", borderRadius: 8, boxShadow: "0 8px 24px rgba(0,0,0,.4)", border: "1px solid rgba(255,255,255,0.15)", zIndex: 99999, minWidth: 140 }}>
+              <button onClick={() => { navigate("/creators/editcreatorportfolio"); setcloseOption(false); }} style={{ width: "100%", padding: "12px 16px", textAlign: "left", color: "var(--mcp-text)", background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 8, fontSize: 13 }}>
+                <Image src={editIcon} alt="edit" className="w-4 h-4" /> Edit
+              </button>
+              <button onClick={() => { confirmDelete(); setcloseOption(false); }} style={{ width: "100%", padding: "12px 16px", textAlign: "left", color: "var(--mcp-rose)", background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 8, fontSize: 13 }}>
+                <Image src={deleteicon} alt="delete" className="w-4 h-4" /> Delete
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+    )}
+  </div>
+</nav>
         {/* ── CAROUSEL ── */}
         <div className="mcp-carousel-wrap">
           <div className="mcp-carousel-track" style={{ transform: `translateX(-${currentImageIndex * 100}%)` }}>
@@ -659,8 +671,17 @@ const [urlCopied, setUrlCopied] = useState(false);
         <div className="mcp-profile-header">
           <div className="mcp-profile-top">
             <div className="mcp-profile-av">
-              {avatarInitials}
-              {checkOnline() === "online" && <div className="mcp-av-online" />}
+  {imglist.length > 0 ? (
+    <img 
+      src={profile.photolink || imglist[0]}
+      alt={creator.name || "creator"}
+      style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }}
+      onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+    />
+  ) : (
+    avatarInitials
+  )}
+  {checkOnline() === "online" && <div className="mcp-av-online" />}
               {/* VIP Badge */}
               {(() => {
                 const isVip = vipStatus?.isVip || vipStatusFromCreator?.isVip;
@@ -687,7 +708,11 @@ const [urlCopied, setUrlCopied] = useState(false);
             {creator.verify && <div className="mcp-badge-v">✓ Verified</div>}
             {isFanDateCreator && <div className="mcp-badge-e">✦ Exclusive</div>}
           </div>
-          {creator.username && <div className="mcp-profile-handle">{creator.username}</div>}
+          {creator.username && (
+  <div className="mcp-profile-handle">
+    {String(creator.username).replace(/^@/, "")}
+  </div>
+)}
           <div className="mcp-profile-tagline">{getStatus(String(creator?.hosttype))} {creator.name?.split(" ")[0] || "creator"}</div>
         </div>
 
@@ -905,12 +930,12 @@ const [urlCopied, setUrlCopied] = useState(false);
         {/* URL box */}
         <div style={{ display: "flex", background: "#0d1120", border: "1px solid rgba(108,99,255,.25)", borderRadius: 11, overflow: "hidden", marginBottom: 20 }}>
           <div style={{ flex: 1, padding: "12px 14px", fontSize: 12.5, color: "#94a3b8", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-            mmeko.com/{creator.username || ""}
-          </div>
+  {typeof window !== "undefined" ? window.location.host : "mmeko.com"}/{String(creator.username || "").replace(/^@/, "")}
+</div>
           <button
             onClick={async () => {
               await navigator.clipboard.writeText(
-  `https://mmeko.com/${creator.username || ""}`
+  `${window.location.origin}/${String(creator.username || "").replace(/^@/, "")}`
 ).catch(() => {});
               setUrlCopied(true);
               setTimeout(() => setUrlCopied(false), 2500);
@@ -933,7 +958,7 @@ const [urlCopied, setUrlCopied] = useState(false);
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           <button
             onClick={async () => {
-              const url = `https://mmeko.com/${creator.username || ""}`;
+              const url = `${window.location.origin}/${String(creator.username || "").replace(/^@/, "")}`;
               if (navigator.share) await navigator.share({ title: `Book a meet with me on mmeko`, url });
               else { await navigator.clipboard.writeText(url).catch(() => {}); toast.success("Link copied!", { autoClose: 2000 }); }
             }}
