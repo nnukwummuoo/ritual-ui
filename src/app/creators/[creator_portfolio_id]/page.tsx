@@ -351,23 +351,15 @@ const [urlCopied, setUrlCopied] = useState(false);
   const creatorRateSuffix = isFanCallCreator ? "/min" : isFanDateCreator ? "/date" : "/meet";
   const creatorDurationText = isFanCallCreator ? "Billed per minute" : `${formatCreatorPrices(String(creator?.duration || "")) || "30"} minutes`;
   const availabilityDays = String(creator?.daysava || "").split(/[\s,]+/).map((d) => d.trim()).filter(Boolean);
-  const availabilityHours = (() => {
-  const raw = creator?.timeava;
-
-  if (!raw) return [];
-
-  if (Array.isArray(raw)) return raw;
-
-  if (typeof raw === "string") {
-    return raw.split(",").map(t => t.trim()).filter(Boolean);
-  }
-
-  if (typeof raw === "object") {
-    return Object.values(raw);
-  }
-
-  return [];
-})();
+   const availabilityHours = String(creator?.timeava || "")
+    .split(/[\s,]+/)
+    .map((time) =>
+      time
+        .trim()
+        .replace(/(AM|PM)$/i, " $1")
+        .toUpperCase(),
+    )
+    .filter(Boolean);
 
   const openModal = (imageSrc: string) => { setSelectedImage(imageSrc); setIsModalOpen(true); document.body.style.overflow = "hidden"; };
   const closeModal = () => { setIsModalOpen(false); setSelectedImage(""); document.body.style.overflow = "unset"; };
@@ -598,33 +590,8 @@ const [urlCopied, setUrlCopied] = useState(false);
         .mcp-dv{font-size:13.5px;font-weight:700;color:var(--mcp-text);line-height:1.4;}
         .mcp-days-wrap{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;}
         .mcp-day{height:38px;padding:0 12px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;letter-spacing:.03em;background:rgba(34,197,94,.07);border:1px solid rgba(34,197,94,.2);color:var(--mcp-success);}
-        .mcp-hours-wrap{
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px; 
-  margin-top: 12px;
-}
-        .mcp-hour{
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-
-  padding: 4px 12px; /* px-3 py-1 */
-  border-radius: 6px; /* rounded-md */
-
-  font-size: 12px; /* text-xs */
-  font-weight: 600;
-
-  background: #0e1220;
-  color: #94a3b8;
-
-  border: 1px solid rgba(255,255,255,0.08); /* ring-1 gray-ish */
-
-  white-space: nowrap;}
-  .mcp-hour-empty{
-  font-size: 13px;
-  color: #94a3b8;
-}
+        .mcp-hours-wrap{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
+        .mcp-hour{padding:7px 12px;border-radius:8px;font-size:11.5px;font-weight:600;background:var(--mcp-bg3);border:1px solid var(--mcp-border2);color:var(--mcp-text2);font-family:inherit;}
         .mcp-about-text{font-size:13.5px;color:var(--mcp-text2);line-height:1.8;}
         .mcp-safety-card{margin:0 18px 24px;background:var(--mcp-card2);border:1px solid rgba(245,158,11,.15);border-radius:14px;overflow:hidden;}
         .mcp-safety-top{padding:14px 18px;border-bottom:1px solid rgba(245,158,11,.1);display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:#f59e0b;}
@@ -829,16 +796,8 @@ const [urlCopied, setUrlCopied] = useState(false);
             <div className="mcp-di full">
               <div className="mcp-dk">🕐 Available Hours</div>
               <div className="mcp-hours-wrap">
-  {availabilityHours.length > 0 ? (
-    availabilityHours.map((time) => (
-      <span key={time} className="mcp-hour">
-        {time}
-      </span>
-    ))
-  ) : (
-    <span className="mcp-hour-empty">Not specified</span>
-  )}
-</div>
+                {availabilityHours.length > 0 ? availabilityHours.map((time) => <span key={time} className="mcp-hour">{time}</span>) : <span style={{ fontSize: 13, color: "var(--mcp-text2)" }}>Not specified</span>}
+              </div>
             </div>
           </div>
         </div>
