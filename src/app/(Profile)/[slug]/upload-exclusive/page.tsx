@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { useRouter, useParams, useSearchParams } from "next/navigation";
 import axios from "axios";
@@ -14,6 +14,7 @@ import { Gennavigation } from "@/components/navs/Gennav";
 import type { RootState } from "@/store/store";
 import { useVideoAutoPlay } from "@/hooks/useVideoAutoPlayNew";
 import { getImageSource } from "@/lib/imageUtils";
+import FileLimitPopup from "@/app/upload/_components/FileLimitPopup";
 
 // Simple Video Component for preview
 const VideoPreview = React.memo(function VideoPreview({ src }: { src: string }) {
@@ -73,6 +74,13 @@ export default function UploadExclusivePage() {
     return "";
   })() : "";
 
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+const triggerFileInput = () => {
+  fileInputRef.current?.click();
+};
+
+
   // State for form
   const [exclusiveContentPrice, setExclusiveContentPrice] = useState<string>("");
   const [exclusiveContentFile, setExclusiveContentFile] = useState<File | null>(null);
@@ -87,6 +95,8 @@ export default function UploadExclusivePage() {
   const [showPriceTooltip, setShowPriceTooltip] = useState(false);
   const [showFileSizeError, setShowFileSizeError] = useState(false);
   const [fileSizeError, setFileSizeError] = useState<{ title: string; message: string } | null>(null);
+  const [showSizeWarning, setShowSizeWarning] = useState(false);
+  const [sizeWarningType, setSizeWarningType] = useState<"image" | "video">("video");
 
   // Fetch post data if in edit mode
   useEffect(() => {
@@ -166,22 +176,16 @@ export default function UploadExclusivePage() {
 
       if (file.type.startsWith('image/')) {
         if (file.size > maxImageSize) {
-          setFileSizeError({
-            title: "File Too Large",
-            message: "Max size is 10 MB. Please trim or compress before uploading."
-          });
-          setShowFileSizeError(true);
+         setSizeWarningType("image");
+        setShowSizeWarning(true);
           // Reset the input
           e.target.value = '';
           return;
         }
       } else if (file.type.startsWith('video/')) {
         if (file.size > maxVideoSize) {
-          setFileSizeError({
-            title: "File Too Large",
-            message: "Max size is 500 MB. Please trim or compress before uploading."
-          });
-          setShowFileSizeError(true);
+           setSizeWarningType("video");
+           setShowSizeWarning(true);
           // Reset the input
           e.target.value = '';
           return;
@@ -382,6 +386,7 @@ export default function UploadExclusivePage() {
                         <p className="text-sm text-gray-400">Current content</p>
                         <label className="cursor-pointer inline-block">
                           <input
+                            ref={fileInputRef}
                             type="file"
                             accept="image/*,video/*"
                             onChange={handleFileSelect}
@@ -507,35 +512,15 @@ export default function UploadExclusivePage() {
         </div>
       )}
 
-      {/* File Size Error Modal */}
-      {showFileSizeError && fileSizeError && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75 p-4">
-          <div className="bg-[#080b14] dark:bg-[#111624] rounded-lg max-w-md w-full border border-gray-700 shadow-xl overflow-hidden">
-            {/* Red Header */}
-            <div className="bg-red-600 px-6 py-4">
-              <h3 className="text-xl font-bold text-white">{fileSizeError.title}</h3>
-            </div>
-            {/* Dark Blue Body */}
-            <div className="bg-blue-900 px-6 py-6">
-              <p className="text-white text-base leading-relaxed">
-                {fileSizeError.message}
-              </p>
-            </div>
-            {/* Action Button */}
-            <div className="bg-blue-900 px-6 pb-6 flex justify-end">
-              <button
-                onClick={() => {
-                  setShowFileSizeError(false);
-                  setFileSizeError(null);
-                }}
-                className="px-6 py-2 bg-blue-800 hover:bg-blue-700 text-white rounded-lg transition-colors font-medium"
-              >
-                OK
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <FileLimitPopup
+  open={showSizeWarning}
+  type={sizeWarningType}
+  onClose={() => setShowSizeWarning(false)}
+  onChooseDifferent={() => {
+    setShowSizeWarning(false);
+    fileInputRef.current?.click();
+  }}
+/>
     </div>
   );
 }
