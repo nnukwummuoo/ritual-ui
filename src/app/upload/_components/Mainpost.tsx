@@ -20,6 +20,7 @@ import { createpost, getallpost, hydrateFromCache } from "@/store/post";
 import { useRouter } from "next/navigation";
 import { useUserId } from "@/lib/hooks/useUserId";
 import { useAuthToken } from "@/lib/hooks/useAuthToken";
+import FileLimitPopup from "@/app/upload/_components/FileLimitPopup";
 
 
 export const Mainpost = () => {
@@ -837,30 +838,20 @@ export const Mainpost = () => {
         </div>
       )}
 
-      {showSizeWarning && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/60" style={{ zIndex: 1001 }}>
-          <div className="w-full max-w-lg mx-4 bg-[#0b0f1f] border border-gray-700 rounded-2xl shadow-2xl">
-            <div className="flex items-center justify-between p-4 border-b border-gray-700 bg-red-800 rounded-t-2xl">
-              <span className="text-white font-semibold">File Too Large</span>
-            </div>
-            <div className="p-4 space-y-4 text-white">
-              <p>Max size is {fileTypeForSizeWarning === 'image' ? '10 MB' : '500 MB'}. Please trim or compress before uploading.</p>
-            </div>
-            <div className="flex items-center justify-end gap-3 p-4 border-t border-gray-700">
-              <button
-                onClick={() => {
-                  setShowSizeWarning(false);
-                  setUploading(false);
-                  setVideoUploading(false);
-                }}
-                className="px-4 py-2 text-gray-300 hover:text-white transition"
-              >
-                OK
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+     <FileLimitPopup
+  open={showSizeWarning}
+  type={fileTypeForSizeWarning || "video"}
+  onClose={() => setShowSizeWarning(false)}
+  onChooseDifferent={() => {
+    setShowSizeWarning(false);
+
+    if (fileTypeForSizeWarning === "image") {
+      setShowImageModal(true);
+    } else {
+      setShowVideoModal(true);
+    }
+  }}
+/>
     </div>
   );
 };
