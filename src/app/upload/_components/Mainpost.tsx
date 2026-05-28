@@ -90,14 +90,14 @@ export const Mainpost = () => {
 
   const handleUploadStart = (fileType: 'image' | 'video') => {
     if (fileType === 'image' && imageFile) {
-      if (imageFile.size > 5 * 1024 * 1024) {
+      if (imageFile.size > 10 * 1024 * 1024) {
         setFileTypeForSizeWarning('image');
         setShowSizeWarning(true);
         return;
       }
       setShowBanWarning(true);
     } else if (fileType === 'video' && videoFile) {
-      if (videoFile.size > 10 * 1024 * 1024) {
+      if (videoFile.size > 500 * 1024 * 1024) {
         setFileTypeForSizeWarning('video');
         setShowSizeWarning(true);
         return;

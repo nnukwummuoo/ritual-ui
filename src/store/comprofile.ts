@@ -301,7 +301,7 @@ export const updateEdit = createAsyncThunk<any, UpdateEditPayload>("comprofile/u
         if (data.updatePhoto && data.updatePhoto instanceof File) {
             console.log("Validating image file...");
 
-            const validation = validateImageFile(data.updatePhoto, 5); // 5MB max
+            const validation = validateImageFile(data.updatePhoto, 10); // 5MB max
             if (!validation.valid) {
                 throw new Error(validation.error || "Invalid image file");
             }
