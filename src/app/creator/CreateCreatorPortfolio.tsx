@@ -18,6 +18,8 @@ import { countryList } from "@/components/CountrySelect/countryList";
 
 const DAY_OPTIONS = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"];
 
+const ROUTE_SLUG = "routeSlug";
+
 const CATEGORY_OPTIONS = [
   {
     value: "Fan meet",
@@ -228,11 +230,11 @@ export default function CreateCreatorPortfolio() {
       // ── CHANGED: redirect to portfolio page with ?new=1 to trigger share popup ──
       if (hostid) {
         setTimeout(() => {
-          router.push(`/creators/${hostid},${userid}?new=1`);
+          router.push(`/${ROUTE_SLUG}/${hostid},${userid}?new=1`);
         }, 1000);
       } else {
         setTimeout(() => {
-          window.location.href = "/creators";
+          window.location.href = `/${ROUTE_SLUG}`;
         }, 1000);
       }
     } catch (err: any) {
