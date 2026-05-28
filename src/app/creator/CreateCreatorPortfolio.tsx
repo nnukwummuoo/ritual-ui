@@ -227,13 +227,17 @@ export default function CreateCreatorPortfolio() {
 
       // ── CHANGED: redirect to portfolio page with ?new=1 to trigger share popup ──
      if (hostid) {
+  router.refresh();
+
   setTimeout(() => {
-    window.location.href = `/creators/${hostid},${userid}?new=1`;
-  }, 1000);
+    router.push(`/creators/${hostid},${userid}?new=1`);
+  }, 100);
 } else {
+  router.refresh();
+
   setTimeout(() => {
-    window.location.href = `/creators/${userid}`;
-  }, 1000);
+    router.push(`/creators/${userid}`);
+  }, 100);
 }
     } catch (err: any) {
       const status = err?.response?.status;
