@@ -54,7 +54,7 @@ export default function FileLimitPopup({
               media processing servers.
 
               To keep the platform free and sustainable,
-              we simply ask that you keep your files under <strong>{limit}.</strong>
+              we simply ask that you keep your files <strong>under {limit}.</strong>
             </div>
           </div>
 
