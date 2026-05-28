@@ -249,7 +249,7 @@ export default function CreateCreatorPortfolio() {
 
   const handleImageUpload = (files: FileList) => {
     const selected: File[] = Array.from(files).filter((f) => f.type.startsWith("image/"));
-    const oversizedFiles = selected.filter((f) => f.size > 5 * 1024 * 1024);
+    const oversizedFiles = selected.filter((f) => f.size > 10 * 1024 * 1024);
     if (oversizedFiles.length > 0) { setShowFileSizeModal(true); return; }
     const remaining = Math.max(0, MAX_PHOTOS - photolink.length);
     const slice = selected.slice(0, remaining);
