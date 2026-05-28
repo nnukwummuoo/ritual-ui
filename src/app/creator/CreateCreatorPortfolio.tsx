@@ -234,7 +234,7 @@ export default function CreateCreatorPortfolio() {
       });
 
       toast.success("Portfolio created successfully", { autoClose: 3000 });
-      window.location.href = "/creators";
+      window.location.href = "/creators/${userid}";
     } catch (err: any) {
       console.error("Failed to create portfolio", err?.response || err);
       const status = err?.response?.status;
