@@ -11,6 +11,7 @@ import DropdownMenu from "./DropdownMenu";
 // Removed Redux import - using direct API calls instead
 import { getViewingProfile } from "@/store/viewingProfile";
 import { checkVipStatus } from "@/store/vip";
+import FileLimitPopup from "@/app/upload/_components/FileLimitPopup";
 
 import type { RootState } from "@/store/store";
 import { getSocket, startTyping, stopTyping } from "@/lib/socket";
@@ -116,6 +117,9 @@ export const Chat = () => {
 
   const [Chatphoto, set_Chatphoto] = useState("/icons/icons8-profile_user.png");
   const [ChatphotoError, setChatphotoError] = useState(false);
+
+  const [showSizeWarning, setShowSizeWarning] = useState(false);
+const [sizeWarningType, setSizeWarningType] = useState<"image" | "video" | null>(null);
 
   // Generate random background color for user initials
   const getRandomColor = (name: string) => {
@@ -1484,10 +1488,18 @@ export const Chat = () => {
 
     if (file.type.startsWith('image/')) {
       if (file.size > maxImageSize) {
+
+         setSizeWarningType("image");
+    setShowSizeWarning(true);
+
         return { valid: false, error: 'Image size must be less than 10MB' };
       }
     } else if (file.type.startsWith('video/')) {
       if (file.size > maxVideoSize) {
+
+        setSizeWarningType("video");
+  setShowSizeWarning(true);
+
         return { valid: false, error: 'Video size must be less than 500MB' };
       }
     } else {
@@ -2444,6 +2456,18 @@ export const Chat = () => {
           </div>
         </div>
       )}
+
+      <FileLimitPopup
+  open={showSizeWarning}
+  type={sizeWarningType || "video"}
+  onClose={() => setShowSizeWarning(false)}
+  onChooseDifferent={() => {
+    setShowSizeWarning(false);
+    fileInputRef.current?.click();
+  }}
+/>
+
+      
     </div>
   );
 };
