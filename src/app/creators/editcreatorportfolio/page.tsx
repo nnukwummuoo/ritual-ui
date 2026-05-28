@@ -358,7 +358,7 @@ export default function Editcreator() {
         f.type.startsWith("image/"),
       );
       const oversizedFiles = selectedFiles.filter(
-        (f: any) => f.size > 5 * 1024 * 1024,
+        (f: any) => f.size > 10 * 1024 * 1024,
       );
       if (oversizedFiles.length > 0) {
         setShowFileSizeModal(true);
@@ -956,7 +956,7 @@ export default function Editcreator() {
               File Too Large
             </h3>
             <p className="mb-4 text-sm text-slate-200">
-              Max size is 5 MB. Please trim or compress before uploading.
+              Max size is 10 MB. Please trim or compress before uploading.
             </p>
             <button
               type="button"
