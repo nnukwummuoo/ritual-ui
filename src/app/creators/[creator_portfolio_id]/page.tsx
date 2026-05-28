@@ -254,7 +254,7 @@ const [urlCopied, setUrlCopied] = useState(false);
 
   useEffect(() => {
     const currentUserId = getCurrentUserId();
-    if (!currentUserId || !Creator[0]) return;
+   if (!currentUserId || !Creator[0] || !token) return;
     if (creatorbyidstatus !== "loading") {
       dispatch(getmycreatorbyid({ hostid: Creator[0], token, userid: currentUserId }));
     }
@@ -673,7 +673,7 @@ const [urlCopied, setUrlCopied] = useState(false);
             <div className="mcp-profile-av">
   {imglist.length > 0 ? (
     <img 
-      src={profile.photolink || imglist[0]}
+      src={imglist[0]}
       alt={creator.name || "creator"}
       style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }}
       onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
