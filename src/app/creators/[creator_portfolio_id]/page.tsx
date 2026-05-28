@@ -671,16 +671,9 @@ const [urlCopied, setUrlCopied] = useState(false);
         <div className="mcp-profile-header">
           <div className="mcp-profile-top">
             <div className="mcp-profile-av">
-  {imglist.length > 0 ? (
-    <img 
-      src={imglist[0]}
-      alt={creator.name || "creator"}
-      style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }}
-      onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
-    />
-  ) : (
-    avatarInitials
-  )}
+  
+    {avatarInitials}
+  
   {checkOnline() === "online" && <div className="mcp-av-online" />}
               {/* VIP Badge */}
               {(() => {
