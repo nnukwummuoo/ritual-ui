@@ -1010,9 +1010,9 @@ const EditProfile: React.FC = () => {
                   ref={ref}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                     if (e.target.files?.[0]) {
-                      // Check file size (limit to 5MB)
-                      if (e.target.files[0].size > 5 * 1024 * 1024) {
-                        setErrorMessage("File size must be less than 5MB");
+                      // Check file size (limit to 10MB)
+                      if (e.target.files[0].size > 10 * 1024 * 1024) {
+                        setErrorMessage("File size must be less than 10MB");
                         return;
                       }
 

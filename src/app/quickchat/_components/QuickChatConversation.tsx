@@ -204,10 +204,10 @@ export const QuickChatConversation = () => {
     const validFiles = files.filter(file => {
       const isVideo = file.type.startsWith('video/');
       const isImage = file.type.startsWith('image/');
-      const maxSize = isVideo ? 10 * 1024 * 1024 : isImage ? 5 * 1024 * 1024 : 5 * 1024 * 1024; // 10MB for video, 5MB for image
+      const maxSize = isVideo ? 500 * 1024 * 1024 : isImage ? 10 * 1024 * 1024 : 10 * 1024 * 1024; // 500MB for video, 10MB for image
       
       if (file.size > maxSize) {
-        toast.error(`${file.name} is too large. Max size: ${isVideo ? '10MB' : '5MB'}`);
+        toast.error(`${file.name} is too large. Max size: ${isVideo ? '500MB' : '10MB'}`);
         return false;
       }
       return true;

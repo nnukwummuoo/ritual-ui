@@ -390,16 +390,16 @@ export const SupportChat = () => {
 
   // File validation function
   const validateFile = (file: File): { valid: boolean; error?: string } => {
-    const maxImageSize = 5 * 1024 * 1024; // 5MB
-    const maxVideoSize = 50 * 1024 * 1024; // 50MB // 10MB
+    const maxImageSize = 10 * 1024 * 1024; // 10MB
+    const maxVideoSize = 500 * 1024 * 1024; // 500MB
     
     if (file.type.startsWith('image/')) {
       if (file.size > maxImageSize) {
-        return { valid: false, error: 'Image size must be less than 5MB' };
+        return { valid: false, error: 'Image size must be less than 10MB' };
       }
     } else if (file.type.startsWith('video/')) {
       if (file.size > maxVideoSize) {
-        return { valid: false, error: 'Video size must be less than 50MB' };
+        return { valid: false, error: 'Video size must be less than 500MB' };
       }
     } else {
       return { valid: false, error: 'Only images and videos are allowed' };

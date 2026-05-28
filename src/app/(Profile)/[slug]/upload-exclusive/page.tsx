@@ -161,14 +161,14 @@ export default function UploadExclusivePage() {
     const file = e.target.files?.[0];
     if (file) {
       // Check file size based on file type
-      const maxImageSize = 5 * 1024 * 1024; // 5MB in bytes
-      const maxVideoSize = 50 * 1024 * 1024; // 50MB in bytes
+      const maxImageSize = 10 * 1024 * 1024; // 10MB in bytes
+      const maxVideoSize = 500 * 1024 * 1024; // 500MB in bytes
 
       if (file.type.startsWith('image/')) {
         if (file.size > maxImageSize) {
           setFileSizeError({
             title: "File Too Large",
-            message: "Max size is 5 MB. Please trim or compress before uploading."
+            message: "Max size is 10 MB. Please trim or compress before uploading."
           });
           setShowFileSizeError(true);
           // Reset the input
@@ -179,7 +179,7 @@ export default function UploadExclusivePage() {
         if (file.size > maxVideoSize) {
           setFileSizeError({
             title: "File Too Large",
-            message: "Max size is 50 MB. Please trim or compress before uploading."
+            message: "Max size is 500 MB. Please trim or compress before uploading."
           });
           setShowFileSizeError(true);
           // Reset the input

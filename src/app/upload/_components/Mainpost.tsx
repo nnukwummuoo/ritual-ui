@@ -844,7 +844,7 @@ export const Mainpost = () => {
               <span className="text-white font-semibold">File Too Large</span>
             </div>
             <div className="p-4 space-y-4 text-white">
-              <p>Max size is {fileTypeForSizeWarning === 'image' ? '5 MB' : '10 MB'}. Please trim or compress before uploading.</p>
+              <p>Max size is {fileTypeForSizeWarning === 'image' ? '10 MB' : '500 MB'}. Please trim or compress before uploading.</p>
             </div>
             <div className="flex items-center justify-end gap-3 p-4 border-t border-gray-700">
               <button

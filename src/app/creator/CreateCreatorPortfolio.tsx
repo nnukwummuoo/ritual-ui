@@ -746,7 +746,7 @@ export default function CreateCreatorPortfolio() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
           <div className="w-full max-w-md rounded-2xl bg-[#111624] p-5">
             <h3 className="mb-3 text-lg font-bold text-red-400">File Too Large</h3>
-            <p className="mb-4 text-sm text-slate-200">Max size is 5 MB. Please trim or compress before uploading.</p>
+            <p className="mb-4 text-sm text-slate-200">Max size is 10 MB. Please trim or compress before uploading.</p>
             <button
               type="button"
               onClick={() => setShowFileSizeModal(false)}
