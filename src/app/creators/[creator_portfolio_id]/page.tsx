@@ -598,8 +598,31 @@ const [urlCopied, setUrlCopied] = useState(false);
         .mcp-dv{font-size:13.5px;font-weight:700;color:var(--mcp-text);line-height:1.4;}
         .mcp-days-wrap{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;}
         .mcp-day{height:38px;padding:0 12px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;letter-spacing:.03em;background:rgba(34,197,94,.07);border:1px solid rgba(34,197,94,.2);color:var(--mcp-success);}
-        .mcp-hours-wrap{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
-        .mcp-hour{padding:7px 12px;border-radius:8px;font-size:11.5px;font-weight:600;background:var(--mcp-bg3);border:1px solid var(--mcp-border2);color:var(--mcp-text2);font-family:inherit;}
+        ..mcp-hours-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: flex-start;
+}
+        ..mcp-hour {
+  display: inline-flex;
+  align-items: center;
+
+  padding: 7px 12px;
+  border-radius: 8px;
+
+  font-size: 11.5px;
+  font-weight: 600;
+
+  background: var(--mcp-bg3);
+  border: 1px solid var(--mcp-border2);
+  color: var(--mcp-text2);
+
+  font-family: inherit;
+
+  white-space: nowrap;
+  flex-shrink: 0;
+}
         .mcp-about-text{font-size:13.5px;color:var(--mcp-text2);line-height:1.8;}
         .mcp-safety-card{margin:0 18px 24px;background:var(--mcp-card2);border:1px solid rgba(245,158,11,.15);border-radius:14px;overflow:hidden;}
         .mcp-safety-top{padding:14px 18px;border-bottom:1px solid rgba(245,158,11,.1);display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:#f59e0b;}
