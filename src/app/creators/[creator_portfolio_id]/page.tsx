@@ -351,18 +351,11 @@ const [urlCopied, setUrlCopied] = useState(false);
   const creatorRateSuffix = isFanCallCreator ? "/min" : isFanDateCreator ? "/date" : "/meet";
   const creatorDurationText = isFanCallCreator ? "Billed per minute" : `${formatCreatorPrices(String(creator?.duration || "")) || "30"} minutes`;
   const availabilityDays = String(creator?.daysava || "").split(/[\s,]+/).map((d) => d.trim()).filter(Boolean);
-  const availabilityHours = Array.isArray(creator?.timeava)
-  ? creator.timeava
-  : (creator?.timeava ?? "")
-      .toString()
-      .split(/[,|-]/)
-      .map((t) =>
-        t
-          .trim()
-          .replace(/\s*(AM|PM)\b/i, "$1")
-          .toUpperCase()
-      )
-      .filter(Boolean);
+  const availabilityHours = String(creator?.timeava || "")
+  .trim()
+  .split(/\s+/) // split by ANY whitespace
+  .map((t) => t.toUpperCase())
+  .filter(Boolean);
 
   const openModal = (imageSrc: string) => { setSelectedImage(imageSrc); setIsModalOpen(true); document.body.style.overflow = "hidden"; };
   const closeModal = () => { setIsModalOpen(false); setSelectedImage(""); document.body.style.overflow = "unset"; };
