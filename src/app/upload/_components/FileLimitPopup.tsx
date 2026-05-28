@@ -45,8 +45,8 @@ export default function FileLimitPopup({
             <div className="why-title">Why we have this limit</div>
             <div className="why-text">
               We don’t take a single penny of your earnings —{" "}
-              <strong>100% goes directly to you.</strong> To keep the platform
-              fast and free, we limit large file uploads.
+              <strong>100% goes directly to you.</strong>  Because of that, we don't spend millions on expensive media processing servers. 
+              To keep the platform free and sustainable, we simply ask that you keep your files under {limit}.
             </div>
           </div>
 
@@ -130,7 +130,7 @@ export default function FileLimitPopup({
         .overlay {
           position: fixed;
           inset: 0;
-          z-index: 1000;
+          z-index: 999999;
           background: rgba(0,0,0,.7);
           backdrop-filter: blur(6px);
           display: flex;
@@ -140,6 +140,8 @@ export default function FileLimitPopup({
 
         .popup {
           width: 100%;
+          position: relative;
+          z-index: 999999;
           max-width: 480px;
           background: #0d1120;
           border-radius: 24px 24px 0 0;
