@@ -53,7 +53,7 @@ import { URL } from "@/api/config";
 // Types
 interface RootState {
   register: { userID: string; logedin: boolean; refreshtoken: string };
-  profile: { creator_portfolio_id: string; balance: string; photolink?: string };
+  profile: { creator_portfolio_id: string; balance: string };
   creator: {
     userid: string; hostid: string; name: string; age: string;
     location: string; price: string; duration: string; description: string;
