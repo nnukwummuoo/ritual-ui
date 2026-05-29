@@ -2,7 +2,7 @@
 import Image from 'next/image';
 import React, { useState, useEffect, useCallback } from 'react'
 import { BiTimeFive } from 'react-icons/bi'
-import { FaCoins } from 'react-icons/fa';
+import { FaCoins, FaArrowRight } from 'react-icons/fa';
 import { toast } from 'material-react-toastify';
 import { URL } from '@/api/config';
 import { IoCalendarOutline, IoLocationOutline, IoTimeOutline, IoWarningOutline, IoCheckmarkCircleOutline } from 'react-icons/io5';
@@ -1513,6 +1513,19 @@ function DetailsModal({
           </div>
         )}
 
+         {/* How it works */}
+        {hosttype?.toLowerCase() === "fan call" && (
+          <div className="flex items-start gap-3 mb-4">
+            <FaArrowRight className="text-yellow-400 text-xl mt-1" />
+            <div>
+              <h3 className="font-semibold text-gray-800">What happens next?</h3>
+              <p className="text-gray-600 text-sm mt-1">
+                Once a booking request is sent, the creator has up to 24 hours to accept it. After the creator accepts, the call can be started anytime based on mutual availability within that booking.
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Date & Time */}
         <div className="flex items-start gap-3 mb-4">
           <IoCalendarOutline className="text-gray-600 text-xl mt-1" />
@@ -1555,19 +1568,6 @@ function DetailsModal({
             <div>
               <h3 className="font-semibold text-gray-800">Duration</h3>
               <p className="text-gray-600">{details.duration || "Maximum 30 minutes"}</p>
-            </div>
-          </div>
-        )}
-
-        {/* Call Expiration Notice - Only show for fan calls */}
-        {hosttype?.toLowerCase() === "fan call" && (
-          <div className="flex items-start gap-3 mb-4">
-            <IoCheckmarkCircleOutline className="text-green-500 text-xl mt-1" />
-            <div>
-              <h3 className="font-semibold text-gray-800">What happens next?</h3>
-              <p className="text-gray-600 text-sm mt-1">
-                Once a booking request is sent, the creator has up to 24 hours to accept it. After the creator accepts, the call can be started anytime based on mutual availability within that booking.
-              </p>
             </div>
           </div>
         )}
