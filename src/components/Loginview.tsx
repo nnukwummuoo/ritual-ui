@@ -700,7 +700,7 @@ export const Loginview = () => {
           <h1 className="text-white text-sm font-bold">Meet Your Fans • Keep 100% • Stay Safe</h1>
         </div>
         <p className="text-white text-sm leading-relaxed text-left">
-          No Platform Cut. Instant Payouts. Structured Safety.
+          Where Creators Meet With Dignity
         </p>
       </div>
 
