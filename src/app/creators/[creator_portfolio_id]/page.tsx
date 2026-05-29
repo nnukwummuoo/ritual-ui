@@ -53,7 +53,7 @@ import { URL } from "@/api/config";
 // Types
 interface RootState {
   register: { userID: string; logedin: boolean; refreshtoken: string };
-  profile: { creator_portfolio_id: string; balance: string; photolink?: string };
+  profile: { creator_portfolio_id: string; balance: string };
   creator: {
     userid: string; hostid: string; name: string; age: string;
     location: string; price: string; duration: string; description: string;
@@ -146,7 +146,7 @@ const [urlCopied, setUrlCopied] = useState(false);
   const [oldlink, setoldlink] = useState<string[]>([]);
   const [documentlink] = useState<string[]>([]);
   const [docCount] = useState(0);
-  const [creator_portfolio_id] = useState<[string?, string?]>([Creator[1], userid]);
+  const creator_portfolio_id: [string?, string?] = [Creator[1], userid];
   const [requestclick, setrequestclick] = useState(false);
   const [success, setsuccess] = useState(false);
   const [requested, setrequested] = useState(false);
@@ -166,8 +166,7 @@ const [urlCopied, setUrlCopied] = useState(false);
   const [vipCelebrationShown, setVipCelebrationShown] = useState(false);
   const [celebrationChecked, setCelebrationChecked] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-const [imgError, setImgError] = useState(false);
-const [avatarImgError, setAvatarImgError] = useState(false);
+  const [imgError, setImgError] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState("");
   const [isFollowing, setIsFollowing] = useState(false);
@@ -255,7 +254,7 @@ const [avatarImgError, setAvatarImgError] = useState(false);
 
   useEffect(() => {
     const currentUserId = getCurrentUserId();
-    if (!currentUserId || !Creator[0]) return;
+   if (!currentUserId || !Creator[0] || !token) return;
     if (creatorbyidstatus !== "loading") {
       dispatch(getmycreatorbyid({ hostid: Creator[0], token, userid: currentUserId }));
     }
@@ -671,32 +670,10 @@ const [avatarImgError, setAvatarImgError] = useState(false);
         {/* ── PROFILE HEADER ── */}
         <div className="mcp-profile-header">
           <div className="mcp-profile-top">
-         <div className="mcp-profile-av">
- {(() => {
-  const raw = (Array.isArray(creator.photolink)
-    ? creator.photolink[0]
-    : creator.photolink?.split(",")[0]?.trim()) || "";
-  const isStorj = raw.startsWith("https://gateway.storjshare.io/");
-  const avatarSrc = isStorj
-    ? (() => {
-        const parts = raw.split("/");
-        const key = parts[parts.length - 1];
-        const bucketIndex = parts.findIndex((p) => p === "gateway.storjshare.io") + 1;
-        const bucket = parts[bucketIndex] || "post";
-        return `${API_BASE}/api/image/view?publicId=${encodeURIComponent(key)}&bucket=${bucket}`;
-      })()
-    : raw;
-  return raw && !avatarImgError ? (
-    <img
-      src={avatarSrc}
-      alt={creator.name || "creator"}
-      style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }}
-      onError={() => setAvatarImgError(true)}
-    />
-  ) : (
-    <span>{avatarInitials}</span>
-  );
-})()}
+            <div className="mcp-profile-av">
+  
+    {avatarInitials}
+  
   {checkOnline() === "online" && <div className="mcp-av-online" />}
               {/* VIP Badge */}
               {(() => {
