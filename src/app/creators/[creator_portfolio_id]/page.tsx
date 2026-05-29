@@ -53,7 +53,7 @@ import { URL } from "@/api/config";
 // Types
 interface RootState {
   register: { userID: string; logedin: boolean; refreshtoken: string };
-  profile: { creator_portfolio_id: string; balance: string };
+  profile: { creator_portfolio_id: string; balance: string; photolink?: string };
   creator: {
     userid: string; hostid: string; name: string; age: string;
     location: string; price: string; duration: string; description: string;
@@ -146,7 +146,7 @@ const [urlCopied, setUrlCopied] = useState(false);
   const [oldlink, setoldlink] = useState<string[]>([]);
   const [documentlink] = useState<string[]>([]);
   const [docCount] = useState(0);
-  const creator_portfolio_id: [string?, string?] = [Creator[1], userid];
+  const [creator_portfolio_id] = useState<[string?, string?]>([Creator[1], userid]);
   const [requestclick, setrequestclick] = useState(false);
   const [success, setsuccess] = useState(false);
   const [requested, setrequested] = useState(false);
@@ -254,7 +254,7 @@ const [urlCopied, setUrlCopied] = useState(false);
 
   useEffect(() => {
     const currentUserId = getCurrentUserId();
-   if (!currentUserId || !Creator[0] || !token) return;
+    if (!currentUserId || !Creator[0]) return;
     if (creatorbyidstatus !== "loading") {
       dispatch(getmycreatorbyid({ hostid: Creator[0], token, userid: currentUserId }));
     }
@@ -673,7 +673,7 @@ const [urlCopied, setUrlCopied] = useState(false);
             <div className="mcp-profile-av">
   
     {avatarInitials}
-  
+
   {checkOnline() === "online" && <div className="mcp-av-online" />}
               {/* VIP Badge */}
               {(() => {
