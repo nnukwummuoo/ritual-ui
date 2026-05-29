@@ -77,6 +77,13 @@ export const RequestDetailsForm: React.FC<RequestDetailsFormProps> = ({
     }
   };
 
+  const bookingWord = 
+  creatorType === "Fan call" ? "call" :
+  creatorType === "Fan date" ? "date" :
+  "meet & greet";
+
+
+
 
   // Calendar helper functions
   const getAvailableDates = () => {
@@ -201,8 +208,10 @@ export const RequestDetailsForm: React.FC<RequestDetailsFormProps> = ({
               Request {creatorType} with {creatorName}
             </p>
             <p className="text-yellow-400 font-semibold mt-2">
-              💰 {price} Gold will be deducted from your balance {creatorType === "Fan call" ? "per minute during the video call" : "and held until the booking is completed. Once you confirm completion, the payment is released to the creator."}
-            </p>
+  {creatorType === "Fan call" 
+    ? "Fan Calls can be booked up to 5 days in advance 🙂 Once a booking request is sent, the creator has up to 24 hours to accept it. After the creator accepts, the  ${bookingWord} can be started anytime based on mutual availability within that booking."
+    : `💰 ${price} Gold will be deducted from your balance and held until the booking is completed. Once you confirm completion, the payment is released to the creator. Once a booking request is sent, the creator has up to 24 hours to accept. After acceptance, the  ${bookingWord} can take place at any time based on mutual availability within that booking.`}
+</p>
           </div>
 
           {/* Form Fields */}
