@@ -699,7 +699,7 @@ export const Loginview = () => {
           <div className="text-yellow-400 text-sm mr-3">⚡</div>
           <h1 className="text-white text-sm font-bold">Meet Your Fans • Keep 100% • Stay Safe</h1>
         </div>
-        <p className="text-white text-sm leading-relaxed text-left">
+        <p className="text-white text-sm leading-relaxed text-center">
           Where Creators Meet With Dignity
         </p>
       </div>
