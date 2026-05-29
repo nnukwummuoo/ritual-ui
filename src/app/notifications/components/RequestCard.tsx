@@ -1600,7 +1600,7 @@ function DetailsModal({
         {/* Call Expiration Notice - Only show for fan calls */}
         {hosttype?.toLowerCase() === "fan call" && (
           <div className="flex items-start gap-3 mb-4">
-            <span className="text-xl mt-1">⏳</span>
+            <span className="text-xl mt-1">🛡️</span>
             <div>
               <h3 className="font-semibold text-gray-800">Call Expiration</h3>
               <p className="text-gray-600 text-sm mt-1">
