@@ -46,12 +46,12 @@ const MAX_PHOTOS = 9;
 
 // ── AM / PM hour lists matching the HTML exactly ──────────────────────────
 const AM_HOURS = [
-  "12:00 AM","1:00 AM","2:00 AM","3:00 AM","4:00 AM","5:00 AM",
-  "6:00 AM","7:00 AM","8:00 AM","9:00 AM","10:00 AM","11:00 AM",
+  "12:00AM","1:00AM","2:00AM","3:00AM","4:00AM","5:00AM",
+  "6:00AM","7:00AM","8:00AM","9:00AM","10:00AM","11:00AM",
 ];
 const PM_HOURS = [
-  "12:00 PM","1:00 PM","2:00 PM","3:00 PM","4:00 PM","5:00 PM",
-  "6:00 PM","7:00 PM","8:00 PM","9:00 PM","10:00 PM","11:00 PM",
+  "12:00PM","1:00PM","2:00PM","3:00PM","4:00PM","5:00PM",
+  "6:00PM","7:00PM","8:00PM","9:00PM","10:00PM","11:00PM",
 ];
 
 export default function CreateCreatorPortfolio() {
