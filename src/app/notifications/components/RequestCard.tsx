@@ -136,7 +136,7 @@ const getDetailsTitle = (hostType: string) => {
   // Map different host types to their appropriate detail titles
   const titleMap: Record<string, string> = {
     "fan call": "Call Details",
-    "fan meet": "Meet Details",
+    "fan meet": "Meet & Greet Details",
     "fan date": "Date Details",
     "fan hangout": "Hangout Details",
     "fan chat": "Chat Details"
@@ -1521,7 +1521,7 @@ function DetailsModal({
       <h3 className="font-semibold text-gray-800">What happens next?</h3>
       <p className="text-gray-600 text-sm mt-1">
         Once a booking request is sent, the creator has up to 24 hours to accept. After acceptance, the{" "}
-        {hosttype?.toLowerCase() === "fan date" ? "date" : "meet & greet"}{" "}
+        <strong>{hosttype?.toLowerCase() === "fan date" ? "date" : "meet & greet"}</strong>{" "}
         can take place at any time based on mutual availability within that booking.
       </p>
     </div>
@@ -1536,7 +1536,7 @@ function DetailsModal({
       <h3 className="font-semibold text-gray-800">What happens next?</h3>
       <p className="text-gray-600 text-sm mt-1">
         Once a booking request is sent, the creator has up to 24 hours to accept. After acceptance, the{" "}
-        {hosttype?.toLowerCase() === "fan date" ? "date" : "meet & greet"}{" "}
+        <strong>{hosttype?.toLowerCase() === "fan date" ? "date" : "meet & greet"}</strong>{" "}
         can take place at any time based on mutual availability within that booking.
       </p>
     </div>
