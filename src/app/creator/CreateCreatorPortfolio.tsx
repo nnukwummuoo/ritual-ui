@@ -225,16 +225,8 @@ export default function CreateCreatorPortfolio() {
 
       toast.success("Portfolio created successfully", { autoClose: 3000 });
 
-      // ── CHANGED: redirect to portfolio page with ?new=1 to trigger share popup ──
-    if (hostid) {
-  setTimeout(() => {
-    router.push(`/creators/${hostid},${userid}?new=1`);
-  }, 1000);
-} else {
-  setTimeout(() => {
-    router.push(`/creators/${userid}`);
-  }, 1000);
-}
+    window.location.href = "/creators";
+
     } catch (err: any) {
       const status = err?.response?.status;
       const data = err?.response?.data;
