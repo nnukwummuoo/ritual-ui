@@ -1574,7 +1574,7 @@ function DetailsModal({
 
         {/* Safety Rules */}
         <div className="flex items-start gap-3 mb-4">
-          <IoWarningOutline className="text-orange-500 text-xl mt-1" />
+         <span className="text-xl mt-1">🛡️</span>
           <div>
             <h3 className="font-semibold text-gray-800">Safety Rules (Important!)</h3>
             {hosttype?.toLowerCase() === "fan call" ? (
@@ -1600,7 +1600,7 @@ function DetailsModal({
         {/* Call Expiration Notice - Only show for fan calls */}
         {hosttype?.toLowerCase() === "fan call" && (
           <div className="flex items-start gap-3 mb-4">
-            <IoCheckmarkCircleOutline className="text-green-500 text-xl mt-1" />
+            <span className="text-xl mt-1">⏳</span>
             <div>
               <h3 className="font-semibold text-gray-800">Call Expiration</h3>
               <p className="text-gray-600 text-sm mt-1">
