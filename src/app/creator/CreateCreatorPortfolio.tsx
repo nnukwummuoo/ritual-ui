@@ -417,51 +417,64 @@ export default function CreateCreatorPortfolio() {
         </div>
 
         {/* ── AVAILABLE HOURS ── */}
-        <SectionLabel>Available Hours</SectionLabel>
-        <div className="mb-6 overflow-hidden rounded-xl border border-white/7 bg-[#111624]">
-          {/* AM / PM tabs */}
-          <div className="grid grid-cols-2 border-b border-white/7">
-            {(["AM", "PM"] as const).map((tab) => (
-              <button
-                key={tab}
-                type="button"
-                onClick={() => setpm(tab)}
-                className="flex items-center justify-center gap-1.5 py-3 text-sm font-bold transition"
-                style={{ background: pm === tab ? "rgba(108,99,255,.1)" : "transparent", color: pm === tab ? "#a89cff" : "#475569" }}
-              >
-                <span>{tab === "AM" ? "🌞" : "🌙"}</span>
-                <span>{tab}</span>
-              </button>
-            ))}
-          </div>
-          {/* Hour chips */}
-          <div className="grid grid-cols-3 gap-2 p-[14px]">
-            {hourValues.map((h) => {
-              const sel = selectedTimes.includes(h);
-              return (
-                <button
-                  key={h}
-                  type="button"
-                  onClick={() =>
-                    setSelectedTimes((prev) =>
-                      prev.includes(h) ? prev.filter((t) => t !== h) : [...prev, h]
-                    )
-                  }
-                  style={{
-                    padding: "9px 8px", borderRadius: 8, fontSize: 12, fontWeight: 600,
-                    textAlign: "center", cursor: "pointer", transition: "all .2s",
-                    background: sel ? "rgba(108,99,255,.14)" : "#0e1220",
-                    border: sel ? "1px solid rgba(108,99,255,.35)" : "1px solid rgba(255,255,255,.04)",
-                    color: sel ? "#a89cff" : "#94a3b8",
-                  }}
-                >
-                  {h}
-                </button>
-              );
-            })}
-          </div>
-        </div>
+        <section className="mb-8">
+          <h2 className="mb-4 flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500">
+            <span className="block h-[2px] w-4 rounded bg-[#6c63ff]" />
+            Available Hours
+          </h2>
 
+          <div className="overflow-hidden rounded-2xl border border-white/10 bg-[#111624]">
+            <div className="grid grid-cols-2 border-b border-white/10">
+              <button
+                type="button"
+                onClick={() => setpm("AM")}
+                className={`flex items-center justify-center gap-2 py-3 text-sm font-bold transition ${
+                  pm === "AM" ? "bg-[#6c63ff]/15 text-[#a89cff]" : "text-slate-500"
+                }`}
+              >
+                <span aria-hidden>🌞</span>
+                <span>AM</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setpm("PM")}
+                className={`flex items-center justify-center gap-2 py-3 text-sm font-bold transition ${
+                  pm === "PM" ? "bg-[#6c63ff]/15 text-[#a89cff]" : "text-slate-500"
+                }`}
+              >
+                <span aria-hidden>🌙</span>
+                <span>PM</span>
+              </button>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2 p-3 sm:grid-cols-3">
+              {hourValues.map((value) => {
+                const selected = selectedTimes.includes(value);
+                return (
+                  <button
+                    key={value}
+                    type="button"
+                    aria-pressed={selected}
+                    onClick={() =>
+                      setSelectedTimes((prev) =>
+                        prev.includes(value)
+                          ? prev.filter((hourValue) => hourValue !== value)
+                          : [...prev, value],
+                      )
+                    }
+                    className={`rounded-lg border px-2 py-2 text-center text-xs font-semibold transition ${
+                      selected
+                        ? "border-[#6c63ff]/45 bg-[#6c63ff]/20 text-[#b8adff]"
+                        : "border-white/5 bg-[#0f1527] text-slate-400 hover:border-[#6c63ff]/35 hover:text-slate-200"
+                    }`}
+                  >
+                    {value.replace(/(AM|PM)$/, " $1")}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </section>
         <Divider />
 
         {/* ── CATEGORY ── */}
