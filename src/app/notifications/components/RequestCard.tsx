@@ -1559,6 +1559,19 @@ function DetailsModal({
           </div>
         )}
 
+        {/* Call Expiration Notice - Only show for fan calls */}
+        {hosttype?.toLowerCase() === "fan call" && (
+          <div className="flex items-start gap-3 mb-4">
+            <IoCheckmarkCircleOutline className="text-green-500 text-xl mt-1" />
+            <div>
+              <h3 className="font-semibold text-gray-800">What happens next?</h3>
+              <p className="text-gray-600 text-sm mt-1">
+                Once a booking request is sent, the creator has up to 24 hours to accept it. After the creator accepts, the call can be started anytime based on mutual availability within that booking.
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Safety Rules */}
         <div className="flex items-start gap-3 mb-4">
           <IoWarningOutline className="text-orange-500 text-xl mt-1" />
