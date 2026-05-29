@@ -1513,31 +1513,35 @@ function DetailsModal({
           </div>
         )}
 
-        {/* How it works for Fan Meet and Fan Date show before acceptance */}
-        {hosttype?.toLowerCase() !== "fan call" && (
-          <div className="flex items-start gap-3 mb-4">
-            <span className="text-xl mt-1">👉</span>
-            <div>
-              <h3 className="font-semibold text-gray-800">What happens next?</h3>
-              <p className="text-gray-600 text-sm mt-1">
-                Once a booking request is sent, the creator has up to 24 hours to accept. After acceptance, the session can take place at any time based on mutual availability within that booking.
-              </p>
-            </div>
-          </div>
-        )}
+       {/* How it works for Fan Meet and Fan Date before acceptance */}
+{hosttype?.toLowerCase() !== "fan call" && (
+  <div className="flex items-start gap-3 mb-4">
+    <span className="text-xl mt-1">👉</span>
+    <div>
+      <h3 className="font-semibold text-gray-800">What happens next?</h3>
+      <p className="text-gray-600 text-sm mt-1">
+        Once a booking request is sent, the creator has up to 24 hours to accept. After acceptance, the{" "}
+        {hosttype?.toLowerCase() === "fan date" ? "date" : "meet & greet"}{" "}
+        can take place at any time based on mutual availability within that booking.
+      </p>
+    </div>
+  </div>
+)}
 
-        {/* How it works for Fan Meet and Fan Date */}
-        {currentStatus === "accepted" && hosttype?.toLowerCase() !== "fan call" && (
-          <div className="flex items-start gap-3 mb-4">
-            <span className="text-xl mt-1">👉</span>
-            <div>
-              <h3 className="font-semibold text-gray-800">What happens next?</h3>
-              <p className="text-gray-600 text-sm mt-1">
-                Once a booking request is sent, the creator has up to 24 hours to accept. After acceptance, the session can take place at any time based on mutual availability within that booking.
-              </p>
-            </div>
-          </div>
-        )}
+        {/* How it works for Fan Meet and Fan Date after acceptance */}
+{currentStatus === "accepted" && hosttype?.toLowerCase() !== "fan call" && (
+  <div className="flex items-start gap-3 mb-4">
+    <span className="text-xl mt-1">👉</span>
+    <div>
+      <h3 className="font-semibold text-gray-800">What happens next?</h3>
+      <p className="text-gray-600 text-sm mt-1">
+        Once a booking request is sent, the creator has up to 24 hours to accept. After acceptance, the{" "}
+        {hosttype?.toLowerCase() === "fan date" ? "date" : "meet & greet"}{" "}
+        can take place at any time based on mutual availability within that booking.
+      </p>
+    </div>
+  </div>
+)}
 
 
          {/* How it works for fan call */}
