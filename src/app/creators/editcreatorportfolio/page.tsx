@@ -86,6 +86,7 @@ export default function Editcreator() {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const hosttypeInitialized = useRef(false);
   const token = useAuthToken();
+  const imagesInitialized = useRef(false); 
 
   const filteredCountries = useMemo(() => {
     const query = countryQuery.trim().toLowerCase();
@@ -197,15 +198,16 @@ export default function Editcreator() {
       setHours(toArray(creator.daysava));
     }
 
-    if (creator.photolink) {
-      const existingImgArray =
-        typeof creator.photolink === "string"
-          ? creator.photolink.split(",").filter((url: string) => url.trim())
-          : Array.isArray(creator.photolink)
-            ? creator.photolink.filter((url: string) => url.trim())
-            : [];
-      setExistingImages(existingImgArray);
-    }
+   if (creator.photolink && !imagesInitialized.current) {
+  const existingImgArray =
+    typeof creator.photolink === "string"
+      ? creator.photolink.split(",").filter((url: string) => url.trim())
+      : Array.isArray(creator.photolink)
+        ? creator.photolink.filter((url: string) => url.trim())
+        : [];
+  setExistingImages(existingImgArray);
+  imagesInitialized.current = true;
+}
   }, [
     creator,
     creator_portfolio_id,
@@ -216,8 +218,6 @@ export default function Editcreator() {
     profile.status,
     reduxUserId,
     userid,
-    times.length,
-    hours.length,
   ]);
 
   // Autofill full name from user profile
