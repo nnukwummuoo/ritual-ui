@@ -1515,7 +1515,7 @@ function DetailsModal({
 
         {/* How it works for Fan Meet and Fan Date show before acceptance */}
         {hosttype?.toLowerCase() !== "fan call" && (
-          <div className="flex items-start gap-3 mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+          <div className="flex items-start gap-3 mb-4">
             <span className="text-xl mt-1">👉</span>
             <div>
               <h3 className="font-semibold text-gray-800">What happens next?</h3>
@@ -1528,7 +1528,7 @@ function DetailsModal({
 
         {/* How it works for Fan Meet and Fan Date */}
         {currentStatus === "accepted" && hosttype?.toLowerCase() !== "fan call" && (
-          <div className="flex items-start gap-3 mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+          <div className="flex items-start gap-3 mb-4">
             <span className="text-xl mt-1">👉</span>
             <div>
               <h3 className="font-semibold text-gray-800">What happens next?</h3>
@@ -1580,7 +1580,7 @@ function DetailsModal({
         {/* Venue - Hide for Fan Call */}
         {hosttype?.toLowerCase() !== "fan call" && (
           <div className="flex items-start gap-3 mb-4">
-            <IoLocationOutline className="text-gray-600 text-xl mt-1" />
+            <span className="text-xl mt-1">📍</span>
             <div>
               <h3 className="font-semibold text-gray-800">Venue</h3>
               <p className="text-gray-600">{details.venue}</p>
@@ -1591,7 +1591,7 @@ function DetailsModal({
         {/* Duration - Hide for Fan Call */}
         {hosttype?.toLowerCase() !== "fan call" && (
           <div className="flex items-start gap-3 mb-4">
-            <IoTimeOutline className="text-gray-600 text-xl mt-1" />
+           <span className="text-xl mt-1">⏱️</span>
             <div>
               <h3 className="font-semibold text-gray-800">Duration</h3>
               <p className="text-gray-600">{details.duration || "Maximum 30 minutes"}</p>
@@ -1640,7 +1640,7 @@ function DetailsModal({
         {/* Agreement - Show for creators with appropriate message (excluding fan calls) */}
         {type === "creator" && hosttype?.toLowerCase() !== "fan call" && (
           <div className="flex items-start gap-3 mb-6">
-            <IoCheckmarkCircleOutline className="text-green-500 text-xl mt-1" />
+           <span className="text-xl mt-1">✅</span>
             <p className="text-gray-800 font-semibold text-sm">
               By accepting this request, you agree to follow these safety rules.
             </p>
@@ -1650,7 +1650,7 @@ function DetailsModal({
         {/* Agreement - Show for fans when viewing Fan Date and Fan Meet details */}
         {type === "fan" && hosttype?.toLowerCase() !== "fan call" && (
           <div className="flex items-start gap-3 mb-6">
-            <IoCheckmarkCircleOutline className="text-green-500 text-xl mt-1" />
+           <span className="text-xl mt-1">✅</span>
             <p className="text-gray-800 font-semibold text-sm">
               By sending this request, you agree to follow these safety rules.
             </p>
