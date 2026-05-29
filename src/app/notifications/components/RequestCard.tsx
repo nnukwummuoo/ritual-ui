@@ -2,7 +2,7 @@
 import Image from 'next/image';
 import React, { useState, useEffect, useCallback } from 'react'
 import { BiTimeFive } from 'react-icons/bi'
-import { FaCoins, FaArrowRight } from 'react-icons/fa';
+import { FaCoins } from 'react-icons/fa';
 import { toast } from 'material-react-toastify';
 import { URL } from '@/api/config';
 import { IoCalendarOutline, IoLocationOutline, IoTimeOutline, IoWarningOutline, IoCheckmarkCircleOutline } from 'react-icons/io5';
@@ -1516,7 +1516,7 @@ function DetailsModal({
          {/* How it works */}
         {hosttype?.toLowerCase() === "fan call" && (
           <div className="flex items-start gap-3 mb-4">
-            <FaArrowRight className="text-yellow-400 text-xl mt-1" />
+           <span className="text-xl mt-1">👉</span>
             <div>
               <h3 className="font-semibold text-gray-800">What happens next?</h3>
               <p className="text-gray-600 text-sm mt-1">
