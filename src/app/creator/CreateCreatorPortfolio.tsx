@@ -231,8 +231,9 @@ export default function CreateCreatorPortfolio() {
 
       toast.success("Portfolio created successfully", { autoClose: 3000 });
 
-    window.location.href = `/creators/${creator_portfolio_id}`;
-
+    setTimeout(() => {
+ window.location.href = `/creators/${creator_portfolio_id}`;
+}, 1500); // give the server a moment
     } catch (err: any) {
       const status = err?.response?.status;
       const data = err?.response?.data;
