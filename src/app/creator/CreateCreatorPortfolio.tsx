@@ -59,12 +59,6 @@ export default function CreateCreatorPortfolio() {
   const userid = session?._id ?? useUserId();
   const token = useAuthToken() || session?.token;
 
-  const creator = useSelector((state: any) => state.creator.creatorbyid);
-
-  const creator_portfolio_id = (creator &&
-      (creator.hostid || creator.id || creator._id)) as string | undefined;
-    
-
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
@@ -231,9 +225,8 @@ export default function CreateCreatorPortfolio() {
 
       toast.success("Portfolio created successfully", { autoClose: 3000 });
 
-    setTimeout(() => {
- window.location.href = `/creators/${creator_portfolio_id}`;
-}, 1500); // give the server a moment
+    window.location.href = "/creators";
+
     } catch (err: any) {
       const status = err?.response?.status;
       const data = err?.response?.data;
