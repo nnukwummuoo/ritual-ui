@@ -1543,6 +1543,36 @@ function DetailsModal({
   </div>
 )}
 
+{/* Payment details before acceptance */}
+{hosttype?.toLowerCase() !== "fan call" && (
+  <div className="flex items-start gap-3 mb-4">
+    <span className="text-xl mt-1">🔒</span>
+    <div>
+      <h3 className="font-semibold text-gray-800">Payment Secured</h3>
+      <p className="text-gray-600 text-sm mt-1">
+        Once a booking is accepted, your payment is secured and held by Mmeko. After the{" "}
+        <strong>{hosttype?.toLowerCase() === "fan date" ? "date" : "meet & greet"}</strong>,{" "}
+        simply ask the fan to tap <strong>"Mark as Complete"</strong> to receive your payment automatically. If they don't, contact <strong>Mmeko Support</strong> and we'll release it accordingly. 🙂
+      </p>
+    </div>
+  </div>
+)}
+
+{/* Payment details after acceptance */}
+{currentStatus === "accepted" && hosttype?.toLowerCase() !== "fan call" && (
+  <div className="flex items-start gap-3 mb-4">
+    <span className="text-xl mt-1">🔒</span>
+    <div>
+      <h3 className="font-semibold text-gray-800">Payment Secured</h3>
+      <p className="text-gray-600 text-sm mt-1">
+        Once a booking is accepted, your payment is secured and held by Mmeko. After the{" "}
+        <strong>{hosttype?.toLowerCase() === "fan date" ? "date" : "meet & greet"}</strong>,{" "}
+        simply ask the fan to tap <strong>"Mark as Complete"</strong> to receive your payment automatically. If they don't, contact <strong>Mmeko Support</strong> and we'll release it accordingly. 🙂
+      </p>
+    </div>
+  </div>
+)}
+
 
          {/* How it works for fan call */}
         {hosttype?.toLowerCase() === "fan call" && (
