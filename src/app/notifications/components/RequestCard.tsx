@@ -29,17 +29,17 @@ const getCreatorContent = (hostType: string, hasRating: boolean = false) => {
 
   // Special handling for Fan Call
   const getAcceptedContent = () => {
-    if (typeText.toLowerCase() === "fan call") {
-      return {
-        head: "📞 Please wait for the fan to start the call.",
-        body: "You've accepted the request — now relax and stay online. The fan will initiate the call when ready."
-      };
-    }
+  if (typeText.toLowerCase() === "fan call") {
     return {
-      head: `${typeText} Accepted`,
-      body: "Please kindly remind your fan to mark as complete during or after the date — it only takes a second. If they don't, contact support within 24 hours.",
+      head: "📞 Please wait for the fan to start the call.",
+      body: "You've accepted the request — now relax and stay online. The fan will initiate the call when ready."
     };
+  }
+  return {
+    head: `${typeText} Accepted`,
+    body: `Once a booking request is sent, the creator has up to 24 hours to accept. After acceptance, the ${typeText.toLowerCase() === "fan date" ? "date" : "meet & greet"} can take place at any time based on mutual availability within that booking.`
   };
+};
 
   // Different content for completed status based on whether fan has rated
   const getCompletedContent = () => {
