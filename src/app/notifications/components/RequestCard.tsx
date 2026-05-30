@@ -1522,7 +1522,7 @@ function DetailsModal({
       <p className="text-gray-600 text-sm mt-1">
         Once a booking request is sent, the creator has up to 24 hours to accept. After acceptance, the{" "}
         <strong>{hosttype?.toLowerCase() === "fan date" ? "date" : "meet & greet"}</strong>{" "}
-        can take place at any time based on mutual availability within that booking.
+        can take place at any time based on mutual availability within that booking gtdsfgd.
       </p>
     </div>
   </div>
