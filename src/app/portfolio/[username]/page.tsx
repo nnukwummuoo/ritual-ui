@@ -19,7 +19,7 @@ import { RequestDetailsForm } from "@/components/requestFrag/RequestDetailsForm"
 import closeIcon from "@/icons/closeIcon.svg";
 import { getViews } from "@/store/creatorSlice";
 import { getAllCreatorRatings } from "@/store/profile";
-import { CreatorReview } from "./_components/Creator_review";
+import { CreatorReview } from "../_components/Creator_review";
 import { IoArrowBack, IoCheckmarkCircleOutline } from "react-icons/io5";
 import { BadgeCheck, ArrowLeftSquare, Coins } from "lucide-react";
 
@@ -36,9 +36,9 @@ import Skeleton, { SkeletonTheme } from "react-loading-skeleton";
 // @ts-ignore: side-effect import of CSS without type declarations
 import "react-loading-skeleton/dist/skeleton.css";
 
-import CreatorByIdNav from "./_components/CreatorByIdNav";
-import FollowStrip from "./_components/FollowStrip";
-import { formatCreatorPrices } from "./_utils/formatCreatorPrices";
+import CreatorByIdNav from "../_components/CreatorByIdNav";
+import FollowStrip from "../_components/FollowStrip";
+import { formatCreatorPrices } from "../_utils/formatCreatorPrices";
 import { AppDispatch } from "@/store/store";
 import { useUserId } from "@/lib/hooks/useUserId";
 import { useAuth } from "@/lib/context/auth-context";
@@ -76,10 +76,11 @@ interface RootState {
 }
 
 export default function Creatorbyid() {
-  const params = useParams<{ creator_portfolio_id: string }>();
-  const Creator = params?.creator_portfolio_id?.split(",") || [];
+  const params = useParams<{ username: string }>();
+  const Creator = params?.username?.split(",") || [];
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
+  
 
   const useridFromHook = useUserId();
   const { session } = useAuth();
@@ -256,7 +257,9 @@ const [urlCopied, setUrlCopied] = useState(false);
     const currentUserId = getCurrentUserId();
     if (!currentUserId || !Creator[0]) return;
     if (creatorbyidstatus !== "loading") {
-      dispatch(getmycreatorbyid({ hostid: Creator[0], token, userid: currentUserId }));
+      dispatch(getmycreatorbyid({ hostid: null, token, userid: currentUserId, username:Creator[0] }));
+    
+
     }
     if (ratings_stats !== "loading") {
       dispatch(getAllCreatorRatings({ creatorId: Creator[0], token }));
@@ -288,7 +291,7 @@ const [urlCopied, setUrlCopied] = useState(false);
     }
   }, [creatorbyidstatus, creator.photolink]);
 
-  useEffect(() => {
+  useEffect(() => { 
     const stored = localStorage.getItem("login");
     if (stored) setUser(JSON.parse(stored));
   }, []);
@@ -297,12 +300,13 @@ const [urlCopied, setUrlCopied] = useState(false);
     const fetchViews = async () => {
       const currentUserId = getCurrentUserId();
       if (!Creator[0] || !currentUserId) return;
-      const data = { creator_portfolio_id: Creator[0], userId: currentUserId };
+      const data = { creator_portfolio_id: null, userId: currentUserId, username: Creator[0] };
       const response = await dispatch(getViews(data));
       try {
         const payload = response?.payload?.response;
         if (!payload) { setViews(0); return; }
         const parsed = typeof payload === "string" ? JSON.parse(payload) : payload;
+        console.log("Fetched views:", parsed);
         setViews(parsed?.views ?? 0);
       } catch { setViews(0); }
     };
@@ -926,12 +930,12 @@ const [urlCopied, setUrlCopied] = useState(false);
         {/* URL box */}
         <div style={{ display: "flex", background: "#0d1120", border: "1px solid rgba(108,99,255,.25)", borderRadius: 11, overflow: "hidden", marginBottom: 20 }}>
           <div style={{ flex: 1, padding: "12px 14px", fontSize: 12.5, color: "#94a3b8", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-  {typeof window !== "undefined" ? window.location.host : "mmeko.com"}/portfolio/{String(creator.username || "").replace(/^@/, "")}
+  {typeof window !== "undefined" ? window.location.host : "mmeko.com"}/{String(creator.username || "").replace(/^@/, "")}
 </div>
           <button
             onClick={async () => {
               await navigator.clipboard.writeText(
-  `${window.location.origin}/portfolio/${String(creator.username || "").replace(/^@/, "")}`
+  `${window.location.origin}/${String(creator.username || "").replace(/^@/, "")}`
 ).catch(() => {});
               setUrlCopied(true);
               setTimeout(() => setUrlCopied(false), 2500);
@@ -950,13 +954,11 @@ const [urlCopied, setUrlCopied] = useState(false);
           </div>
         </div>
 
-        
-
         {/* actions */}
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           <button
             onClick={async () => {
-              const url = `${window.location.origin}/portfolio/${String(creator.username || "").replace(/^@/, "")}`;
+              const url = `${window.location.origin}/${String(creator.username || "").replace(/^@/, "")}`;
               if (navigator.share) await navigator.share({ title: `Book a meet with me on mmeko`, url });
               else { await navigator.clipboard.writeText(url).catch(() => {}); toast.success("Link copied!", { autoClose: 2000 }); }
             }}
