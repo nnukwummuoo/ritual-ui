@@ -76,7 +76,7 @@ interface RootState {
   };
 }
 
-export default async function Creatorbyid() {
+export default function Creatorbyid() {
   const params = useParams<{ username: string }>();
   const Creator = params?.username?.split(",") || [];
   const router = useRouter();
@@ -268,7 +268,7 @@ const [urlCopied, setUrlCopied] = useState(false);
     if (ratings_stats !== "loading") {
       dispatch(getAllCreatorRatings({ creatorId: Creator[0], token: token || undefined }));
     }
-  }, [userid, Creator[0], token]);
+  }, [userid, Creator[0], token, dispatch, creatorbyidstatus, ratings_stats]);
 
   useEffect(() => {
     if (creatorbyidstatus === "succeeded") {
