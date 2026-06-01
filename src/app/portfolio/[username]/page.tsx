@@ -49,6 +49,7 @@ import {
 } from "@/api/vipCelebration";
 import { checkVipStatus } from "@/store/vip";
 import { URL } from "@/api/config";
+import LoginPromptBanner from "@/components/LoginPromptBanner";
 
 // Types
 interface RootState {
@@ -75,7 +76,7 @@ interface RootState {
   };
 }
 
-export default function Creatorbyid() {
+export default async function Creatorbyid() {
   const params = useParams<{ username: string }>();
   const Creator = params?.username?.split(",") || [];
   const router = useRouter();
@@ -85,6 +86,8 @@ export default function Creatorbyid() {
   const useridFromHook = useUserId();
   const { session } = useAuth();
   const reduxUserid = useSelector((state: RootState) => state.register.userID);
+const isAuthenticated = !!session?._id;
+
   const [userid, setUserid] = useState<string>("");
   const [showSharePopup, setShowSharePopup] = useState(false);
 const [urlCopied, setUrlCopied] = useState(false);
@@ -173,6 +176,7 @@ const [urlCopied, setUrlCopied] = useState(false);
   const [isFollowing, setIsFollowing] = useState(false);
 
   const navigate = (path: string) => router.push(path);
+  
 
   const getCurrentUserId = () => {
     let currentUserId = userid;
@@ -255,14 +259,14 @@ const [urlCopied, setUrlCopied] = useState(false);
 
   useEffect(() => {
     const currentUserId = getCurrentUserId();
-    if (!currentUserId || !Creator[0]) return;
+    if (!Creator[0]) return;
     if (creatorbyidstatus !== "loading") {
-      dispatch(getmycreatorbyid({ hostid: null, token, userid: currentUserId, username:Creator[0] }));
+      dispatch(getmycreatorbyid({ hostid: null, token: token || undefined, userid: currentUserId || undefined, username:Creator[0] }));
     
 
     }
     if (ratings_stats !== "loading") {
-      dispatch(getAllCreatorRatings({ creatorId: Creator[0], token }));
+      dispatch(getAllCreatorRatings({ creatorId: Creator[0], token: token || undefined }));
     }
   }, [userid, Creator[0], token]);
 
@@ -984,6 +988,10 @@ const [urlCopied, setUrlCopied] = useState(false);
   </div>
 )}
       </div>
+
+      {!isAuthenticated && 
+       <LoginPromptBanner />
+        } 
     </>
   );
 }

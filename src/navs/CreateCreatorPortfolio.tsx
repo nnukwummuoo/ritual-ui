@@ -225,7 +225,7 @@ export default function CreateCreatorPortfolio () {
       // Prefer backend message if available
       const okMsg = (res && (res.message || res.msg)) ? String(res.message || res.msg) : "Portfolio created successfully";
       toast.success(okMsg, { autoClose: 3000 });
-      router.push("/creators");
+      router.push("/creator/"+res.id);
     }catch(err:any){
       // Log full error for debugging
       console.error("Failed to create portfolio", err?.response || err);

@@ -1,3 +1,4 @@
+
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { sessionMng, checkUserAdmin } from './lib/service/manageSession';
@@ -64,12 +65,18 @@ export async function middleware(request: NextRequest) {
     return res;
   }
 
-  const isPublicProfileRoute = PUBLIC_PROFILE_ROUTE.test(pathname); 
-  const isPublicRoute =
-    publicRoutes.includes(pathname) ||
-    publicRoutePrefixes.some((prefix) => pathname.startsWith(prefix)) ||
-    isPublicProfileRoute; 
+  // const isPublicProfileRoute = PUBLIC_PROFILE_ROUTE.test(pathname); 
+  // const isPublicRoute =
+  //   publicRoutes.includes(pathname) ||
+  //   publicRoutePrefixes.some((prefix) => pathname.startsWith(prefix)) ||
+  //   isPublicProfileRoute; 
 
+  const isPublicRoute =
+  publicRoutes.includes(pathname) ||
+  publicRoutePrefixes.some((prefix) => pathname.startsWith(prefix)) ||
+  PUBLIC_PROFILE_ROUTE.test(pathname) ||
+  pathname.startsWith('/portfolio/') ; 
+  
   const isProhibitedRoute = prohibitedRoutes.some((route) => pathname === route);
   const isAdminRoute = adminRoutes.some((route) => pathname.startsWith(route));
 
