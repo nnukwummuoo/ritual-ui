@@ -221,11 +221,12 @@ export default function CreateCreatorPortfolio() {
 
       // ── CHANGED: capture response to get hostid for redirect ────────────
       const response = await createCreatorMultipart({ token, userid, data, photolink });
-      const hostid = response?.hostid || response?.data?.hostid || response?._id || response?.data?._id;
+      const hostid = response?.hostid || response?.data?.hostid || response?._id || response?.id || response?.data?._id;
 
       toast.success("Portfolio created successfully", { autoClose: 3000 });
+      router.push(`/creators/${hostid}`);
 
-    window.location.href = "/creators";
+    // window.location.href = "/creators";
 
     } catch (err: any) {
       const status = err?.response?.status;
