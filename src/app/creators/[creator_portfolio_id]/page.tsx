@@ -71,6 +71,7 @@ interface RootState {
       hosttype: string; photolink: string | string[]; verify: boolean;
       active: boolean; add: boolean; followingUser: boolean;
       isVip?: boolean; vipEndDate?: string;
+      userPhotolink?: string | null; 
     };
   };
 }
@@ -670,22 +671,30 @@ const [urlCopied, setUrlCopied] = useState(false);
         {/* ── PROFILE HEADER ── */}
         <div className="mcp-profile-header">
           <div className="mcp-profile-top">
-            <div className="mcp-profile-av">
-  
-    {avatarInitials}
-
+           <div className="mcp-profile-av">
+  {creator.userPhotolink ? (
+    <img
+      src={creator.userPhotolink}
+      alt={creator.name}
+      style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }}
+      onError={(e) => {
+        (e.currentTarget as HTMLImageElement).style.display = "none";
+        (e.currentTarget.nextSibling as HTMLElement).style.display = "flex";
+      }}
+    />
+  ) : null}
+  <span style={{ display: creator.userPhotolink ? "none" : "flex" }}>{avatarInitials}</span>
   {checkOnline() === "online" && <div className="mcp-av-online" />}
-              {/* VIP Badge */}
-              {(() => {
-                const isVip = vipStatus?.isVip || vipStatusFromCreator?.isVip;
-                const vipEndDate = vipStatus?.vipEndDate || vipStatusFromCreator?.vipEndDate;
-                return isVip === true && (
-                  <div style={{ position: "absolute", bottom: 30, left: 28 }}>
-                    <VIPBadge size="xl" isVip={isVip} vipEndDate={vipEndDate} />
-                  </div>
-                );
-              })()}
-            </div>
+  {(() => {
+    const isVip = vipStatus?.isVip || vipStatusFromCreator?.isVip;
+    const vipEndDate = vipStatus?.vipEndDate || vipStatusFromCreator?.vipEndDate;
+    return isVip === true && (
+      <div style={{ position: "absolute", bottom: 30, left: 28 }}>
+        <VIPBadge size="xl" isVip={isVip} vipEndDate={vipEndDate} />
+      </div>
+    );
+  })()}
+</div>
             <div className="mcp-profile-stats">
               <div className="mcp-pstat"><div className="mcp-pstat-n">{views}</div><div className="mcp-pstat-l">Views</div></div>
               <div className="mcp-pstat">
