@@ -1522,6 +1522,8 @@ function DetailsModal({
   
   const [fanDocLoading, setFanDocLoading] = useState(true);
 
+  const [lightboxSrc, setLightboxSrc] = useState<string>("");
+
  useEffect(() => {
   if (type !== "creator" || !fanUserid) return;
   const fetchFanDoc = async () => {
@@ -1758,29 +1760,31 @@ function DetailsModal({
        {fanDocument.idPhotofilelink && (
   <div>
     <p className="text-xs text-gray-500 mb-1">ID Document</p>
-    <img
-      src={(() => {
-        const original = fanDocument.idPhotofilelink!;
-        const key = original.split("/").pop()?.split("?")[0] || "";
-        return `${API_BASE}/api/image/view?publicId=${encodeURIComponent(key)}&bucket=post`;
-      })()}
-      alt="Fan ID"
-      className="w-full rounded-lg object-cover border border-gray-200"
-    />
+   <img
+  src={(() => {
+    const original = fanDocument.idPhotofilelink!;
+    const key = original.split("/").pop()?.split("?")[0] || "";
+    return `${API_BASE}/api/image/view?publicId=${encodeURIComponent(key)}&bucket=creator-application`;
+  })()}
+  alt="Fan ID"
+  className="w-full rounded-lg object-cover border border-gray-200 cursor-pointer hover:opacity-90 transition-opacity"
+  onClick={() => setLightboxSrc(`${API_BASE}/api/image/view?publicId=${encodeURIComponent(fanDocument.idPhotofilelink!.split("/").pop()?.split("?")[0] || "")}&bucket=post`)}
+/>
   </div>
 )}
 {fanDocument.holdingIdPhotofilelink && (
   <div>
     <p className="text-xs text-gray-500 mb-1">Selfie with ID</p>
     <img
-      src={(() => {
-        const original = fanDocument.holdingIdPhotofilelink!;
-        const key = original.split("/").pop()?.split("?")[0] || "";
-        return `${API_BASE}/api/image/view?publicId=${encodeURIComponent(key)}&bucket=post`;
-      })()}
-      alt="Fan selfie with ID"
-      className="w-full rounded-lg object-cover border border-gray-200"
-    />
+  src={(() => {
+    const original = fanDocument.holdingIdPhotofilelink!;
+    const key = original.split("/").pop()?.split("?")[0] || "";
+    return `${API_BASE}/api/image/view?publicId=${encodeURIComponent(key)}&bucket=creator-application`;
+  })()}
+  alt="Fan selfie with ID"
+  className="w-full rounded-lg object-cover border border-gray-200 cursor-pointer hover:opacity-90 transition-opacity"
+  onClick={() => setLightboxSrc(`${API_BASE}/api/image/view?publicId=${encodeURIComponent(fanDocument.holdingIdPhotofilelink!.split("/").pop()?.split("?")[0] || "")}&bucket=post`)}
+/>
   </div>
 )}
       </div>
@@ -1812,6 +1816,24 @@ function DetailsModal({
         <p className="text-sm text-gray-500">Fan not verified yet</p>
       )}
     </div>
+  </div>
+)}
+
+{lightboxSrc && (
+  <div
+    className="fixed inset-0 z-[99999] bg-black/90 flex items-center justify-center p-4"
+    onClick={() => setLightboxSrc("")}
+  >
+    <button
+      onClick={() => setLightboxSrc("")}
+      className="absolute top-5 right-5 w-10 h-10 rounded-full bg-white/10 text-white flex items-center justify-center text-lg hover:bg-white/20"
+    >✕</button>
+    <img
+      src={lightboxSrc}
+      alt="Document"
+      className="max-w-full max-h-[90vh] rounded-xl"
+      onClick={e => e.stopPropagation()}
+    />
   </div>
 )}
 
