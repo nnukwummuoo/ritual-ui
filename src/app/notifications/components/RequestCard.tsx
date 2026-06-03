@@ -1000,10 +1000,8 @@ export default function RequestCard({ exp, img, originalPhotoLink, name, usernam
               </p>
             </div>
             <div className='flex gap-1'>{titles?.map((title, i) => i === titles.length - 1 ? <p key={title}>{title}</p> : <p key={title}>{title} &#x2022; </p>)}</div>
-          </div>
-        </div>
 
-    {type === "creator" && (
+             {type === "creator" && (
   <div className="mt-1">
     {fanVerified ? (
       <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold"
@@ -1070,6 +1068,9 @@ export default function RequestCard({ exp, img, originalPhotoLink, name, usernam
     )}
   </div>
 )}
+
+          </div>
+        </div>
 
         <div className="flex flex-col items-end">
           {currentStatus === "accepted" ? <p className="flex items-center gap-2 text-xl"><FaCoins /> {price || 20}</p> : <BiTimeFive className="text-2xl" />}
