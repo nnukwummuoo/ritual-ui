@@ -63,8 +63,8 @@ const portfolioUrl = `https://mmeko.com/portfolio/${cleanUsername}`;
         {/* Steps */}
         <div className="flex flex-col gap-2.5 mb-3.5">
           {[
-            ["Set up your Fan Meet or Fan Call portfolio", "add your availability, price and location preference"],
-            ["Copy your profile link", "your unique mmeko link is ready instantly"],
+            ["Set up your Fan Meet or Fan Call portfolio", "add your availability, price and location"],
+            ["Copy your portfolio link", "your unique mmeko link is ready instantly"],
             ["Share it with your fans", "on your other platforms"],
           ].map(([bold, rest], i) => (
             <div key={i} className="flex items-start gap-2.5">
