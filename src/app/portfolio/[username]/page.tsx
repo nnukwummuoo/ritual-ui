@@ -295,21 +295,18 @@ const [urlCopied, setUrlCopied] = useState(false);
   }, []);
 
   useEffect(() => {
-    const fetchViews = async () => {
-      const currentUserId = getCurrentUserId();
-      if (!Creator[0] || !currentUserId) return;
-      const data = { creator_portfolio_id: null, userId: currentUserId, username: Creator[0] };
-      const response = await dispatch(getViews(data));
-      try {
-        const payload = response?.payload?.response;
-        if (!payload) { setViews(0); return; }
-        const parsed = typeof payload === "string" ? JSON.parse(payload) : payload;
-        console.log("Fetched views:", parsed);
-        setViews(parsed?.views ?? 0);
-      } catch { setViews(0); }
-    };
-    fetchViews();
-  }, [Creator[0], userid, dispatch]);
+  const fetchViews = async () => {
+    const currentUserId = getCurrentUserId();
+    if (!Creator[0]) return;
+    const data = { creator_portfolio_id: null, userId: currentUserId || "", username: Creator[0] };
+    const response = await dispatch(getViews(data));
+    try {
+      const payload = response?.payload;
+      setViews(payload?.views ?? 0);
+    } catch { setViews(0); }
+  };
+  fetchViews();
+}, [Creator[0], userid, dispatch]);
 
   useEffect(() => {
     if (creatordeletestatus === "succeeded") { dispatch(changecreatorstatus("idle")); setLoading(false); navigate("/"); }
