@@ -1553,7 +1553,7 @@ function DetailsModal({
   };
   if (!details) {
     return (
-      <div className="fixed inset-0 z-50 overflow-y-auto">
+      <div className="fixed inset-0 z-[9999]  overflow-y-auto">
         <div className="bg-white rounded-lg p-6 max-w-md w-full">
           <h2 className="text-xl font-bold text-gray-800 mb-4">{getDetailsTitle(hosttype || "Fan Meet")}</h2>
           <p className="text-gray-600 mb-4">Details not available</p>
@@ -1594,7 +1594,7 @@ function DetailsModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto">
+    <div className="fixed inset-0 z-[9999]  overflow-y-auto">
     <div className="bg-white w-full h-full min-h-screen p-6 overflow-y-auto">
         <h2 className="text-xl font-bold text-gray-800 mb-6">{getDetailsTitle(hosttype || "Fan Meet")}</h2>
 
