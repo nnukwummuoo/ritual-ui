@@ -134,7 +134,7 @@ const SupportPage: React.FC = () => {
         },
         {
           question: "What if the fan didn't show up?",
-          answer: "❌ Don't worry — just contact mmeko Support directly through the platform. Our team reviews the situation using your on-platform chat history and releases your payment accordingly. If Support is not contacted within 10 days from the appointment date, the payment will be automatically refunded to the fan."
+          answer: "❌ just contact mmeko Support directly through the platform. Our team reviews the situation using your on-platform chat history and releases your payment accordingly. If Support is not contacted within 10 days from the appointment date, the payment will be automatically refunded to the fan."
         },
     
       ]
@@ -153,7 +153,7 @@ const SupportPage: React.FC = () => {
       questions: [
         {
           question: "What happens if my Fan Call request isn't answered or started?",
-          answer: "🕒 If your Fan Call doesn't start within 7 days after acceptance, it expires automatically.\nNo money is deducted, and you can always send a new request later."
+          answer: "🕒 If your Fan Call doesn't start within 10 days after acceptance, it expires automatically.\nNo money is deducted, and you can always send a new request later."
         },
         {
           question: "Will I lose any gold or balance if it expires?",
@@ -271,10 +271,7 @@ const SupportPage: React.FC = () => {
               question: "What if a fan/creator breaks the rules?",
               answer: "Use the Report button. Our team will review immediately and take action."
             },
-            {
-              question: "What happens if a fan doesn't mark a meet/date as complete?",
-              answer: "Contact support within 24 hours with evidence (Screenshots, photo, video or chat logs) and our support team will review the case. If valid, the payment will still be released to the Creator."
-            }
+           
           ]
         },
         {
