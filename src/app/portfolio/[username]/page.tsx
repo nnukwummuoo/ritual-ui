@@ -72,6 +72,7 @@ interface RootState {
       hosttype: string; photolink: string | string[]; verify: boolean;
       active: boolean; add: boolean; followingUser: boolean;
       isVip?: boolean; vipEndDate?: string;
+      userPhotolink?: string | null; 
     };
   };
 }
