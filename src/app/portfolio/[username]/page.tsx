@@ -258,17 +258,11 @@ const [urlCopied, setUrlCopied] = useState(false);
 }, [userid]);
 
   useEffect(() => {
-    const currentUserId = getCurrentUserId();
-    if (!Creator[0]) return;
-    if (creatorbyidstatus !== "loading") {
-      dispatch(getmycreatorbyid({ hostid: null, token: token || undefined, userid: currentUserId || undefined, username:Creator[0] }));
-    
-
-    }
-    if (ratings_stats !== "loading") {
-      dispatch(getAllCreatorRatings({ creatorId: Creator[0], token: token || undefined }));
-    }
-  }, [userid, Creator[0], token, dispatch, creatorbyidstatus, ratings_stats]);
+  const currentUserId = getCurrentUserId();
+  if (!Creator[0]) return;
+  dispatch(getmycreatorbyid({ hostid: null, token: token || undefined, userid: currentUserId || undefined, username: Creator[0] }));
+  dispatch(getAllCreatorRatings({ creatorId: Creator[0], token: token || undefined }));
+}, [userid, Creator[0], token]);
 
   useEffect(() => {
     if (creatorbyidstatus === "succeeded") {
