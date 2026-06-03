@@ -27,6 +27,7 @@ interface Request {
     isCreator: boolean;
     isVip?: boolean;
     vipEndDate?: string | null;
+    fanVerified?: boolean;
   };
   timeRemaining?: string;
   price: number;
@@ -39,6 +40,7 @@ interface Request {
   targetUserId?: string; // Add target user ID for profile navigation
   targetUsername?: string; // Username for profile URL (e.g. @handle)
   hosttype?: string;
+  fanVerified?: boolean;
 }
 
 export default function Activity() {
@@ -168,7 +170,8 @@ export default function Activity() {
               creator_portfolio_id: req.creator_portfolio_id,
               targetUserId: req.targetUserId,
               targetUsername: req.targetUsername || req.otherUser?.username,
-              hosttype: req.hosttype
+              hosttype: req.hosttype,
+              fanVerified: req.otherUser?.fanVerified || false, 
             };
           });
 
@@ -293,6 +296,7 @@ export default function Activity() {
               img={imageSrc}
               originalPhotoLink={photolink}
               status={request.status}
+              fanVerified={request.fanVerified || false}
               name={name}
               username={username}
               firstName={firstName}

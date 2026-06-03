@@ -259,7 +259,7 @@ useEffect(() => {
         username:           d.username,
         photolink:          d.photolink,
         idPhotofile:        d.idPhotofile,
-        holdingIdPhotoFile: d.holdingIdPhotofile,
+        holdingIdPhotofile: d.holdingIdPhotofile,
         createdAt:          d.createdAt,
         documentType:       d.documentType,
         verify:             d.verify,

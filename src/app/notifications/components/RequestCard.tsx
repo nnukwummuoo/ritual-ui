@@ -14,6 +14,7 @@ import RatingModal from '@/components/RatingModal';
 import FanRatingModal from '@/components/FanRatingModal';
 import { useSelector } from "react-redux";
 import { RootState } from "@/store/store";
+import { URL as API_BASE } from "@/api/config";
 
 const cardStates = {
   request: "Request sent",
@@ -236,15 +237,16 @@ interface CardProps {
   isVip?: boolean;
   vipEndDate?: string | null;
   createdAt?: string; // Add creation timestamp for countdown
+  fanVerified?: boolean;
   onStatusChange?: (requestId: string, newStatus: string) => void;
 }
 
-export default function RequestCard({ exp, img, originalPhotoLink, name, username, firstName, lastName, titles = ["fan"], status, type = "fan", requestId, price, details, userid, creator_portfolio_id, targetUserId, targetUsername, hosttype, isVip = false, vipEndDate = null, createdAt, onStatusChange }: CardProps) {
+export default function RequestCard({ exp, img, originalPhotoLink, name, username, firstName, lastName, titles = ["fan"], status, type = "fan", requestId, price, details, userid, creator_portfolio_id, targetUserId, targetUsername, hosttype, isVip = false, vipEndDate = null, createdAt,  fanVerified = false, onStatusChange }: CardProps) {
   const [loading, setLoading] = useState(false);
   const [currentStatus, setCurrentStatus] = useState(status);
   const [timeLeft, setTimeLeft] = useState<string>("");
   const [isExpired, setIsExpired] = useState(false);
-
+  const [showVerifyPopup, setShowVerifyPopup] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
 
   // Function to handle opening details modal
@@ -1001,6 +1003,74 @@ export default function RequestCard({ exp, img, originalPhotoLink, name, usernam
           </div>
         </div>
 
+    {type === "creator" && (
+  <div className="mt-1">
+    {fanVerified ? (
+      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold"
+        style={{
+          background: "linear-gradient(135deg,rgba(108,99,255,.15),rgba(155,89,245,.1))",
+          border: "1px solid rgba(108,99,255,.3)",
+          color: "#a89cff"
+        }}
+      >
+        <svg viewBox="0 0 24 24" width="12" height="12" fill="none">
+          <path d="M12 2.8L4.5 6V11C4.5 15.2 7.9 19.4 12 20.6C16.1 19.4 19.5 15.2 19.5 11V6L12 2.8Z" fill="#a89cff"/>
+          <path d="M12 7l1.2 2.4 2.6.4-1.9 1.85.45 2.6L12 13.1l-2.35 1.15.45-2.6L8.2 9.8l2.6-.4L12 7z" fill="white"/>
+        </svg>
+        Verified Fan
+      </span>
+    ) : (
+      <>
+        <button
+          className="text-xs text-yellow-400 border border-yellow-400/30 px-2 py-0.5 rounded-md hover:bg-yellow-400/10 transition-colors"
+          onClick={() => setShowVerifyPopup(true)}
+        >
+          Ask fan to verify
+        </button>
+
+        {showVerifyPopup && (
+          <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-[9999] p-4" onClick={() => setShowVerifyPopup(false)}>
+            <div className="bg-[#111624] rounded-2xl p-6 max-w-sm w-full border border-white/10" onClick={e => e.stopPropagation()}>
+              <h3 className="text-white font-bold text-base mb-2">Ask fan to verify</h3>
+              <p className="text-gray-400 text-xs mb-4">Send this message to the fan:</p>
+              <div className="bg-[#0d1120] border border-white/10 rounded-xl p-4 text-sm text-gray-300 mb-5 leading-relaxed">
+                I only accept booking requests from verified accounts. Please head to your profile and tap <strong className="text-white">"Fan Verification"</strong> to verify your account with Mmeko. 🙂
+              </div>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText("I only accept booking requests from verified accounts. Please head to your profile and tap \"Fan Verification\" to verify your account with Mmeko. 🙂");
+                    toast.success("Message copied!");
+                  }}
+                  className="flex-1 py-2.5 rounded-xl text-sm font-semibold border border-white/10 text-gray-300 hover:bg-white/5 transition-colors"
+                >
+                  📋 Copy
+                </button>
+                <button
+                  onClick={() => {
+                    setShowVerifyPopup(false);
+                    router.push(`/message/${userid}`);
+                  }}
+                  className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white transition-all"
+                  style={{ background: "linear-gradient(135deg,#6c63ff,#9b59f5)" }}
+                >
+                  💬 Go to Chat
+                </button>
+              </div>
+              <button
+                onClick={() => setShowVerifyPopup(false)}
+                className="w-full mt-3 py-2 text-xs text-gray-500 hover:text-gray-400 transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
+      </>
+    )}
+  </div>
+)}
+
         <div className="flex flex-col items-end">
           {currentStatus === "accepted" ? <p className="flex items-center gap-2 text-xl"><FaCoins /> {price || 20}</p> : <BiTimeFive className="text-2xl" />}
         </div>
@@ -1380,17 +1450,19 @@ export default function RequestCard({ exp, img, originalPhotoLink, name, usernam
       </div>
 
       {/* Details Modal */}
-      {showDetails && (
-        <DetailsModal
-          details={details}
-          onClose={() => setShowDetails(false)}
-          type={type}
-          hosttype={hosttype}
-          timeLeft={timeLeft}
-          isExpired={isExpired}
-          currentStatus={currentStatus}
-        />
-      )}
+     {showDetails && (
+  <DetailsModal
+    details={details}
+    onClose={() => setShowDetails(false)}
+    type={type}
+    hosttype={hosttype}
+    timeLeft={timeLeft}
+    isExpired={isExpired}
+    currentStatus={currentStatus}
+    fanUserid={userid}
+    fanVerified={fanVerified}
+  />
+)}
     </div>
   );
 }
@@ -1428,7 +1500,9 @@ function DetailsModal({
   hosttype,
   timeLeft,
   isExpired,
-  currentStatus
+  currentStatus,
+  fanUserid,
+  fanVerified
 }: {
   details?: FanMeetDetails;
   onClose: () => void;
@@ -1437,7 +1511,38 @@ function DetailsModal({
   timeLeft?: string;
   isExpired?: boolean;
   currentStatus?: string;
+  fanUserid?: string;
+  fanVerified?: boolean;
 }) {
+  const [fanDocument, setFanDocument] = useState<{
+    idPhotofilelink?: string;
+    holdingIdPhotofilelink?: string;
+  } | null>(null);
+  
+  const [fanDocLoading, setFanDocLoading] = useState(true);
+
+ useEffect(() => {
+  if (type !== "creator" || !fanUserid) return;
+  const fetchFanDoc = async () => {
+    try {
+      const res = await fetch(`${URL}/getdocument/fan/${fanUserid}`);
+      const data = await res.json();
+      if (data.ok && data.document) {
+        setFanDocument({
+          idPhotofilelink: data.document.idPhotofile?.idPhotofilelink,
+          holdingIdPhotofilelink: data.document.holdingIdPhotofile?.holdingIdPhotofilelink,
+        });
+      }
+    } catch {
+    
+    } finally {
+      setFanDocLoading(false);
+    }
+  };
+  fetchFanDoc();
+}, [fanUserid, type]);
+
+
 
   // Fallback countdown calculation for modal
   const getFallbackCountdown = () => {
@@ -1531,21 +1636,6 @@ function DetailsModal({
 
 {/* Payment details before acceptance */}
 {hosttype?.toLowerCase() !== "fan call" && (
-  <div className="flex items-start gap-3 mb-4">
-    <span className="text-xl mt-1">🔒</span>
-    <div>
-      <h3 className="font-semibold text-gray-800">Payment Secured</h3>
-      <p className="text-gray-600 text-sm mt-1">
-        Once a booking is accepted, your payment is secured and held by Mmeko. After the{" "}
-        <strong>{hosttype?.toLowerCase() === "fan date" ? "date" : "meet & greet"}</strong>,{" "}
-        simply ask the fan to tap <strong>"Mark as Complete"</strong> to receive your payment automatically. If they don't, contact <strong>Mmeko Support</strong> and we'll release it accordingly. 🙂
-      </p>
-    </div>
-  </div>
-)}
-
-{/* Payment details after acceptance */}
-{currentStatus === "accepted" && hosttype?.toLowerCase() !== "fan call" && (
   <div className="flex items-start gap-3 mb-4">
     <span className="text-xl mt-1">🔒</span>
     <div>
@@ -1657,6 +1747,73 @@ function DetailsModal({
           </div>
         )}
 
+          {/* Fan Verification Documents - Only show to creator */}
+{type === "creator" && fanDocument && fanVerified && (
+  <div className="flex items-start gap-3 mb-6">
+    <span className="text-xl mt-1">🪪</span>
+    <div className="w-full">
+      <h3 className="font-semibold text-gray-800 mb-3">Fan Verification</h3>
+      <div className="grid grid-cols-2 gap-3">
+       {fanDocument.idPhotofilelink && (
+  <div>
+    <p className="text-xs text-gray-500 mb-1">ID Document</p>
+    <img
+      src={(() => {
+        const original = fanDocument.idPhotofilelink!;
+        const key = original.split("/").pop()?.split("?")[0] || "";
+        return `${API_BASE}/api/image/view?publicId=${encodeURIComponent(key)}&bucket=post`;
+      })()}
+      alt="Fan ID"
+      className="w-full rounded-lg object-cover border border-gray-200"
+    />
+  </div>
+)}
+{fanDocument.holdingIdPhotofilelink && (
+  <div>
+    <p className="text-xs text-gray-500 mb-1">Selfie with ID</p>
+    <img
+      src={(() => {
+        const original = fanDocument.holdingIdPhotofilelink!;
+        const key = original.split("/").pop()?.split("?")[0] || "";
+        return `${API_BASE}/api/image/view?publicId=${encodeURIComponent(key)}&bucket=post`;
+      })()}
+      alt="Fan selfie with ID"
+      className="w-full rounded-lg object-cover border border-gray-200"
+    />
+  </div>
+)}
+      </div>
+    </div>
+  </div>
+)}
+
+{/* Fan Verified Badge - Only show to creator */}
+{type === "creator" && (
+  <div className="flex items-start gap-3 mb-6">
+    <span className="text-xl mt-1">🪪</span>
+    <div>
+      <h3 className="font-semibold text-gray-800 mb-1">Fan Identity</h3>
+      {fanVerified ? (
+        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-sm font-bold"
+          style={{
+            background: "linear-gradient(135deg,rgba(108,99,255,.15),rgba(155,89,245,.1))",
+            border: "1px solid rgba(108,99,255,.3)",
+            color: "#6c63ff"
+          }}
+        >
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none">
+            <path d="M12 2.8L4.5 6V11C4.5 15.2 7.9 19.4 12 20.6C16.1 19.4 19.5 15.2 19.5 11V6L12 2.8Z" fill="#6c63ff"/>
+            <path d="M12 7l1.2 2.4 2.6.4-1.9 1.85.45 2.6L12 13.1l-2.35 1.15.45-2.6L8.2 9.8l2.6-.4L12 7z" fill="white"/>
+          </svg>
+          Verified Fan
+        </span>
+      ) : (
+        <p className="text-sm text-gray-500">Fan not verified yet</p>
+      )}
+    </div>
+  </div>
+)}
+
         {/* Agreement - Show for creators with appropriate message (excluding fan calls) */}
         {type === "creator" && hosttype?.toLowerCase() !== "fan call" && (
           <div className="flex items-start gap-3 mb-6">
@@ -1666,6 +1823,8 @@ function DetailsModal({
             </p>
           </div>
         )}
+
+        
 
         {/* Agreement - Show for fans when viewing Fan Date and Fan Meet details */}
         {type === "fan" && hosttype?.toLowerCase() !== "fan call" && (
