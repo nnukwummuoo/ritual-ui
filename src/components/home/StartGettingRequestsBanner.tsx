@@ -8,8 +8,10 @@ const DISMISS_KEY = "sgr_banner_dismissed";
 export default function StartGettingRequestsBanner() {
   const username = useSelector((s: RootState) => s.profile.username);
   const isFanVerified = useSelector((s: RootState) => (s.profile as any).fan_verified === true);
+  const hasPortfolio = useSelector((s: RootState) => !!(s.profile as any).creator_portfolio_id);
   const [copied, setCopied] = useState(false);
   const [dismissed, setDismissed] = useState(true);
+  const [showNoPortfolioPopup, setShowNoPortfolioPopup] = useState(false);
 
   useEffect(() => {
     setDismissed(localStorage.getItem(DISMISS_KEY) === "1");
@@ -20,13 +22,18 @@ export default function StartGettingRequestsBanner() {
 
 
 
-  const cleanUsername = (username || "you").replace(/^@+/, "");
+  const cleanUsername = (username || "").replace(/^@+/, "");
 const profileUrl = `https://mmeko.com/@${cleanUsername}`;
-  const handleCopy = () => {
-    navigator.clipboard.writeText(profileUrl).catch(() => {});
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2500);
-  };
+const portfolioUrl = `https://mmeko.com/portfolio/${cleanUsername}`;
+ const handleCopy = () => {
+  if (!hasPortfolio) {
+    setShowNoPortfolioPopup(true);
+    return;
+  }
+  navigator.clipboard.writeText(portfolioUrl).catch(() => {});
+  setCopied(true);
+  setTimeout(() => setCopied(false), 2500);
+};
 
   const handleDismiss = () => {
     localStorage.setItem(DISMISS_KEY, "1");
@@ -98,6 +105,40 @@ const profileUrl = `https://mmeko.com/@${cleanUsername}`;
           </>
         )}
       </button>
+
+      {showNoPortfolioPopup && (
+  <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[9999] p-4" onClick={() => setShowNoPortfolioPopup(false)}>
+    <div className="bg-[#111624] rounded-2xl p-6 max-w-sm w-full border border-white/10" onClick={e => e.stopPropagation()}>
+      <h3 className="text-white font-bold text-base mb-3">No portfolio yet 📋</h3>
+      <p className="text-[#94a3b8] text-sm leading-relaxed mb-5">
+        You haven't created a portfolio yet. Please create your portfolio first before copying the link.
+        <br/><br/>
+        For exclusive content and PPVs, creating a portfolio is not required — in that case you can copy your profile link instead.
+      </p>
+      <div className="flex flex-col gap-2.5">
+        <button
+          onClick={() => {
+            setShowNoPortfolioPopup(false);
+            navigator.clipboard.writeText(profileUrl).catch(() => {});
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2500);
+          }}
+          className="w-full py-3 rounded-xl text-sm font-bold text-white"
+          style={{ background: "linear-gradient(135deg,#6c63ff,#9b59f5)" }}
+        >
+          Copy Profile Link Instead
+        </button>
+        <button
+          onClick={() => setShowNoPortfolioPopup(false)}
+          className="w-full py-2.5 rounded-xl text-sm font-semibold text-[#94a3b8] border border-white/10 hover:text-white transition-colors"
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
     </div>
   );
 }
