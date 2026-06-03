@@ -258,6 +258,26 @@ const [urlCopied, setUrlCopied] = useState(false);
   if (userid) setUserResolved(true);
 }, [userid]);
 
+useEffect(() => {
+  if (!checkuser()) return;
+
+  const dismissedKey = `share_popup_dismissed_${creator.hostid}`;
+  const alreadyDismissed = localStorage.getItem(dismissedKey);
+  if (alreadyDismissed) return;
+
+  // Auto-show once on first visit
+  const shownKey = `share_popup_shown_${creator.hostid}`;
+  const alreadyShown = localStorage.getItem(shownKey);
+  if (alreadyShown) return;
+
+  if (creator.hostid) {
+    setTimeout(() => {
+      localStorage.setItem(shownKey, "true");
+      setShowSharePopup(true);
+    }, 600);
+  }
+}, [creator.hostid, userid]);
+
   useEffect(() => {
   const currentUserId = getCurrentUserId();
   if (!Creator[0]) return;
@@ -267,6 +287,7 @@ const [urlCopied, setUrlCopied] = useState(false);
 
   useEffect(() => {
     if (creatorbyidstatus === "succeeded") {
+        console.log("creator data:", creator); // 👈 add here
       setLoading(false);
       setshowcreator(true);
       checkcrush();
@@ -670,22 +691,40 @@ const [urlCopied, setUrlCopied] = useState(false);
         {/* ── PROFILE HEADER ── */}
         <div className="mcp-profile-header">
           <div className="mcp-profile-top">
-            <div className="mcp-profile-av">
-  
-    {avatarInitials}
 
+       <div className="mcp-profile-av">
+  {creator.userPhotolink ? (
+    <img
+      src={(() => {
+        const original = String(creator.userPhotolink || "").trim();
+        const isStorj = original.startsWith("https://gateway.storjshare.io/");
+        if (isStorj) {
+          const parts = original.split("/");
+          const key = parts[parts.length - 1].split("?")[0];
+          return `${API_BASE}/api/image/view?publicId=${encodeURIComponent(key)}&bucket=profile`;
+        }
+        return original;
+      })()}
+      alt={creator.name}
+      style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }}
+      onError={(e) => {
+        (e.currentTarget as HTMLImageElement).style.display = "none";
+        (e.currentTarget.nextSibling as HTMLElement).style.display = "flex";
+      }}
+    />
+  ) : null}
+  <span style={{ display: creator.userPhotolink ? "none" : "flex" }}>{avatarInitials}</span>
   {checkOnline() === "online" && <div className="mcp-av-online" />}
-              {/* VIP Badge */}
-              {(() => {
-                const isVip = vipStatus?.isVip || vipStatusFromCreator?.isVip;
-                const vipEndDate = vipStatus?.vipEndDate || vipStatusFromCreator?.vipEndDate;
-                return isVip === true && (
-                  <div style={{ position: "absolute", bottom: 30, left: 28 }}>
-                    <VIPBadge size="xl" isVip={isVip} vipEndDate={vipEndDate} />
-                  </div>
-                );
-              })()}
-            </div>
+  {(() => {
+    const isVip = vipStatus?.isVip || vipStatusFromCreator?.isVip;
+    const vipEndDate = vipStatus?.vipEndDate || vipStatusFromCreator?.vipEndDate;
+    return isVip === true && (
+      <div style={{ position: "absolute", bottom: 30, left: 28 }}>
+        <VIPBadge size="xl" isVip={isVip} vipEndDate={vipEndDate} />
+      </div>
+    );
+  })()}
+</div>
             <div className="mcp-profile-stats">
               <div className="mcp-pstat"><div className="mcp-pstat-n">{views}</div><div className="mcp-pstat-l">Views</div></div>
               <div className="mcp-pstat">
@@ -706,6 +745,8 @@ const [urlCopied, setUrlCopied] = useState(false);
     {String(creator.username).replace(/^@/, "")}
   </div>
 )}
+
+
           <div className="mcp-profile-tagline">{getStatus(String(creator?.hosttype))} {creator.name?.split(" ")[0] || "creator"}</div>
         </div>
 
@@ -962,11 +1003,11 @@ const [urlCopied, setUrlCopied] = useState(false);
           >
             🔗 Share My Portfolio
           </button>
-          <button
+       <button
   onClick={() => {
-    // Permanently remember that this creator dismissed the popup
     if (creator.hostid) {
       localStorage.setItem(`share_popup_dismissed_${creator.hostid}`, "true");
+      localStorage.setItem(`share_popup_shown_${creator.hostid}`, "true");
     }
     setShowSharePopup(false);
   }}
