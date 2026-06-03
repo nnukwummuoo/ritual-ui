@@ -254,15 +254,15 @@ const [urlCopied, setUrlCopied] = useState(false);
 }, [userid]);
 
   useEffect(() => {
-  const currentUserId = getCurrentUserId();
-  if (!Creator[0]) return;
-  if (creatorbyidstatus !== "loading") {
-    dispatch(getmycreatorbyid({ hostid: Creator[0], token, userid: currentUserId || "" }));
-  }
-  if (ratings_stats !== "loading") {
-    dispatch(getAllCreatorRatings({ creatorId: Creator[0], token }));
-  }
-}, [userid, Creator[0], token]);
+    const currentUserId = getCurrentUserId();
+    if (!currentUserId || !Creator[0]) return;
+    if (creatorbyidstatus !== "loading") {
+      dispatch(getmycreatorbyid({ hostid: Creator[0], token, userid: currentUserId }));
+    }
+    if (ratings_stats !== "loading") {
+      dispatch(getAllCreatorRatings({ creatorId: Creator[0], token }));
+    }
+  }, [userid, Creator[0], token]);
 
   useEffect(() => {
     if (creatorbyidstatus === "succeeded") {
