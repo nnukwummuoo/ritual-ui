@@ -232,10 +232,8 @@ const Sidemenu = () => {
         .sb-ver{text-align:center;font-size:10px;color:#475569;padding:18px 0 24px;letter-spacing:.04em;}
       `}</style>
 
-      {/* Backdrop */}
-      {open && (
-        <div className="sb-overlay open" onClick={handleMenubar} />
-      )}
+     {/* Backdrop */}
+<div className={`sb-overlay${open ? " open" : ""}`} onClick={handleMenubar} />
 
       {/* Sidebar panel */}
       <nav
@@ -314,22 +312,37 @@ const Sidemenu = () => {
 
           <div className="sb-div" />
 
-          {/* Creator */}
-          <div className="sb-sec">Creator</div>
-          <div className="sb-menu">
-            {getCreatorButton()}
-          </div>
+        {/* Creator */}
+<div className="sb-sec">Creator</div>
+<div className="sb-menu">
+  {getCreatorButton()}
+  <div className="sb-item" onClick={() => { router.push("/ritual/upload"); handleMenubar(); }}>
+    <div className="si-icon ic-gr">🔥</div>
+    <div><div className="si-label">Upload Ritual</div><div className="si-sub">Post your daily 15-panel story</div></div>
+    <div className="si-arr">›</div>
+  </div>
+</div>
 
           <div className="sb-div" />
 
           {/* More */}
           <div className="sb-sec">More</div>
           <div className="sb-menu">
-            <div className="sb-item" onClick={() => { router.push("/change-log"); handleMenubar(); }}>
-              <div className="si-icon ic-b">✨</div>
-              <div><div className="si-label">What&apos;s New</div><div className="si-sub">Latest features and updates</div></div>
-              <span className="si-badge">NEW</span>
-            </div>
+         <div className="sb-item" onClick={() => { router.push("/change-log"); handleMenubar(); }}>
+  <div className="si-icon ic-b">✨</div>
+  <div><div className="si-label">What&apos;s New</div><div className="si-sub">Latest features and updates</div></div>
+  <span className="si-badge">NEW</span>
+</div>
+<div className="sb-item" onClick={() => { router.push("/settings"); handleMenubar(); }}>
+  <div className="si-icon ic-s">⚙️</div>
+  <div><div className="si-label">Settings</div><div className="si-sub">Account and preferences</div></div>
+  <div className="si-arr">›</div>
+</div>
+<div className="sb-item" onClick={() => { router.push("/support"); handleMenubar(); }}>
+  <div className="si-icon ic-s">🛡️</div>
+  <div><div className="si-label">Safety &amp; Support</div><div className="si-sub">Help centre and guidelines</div></div>
+  <div className="si-arr">›</div>
+</div>
             {admin && (
               <div className="sb-item" onClick={() => { router.push("/mmeko/admin"); handleMenubar(); }}>
                 <div className="si-icon ic-s">🔧</div>
