@@ -161,16 +161,127 @@ export default function VerifiedUserForm() {
 
   /* ─── pending screen ─── */
   if (appStatus === "pending") return (
-    <div style={{ minHeight:"100vh", background:S.bg, display:"flex", alignItems:"center", justifyContent:"center", color:S.text, fontFamily:"'Plus Jakarta Sans',sans-serif" }}>
-      <ToastContainer position="top-center" theme="dark"/>
-      <div style={{ background:S.card, border:`1px solid ${S.border}`, borderRadius:20, padding:"40px 32px", textAlign:"center", maxWidth:360 }}>
-        <div style={{ width:56, height:56, borderRadius:"50%", background:"rgba(234,179,8,.15)", border:"1px solid rgba(234,179,8,.3)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:24, margin:"0 auto 20px" }}>⏳</div>
-        <h2 style={{ fontSize:20, fontWeight:800, marginBottom:8 }}>Application Pending</h2>
-        <p style={{ color:S.text2, fontSize:13.5, lineHeight:1.65, marginBottom:24 }}>Your application is now under review. You&apos;ll hear from us within a few hours.</p>
-        <button onClick={() => router.push("/")} style={{ padding:"12px 28px", borderRadius:10, background:`linear-gradient(135deg,${S.accent},${S.accent2})`, border:"none", color:"white", fontWeight:700, fontSize:14, fontFamily:"inherit", cursor:"pointer" }}>Back to Home</button>
+  <>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <style>{`
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+      .nav { position: sticky; top: 0; z-index: 100; background: rgba(8,11,20,.97); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.07); padding: 0 24px; height: 56px; display: flex; align-items: center; justify-content: center; }
+      .nav-logo { display: flex; align-items: center; gap: 8px; text-decoration: none; }
+      .nav-logo-icon { width: 28px; height: 28px; border-radius: 7px; background: linear-gradient(135deg,#6c63ff,#9b59f5); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; color: white; }
+      .nav-logo-name { font-size: 15px; font-weight: 700; color: #f1f5f9; }
+      .page { max-width: 480px; margin: 0 auto; padding: 48px 20px 80px; display: flex; flex-direction: column; align-items: center; text-align: center; }
+      .status-visual { position: relative; width: 130px; height: 130px; display: flex; align-items: center; justify-content: center; margin-bottom: 36px; }
+      .spin-outer { position: absolute; inset: 0; border-radius: 50%; border: 2px solid transparent; border-top-color: #6c63ff; border-right-color: rgba(108,99,255,.2); animation: spinSlow 3s linear infinite; }
+      @keyframes spinSlow { from{transform:rotate(0deg);} to{transform:rotate(360deg);} }
+      .spin-inner { position: absolute; inset: 16px; border-radius: 50%; border: 1.5px solid transparent; border-bottom-color: #2dd4bf; border-left-color: rgba(45,212,191,.2); animation: spinSlow 2s linear infinite reverse; }
+      .pulse-ring { position: absolute; inset: 28px; border-radius: 50%; border: 1px solid rgba(108,99,255,.15); animation: pulsate 3s ease-in-out infinite; }
+      @keyframes pulsate { 0%,100%{opacity:.3;transform:scale(.95);} 50%{opacity:1;transform:scale(1.05);} }
+      .status-center { width: 72px; height: 72px; border-radius: 50%; background: linear-gradient(135deg,rgba(108,99,255,.2),rgba(155,89,245,.15)); border: 1px solid rgba(108,99,255,.3); display: flex; align-items: center; justify-content: center; position: relative; z-index: 1; animation: float 4s ease-in-out infinite; }
+      @keyframes float { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-5px);} }
+      .status-center svg { filter: drop-shadow(0 0 10px rgba(108,99,255,.6)); }
+      .status-tag { display: inline-flex; align-items: center; gap: 7px; background: rgba(245,158,11,.08); border: 1px solid rgba(245,158,11,.2); border-radius: 100px; padding: 5px 14px; margin-bottom: 18px; font-size: 11px; font-weight: 700; color: #f59e0b; letter-spacing: .08em; text-transform: uppercase; }
+      .tag-dot { width: 6px; height: 6px; border-radius: 50%; background: #f59e0b; box-shadow: 0 0 6px #f59e0b; animation: blink 2s ease-in-out infinite; }
+      @keyframes blink { 0%,100%{opacity:1;} 50%{opacity:.3;} }
+      .status-title { font-size: 24px; font-weight: 800; letter-spacing: -.02em; line-height: 1.2; margin-bottom: 12px; }
+      .status-title em { font-style: normal; background: linear-gradient(135deg,#6c63ff,#9b59f5); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+      .status-sub { font-size: 14px; color: #94a3b8; line-height: 1.75; max-width: 340px; margin-bottom: 40px; }
+      .timeline { width: 100%; margin-bottom: 32px; text-align: left; }
+      .timeline-step { display: flex; align-items: flex-start; gap: 14px; padding: 14px 0; position: relative; }
+      .timeline-step:not(:last-child)::after { content: ''; position: absolute; left: 15px; top: 46px; width: 2px; height: calc(100% - 14px); background: rgba(255,255,255,0.04); }
+      .timeline-step.done::after { background: rgba(34,197,94,.2); }
+      .timeline-step.active::after { background: linear-gradient(180deg,rgba(108,99,255,.4),rgba(255,255,255,0.04)); }
+      .step-dot { width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 12px; position: relative; z-index: 1; border: 1px solid rgba(255,255,255,0.07); background: #0e1220; color: #475569; }
+      .timeline-step.done .step-dot { background: rgba(34,197,94,.1); border-color: rgba(34,197,94,.3); color: #22c55e; }
+      .timeline-step.active .step-dot { background: rgba(108,99,255,.12); border-color: rgba(108,99,255,.3); color: #a89cff; animation: stepPulse 2s ease-in-out infinite; }
+      @keyframes stepPulse { 0%,100%{box-shadow:0 0 0 0 rgba(108,99,255,.3);} 50%{box-shadow:0 0 0 6px rgba(108,99,255,0);} }
+      .step-title { font-size: 13.5px; font-weight: 700; margin-bottom: 3px; }
+      .step-sub { font-size: 12px; color: #94a3b8; line-height: 1.5; }
+      .step-time { font-size: 11px; color: #475569; margin-top: 4px; font-weight: 500; }
+      .expect-card { width: 100%; background: #111624; border: 1px solid rgba(255,255,255,0.07); border-radius: 16px; padding: 20px; margin-bottom: 24px; text-align: left; }
+      .expect-title { font-size: 13px; font-weight: 700; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+      .expect-item { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 12px; }
+      .expect-item:last-child { margin-bottom: 0; }
+      .expect-icon { width: 30px; height: 30px; border-radius: 8px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+      .ei-purple { background: rgba(108,99,255,.12); } .ei-teal { background: rgba(45,212,191,.1); } .ei-green { background: rgba(34,197,94,.1); } .ei-gold { background: rgba(212,168,83,.1); }
+      .expect-text { font-size: 12.5px; color: #94a3b8; line-height: 1.6; padding-top: 4px; }
+      .expect-text strong { color: #f1f5f9; font-weight: 600; }
+      .dos-card { width: 100%; background: linear-gradient(135deg,rgba(108,99,255,.07),rgba(155,89,245,.04)); border: 1px solid rgba(108,99,255,.15); border-radius: 16px; padding: 20px; margin-bottom: 28px; text-align: left; position: relative; overflow: hidden; }
+      .dos-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg,#6c63ff,#9b59f5,#2dd4bf); }
+      .dos-title { font-size: 13px; font-weight: 700; margin-bottom: 14px; display: flex; align-items: center; gap: 7px; }
+      .dos-item { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; font-size: 12.5px; color: #94a3b8; }
+      .dos-item:last-child { margin-bottom: 0; }
+      .dos-check { width: 18px; height: 18px; border-radius: 50%; background: rgba(108,99,255,.12); color: #a89cff; display: flex; align-items: center; justify-content: center; font-size: 9px; flex-shrink: 0; }
+      .dos-item strong { color: #f1f5f9; font-weight: 600; }
+      .btn-explore { width: 100%; padding: 15px; border-radius: 12px; background: linear-gradient(135deg,#6c63ff,#9b59f5); border: none; color: white; font-size: 14px; font-weight: 700; font-family: inherit; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 20px rgba(108,99,255,.3); transition: all .25s; margin-bottom: 12px; }
+      .btn-explore:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(108,99,255,.45); }
+      .btn-home { width: 100%; padding: 13px; border-radius: 12px; background: transparent; border: 1px solid rgba(255,255,255,0.07); color: #94a3b8; font-size: 14px; font-weight: 600; font-family: inherit; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all .2s; }
+      .btn-home:hover { background: rgba(255,255,255,.04); color: #f1f5f9; }
+    `}</style>
+    <ToastContainer position="top-center" theme="dark"/>
+    <div style={{ background:"#080b14", minHeight:"100vh", fontFamily:"'Plus Jakarta Sans', sans-serif", color:"#f1f5f9" }}>
+      <nav className="nav">
+        <a href="/" className="nav-logo">
+          <div className="nav-logo-icon">M</div>
+          <span className="nav-logo-name">mmeko</span>
+        </a>
+      </nav>
+      <div className="page">
+        <div className="status-visual">
+          <div className="spin-outer" />
+          <div className="spin-inner" />
+          <div className="pulse-ring" />
+          <div className="status-center">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+              <path d="M12 2L3 7v5c0 5.25 3.75 10.15 9 11.35C17.25 22.15 21 17.25 21 12V7L12 2z" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M9 12l2 2 4-4" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </div>
+        </div>
+        <div className="status-tag"><div className="tag-dot" />Application Under Review</div>
+        <div className="status-title">Your application is<br/><em>being reviewed</em></div>
+        <p className="status-sub">We&apos;ve received everything. Our team is reviewing your information and documents — this usually takes less than 24 hours.</p>
+        <div className="timeline">
+          <div className="timeline-step done">
+            <div className="step-dot">✓</div>
+            <div><div className="step-title">Application submitted</div><div className="step-sub">Your personal details and documents were received.</div><div className="step-time">Just now</div></div>
+          </div>
+          <div className="timeline-step done">
+            <div className="step-dot">✓</div>
+            <div><div className="step-title">Documents received</div><div className="step-sub">Your ID and selfie have been securely uploaded.</div><div className="step-time">Just now</div></div>
+          </div>
+          <div className="timeline-step active">
+            <div className="step-dot">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="12" r="9" stroke="#a89cff" strokeWidth="2"/>
+                <path d="M12 7v5l3 3" stroke="#a89cff" strokeWidth="2" strokeLinecap="round"/>
+              </svg>
+            </div>
+            <div><div className="step-title">Identity verification in progress</div><div className="step-sub">Our team is reviewing your documents and details.</div><div className="step-time">Usually within 24 hours</div></div>
+          </div>
+          <div className="timeline-step">
+            <div className="step-dot">✦</div>
+            <div><div className="step-title">Creator status activated</div><div className="step-sub">You&apos;ll be notified and can start accepting fan requests immediately.</div><div className="step-time">Pending</div></div>
+          </div>
+        </div>
+        <div className="expect-card">
+          <div className="expect-title">🔔 What happens when you&apos;re approved</div>
+          <div className="expect-item"><div className="expect-icon ei-purple">📩</div><div className="expect-text"><strong>You&apos;ll get notified immediately</strong> — a notification the moment your application is approved or if we need anything from you.</div></div>
+          <div className="expect-item"><div className="expect-icon ei-green">✅</div><div className="expect-text"><strong>Verified creator badge</strong> — your profile gets a verified badge, building instant trust with fans browsing mmeko.</div></div>
+          <div className="expect-item"><div className="expect-icon ei-teal">💸</div><div className="expect-text"><strong>Start accepting fan requests</strong> — you can set your price, choose your availability and start earning from fan meet &amp; greets immediately.</div></div>
+          <div className="expect-item"><div className="expect-icon ei-gold">⚡</div><div className="expect-text"><strong>Instant payouts</strong> — every fan request is paid upfront. You request a cashout anytime and it&apos;s instant.</div></div>
+        </div>
+        <div className="dos-card">
+          <div className="dos-title">💡 While you wait</div>
+          <div className="dos-item"><div className="dos-check">✓</div><div><strong>Complete your profile</strong> — add a bio and profile photo so you&apos;re ready to go the moment you&apos;re approved</div></div>
+          <div className="dos-item"><div className="dos-check">✓</div><div><strong>Explore the platform</strong> — see how other creators have set up their pages and get inspired</div></div>
+          <div className="dos-item"><div className="dos-check">✓</div><div><strong>Set your availability</strong> — decide when and where you&apos;re open for fan meets so fans can send requests right away</div></div>
+        </div>
+        <button className="btn-explore" onClick={() => router.push("/profile")}>Complete My Profile</button>
+        <button className="btn-home" onClick={() => router.push("/")}>Go to Home</button>
       </div>
     </div>
-  );
+  </>
+);
 
   /* ─── instruction content ─── */
   const idRules = [

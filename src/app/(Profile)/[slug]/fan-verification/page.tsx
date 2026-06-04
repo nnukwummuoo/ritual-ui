@@ -107,17 +107,107 @@ useEffect(() => {
 );
 
   /* ─── pending state screen ─── */
-  if (appStatus === "pending") return (
-    <div style={{ minHeight:"100vh", background:S.bg, display:"flex", alignItems:"center", justifyContent:"center", color:S.text, fontFamily:"'Plus Jakarta Sans',sans-serif" }}>
-      <ToastContainer position="top-center" theme="dark"/>
-      <div style={{ background:S.card, border:`1px solid ${S.border}`, borderRadius:20, padding:"40px 32px", textAlign:"center", maxWidth:360 }}>
-        <div style={{ width:56, height:56, borderRadius:"50%", background:"rgba(234,179,8,.15)", border:"1px solid rgba(234,179,8,.3)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:24, margin:"0 auto 20px" }}>⏳</div>
-        <h2 style={{ fontSize:20, fontWeight:800, marginBottom:8 }}>Verification Pending</h2>
-        <p style={{ color:S.text2, fontSize:13.5, lineHeight:1.65, marginBottom:24 }}>Your documents are under review. You&apos;ll hear from us within a few hours.</p>
-        <button onClick={() => router.back()} style={{ padding:"12px 28px", borderRadius:10, background:`linear-gradient(135deg,${S.accent},${S.accent2})`, border:"none", color:"white", fontWeight:700, fontSize:14, fontFamily:"inherit", cursor:"pointer" }}>Go Back</button>
+ if (appStatus === "pending") return (
+  <>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <style>{`
+      .fvp-nav { position: sticky; top: 0; z-index: 100; background: rgba(8,11,20,.97); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.07); padding: 0 24px; height: 56px; display: flex; align-items: center; justify-content: space-between; }
+      .fvp-nav-logo { display: flex; align-items: center; gap: 8px; text-decoration: none; }
+      .fvp-nav-logo-icon { width: 28px; height: 28px; border-radius: 7px; background: linear-gradient(135deg,#6c63ff,#9b59f5); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; color: white; }
+      .fvp-nav-logo-name { font-size: 15px; font-weight: 700; color: #f1f5f9; }
+      .fvp-page { max-width: 480px; margin: 0 auto; padding: 48px 20px 80px; display: flex; flex-direction: column; align-items: center; text-align: center; }
+      .fvp-status-visual { position: relative; width: 120px; height: 120px; display: flex; align-items: center; justify-content: center; margin-bottom: 36px; }
+      .fvp-spin-ring { position: absolute; inset: 0; border-radius: 50%; border: 2px solid transparent; border-top-color: #6c63ff; border-right-color: rgba(108,99,255,.3); animation: fvpSpin 2s linear infinite; }
+      @keyframes fvpSpin { from{transform:rotate(0deg);} to{transform:rotate(360deg);} }
+      .fvp-pulse-ring { position: absolute; inset: 12px; border-radius: 50%; border: 1px solid rgba(108,99,255,.2); animation: fvpPulsate 3s ease-in-out infinite; }
+      @keyframes fvpPulsate { 0%,100%{opacity:.3;transform:scale(.95);} 50%{opacity:1;transform:scale(1.05);} }
+      .fvp-status-center { width: 70px; height: 70px; border-radius: 50%; background: linear-gradient(135deg,rgba(108,99,255,.2),rgba(155,89,245,.15)); border: 1px solid rgba(108,99,255,.3); display: flex; align-items: center; justify-content: center; position: relative; z-index: 1; }
+      .fvp-status-center svg { filter: drop-shadow(0 0 10px rgba(108,99,255,.6)); animation: fvpFloat 4s ease-in-out infinite; }
+      @keyframes fvpFloat { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-4px);} }
+      .fvp-status-tag { display: inline-flex; align-items: center; gap: 7px; background: rgba(245,158,11,.08); border: 1px solid rgba(245,158,11,.2); border-radius: 100px; padding: 5px 14px; margin-bottom: 18px; font-size: 11px; font-weight: 700; color: #f59e0b; letter-spacing: .08em; text-transform: uppercase; }
+      .fvp-tag-dot { width: 6px; height: 6px; border-radius: 50%; background: #f59e0b; box-shadow: 0 0 6px #f59e0b; animation: fvpBlink 2s ease-in-out infinite; }
+      @keyframes fvpBlink { 0%,100%{opacity:1;} 50%{opacity:.3;} }
+      .fvp-status-title { font-size: 24px; font-weight: 800; letter-spacing: -.02em; line-height: 1.2; margin-bottom: 12px; color: #f1f5f9; }
+      .fvp-status-sub { font-size: 14px; color: #94a3b8; line-height: 1.75; max-width: 340px; margin-bottom: 36px; }
+      .fvp-timeline { width: 100%; margin-bottom: 32px; }
+      .fvp-timeline-step { display: flex; align-items: flex-start; gap: 14px; text-align: left; padding: 14px 0; position: relative; }
+      .fvp-timeline-step:not(:last-child)::after { content: ''; position: absolute; left: 15px; top: 46px; width: 2px; height: calc(100% - 14px); background: rgba(255,255,255,0.04); }
+      .fvp-timeline-step.done::after { background: rgba(34,197,94,.2); }
+      .fvp-timeline-step.active::after { background: linear-gradient(180deg,rgba(108,99,255,.4),rgba(255,255,255,0.04)); }
+      .fvp-step-dot { width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 13px; position: relative; z-index: 1; border: 1px solid rgba(255,255,255,0.07); background: #0e1220; color: #475569; }
+      .fvp-timeline-step.done .fvp-step-dot { background: rgba(34,197,94,.1); border-color: rgba(34,197,94,.3); color: #22c55e; }
+      .fvp-timeline-step.active .fvp-step-dot { background: rgba(108,99,255,.12); border-color: rgba(108,99,255,.3); color: #a89cff; animation: fvpStepPulse 2s ease-in-out infinite; }
+      @keyframes fvpStepPulse { 0%,100%{box-shadow:0 0 0 0 rgba(108,99,255,.3);} 50%{box-shadow:0 0 0 6px rgba(108,99,255,0);} }
+      .fvp-step-title { font-size: 13.5px; font-weight: 700; margin-bottom: 3px; color: #f1f5f9; }
+      .fvp-step-sub { font-size: 12px; color: #94a3b8; line-height: 1.5; }
+      .fvp-step-time { font-size: 11px; color: #475569; margin-top: 4px; font-weight: 500; }
+      .fvp-next-card { width: 100%; background: #111624; border: 1px solid rgba(255,255,255,0.07); border-radius: 16px; padding: 20px; margin-bottom: 24px; text-align: left; }
+      .fvp-next-card-title { font-size: 13px; font-weight: 700; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; color: #f1f5f9; }
+      .fvp-next-item { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 12px; }
+      .fvp-next-item:last-child { margin-bottom: 0; }
+      .fvp-next-item-icon { width: 28px; height: 28px; border-radius: 7px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 13px; }
+      .fvp-ni-purple { background: rgba(108,99,255,.12); } .fvp-ni-teal { background: rgba(45,212,191,.1); } .fvp-ni-green { background: rgba(34,197,94,.1); }
+      .fvp-next-item-text { font-size: 12.5px; color: #94a3b8; line-height: 1.55; padding-top: 4px; }
+      .fvp-next-item-text strong { color: #f1f5f9; font-weight: 600; }
+      .fvp-btn-explore { width: 100%; padding: 15px; border-radius: 12px; background: linear-gradient(135deg,#6c63ff,#9b59f5); border: none; color: white; font-size: 14px; font-weight: 700; font-family: inherit; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 20px rgba(108,99,255,.3); transition: all .25s; margin-bottom: 12px; }
+      .fvp-btn-explore:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(108,99,255,.45); }
+      .fvp-btn-home { width: 100%; padding: 13px; border-radius: 12px; background: transparent; border: 1px solid rgba(255,255,255,0.07); color: #94a3b8; font-size: 14px; font-weight: 600; font-family: inherit; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all .2s; }
+      .fvp-btn-home:hover { background: rgba(255,255,255,.04); color: #f1f5f9; }
+    `}</style>
+    <ToastContainer position="top-center" theme="dark"/>
+    <div style={{ background: "#080b14", minHeight: "100vh", fontFamily: "'Plus Jakarta Sans', sans-serif", color: "#f1f5f9" }}>
+      <nav className="fvp-nav">
+        <a href="/" className="fvp-nav-logo">
+          <div className="fvp-nav-logo-icon">M</div>
+          <span className="fvp-nav-logo-name">mmeko</span>
+        </a>
+        <div style={{ width: 60 }} />
+      </nav>
+      <div className="fvp-page">
+        <div className="fvp-status-visual">
+          <div className="fvp-spin-ring" />
+          <div className="fvp-pulse-ring" />
+          <div className="fvp-status-center">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M9 12l2 2 4-4" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </div>
+        </div>
+        <div className="fvp-status-tag"><div className="fvp-tag-dot" />Under Review</div>
+        <div className="fvp-status-title">Your verification<br/>is being reviewed</div>
+        <p className="fvp-status-sub">We&apos;ve received your documents and our team is reviewing them. This usually takes less than 24 hours.</p>
+        <div className="fvp-timeline">
+          <div className="fvp-timeline-step done">
+            <div className="fvp-step-dot">✓</div>
+            <div><div className="fvp-step-title">Documents submitted</div><div className="fvp-step-sub">Your ID and selfie were received successfully.</div><div className="fvp-step-time">Just now</div></div>
+          </div>
+          <div className="fvp-timeline-step active">
+            <div className="fvp-step-dot">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="12" r="9" stroke="#a89cff" strokeWidth="2"/>
+                <path d="M12 7v5l3 3" stroke="#a89cff" strokeWidth="2" strokeLinecap="round"/>
+              </svg>
+            </div>
+            <div><div className="fvp-step-title">Review in progress</div><div className="fvp-step-sub">Our team is checking your documents.</div><div className="fvp-step-time">Usually within 24 hours</div></div>
+          </div>
+          <div className="fvp-timeline-step">
+            <div className="fvp-step-dot">🛡</div>
+            <div><div className="fvp-step-title">Verification complete</div><div className="fvp-step-sub">You&apos;ll receive a notification once reviewed.</div><div className="fvp-step-time">Pending</div></div>
+          </div>
+        </div>
+        <div className="fvp-next-card">
+          <div className="fvp-next-card-title">🔔 What happens next</div>
+          <div className="fvp-next-item"><div className="fvp-next-item-icon fvp-ni-purple">📩</div><div className="fvp-next-item-text"><strong>You&apos;ll get notified</strong> — we&apos;ll send you a notification the moment your verification is approved or if we need anything else.</div></div>
+          <div className="fvp-next-item"><div className="fvp-next-item-icon fvp-ni-green">✅</div><div className="fvp-next-item-text"><strong>Verified badge</strong> — once approved, a verified badge appears on your profile and your requests get 2× priority.</div></div>
+          <div className="fvp-next-item"><div className="fvp-next-item-icon fvp-ni-teal">🔓</div><div className="fvp-next-item-text"><strong>More creators unlocked</strong> — some creators only accept requests from verified fans. Approval opens them up to you.</div></div>
+        </div>
+        <button className="fvp-btn-explore" onClick={() => router.push("/")}>Explore Creators</button>
+        <button className="fvp-btn-home" onClick={() => router.push("/")}>Go to Home</button>
       </div>
     </div>
-  );
+  </>
+);
 
   return (
     <div style={{ fontFamily:"'Plus Jakarta Sans',sans-serif", color:S.text, background:S.bg, minHeight:"100vh" }}>
