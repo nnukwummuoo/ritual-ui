@@ -143,37 +143,36 @@ const Sidemenu = () => {
 
   const isFanVerifiedCheck = (profile as any).fan_verified === true;
 
-  const getCreatorButton = () => {
-    if (profile.creator_portfolio_id) {
-      return (
-        <MenuIconImg
-          src="/icons/icons8-creator.png"
-          name="My Portfolio"
-          url={`/creators/${profile.creator_portfolio_id}`}
-        />
-      );
-    }
-    if (profile.creator_verified) {
-      return (
-        <MenuIconImg
-          src="/icons/icons8-plus.png"
-          name="Create Portfolio"
-          url="/creator/create"
-        />
-      );
-    }
-    if (!isFanVerifiedCheck) {
-      return (
-        <MenuIconImg
-          src="/icons/icons-become-a-creator.png"
-          name="Become a creator"
-          url="/be-a-creator/apply"
-        />
-      );
-    }
-    return null;
-  };
-
+ const getCreatorButton = () => {
+  if (profile.creator_portfolio_id) {
+    return (
+      <div className="sb-item" onClick={() => { router.push(`/creators/${profile.creator_portfolio_id}`); handleMenubar(); }}>
+        <div className="si-icon ic-p">🎬</div>
+        <div><div className="si-label">My Portfolio</div><div className="si-sub">View your creator page</div></div>
+        <div className="si-arr">›</div>
+      </div>
+    );
+  }
+  if (profile.creator_verified) {
+    return (
+      <div className="sb-item" onClick={() => { router.push("/creator/create"); handleMenubar(); }}>
+        <div className="si-icon ic-p">➕</div>
+        <div><div className="si-label">Create Portfolio</div><div className="si-sub">Set up your creator page</div></div>
+        <div className="si-arr">›</div>
+      </div>
+    );
+  }
+  if (!isFanVerifiedCheck) {
+    return (
+      <div className="sb-item" onClick={() => { router.push("/be-a-creator/apply"); handleMenubar(); }}>
+        <div className="si-icon ic-p">✦</div>
+        <div><div className="si-label">Become a Creator</div><div className="si-sub">Start accepting fan requests</div></div>
+        <div className="si-arr">›</div>
+      </div>
+    );
+  }
+  return null;
+};
   const fullName = `${firstname} ${lastname}`.trim();
   const initials = `${firstname.charAt(0)}${lastname.charAt(0)}`.toUpperCase() || "?";
   const username = profile?.username || "";
