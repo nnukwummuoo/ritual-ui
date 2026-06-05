@@ -176,6 +176,10 @@ const CSS = `
 
 /* STATS */
 .lp .stats { display: grid; grid-template-columns: repeat(4,1fr); background: var(--bg2); border-bottom: 1px solid var(--border); }
+.lp .stat { padding: 32px 24px; text-align: center; border-right: 1px solid var(--border); width: 100%; }
+.lp .stat:last-child { border-right: none; }
+.lp .stat-label-small { font-size: 16px; font-weight: 800; color: var(--text); }
+
 @media (max-width: 600px) {
   .lp .stats { grid-template-columns: repeat(2,1fr); }
   .lp .stat { border-right: none; border-bottom: 1px solid var(--border); padding: 20px 16px; }
@@ -183,9 +187,8 @@ const CSS = `
   .lp .stat:nth-last-child(-n+2) { border-bottom: none; }
   .lp .stat-l { font-size: 13px; }
   .lp .stat-n { font-size: 13px !important; }
+  .lp .stat-label-small { font-size: 11px; font-weight: 600; color: var(--text2); }
 }
-.lp .stat { padding: 32px 24px; text-align: center; border-right: 1px solid var(--border); width: 100%; }
-.lp .stat:last-child { border-right: none; }
 .lp .stat-n { font-size: 16px; font-weight: 800; letter-spacing: -.03em; background: linear-gradient(135deg, #6c63ff, #9b59f5); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; display: inline; }
 .lp .stat-l { font-size: 16px; font-weight: 800; letter-spacing: -.03em; color: var(--text); display: inline; }
 /* SECTION */
