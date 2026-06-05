@@ -47,21 +47,20 @@ const Sidemenu = () => {
 
   // Click outside to close
   useEffect(() => {
-  if (!open) return;
-  
-  const handleClick = (e: MouseEvent) => {
-    if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-      handleMenubar();
-    }
-  };
-
-  // Use capture phase to catch clicks before they reach other elements
-  document.addEventListener("click", handleClick, true);
-  
-  return () => {
-    document.removeEventListener("click", handleClick, true);
-  };
-}, [open, handleMenubar]);
+    if (!open) return;
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        handleMenubar();
+      }
+    };
+    const timer = setTimeout(() => {
+      document.addEventListener("mousedown", handleClickOutside);
+    }, 100);
+    return () => {
+      clearTimeout(timer);
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [open, handleMenubar]);
 
   React.useEffect(() => {
     if (currentUserId && (!profile.firstname || profile.status === "idle")) {
@@ -238,7 +237,7 @@ const Sidemenu = () => {
           onClick={() => handleMenubar()}
         />
       {/* Sidebar panel */}
-      <nav
+      <div
         ref={menuRef}
         className={`new-sidebar${open ? " open" : ""}`}
       >
@@ -376,7 +375,7 @@ const Sidemenu = () => {
           <div className="sb-ver">mmeko · All rights reserved</div>
 
         </div>
-      </nav>
+      </div>
   </>
   );
 };
