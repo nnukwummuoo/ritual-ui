@@ -232,8 +232,13 @@ const Sidemenu = () => {
       `}</style>
 
      {/* Backdrop */}
-     <div className={`sb-overlay${open ? " open" : ""}`} onClick={() => handleMenubar()} />
-
+   <div 
+  className={open ? "sb-overlay open" : "sb-overlay"} 
+  onClick={() => {
+    console.log("overlay clicked, open is:", open);
+    handleMenubar();
+  }} 
+/>
       {/* Sidebar panel */}
       <nav
         ref={menuRef}
