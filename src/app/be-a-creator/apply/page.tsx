@@ -165,7 +165,7 @@ export default function VerifiedUserForm() {
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
     <style>{`
       *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-      .nav { position: sticky; top: 0; z-index: 100; background: rgba(8,11,20,.97); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.07); padding: 0 24px; height: 56px; display: flex; align-items: center; justify-content: center; }
+      .nav { position: sticky; top: 0; z-index: 40; background: rgba(8,11,20,.97); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.07); padding: 0 24px; height: 56px; display: flex; align-items: center; justify-content: center; }
       .nav-logo { display: flex; align-items: center; gap: 8px; text-decoration: none; }
       .nav-logo-icon { width: 28px; height: 28px; border-radius: 7px; background: linear-gradient(135deg,#6c63ff,#9b59f5); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; color: white; }
       .nav-logo-name { font-size: 15px; font-weight: 700; color: #f1f5f9; }
