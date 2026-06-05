@@ -252,9 +252,24 @@ const Sidemenu = () => {
                 className="sb-av"
                 onClick={() => { router.push(`/${profile?.username || userId}`); handleMenubar(); }}
               >
-                {profile.photolink ? (
-                  <img src={profile.photolink} alt={fullName} />
-                ) : initials}
+               {profile.photolink ? (
+  <img
+    src={(() => {
+      const original = String(profile.photolink || "").trim();
+      const isStorj = original.startsWith("https://gateway.storjshare.io/");
+      if (isStorj) {
+        const parts = original.split("/");
+        const key = parts[parts.length - 1].split("?")[0];
+        return `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3100"}/api/image/view?publicId=${encodeURIComponent(key)}&bucket=profile`;
+      }
+      return original;
+    })()}
+    alt={fullName}
+    onError={(e) => {
+      (e.currentTarget as HTMLImageElement).style.display = "none";
+    }}
+  />
+) : initials}
               </div>
               <div>
                 <div className="sb-uname">{fullName}</div>
