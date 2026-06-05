@@ -17,6 +17,9 @@ import { createPortal } from "react-dom";
 
 const Sidemenu = () => {
   const [minimize, setMinimize] = useState(false);
+  const [mounted, setMounted] = React.useState(false);
+React.useEffect(() => { setMounted(true); }, []);
+
   const userId = useUserId();
   const router = useRouter();
   const { open, toggleMenu: handleMenubar } = useMenuContext();
@@ -179,10 +182,7 @@ const Sidemenu = () => {
   const initials = `${firstname.charAt(0)}${lastname.charAt(0)}`.toUpperCase() || "?";
   const username = profile?.username || "";
 
-  const [mounted, setMounted] = React.useState(false);
-React.useEffect(() => { setMounted(true); }, []);
-
-if (!mounted) return null; // prevent SSR issues
+  if (!mounted) return null; // prevent SSR issues
 
   return (
     <>
