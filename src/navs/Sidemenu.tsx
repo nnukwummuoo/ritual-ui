@@ -28,6 +28,7 @@ const Sidemenu = () => {
   const vipStatus = useSelector((state: RootState) => state.vip.vipStatus);
   const isVip = vipStatus?.isVip || false;
   const vipEndDate = vipStatus?.vipEndDate;
+  
 
   React.useEffect(() => {
     if (!reduxUserId && typeof window !== "undefined") {
@@ -177,6 +178,11 @@ const Sidemenu = () => {
   const initials = `${firstname.charAt(0)}${lastname.charAt(0)}`.toUpperCase() || "?";
   const username = profile?.username || "";
 
+  const [mounted, setMounted] = React.useState(false);
+React.useEffect(() => { setMounted(true); }, []);
+
+if (!mounted) return null; // prevent SSR issues
+
   return (
     <>
       <style>{`
@@ -232,13 +238,10 @@ const Sidemenu = () => {
       `}</style>
 
      {/* Backdrop */}
-   <div 
-  className={open ? "sb-overlay open" : "sb-overlay"} 
-  onClick={() => {
-    console.log("overlay clicked, open is:", open);
-    handleMenubar();
-  }} 
-/>
+  <div
+          className={open ? "sb-overlay open" : "sb-overlay"}
+          onClick={() => handleMenubar()}
+        />
       {/* Sidebar panel */}
       <nav
         ref={menuRef}
