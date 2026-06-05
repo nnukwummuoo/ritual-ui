@@ -45,22 +45,7 @@ const Sidemenu = () => {
     }
   }, [reduxUserId]);
 
-  // Click outside to close
-  useEffect(() => {
-    if (!open) return;
-    const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        handleMenubar();
-      }
-    };
-    const timer = setTimeout(() => {
-      document.addEventListener("mousedown", handleClickOutside);
-    }, 100);
-    return () => {
-      clearTimeout(timer);
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [open, handleMenubar]);
+ 
 
   React.useEffect(() => {
     if (currentUserId && (!profile.firstname || profile.status === "idle")) {
