@@ -49,6 +49,28 @@ const BENEFITS = [
   { icon:"🔓", bg:"rgba(212,168,83,.1)",   title:"Access to exclusive creators",   desc:"Some creators only accept meet requests from verified fans. Verification unlocks them.",                      badge:"More creators available",  badgeStyle:{ background:"rgba(212,168,83,.1)", color:"#d4a853" } },
 ];
 
+function InstrCard({ icon, imgSrc, title, items, color }: { icon:string; imgSrc?:string; title:string; items:string[]; color:string }) {
+  return (
+    <div style={{ background:S.card2, border:`1px solid ${S.border}`, borderRadius:14, overflow:"hidden", marginBottom:20 }}>
+      <div style={{ padding:"14px 18px", borderBottom:`1px solid ${S.border2}`, display:"flex", alignItems:"center", gap:8, fontSize:13, fontWeight:700 }}>
+        {imgSrc
+          ? <img src={imgSrc} alt="" style={{ width:36, height:36, objectFit:"cover", borderRadius:4 }}/>
+          : <span style={{ fontSize:16 }}>{icon}</span>
+        } {title}
+      </div>
+      <div style={{ padding:"14px 18px", display:"flex", flexDirection:"column", gap:10 }}>
+        {items.map((txt, i) => (
+          <div key={i} style={{ display:"flex", alignItems:"flex-start", gap:10 }}>
+            <div style={{ width:18, height:18, borderRadius:"50%", flexShrink:0, marginTop:1, display:"flex", alignItems:"center", justifyContent:"center", fontSize:9, background:`${color}20`, color }}>&nbsp;✓</div>
+            <div style={{ fontSize:12, color:S.text2, lineHeight:1.5 }} dangerouslySetInnerHTML={{ __html: txt }} />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+
 /* ─── page ─── */
 export default function FanVerificationPage() {
   const router   = useRouter();
@@ -209,6 +231,26 @@ useEffect(() => {
   </>
 );
 
+ /* ─── instruction content ─── */
+  const idRules = [
+    "<strong>Image must be clear</strong> — no blur, shadows or glare",
+    "<strong>ID must be fully in frame</strong> — all four corners visible",
+    "<strong>Must be in color</strong> — black and white photos are not accepted",
+    "<strong>Text must be clearly visible</strong> — name, date of birth and expiry must be readable",
+    "<strong>Background must be minimal</strong> — plain surface preferred",
+    "<strong>Image must not be edited, resized or rotated</strong> — original capture only",
+    "<strong>File must be PNG or JPG</strong> — under 7MB in size",
+    "<strong>ID must be valid and not expired</strong> — we do not accept expired documents",
+  ];
+  const selfieRules = [
+    "<strong>Photo must be clear and in color</strong> — good lighting, no filters",
+    "<strong>ID must be fully in frame</strong> — held next to your face, both clearly visible",
+    "<strong>Facial verification required</strong> — your face must be clear, unobscured and looking at the camera",
+    "<strong>Image must not be edited</strong> — no cropping, filters or adjustments of any kind",
+    "<strong>File must be PNG or JPG</strong> — under 7MB in size",
+  ];
+
+
   return (
     <div style={{ fontFamily:"'Plus Jakarta Sans',sans-serif", color:S.text, background:S.bg, minHeight:"100vh" }}>
       <style>{`
@@ -281,9 +323,13 @@ useEffect(() => {
           <span style={{ marginLeft:6 }}>{count} of 2 uploaded</span>
         </div>
 
+        <InstrCard icon="🪪" title="Government ID — Requirements" items={idRules} color={S.accent}/>
+
         <UploadSlot icon="🪪" title="Government-issued ID"
           sub="Passport, driver's licence, or national ID card.<br/>Must be valid and clearly readable."
           accept="image/*,.pdf" filled={!!idFile} onChange={setIdFile}/>
+
+          <InstrCard icon="🤳" title="Selfie with ID — Requirements" items={selfieRules} color={S.teal}/>
           <img
   src="/icons/verificationImage2.jpeg"
   alt="ID verification example"

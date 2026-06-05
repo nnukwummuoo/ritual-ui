@@ -276,7 +276,22 @@ export default function VerifiedUserForm() {
           <div className="dos-item"><div className="dos-check">✓</div><div><strong>Explore the platform</strong> — see how other creators have set up their pages and get inspired</div></div>
           <div className="dos-item"><div className="dos-check">✓</div><div><strong>Set your availability</strong> — decide when and where you&apos;re open for fan meets so fans can send requests right away</div></div>
         </div>
-        <button className="btn-explore" onClick={() => router.push("/profile")}>Complete My Profile</button>
+      <button className="btn-explore" onClick={() => {
+  try {
+    const raw = localStorage.getItem("login");
+    if (raw) {
+      const data = JSON.parse(raw);
+      const username = data?.username;
+      if (username) {
+        router.push(`/${username}`);
+        return;
+      }
+    }
+  } catch {}
+  router.push("/");
+}}>
+  Complete My Profile
+</button>
         <button className="btn-home" onClick={() => router.push("/")}>Go to Home</button>
       </div>
     </div>
