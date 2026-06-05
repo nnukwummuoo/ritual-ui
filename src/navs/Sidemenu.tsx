@@ -202,7 +202,7 @@ const Sidemenu = () => {
         .gc-lbl{font-size:10px;font-weight:700;color:#b45309;letter-spacing:.08em;text-transform:uppercase;}
         .gc-ico{width:28px;height:28px;border-radius:7px;background:rgba(245,158,11,.15);display:flex;align-items:center;justify-content:center;font-size:14px;}
         .gc-val{font-size:24px;font-weight:800;color:#fbbf24;letter-spacing:-.02em;line-height:1;margin-bottom:3px;}
-        .gc-val sub{font-size:12px;font-weight:600;color:#92400e;vertical-align:middle;margin-left:3px;}
+        .gc-val sub{font-size:12px;font-weight:600;color:#92400e;vertical-align:baseline;margin-left:3px;}
         .gc-usd{font-size:11px;color:#475569;}
         .gc-pending{display:flex;align-items:center;gap:6px;margin-top:8px;font-size:11px;color:rgba(245,158,11,.6);font-weight:500;}
         .gc-pending strong{color:#f59e0b;font-weight:700;}
@@ -282,7 +282,7 @@ const Sidemenu = () => {
               <div className="gc-lbl">Gold Balance</div>
               <div className="gc-ico">🪙</div>
             </div>
-            <div className="gc-val">{gold_balance.toLocaleString()} <sub>GOLD</sub></div>
+            <div className="gc-val">{gold_balance.toLocaleString()} <span style={{fontSize:"12px", fontWeight:600, color:"#92400e", marginLeft:"3px"}}>GOLD</span></div>
             <div className="gc-usd">≈ ${(gold_balance * 0.04).toFixed(2)} USD</div>
             {pending_balance > 0 && (
               <div className="gc-pending">
@@ -329,7 +329,7 @@ const Sidemenu = () => {
 <div className="sb-sec">Creator</div>
 <div className="sb-menu">
   {getCreatorButton()}
-  <div className="sb-item" onClick={() => { router.push("/ritual/upload"); handleMenubar(); }}>
+  <div className="sb-item" onClick={() => { router.push("upload-ritual"); handleMenubar(); }}>
     <div className="si-icon ic-gr">🔥</div>
     <div><div className="si-label">Upload Ritual</div><div className="si-sub">Post your daily 15-panel story</div></div>
     <div className="si-arr">›</div>

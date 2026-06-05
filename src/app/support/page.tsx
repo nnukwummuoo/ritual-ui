@@ -52,10 +52,7 @@ const SupportPage: React.FC = () => {
           question: "What if I lose my 12-secret-phrase?",
           answer: "If you forget your password and lose your 12-secret-phrase, your account cannot be recovered. Keep it safe."
         },
-        {
-          question: "Can I be both a Fan and a Creator?",
-          answer: "Yes ✅. You can switch roles anytime in your account settings."
-        }
+       
       ]
     },
     {
