@@ -13,13 +13,9 @@ import { useSelector, useDispatch } from "react-redux";
 import type { RootState, AppDispatch } from "@/store/store";
 import { getprofile } from "@/store/profile";
 import { checkVipStatus } from "@/store/vip";
-import { createPortal } from "react-dom";
 
 const Sidemenu = () => {
   const [minimize, setMinimize] = useState(false);
-  const [mounted, setMounted] = React.useState(false);
-React.useEffect(() => { setMounted(true); }, []);
-
   const userId = useUserId();
   const router = useRouter();
   const { open, toggleMenu: handleMenubar } = useMenuContext();
@@ -32,7 +28,6 @@ React.useEffect(() => { setMounted(true); }, []);
   const vipStatus = useSelector((state: RootState) => state.vip.vipStatus);
   const isVip = vipStatus?.isVip || false;
   const vipEndDate = vipStatus?.vipEndDate;
-  
 
   React.useEffect(() => {
     if (!reduxUserId && typeof window !== "undefined") {
@@ -52,20 +47,21 @@ React.useEffect(() => { setMounted(true); }, []);
 
   // Click outside to close
   useEffect(() => {
-    if (!open) return;
-    const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        handleMenubar();
-      }
-    };
-    const timer = setTimeout(() => {
-      document.addEventListener("mousedown", handleClickOutside);
-    }, 100);
-    return () => {
-      clearTimeout(timer);
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [open, handleMenubar]);
+  if (!open) return;
+  
+  const handleClick = (e: MouseEvent) => {
+    if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+      handleMenubar();
+    }
+  };
+
+  // Use capture phase to catch clicks before they reach other elements
+  document.addEventListener("click", handleClick, true);
+  
+  return () => {
+    document.removeEventListener("click", handleClick, true);
+  };
+}, [open, handleMenubar]);
 
   React.useEffect(() => {
     if (currentUserId && (!profile.firstname || profile.status === "idle")) {
@@ -182,12 +178,8 @@ React.useEffect(() => { setMounted(true); }, []);
   const initials = `${firstname.charAt(0)}${lastname.charAt(0)}`.toUpperCase() || "?";
   const username = profile?.username || "";
 
-  if (!mounted) return null; // prevent SSR issues
-
   return (
     <>
-     {createPortal(
-       <>
       <style>{`
         .sb-overlay{position:fixed;inset:0;z-index:90;background:transparent;pointer-events:none;transition:background .3s;}
         .sb-overlay.open{background:rgba(0,0,0,.65);pointer-events:all;backdrop-filter:blur(2px);}
@@ -241,14 +233,15 @@ React.useEffect(() => { setMounted(true); }, []);
       `}</style>
 
      {/* Backdrop */}
- <div
+  <div
           className={open ? "sb-overlay open" : "sb-overlay"}
           onClick={() => handleMenubar()}
         />
-
-         {/* Sidebar panel */}
-        <nav ref={menuRef} className={open ? "new-sidebar open" : "new-sidebar"}>
-      
+      {/* Sidebar panel */}
+      <nav
+        ref={menuRef}
+        className={`new-sidebar${open ? " open" : ""}`}
+      >
         <div className="sb-topline" />
         <div className="sb-body">
 
@@ -384,10 +377,7 @@ React.useEffect(() => { setMounted(true); }, []);
 
         </div>
       </nav>
-  </>,
-  document.body
-  )}
- </>
+  </>
   );
 };
 
