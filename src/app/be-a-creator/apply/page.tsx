@@ -158,6 +158,7 @@ export default function VerifiedUserForm() {
     } catch(err:any) { toast.error(err || "Failed to submit. Please try again."); }
     finally { setLoading(false); }
   };
+  
 
   /* ─── pending screen ─── */
   if (appStatus === "pending") return (
