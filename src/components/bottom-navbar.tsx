@@ -17,14 +17,14 @@ import { useMenuContext } from "@/lib/context/MenuContext";
 function ProfileMenuBtn() {
   const { toggleMenu } = useMenuContext();
 
-  const reduxAvatar = useSelector(
-    (state: RootState) =>
-      (state.register as Record<string, unknown>)?.avatar as string | undefined
-  );
-  const reduxName = useSelector(
-    (state: RootState) =>
-      (state.register as Record<string, unknown>)?.username as string | undefined
-  );
+const reduxAvatar = useSelector(
+  (state: RootState) =>
+    (state.register as unknown as Record<string, unknown>)?.avatar as string | undefined
+);
+const reduxName = useSelector(
+  (state: RootState) =>
+    (state.register as unknown as Record<string, unknown>)?.username as string | undefined
+);
 
   const [avatar, setAvatar] = useState<string>("");
   const [initials, setInitials] = useState<string>("U");
@@ -227,13 +227,13 @@ function BottomNavBarInner() {
   }, [recentmsg, msgnitocations]);
 
   // ── Nav items ──────────────────────────────────────────────────────────────
-  type NavItem = {
-    route: string;
-    name: string;
-    icon: ReactNode;
-    badge?: number;
-    isCenter?: boolean;
-  };
+ type NavItem = {
+  route: string;
+  name: string;
+  icon: (active: boolean) => ReactNode;
+  badge?: number;
+  isCenter?: boolean;
+};
 
   const isActive = (route: string) =>
     route === "/" ? pathname === "/" : pathname.startsWith(route);
@@ -341,7 +341,7 @@ function BottomNavBarInner() {
                       boxShadow: "0 4px 16px rgba(108,99,255,0.4)",
                     }}
                   >
-                    {(item.icon as (a: boolean) => ReactNode)(active)}
+                    {item.icon(active)}
                   </div>
                   <span className="text-[9.5px] font-semibold text-[#94a3b8] whitespace-nowrap">
                     {item.name}
@@ -358,7 +358,7 @@ function BottomNavBarInner() {
               >
                 {/* Icon + badge wrapper */}
                 <div className="relative bnav-icon">
-  {(item.icon as (a: boolean) => ReactNode)(active)}
+  {item.icon(active)}
 
                   {/* Badge */}
                   {item.badge && item.badge > 0 ? (
