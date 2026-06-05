@@ -275,7 +275,7 @@ export default function VerifiedUserForm() {
           <div className="dos-title">💡 While you wait</div>
           <div className="dos-item"><div className="dos-check">✓</div><div><strong>Complete your profile</strong> — add a bio and profile photo so you&apos;re ready to go the moment you&apos;re approved</div></div>
           <div className="dos-item"><div className="dos-check">✓</div><div><strong>Explore the platform</strong> — see how other creators have set up their pages and get inspired</div></div>
-          <div className="dos-item"><div className="dos-check">✓</div><div><strong>Set your availability</strong> — decide when and where you&apos;re open for fan meets so fans can send requests right away</div></div>
+          <div className="dos-item"><div className="dos-check">✓</div><div><strong>Tell your fans you're almost live</strong> — share the news on your socials so your fans are ready to book the moment you're approved</div></div>
         </div>
       <button className="btn-explore" onClick={() => {
   try {
