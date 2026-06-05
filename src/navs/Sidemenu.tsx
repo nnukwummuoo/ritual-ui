@@ -232,18 +232,13 @@ const Sidemenu = () => {
       `}</style>
 
      {/* Backdrop */}
-    <div
-  onClick={() => handleMenubar()}
-  style={{
-    position: "fixed",
-    inset: 0,
-    zIndex: 90,
-    background: open ? "rgba(0,0,0,.65)" : "transparent",
-    pointerEvents: open ? "all" : "none",
-    backdropFilter: open ? "blur(2px)" : "none",
-    transition: "background .3s",
-  }}
-/>
+    {open && (
+  <div
+    className="fixed inset-0 bg-black/60 z-[90]"
+    style={{ backdropFilter: "blur(2px)" }}
+    onClick={() => handleMenubar()}
+  />
+)}
 
       {/* Sidebar panel */}
       <nav
