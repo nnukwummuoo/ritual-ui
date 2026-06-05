@@ -265,9 +265,14 @@ const Sidemenu = () => {
       return original;
     })()}
     alt={fullName}
-    onError={(e) => {
-      (e.currentTarget as HTMLImageElement).style.display = "none";
-    }}
+   onError={(e) => {
+  const img = e.currentTarget as HTMLImageElement;
+  img.style.display = "none";
+  const parent = img.parentElement;
+  if (parent) {
+    parent.innerHTML = initials;
+  }
+}}
   />
 ) : initials}
               </div>
