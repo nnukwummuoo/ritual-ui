@@ -232,7 +232,7 @@ const Sidemenu = () => {
       `}</style>
 
      {/* Backdrop */}
-<div className={`sb-overlay${open ? " open" : ""}`} onClick={handleMenubar} />
+     <div className={`sb-overlay${open ? " open" : ""}`} onClick={() => handleMenubar()} />
 
       {/* Sidebar panel */}
       <nav
