@@ -13,6 +13,7 @@ import { useSelector, useDispatch } from "react-redux";
 import type { RootState, AppDispatch } from "@/store/store";
 import { getprofile } from "@/store/profile";
 import { checkVipStatus } from "@/store/vip";
+import { createPortal } from "react-dom";
 
 const Sidemenu = () => {
   const [minimize, setMinimize] = useState(false);
@@ -185,6 +186,8 @@ if (!mounted) return null; // prevent SSR issues
 
   return (
     <>
+     {createPortal(
+       <>
       <style>{`
         .sb-overlay{position:fixed;inset:0;z-index:90;background:transparent;pointer-events:none;transition:background .3s;}
         .sb-overlay.open{background:rgba(0,0,0,.65);pointer-events:all;backdrop-filter:blur(2px);}
@@ -238,15 +241,14 @@ if (!mounted) return null; // prevent SSR issues
       `}</style>
 
      {/* Backdrop */}
-  <div
+ <div
           className={open ? "sb-overlay open" : "sb-overlay"}
           onClick={() => handleMenubar()}
         />
-      {/* Sidebar panel */}
-      <nav
-        ref={menuRef}
-        className={`new-sidebar${open ? " open" : ""}`}
-      >
+
+         {/* Sidebar panel */}
+        <nav ref={menuRef} className={open ? "new-sidebar open" : "new-sidebar"}>
+      
         <div className="sb-topline" />
         <div className="sb-body">
 
@@ -382,7 +384,10 @@ if (!mounted) return null; // prevent SSR issues
 
         </div>
       </nav>
-  </>
+  </>,
+  document.body
+  )}
+ </>
   );
 };
 
