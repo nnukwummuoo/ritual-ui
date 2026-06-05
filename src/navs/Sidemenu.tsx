@@ -13,6 +13,7 @@ import { useSelector, useDispatch } from "react-redux";
 import type { RootState, AppDispatch } from "@/store/store";
 import { getprofile } from "@/store/profile";
 import { checkVipStatus } from "@/store/vip";
+import { getImageSource } from '@/lib/imageUtils';
 
 const Sidemenu = () => {
   const [minimize, setMinimize] = useState(false);
@@ -252,27 +253,18 @@ const Sidemenu = () => {
                 className="sb-av"
                 onClick={() => { router.push(`/${profile?.username || userId}`); handleMenubar(); }}
               >
-               {profile.photolink ? (
+    {profile.photolink ? (
   <img
-    src={(() => {
-      const original = String(profile.photolink || "").trim();
-      const isStorj = original.startsWith("https://gateway.storjshare.io/");
-      if (isStorj) {
-        const parts = original.split("/");
-        const key = parts[parts.length - 1].split("?")[0];
-        return `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3100"}/api/image/view?publicId=${encodeURIComponent(key)}&bucket=profile`;
-      }
-      return original;
-    })()}
+    src={getImageSource(profile.photolink, 'profile').src}
     alt={fullName}
-   onError={(e) => {
-  const img = e.currentTarget as HTMLImageElement;
-  img.style.display = "none";
-  const parent = img.parentElement;
-  if (parent) {
-    parent.innerHTML = initials;
-  }
-}}
+    onError={(e) => {
+      const img = e.currentTarget as HTMLImageElement;
+      img.style.display = "none";
+      const parent = img.parentElement;
+      if (parent) {
+        parent.innerHTML = initials;
+      }
+    }}
   />
 ) : initials}
               </div>
