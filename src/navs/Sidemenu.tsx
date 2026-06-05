@@ -149,7 +149,7 @@ const Sidemenu = () => {
     return (
       <div className="sb-item" onClick={() => { router.push(`/creators/${profile.creator_portfolio_id}`); handleMenubar(); }}>
         <div className="si-icon ic-p">🎬</div>
-        <div><div className="si-label">My Portfolio</div><div className="si-sub">View your creator page</div></div>
+        <div><div className="si-label">My Portfolio</div><div className="si-sub">View your booking page</div></div>
         <div className="si-arr">›</div>
       </div>
     );
@@ -158,7 +158,7 @@ const Sidemenu = () => {
     return (
       <div className="sb-item" onClick={() => { router.push("/creator/create"); handleMenubar(); }}>
         <div className="si-icon ic-p">➕</div>
-        <div><div className="si-label">Create Portfolio</div><div className="si-sub">Set up your creator page</div></div>
+        <div><div className="si-label">Create Portfolio</div><div className="si-sub">Set up your booking page</div></div>
         <div className="si-arr">›</div>
       </div>
     );
@@ -308,7 +308,7 @@ const Sidemenu = () => {
             </div>
             <div className="sb-item" onClick={() => { router.push("/following"); handleMenubar(); }}>
               <div className="si-icon ic-r">❤️</div>
-              <div><div className="si-label">Following</div><div className="si-sub">Creators you follow</div></div>
+              <div><div className="si-label">Following</div><div className="si-sub">people you follow</div></div>
               <div className="si-arr">›</div>
             </div>
             <div className="sb-item" onClick={() => { router.push("/collections"); handleMenubar(); }}>
