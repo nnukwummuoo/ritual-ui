@@ -540,7 +540,7 @@ export default function CreatorLandingContent({ prefetchedCreators }: Props) {
             <span className="av-txt">Trusted by <strong>1,000+</strong> verified creators</span>
           </div>
           <h1>Where Fans Meet Creators<br /><span className="grad">Safely. Instantly. Fully.</span></h1>
-          <p className="hero-sub">The premium platform for <strong>fan meet &amp; greets, calls &amp; dates</strong> — plus PPV content, locked messages, and exclusive content sales. You keep 100%. Always.</p>
+          <p className="hero-sub">The premium platform for <strong>meet &amp; greets, calls &amp; dates</strong> — plus PPV content, locked messages, and exclusive content sales. You keep 100%. Always.</p>
                   {/* Hero Image */}
 {/* Hero Image */}
 <div style={{
@@ -605,7 +605,7 @@ export default function CreatorLandingContent({ prefetchedCreators }: Props) {
               <div className="off-hero-left">
                 <div className="off-tag tag-purple">⭐ Core Offering</div>
                 <span className="off-icon">🤝</span>
-                <div className="off-title">Structured Fan Meet &amp; Greets</div>
+                <div className="off-title">Structured Meet &amp; Greets</div>
                 <div className="off-desc">mmeko&apos;s flagship experience. Offer real-world meet &amp; greets, virtual dates, and exclusive one-on-one time with your fans — structured, safe, and fully on your terms. Every meet is protected, every payment is instant.</div>
               </div>
               <div className="off-hero-right">
@@ -695,7 +695,7 @@ export default function CreatorLandingContent({ prefetchedCreators }: Props) {
                   </tr>
                 </thead>
                 <tbody>
-                  <tr><td className="td-feature">Structured Fan Meet &amp; Greets</td><td className="td-mmeko"><span className="ck">✓ Core feature</span></td><td className="td-other"><span className="cx">✗ Not offered</span></td></tr>
+                  <tr><td className="td-feature">Structured Meet &amp; Greets</td><td className="td-mmeko"><span className="ck">✓ Core feature</span></td><td className="td-other"><span className="cx">✗ Not offered</span></td></tr>
                   <tr><td className="td-feature">30-Min Meet Cap (Creator Safety)</td><td className="td-mmeko"><span className="ck">✓ Enforced</span></td><td className="td-other"><span className="cx">✗ Not applicable</span></td></tr>
                   <tr><td className="td-feature">Public Venue Requirement</td><td className="td-mmeko"><span className="ck">✓ Always</span></td><td className="td-other"><span className="cx">✗ Not applicable</span></td></tr>
                   <tr><td className="td-feature">All Chats On-Platform</td><td className="td-mmeko"><span className="ck">✓ Required</span></td><td className="td-other"><span className="cx">✗ Not enforced</span></td></tr>
