@@ -32,7 +32,7 @@ export default function Navbar({ isAuthenticated }: { isAuthenticated: boolean }
   return (
     <>
       <div
-        className="z-[100] w-full fixed top-0 left-0 h-12 lg:hidden"
+        className="z-[50] w-full fixed top-0 left-0 h-12 lg:hidden"
         style={{ backgroundColor: "#080b14", borderBottom: "1px solid rgba(255,255,255,0.07)" }}
       >
         <div className="flex items-center justify-between h-full px-3">
