@@ -218,7 +218,7 @@ export default function VerifiedUserForm() {
       .btn-home:hover { background: rgba(255,255,255,.04); color: #f1f5f9; }
     `}</style>
     <ToastContainer position="top-center" theme="dark"/>
-    <div style={{ background:"#080b14", minHeight:"100vh", fontFamily:"'Plus Jakarta Sans', sans-serif", color:"#f1f5f9" }}>
+  <div style={{ position:"sticky", top:0, zIndex:2, background:"rgba(8,11,20,.97)", backdropFilter:"blur(20px)", borderBottom:`1px solid ${S.border}`, padding:"0 24px", height:56, display:"flex", alignItems:"center", justifyContent:"space-between" }}>
       <nav className="nav">
         <a href="/" className="nav-logo">
           <div className="nav-logo-icon">M</div>
