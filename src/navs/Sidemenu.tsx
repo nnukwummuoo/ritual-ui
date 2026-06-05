@@ -178,7 +178,7 @@ const Sidemenu = () => {
   const username = profile?.username || "";
 
   return (
-    <div className="fixed z-[110]">
+    <>
       <style>{`
         .sb-overlay{position:fixed;inset:0;z-index:90;background:transparent;pointer-events:none;transition:background .3s;}
         .sb-overlay.open{background:rgba(0,0,0,.65);pointer-events:all;backdrop-filter:blur(2px);}
@@ -374,7 +374,7 @@ const Sidemenu = () => {
 
         </div>
       </nav>
-  </div>
+  </>
   );
 };
 
