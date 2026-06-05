@@ -180,9 +180,9 @@ const Sidemenu = () => {
   return (
     <div className="fixed z-[110]">
       <style>{`
-        .sb-overlay{position:fixed;inset:0;z-index:90;background:transparent;pointer-events:none;transition:background .3s;}
+        .sb-overlay{position:fixed;inset:0;z-index:105;background:transparent;pointer-events:none;transition:background .3s;}
         .sb-overlay.open{background:rgba(0,0,0,.65);pointer-events:all;backdrop-filter:blur(2px);}
-        .new-sidebar{position:fixed;top:0;right:0;width:82%;max-width:300px;height:100%;z-index:100;background:#0d1120;border-left:1px solid rgba(255,255,255,0.08);transform:translateX(100%);transition:transform .35s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;overflow:hidden;}
+        .new-sidebar{position:fixed;top:0;right:0;width:82%;max-width:300px;height:100%;z-index:110;background:#0d1120;border-left:1px solid rgba(255,255,255,0.08);transform:translateX(100%);transition:transform .35s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;overflow:hidden;}
         .new-sidebar.open{transform:translateX(0);}
         .sb-topline{height:2px;width:100%;flex-shrink:0;background:linear-gradient(90deg,#6c63ff,#9b59f5,#2dd4bf);}
         .sb-body{flex:1;overflow-y:auto;overflow-x:hidden;}
