@@ -232,7 +232,18 @@ const Sidemenu = () => {
       `}</style>
 
      {/* Backdrop */}
-     <div className={`sb-overlay${open ? " open" : ""}`} onClick={() => handleMenubar()} />
+    <div
+  onClick={() => handleMenubar()}
+  style={{
+    position: "fixed",
+    inset: 0,
+    zIndex: 90,
+    background: open ? "rgba(0,0,0,.65)" : "transparent",
+    pointerEvents: open ? "all" : "none",
+    backdropFilter: open ? "blur(2px)" : "none",
+    transition: "background .3s",
+  }}
+/>
 
       {/* Sidebar panel */}
       <nav
