@@ -279,6 +279,7 @@ useEffect(() => {
 }, [creator.hostid, userid]);
 
   useEffect(() => {
+     console.log("dispatch useEffect fired, Creator[0]:", Creator[0]);
   const currentUserId = getCurrentUserId();
   if (!Creator[0]) return;
   dispatch(getmycreatorbyid({ hostid: null, token: token || undefined, userid: currentUserId || undefined, username: Creator[0] }));
