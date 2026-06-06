@@ -271,8 +271,8 @@ export const RequestDetailsForm: React.FC<RequestDetailsFormProps> = ({
               <div className="rdf-online" />
             </div>
             <div>
-              <div className="rdf-cs-label">Requesting a meet with</div>
-              <div className="rdf-cs-name">{creatorName} <span className="rdf-cs-badge">✓ Verified</span></div>
+             <div className="rdf-cs-label">Requesting a {isFanCall ? "call" : creatorType.toLowerCase() === "fan date" ? "date" : "meet"} with</div>
+             <div className="rdf-cs-name">{creatorName?.split(" ")[0]} <span className="rdf-cs-badge">✓ Verified</span></div>
             </div>
             <div className="rdf-cs-type">
               <div className="rdf-type-tag">{typeTag}</div>
