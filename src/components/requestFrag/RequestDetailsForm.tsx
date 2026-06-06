@@ -177,7 +177,7 @@ export const RequestDetailsForm: React.FC<RequestDetailsFormProps> = ({
     creatorType.toLowerCase() === "fan date" ? "❤️ Fan Date" : "🤝 Fan Meet";
 
   return (
-    <>
+     <div className="fixed inset-0 z-[9999] overflow-y-auto" style={{ background: "#080b14" }}>
       <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
       <style>{`
         .rdf-root{background:#080b14;min-height:100vh;font-family:'Plus Jakarta Sans',sans-serif;color:#f1f5f9;overflow-x:hidden;}
@@ -394,6 +394,6 @@ export const RequestDetailsForm: React.FC<RequestDetailsFormProps> = ({
 
         </div>
       </div>
-    </>
+    </div>
   );
 };
