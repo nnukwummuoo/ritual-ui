@@ -286,6 +286,7 @@ useEffect(() => {
 }, [userid, Creator[0], token]);
 
   useEffect(() => {
+    console.log("creatorbyidstatus:", creatorbyidstatus);
     if (creatorbyidstatus === "succeeded") {
          console.log("userPhotolink value:", creator.userPhotolink); // 👈 add here
       setLoading(false);
