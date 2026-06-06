@@ -28,6 +28,7 @@ export const RequestDetailsForm: React.FC<RequestDetailsFormProps> = ({
   price,
   creatorPhoto,
 }) => {
+  console.log("creatorPhoto:", creatorPhoto); // 👈 add here
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [venue, setVenue] = useState("");
