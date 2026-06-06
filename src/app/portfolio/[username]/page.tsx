@@ -795,7 +795,7 @@ useEffect(() => {
         {/* ── REQUEST BUTTON ── */}
         {Cantchat() && (
           <div className="mcp-btn-rq-wrap">
-            <button className="mcp-btn-rq" onClick={() => { if (!userid) { toast.info("login to access this operation", { autoClose: 2000 }); return; } setShowRequestDetails(true); }}>
+            <button className="mcp-btn-rq" onClick={() => { console.log("creator.userPhotolink:", creator.userPhotolink); if (!userid) { toast.info("login to access this operation", { autoClose: 2000 }); return; } setShowRequestDetails(true); }}>
               🎯 Request {creatorServiceTitle}
             </button>
           </div>
