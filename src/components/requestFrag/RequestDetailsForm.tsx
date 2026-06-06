@@ -24,8 +24,8 @@ export const RequestDetailsForm: React.FC<RequestDetailsFormProps> = ({
   onCancel,
   creatorName,
   creatorType,
-  creatorPhoto,
   price,
+  creatorPhoto,
 }) => {
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
@@ -268,19 +268,21 @@ export const RequestDetailsForm: React.FC<RequestDetailsFormProps> = ({
 
           {/* CREATOR STRIP */}
           <div className="rdf-strip">
-           <div className="rdf-av" style={{ padding: 0, overflow: "hidden" }}>
-  {creatorPhoto ? (
-    <img
-      src={creatorPhoto}
-      alt={creatorName}
-      style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }}
-      onError={(e) => {
-        (e.currentTarget as HTMLImageElement).style.display = "none";
-        (e.currentTarget.nextSibling as HTMLElement).style.display = "flex";
-      }}
-    />
-  ) : null}
-  <span style={{ display: creatorPhoto ? "none" : "flex", alignItems: "center", justifyContent: "center", width: "100%", height: "100%" }}>{creatorInitial}</span>
+       <div style={{ position: "relative", flexShrink: 0 }}>
+  <div className="rdf-av" style={{ padding: 0, overflow: "hidden" }}>
+    {creatorPhoto ? (
+      <img
+        src={creatorPhoto}
+        alt={creatorName}
+        style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }}
+        onError={(e) => {
+          (e.currentTarget as HTMLImageElement).style.display = "none";
+          (e.currentTarget.nextSibling as HTMLElement).style.display = "flex";
+        }}
+      />
+    ) : null}
+    <span style={{ display: creatorPhoto ? "none" : "flex", alignItems: "center", justifyContent: "center", width: "100%", height: "100%" }}>{creatorInitial}</span>
+  </div>
   <div className="rdf-online" />
 </div>
             <div>
