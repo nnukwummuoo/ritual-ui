@@ -937,7 +937,7 @@ useEffect(() => {
         )}
 
         {showRequestDetails && (
-          <RequestDetailsForm onDone={handleRequestDetailsSubmit} onCancel={() => setShowRequestDetails(false)} creatorName={creator.name} creatorType={creator.hosttype} price={parseFloat(creator.price) || 0} />
+          <RequestDetailsForm onDone={handleRequestDetailsSubmit} onCancel={() => setShowRequestDetails(false)} creatorName={creator.name} creatorType={creator.hosttype} price={parseFloat(creator.price) || 0} creatorPhoto={creator.userPhotolink || ""} />
         )}
 
         {showSharePopup && (

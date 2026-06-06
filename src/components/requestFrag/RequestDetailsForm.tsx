@@ -12,6 +12,7 @@ interface RequestDetailsFormProps {
   creatorName: string;
   creatorType: string;
   price: number;
+  creatorPhoto?: string;
 }
 
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
@@ -23,6 +24,7 @@ export const RequestDetailsForm: React.FC<RequestDetailsFormProps> = ({
   onCancel,
   creatorName,
   creatorType,
+  creatorPhoto,
   price,
 }) => {
   const [date, setDate] = useState("");
@@ -266,10 +268,21 @@ export const RequestDetailsForm: React.FC<RequestDetailsFormProps> = ({
 
           {/* CREATOR STRIP */}
           <div className="rdf-strip">
-            <div className="rdf-av">
-              {creatorInitial}
-              <div className="rdf-online" />
-            </div>
+           <div className="rdf-av" style={{ padding: 0, overflow: "hidden" }}>
+  {creatorPhoto ? (
+    <img
+      src={creatorPhoto}
+      alt={creatorName}
+      style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }}
+      onError={(e) => {
+        (e.currentTarget as HTMLImageElement).style.display = "none";
+        (e.currentTarget.nextSibling as HTMLElement).style.display = "flex";
+      }}
+    />
+  ) : null}
+  <span style={{ display: creatorPhoto ? "none" : "flex", alignItems: "center", justifyContent: "center", width: "100%", height: "100%" }}>{creatorInitial}</span>
+  <div className="rdf-online" />
+</div>
             <div>
              <div className="rdf-cs-label">Requesting a {isFanCall ? "call" : creatorType.toLowerCase() === "fan date" ? "date" : "meet"} with</div>
              <div className="rdf-cs-name">{creatorName?.split(" ")[0]} <span className="rdf-cs-badge">✓ Verified</span></div>
