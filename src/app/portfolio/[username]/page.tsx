@@ -279,7 +279,6 @@ useEffect(() => {
 }, [creator.hostid, userid]);
 
   useEffect(() => {
-     console.log("dispatch useEffect fired, Creator[0]:", Creator[0]);
   const currentUserId = getCurrentUserId();
   if (!Creator[0]) return;
   dispatch(getmycreatorbyid({ hostid: null, token: token || undefined, userid: currentUserId || undefined, username: Creator[0] }));
@@ -287,9 +286,7 @@ useEffect(() => {
 }, [userid, Creator[0], token]);
 
   useEffect(() => {
-    console.log("creatorbyidstatus:", creatorbyidstatus);
     if (creatorbyidstatus === "succeeded") {
-         console.log("userPhotolink value:", creator.userPhotolink); // 👈 add here
       setLoading(false);
       setshowcreator(true);
       checkcrush();
@@ -939,7 +936,7 @@ useEffect(() => {
         )}
 
         {showRequestDetails && (
-          <RequestDetailsForm onDone={handleRequestDetailsSubmit} onCancel={() => setShowRequestDetails(false)} creatorName={creator.name} creatorType={creator.hosttype} price={parseFloat(creator.price) || 0} creatorPhoto={creator.userPhotolink || ""} />
+          <RequestDetailsForm onDone={handleRequestDetailsSubmit} onCancel={() => setShowRequestDetails(false)} creatorName={creator.name} creatorType={creator.hosttype} price={parseFloat(creator.price) || 0} />
         )}
 
         {showSharePopup && (

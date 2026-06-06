@@ -14,6 +14,9 @@ interface RequestDetailsFormProps {
   creatorType: string;
   price: number;
   creatorPhoto?: string;
+  creatorActive?: boolean;
+  userBalance?: number;
+  isFanVerified?: boolean;
 }
 
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
@@ -27,8 +30,10 @@ export const RequestDetailsForm: React.FC<RequestDetailsFormProps> = ({
   creatorType,
   price,
   creatorPhoto,
+  creatorActive = false,
+  userBalance = 0,
+  isFanVerified = false,
 }) => {
-  console.log("creatorPhoto:", creatorPhoto); // 👈 add here
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [venue, setVenue] = useState("");
@@ -37,6 +42,7 @@ export const RequestDetailsForm: React.FC<RequestDetailsFormProps> = ({
   const [curTimeTab, setCurTimeTab] = useState<'AM' | 'PM'>('AM');
   const [viewYear, setViewYear] = useState(new Date().getFullYear());
   const [viewMonth, setViewMonth] = useState(new Date().getMonth());
+  const [showVerifyPopup, setShowVerifyPopup] = useState(false);
 
   const isFanCall = creatorType.toLowerCase() === "fan call";
 
@@ -253,6 +259,9 @@ export const RequestDetailsForm: React.FC<RequestDetailsFormProps> = ({
         .rdf-btn-cancel:hover{background:rgba(255,255,255,.04);color:#f1f5f9;}
         .rdf-fan-call-info{background:linear-gradient(135deg,rgba(108,99,255,.08),rgba(155,89,245,.05));border:1px solid rgba(108,99,255,.15);border-radius:12px;padding:14px 16px;margin-bottom:28px;font-size:12.5px;color:#94a3b8;line-height:1.65;}
         .rdf-fan-call-info strong{color:#a89cff;}
+        .rdf-gn-row{display:flex;align-items:center;justify-content:space-between;margin-top:12px;padding-top:12px;border-top:1px solid rgba(245,158,11,.1);}
+        .rdf-gn-bal{font-size:12px;color:#475569;}
+        .rdf-gn-bal strong{color:#94a3b8;font-weight:600;}
       `}</style>
 
       <div className="rdf-root">
@@ -285,7 +294,7 @@ export const RequestDetailsForm: React.FC<RequestDetailsFormProps> = ({
 ) : null}
     <span style={{ display: creatorPhoto ? "none" : "flex", alignItems: "center", justifyContent: "center", width: "100%", height: "100%" }}>{creatorInitial}</span>
   </div>
-  <div className="rdf-online" />
+  {creatorActive && <div className="rdf-online" />}
 </div>
             <div>
              <div className="rdf-cs-label">Requesting a {isFanCall ? "call" : creatorType.toLowerCase() === "fan date" ? "date" : "meet"} with</div>
@@ -304,11 +313,19 @@ export const RequestDetailsForm: React.FC<RequestDetailsFormProps> = ({
                 <div className="rdf-gn-title">Payment held securely</div>
               </div>
               <div className="rdf-gn-amount">{price.toLocaleString()} <span>GOLD</span></div>
-              <div className="rdf-gn-sub">Will be deducted from your balance and held in escrow until the meet is confirmed complete. You keep full protection.</div>
+            <div className="rdf-gn-sub">
+  Will be deducted from your balance and held in escrow until the meet is confirmed complete. You keep full protection.
+  <br /><br />
+  Once a booking request is sent, the creator has up to 24 hours to accept it. After the creator accepts, the <strong style={{ color: "rgba(245,158,11,.9)" }}>{creatorType.toLowerCase() === "fan date" ? "date" : "meet & greet"}</strong> can take place at anytime based on mutual availability within that booking.
+</div>
+<div className="rdf-gn-row">
+  <div className="rdf-gn-bal">Your balance: <strong>{userBalance.toLocaleString()} GOLD</strong></div>
+  <div style={{ fontSize:11, color:"rgba(245,158,11,.5)" }}>After: {Math.max(0, userBalance - price).toLocaleString()} GOLD</div>
+</div>
             </div>
           ) : (
             <div className="rdf-fan-call-info">
-              Fan Calls can be booked up to 5 days in advance 🙂 Once a booking request is sent, the creator has up to 24 hours to accept it. After the creator accepts, the <strong>call</strong> can be started anytime based on mutual availability within that booking.
+              Fan Calls can be booked up to 7 days in advance 🙂 Once a booking request is sent, the creator has up to 24 hours to accept it. After the creator accepts, the <strong>call</strong> can be started anytime based on mutual availability within that booking.
             </div>
           )}
 
@@ -393,11 +410,17 @@ export const RequestDetailsForm: React.FC<RequestDetailsFormProps> = ({
           </div>
 
           {/* BUTTONS */}
-          <button
-            className="rdf-btn-request"
-            disabled={!isFormValid || loading}
-            onClick={handleSubmit}
-          >
+         <button
+  className="rdf-btn-request"
+  disabled={!isFormValid || loading}
+  onClick={() => {
+    if (!isFanVerified) {
+      setShowVerifyPopup(true);
+    } else {
+      handleSubmit();
+    }
+  }}
+>
             {loading ? (
               <PacmanLoader color="#ffffff" loading={true} size={10} />
             ) : (
@@ -408,6 +431,33 @@ export const RequestDetailsForm: React.FC<RequestDetailsFormProps> = ({
             )}
           </button>
           <button className="rdf-btn-cancel" onClick={onCancel}>Cancel</button>
+
+          {showVerifyPopup && (
+  <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[9999] p-4" onClick={() => setShowVerifyPopup(false)}>
+    <div className="bg-[#111624] rounded-2xl p-6 max-w-sm w-full border border-white/10" onClick={e => e.stopPropagation()}>
+      <div style={{ fontSize: 32, textAlign: "center", marginBottom: 16 }}>🛡️</div>
+      <h3 className="text-white font-bold text-base mb-3 text-center">Verification recommended</h3>
+      <p className="text-[#94a3b8] text-sm leading-relaxed mb-6 text-center">
+        Most creators only accept booking requests from verified fans. Verify your account to increase your chances of being accepted.
+      </p>
+      <div className="flex flex-col gap-3">
+        <button
+          onClick={() => { setShowVerifyPopup(false); window.location.href = "/user_id/fan-verification"; }}
+          className="w-full py-3 rounded-xl text-sm font-bold text-white"
+          style={{ background: "linear-gradient(135deg,#6c63ff,#9b59f5)" }}
+        >
+          🛡️ Verify My Account
+        </button>
+        <button
+          onClick={() => { setShowVerifyPopup(false); handleSubmit(); }}
+          className="w-full py-2.5 rounded-xl text-sm font-semibold text-[#94a3b8] border border-white/10 hover:text-white transition-colors"
+        >
+          Continue without verification
+        </button>
+      </div>
+    </div>
+  </div>
+)}
 
         </div>
       </div>

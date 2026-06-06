@@ -912,7 +912,7 @@ const [urlCopied, setUrlCopied] = useState(false);
         )}
 
         {showRequestDetails && (
-          <RequestDetailsForm onDone={handleRequestDetailsSubmit} onCancel={() => setShowRequestDetails(false)} creatorName={creator.name} creatorType={creator.hosttype} price={parseFloat(creator.price) || 0} />
+          <RequestDetailsForm onDone={handleRequestDetailsSubmit} onCancel={() => setShowRequestDetails(false)} creatorName={creator.name} creatorType={creator.hosttype} price={parseFloat(creator.price) || 0} creatorPhoto={creator.userPhotolink || ""} creatorActive={creator.active || false} userBalance={parseFloat(profile.balance) || 0} />
         )}
 
         {showSharePopup && (
