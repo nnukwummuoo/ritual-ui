@@ -5,6 +5,7 @@ import Image from "next/image";
 import { toast } from "react-toastify";
 import { IoChevronBack, IoChevronForward } from "react-icons/io5";
 import PacmanLoader from "react-spinners/PacmanLoader";
+import { getImageSource } from '@/lib/imageUtils';
 
 interface RequestDetailsFormProps {
   onDone: (details: { date: string; time: string; venue: string }) => void;
@@ -270,17 +271,17 @@ export const RequestDetailsForm: React.FC<RequestDetailsFormProps> = ({
           <div className="rdf-strip">
        <div style={{ position: "relative", flexShrink: 0 }}>
   <div className="rdf-av" style={{ padding: 0, overflow: "hidden" }}>
-    {creatorPhoto ? (
-      <img
-        src={creatorPhoto}
-        alt={creatorName}
-        style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }}
-        onError={(e) => {
-          (e.currentTarget as HTMLImageElement).style.display = "none";
-          (e.currentTarget.nextSibling as HTMLElement).style.display = "flex";
-        }}
-      />
-    ) : null}
+   {creatorPhoto ? (
+  <img
+    src={getImageSource(creatorPhoto, 'profile').src}
+    alt={creatorName}
+    style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }}
+    onError={(e) => {
+      (e.currentTarget as HTMLImageElement).style.display = "none";
+      (e.currentTarget.nextSibling as HTMLElement).style.display = "flex";
+    }}
+  />
+) : null}
     <span style={{ display: creatorPhoto ? "none" : "flex", alignItems: "center", justifyContent: "center", width: "100%", height: "100%" }}>{creatorInitial}</span>
   </div>
   <div className="rdf-online" />
