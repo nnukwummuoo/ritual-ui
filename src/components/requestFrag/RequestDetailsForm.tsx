@@ -1,26 +1,163 @@
 "use client";
-import React, { useState, useEffect, useCallback } from "react";
-import { useRouter } from "next/navigation";
+
+import React, { useState } from "react";
+import Image from "next/image";
+import { toast } from "react-toastify";
+import { IoChevronBack, IoChevronForward } from "react-icons/io5";
+import PacmanLoader from "react-spinners/PacmanLoader";
+
+interface RequestDetailsFormProps {
+  onDone: (details: { date: string; time: string; venue: string }) => void;
+  onCancel: () => void;
+  creatorName: string;
+  creatorType: string;
+  price: number;
+}
 
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 const AM_TIMES = ['12:00 AM','1:00 AM','2:00 AM','3:00 AM','4:00 AM','5:00 AM','6:00 AM','7:00 AM','8:00 AM','9:00 AM','10:00 AM','11:00 AM'];
 const PM_TIMES = ['12:00 PM','1:00 PM','2:00 PM','3:00 PM','4:00 PM','5:00 PM','6:00 PM','7:00 PM','8:00 PM','9:00 PM','10:00 PM','11:00 PM'];
-const AVAIL_TIMES = new Set(['1:00 PM','2:00 PM','3:00 PM','4:00 PM','5:00 PM','6:00 PM','7:00 PM','8:00 PM','9:00 PM','10:00 PM','11:00 PM']);
-const CREATOR_DAYS = [1,2,3,4,5,6,0];
 
-export default function RequestDetailsForm() {
-  const router = useRouter();
-  const today = new Date();
-
-  const [viewYear, setViewYear] = useState(today.getFullYear());
-  const [viewMonth, setViewMonth] = useState(today.getMonth());
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  const [selectedTime, setSelectedTime] = useState<string | null>(null);
+export const RequestDetailsForm: React.FC<RequestDetailsFormProps> = ({
+  onDone,
+  onCancel,
+  creatorName,
+  creatorType,
+  price,
+}) => {
+  const [date, setDate] = useState("");
+  const [time, setTime] = useState("");
+  const [venue, setVenue] = useState("");
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [loading, setLoading] = useState(false);
   const [curTimeTab, setCurTimeTab] = useState<'AM' | 'PM'>('AM');
-  const [venue, setVenue] = useState('');
-  const [submitted, setSubmitted] = useState(false);
+  const [viewYear, setViewYear] = useState(new Date().getFullYear());
+  const [viewMonth, setViewMonth] = useState(new Date().getMonth());
 
-  const isFormValid = selectedDate && selectedTime && venue.trim();
+  const isFanCall = creatorType.toLowerCase() === "fan call";
+
+  const bookingWord =
+    creatorType === "Fan call" ? "call" :
+    creatorType === "Fan date" ? "date" :
+    "meet & greet";
+
+  // ── All existing logic unchanged ──────────────────────────────────────────
+
+  const getAvailableDates = () => {
+    const today = new Date();
+    const startDate = new Date(today);
+    const endDate = new Date();
+    if (isFanCall) {
+      endDate.setDate(today.getDate() + 7);
+    } else {
+      endDate.setDate(today.getDate() + 8);
+    }
+    return { startDate, endDate };
+  };
+
+  const isToday = (d: Date) => {
+    const today = new Date();
+    return d.toDateString() === today.toDateString();
+  };
+
+  const isTomorrow = (d: Date) => {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    return d.toDateString() === tomorrow.toDateString();
+  };
+
+  const isDateAvailable = (d: Date) => {
+    const { startDate, endDate } = getAvailableDates();
+    if (isToday(d) || isTomorrow(d)) return false;
+    return d >= startDate && d <= endDate;
+  };
+
+  const formatDateForInput = (d: Date) => {
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  const handleDateSelect = (selectedDate: Date) => {
+    if (isDateAvailable(selectedDate)) {
+      setDate(formatDateForInput(selectedDate));
+    }
+  };
+
+  const handleSubmit = async () => {
+    if (loading) return;
+    if (!date || !time || (!isFanCall && !venue)) {
+      toast.error("Please fill in all fields", { autoClose: 2000 });
+      return;
+    }
+    const selectedDate = new Date(date);
+    const today = new Date();
+    const { endDate } = getAvailableDates();
+    if (isToday(selectedDate) || isTomorrow(selectedDate)) {
+      toast.error("Today and tomorrow are not available for Request", { autoClose: 2000 });
+      return;
+    }
+    if (selectedDate < today) {
+      toast.error("Please select a future date", { autoClose: 2000 });
+      return;
+    }
+    if (selectedDate > endDate) {
+      const daysAllowed = isFanCall ? "6" : "7";
+      toast.error(`Please select a date within the next ${daysAllowed} available days`, { autoClose: 2000 });
+      return;
+    }
+    setLoading(true);
+    try {
+      await onDone({ date, time, venue: isFanCall ? "" : venue });
+    } catch (error) {
+      console.error('Error submitting request details:', error);
+      toast.error("Failed to submit request. Please try again.", { autoClose: 2000 });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ── Calendar cells ────────────────────────────────────────────────────────
+  const today = new Date();
+  const firstDay = new Date(viewYear, viewMonth, 1).getDay();
+  const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+  const dayNames = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
+
+  const calCells: React.ReactNode[] = [];
+  for (let i = 0; i < firstDay; i++) calCells.push(<div key={`e-${i}`} />);
+  for (let d = 1; d <= daysInMonth; d++) {
+    const cellDate = new Date(viewYear, viewMonth, d);
+    const isPast = cellDate < new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const isTodayDate = isToday(cellDate);
+    const isTomorrowDate = isTomorrow(cellDate);
+    const isAvail = isDateAvailable(cellDate);
+    const isDisabled = isPast || isTodayDate || isTomorrowDate || !isAvail;
+    const isSel = date === formatDateForInput(cellDate);
+
+    calCells.push(
+      <div
+        key={d}
+        className={`date-cell${isDisabled ? ' disabled' : ''}${isSel ? ' sel' : ''}`}
+        onClick={() => { if (!isDisabled) handleDateSelect(cellDate); }}
+      >
+        <div className="dc-day">{dayNames[cellDate.getDay()]}</div>
+        <div className="dc-num">{d}</div>
+      </div>
+    );
+  }
+
+  // ── Time chips ────────────────────────────────────────────────────────────
+  // Convert time string like "1:00 PM" to "13:00" for comparison with input type=time
+  const timeChips = curTimeTab === 'AM' ? AM_TIMES : PM_TIMES;
+
+  const convertTo24 = (t: string) => {
+    const [timePart, period] = t.split(' ');
+    let [hours, minutes] = timePart.split(':').map(Number);
+    if (period === 'PM' && hours !== 12) hours += 12;
+    if (period === 'AM' && hours === 12) hours = 0;
+    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+  };
 
   const prevMonth = () => {
     if (viewMonth === 0) { setViewMonth(11); setViewYear(y => y - 1); }
@@ -32,206 +169,169 @@ export default function RequestDetailsForm() {
     else setViewMonth(m => m + 1);
   };
 
-  const handleRequest = () => {
-    if (!isFormValid) return;
-    setSubmitted(true);
-  };
+  const isFormValid = date && time && (isFanCall || venue.trim());
 
-  // Build calendar days
-  const firstDay = new Date(viewYear, viewMonth, 1).getDay();
-  const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+  const creatorInitial = creatorName?.charAt(0)?.toUpperCase() || "C";
 
-  const calCells: React.ReactNode[] = [];
-  for (let i = 0; i < firstDay; i++) {
-    calCells.push(<div key={`e-${i}`} />);
-  }
-  for (let d = 1; d <= daysInMonth; d++) {
-    const date = new Date(viewYear, viewMonth, d);
-    const isPast = date < new Date(today.getFullYear(), today.getMonth(), today.getDate());
-    const isToday = d === today.getDate() && viewMonth === today.getMonth() && viewYear === today.getFullYear();
-    const isTomorrow = d === today.getDate() + 1 && viewMonth === today.getMonth() && viewYear === today.getFullYear();
-    const dayOfWeek = date.getDay();
-    const isAvail = CREATOR_DAYS.includes(dayOfWeek);
-    const isDisabled = isPast || isToday || isTomorrow || !isAvail;
-    const isSel = selectedDate?.getDate() === d && selectedDate?.getMonth() === viewMonth;
-    const dayNames = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
-
-    calCells.push(
-      <div
-        key={d}
-        className={`date-cell${isDisabled ? ' disabled' : ''}${isSel ? ' sel' : ''}`}
-        onClick={() => { if (!isDisabled) setSelectedDate(new Date(viewYear, viewMonth, d)); }}
-      >
-        <div className="dc-day">{dayNames[dayOfWeek]}</div>
-        <div className="dc-num">{d}</div>
-      </div>
-    );
-  }
-
-  const times = curTimeTab === 'AM' ? AM_TIMES : PM_TIMES;
+  const typeTag = isFanCall ? "📞 Fan Call" :
+    creatorType.toLowerCase() === "fan date" ? "❤️ Fan Date" : "🤝 Fan Meet";
 
   return (
     <>
       <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
       <style>{`
-        *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-        :root{
-          --bg:#080b14;--bg2:#0b0f1c;--bg3:#0e1220;
-          --card:#111624;--card2:#161b2e;
-          --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.04);
-          --accent:#6c63ff;--accent2:#9b59f5;
-          --teal:#2dd4bf;--rose:#f472b6;
-          --success:#22c55e;--gold:#f59e0b;
-          --text:#f1f5f9;--text2:#94a3b8;--text3:#475569;
-        }
-        html{scroll-behavior:smooth;}
-        body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;min-height:100vh;overflow-x:hidden;}
-        ::-webkit-scrollbar{width:4px;}
-        ::-webkit-scrollbar-thumb{background:var(--card2);border-radius:4px;}
-        .nav{position:sticky;top:0;z-index:200;background:rgba(8,11,20,.97);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:0 20px;height:56px;display:flex;align-items:center;justify-content:space-between;}
-        .nav-logo{display:flex;align-items:center;gap:8px;text-decoration:none;}
-        .nav-logo-icon{width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,#6c63ff,#9b59f5);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:white;}
-        .nav-logo-name{font-size:15px;font-weight:700;color:var(--text);}
-        .nav-back{background:none;border:none;color:var(--text2);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:5px;transition:color .2s;}
-        .nav-back:hover{color:var(--text);}
-        .page{max-width:480px;margin:0 auto;padding:28px 20px 80px;}
-        .creator-strip{display:flex;align-items:center;gap:14px;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin-bottom:28px;}
-        .cs-av{width:46px;height:46px;border-radius:50%;background:linear-gradient(135deg,#6c63ff,#9b59f5);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;color:white;flex-shrink:0;position:relative;}
-        .cs-online{position:absolute;bottom:2px;right:2px;width:11px;height:11px;border-radius:50%;background:var(--success);border:2px solid var(--card);}
-        .cs-label{font-size:10px;font-weight:600;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:3px;}
-        .cs-name{font-size:15px;font-weight:800;letter-spacing:-.01em;display:flex;align-items:center;gap:6px;}
-        .cs-badge{display:inline-flex;align-items:center;gap:3px;background:rgba(45,212,191,.1);border:1px solid rgba(45,212,191,.2);border-radius:5px;padding:1px 7px;font-size:9px;font-weight:700;color:var(--teal);}
-        .cs-handle{font-size:12px;color:var(--text3);margin-top:2px;}
-        .cs-type{margin-left:auto;display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0;}
-        .cs-type-tag{display:inline-flex;align-items:center;gap:5px;background:rgba(244,114,182,.08);border:1px solid rgba(244,114,182,.2);border-radius:7px;padding:5px 10px;font-size:11px;font-weight:700;color:var(--rose);}
-        .gold-notice{background:linear-gradient(135deg,rgba(245,158,11,.1),rgba(245,158,11,.06));border:1px solid rgba(245,158,11,.2);border-radius:14px;padding:16px 18px;margin-bottom:28px;position:relative;overflow:hidden;}
-        .gold-notice::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,#f59e0b,#fbbf24,#f59e0b);}
-        .gn-top{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
-        .gn-icon{font-size:20px;}
-        .gn-title{font-size:13px;font-weight:700;color:#fbbf24;}
-        .gn-amount{font-size:26px;font-weight:800;letter-spacing:-.02em;color:var(--gold);margin-bottom:4px;}
-        .gn-amount span{font-size:14px;font-weight:600;color:rgba(245,158,11,.7);}
-        .gn-sub{font-size:12px;color:rgba(245,158,11,.6);line-height:1.55;}
-        .gn-row{display:flex;align-items:center;justify-content:space-between;margin-top:12px;padding-top:12px;border-top:1px solid rgba(245,158,11,.1);}
-        .gn-bal{font-size:12px;color:var(--text3);}
-        .gn-bal strong{color:var(--text2);font-weight:600;}
-        .sec-label{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:12px;display:flex;align-items:center;gap:8px;}
-        .sec-label::before{content:'';display:block;width:16px;height:2px;background:var(--accent);border-radius:2px;}
-        .fg{display:flex;flex-direction:column;gap:7px;margin-bottom:18px;}
-        .fl{font-size:12.5px;font-weight:600;color:var(--text2);display:flex;align-items:center;gap:6px;}
-        .req{color:#ef4444;font-size:11px;}
-        .fi{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:13px 14px;font-size:13.5px;color:var(--text);font-family:inherit;outline:none;transition:border-color .2s;width:100%;}
-        .fi:focus{border-color:rgba(108,99,255,.4);}
-        .fi::placeholder{color:var(--text3);}
-        .date-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:6px;}
-        .date-cell{aspect-ratio:1;border-radius:9px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--card);border:1px solid var(--border);cursor:pointer;transition:all .2s;user-select:none;}
+        .rdf-root{background:#080b14;min-height:100vh;font-family:'Plus Jakarta Sans',sans-serif;color:#f1f5f9;overflow-x:hidden;}
+        .rdf-nav{position:sticky;top:0;z-index:200;background:rgba(8,11,20,.97);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,0.07);padding:0 20px;height:56px;display:flex;align-items:center;justify-content:space-between;}
+        .rdf-nav-logo{display:flex;align-items:center;gap:8px;text-decoration:none;}
+        .rdf-nav-logo-icon{width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,#6c63ff,#9b59f5);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:white;}
+        .rdf-nav-logo-name{font-size:15px;font-weight:700;color:#f1f5f9;}
+        .rdf-nav-back{background:none;border:none;color:#94a3b8;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:5px;transition:color .2s;}
+        .rdf-nav-back:hover{color:#f1f5f9;}
+        .rdf-page{max-width:480px;margin:0 auto;padding:28px 20px 80px;}
+        .rdf-strip{display:flex;align-items:center;gap:14px;background:#111624;border:1px solid rgba(255,255,255,0.07);border-radius:14px;padding:14px 16px;margin-bottom:28px;}
+        .rdf-av{width:46px;height:46px;border-radius:50%;background:linear-gradient(135deg,#6c63ff,#9b59f5);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;color:white;flex-shrink:0;position:relative;}
+        .rdf-online{position:absolute;bottom:2px;right:2px;width:11px;height:11px;border-radius:50%;background:#22c55e;border:2px solid #111624;}
+        .rdf-cs-label{font-size:10px;font-weight:600;color:#475569;letter-spacing:.06em;text-transform:uppercase;margin-bottom:3px;}
+        .rdf-cs-name{font-size:15px;font-weight:800;letter-spacing:-.01em;display:flex;align-items:center;gap:6px;color:#f1f5f9;}
+        .rdf-cs-badge{display:inline-flex;align-items:center;gap:3px;background:rgba(45,212,191,.1);border:1px solid rgba(45,212,191,.2);border-radius:5px;padding:1px 7px;font-size:9px;font-weight:700;color:#2dd4bf;}
+        .rdf-cs-handle{font-size:12px;color:#475569;margin-top:2px;}
+        .rdf-cs-type{margin-left:auto;flex-shrink:0;}
+        .rdf-type-tag{display:inline-flex;align-items:center;gap:5px;background:rgba(244,114,182,.08);border:1px solid rgba(244,114,182,.2);border-radius:7px;padding:5px 10px;font-size:11px;font-weight:700;color:#f472b6;}
+        .rdf-gold{background:linear-gradient(135deg,rgba(245,158,11,.1),rgba(245,158,11,.06));border:1px solid rgba(245,158,11,.2);border-radius:14px;padding:16px 18px;margin-bottom:28px;position:relative;overflow:hidden;}
+        .rdf-gold::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,#f59e0b,#fbbf24,#f59e0b);}
+        .rdf-gn-top{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+        .rdf-gn-title{font-size:13px;font-weight:700;color:#fbbf24;}
+        .rdf-gn-amount{font-size:26px;font-weight:800;letter-spacing:-.02em;color:#f59e0b;margin-bottom:4px;}
+        .rdf-gn-amount span{font-size:14px;font-weight:600;color:rgba(245,158,11,.7);}
+        .rdf-gn-sub{font-size:12px;color:rgba(245,158,11,.6);line-height:1.55;}
+        .rdf-gn-row{display:flex;align-items:center;justify-content:space-between;margin-top:12px;padding-top:12px;border-top:1px solid rgba(245,158,11,.1);}
+        .rdf-gn-bal{font-size:12px;color:#475569;}
+        .rdf-gn-bal strong{color:#94a3b8;font-weight:600;}
+        .rdf-sec-label{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#475569;margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+        .rdf-sec-label::before{content:'';display:block;width:16px;height:2px;background:#6c63ff;border-radius:2px;}
+        .rdf-fg{display:flex;flex-direction:column;gap:7px;margin-bottom:18px;}
+        .rdf-fl{font-size:12.5px;font-weight:600;color:#94a3b8;display:flex;align-items:center;gap:6px;}
+        .rdf-fi{background:#111624;border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:13px 14px;font-size:13.5px;color:#f1f5f9;font-family:inherit;outline:none;transition:border-color .2s;width:100%;}
+        .rdf-fi:focus{border-color:rgba(108,99,255,.4);}
+        .rdf-fi::placeholder{color:#475569;}
+        .rdf-date-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:6px;}
+        .date-cell{aspect-ratio:1;border-radius:9px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#111624;border:1px solid rgba(255,255,255,0.07);cursor:pointer;transition:all .2s;user-select:none;}
         .date-cell:hover:not(.disabled){border-color:rgba(108,99,255,.35);background:rgba(108,99,255,.06);}
         .date-cell.sel{background:rgba(108,99,255,.15);border-color:rgba(108,99,255,.4);color:#a89cff;}
         .date-cell.disabled{opacity:.3;cursor:not-allowed;}
-        .dc-day{font-size:8px;font-weight:600;color:var(--text3);letter-spacing:.04em;margin-bottom:2px;}
-        .dc-num{font-size:13px;font-weight:800;}
+        .dc-day{font-size:8px;font-weight:600;color:#475569;letter-spacing:.04em;margin-bottom:2px;}
+        .dc-num{font-size:13px;font-weight:800;color:#f1f5f9;}
         .date-cell.sel .dc-day{color:#a89cff;}
-        .date-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
-        .date-nav-btn{background:var(--card);border:1px solid var(--border);color:var(--text2);width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:all .2s;}
-        .date-nav-btn:hover{border-color:rgba(108,99,255,.3);color:#a89cff;}
-        .date-month{font-size:13px;font-weight:700;color:var(--text);}
-        .time-section{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:18px;}
-        .time-tabs{display:flex;border-bottom:1px solid var(--border);}
-        .t-tab{flex:1;padding:11px;font-size:13px;font-weight:700;font-family:inherit;background:transparent;border:none;color:var(--text3);cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:6px;}
-        .t-tab.active{background:rgba(108,99,255,.1);color:#a89cff;}
-        .time-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:14px;}
-        .t-chip{padding:9px 8px;border-radius:8px;font-size:12px;font-weight:600;background:var(--bg3);border:1px solid var(--border2);color:var(--text2);cursor:pointer;transition:all .2s;text-align:center;user-select:none;}
-        .t-chip:hover{border-color:rgba(108,99,255,.3);color:#a89cff;}
-        .t-chip.sel{background:rgba(108,99,255,.14);border-color:rgba(108,99,255,.35);color:#a89cff;}
-        .t-chip.unavail{opacity:.3;cursor:not-allowed;}
-        .venue-note{font-size:11.5px;color:var(--text3);margin-top:6px;line-height:1.55;display:flex;align-items:flex-start;gap:7px;}
-        .venue-note-icon{font-size:13px;flex-shrink:0;margin-top:1px;}
-        .safety-mini{background:var(--card2);border:1px solid rgba(245,158,11,.12);border-radius:12px;padding:14px 16px;margin-bottom:28px;}
-        .sm-title{font-size:12px;font-weight:700;color:#f59e0b;margin-bottom:10px;display:flex;align-items:center;gap:6px;}
-        .sm-rule{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text2);margin-bottom:7px;line-height:1.4;}
-        .sm-rule:last-child{margin-bottom:0;}
-        .sm-dot{width:16px;height:16px;border-radius:50%;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.2);display:flex;align-items:center;justify-content:center;font-size:7px;color:#f59e0b;flex-shrink:0;}
-        .btn-request{width:100%;padding:16px;border-radius:14px;background:linear-gradient(135deg,#6c63ff,#9b59f5);border:none;color:white;font-size:15px;font-weight:800;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 6px 28px rgba(108,99,255,.4);transition:all .25s;margin-bottom:12px;}
-        .btn-request:hover{transform:translateY(-2px);box-shadow:0 10px 36px rgba(108,99,255,.55);}
-        .btn-request:disabled{opacity:.4;cursor:not-allowed;transform:none;box-shadow:none;}
-        .btn-cancel{width:100%;padding:14px;border-radius:12px;background:transparent;border:1px solid var(--border);color:var(--text2);font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;transition:all .2s;}
-        .btn-cancel:hover{background:rgba(255,255,255,.04);color:var(--text);}
+        .date-cell.sel .dc-num{color:#a89cff;}
+        .rdf-date-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+        .rdf-date-nav-btn{background:#111624;border:1px solid rgba(255,255,255,0.07);color:#94a3b8;width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:all .2s;}
+        .rdf-date-nav-btn:hover{border-color:rgba(108,99,255,.3);color:#a89cff;}
+        .rdf-date-month{font-size:13px;font-weight:700;color:#f1f5f9;}
+        .rdf-time-section{background:#111624;border:1px solid rgba(255,255,255,0.07);border-radius:12px;overflow:hidden;margin-bottom:18px;}
+        .rdf-time-tabs{display:flex;border-bottom:1px solid rgba(255,255,255,0.07);}
+        .rdf-t-tab{flex:1;padding:11px;font-size:13px;font-weight:700;font-family:inherit;background:transparent;border:none;color:#475569;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:6px;}
+        .rdf-t-tab.active{background:rgba(108,99,255,.1);color:#a89cff;}
+        .rdf-time-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:14px;}
+        .rdf-t-chip{padding:9px 8px;border-radius:8px;font-size:12px;font-weight:600;background:#0e1220;border:1px solid rgba(255,255,255,0.04);color:#94a3b8;cursor:pointer;transition:all .2s;text-align:center;user-select:none;}
+        .rdf-t-chip:hover{border-color:rgba(108,99,255,.3);color:#a89cff;}
+        .rdf-t-chip.sel{background:rgba(108,99,255,.14);border-color:rgba(108,99,255,.35);color:#a89cff;}
+        .rdf-t-chip.unavail{opacity:.3;cursor:not-allowed;}
+        .rdf-venue-note{font-size:11.5px;color:#475569;margin-top:6px;line-height:1.55;display:flex;align-items:flex-start;gap:7px;}
+        .rdf-safety{background:#161b2e;border:1px solid rgba(245,158,11,.12);border-radius:12px;padding:14px 16px;margin-bottom:28px;}
+        .rdf-sm-title{font-size:12px;font-weight:700;color:#f59e0b;margin-bottom:10px;display:flex;align-items:center;gap:6px;}
+        .rdf-sm-rule{display:flex;align-items:center;gap:8px;font-size:12px;color:#94a3b8;margin-bottom:7px;line-height:1.4;}
+        .rdf-sm-rule:last-child{margin-bottom:0;}
+        .rdf-sm-dot{width:16px;height:16px;border-radius:50%;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.2);display:flex;align-items:center;justify-content:center;font-size:7px;color:#f59e0b;flex-shrink:0;}
+        .rdf-btn-request{width:100%;padding:16px;border-radius:14px;background:linear-gradient(135deg,#6c63ff,#9b59f5);border:none;color:white;font-size:15px;font-weight:800;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 6px 28px rgba(108,99,255,.4);transition:all .25s;margin-bottom:12px;}
+        .rdf-btn-request:hover{transform:translateY(-2px);box-shadow:0 10px 36px rgba(108,99,255,.55);}
+        .rdf-btn-request:disabled{opacity:.4;cursor:not-allowed;transform:none;box-shadow:none;}
+        .rdf-btn-cancel{width:100%;padding:14px;border-radius:12px;background:transparent;border:1px solid rgba(255,255,255,0.07);color:#94a3b8;font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;transition:all .2s;}
+        .rdf-btn-cancel:hover{background:rgba(255,255,255,.04);color:#f1f5f9;}
+        .rdf-fan-call-info{background:linear-gradient(135deg,rgba(108,99,255,.08),rgba(155,89,245,.05));border:1px solid rgba(108,99,255,.15);border-radius:12px;padding:14px 16px;margin-bottom:28px;font-size:12.5px;color:#94a3b8;line-height:1.65;}
+        .rdf-fan-call-info strong{color:#a89cff;}
       `}</style>
 
-      <div style={{ background:"var(--bg)", minHeight:"100vh", fontFamily:"'Plus Jakarta Sans',sans-serif", color:"var(--text)" }}>
-
+      <div className="rdf-root">
         {/* NAV */}
-        <nav className="nav">
-          <button className="nav-back" onClick={() => router.back()}>← Back</button>
-          <a href="/" className="nav-logo">
-            <div className="nav-logo-icon">M</div>
-            <span className="nav-logo-name">mmeko</span>
+        <nav className="rdf-nav">
+          <button className="rdf-nav-back" onClick={onCancel}>← Back</button>
+          <a href="/" className="rdf-nav-logo">
+            <div className="rdf-nav-logo-icon">M</div>
+            <span className="rdf-nav-logo-name">mmeko</span>
           </a>
           <div style={{ width: 60 }} />
         </nav>
 
-        <div className="page">
+        <div className="rdf-page">
 
           {/* CREATOR STRIP */}
-          <div className="creator-strip">
-            <div className="cs-av">H<div className="cs-online" /></div>
-            <div className="cs-info">
-              <div className="cs-label">Requesting a meet with</div>
-              <div className="cs-name">Hailey Rae <span className="cs-badge">✓ Verified</span></div>
-              <div className="cs-handle">@haileyrae613</div>
+          <div className="rdf-strip">
+            <div className="rdf-av">
+              {creatorInitial}
+              <div className="rdf-online" />
             </div>
-            <div className="cs-type">
-              <div className="cs-type-tag">❤️ Fan Date</div>
+            <div>
+              <div className="rdf-cs-label">Requesting a meet with</div>
+              <div className="rdf-cs-name">{creatorName} <span className="rdf-cs-badge">✓ Verified</span></div>
+            </div>
+            <div className="rdf-cs-type">
+              <div className="rdf-type-tag">{typeTag}</div>
             </div>
           </div>
 
           {/* GOLD NOTICE */}
-          <div className="gold-notice">
-            <div className="gn-top">
-              <div className="gn-icon">💰</div>
-              <div className="gn-title">Payment held securely</div>
+          {!isFanCall ? (
+            <div className="rdf-gold">
+              <div className="rdf-gn-top">
+                <div style={{ fontSize: 20 }}>💰</div>
+                <div className="rdf-gn-title">Payment held securely</div>
+              </div>
+              <div className="rdf-gn-amount">{price.toLocaleString()} <span>GOLD</span></div>
+              <div className="rdf-gn-sub">Will be deducted from your balance and held in escrow until the meet is confirmed complete. You keep full protection.</div>
             </div>
-            <div className="gn-amount">15,000 <span>GOLD</span></div>
-            <div className="gn-sub">Will be deducted from your balance and held in escrow until the meet is confirmed complete. You keep full protection.</div>
-            <div className="gn-row">
-              <div className="gn-bal">Your balance: <strong>20,000 GOLD</strong></div>
-              <div style={{ fontSize:11, color:"rgba(245,158,11,.5)" }}>After: 5,000 GOLD</div>
+          ) : (
+            <div className="rdf-fan-call-info">
+              Fan Calls can be booked up to 5 days in advance 🙂 Once a booking request is sent, the creator has up to 24 hours to accept it. After the creator accepts, the <strong>call</strong> can be started anytime based on mutual availability within that booking.
             </div>
-          </div>
+          )}
 
           {/* SELECT DATE */}
-          <div className="sec-label">Select Date</div>
+          <div className="rdf-sec-label">Select Date</div>
           <div style={{ marginBottom: 18 }}>
-            <div className="date-nav">
-              <button className="date-nav-btn" onClick={prevMonth}>‹</button>
-              <div className="date-month">{MONTHS[viewMonth]} {viewYear}</div>
-              <button className="date-nav-btn" onClick={nextMonth}>›</button>
+            <div className="rdf-date-nav">
+              <button className="rdf-date-nav-btn" onClick={prevMonth}>‹</button>
+              <div className="rdf-date-month">{MONTHS[viewMonth]} {viewYear}</div>
+              <button className="rdf-date-nav-btn" onClick={nextMonth}>›</button>
             </div>
-            {/* Day headers */}
             <div style={{ display:"grid", gridTemplateColumns:"repeat(7,1fr)", gap:6, marginBottom:6 }}>
               {['SUN','MON','TUE','WED','THU','FRI','SAT'].map(d => (
-                <div key={d} style={{ fontSize:9, fontWeight:700, color:"var(--text3)", textAlign:"center", padding:"4px 0" }}>{d}</div>
+                <div key={d} style={{ fontSize:9, fontWeight:700, color:"#475569", textAlign:"center", padding:"4px 0" }}>{d}</div>
               ))}
             </div>
-            <div className="date-grid">{calCells}</div>
+            <div className="rdf-date-grid">{calCells}</div>
+            {date && (
+              <div style={{ fontSize:12, color:"#a89cff", marginTop:8, textAlign:"center" }}>
+                Selected: {new Date(date).toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric' })}
+              </div>
+            )}
           </div>
 
           {/* SELECT TIME */}
-          <div className="sec-label">Select Time</div>
-          <div className="time-section">
-            <div className="time-tabs">
-              <button className={`t-tab${curTimeTab === 'AM' ? ' active' : ''}`} onClick={() => setCurTimeTab('AM')}>🌞 AM</button>
-              <button className={`t-tab${curTimeTab === 'PM' ? ' active' : ''}`} onClick={() => setCurTimeTab('PM')}>🌙 PM</button>
+          <div className="rdf-sec-label">Select Time</div>
+          <div className="rdf-time-section">
+            <div className="rdf-time-tabs">
+              <button className={`rdf-t-tab${curTimeTab === 'AM' ? ' active' : ''}`} onClick={() => setCurTimeTab('AM')}>🌞 AM</button>
+              <button className={`rdf-t-tab${curTimeTab === 'PM' ? ' active' : ''}`} onClick={() => setCurTimeTab('PM')}>🌙 PM</button>
             </div>
-            <div className="time-grid">
-              {times.map(t => {
-                const avail = AVAIL_TIMES.has(t);
-                const isSel = selectedTime === t;
+            <div className="rdf-time-grid">
+              {timeChips.map(t => {
+                const val24 = convertTo24(t);
+                const isSel = time === val24;
                 return (
                   <div
                     key={t}
-                    className={`t-chip${!avail ? ' unavail' : ''}${isSel ? ' sel' : ''}`}
-                    onClick={() => { if (avail) setSelectedTime(t); }}
+                    className={`rdf-t-chip${isSel ? ' sel' : ''}`}
+                    onClick={() => setTime(val24)}
                   >{t}</div>
                 );
               })}
@@ -239,42 +339,61 @@ export default function RequestDetailsForm() {
           </div>
 
           {/* VENUE */}
-          <div className="fg">
-            <label className="fl">Venue <span className="req">*</span></label>
-            <input
-              type="text"
-              className="fi"
-              placeholder="e.g. Starbucks, Times Square, NYC..."
-              value={venue}
-              onChange={e => setVenue(e.target.value)}
-            />
-            <div className="venue-note">
-              <div className="venue-note-icon">📍</div>
-              Must be a public place — café, restaurant, hotel lobby, park, or similar. Private venues are not permitted.
+          {!isFanCall && (
+            <div className="rdf-fg">
+              <label className="rdf-fl">Venue <span style={{ color:"#ef4444", fontSize:11 }}>*</span></label>
+              <input
+                type="text"
+                className="rdf-fi"
+                placeholder="e.g. Starbucks, Times Square, NYC..."
+                value={venue}
+                onChange={e => setVenue(e.target.value)}
+              />
+              <div className="rdf-venue-note">
+                <div style={{ fontSize:13, flexShrink:0, marginTop:1 }}>📍</div>
+                Must be a public place — café, restaurant, hotel lobby, park, or similar. Private venues are not permitted.
+              </div>
             </div>
-          </div>
+          )}
 
           {/* SAFETY */}
-          <div className="safety-mini">
-            <div className="sm-title">⚠️ Before you send</div>
-            <div className="sm-rule"><div className="sm-dot">1</div>All meets are limited to <strong style={{ color:"var(--text)" }}>30 minutes</strong> — no exceptions</div>
-            <div className="sm-rule"><div className="sm-dot">2</div>Must take place in a <strong style={{ color:"var(--text)" }}>public venue only</strong></div>
-            <div className="sm-rule"><div className="sm-dot">3</div>Your gold is held securely — <strong style={{ color:"var(--text)" }}>released only after the meet</strong></div>
+          <div className="rdf-safety">
+            <div className="rdf-sm-title">⚠️ Before you send</div>
+            {!isFanCall && (
+              <>
+                <div className="rdf-sm-rule"><div className="rdf-sm-dot">1</div>All meets are limited to <strong style={{ color:"#f1f5f9" }}>30 minutes</strong> — no exceptions</div>
+                <div className="rdf-sm-rule"><div className="rdf-sm-dot">2</div>Must take place in a <strong style={{ color:"#f1f5f9" }}>public venue only</strong></div>
+                <div className="rdf-sm-rule"><div className="rdf-sm-dot">3</div>Your gold is held securely — <strong style={{ color:"#f1f5f9" }}>released only after the meet</strong></div>
+              </>
+            )}
+            {isFanCall && (
+              <>
+                <div className="rdf-sm-rule"><div className="rdf-sm-dot">1</div>Calls are <strong style={{ color:"#f1f5f9" }}>billed per minute</strong></div>
+                <div className="rdf-sm-rule"><div className="rdf-sm-dot">2</div>Ensure a <strong style={{ color:"#f1f5f9" }}>stable internet connection</strong> before starting</div>
+                <div className="rdf-sm-rule"><div className="rdf-sm-dot">3</div>Be respectful and follow <strong style={{ color:"#f1f5f9" }}>platform guidelines</strong></div>
+              </>
+            )}
           </div>
 
           {/* BUTTONS */}
           <button
-            className="btn-request"
-            disabled={!isFormValid || submitted}
-            onClick={handleRequest}
-            style={submitted ? { background:"linear-gradient(135deg,#22c55e,#16a34a)" } : {}}
+            className="rdf-btn-request"
+            disabled={!isFormValid || loading}
+            onClick={handleSubmit}
           >
-            {submitted ? '✓ Request Sent!' : '🎯 Send Request'}
+            {loading ? (
+              <PacmanLoader color="#ffffff" loading={true} size={10} />
+            ) : (
+              <>
+                {isFanCall ? "📞" : creatorType.toLowerCase() === "fan date" ? "💕" : "🎯"}
+                {loading ? "Processing..." : `Request ${creatorType}`}
+              </>
+            )}
           </button>
-          <button className="btn-cancel" onClick={() => router.back()}>Cancel</button>
+          <button className="rdf-btn-cancel" onClick={onCancel}>Cancel</button>
 
         </div>
       </div>
     </>
   );
-}
+};
