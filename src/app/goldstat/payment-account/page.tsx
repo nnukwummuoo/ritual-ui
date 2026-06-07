@@ -357,6 +357,46 @@ export default function PaymentAccountPage() {
                   <label className="text-left text-sm text-gray-300">Country of Residence</label>
                   <CountrySelect onSelectCountry={(country) => setFormData({ ...formData, country })} />
                 </div>
+
+                {/* Choose Stablecoin */}
+<div className="flex flex-col gap-1">
+  <label className="text-left text-sm text-gray-300">Choose Stablecoin</label>
+  <div className="flex gap-3">
+    {["USDT (BEP-20)", "USDC (BEP-20)"].map((coin) => (
+      <div
+        key={coin}
+        onClick={() => setFormData({ ...formData, currency: coin })}
+        className={`flex-1 border rounded-lg px-4 py-3 text-sm font-semibold cursor-pointer transition-all text-center ${
+          formData.currency === coin
+            ? "border-purple-500 bg-purple-500/10 text-purple-400"
+            : "border-gray-600 bg-gray-700 text-gray-300 hover:border-gray-400"
+        }`}
+      >
+        {coin}
+      </div>
+    ))}
+  </div>
+</div>
+
+{/* Choose Network */}
+<div className="flex flex-col gap-1">
+  <label className="text-left text-sm text-gray-300">Choose Network</label>
+  <div
+    className="border border-purple-500 bg-purple-500/10 rounded-lg px-4 py-3 text-sm font-semibold text-purple-400 cursor-default"
+  >
+    ✓ BNB Smart Chain
+  </div>
+  <div className="flex items-start gap-2 bg-yellow-900/20 border border-yellow-500/30 rounded-lg px-3 py-2.5 mt-1">
+    <span className="text-yellow-400 text-sm flex-shrink-0">⚠️</span>
+    <p className="text-yellow-400 text-xs leading-relaxed">
+      Withdrawals are only processed through <strong>BNB Smart Chain (BEP-20)</strong>. Sending to any other network will result in permanent loss of funds.
+    </p>
+  </div>
+</div>
+
+{/* Wallet Address */}
+<div className="flex flex-col gap-1">
+  <label className="text-left text-sm text-gray-300">Wallet Address</label>
                
                 <div className="flex flex-col gap-1">
                   <label className="text-left text-sm text-gray-300">Wallet Address</label>
@@ -383,6 +423,7 @@ export default function PaymentAccountPage() {
                     <p className="text-red-400 text-xs mt-1">{walletError}</p>
                   )}
                 </div>
+                 </div>
 
                 <label className="flex items-start gap-2 text-sm text-gray-400">
                   <input
@@ -405,12 +446,12 @@ export default function PaymentAccountPage() {
             </div>
           </div>
 
-          {/* Right Column - Withdrawal Guidelines */}
+          {/* Right Column - Withdrawal Guidelines 
           <div className="space-y-6">
             <div className="bg-[#111624] rounded-lg p-6">
               <h2 className="text-xl font-semibold mb-4">🌍 Guidelines for Withdrawing Crypto</h2>
               
-              {/* Filipina creators Section */}
+              {/* Filipina creators Section 
               <div className="mb-6">
                 <h3 className="text-lg font-medium text-blue-400 mb-3">🇵🇭 For Filipino Creators</h3>
                 <div className="space-y-3 text-sm">
@@ -445,7 +486,7 @@ export default function PaymentAccountPage() {
                 </div>
               </div>
 
-               {/* Important Notice */}
+               {/* Important Notice 
               <div className="bg-red-900/20 border border-red-500/30 rounded-lg p-4">
                 <h4 className="font-medium text-red-400 mb-2">⚠ Important:</h4>
                 <ul className="list-disc list-inside space-y-1 text-sm text-gray-300">
@@ -455,7 +496,7 @@ export default function PaymentAccountPage() {
                 </ul>
               </div>
 
-              {/* Nigerian Creators Section */}
+              {/* Nigerian Creators Section *
               <div className="mb-6">
                 <h3 className="text-lg font-medium text-green-400 mb-3">🇳🇬 For Nigerian Creators</h3>
                 <div className="space-y-3 text-sm">
@@ -492,7 +533,7 @@ export default function PaymentAccountPage() {
                 </div>
               </div>
 
-              {/* Important Notice */}
+              {/* Important Notice *
               <div className="bg-red-900/20 border border-red-500/30 rounded-lg p-4">
                 <h4 className="font-medium text-red-400 mb-2">⚠ Important:</h4>
                 <ul className="list-disc list-inside space-y-1 text-sm text-gray-300">
@@ -500,11 +541,18 @@ export default function PaymentAccountPage() {
                   <li>Address Format: The "USDT BNB Smart Chain" address typically starts with "0x".</li>
                   <li>Crypto transactions are irreversible.</li>
                 </ul>
+                
               </div>
+              
             </div>
+            
           </div>
+          */}
         </div>
       </div>
     </div>
+    
+    
   );
+  
 }
