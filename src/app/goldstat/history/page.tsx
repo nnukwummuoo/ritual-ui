@@ -789,18 +789,15 @@ const HistoryPage = () => {
                 <p className="text-sm text-gray-300"><strong>Name:</strong> {paymentAccountDetails.fullName}</p>
                 <p className="text-sm text-gray-300"><strong>Email:</strong> {paymentAccountDetails.email}</p>
                 <p className="text-sm text-gray-300"><strong>Country:</strong> {paymentAccountDetails.country}</p>
-                <p className="text-sm text-gray-300"><strong>Crypto:</strong> {(() => {
-                  const cryptoType = paymentAccountDetails.cryptoType;
-                  if (!cryptoType) return 'Crypto';
-
-                  // Convert USDT_BEP20 to USDT (BEP20)
-                  if (cryptoType.includes('_')) {
-                    const [currency, network] = cryptoType.split('_');
-                    return `${currency} (${network})`;
-                  }
-
-                  return cryptoType;
-                })()}</p>
+               <p className="text-sm text-gray-300"><strong>Stablecoin:</strong> {paymentAccountDetails.currency || (() => {
+  const cryptoType = paymentAccountDetails.cryptoType;
+  if (!cryptoType) return 'Crypto';
+  if (cryptoType.includes('_')) {
+    const [currency, network] = cryptoType.split('_');
+    return `${currency} (${network})`;
+  }
+  return cryptoType;
+})()}</p>
                 <p className="text-sm text-gray-300 break-all"><strong>Wallet:</strong> {paymentAccountDetails.walletAddress}</p>
               </div>
             )}
