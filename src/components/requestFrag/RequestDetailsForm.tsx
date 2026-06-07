@@ -314,9 +314,9 @@ export const RequestDetailsForm: React.FC<RequestDetailsFormProps> = ({
               </div>
               <div className="rdf-gn-amount">{price.toLocaleString()} <span>GOLD</span></div>
             <div className="rdf-gn-sub">
-  Will be deducted from your balance and held in escrow until the meet is confirmed complete. You keep full protection.
+  Will be deducted from your balance and held in escrow until the <strong style={{ color: "rgba(245,158,11,.9)" }}>{creatorType.toLowerCase() === "fan date" ? "date" : "meet & greet"}</strong> is confirmed complete. You keep full protection.
   <br /><br />
-  Once a booking request is sent, the creator has up to 24 hours to accept it. After the creator accepts, the <strong style={{ color: "rgba(245,158,11,.9)" }}>{creatorType.toLowerCase() === "fan date" ? "date" : "meet & greet"}</strong> can take place at anytime based on mutual availability within that booking.
+  Once a booking request is sent, the creator has up to 24 hours to accept it. After the creator accepts, the <strong style={{ color: "rgba(245,158,11,.9)" }}>{creatorType.toLowerCase() === "fan date" ? "date" : "meet"}</strong> can take place at anytime based on mutual availability within that booking.
 </div>
 <div className="rdf-gn-row">
   <div className="rdf-gn-bal">Your balance: <strong>{userBalance.toLocaleString()} GOLD</strong></div>
@@ -442,7 +442,20 @@ export const RequestDetailsForm: React.FC<RequestDetailsFormProps> = ({
       </p>
       <div className="flex flex-col gap-3">
         <button
-          onClick={() => { setShowVerifyPopup(false); window.location.href = "/user_id/fan-verification"; }}
+          onClick={() => {
+  setShowVerifyPopup(false);
+  try {
+    const raw = localStorage.getItem("login");
+    if (raw) {
+      const data = JSON.parse(raw);
+      const username = data?.username || "";
+      const cleanUsername = String(username).replace(/^@/, "");
+      window.location.href = `/@${cleanUsername}/fan-verification`;
+      return;
+    }
+  } catch {}
+  window.location.href = "/fan-verification";
+}}
           className="w-full py-3 rounded-xl text-sm font-bold text-white"
           style={{ background: "linear-gradient(135deg,#6c63ff,#9b59f5)" }}
         >

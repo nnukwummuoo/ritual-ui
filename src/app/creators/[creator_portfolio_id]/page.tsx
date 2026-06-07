@@ -140,6 +140,7 @@ const [urlCopied, setUrlCopied] = useState(false);
   const profile = useSelector((state: RootState) => state.profile);
   const vipStatus = useSelector((s: any) => s.vip?.vipStatus);
   const vipStatusFromCreator = creator?.isVip ? { isVip: creator.isVip, vipEndDate: creator.vipEndDate } : null;
+  const isFanVerified = (profile as any).fan_verified === true;
 
   const [user, setUser] = useState<{ refreshtoken: string } | null>(null);
   const [showmode, setshowcreator] = useState(false);
@@ -912,7 +913,7 @@ const [urlCopied, setUrlCopied] = useState(false);
         )}
 
         {showRequestDetails && (
-          <RequestDetailsForm onDone={handleRequestDetailsSubmit} onCancel={() => setShowRequestDetails(false)} creatorName={creator.name} creatorType={creator.hosttype} price={parseFloat(creator.price) || 0} creatorPhoto={creator.userPhotolink || ""} creatorActive={creator.active || false} userBalance={parseFloat(profile.balance) || 0} />
+          <RequestDetailsForm onDone={handleRequestDetailsSubmit} onCancel={() => setShowRequestDetails(false)} creatorName={creator.name} creatorType={creator.hosttype} price={parseFloat(creator.price) || 0} creatorPhoto={creator.userPhotolink || ""} creatorActive={creator.active || false} userBalance={parseFloat(profile.balance) || 0} isFanVerified={isFanVerified} />
         )}
 
         {showSharePopup && (
