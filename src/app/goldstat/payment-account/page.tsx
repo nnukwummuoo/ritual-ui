@@ -395,8 +395,6 @@ export default function PaymentAccountPage() {
 </div>
 
 {/* Wallet Address */}
-<div className="flex flex-col gap-1">
-  <label className="text-left text-sm text-gray-300">Wallet Address</label>
                
                 <div className="flex flex-col gap-1">
                   <label className="text-left text-sm text-gray-300">Wallet Address</label>
@@ -423,7 +421,6 @@ export default function PaymentAccountPage() {
                     <p className="text-red-400 text-xs mt-1">{walletError}</p>
                   )}
                 </div>
-                 </div>
 
                 <label className="flex items-start gap-2 text-sm text-gray-400">
                   <input
@@ -445,114 +442,8 @@ export default function PaymentAccountPage() {
               </form>
             </div>
           </div>
-
-          {/* Right Column - Withdrawal Guidelines 
-          <div className="space-y-6">
-            <div className="bg-[#111624] rounded-lg p-6">
-              <h2 className="text-xl font-semibold mb-4">🌍 Guidelines for Withdrawing Crypto</h2>
-              
-              {/* Filipina creators Section 
-              <div className="mb-6">
-                <h3 className="text-lg font-medium text-blue-400 mb-3">🇵🇭 For Filipino Creators</h3>
-                <div className="space-y-3 text-sm">
-                  <div>
-                    <h4 className="font-medium text-gray-200 mb-1">1. Recommended Wallet:</h4>
-                    <p className="text-gray-300">Coin.ph.</p>
-                  </div>
-                  
-                  <div>
-                    <h4 className="font-medium text-gray-200 mb-1">2. Open Coin.ph: Launch the app and ensure you are on main wallet screen. </h4>
-                    </div>
-                    <div>
-                    <h4 className="font-medium text-gray-200 mb-1">3. Tap "Deposit" and then tap "Recieve Crypto" </h4>
-                    <ol className="list-decimal list-inside space-y-1 text-gray-300 ml-2">
-                      <li>Tap the toggle/search icon in the top-right corner.</li>
-                      <li>Search for "USDT".</li>
-                      <li>Locate the option that says "USDT Tether".</li>
-                      <li>Toggle it and choose "BNB Smart Chain" .</li>
-                    </ol>
-                  </div>
-                  
-                  <div>
-                    <h4 className="font-medium text-gray-200 mb-1">3. Get the Wallet Address:</h4>
-                    <ul className="list-disc list-inside space-y-1 text-gray-300 ml-2">
-                      <li>Copy the "USDT BNB Smart Chain" address shown.</li>
-                        <li>Paste on mmeko "wallet address" field</li>
-                       <li>Save account details</li>
-                       <li>Click withdraw</li>
-                       <li>Receive funds with 24 hours</li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-
-               {/* Important Notice 
-              <div className="bg-red-900/20 border border-red-500/30 rounded-lg p-4">
-                <h4 className="font-medium text-red-400 mb-2">⚠ Important:</h4>
-                <ul className="list-disc list-inside space-y-1 text-sm text-gray-300">
-                  <li>Verify Network: Ensure the network is BNB Smart Chain (not ERC20/Ethereum) to avoid loss of funds.</li>
-                  <li>Address Format: The "USDT BNB Smart Chain" address typically starts with "0x".</li>
-                  <li>Crypto transactions are irreversible.</li>
-                </ul>
-              </div>
-
-              {/* Nigerian Creators Section *
-              <div className="mb-6">
-                <h3 className="text-lg font-medium text-green-400 mb-3">🇳🇬 For Nigerian Creators</h3>
-                <div className="space-y-3 text-sm">
-                  <div>
-                    <h4 className="font-medium text-gray-200 mb-1">1. Recommended Wallet:</h4>
-                    <p className="text-gray-300">Trust Wallet.</p>
-                  </div>
-                  
-                  <div>
-                    <h4 className="font-medium text-gray-200 mb-1">2. Open Trust wallet: Launch the app and ensure you are on main wallet screen. </h4>
-                    </div>
-                    <div>
-                    <h4 className="font-medium text-gray-200 mb-1">3. Add/Find USDT BEP20: </h4>
-                    <ol className="list-decimal list-inside space-y-1 text-gray-300 ml-2">
-                      <li>Tap the toggle/search icon in the top-right corner.</li>
-                      <li>Search for "USDT".</li>
-                      <li>Locate the option that says "USDT BNB Smart Chain".</li>
-                      <li>Toggle it on to add it to your main screen.</li>
-                    </ol>
-                  </div>
-                  
-                  <div>
-                    <h4 className="font-medium text-gray-200 mb-1">3. Get the Wallet Address:</h4>
-                    <ul className="list-disc list-inside space-y-1 text-gray-300 ml-2">
-                      <li>Tap on the "USDT BNB Smart Chain" token from your list.</li>
-                      <li>Tap the "Receive" button.</li>
-                       <li>Copy the address shown</li>
-                       <li>Paste on mmeko "wallet address" field</li>
-                       <li>Save account details</li>
-                       <li>Click withdraw</li>
-                       <li>Receive funds with 24 hours</li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-
-              {/* Important Notice *
-              <div className="bg-red-900/20 border border-red-500/30 rounded-lg p-4">
-                <h4 className="font-medium text-red-400 mb-2">⚠ Important:</h4>
-                <ul className="list-disc list-inside space-y-1 text-sm text-gray-300">
-                  <li>Verify Network: Ensure the network is BNB Smart Chain (not ERC20/Ethereum) to avoid loss of funds.</li>
-                  <li>Address Format: The "USDT BNB Smart Chain" address typically starts with "0x".</li>
-                  <li>Crypto transactions are irreversible.</li>
-                </ul>
-                
-              </div>
-              
-            </div>
-            
-          </div>
-          */}
         </div>
       </div>
     </div>
-    
-    
   );
-  
 }
