@@ -13,14 +13,15 @@ import { Copy, Check } from "lucide-react";
 
 // Icons for tags
 const tagIcons: Record<string, React.ReactNode> = {
-  "Casual Fan": null,
-  "Hot Choice": <span role="img" aria-label="hot">🔥</span>,
-  "Most Popular": <span role="img" aria-label="star">⭐</span>,
+  "Casual Fan": <span role="img" aria-label="smile">🙂</span>,
+  "Supporter": <span role="img" aria-label="hot">🔥</span>,
+  "Member": <span role="img" aria-label="star">⭐</span>,
   "Fan Favorite": <span role="img" aria-label="heart">💖</span>,
-  "Best Value": <span role="img" aria-label="key">🔑</span>,
+  "Access": <span role="img" aria-label="key">🔑</span>,
   "VIP": <span role="img" aria-label="diamond">💎</span>,
   "Elite": <span role="img" aria-label="crown">👑</span>,
-  "Pro": <span role="img" aria-label="briefcase">💼</span>,
+  "Black Card": <span role="img" aria-label="heart">🖤</span>,
+  "Sovereign": <span role="img" aria-label="Diamond">💠</span>,
 };
 
 const Topup: React.FC = () => {

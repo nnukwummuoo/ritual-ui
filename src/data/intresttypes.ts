@@ -74,12 +74,19 @@ interface golds {
 //     }
 // ]
 export const golds = [
+  {
+    id: "pack_50000",
+    amount: "$2250",
+    value: "50000",
+    price: `${50000}`,
+    tag: "Sovereign",
+  },
    {
     id: "pack_20000",
     amount: "$950",
     value: "20000",
     price: `${20000}`,
-    tag: "Pro",
+    tag: "Black Card",
   },
   {
     id: "pack_10000",
@@ -100,21 +107,21 @@ export const golds = [
     amount: "$66",
     value: "1000",
     price: `${1000}`,
-    tag: "Best Value",
+    tag: "Access",
   },
   {
     id: "pack_400",
     amount: "$36",
     value: "400",
     price: `${400}`,
-    tag: "Most Popular",
+    tag: "Member",
   },
   {
     id: "pack_200",
     amount: "$20",
     value: "200",
     price: `${200}`,
-    tag: "Hot Choice",
+    tag: "Supporter",
   },
   {
     id: "pack_100",
