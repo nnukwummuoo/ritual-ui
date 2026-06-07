@@ -906,7 +906,7 @@ const HistoryPage = () => {
             </div>
             <h2 className="text-2xl font-bold mb-4 text-white">Withdrawal Submitted!</h2>
             <p className="text-gray-300 mb-6">
-              Withdrawal submitted successfully. Processing typically completes within 72 hours
+              Withdrawal submitted successfully. Processing typically completes within 24 hours
             </p>
             <button
               className="bg-gradient-to-r from-green-600 to-green-500 hover:from-green-500 hover:to-green-400 transition-all text-white font-bold px-6 py-3 rounded-lg"
