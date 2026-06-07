@@ -366,7 +366,7 @@ export default function PaymentAccountPage() {
       <div
         key={coin}
         onClick={() => setFormData({ ...formData, currency: coin })}
-        className={`flex-1 border rounded-lg px-4 py-3 text-sm font-semibold cursor-pointer transition-all text-center ${
+        className={`flex-1 border rounded-lg px-2 py-3 text-xs sm:text-sm sm:px-4 font-semibold cursor-pointer transition-all text-center ${
           formData.currency === coin
             ? "border-purple-500 bg-purple-500/10 text-purple-400"
             : "border-gray-600 bg-gray-700 text-gray-300 hover:border-gray-400"
