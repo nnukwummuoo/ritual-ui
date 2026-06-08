@@ -710,19 +710,16 @@ const HistoryPage = () => {
                       Pending
                     </span>
                     <p className="text-xs text-gray-400 mt-1">
-                      {(() => {
-                        const cryptoType = request.credentials?.cryptoType;
-                        if (!cryptoType) return 'Crypto';
-
-                        // Convert USDT_BEP20 to USDT (BEP20)
-                        if (cryptoType.includes('_')) {
-                          const [currency, network] = cryptoType.split('_');
-                          return `${currency} (${network})`;
-                        }
-
-                        return cryptoType;
-                      })()}
-                    </p>
+  {request.credentials?.currency || (() => {
+    const cryptoType = request.credentials?.cryptoType;
+    if (!cryptoType) return 'Crypto';
+    if (cryptoType.includes('_')) {
+      const [currency, network] = cryptoType.split('_');
+      return `${currency} (${network})`;
+    }
+    return cryptoType;
+  })()}
+</p>
                   </div>
                 </div>
               </div>
