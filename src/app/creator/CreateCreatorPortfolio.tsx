@@ -577,6 +577,18 @@ export default function CreateCreatorPortfolio() {
           <section className="mb-8">
             <SectionLabel>Duration</SectionLabel>
 
+            <p
+  style={{
+    fontSize: 12,
+    color: "rgba(148,163,184,.85)",
+    marginTop: 6,
+    marginBottom: 12,
+    lineHeight: 1.4,
+  }}
+>
+  For premium creators, fans can seamlessly continue their experience by sending another booking request at the end of each session if both parties wish to continue.
+</p>
+
             {/* ── CHANGED: step 5, visual progress bar ── */}
             <div className="flex items-center gap-3">
               <button
