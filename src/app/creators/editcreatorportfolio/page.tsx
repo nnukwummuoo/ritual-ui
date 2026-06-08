@@ -731,7 +731,7 @@ export default function Editcreator() {
     lineHeight: 1.4,
   }}
 >
-  For premium creators, fans can seamlessly continue their experience by sending another booking request at the end of each session if both parties wish to continue.
+  For premium creators, fans can seamlessly extend their experience by sending an additional structured booking request at the end of each session if both parties wish to continue.
 </p>
 
             <div className="flex items-center gap-3">

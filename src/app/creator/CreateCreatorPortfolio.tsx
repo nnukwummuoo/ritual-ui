@@ -586,7 +586,7 @@ export default function CreateCreatorPortfolio() {
     lineHeight: 1.4,
   }}
 >
-  For premium creators, fans can seamlessly continue their experience by sending another booking request at the end of each session if both parties wish to continue.
+For premium creators, fans can seamlessly extend their experience by sending an additional structured booking request at the end of each session if both parties wish to continue.
 </p>
 
             {/* ── CHANGED: step 5, visual progress bar ── */}
