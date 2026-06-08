@@ -722,6 +722,18 @@ export default function Editcreator() {
               Duration
             </h2>
 
+            <p
+  style={{
+    fontSize: 12,
+    color: "rgba(148,163,184,.85)",
+    marginTop: 6,
+    marginBottom: 12,
+    lineHeight: 1.4,
+  }}
+>
+  For premium creators, fans can seamlessly continue their experience by sending another booking request at the end of each session if both parties wish to continue.
+</p>
+
             <div className="flex items-center gap-3">
               <button
                 type="button"
