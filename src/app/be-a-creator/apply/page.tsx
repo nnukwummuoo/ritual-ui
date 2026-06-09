@@ -268,7 +268,7 @@ export default function VerifiedUserForm() {
           <div className="expect-title">🔔 What happens when you&apos;re approved</div>
           <div className="expect-item"><div className="expect-icon ei-purple">📩</div><div className="expect-text"><strong>You&apos;ll get notified immediately</strong> — a notification the moment your application is approved or if we need anything from you.</div></div>
           <div className="expect-item"><div className="expect-icon ei-green">✅</div><div className="expect-text"><strong>Verified creator badge</strong> — your profile gets a verified badge, building instant trust with fans browsing mmeko.</div></div>
-          <div className="expect-item"><div className="expect-icon ei-teal">💸</div><div className="expect-text"><strong>Start accepting fan requests</strong> — you can set your price, choose your availability and start earning from fan meet &amp; greets immediately.</div></div>
+          <div className="expect-item"><div className="expect-icon ei-teal">💸</div><div className="expect-text"><strong>Start accepting fan requests</strong> — you can set up your portfolio, price, choose your availability and start earning from fan meet &amp; greets immediately.</div></div>
           <div className="expect-item"><div className="expect-icon ei-gold">⚡</div><div className="expect-text"><strong>Instant payouts</strong> — every fan request is paid upfront. You request a cashout anytime and it&apos;s instant.</div></div>
         </div>
         <div className="dos-card">

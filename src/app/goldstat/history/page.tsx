@@ -202,7 +202,8 @@ const HistoryPage = () => {
             country: paymentAccountDetails.country,
             cryptoType: paymentAccountDetails.cryptoType,
             walletAddress: paymentAccountDetails.walletAddress,
-          }
+            currency: paymentAccountDetails.currency || null,
+          },
         })
       });
 
