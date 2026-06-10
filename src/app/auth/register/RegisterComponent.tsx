@@ -25,28 +25,63 @@ import { useDeviceFingerprint } from "@/hooks/useDeviceFingerprint";
 
 // Word list for generating a mnemonic phrase (unchanged)
 const wordList = [
-  // Igbo
-  "chi", "aku", "obi", "mma", "nne", "nna", "nwa", "elu", "ala", "uzo", "ulo", "anu", "mmiri", "oku", "igwe", "osisi", "ite", "ugwu", "igweoma", "ike", "ife", "eze", "ada", "uzochi", "odogwu", "obioma", "nwanne", "okwu", "ego", "uto", "mmirioma", "nkume", "ugwuoma", "onyema", "olile", "ndidi", "obiomaeze", "chukwu", "onyinye", "okwuoma", "okike", "uwa", "nnamdi", "oge", "udo", "ihe", "isi", "aka", "ukwu", "anya",
-
-  // Yoruba
-  "omo", "iya", "baba", "orun", "ile", "omi", "ina", "igi", "orunmila", "orunko", "ire", "ayo", "ife", "oro", "owon", "ojo", "orunke", "agbara", "ebi", "ireti", "ojooma", "ore", "ogo", "ala", "irele", "awon", "aseyori", "alafia", "otito", "igboya",
-
-  // Hausa
-  "uba", "uwa", "yaro", "yarinya", "ruwa", "wuta", "sama", "kasa", "gida", "hanya", "zuciya", "zuciyarmu", "sarki", "mace", "namiji", "gari", "rana", "dare", "lafiya", "arziki", "karfi", "hakuri", "gaskiya", "soyayya", "bege", "kyauta", "aboki", "karfi", "duniya", "lokaci",
-
-  // Ghana (Twi)
-  "agya", "ena", "abofra", "nsuo", "ogya", "soro", "asaase", "ofie", "kwan", "akoma", "ohene", "obaa", "barima", "anadwo", "owia", "osrane", "adesua", "nkrabea", "nkwagye", "nokware", "aseda", "ahonya", "anigye", "animuonyam", "asomdwoe", "bere", "wiase",
-
-  // Zulu
-  "Inhliziyo", "Indlu", "Amanzi", "Inyama", "Ekuseni", "Usuku", "Ubusuku", "Ingane", "Umgwaqo", "Ikhanda", "Umlenze", "Isandla", "Umlilo", "Ukudla", "Umngane", "Isikhathi", "Umhlaba", "Indoda", "Owesifazane", "Imali", "Incwadi", "Inhlanzi", "Ingubo", "Amandla", "Ithemba", "Uthando", "Injabulo", "Ilanga", "Izulu", "Ukuphila",
-
-  // Swahili
-  "Moyo", "Nyumba", "Maji", "Nyama", "Asubuhi", "Siku", "Usiku", "Mtoto", "Barabara", "Kichwa", "Mguu", "Mkono", "Moto", "Chakula", "Rafiki", "Wakati", "Dunia", "Mwanaume", "Mwanamke", "Pesa", "Kitabu", "Samaki", "Nguo", "Nguvu", "Nuru", "Upendo", "Furaha", "Jua", "Mbingu", "Maisha",
-
-  // Tagalog (Philippines)
-  "Araw", "Buwan", "Tubig", "Apoy", "Hangin", "Lupa", "Ulan", "Gubat", "Bundok", "Ilog", "Puso", "Mabuhay", "Kamay", "Ulo", "Katawan", "Mata", "Saya", "Lungkot", "Galit", "Ginhawa", "Umaga", "Gabi", "Oras", "Lakad", "Takbo", "Bahay", "Kaibigan", "Salita", "Buhay", "Mundo"
+  "apple","ball","cat","dog","egg","fish","goat","hat","ice","jam",
+  "kite","lamp","moon","nest","orange","pen","queen","rain","sun","tree",
+  "umbrella","van","water","xray","yarn","zebra","book","chair","desk","door",
+  "floor","glass","house","key","leaf","milk","note","oven","plate","road",
+  "shoe","table","unit","vase","wall","yard","zero","air","bag","car",
+  "day","ear","fan","game","hand","iron","job","king","line","man",
+  "net","oil","park","quiz","ring","salt","time","use","voice","wind",
+  "year","zone","bread","cloud","dust","fire","gold","hill","ink","joy",
+  "love","map","name","open","pool","rice","sand","town","user","view",
+  "wood","young","baby","cold","dark","easy","fast","good","hard","idea",
+  "kind","long","more","new","old","play","quick","red","small","tall",
+  "up","very","white","yellow","blue","green","black","brown","silver","gray",
+  "happy","sad","angry","calm","peace","hope","fear","dream","wish","smile",
+  "laugh","cry","sing","dance","walk","run","jump","sit","stand","sleep",
+  "wake","eat","drink","cook","read","write","draw","paint","build","fix",
+  "open","close","start","stop","push","pull","carry","lift","drop","throw",
+  "catch","hold","touch","feel","see","hear","smell","taste","think","know",
+  "learn","teach","work","rest","play","study","drive","ride","fly","swim",
+  "climb","fall","grow","cut","break","make","give","take","send","call",
+  "ask","answer","tell","say","talk","listen","look","watch","show","find",
+  "lose","win","begin","end","stay","go","come","leave","enter","exit",
+  "rise","move","stand","sit","walk","run","jump","sleep","dream","light",
+  "dark","hot","cold","wet","dry","soft","hard","high","low","big",
+  "small","short","long","wide","narrow","deep","shallow","near","far","early",
+  "late","young","old","new","used","clean","dirty","full","empty","strong",
+  "weak","rich","poor","fast","slow","right","left","north","south","east",
+  "west","morning","noon","night","day","week","month","year","time","life",
+  "death","man","woman","boy","girl","child","friend","family","people","city",
+  "town","village","country","world","earth","sky","sea","river","lake","mountain",
+  "forest","field","garden","road","street","bridge","school","work","home","shop",
+  "market","bank","office","room","bed","chair","table","door","window","wall",
+  "floor","roof","light","fan","clock","phone","radio","tv","computer","music",
+  "song","film","game","sport","ball","team","goal","win","lose","food",
+  "drink","fruit","meat","rice","bread","milk","water","tea","coffee","sugar",
+  "salt","spice","sweet","soup","cake","fish","egg","oil","butter","money",
+  "coin","note","card","price","cost","buy","sell","pay","save","love",
+  "hope","peace","joy","fear","dream","wish","smile","laugh","cry","clouds",
+  "storm","rainbow","riverbank","shore","beach","desert","valley","cave","stone","rock",
+  "metal","iron","steel","wood","paper","pen","pencil","brush","color","paint",
+  "picture","photo","camera","screen","keyboard","mouse","button","switch","lamp","lightbulb",
+  "engine","wheel","tire","car","bus","train","ship","boat","plane","rocket",
+  "star","planet","space","galaxy","universe","atom","cell","blood","heart","brain",
+  "body","arm","leg","hand","foot","eye","ear","nose","mouth","face",
+  "hair","skin","bone","muscle","voice","sound","noise","music","song","melody",
+  "rhythm","beat","dance","move","step","jump","run","walk","sit","stand",
+  "rest","sleep","dream","wake","think","plan","goal","task","job","work",
+  "play","fun","joy","laugh","smile","cry","tear","sad","angry","calm",
+  "peace","hope","love","care","help","share","give","take","send","call",
+  "text","chat","talk","listen","hear","see","look","watch","show","find",
+  "lose","win","begin","end","start","stop","open","close","push","pull",
+  "carry","lift","drop","throw","catch","hold","touch","feel","taste","smell",
+  "hot","cold","warm","cool","wet","dry","soft","hard","light","dark",
+  "big","small","short","long","wide","narrow","deep","shallow","high","low",
+  "early","late","young","old","new","used","clean","dirty","full","empty",
+  "strong","weak","rich","poor","fast","slow","right","left","north","south",
+  "east","west","day","night","week","month","year","time","life","death"
 ];
-
 // Function to generate a 12-word secret phrase (unchanged)
 const generateSecretPhrase = (): string[] => {
   const phrase = new Set<string>();
