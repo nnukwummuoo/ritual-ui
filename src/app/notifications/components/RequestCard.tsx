@@ -1646,7 +1646,7 @@ function DetailsModal({
       <p className="text-gray-600 text-sm mt-1">
         Once a booking is accepted, your payment is secured and held by Mmeko. After the{" "}
         <strong>{hosttype?.toLowerCase() === "fan date" ? "date" : "meet & greet"}</strong>,{" "}
-        simply ask the fan to tap <strong>"Mark as Complete"</strong> to receive your payment automatically. If they don't, contact <strong>Mmeko Support</strong> and we'll release it accordingly. 🙂
+        simply ask the fan to tap <strong>"Mark as Complete"</strong> to receive your payment automatically. If they don't, contact <strong>Mmeko Support</strong> and we'll release it immediately. 🙂
       </p>
     </div>
   </div>

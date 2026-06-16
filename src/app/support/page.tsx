@@ -110,7 +110,7 @@ const SupportPage: React.FC = () => {
         },
         {
           question: "Can a fan cancel a request I already accepted?",
-          answer: "❌ No. Once a creator accepts a request, it is final. If a fan does not show up, contact Support immediately and we will review and release your payment accordingly. If Support is not contacted within 10 days from the appointment date, the payment will be automatically refunded to the fan.."
+          answer: "❌ No. Once a creator accepts a request, it is final. If a fan does not show up, contact Support immediately and we will review and release your payment immediately. If Support is not contacted within 10 days from the appointment date, the payment will be automatically refunded to the fan.."
         },
         {
           question: "Is this safe?",
@@ -131,7 +131,7 @@ const SupportPage: React.FC = () => {
         },
         {
           question: "What if the fan didn't show up?",
-          answer: "❌ just contact mmeko Support directly through the platform. Our team reviews the situation using your on-platform chat history and releases your payment accordingly. If Support is not contacted within 10 days from the appointment date, the payment will be automatically refunded to the fan."
+          answer: "❌ just contact mmeko Support directly through the platform. Our team reviews the situation using your on-platform chat history and releases your payment immediately. If Support is not contacted within 10 days from the appointment date, the payment will be automatically refunded to the fan."
         },
     
       ]

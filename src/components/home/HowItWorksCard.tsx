@@ -59,7 +59,7 @@ const baseSlides: HowItWorksSlide[] = [
         image: "/Card6.png",
         title: "Full Creator Protection",
         description:
-            "If a fan doesn’t mark the meetup as complete or fails to attend, contact Support. Our team will review the situation and release the payment accordingly.",
+            "If a fan doesn’t mark the meetup as complete or fails to attend, contact Support. Our team will review the situation and release the payment immediately.",
     },
     {
         id: 8,

@@ -101,7 +101,7 @@ const TermsAndConditions = () => {
            
             <p className="mb-6">
          If a fan does not attend the scheduled appointment, the creator must contact Support immediately. 
-         Support will review the case and release the creator’s payment accordingly as compensation for time and travel. Creators must contact Support within 10 days from the appointment date. 
+         Support will review the case and release the creator’s payment immediately as compensation for time and travel. Creators must contact Support within 10 days from the appointment date. 
          If Support is not contacted within this window, the payment will be automatically refunded to the fan.  
  
  
