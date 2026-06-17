@@ -1652,6 +1652,19 @@ function DetailsModal({
   </div>
 )}
 
+{/* No Show Policy */}
+{type === "creator" && hosttype?.toLowerCase() !== "fan call" && (
+  <div className="flex items-start gap-3 mb-4">
+    <span className="text-xl mt-1">🛑</span>
+    <div>
+      <h3 className="font-semibold text-gray-800">No show??</h3>
+      <p className="text-gray-600 text-sm mt-1">
+        Cancellation by the fan is not allowed after you accept a booking request. If the fan does not show up, stops responding to messages, or requests a cancellation, simply contact <strong>Mmeko Support</strong> and we will release your payment immediately. 🙂
+      </p>
+    </div>
+  </div>
+)}
+
 
          {/* How it works for fan call */}
         {hosttype?.toLowerCase() === "fan call" && (
