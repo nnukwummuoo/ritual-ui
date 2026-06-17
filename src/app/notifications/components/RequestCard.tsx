@@ -1705,29 +1705,28 @@ function DetailsModal({
           </div>
         )}
 
-        {/* Date & Time */}
-        <div className="flex items-start gap-3 mb-4">
-         <span className="text-xl mt-1">🗓️</span>
-          <div>
-            <h3 className="font-semibold text-gray-800">Date & Time</h3>
-            <p className="text-gray-600">
-              {formatDate(details.date)} at {formatTime(details.time)}
-            </p>
-          </div>
+       {/* Schedule / Date Section */}
+{hosttype?.toLowerCase() !== "fan call" && (
+  <div className="flex items-start gap-3 mb-4">
+    <span className="text-xl mt-1">📅</span>
+    <div className="w-full">
+      <h3 className="font-semibold text-gray-800">Booking Schedule</h3>
+      <p className="text-gray-600"> {formatDate(details.date)} at {formatTime(details.time)}</p>
+      
+      {/* Card Expiration Box - Nested exactly like the Premium box */}
+      {currentStatus === "accepted" && (
+        <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm">
+          <p className="font-bold text-xs uppercase tracking-wider text-blue-600 mb-1 flex items-center gap-1">
+            ⚠️ Card Expiration Rule
+          </p>
+          <p className="text-gray-600 leading-relaxed text-xs sm:text-sm">
+            While bookings must occur within 14 days, this card remains active for 20 days as a completion grace period. If not marked as complete and no creator dispute is filed by day 18, it automatically expires and refunds the fan.
+          </p>
         </div>
-
-        {/* Card Expiration Notice - Only show for Fan Meet and Fan Date */}
-        {currentStatus === "accepted" && hosttype?.toLowerCase() !== "fan call" && (
-          <div className="flex items-start gap-3 mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-            <IoWarningOutline className="text-blue-500 text-xl mt-1" />
-            <div>
-              <h3 className="font-semibold text-gray-800">Card Expiration</h3>
-              <p className="text-gray-600 text-sm mt-1">
-                 While bookings must occur within 14 days, this card remains active for 20 days as a completion grace period. If not marked as complete and no creator dispute is filed by day 18, it automatically expires and refunds the fan.
-              </p>
-            </div>
-          </div>
-        )}
+      )}
+    </div>
+  </div>
+)}
 
         {/* Venue - Hide for Fan Call */}
         {hosttype?.toLowerCase() !== "fan call" && (
