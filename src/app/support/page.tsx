@@ -110,7 +110,7 @@ const SupportPage: React.FC = () => {
         },
         {
           question: "Can a fan cancel a request I already accepted?",
-          answer: "❌ No. Once a creator accepts a request, it is final. If a fan does not show up, contact Support immediately and we will review and release your payment immediately. If Support is not contacted within 10 days from the appointment date, the payment will be automatically refunded to the fan.."
+          answer: "❌ No. Once a creator accepts a request, it is final. If a fan does not show up, contact Support immediately and we will review and release your payment immediately. If Support is not contacted within 18 days from the appointment date, the payment will be automatically refunded to the fan.."
         },
         {
           question: "Is this safe?",
@@ -123,7 +123,7 @@ const SupportPage: React.FC = () => {
       questions: [
         {
           question: "What happens if the meet or date doesn't happen within 14 days?",
-          answer: "🕒 If 14 days pass and the fan didn't marks it as complete, the system automatically refunds the fan's payment (unless a creator complaint was filed within 10 days)."
+          answer: "🕒 If 14 days pass and the fan didn't marks it as complete, the system automatically refunds the fan's payment (unless a creator complaint was filed within 18 days)."
         },
         {
           question: "What if the creator didn't show up?",
@@ -131,7 +131,7 @@ const SupportPage: React.FC = () => {
         },
         {
           question: "What if the fan didn't show up?",
-          answer: "❌ just contact mmeko Support directly through the platform. Our team reviews the situation using your on-platform chat history and releases your payment immediately. If Support is not contacted within 10 days from the appointment date, the payment will be automatically refunded to the fan."
+          answer: "❌ just contact mmeko Support directly through the platform. Our team reviews the situation using your on-platform chat history and releases your payment immediately. If Support is not contacted within 18 days from the appointment date, the payment will be automatically refunded to the fan."
         },
     
       ]

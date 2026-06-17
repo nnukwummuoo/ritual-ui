@@ -101,7 +101,7 @@ const TermsAndConditions = () => {
            
             <p className="mb-6">
          If a fan does not attend the scheduled appointment, the creator must contact Support immediately. 
-         Support will review the case and release the creator’s payment immediately as compensation for time and travel. Creators must contact Support within 10 days from the appointment date. 
+         Support will review the case and release the creator’s payment immediately as compensation for time and travel. Creators must contact Support within 18 days from the appointment date. 
          If Support is not contacted within this window, the payment will be automatically refunded to the fan.  
  
  
@@ -116,7 +116,7 @@ const TermsAndConditions = () => {
            
             <p className="mb-6">
          If a creator does not attend the scheduled appointment, the fan will automatically receive a full refund. 
-         Refunds are released to the fan automatically on the 14th day from the appointment date, without requiring any action.
+         Refunds are released to the fan automatically on the 20th day from the appointment date, without requiring any action.
  
            </p>
  
@@ -128,8 +128,8 @@ const TermsAndConditions = () => {
  
            
             <p className="mb-6">
-          If the fan didn't mark the meet or date as “Completed” within 14 days after the scheduled event,
-         and no complaint or dispute has been filed by the creator within 10 days from the appointment date, the fan will automatically receive a full refund of the payment.
+          If the fan didn't mark the meet or date as “Completed” within 20 days after the scheduled event,
+         and no complaint or dispute has been filed by the creator within 18 days from the appointment date, the fan will automatically receive a full refund of the payment.
           This ensures fairness and protects both parties in cases where no meeting occurred.
  
  
@@ -159,8 +159,8 @@ const TermsAndConditions = () => {
            </p>
  
                <p className="mb-6">
-          If a meeting does not happen and the fan didn't mark it as complete within 14 days, the system
-           will automatically refund the fan in full — provided no complaint was filed by the creator within 10 days from the appointment date.
+          If a meeting does not happen and the fan didn't mark it as complete within 20 days, the system
+           will automatically refund the fan in full — provided no complaint was filed by the creator within 18 days from the appointment date.
  
            </p>
  
