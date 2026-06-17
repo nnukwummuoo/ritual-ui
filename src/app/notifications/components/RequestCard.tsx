@@ -1652,14 +1652,27 @@ function DetailsModal({
   </div>
 )}
 
-{/* No Show Policy */}
+{/* No Show Policy for creator */}
 {type === "creator" && hosttype?.toLowerCase() !== "fan call" && (
   <div className="flex items-start gap-3 mb-4">
     <span className="text-xl mt-1">🛑</span>
     <div>
-      <h3 className="font-semibold text-gray-800">No show??</h3>
+      <h3 className="font-semibold text-gray-800">No show?? No problem!</h3>
       <p className="text-gray-600 text-sm mt-1">
         Cancellation by the fan is not allowed after you accept a booking request. If the fan does not show up, stops responding to messages, or requests a cancellation, simply contact <strong>Mmeko Support</strong> and we will release your payment immediately. 🙂
+      </p>
+    </div>
+  </div>
+)}
+
+{/* No Show Policy for fan */}
+{type === "fan" && hosttype?.toLowerCase() !== "fan call" && (
+  <div className="flex items-start gap-3 mb-4">
+    <span className="text-xl mt-1">🤝</span>
+    <div>
+      <h3 className="font-semibold text-gray-800">No show?? Protected Booking</h3>
+      <p className="text-gray-600 text-sm mt-1">
+           Cancellations are not allowed after acceptance. If you fail to show up, stop responding to messages, or request a cancellation, your payment is forfeited to the creator. However, <strong>if the creator does not show up or respond</strong>, your payment is fully protected—simply do not mark it complete, and the funds will automatically refund to you on day 20. 🙂
       </p>
     </div>
   </div>
