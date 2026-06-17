@@ -60,7 +60,7 @@ export const RequestDetailsForm: React.FC<RequestDetailsFormProps> = ({
     if (isFanCall) {
       endDate.setDate(today.getDate() + 7);
     } else {
-      endDate.setDate(today.getDate() + 8);
+      endDate.setDate(today.getDate() + 14);
     }
     return { startDate, endDate };
   };
