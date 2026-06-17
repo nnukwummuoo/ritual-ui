@@ -296,7 +296,7 @@ export default function RequestCard({ exp, img, originalPhotoLink, name, usernam
       expirationHours = 23 + (14 / 60); // 23.233333... hours
     } else if (currentStatus === "accepted") {
       // Accepted requests expire based on type
-      expirationHours = isFanCall ? 240 : 168; // 240h (10 days) for Fan call, 7 days (168h) for others
+      expirationHours = isFanCall ? 240 : 336; // 240h (10 days) for Fan call, 14 days (336h) for others
     } else {
       // For other statuses, don't show countdown
       return;
@@ -1684,7 +1684,7 @@ function DetailsModal({
             <div>
               <h3 className="font-semibold text-gray-800">Card Expiration</h3>
               <p className="text-gray-600 text-sm mt-1">
-                This request card expires in 14 days from acceptance. Please complete the meeting before expiration.
+                This request card expires in 20 days from acceptance. Please complete the meeting before expiration.
               </p>
             </div>
           </div>
