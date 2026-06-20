@@ -205,7 +205,7 @@ export const CreatorCard = ({
           src={currentSrc}
           width={400}
           height={300}
-         className="object-cover w-full rounded h-64 sm:h-80 md:h-72 2xl:h-96"
+         className="object-cover w-full rounded h-64 sm:h-80 md:h-56 2xl:h-96"
           onError={handleImageError}
         />
       </div>
