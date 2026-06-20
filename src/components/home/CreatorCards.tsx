@@ -61,7 +61,7 @@ const CreatorCard: React.FC<CreatorCardProps> = ({
 
   return (
     <div
-      className="relative bg-[#111624] rounded-lg w-48 flex-shrink-0 cursor-pointer hover:bg-gray-750 transition-colors overflow-hidden flex flex-col"
+      className="relative bg-[#111624] rounded-lg w-32 2xl:w-48 flex-shrink-0 cursor-pointer hover:bg-gray-750 transition-colors overflow-hidden flex flex-col"
       onClick={handleCardClick}
     >
       {/* Close button */}
@@ -78,7 +78,7 @@ const CreatorCard: React.FC<CreatorCardProps> = ({
       </button> */}
 
       {/* Profile Image - Large Portrait Style */}
-      <div className="relative w-full h-64 bg-gray-700">
+      <div className="relative w-full h-40 2xl:h-64 bg-gray-700">
         {photolink && photolink !== "/images/default-placeholder.png" ? (
           <img
             src={getImageSource(photolink, 'profile').src}
@@ -113,7 +113,7 @@ const CreatorCard: React.FC<CreatorCardProps> = ({
 
       {/* Creator Info */}
       <div className="p-3 text-center flex flex-col gap-3">
-        <h3 className="font-semibold text-white flex text-center gap-3 items-center justify-center text-lg tracking-wide">{firstName}<span> <BadgeCheck size={17} fill="white" className="text-black" /> </span></h3>
+        <h3 className="font-semibold text-white flex text-center gap-1 items-center justify-center text-xs 2xl:text-lg tracking-wide">{firstName}<span> <BadgeCheck size={17} fill="white" className="text-black" /> </span></h3>
 
 
         {/* View Profile Button */}
@@ -325,7 +325,7 @@ const CreatorCards: React.FC = () => {
     return (
       <div>
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-white font-medium">Creators for you</h3>
+          <h3 className="text-white font-medium text-sm 2xl:text-base">Creators for you</h3>
           <button className="text-blue-500 text-sm hover:underline">See all</button>
         </div>
         <div className="flex gap-3 overflow-x-auto">
@@ -352,7 +352,7 @@ const CreatorCards: React.FC = () => {
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-white font-medium">Creators for you</h3>
+       <h3 className="text-white font-medium text-sm 2xl:text-base">Creators for you</h3>
         <button
           className="text-blue-500 text-sm hover:underline"
           onClick={() => router.push('/creators')}
