@@ -318,7 +318,12 @@ useEffect(() => {
               <span className="font-medium text-white hidden 2xl:inline">Push Notifications</span>
             </div>
             <div className="flex justify-center md:justify-start">
-              <PushNotificationToggle size="sm" showLabel={false} />
+              <div className="hidden 2xl:block">
+  <PushNotificationToggle size="sm" showLabel={true} />
+</div>
+<div className="2xl:hidden">
+  <PushNotificationToggle size="sm" showLabel={false} />
+</div>
             </div>
           </div>
 

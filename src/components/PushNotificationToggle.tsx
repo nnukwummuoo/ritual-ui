@@ -116,9 +116,9 @@ const PushNotificationToggle: React.FC<PushNotificationToggleProps> = ({
         {error && (
           <p className="text-xs text-red-500 mt-1">{error}</p>
         )}
-        <p className="text-xs text-gray-400 mt-1">
-          Requires HTTPS or localhost, and a modern browser
-        </p>
+       {showLabel && <p className="text-xs text-gray-400 mt-1">
+  Requires HTTPS or localhost, and a modern browser
+</p>}
       </div>
     );
   }
@@ -156,9 +156,9 @@ const PushNotificationToggle: React.FC<PushNotificationToggleProps> = ({
       )}
       
       {permission === 'denied' && (
-        <p className="text-xs text-red-400 mt-1">
-          Please enable notifications in your browser settings
-        </p>
+       showLabel && <p className="text-xs text-red-400 mt-1">
+  Please enable notifications in your browser settings
+</p>
       )}
     </div>
   );
