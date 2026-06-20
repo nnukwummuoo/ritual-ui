@@ -205,7 +205,7 @@ export const CreatorCard = ({
           src={currentSrc}
           width={400}
           height={300}
-         className="object-cover w-full rounded h-64 sm:h-80 md:h-56 2xl:h-96"
+          className="object-cover w-full rounded h-64 sm:h-80 md:h-96"
           onError={handleImageError}
         />
       </div>
@@ -224,7 +224,7 @@ export const CreatorCard = ({
       <div className="absolute bottom-2">
         <div className="flex flex-col items-start gap-1.5 px-1 overflow-auto sm:gap-2">
           {/* Country */}
-          <div className="flex items-center gap-1 px-1.5 py-1 md:gap-1 md:px-1.5 md:py-1 2xl:gap-1.5 2xl:px-2.5 2xl:py-1.5 bg-black bg-opacity-40 rounded-lg">
+          <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-black bg-opacity-40 rounded-lg">
             {countryData.flag && (
               <div className="rounded-full overflow-hidden size-4">
                 <img                  src={countryData.flag}
@@ -239,12 +239,12 @@ export const CreatorCard = ({
           </div>
 
           {/* Host Type */}
-          <h4 className="px-1.5 py-1 text-[10px] md:text-[10px] 2xl:text-xs 2xl:px-2.5 2xl:py-1.5 bg-black bg-opacity-40 rounded-lg whitespace-nowrap">
+          <h4 className="px-2.5 py-1.5 text-xs bg-black bg-opacity-40 rounded-lg whitespace-nowrap">
             {hosttype}
           </h4>
 
           {/* First Name */}
-          <h4 className="px-1.5 py-1 text-[10px] md:text-[10px] 2xl:text-xs 2xl:px-2.5 2xl:py-1.5 bg-black bg-opacity-50 rounded-lg overflow-auto">
+          <h4 className="px-2.5 py-1.5 text-xs bg-black bg-opacity-50 rounded-lg overflow-auto">
             {name?.split?.(" ")[0] ?? "Name"}
           </h4>
         </div>
