@@ -726,7 +726,7 @@ export default function PostsCard() {
                     {/* <div className="hidden lg:block mx-auto max-w-[30rem] w-full">
                       <TopFans />
                     </div> */}
-                    <div className="2xl:hidden">
+                    <div className="2xl:hidden mx-auto max-w-[30rem] w-full">
                       <RitualsCard />
                     </div>
                   </>
