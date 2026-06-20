@@ -171,10 +171,6 @@ if (!isAuthenticated && isHomeRoute) {
   // Otherwise, render with main layout
   return (
   <main className="flex overflow-hidden h-screen relative" style={{ background: "#080b14" }}>
-    <div className="fixed top-0 left-0 z-[9999] bg-red-500 text-white p-2 text-xs">
-  Screen: <span id="width"></span>
-  <script dangerouslySetInnerHTML={{__html: `document.getElementById('width').textContent = window.innerWidth`}} />
-</div>
       {/* Sidebar - only shown when authenticated */}
       {isAuthenticated && (
         <>
@@ -226,7 +222,7 @@ if (!isAuthenticated && isHomeRoute) {
             </div>
             {/* Show CreatorCards only on home route when authenticated */}
             {isHomeRoute && isAuthenticated && (
-              <div className="w-full h-full hidden xl:block">
+              <div className="w-full h-full hidden 2xl:block">
                 <div className="sticky top-28 self-start -mr-16 space-y-4">
                   <div className="w-[25rem] mx-auto max-[600px]:w-[90%] rounded-2xl px-4 pt-4 pb-2 bg-[#080b14]">
                     <CreatorCards />
