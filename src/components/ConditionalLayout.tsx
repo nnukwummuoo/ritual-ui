@@ -237,7 +237,7 @@ if (!isAuthenticated && isHomeRoute) {
           {isAuthenticated && !isMessageRoute && <div className="h-24 md:h-0"></div>}
         </div>
         {isAuthenticated && (
-  <div className={!isHomeRoute ? "2xl:hidden" : ""}>
+  <div className={isHomeRoute ? "block" : "2xl:hidden"}>
     <BottomNavBar />
   </div>
 )}
