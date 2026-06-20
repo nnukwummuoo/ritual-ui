@@ -258,7 +258,7 @@ function BottomNavBarInner() {
       ),
     },
     {
-      name: "Notifications",
+      name: "Activity",
       route: "/notifications",
       badge: hasUnreadNotifications ? unreadNotificationCount : 0,
       icon: (active: boolean) => (
