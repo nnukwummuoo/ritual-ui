@@ -301,14 +301,14 @@ useEffect(() => {
     // Full-height page with flexbox for 20%/80% split
     <div className="flex min-h-screen h-screen bg-[#111827] text-gray-200 font-sans">
       {/* Sidebar: responsive width */}
-      <aside className="w-16 2xl:w-[30%] bg-[#1F2937] flex flex-col">
+      <aside className="w-16 md:w-[30%] bg-[#1F2937] flex flex-col">
         <div className="p-2 md:p-4 overflow-y-auto flex-1">
           {/* Header */}
           <div className="flex items-center gap-3 mb-8 p-2 justify-center md:justify-start">
             <div className="w-9 h-9 bg-indigo-600 rounded-md grid place-items-center">
               <IoGridOutline color="white" />
             </div>
-            <h1 className="text-xl font-bold text-white hidden 2xl:inline">Dashboard</h1>
+            <h1 className="text-xl font-bold text-white hidden md:inline">Dashboard</h1>
           </div>
 
           {/* Push Notifications Toggle */}
