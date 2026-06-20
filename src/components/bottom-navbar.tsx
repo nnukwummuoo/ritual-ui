@@ -320,7 +320,7 @@ function BottomNavBarInner() {
         }}
       >
         <div className="flex items-center justify-around">
-<style>{`@media(min-width:1024px){.bnav-icon svg{width:30px!important;height:30px!important;}}`}</style>
+<style>{`@media(min-width:1536px){.bnav-icon svg{width:30px!important;height:30px!important;}}`}</style>
           {navItems.map((item) => {
             const active = isActive(item.route);
 
