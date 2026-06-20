@@ -239,7 +239,7 @@ export const CreatorCard = ({
           </div>
 
           {/* Host Type */}
-          <h4 className="px-1.5 py-1 text-[10px] md:text-[10px] 2xl:text-xs 2xl:px-2.5 2xl:py-1.5 bg-black bg-opacity-40 rounded-lg whitespace-nowrap">
+          <h4 className="px-1.5 py-1 text-[10px] md:text-[10px] 2xl:text-xs 2xl:px-2.5 2xl:py-1.5 bg-black bg-opacity-50 rounded-lg overflow-auto">
             {hosttype}
           </h4>
 
