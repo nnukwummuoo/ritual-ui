@@ -312,14 +312,14 @@ function BottomNavBarInner() {
 
   return (
     <div className="h-fit mr-6 mt-4 max-[600px]:m-0 fixed right-0 max-[1536px]:bottom-1 max-[1536px]:w-full max-[1536px]:right-0 max-[1536px]:left-0 z-50">
-<div className="w-[25rem] mx-auto max-[600px]:w-[96%] max-[380px]:w-full max-[380px]:rounded-none rounded-2xl px-2 max-[600px]:px-1 pt-3 pb-5 bottom-4 lg:w-[28rem]"style={{
+<div className="w-[25rem] mx-auto max-[600px]:w-[96%] max-[380px]:w-full max-[380px]:rounded-none rounded-2xl px-2 max-[600px]:px-1 pt-3 pb-5 bottom-4 lg:w-[25rem] 2xl:w-[28rem]"style={{
           background: "rgba(8,11,20,0.97)",
           borderTop: "1px solid rgba(255,255,255,0.07)",
           backdropFilter: "blur(20px)",
           WebkitBackdropFilter: "blur(20px)",
         }}
       >
-        <div className="flex items-center justify-around">
+        <div className="flex items-center justify-around gap-0 2xl:gap-2">
 <style>{`@media(min-width:1024px){.bnav-icon svg{width:30px!important;height:30px!important;}}`}</style>
           {navItems.map((item) => {
             const active = isActive(item.route);
