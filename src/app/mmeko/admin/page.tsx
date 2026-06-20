@@ -350,7 +350,7 @@ useEffect(() => {
               <li
                 key={item.name}
                 onClick={() => setActiveView(item.name)}
-                className={`flex items-center justify-center md:justify-start gap-0 md:gap-4 px-0 md:px-4 py-3 rounded-lg cursor-pointer transition-all duration-200
+                className={`flex items-center justify-center 2xl:justify-start gap-0 2xl:gap-4 px-0 2xl:px-4 py-3 rounded-lg cursor-pointer transition-all duration-200
                   ${activeView === item.name
                     ? "bg-indigo-600 text-white"
                     : "hover:bg-gray-700 text-gray-400 hover:text-white"
