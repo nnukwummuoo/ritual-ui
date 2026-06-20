@@ -171,6 +171,10 @@ if (!isAuthenticated && isHomeRoute) {
   // Otherwise, render with main layout
   return (
   <main className="flex overflow-hidden h-screen relative" style={{ background: "#080b14" }}>
+    <div className="fixed top-0 left-0 z-[9999] bg-red-500 text-white p-2 text-xs">
+  Screen: <span id="width"></span>
+  <script dangerouslySetInnerHTML={{__html: `document.getElementById('width').textContent = window.innerWidth`}} />
+</div>
       {/* Sidebar - only shown when authenticated */}
       {isAuthenticated && (
         <>
