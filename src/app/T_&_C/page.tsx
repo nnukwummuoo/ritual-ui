@@ -116,7 +116,7 @@ const TermsAndConditions = () => {
           
            <p className="mb-6">
         If a creator does not attend the scheduled appointment, the fan will automatically receive a full refund. 
-        Refunds are released to the fan automatically on the 14th day from the appointment date, without requiring any action.
+        Refunds are released to the fan automatically on the 20th day from the appointment date, without requiring any action.
 
           </p>
 
