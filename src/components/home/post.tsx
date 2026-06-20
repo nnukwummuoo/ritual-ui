@@ -687,9 +687,9 @@ export default function PostsCard() {
                     <div className="mx-auto max-w-[30rem] w-full">
                       {/* <HowItWorksCard /> */}
                     </div>
-                    <div className="2xl:hidden">
-                      <CreatorCards />
-                    </div>
+                  <div className="2xl:hidden mx-auto max-w-[30rem] w-full">
+  <CreatorCards />
+</div>
                   </div>
                 )}
                 <div
