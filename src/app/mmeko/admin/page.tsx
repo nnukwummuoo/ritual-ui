@@ -334,7 +334,12 @@ useEffect(() => {
               <span className="font-medium text-white hidden 2xl:inline">Maintenance</span>
             </div>
             <div className="flex justify-center md:justify-start">
-              <MaintenanceToggle showLabel={true} />
+              <div className="hidden 2xl:block">
+  <MaintenanceToggle showLabel={true} />
+</div>
+<div className="2xl:hidden">
+  <MaintenanceToggle showLabel={false} />
+</div>
             </div>
           </div>
 
@@ -345,7 +350,12 @@ useEffect(() => {
               <span className="font-medium text-white hidden 2xl:inline">Creator Sorting</span>
             </div>
             <div className="flex justify-center md:justify-start">
-              <SortToggle showLabel={true} />
+              <div className="hidden 2xl:block">
+  <SortToggle showLabel={true} />
+</div>
+<div className="2xl:hidden">
+  <SortToggle showLabel={false} />
+</div>
             </div>
           </div>
 
