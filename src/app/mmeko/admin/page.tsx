@@ -301,21 +301,21 @@ useEffect(() => {
     // Full-height page with flexbox for 20%/80% split
     <div className="flex min-h-screen h-screen bg-[#111827] text-gray-200 font-sans">
       {/* Sidebar: responsive width */}
-      <aside className="w-16 md:w-[30%] bg-[#1F2937] flex flex-col">
-        <div className="p-2 md:p-4 overflow-y-auto flex-1">
+      <aside className="w-16 2xl:w-[30%] bg-[#1F2937] flex flex-col">
+        <div className="p-2 2xl:p-4 overflow-y-auto flex-1">
           {/* Header */}
-          <div className="flex items-center gap-3 mb-8 p-2 justify-center md:justify-start">
+          <div className="flex items-center gap-3 mb-8 p-2 justify-center 2xl:justify-start">
             <div className="w-9 h-9 bg-indigo-600 rounded-md grid place-items-center">
               <IoGridOutline color="white" />
             </div>
-            <h1 className="text-xl font-bold text-white hidden md:inline">Dashboard</h1>
+            <h1 className="text-xl font-bold text-white hidden 2xl:inline">Dashboard</h1>
           </div>
 
           {/* Push Notifications Toggle */}
           <div className="mb-6 p-3 bg-[#111624] rounded-lg">
-            <div className="flex items-center justify-center md:justify-start gap-2 mb-2">
+            <div className="flex items-center justify-center 2xl:justify-start gap-2 mb-2">
               <IoChatbubbleOutline color="white" size={20} />
-              <span className="font-medium text-white hidden md:inline">Push Notifications</span>
+              <span className="font-medium text-white hidden 2xl:inline">Push Notifications</span>
             </div>
             <div className="flex justify-center md:justify-start">
               <PushNotificationToggle size="sm" showLabel={false} />
@@ -324,9 +324,9 @@ useEffect(() => {
 
           {/* Maintenance Toggle */}
           <div className="mb-6 p-3 bg-[#111624] rounded-lg">
-            <div className="flex items-center justify-center md:justify-start gap-2 mb-2">
+            <div className="flex items-center justify-center 2xl:justify-start gap-2 mb-2">
               <IoConstructOutline color="white" size={20} />
-              <span className="font-medium text-white hidden md:inline">Maintenance</span>
+              <span className="font-medium text-white hidden 2xl:inline">Maintenance</span>
             </div>
             <div className="flex justify-center md:justify-start">
               <MaintenanceToggle showLabel={true} />
@@ -335,9 +335,9 @@ useEffect(() => {
 
           {/* Sort Creator Toggle */}
           <div className="mb-6 p-3 bg-[#111624] rounded-lg">
-            <div className="flex items-center justify-center md:justify-start gap-2 mb-2">
+            <div className="flex items-center justify-center 2xl:justify-start gap-2 mb-2">
               <IoTimerOutline color="white" size={20} />
-              <span className="font-medium text-white hidden md:inline">Creator Sorting</span>
+              <span className="font-medium text-white hidden 2xl:inline">Creator Sorting</span>
             </div>
             <div className="flex justify-center md:justify-start">
               <SortToggle showLabel={true} />
@@ -357,7 +357,7 @@ useEffect(() => {
                   }`}
               >
                 {item.icon}
-                <span className="font-medium hidden md:inline ml-0 md:ml-2">{item.name}</span>
+                <span className="font-medium hidden 2xl:inline ml-0 2xl:ml-2">{item.name}</span>
                 {item.name === "Creator Verification" && docCount > 0 && (
                   <span className="ml-2 bg-red-500 text-white px-1.5 py-1 rounded-full text-xs">
                     {docCount}
