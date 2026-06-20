@@ -254,3 +254,9 @@ body .Toastify__toast-body {
 .animate-gradient {
   animation: gradient-shift 6s ease infinite;
 }
+
+@media (min-width: 1024px) and (max-width: 1535px) {
+  html {
+    font-size: 14px;
+  }
+}

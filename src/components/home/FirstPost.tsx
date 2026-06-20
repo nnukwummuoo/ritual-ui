@@ -449,7 +449,7 @@ const FirstPost: React.FC<FirstPostProps> = ({
             className="flex-1 cursor-pointer"
 
           >
-            <p className="font-medium text-white flex items-center gap-1 text-sm 2xl:text-base" onClick={(e) => {
+            <p className="font-medium text-white flex items-center gap-1 text-sm sm:text-base" onClick={(e) => {
               e.stopPropagation();
               router.push(`/${post?.user?.username || postAuthorId}`);
             }}>
@@ -463,7 +463,7 @@ const FirstPost: React.FC<FirstPostProps> = ({
                 );
               })()}
             </p>
-            <span className="text-gray-400 text-xs 2xl:text-sm">{handleStr ? `${handleStr}` : ""}</span>
+            <span className="text-gray-400 text-xs sm:text-sm">{handleStr ? `${handleStr}` : ""}</span>
           </div>
           {post?.user?.creator_portfolio_id && (
             <div className="flex items-end gap-1">
@@ -497,7 +497,7 @@ className={`text-white px-2 bg-gradient-to-r from-[#6c63ff] to-[#9b59f5] cursor-
       )}
 
       {postType == "image" && src && (
-        <div className="w-full aspect-[4/5] 2xl:aspect-[4/5] md:aspect-[3/4] relative rounded overflow-hidden">
+        <div className="w-full aspect-[4/5] relative rounded overflow-hidden">
           <Image
             src={src}
             alt={post?.content || "post image"}
@@ -532,7 +532,7 @@ className={`text-white px-2 bg-gradient-to-r from-[#6c63ff] to-[#9b59f5] cursor-
       )}
 
       {postType == "video" && src && (
-        <div className="relative w-full aspect-[3/4] 2xl:aspect-[4/5] rounded overflow-hidden">
+        <div className="relative w-full aspect-[4/5] rounded overflow-hidden">
           {/* Video skeleton - show while video is loading and no poster is available */}
           {!isVideoLoaded && !posterSource && (
             <VideoSkeleton />
