@@ -68,7 +68,7 @@ const VideoComponent = ({ post, src, pathUrlPrimary, queryUrlFallback, pathUrlFa
     };
   }, [setShowControls]);
   return (
-    <div className="relative w-full aspect-[4/5] rounded overflow-hidden">
+    <div className="relative w-full aspect-[3/4] 2xl:aspect-[4/5] rounded overflow-hidden">
       {/* Video skeleton - show while video is loading and no poster is available */}
       {!isVideoLoaded && !posterSource && (
         <VideoSkeleton />
@@ -765,7 +765,7 @@ const LazyPost: React.FC<LazyPostProps> = ({
           <div
             className="flex-1 cursor-pointer"
           >
-            <p className="font-medium text-white flex items-center gap-1 text-sm sm:text-base"
+            <p className="font-medium text-white flex items-center gap-1 text-sm 2xl:text-base"
               onClick={(e) => {
                 e.stopPropagation();
                 router.push(`/${post?.user?.username || postAuthorId}`);
@@ -782,7 +782,7 @@ const LazyPost: React.FC<LazyPostProps> = ({
               })()}
             </p>
 
-            <span className="text-gray-400 text-xs sm:text-sm">{handleStr ? `${handleStr}` : ""}</span>
+            <span className="text-gray-400 text-xs 2xl:text-sm">{handleStr ? `${handleStr}` : ""}</span>
           </div>
           {post?.user?.creator_portfolio_id && (
             <div className="flex items-end gap-1">
@@ -815,7 +815,7 @@ className={`text-white px-2 bg-gradient-to-r from-[#6c63ff] to-[#9b59f5] cursor-
       )}
 
       {postType == "image" && src && (
-        <div className="w-full aspect-[4/5] relative rounded overflow-hidden">
+        <div className="w-full aspect-[4/5] 2xl:aspect-[4/5] md:aspect-[3/4] relative rounded overflow-hidden">
           <LazyImage
             src={src}
             alt={post?.content || "post image"}

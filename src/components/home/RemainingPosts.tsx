@@ -218,7 +218,7 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
     }, []);
 
     return (
-      <div className="relative w-full aspect-[4/5] rounded overflow-hidden">
+      <div className="relative w-full aspect-[3/4] 2xl:aspect-[4/5] rounded overflow-hidden">
         {/* Video skeleton - show while video is loading */}
         {!isVideoLoaded && (
           <VideoSkeleton />
@@ -676,7 +676,7 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
             )}
 
             {postType == "image" && src && (
-              <div className="w-full aspect-[4/5] relative rounded overflow-hidden">
+              <div className="w-full aspect-[4/5] 2xl:aspect-[4/5] md:aspect-[3/4] relative rounded overflow-hidden">
                 <Image
                   src={src}
                   alt={p?.content || "post image"}
