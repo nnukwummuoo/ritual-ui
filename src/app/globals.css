@@ -259,4 +259,9 @@ body .Toastify__toast-body {
   html {
     font-size: 14px;
   }
+  
+  .bnav-icon svg {
+    width: 18px !important;
+    height: 18px !important;
+  }
 }
