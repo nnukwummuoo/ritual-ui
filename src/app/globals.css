@@ -260,3 +260,9 @@ body .Toastify__toast-body {
     font-size: 14px;
   }
 }
+
+@media (max-width: 380px) {
+  html {
+    font-size: 13px;
+  }
+}
