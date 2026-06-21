@@ -113,17 +113,17 @@ const CreatorCard: React.FC<CreatorCardProps> = ({
 
       {/* Creator Info */}
       {/*<div className="p-3 text-center flex flex-col gap-3">
-        <h3 className="font-semibold text-white flex text-center gap-3 items-center justify-center text-lg tracking-wide">{firstName}<span> <BadgeCheck size={17} fill="white" className="text-black" /> </span></h3>*/}
+        <h3 className="font-semibold text-white flex text-center gap-3 items-center justify-center text-lg tracking-wide">{firstName}<span> <BadgeCheck size={17} fill="white" className="text-black" /> </span></h3>
 
 
-        {/* View Profile Button */}
+        View Profile Button
         <button
           onClick={handleCardClick}
           className="w-full py-2 px-3 rounded-lg text-sm font-bold transition-all duration-200 bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:scale-105 shadow-md"
         >
           Request
         </button>
-      </div>
+      </div>*/}
     </div>
   );
 };
