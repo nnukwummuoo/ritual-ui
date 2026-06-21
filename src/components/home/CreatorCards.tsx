@@ -112,8 +112,8 @@ const CreatorCard: React.FC<CreatorCardProps> = ({
       </div>
 
       {/* Creator Info */}
-      <div className="p-3 text-center flex flex-col gap-3">
-        <h3 className="font-semibold text-white flex text-center gap-3 items-center justify-center text-lg tracking-wide">{firstName}<span> <BadgeCheck size={17} fill="white" className="text-black" /> </span></h3>
+      {/*<div className="p-3 text-center flex flex-col gap-3">
+        <h3 className="font-semibold text-white flex text-center gap-3 items-center justify-center text-lg tracking-wide">{firstName}<span> <BadgeCheck size={17} fill="white" className="text-black" /> </span></h3>*/}
 
 
         {/* View Profile Button */}
