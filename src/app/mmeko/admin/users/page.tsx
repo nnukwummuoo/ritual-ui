@@ -714,7 +714,7 @@ useEffect(() => {
       if (diffInDays < 7) return `${diffInDays}d ago`;
       const diffInWeeks = Math.floor(diffInDays / 7);
       if (diffInWeeks < 4) return `${diffInWeeks}w ago`;
-      const diffInMonths = Math.floor(diffInDays / 30);
+      const diffInMonths = Math.round(diffInDays / 30);
       if (diffInMonths < 12) return `${diffInMonths}mo ago`;
       const diffInYears = Math.floor(diffInDays / 365);
       return `${diffInYears}y ago`;

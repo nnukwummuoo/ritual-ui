@@ -1659,7 +1659,7 @@ function DetailsModal({
     <div>
       <h3 className="font-semibold text-gray-800">No show?? No problem!</h3>
       <p className="text-gray-600 text-sm mt-1">
-        Cancellation by the fan is not allowed after you accept a booking request. If the fan does not show up, stops responding to messages, or requests a cancellation, simply contact <strong>Mmeko Support</strong> and we will release your payment immediately. 🙂
+        Cancellation by the fan is not allowed after you accept a booking request. If the fan does not show up, stops responding to messages, or asks to cancel, simply contact <strong>Mmeko Support</strong> and we will release your payment immediately. 🙂
       </p>
     </div>
   </div>

@@ -110,7 +110,7 @@ const SupportPage: React.FC = () => {
         },
         {
           question: "Can a fan cancel a request I already accepted?",
-          answer: "❌ No. Once a creator accepts a request, it is final. If a fan does not show up, stops responding to messages, or requests a cancellation, contact Support immediately and we will review and release your payment immediately. If Support is not contacted within 18 days from the appointment date, the payment will be automatically refunded to the fan.."
+          answer: "❌ No. Once a creator accepts a request, it is final. If a fan does not show up, stops responding to messages, or asks to cancel, contact Support immediately and we will review and release your payment immediately. If Support is not contacted within 18 days from the appointment date, the payment will be automatically refunded to the fan.."
         },
         {
           question: "Is this safe?",
@@ -166,8 +166,8 @@ const SupportPage: React.FC = () => {
       section: "❓ FAQ: Attendance & No-Show Policy",
       questions: [
         {
-          question: "What if a fan doesn't show up for a Fan Meet or Fan Date?",
-          answer: "🚫 If a fan fails to show up at the agreed time and location, the payment is automatically released to the creator to cover her time and travel.\nNo refund will be issued to the fan once the creator has already arrived or waited at the meeting spot."
+          question: "What if a fan stops responding to messages, asks to cancel, doesn't show up or doesn't mark as complete?",
+          answer: "🚫 The payment will be automatically released to the creator."
         },
         {
           question: "What if a creator doesn't show up for a Fan Meet or Fan Date?",

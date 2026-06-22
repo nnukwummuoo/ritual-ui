@@ -262,7 +262,7 @@ const formatRelativeTime = (timestamp: string | number | Date): string => {
 
 
 
-    const diffInMonths = Math.floor(diffInDays / 30);
+    const diffInMonths = Math.round(diffInDays / 30);
 
     if (diffInMonths < 12) {
 

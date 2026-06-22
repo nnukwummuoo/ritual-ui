@@ -105,7 +105,7 @@ const formatRelativeTime = (timestamp: string | number | Date): string => {
       return `${diffInWeeks}w ago`;
     }
 
-    const diffInMonths = Math.floor(diffInDays / 30);
+    const diffInMonths = Math.round(diffInDays / 30);
     if (diffInMonths < 12) {
       return `${diffInMonths}mo ago`;
     }
