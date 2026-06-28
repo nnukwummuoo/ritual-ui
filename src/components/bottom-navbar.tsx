@@ -230,9 +230,10 @@ function BottomNavBarInner() {
  type NavItem = {
   route: string;
   name: string;
-  icon: (active: boolean) => ReactNode;
+  icon?: (active: boolean) => ReactNode;
   badge?: number;
   isCenter?: boolean;
+  isProfile?: boolean; 
 };
 
   const isActive = (route: string) =>
@@ -308,6 +309,7 @@ function BottomNavBarInner() {
         </svg>
       ),
     },
+     { name: "Profile", route: "", isProfile: true},
   ];
 
   return (
@@ -341,7 +343,7 @@ function BottomNavBarInner() {
                       boxShadow: "0 4px 16px rgba(108,99,255,0.4)",
                     }}
                   >
-                    {item.icon(active)}
+                    {item.icon && item.icon(active)}
                   </div>
                   <span className="text-[9.5px] font-semibold text-[#94a3b8] whitespace-nowrap">
                     {item.name}
@@ -349,6 +351,10 @@ function BottomNavBarInner() {
                 </Link>
               );
             }
+
+            if (item.isProfile) {
+  return <ProfileMenuBtn key="profile" />;
+}
 
             return (
               <Link
@@ -358,7 +364,7 @@ function BottomNavBarInner() {
               >
                 {/* Icon + badge wrapper */}
                 <div className="relative bnav-icon">
-  {item.icon(active)}
+  {item.icon && item.icon(active)}
 
                   {/* Badge */}
                   {item.badge && item.badge > 0 ? (
