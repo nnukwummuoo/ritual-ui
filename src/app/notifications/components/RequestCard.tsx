@@ -307,7 +307,7 @@ export default function RequestCard({ exp, img, originalPhotoLink, name, usernam
 
 
   if (timeDiff <= 0) {
-  setTimeLeft("Awaiting processing...");
+  setTimeLeft("Expiring soon...");
   return;
 }
 
