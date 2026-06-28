@@ -406,7 +406,7 @@ function BottomNavBarInner() {
           })}
 
           {/* Profile button — opens side menu */}
-          <ProfileMenuBtn />
+    
         </div>
       </div>
 
