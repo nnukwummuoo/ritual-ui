@@ -457,7 +457,26 @@ const HistoryPage = () => {
       } catch (error) {
         console.error('Error fetching monthly history:', error);
       }
+      
     };
+
+     const fetchPaymentAccount = async () => {
+    if (!session?._id || !session?.token) return;
+    try {
+    const response = await fetch(`${URL}/addpayment/check-account/${session._id}`, {
+  headers: { Authorization: `Bearer ${session?.token}` }
+});
+      const data = await response.json();
+      if (data.exists) {
+        setHasPaymentAccount(true);
+        setPaymentAccountDetails(data.account);
+      }
+    } catch (error) {
+      console.error('Error fetching payment account:', error);
+    }
+  };
+
+    
 
     if (session?._id && session?.token) {
       dispatch(get_my_history({ userId: session._id, token: session.token }) as any);
@@ -465,6 +484,7 @@ const HistoryPage = () => {
       dispatch(getprofile({ userid: session._id, token: session.token }) as any);
       fetchPendingWithdrawals();
       fetchMonthlyHistory();
+      fetchPaymentAccount(); 
     }
   }, [dispatch, session]);
 
