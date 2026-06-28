@@ -805,7 +805,7 @@ const HistoryPage = () => {
                   </button>
                 </div>
                 <p className="text-sm text-gray-300"><strong>Name:</strong> {paymentAccountDetails.fullName}</p>
-                <p className="text-sm text-gray-300"><strong>Email:</strong> {paymentAccountDetails.email}</p>
+                <p className="text-sm text-gray-300 break-all"><strong>Email:</strong> {paymentAccountDetails.email}</p>
                 <p className="text-sm text-gray-300"><strong>Country:</strong> {paymentAccountDetails.country}</p>
                <p className="text-sm text-gray-300"><strong>Stablecoin:</strong> {paymentAccountDetails.currency || (() => {
   const cryptoType = paymentAccountDetails.cryptoType;
