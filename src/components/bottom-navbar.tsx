@@ -60,7 +60,7 @@ const reduxName = useSelector(
   return (
   <button
     onClick={toggleMenu}
-    className="flex flex-col items-center gap-1 relative px-3 py-1 rounded-xl border-none bg-transparent cursor-pointer hover:bg-white/[0.04] transition-all duration-200"
+    className="flex-1 flex flex-col items-center gap-1 relative px-3 py-1 rounded-xl border-none bg-transparent cursor-pointer hover:bg-white/[0.04] transition-all duration-200"
   >
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
       <circle
@@ -321,7 +321,7 @@ function BottomNavBarInner() {
           WebkitBackdropFilter: "blur(20px)",
         }}
       >
-        <div className="flex items-center justify-around">
+        <div className="flex items-center">
 <style>{`@media(min-width:1024px){.bnav-icon svg{width:30px!important;height:30px!important;}}`}</style>
           {navItems.map((item) => {
             const active = isActive(item.route);
@@ -331,7 +331,7 @@ function BottomNavBarInner() {
                 <Link
                   key={item.name}
                   href={item.route}
-                  className="flex flex-col items-center gap-1 relative px-3 py-1"
+                  className="flex-1 flex flex-col items-center gap-1 relative px-3 py-1"
                 >
                   {/* Elevated gradient circle */}
                   <div
@@ -360,7 +360,7 @@ function BottomNavBarInner() {
               <Link
                 key={item.name}
                 href={item.route}
-                className="flex flex-col items-center gap-1 relative px-3 py-1 rounded-xl hover:bg-white/[0.04] transition-all duration-200"
+                className="flex-1 flex flex-col items-center gap-1 relative px-3 py-1 rounded-xl hover:bg-white/[0.04] transition-all duration-200"
               >
                 {/* Icon + badge wrapper */}
                 <div className="relative bnav-icon">
