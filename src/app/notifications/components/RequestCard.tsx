@@ -292,10 +292,10 @@ export default function RequestCard({ exp, img, originalPhotoLink, name, usernam
     let expirationHours;
     if (currentStatus === "request") {
       // Pending requests expire after 23 hours 14 minutes
-      expirationHours = 23 + (14 / 60); // 23.233333... hours
+       expirationHours = 2 / 60; // 2 minutes // 23.233333... hours
     } else if (currentStatus === "accepted") {
       // Accepted requests expire based on type
-      expirationHours = isFanCall ? 240 : 480; // 240h (10 days) for Fan call, 20 days (480h) for others
+       expirationHours = isFanCall ? 10 / 60 : 20 / 60; // 10 or 20 minutes 240h (10 days) for Fan call, 20 days (480h) for others
     } else {
       // For other statuses, don't show countdown
       return;
