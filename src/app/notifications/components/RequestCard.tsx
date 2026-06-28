@@ -245,7 +245,6 @@ export default function RequestCard({ exp, img, originalPhotoLink, name, usernam
   const [loading, setLoading] = useState(false);
   const [currentStatus, setCurrentStatus] = useState(status);
   const [timeLeft, setTimeLeft] = useState<string>("");
-  const [isExpired, setIsExpired] = useState(false);
   const [showVerifyPopup, setShowVerifyPopup] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
 
@@ -307,17 +306,10 @@ export default function RequestCard({ exp, img, originalPhotoLink, name, usernam
 
 
 
-    if (timeDiff <= 0) {
-      setIsExpired(true);
-      setTimeLeft("Expired");
-
-      // Update the card status to expired
-      if (currentStatus !== "expired") {
-        setCurrentStatus("expired");
-        onStatusChange?.(requestId || "", "expired");
-      }
-      return;
-    }
+  if (timeDiff <= 0) {
+  setTimeLeft("Awaiting processing...");
+  return;
+}
 
     const hours = Math.floor(timeDiff / (1000 * 60 * 60));
     const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
@@ -338,35 +330,7 @@ export default function RequestCard({ exp, img, originalPhotoLink, name, usernam
     setTimeLeft(timeDisplay);
   }, [createdAt, currentStatus, hosttype, requestId, onStatusChange]);
 
-  // Handle expiration
-  const handleExpiration = useCallback(async () => {
-    if (!isExpired || !requestId || currentStatus === "expired") return;
-
-    try {
-      // Call API to expire the request and refund gold
-      const response = await fetch(`${URL}/expire-request`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          requestId,
-          userid,
-          creator_portfolio_id,
-          price
-        })
-      });
-
-      if (response.ok) {
-        setCurrentStatus('expired');
-        onStatusChange?.(requestId, 'expired');
-        toast.info("Request has expired and gold has been refunded to your balance");
-      }
-    } catch (error) {
-      console.error("Error expiring request:", error);
-    }
-  }, [isExpired, requestId, currentStatus, userid, creator_portfolio_id, price, onStatusChange]);
-
+ 
   // Debug log for user ID sources
   useEffect(() => {
     let loginUserId = null;
@@ -586,12 +550,7 @@ export default function RequestCard({ exp, img, originalPhotoLink, name, usernam
     }
   }, [currentStatus, calculateTimeLeft]);
 
-  // Handle expiration effect
-  useEffect(() => {
-    if (isExpired) {
-      handleExpiration();
-    }
-  }, [isExpired, handleExpiration]);
+  
 
 
 
@@ -1458,7 +1417,6 @@ export default function RequestCard({ exp, img, originalPhotoLink, name, usernam
     type={type}
     hosttype={hosttype}
     timeLeft={timeLeft}
-    isExpired={isExpired}
     currentStatus={currentStatus}
     fanUserid={userid}
     fanVerified={fanVerified}
@@ -1609,12 +1567,10 @@ function DetailsModal({
                 <p className="text-sm text-gray-600 mb-1">
                   {hosttype?.toLowerCase() === "fan call" ? "Expires in:" : "Remain to meet:"}
                 </p>
-                <p className={`text-2xl font-bold ${isExpired ? 'text-red-600' : 'text-orange-600'}`}>
-                  {timeLeft || getFallbackCountdown()}
-                </p>
-                {isExpired && (
-                  <p className="text-xs text-red-500 mt-1">Request has expired</p>
-                )}
+                <p className="text-2xl font-bold text-orange-600">
+  {timeLeft || getFallbackCountdown()}
+</p>
+                
 
               </div>
             </div>
