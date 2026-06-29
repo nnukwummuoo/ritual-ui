@@ -602,130 +602,114 @@ useEffect(() => {
 };
 
   const handleDecline = async () => {
-    if (!requestId || !details) return;
-    setLoading(true);
-    try {
-      const requestBody = {
+  if (!requestId) return;
+  setLoading(true);
+  try {
+    const response = await fetch(`${URL}/fanrequest/decline`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        requestId: requestId,
         creator_portfolio_id: creator_portfolio_id,
-        userid: userid,
-        date: details.date,
-        time: details.time
-      };
+        userid: userid
+      })
+    });
 
-      const response = await fetch(`${URL}/declinerequest`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestBody)
-      });
-
-      if (response.ok) {
-        setCurrentStatus('declined');
-        onStatusChange?.(requestId, 'declined');
-        // Don't show toast here - the socket notification will handle it
-      } else {
-        const errorData = await response.json();
-        const serviceType = hosttype || "Fan request";
-        toast.error(errorData.message || `Failed to decline ${serviceType.toLowerCase()} request`);
-      }
-    } catch {
+    if (response.ok) {
+      setCurrentStatus('declined');
+      onStatusChange?.(requestId, 'declined');
+    } else {
+      const errorData = await response.json();
       const serviceType = hosttype || "Fan request";
-      toast.error(`Error declining ${serviceType.toLowerCase()} request`);
-    } finally {
-      setLoading(false);
+      toast.error(errorData.message || `Failed to decline ${serviceType.toLowerCase()} request`);
     }
-  };
+  } catch {
+    const serviceType = hosttype || "Fan request";
+    toast.error(`Error declining ${serviceType.toLowerCase()} request`);
+  } finally {
+    setLoading(false);
+  }
+};
 
-  const handleCancel = async () => {
-    if (!requestId || !details || !userid || !creator_portfolio_id) {
-      toast.error('Missing required data for cancel request');
-      return;
-    }
-    setLoading(true);
-    try {
-      const requestBody = {
+ const handleCancel = async () => {
+  if (!requestId || !userid || !creator_portfolio_id) {
+    toast.error('Missing required data for cancel request');
+    return;
+  }
+  setLoading(true);
+  try {
+    const response = await fetch(`${URL}/fanrequest/cancel`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
         id: requestId,
         userid: userid,
         creator_portfolio_id: creator_portfolio_id
-      };
+      })
+    });
 
-      const response = await fetch(`${URL}/cancelrequest`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestBody)
-      });
-
-      if (response.ok) {
-        setCurrentStatus('cancelled');
-        onStatusChange?.(requestId, 'cancelled');
-        // Don't show toast here - the socket notification will handle it
-      } else {
-        const errorData = await response.json();
-        const serviceType = hosttype || "Fan request";
-        toast.error(errorData.message || `Failed to cancel ${serviceType.toLowerCase()} request`);
-      }
-    } catch {
+    if (response.ok) {
+      setCurrentStatus('cancelled');
+      onStatusChange?.(requestId, 'cancelled');
+    } else {
+      const errorData = await response.json();
       const serviceType = hosttype || "Fan request";
-      toast.error(`Error cancelling ${serviceType.toLowerCase()} request`);
-    } finally {
-      setLoading(false);
+      toast.error(errorData.message || `Failed to cancel ${serviceType.toLowerCase()} request`);
     }
-  };
+  } catch {
+    const serviceType = hosttype || "Fan request";
+    toast.error(`Error cancelling ${serviceType.toLowerCase()} request`);
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleComplete = async () => {
-    if (!requestId) return;
+  if (!requestId) return;
 
-    // If it's a Fan Call, start call instead of completing
-    if (hosttype === "Fan call") {
-      if (creator_portfolio_id && (username || name)) {
-        // Pass the original photo URL (before proxy processing) if available
+  if (hosttype === "Fan call") {
+    if (creator_portfolio_id && (username || name)) {
+      // Pass the original photo URL (before proxy processing) if available
         // This ensures we have the original Storj URL for proper processing in FanCallModal
-        const photoUrl = originalPhotoLink && originalPhotoLink !== '/picture-1.jfif' && originalPhotoLink !== '/default-image.png'
-          ? originalPhotoLink
-          : (img && img !== '/picture-1.jfif' && img !== '/default-image.png' && !img.includes('/api/image/view'))
-            ? img // Use img if it's not a proxy URL and not default
-            : undefined;
+      const photoUrl = originalPhotoLink && originalPhotoLink !== '/picture-1.jfif' && originalPhotoLink !== '/default-image.png'
+        ? originalPhotoLink
+        : (img && img !== '/picture-1.jfif' && img !== '/default-image.png' && !img.includes('/api/image/view'))
+          ? img // Use img if it's not a proxy URL and not default
+          : undefined;
 
-        startVideoCall(creator_portfolio_id, username || name, price || 1, isVip, vipEndDate, firstName, lastName, photoUrl);
-      }
-      return;
+      startVideoCall(creator_portfolio_id, username || name, price || 1, isVip, vipEndDate, firstName, lastName, photoUrl);
     }
+    return;
+  }
 
-    // For Fan Meet/Fan Date, complete the request
-    setLoading(true);
-    try {
-      const response = await fetch(`${URL}/completerequests`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          requestId,
-          userid: userid,
-          creator_portfolio_id: creator_portfolio_id
-        })
-      });
+   // For Fan Meet/Fan Date, complete the request
 
-      if (response.ok) {
-        setCurrentStatus('completed');
-        onStatusChange?.(requestId, 'completed');
+  setLoading(true);
+  try {
+    const response = await fetch(`${URL}/fanrequest/complete`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        requestId,
+        userid: userid,
+        creator_portfolio_id: creator_portfolio_id
+      })
+    });
 
-        // Don't auto-show rating modal - let user click stars manually
-        // Don't show toast here - the socket notification will handle it
-      } else {
-        const serviceType = hosttype || "Fan request";
-        toast.error(`Failed to complete ${serviceType.toLowerCase()}`);
-      }
-    } catch {
+    if (response.ok) {
+      setCurrentStatus('completed');
+      onStatusChange?.(requestId, 'completed');
+    } else {
       const serviceType = hosttype || "Fan request";
-      toast.error(`Error completing ${serviceType.toLowerCase()}`);
-    } finally {
-      setLoading(false);
+      toast.error(`Failed to complete ${serviceType.toLowerCase()}`);
     }
-  };
+  } catch {
+    const serviceType = hosttype || "Fan request";
+    toast.error(`Error completing ${serviceType.toLowerCase()}`);
+  } finally {
+    setLoading(false);
+  }
+};
 
   // Handle rating submission
   const handleRatingSubmit = async (rating: number, feedback: string) => {
