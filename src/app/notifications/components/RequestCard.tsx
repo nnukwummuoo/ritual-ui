@@ -573,7 +573,7 @@ useEffect(() => {
   if (!requestId || !details) return;
   setLoading(true);
   try {
-    const response = await fetch(`${URL}/acceptFanRequest`, {
+    const response = await fetch(`${URL}/fanrequest/accept`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
