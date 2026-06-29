@@ -573,7 +573,7 @@ useEffect(() => {
   if (!requestId || !details) return;
   setLoading(true);
   try {
-    const response = await fetch(`${URL}/fan/accept`, {
+    const response = await fetch(`${URL}/acceptFanRequest`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -588,7 +588,7 @@ useEffect(() => {
     if (response.ok) {
       setCurrentStatus('accepted');
       onStatusChange?.(requestId, 'accepted');
-      // Don't show toast here - the socket notification will handle it
+    // Don't show toast here - the socket notification will handle it
     } else {
       const serviceType = hosttype || "Fan request";
       toast.error(`Failed to accept ${serviceType.toLowerCase()} request`);
