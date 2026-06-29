@@ -569,38 +569,37 @@ useEffect(() => {
   const fanActionClass = `${actionBtnBase} border border-gray-500 text-gray-300 hover:bg-slate-700 bg-transparent`;
 
   // API call functions
-  const handleAccept = async () => {
-    if (!requestId || !details) return;
-    setLoading(true);
-    try {
-      const response = await fetch(`${URL}/acceptrequest`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          creator_portfolio_id: creator_portfolio_id,
-          userid: userid,
-          date: details.date,
-          time: details.time
-        })
-      });
+ const handleAccept = async () => {
+  if (!requestId || !details) return;
+  setLoading(true);
+  try {
+    const response = await fetch(`${URL}/fan/accept`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        requestId: requestId,
+        creator_portfolio_id: creator_portfolio_id,
+        userid: userid
+      })
+    });
 
-      if (response.ok) {
-        setCurrentStatus('accepted');
-        onStatusChange?.(requestId, 'accepted');
-        // Don't show toast here - the socket notification will handle it
-      } else {
-        const serviceType = hosttype || "Fan request";
-        toast.error(`Failed to accept ${serviceType.toLowerCase()} request`);
-      }
-    } catch {
+    if (response.ok) {
+      setCurrentStatus('accepted');
+      onStatusChange?.(requestId, 'accepted');
+      // Don't show toast here - the socket notification will handle it
+    } else {
       const serviceType = hosttype || "Fan request";
-      toast.error(`Error accepting ${serviceType.toLowerCase()} request`);
-    } finally {
-      setLoading(false);
+      toast.error(`Failed to accept ${serviceType.toLowerCase()} request`);
     }
-  };
+  } catch {
+    const serviceType = hosttype || "Fan request";
+    toast.error(`Error accepting ${serviceType.toLowerCase()} request`);
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleDecline = async () => {
     if (!requestId || !details) return;
