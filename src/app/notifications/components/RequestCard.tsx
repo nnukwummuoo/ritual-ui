@@ -1714,31 +1714,7 @@ function DetailsModal({
 )}
         
 
-        {/* Safety Rules */}
-        <div className="flex items-start gap-3 mb-4">
-         <span className="text-xl mt-1">🛡️</span>
-          <div>
-            <h3 className="font-semibold text-gray-800">Safety Rules (Important!)</h3>
-            {hosttype?.toLowerCase() === "fan call" ? (
-              <ul className="text-gray-600 text-sm mt-1 space-y-1">
-                <li>• Calls are billed per minute.</li>
-                <li>• Ensure stable internet connection before starting.</li>
-                <li>• Be respectful and follow platform guidelines.</li>
-              </ul>
-            ) : (
-              <>
-                <ul className="text-gray-600 text-sm mt-1 space-y-1">
-                  <li>• All meets are limited to 30 minutes.</li>
-                  <li>• Meets must happen in a public place only.</li>
-                </ul>
-                <p className="text-gray-500 text-xs mt-2">
-                  What happens after 30 minutes is outside the platform&apos;s responsibility.
-                </p>
-              </>
-            )}
-          </div>
-        </div>
-
+    
         {/* Call Expiration Notice - Only show for fan calls */}
         {hosttype?.toLowerCase() === "fan call" && (
           <div className="flex items-start gap-3 mb-4">
@@ -1838,6 +1814,32 @@ function DetailsModal({
     />
   </div>
 )}
+
+    {/* Safety Rules */}
+        <div className="flex items-start gap-3 mb-4">
+         <span className="text-xl mt-1">🛡️</span>
+          <div>
+            <h3 className="font-semibold text-gray-800">Safety Rules (Important!)</h3>
+            {hosttype?.toLowerCase() === "fan call" ? (
+              <ul className="text-gray-600 text-sm mt-1 space-y-1">
+                <li>• Calls are billed per minute.</li>
+                <li>• Ensure stable internet connection before starting.</li>
+                <li>• Be respectful and follow platform guidelines.</li>
+              </ul>
+            ) : (
+              <>
+                <ul className="text-gray-600 text-sm mt-1 space-y-1">
+                  <li>• All meets are limited to 30 minutes.</li>
+                  <li>• Meets must happen in a public place only.</li>
+                </ul>
+                <p className="text-gray-500 text-xs mt-2">
+                  What happens after 30 minutes is outside the platform&apos;s responsibility.
+                </p>
+              </>
+            )}
+          </div>
+        </div>
+
 
         {/* Agreement - Show for creators with appropriate message (excluding fan calls) */}
         {type === "creator" && hosttype?.toLowerCase() !== "fan call" && (
