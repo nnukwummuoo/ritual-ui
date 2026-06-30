@@ -1615,7 +1615,7 @@ function DetailsModal({
   <div className="flex items-start gap-3 mb-4">
     <span className="text-xl mt-1">🤝</span>
     <div>
-      <h3 className="font-semibold text-gray-800">No show?? Protected Booking</h3>
+      <h3 className="font-semibold text-gray-800">Protected Booking</h3>
       <p className="text-gray-600 text-sm mt-1">
            Cancellations are not allowed after acceptance. If you fail to show up, stop responding to messages, or request a cancellation, your payment is forfeited to the creator. However, <strong>if the creator does not show up or respond</strong>, your payment is fully protected—simply do not mark it complete, and the funds will automatically refund to you on day 20. 🙂
       </p>
@@ -1815,7 +1815,7 @@ function DetailsModal({
           Verified Fan
         </span>
       ) : (
-        <p className="text-sm text-gray-500">Fan not verified yet</p>
+        <p className="text-sm text-gray-500">Fan not yet verified. After verification, ID and selfie details will appear here.</p>
       )}
     </div>
   </div>
