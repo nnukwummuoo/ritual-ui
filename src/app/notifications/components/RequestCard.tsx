@@ -1815,7 +1815,7 @@ function DetailsModal({
           Verified Fan
         </span>
       ) : (
-        <p className="text-sm text-gray-500">Fan not yet verified. After verification, ID and selfie details will appear here.</p>
+        <p className="text-sm text-gray-500">ID and selfie confirmation will appear here once the fan is verified.</p>
       )}
     </div>
   </div>
