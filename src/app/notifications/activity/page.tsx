@@ -92,7 +92,7 @@ export default function Activity() {
           // Accepted requests:
           // - Fan Call: 10 days
           // - Fan Meet/Date: 14 days
-          daysToExpire = isFanCall ? 10 : 14;
+          daysToExpire = isFanCall ? 10 : 20;
         } else {
           // For other statuses (declined, cancelled, expired, completed), show no time remaining
           return "No action needed";
@@ -101,7 +101,7 @@ export default function Activity() {
         const expireTime = new Date(created.getTime() + daysToExpire * 24 * 60 * 60 * 1000);
         const diffMs = expireTime.getTime() - now.getTime();
 
-        if (diffMs <= 0) return "Expired";
+        if (diffMs <= 0) return "Expiring soon";
 
         const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
         const diffHours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
@@ -302,7 +302,7 @@ export default function Activity() {
               firstName={firstName}
               lastName={lastName}
               titles={request.otherUser?.isCreator ? ["Creator"] : ["Fan"]}
-              exp={request.timeRemaining || "Expired"}
+              exp={request.timeRemaining || "Expiring soon"}
               requestId={request.requestId}
               price={request.price}
               details={
