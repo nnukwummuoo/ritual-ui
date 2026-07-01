@@ -260,7 +260,16 @@ const [timeRemaining, setTimeRemaining] = useState(() => {
   return saved ? parseInt(saved) : 30 * 60;
 });
 
+
 const [timerInterval, setTimerInterval] = useState<NodeJS.Timeout | null>(null);
+
+const formatTimer = (seconds: number) => {
+  const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+  const s = (seconds % 60).toString().padStart(2, '0');
+  return `${m}:${s}`;
+};
+
+
 
 
   // Function to handle opening details modal
@@ -1506,8 +1515,6 @@ function DetailsModal({
   setTimerActive,
   timeRemaining,
   setTimeRemaining,
-  timerInterval,
-  setTimerInterval
 }: {
   details?: FanMeetDetails;
   onClose: () => void;
@@ -1559,6 +1566,13 @@ const handleStartTimer = async () => {
 
   setTimerActive(true);
   setTimeRemaining(30 * 60);
+};
+
+// Add this inside DetailsModal function
+const formatTimer = (seconds: number) => {
+  const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+  const s = (seconds % 60).toString().padStart(2, '0');
+  return `${m}:${s}`;
 };
 
 
