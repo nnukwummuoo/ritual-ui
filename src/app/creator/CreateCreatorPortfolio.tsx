@@ -577,20 +577,28 @@ export default function CreateCreatorPortfolio() {
           <section className="mb-8">
             <SectionLabel>Duration</SectionLabel>
 
-     <div 
-          className="mt-3 p-3 rounded-lg border text-sm"
-          style={{
-            background: "linear-gradient(135deg, rgba(108, 99, 255, 0.06), rgba(155, 89, 245, 0.04))",
-            borderColor: "rgba(108, 99, 255, 0.2)",
-          }}
-        >
-          <p style={{ color: "#6c63ff" }} className="font-bold text-xs uppercase tracking-wider mb-1 flex items-center gap-1">
-            ✨ Premium Extension Available
-          </p>
-          <p className="text-gray-600 leading-relaxed text-xs sm:text-sm">
-            Fans can seamlessly extend their experience by sending an additional structured booking request at the end of each session if both parties wish to continue.
-          </p>
-        </div>
+      <>
+  <p
+    style={{
+      fontSize: 12,
+      color: "rgba(148,163,184,.85)",
+      marginTop: 6,
+      marginBottom: 12,
+      lineHeight: 1.4,
+    }}
+  >
+    <span
+      style={{ color: "#6c63ff" }}
+      className="font-bold text-xs uppercase tracking-wider flex items-center gap-1"
+    >
+      ✨ Premium Extension Available
+    </span>
+  </p>
+  <p className="text-gray-600 leading-relaxed text-xs sm:text-sm"
+     style={{ marginTop: -8 }}>
+    Fans can seamlessly extend their experience by sending an additional structured booking request at the end of each session if both parties wish to continue.
+  </p>
+</>
 
             {/* ── CHANGED: step 5, visual progress bar ── */}
             <div className="flex items-center gap-3">

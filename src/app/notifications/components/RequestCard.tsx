@@ -639,25 +639,6 @@ useEffect(() => {
   }
 }, [timerActive]);
 
-useEffect(() => {
-  if (timeRemaining === 0 && !timerActive) {
-    setSessionCompleted(true);
-    fetch(`${URL}/fanrequest/notify-session`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        fanUserid: userid,
-        creatorUserid: currentUserId,
-        hosttype: hosttype || "Fan Meet",
-        event: 'ended'
-      })
-    })
-    .then(res => res.json())
-    .then(data => console.log('✅ End notification sent:', data))
-    .catch(err => console.error('❌ Failed to send end notification:', err));
-  }
-}, [timeRemaining, timerActive]);
-
 
 
   const cardBorderVariance = type === "creator" ? "border-blue-500" : type === "fan" && ["accepted", "completed"].includes(currentStatus) ? "border-green-500" : "border-yellow-500"
