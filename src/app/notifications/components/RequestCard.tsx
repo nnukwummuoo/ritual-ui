@@ -252,21 +252,7 @@ export default function RequestCard({ exp, img, originalPhotoLink, name, usernam
 const [timerActive, setTimerActive] = useState(() => {
   if (typeof window === 'undefined') return false;
   const saved = localStorage.getItem(`timer_active_${requestId}`);
-  if (saved !== 'true') return false;
-  
-  // Check if timer has already ended
-  const endTime = localStorage.getItem(`timer_end_${requestId}`);
-  if (!endTime) return false;
-  
-  const diff = Math.floor((parseInt(endTime) - Date.now()) / 1000);
-  if (diff <= 0) {
-    // Clean up stale localStorage
-    localStorage.removeItem(`timer_active_${requestId}`);
-    localStorage.removeItem(`timer_end_${requestId}`);
-    return false;
-  }
-  
-  return true;
+  return saved === 'true';
 });
 
 const [timeRemaining, setTimeRemaining] = useState(() => {
@@ -1604,10 +1590,12 @@ const handleStartTimer = async () => {
     console.error('Failed to send start notification', err);
   }
 
+  const endTime = Date.now() + 30 * 60 * 1000;
+  localStorage.setItem(`timer_active_${requestId}`, 'true');
+  localStorage.setItem(`timer_end_${requestId}`, String(endTime));
   setTimerActive(true);
   setTimeRemaining(30 * 60);
 };
-
 
 const formatTimer = (seconds: number) => {
   const m = Math.floor(seconds / 60).toString().padStart(2, '0');
@@ -1615,11 +1603,6 @@ const formatTimer = (seconds: number) => {
   return `${m}:${s}`;
 };
 
-const endTime = Date.now() + 30 * 60 * 1000;
-localStorage.setItem(`timer_active_${requestId}`, 'true');
-localStorage.setItem(`timer_end_${requestId}`, String(endTime));
-setTimerActive(true);
-setTimeRemaining(30 * 60);
 
 
 
