@@ -1759,7 +1759,7 @@ const formatTimer = (seconds: number) => {
       <p className="text-gray-600 text-sm mt-1">
         Once a booking is accepted, your payment is secured and held by Mmeko. After the{" "}
         <strong>{hosttype?.toLowerCase() === "fan date" ? "date" : "meet & greet"}</strong>,{" "}
-        simply ask the fan to tap <strong>"Mark as Complete"</strong> to receive your payment automatically. If they don't, contact <strong>Mmeko Support</strong> and we'll release it immediately. 🙂
+        Your fan will be notified to <strong>"Mark it as Complete"</strong> — once they do, your payment is released instantly. If they don't, contact <strong>Mmeko Support</strong> and we will release your payment immediately. 🙂
       </p>
     </div>
   </div>
