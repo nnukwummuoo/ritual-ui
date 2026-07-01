@@ -734,12 +734,13 @@ export default function Editcreator() {
   >
     <span
       style={{ color: "#6c63ff" }}
-      className="font-bold text-xs uppercase tracking-wider mb-0 flex items-center gap-1"
+      className="font-bold text-xs uppercase tracking-wider flex items-center gap-1"
     >
       ✨ Premium Extension Available
     </span>
   </p>
-  <p className="text-gray-600 leading-relaxed text-xs sm:text-sm mt-1">
+  <p className="text-gray-600 leading-relaxed text-xs sm:text-sm"
+     style={{ marginTop: -8 }}>
     Fans can seamlessly extend their experience by sending an additional structured booking request at the end of each session if both parties wish to continue.
   </p>
 </>
