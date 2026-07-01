@@ -248,6 +248,7 @@ export default function RequestCard({ exp, img, originalPhotoLink, name, usernam
   const [timeLeft, setTimeLeft] = useState<string>("");
   const [showVerifyPopup, setShowVerifyPopup] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
+
 const [timerActive, setTimerActive] = useState(() => {
   if (typeof window === 'undefined') return false;
   const saved = localStorage.getItem(`timer_active_${requestId}`);
@@ -255,11 +256,12 @@ const [timerActive, setTimerActive] = useState(() => {
 });
 
 const [timeRemaining, setTimeRemaining] = useState(() => {
-  if (typeof window === 'undefined') return 30 * 60; // 30 minutes in seconds
-  const saved = localStorage.getItem(`timer_remaining_${requestId}`);
-  return saved ? parseInt(saved) : 30 * 60;
+  if (typeof window === 'undefined') return 30 * 60;
+  const endTime = localStorage.getItem(`timer_end_${requestId}`);
+  if (!endTime) return 30 * 60;
+  const diff = Math.floor((parseInt(endTime) - Date.now()) / 1000);
+  return diff > 0 ? diff : 0;
 });
-
 
 const [timerInterval, setTimerInterval] = useState<NodeJS.Timeout | null>(null);
 
@@ -590,25 +592,27 @@ useEffect(() => {
 
 // Restart timer on mount if it was active
 useEffect(() => {
-  if (timerActive && timeRemaining > 0) {
+  if (timerActive) {
     const interval = setInterval(() => {
-      setTimeRemaining(prev => {
-        if (prev <= 1) {
-          clearInterval(interval);
-          setTimerActive(false);
-          setTimeRemaining(0);
-          localStorage.removeItem(`timer_active_${requestId}`);
-          localStorage.removeItem(`timer_remaining_${requestId}`);
-          return 0;
-        }
-        return prev - 1;
-      });
+      const endTime = localStorage.getItem(`timer_end_${requestId}`);
+      if (!endTime) return;
+      
+      const diff = Math.floor((parseInt(endTime) - Date.now()) / 1000);
+      
+      if (diff <= 0) {
+        clearInterval(interval);
+        setTimerActive(false);
+        setTimeRemaining(0);
+        localStorage.removeItem(`timer_active_${requestId}`);
+        localStorage.removeItem(`timer_end_${requestId}`);
+      } else {
+        setTimeRemaining(diff);
+      }
     }, 1000);
 
-    return () => clearInterval(interval); // ← cleanup when timerActive changes
+    return () => clearInterval(interval);
   }
-}, [timerActive]); // ← runs when timer starts/stops
-  
+}, [timerActive]);
 
 
 
@@ -1462,6 +1466,7 @@ useEffect(() => {
     fanUserid={userid}
     fanVerified={fanVerified}
     creatorUserid={currentUserId}
+     requestId={requestId}
     timerActive={timerActive}
   setTimerActive={setTimerActive}
   timeRemaining={timeRemaining}
@@ -1512,6 +1517,7 @@ function DetailsModal({
   fanVerified,
   creatorUserid,
    timerActive,
+  requestId,
   setTimerActive,
   timeRemaining,
   setTimeRemaining,
@@ -1526,6 +1532,7 @@ function DetailsModal({
   fanUserid?: string;
   fanVerified?: boolean;
   creatorUserid?: string;
+  requestId?: string;
    timerActive: boolean;
   setTimerActive: (v: boolean) => void;
   timeRemaining: number;
@@ -1568,12 +1575,18 @@ const handleStartTimer = async () => {
   setTimeRemaining(30 * 60);
 };
 
-// Add this inside DetailsModal function
+
 const formatTimer = (seconds: number) => {
   const m = Math.floor(seconds / 60).toString().padStart(2, '0');
   const s = (seconds % 60).toString().padStart(2, '0');
   return `${m}:${s}`;
 };
+
+const endTime = Date.now() + 30 * 60 * 1000;
+localStorage.setItem(`timer_active_${requestId}`, 'true');
+localStorage.setItem(`timer_end_${requestId}`, String(endTime));
+setTimerActive(true);
+setTimeRemaining(30 * 60);
 
 
 
