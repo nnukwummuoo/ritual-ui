@@ -1409,6 +1409,7 @@ useEffect(() => {
     currentStatus={currentStatus}
     fanUserid={userid}
     fanVerified={fanVerified}
+    creatorUserid={currentUserId}
   />
 )}
     </div>
@@ -1450,7 +1451,8 @@ function DetailsModal({
   isExpired,
   currentStatus,
   fanUserid,
-  fanVerified
+  fanVerified,
+  creatorUserid
 }: {
   details?: FanMeetDetails;
   onClose: () => void;
@@ -1461,6 +1463,7 @@ function DetailsModal({
   currentStatus?: string;
   fanUserid?: string;
   fanVerified?: boolean;
+  creatorUserid?: string;
 }) {
   const [fanDocument, setFanDocument] = useState<{
     idPhotofilelink?: string;
@@ -1488,6 +1491,7 @@ const handleStartTimer = async () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         fanUserid,
+        creatorUserid: creatorUserid,
         hosttype: hostTypeLabel,
         event: 'started'
       })
@@ -1512,6 +1516,7 @@ const handleStartTimer = async () => {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             fanUserid,
+             creatorUserid: creatorUserid,
             hosttype: hostTypeLabel,
             event: 'ended'
           })
