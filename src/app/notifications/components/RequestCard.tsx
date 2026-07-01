@@ -248,8 +248,18 @@ export default function RequestCard({ exp, img, originalPhotoLink, name, usernam
   const [timeLeft, setTimeLeft] = useState<string>("");
   const [showVerifyPopup, setShowVerifyPopup] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
-  const [timerActive, setTimerActive] = useState(false);
-const [timeRemaining, setTimeRemaining] = useState(30 * 60); // 30 minutes in seconds
+const [timerActive, setTimerActive] = useState(() => {
+  if (typeof window === 'undefined') return false;
+  const saved = localStorage.getItem(`timer_active_${requestId}`);
+  return saved === 'true';
+});
+
+const [timeRemaining, setTimeRemaining] = useState(() => {
+  if (typeof window === 'undefined') return 30 * 60; // 30 minutes in seconds
+  const saved = localStorage.getItem(`timer_remaining_${requestId}`);
+  return saved ? parseInt(saved) : 30 * 60;
+});
+
 const [timerInterval, setTimerInterval] = useState<NodeJS.Timeout | null>(null);
 
 
@@ -560,6 +570,48 @@ useEffect(() => {
       return () => clearInterval(interval);
     }
   }, [currentStatus, calculateTimeLeft]);
+
+  // Save timer state to localStorage
+useEffect(() => {
+  if (requestId) {
+    localStorage.setItem(`timer_active_${requestId}`, String(timerActive));
+    localStorage.setItem(`timer_remaining_${requestId}`, String(timeRemaining));
+  }
+}, [timerActive, timeRemaining, requestId]);
+
+// Restart timer on mount if it was active
+useEffect(() => {
+  if (timerActive && timeRemaining > 0) {
+    const interval = setInterval(() => {
+      setTimeRemaining(prev => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          setTimerActive(false);
+          localStorage.removeItem(`timer_active_${requestId}`);
+          localStorage.removeItem(`timer_remaining_${requestId}`);
+
+          // Send end notification
+          fetch(`${URL}/fanrequest/notify-session`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              fanUserid: userid,
+              creatorUserid: currentUserId,
+              hosttype: hosttype || "Fan Meet",
+              event: 'ended'
+            })
+          }).catch(err => console.error('Failed to send end notification', err));
+
+          return 30 * 60;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    setTimerInterval(interval);
+    return () => clearInterval(interval);
+  }
+}, [timerActive]); // ← only re-run when timerActive changes
 
   
 
