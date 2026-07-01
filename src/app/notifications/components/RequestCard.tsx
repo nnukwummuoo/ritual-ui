@@ -265,6 +265,8 @@ const [timerActive, setTimerActive] = useState(() => {
 
 const [timeRemaining, setTimeRemaining] = useState(() => {
   if (typeof window === 'undefined') return 30 * 60;
+   console.log('requestId on init:', requestId);
+  console.log('session_completed:', localStorage.getItem(`session_completed_${requestId}`));
   // If session completed, show 0
   if (localStorage.getItem(`session_completed_${requestId}`) === 'true') return 0;
   const endTime = localStorage.getItem(`timer_end_${requestId}`);
