@@ -265,6 +265,8 @@ const [timeRemaining, setTimeRemaining] = useState(() => {
 
 const [timerInterval, setTimerInterval] = useState<NodeJS.Timeout | null>(null);
 
+const [sessionCompleted, setSessionCompleted] = useState(false);
+
 const formatTimer = (seconds: number) => {
   const m = Math.floor(seconds / 60).toString().padStart(2, '0');
   const s = (seconds % 60).toString().padStart(2, '0');
@@ -616,7 +618,7 @@ useEffect(() => {
 
 useEffect(() => {
   if (timeRemaining === 0 && !timerActive) {
-    console.log('🔔 Sending end notification...');
+    setSessionCompleted(true);
     fetch(`${URL}/fanrequest/notify-session`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -1492,6 +1494,8 @@ useEffect(() => {
   setTimeRemaining={setTimeRemaining}
   timerInterval={timerInterval}
   setTimerInterval={setTimerInterval}
+  sessionCompleted={sessionCompleted}
+setSessionCompleted={setSessionCompleted}
   />
 )}
     </div>
@@ -1540,6 +1544,10 @@ function DetailsModal({
   setTimerActive,
   timeRemaining,
   setTimeRemaining,
+   timerInterval,
+  setTimerInterval,
+   sessionCompleted,    
+  setSessionCompleted 
 }: {
   details?: FanMeetDetails;
   onClose: () => void;
@@ -1558,6 +1566,8 @@ function DetailsModal({
   setTimeRemaining: React.Dispatch<React.SetStateAction<number>>;
   timerInterval: NodeJS.Timeout | null;
   setTimerInterval: (v: NodeJS.Timeout | null) => void;
+  sessionCompleted: boolean;
+setSessionCompleted: (v: boolean) => void;
 }) {
   const [fanDocument, setFanDocument] = useState<{
     idPhotofilelink?: string;
@@ -1602,6 +1612,8 @@ const formatTimer = (seconds: number) => {
   const s = (seconds % 60).toString().padStart(2, '0');
   return `${m}:${s}`;
 };
+
+
 
 
 
@@ -1871,24 +1883,32 @@ const formatTimer = (seconds: number) => {
       {/* Button or countdown */}
       <div className="mt-2 mb-3">
         {timerActive ? (
-          <div className="w-full py-3 rounded-lg text-center font-bold text-white text-xl"
-            style={{ background: "linear-gradient(135deg, #f97316, #ef4444)" }}>
-            ⏱️ {formatTimer(timeRemaining)} remaining
-          </div>
-        ) : (
-          <button
-            onClick={handleStartTimer}
-            className="w-full py-3 rounded-lg font-bold text-white transition-all"
-            style={{ background: "linear-gradient(135deg, #6c63ff, #9b59f5)" }}
-          >
-            Start {hosttype || "Fan Meet"}
-          </button>
-        )}
+  <div className="w-full py-3 rounded-lg text-center font-bold text-white text-xl"
+    style={{ background: "linear-gradient(135deg, #f97316, #ef4444)" }}>
+    ⏱️ {formatTimer(timeRemaining)} remaining
+  </div>
+) : sessionCompleted ? (
+  <div className="w-full py-3 rounded-lg text-center font-bold text-white text-xl"
+    style={{ background: "linear-gradient(135deg, #16a34a, #15803d)" }}>
+    ✅ {hosttype || "Fan Meet"} Completed
+  </div>
+) : (
+  <button
+    onClick={handleStartTimer}
+    className="w-full py-3 rounded-lg font-bold text-white transition-all"
+    style={{ background: "linear-gradient(135deg, #6c63ff, #9b59f5)" }}
+  >
+    Start {hosttype || "Fan Meet"}
+  </button>
+)}
       </div>
 
       <p className="text-gray-600 text-sm mt-1">
-        Start this timer when the {hosttype?.toLowerCase() === "fan date" ? "date" : "meet & greet"} begins. It will notify both you and your fan when it starts and when it ends.
-      </p>
+  {sessionCompleted 
+    ? "Kindly ask your fan to mark as complete"
+    : `Start this timer when the ${hosttype?.toLowerCase() === "fan date" ? "date" : "meet & greet"} begins. It will notify both you and your fan when it starts and when it ends.`
+  }
+</p>
     </div>
   </div>
 )}
