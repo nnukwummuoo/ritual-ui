@@ -614,6 +614,29 @@ useEffect(() => {
   }
 }, [timerActive]);
 
+useEffect(() => {
+  if (timerActive) {
+    const interval = setInterval(() => {
+      const endTime = localStorage.getItem(`timer_end_${requestId}`);
+      if (!endTime) return;
+      
+      const diff = Math.floor((parseInt(endTime) - Date.now()) / 1000);
+      
+      if (diff <= 0) {
+        clearInterval(interval);
+        setTimerActive(false);
+        setTimeRemaining(0);
+        localStorage.removeItem(`timer_active_${requestId}`);
+        localStorage.removeItem(`timer_end_${requestId}`);
+      } else {
+        setTimeRemaining(diff);
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }
+}, [timerActive]);
+
 
 
   const cardBorderVariance = type === "creator" ? "border-blue-500" : type === "fan" && ["accepted", "completed"].includes(currentStatus) ? "border-green-500" : "border-yellow-500"
