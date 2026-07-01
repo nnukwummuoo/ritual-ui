@@ -1616,7 +1616,8 @@ const handleStartTimer = async () => {
         fanUserid,
         creatorUserid,
         hosttype: hostTypeLabel,
-        event: 'started'
+        event: 'started',
+       requestId
       })
     });
   } catch (err) {
