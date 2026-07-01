@@ -253,16 +253,6 @@ const [timerActive, setTimerActive] = useState(false);
 const [timeRemaining, setTimeRemaining] = useState(30 * 60);
 const [sessionCompleted, setSessionCompleted] = useState(false);
 
-const [timerInterval, setTimerInterval] = useState<NodeJS.Timeout | null>(null);
-
-
-const formatTimer = (seconds: number) => {
-  const m = Math.floor(seconds / 60).toString().padStart(2, '0');
-  const s = (seconds % 60).toString().padStart(2, '0');
-  return `${m}:${s}`;
-};
-
-
 useEffect(() => {
   if (!requestId) return;
   
@@ -292,6 +282,16 @@ useEffect(() => {
     }
   }
 }, [requestId]);
+
+const [timerInterval, setTimerInterval] = useState<NodeJS.Timeout | null>(null);
+
+
+const formatTimer = (seconds: number) => {
+  const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+  const s = (seconds % 60).toString().padStart(2, '0');
+  return `${m}:${s}`;
+};
+
 
 
 
