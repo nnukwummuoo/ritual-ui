@@ -615,27 +615,23 @@ useEffect(() => {
 }, [timerActive]);
 
 useEffect(() => {
-  if (timerActive) {
-    const interval = setInterval(() => {
-      const endTime = localStorage.getItem(`timer_end_${requestId}`);
-      if (!endTime) return;
-      
-      const diff = Math.floor((parseInt(endTime) - Date.now()) / 1000);
-      
-      if (diff <= 0) {
-        clearInterval(interval);
-        setTimerActive(false);
-        setTimeRemaining(0);
-        localStorage.removeItem(`timer_active_${requestId}`);
-        localStorage.removeItem(`timer_end_${requestId}`);
-      } else {
-        setTimeRemaining(diff);
-      }
-    }, 1000);
-
-    return () => clearInterval(interval);
+  if (timeRemaining === 0 && !timerActive) {
+    console.log('🔔 Sending end notification...');
+    fetch(`${URL}/fanrequest/notify-session`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        fanUserid: userid,
+        creatorUserid: currentUserId,
+        hosttype: hosttype || "Fan Meet",
+        event: 'ended'
+      })
+    })
+    .then(res => res.json())
+    .then(data => console.log('✅ End notification sent:', data))
+    .catch(err => console.error('❌ Failed to send end notification:', err));
   }
-}, [timerActive]);
+}, [timeRemaining, timerActive]);
 
 
 
