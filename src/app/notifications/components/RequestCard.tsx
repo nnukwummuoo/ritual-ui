@@ -1471,6 +1471,74 @@ function DetailsModal({
 
   const [lightboxSrc, setLightboxSrc] = useState<string>("");
 
+  // Timer state
+const [timerActive, setTimerActive] = useState(false);
+const [timeRemaining, setTimeRemaining] = useState(30 * 60); // 30 minutes in seconds
+const [timerInterval, setTimerInterval] = useState<NodeJS.Timeout | null>(null);
+
+const handleStartTimer = async () => {
+  if (timerActive) return;
+
+  const hostTypeLabel = hosttype || "Fan Meet";
+
+  // Send start notification
+  try {
+    await fetch(`${URL}/fanrequest/notify-session`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        fanUserid,
+        hosttype: hostTypeLabel,
+        event: 'started'
+      })
+    });
+  } catch (err) {
+    console.error('Failed to send start notification', err);
+  }
+
+  setTimerActive(true);
+  setTimeRemaining(30 * 60);
+
+  const interval = setInterval(async () => {
+    setTimeRemaining(prev => {
+      if (prev <= 1) {
+        clearInterval(interval);
+        setTimerActive(false);
+        setTimeRemaining(30 * 60);
+
+        // Send end notification
+        fetch(`${URL}/fanrequest/notify-session`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            fanUserid,
+            hosttype: hostTypeLabel,
+            event: 'ended'
+          })
+        }).catch(err => console.error('Failed to send end notification', err));
+
+        return 30 * 60;
+      }
+      return prev - 1;
+    });
+  }, 1000);
+
+  setTimerInterval(interval);
+};
+
+// Cleanup on unmount
+useEffect(() => {
+  return () => {
+    if (timerInterval) clearInterval(timerInterval);
+  };
+}, [timerInterval]);
+
+const formatTimer = (seconds: number) => {
+  const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+  const s = (seconds % 60).toString().padStart(2, '0');
+  return `${m}:${s}`;
+};
+
  useEffect(() => {
   if (type !== "creator" || !fanUserid) return;
   const fetchFanDoc = async () => {
@@ -1491,8 +1559,6 @@ function DetailsModal({
   };
   fetchFanDoc();
 }, [fanUserid, type]);
-
-
 
   // Fallback countdown calculation for modal
   const getFallbackCountdown = () => {
@@ -1728,6 +1794,41 @@ function DetailsModal({
           </div>
         )}
 
+
+ {type === "creator" && currentStatus === "accepted" && hosttype?.toLowerCase() !== "fan call" && (
+  <div className="flex items-start gap-3 mb-4">
+    <span className="text-xl mt-1">⏰</span>
+    <div className="w-full">
+      <h3 className="font-semibold text-gray-800">Timer</h3>
+
+      {/* Button or countdown */}
+      <div className="mt-2 mb-3">
+        {timerActive ? (
+          <div className="w-full py-3 rounded-lg text-center font-bold text-white text-xl"
+            style={{ background: "linear-gradient(135deg, #f97316, #ef4444)" }}>
+            ⏱️ {formatTimer(timeRemaining)} remaining
+          </div>
+        ) : (
+          <button
+            onClick={handleStartTimer}
+            className="w-full py-3 rounded-lg font-bold text-white transition-all"
+            style={{ background: "linear-gradient(135deg, #6c63ff, #9b59f5)" }}
+          >
+            Start {hosttype || "Fan Meet"}
+          </button>
+        )}
+      </div>
+
+      <p className="text-gray-600 text-sm mt-1">
+        Start this timer when the {hosttype?.toLowerCase() === "fan date" ? "date" : "meet & greet"} begins. It will notify both you and your fan when it starts and when it ends.
+      </p>
+    </div>
+  </div>
+)}
+
+
+
+
           {/* Fan Verification Documents - Only show to creator */}
 {type === "creator" && fanDocument && fanVerified && (
   <div className="flex items-start gap-3 mb-6">
@@ -1814,6 +1915,8 @@ function DetailsModal({
     />
   </div>
 )}
+
+ 
 
     {/* Safety Rules */}
         <div className="flex items-start gap-3 mb-4">
