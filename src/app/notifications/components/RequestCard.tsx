@@ -265,7 +265,10 @@ const [timeRemaining, setTimeRemaining] = useState(() => {
 
 const [timerInterval, setTimerInterval] = useState<NodeJS.Timeout | null>(null);
 
-const [sessionCompleted, setSessionCompleted] = useState(false);
+const [sessionCompleted, setSessionCompleted] = useState(() => {
+  if (typeof window === 'undefined') return false;
+  return localStorage.getItem(`session_completed_${requestId}`) === 'true';
+});
 
 const formatTimer = (seconds: number) => {
   const m = Math.floor(seconds / 60).toString().padStart(2, '0');
@@ -602,9 +605,12 @@ useEffect(() => {
       const diff = Math.floor((parseInt(endTime) - Date.now()) / 1000);
       
       if (diff <= 0) {
+        console.log('⏰ Timer hit zero');
         clearInterval(interval);
         setTimerActive(false);
         setTimeRemaining(0);
+        setSessionCompleted(true); 
+        localStorage.setItem(`session_completed_${requestId} `, 'true'); 
         localStorage.removeItem(`timer_active_${requestId}`);
         localStorage.removeItem(`timer_end_${requestId}`);
       } else {
@@ -1905,7 +1911,7 @@ const formatTimer = (seconds: number) => {
 
       <p className="text-gray-600 text-sm mt-1">
   {sessionCompleted 
-    ? "Kindly ask your fan to mark as complete"
+    ? "Your fan will be notified to mark it as complete — once they do, your payment is released instantly. If they don't, contact Mmeko Support and we will release your payment immediately."
     : `Start this timer when the ${hosttype?.toLowerCase() === "fan date" ? "date" : "meet & greet"} begins. It will notify both you and your fan when it starts and when it ends.`
   }
 </p>
