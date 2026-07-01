@@ -1894,12 +1894,12 @@ const formatTimer = (seconds: number) => {
 
       {/* Button or countdown */}
       <div className="mt-2 mb-3">
-        {timerActive ? (
+       {timerActive ? (
   <div className="w-full py-3 rounded-lg text-center font-bold text-white text-xl"
     style={{ background: "linear-gradient(135deg, #f97316, #ef4444)" }}>
     ⏱️ {formatTimer(timeRemaining)} remaining
   </div>
-) : sessionCompleted ? (
+) : timeRemaining === 0 ? (
   <div className="w-full py-3 rounded-lg text-center font-bold text-white text-xl"
     style={{ background: "linear-gradient(135deg, #16a34a, #15803d)" }}>
     ✅ {hosttype || "Fan Meet"} Completed
@@ -1915,8 +1915,8 @@ const formatTimer = (seconds: number) => {
 )}
       </div>
 
-      <p className="text-gray-600 text-sm mt-1">
-  {sessionCompleted 
+  <p className="text-gray-600 text-sm mt-1">
+  {timeRemaining === 0 && !timerActive
     ? "Your fan will be notified to mark it as complete — once they do, your payment is released instantly. If they don't, contact Mmeko Support and we will release your payment immediately."
     : `Start this timer when the ${hosttype?.toLowerCase() === "fan date" ? "date" : "meet & greet"} begins. It will notify both you and your fan when it starts and when it ends.`
   }
