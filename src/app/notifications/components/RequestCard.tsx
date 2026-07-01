@@ -249,14 +249,24 @@ export default function RequestCard({ exp, img, originalPhotoLink, name, usernam
   const [showVerifyPopup, setShowVerifyPopup] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
 
+const [sessionCompleted, setSessionCompleted] = useState(() => {
+  if (typeof window === 'undefined') return false;
+  const val = localStorage.getItem(`session_completed_${requestId}`);
+  return val === 'true';
+});
+
 const [timerActive, setTimerActive] = useState(() => {
   if (typeof window === 'undefined') return false;
-  const saved = localStorage.getItem(`timer_active_${requestId}`);
-  return saved === 'true';
+  // If session already completed, timer is not active
+  if (localStorage.getItem(`session_completed_${requestId}`) === 'true') return false;
+  const val = localStorage.getItem(`timer_active_${requestId}`);
+  return val === 'true';
 });
 
 const [timeRemaining, setTimeRemaining] = useState(() => {
   if (typeof window === 'undefined') return 30 * 60;
+  // If session completed, show 0
+  if (localStorage.getItem(`session_completed_${requestId}`) === 'true') return 0;
   const endTime = localStorage.getItem(`timer_end_${requestId}`);
   if (!endTime) return 30 * 60;
   const diff = Math.floor((parseInt(endTime) - Date.now()) / 1000);
@@ -265,10 +275,6 @@ const [timeRemaining, setTimeRemaining] = useState(() => {
 
 const [timerInterval, setTimerInterval] = useState<NodeJS.Timeout | null>(null);
 
-const [sessionCompleted, setSessionCompleted] = useState(() => {
-  if (typeof window === 'undefined') return false;
-  return localStorage.getItem(`session_completed_${requestId}`) === 'true';
-});
 
 const formatTimer = (seconds: number) => {
   const m = Math.floor(seconds / 60).toString().padStart(2, '0');
