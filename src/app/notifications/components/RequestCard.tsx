@@ -252,7 +252,21 @@ export default function RequestCard({ exp, img, originalPhotoLink, name, usernam
 const [timerActive, setTimerActive] = useState(() => {
   if (typeof window === 'undefined') return false;
   const saved = localStorage.getItem(`timer_active_${requestId}`);
-  return saved === 'true';
+  if (saved !== 'true') return false;
+  
+  // Check if timer has already ended
+  const endTime = localStorage.getItem(`timer_end_${requestId}`);
+  if (!endTime) return false;
+  
+  const diff = Math.floor((parseInt(endTime) - Date.now()) / 1000);
+  if (diff <= 0) {
+    // Clean up stale localStorage
+    localStorage.removeItem(`timer_active_${requestId}`);
+    localStorage.removeItem(`timer_end_${requestId}`);
+    return false;
+  }
+  
+  return true;
 });
 
 const [timeRemaining, setTimeRemaining] = useState(() => {
