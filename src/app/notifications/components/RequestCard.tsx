@@ -238,6 +238,7 @@ interface CardProps {
   vipEndDate?: string | null;
   createdAt?: string; // Add creation timestamp for countdown
   fanVerified?: boolean;
+  
   onStatusChange?: (requestId: string, newStatus: string) => void;
 }
 
@@ -247,6 +248,10 @@ export default function RequestCard({ exp, img, originalPhotoLink, name, usernam
   const [timeLeft, setTimeLeft] = useState<string>("");
   const [showVerifyPopup, setShowVerifyPopup] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
+  const [timerActive, setTimerActive] = useState(false);
+const [timeRemaining, setTimeRemaining] = useState(30 * 60); // 30 minutes in seconds
+const [timerInterval, setTimerInterval] = useState<NodeJS.Timeout | null>(null);
+
 
   // Function to handle opening details modal
   const handleShowDetails = () => {
@@ -1410,6 +1415,12 @@ useEffect(() => {
     fanUserid={userid}
     fanVerified={fanVerified}
     creatorUserid={currentUserId}
+    timerActive={timerActive}
+  setTimerActive={setTimerActive}
+  timeRemaining={timeRemaining}
+  setTimeRemaining={setTimeRemaining}
+  timerInterval={timerInterval}
+  setTimerInterval={setTimerInterval}
   />
 )}
     </div>
@@ -1452,7 +1463,13 @@ function DetailsModal({
   currentStatus,
   fanUserid,
   fanVerified,
-  creatorUserid
+  creatorUserid,
+   timerActive,
+  setTimerActive,
+  timeRemaining,
+  setTimeRemaining,
+  timerInterval,
+  setTimerInterval
 }: {
   details?: FanMeetDetails;
   onClose: () => void;
@@ -1464,6 +1481,12 @@ function DetailsModal({
   fanUserid?: string;
   fanVerified?: boolean;
   creatorUserid?: string;
+   timerActive: boolean;
+  setTimerActive: (v: boolean) => void;
+  timeRemaining: number;
+  setTimeRemaining: React.Dispatch<React.SetStateAction<number>>;
+  timerInterval: NodeJS.Timeout | null;
+  setTimerInterval: (v: NodeJS.Timeout | null) => void;
 }) {
   const [fanDocument, setFanDocument] = useState<{
     idPhotofilelink?: string;
@@ -1475,10 +1498,6 @@ function DetailsModal({
   const [lightboxSrc, setLightboxSrc] = useState<string>("");
 
   // Timer state
-const [timerActive, setTimerActive] = useState(false);
-const [timeRemaining, setTimeRemaining] = useState(30 * 60); // 30 minutes in seconds
-const [timerInterval, setTimerInterval] = useState<NodeJS.Timeout | null>(null);
-
 const handleStartTimer = async () => {
   if (timerActive) return;
 
