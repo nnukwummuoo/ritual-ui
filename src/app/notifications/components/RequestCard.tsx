@@ -587,32 +587,18 @@ useEffect(() => {
         if (prev <= 1) {
           clearInterval(interval);
           setTimerActive(false);
+          setTimeRemaining(0);
           localStorage.removeItem(`timer_active_${requestId}`);
           localStorage.removeItem(`timer_remaining_${requestId}`);
-
-          // Send end notification
-          fetch(`${URL}/fanrequest/notify-session`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              fanUserid: userid,
-              creatorUserid: currentUserId,
-              hosttype: hosttype || "Fan Meet",
-              event: 'ended'
-            })
-          }).catch(err => console.error('Failed to send end notification', err));
-
-          return 30 * 60;
+          return 0;
         }
         return prev - 1;
       });
     }, 1000);
 
-    setTimerInterval(interval);
-    return () => clearInterval(interval);
+    return () => clearInterval(interval); // ← cleanup when timerActive changes
   }
-}, [timerActive]); // ← only re-run when timerActive changes
-
+}, [timerActive]); // ← runs when timer starts/stops
   
 
 
@@ -1550,19 +1536,19 @@ function DetailsModal({
   const [lightboxSrc, setLightboxSrc] = useState<string>("");
 
   // Timer state
+
 const handleStartTimer = async () => {
   if (timerActive) return;
 
   const hostTypeLabel = hosttype || "Fan Meet";
 
-  // Send start notification
   try {
     await fetch(`${URL}/fanrequest/notify-session`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         fanUserid,
-        creatorUserid: creatorUserid,
+        creatorUserid,
         hosttype: hostTypeLabel,
         event: 'started'
       })
@@ -1573,47 +1559,9 @@ const handleStartTimer = async () => {
 
   setTimerActive(true);
   setTimeRemaining(30 * 60);
-
-  const interval = setInterval(async () => {
-    setTimeRemaining(prev => {
-      if (prev <= 1) {
-        clearInterval(interval);
-        setTimerActive(false);
-        setTimeRemaining(30 * 60);
-
-        // Send end notification
-        fetch(`${URL}/fanrequest/notify-session`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            fanUserid,
-             creatorUserid: creatorUserid,
-            hosttype: hostTypeLabel,
-            event: 'ended'
-          })
-        }).catch(err => console.error('Failed to send end notification', err));
-
-        return 30 * 60;
-      }
-      return prev - 1;
-    });
-  }, 1000);
-
-  setTimerInterval(interval);
 };
 
-// Cleanup on unmount
-useEffect(() => {
-  return () => {
-    if (timerInterval) clearInterval(timerInterval);
-  };
-}, [timerInterval]);
 
-const formatTimer = (seconds: number) => {
-  const m = Math.floor(seconds / 60).toString().padStart(2, '0');
-  const s = (seconds % 60).toString().padStart(2, '0');
-  return `${m}:${s}`;
-};
 
  useEffect(() => {
   if (type !== "creator" || !fanUserid) return;
