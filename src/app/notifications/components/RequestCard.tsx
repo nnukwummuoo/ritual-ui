@@ -1582,27 +1582,17 @@ setSessionCompleted: (v: boolean) => void;
 
   const [lightboxSrc, setLightboxSrc] = useState<string>("");
 
-  // Timer state
-
 const handleStartTimer = async () => {
   if (timerActive) return;
-
-  const hostTypeLabel = hosttype || "Fan Meet";
 
   try {
     await fetch(`${URL}/fanrequest/notify-session`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        fanUserid,
-        creatorUserid,
-        hosttype: hostTypeLabel,
-        event: 'started',
-       requestId
-      })
+      body: JSON.stringify({ requestId })
     });
   } catch (err) {
-    console.error('Failed to send start notification', err);
+    console.error('Failed to save session end time', err);
   }
 
   const endTime = Date.now() + 30 * 60 * 1000;
