@@ -58,7 +58,7 @@ export async function middleware(request: NextRequest) {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         path: '/',
-        sameSite: 'strict',
+        sameSite: 'lax',
         maxAge: 30 * 24 * 60 * 60,
       });
     }
@@ -95,7 +95,7 @@ export async function middleware(request: NextRequest) {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         path: '/',
-        sameSite: 'strict',
+        sameSite: 'lax',
         maxAge: 30 * 24 * 60 * 60,
       });
     }
