@@ -25,7 +25,9 @@ const backend = (token: String | undefined) => {
             data.accesstoken = newToken;
             localStorage.setItem("login", JSON.stringify(data));
           }
-        } catch {}
+        } catch {
+            // Redux update above still applies even if localStorage fails
+        }
       }
       return res;
     },

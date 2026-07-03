@@ -2,6 +2,11 @@
 
 import { handleInvalidToken } from "@/utils/handleInvalidToken";
 
+// Globally patches window.fetch so any raw fetch() call to the backend
+// (not just axios calls) picks up a sliding-refresh access token the
+// same way the axios interceptor does. This covers every current and
+// future fetch() call site in the app without needing to touch each one.
+
 (function setupFetchTokenSync() {
   if (typeof window === "undefined") return;
 
