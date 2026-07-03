@@ -4,6 +4,7 @@ import axios from "axios";
 import { URL as API_BASE } from "./config";
 import { store } from "@/store/store";
 import { updateAccessToken } from "@/store/registerSlice";
+import { handleInvalidToken } from "@/utils/handleInvalidToken"
 
 const PROD_BASE = process.env.NEXT_PUBLIC_API || "";
 
@@ -35,6 +36,13 @@ const PROD_BASE = process.env.NEXT_PUBLIC_API || "";
     return res;
   },
       async (error) => {
+
+         if (error?.response?.status === 403 && error?.response?.data?.code === "TOKEN_INVALID") {
+          handleInvalidToken();
+          return Promise.reject(error);
+        }
+
+
         if (!error || !error.config) return Promise.reject(error);
 
         const cfg = error.config as any;

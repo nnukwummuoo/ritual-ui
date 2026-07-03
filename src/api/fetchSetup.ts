@@ -2,6 +2,7 @@
 
 import { store } from "@/store/store";
 import { updateAccessToken } from "@/store/registerSlice";
+import { handleInvalidToken } from "@/utils/handleInvalidToken"
 
 // Globally patches window.fetch so any raw fetch() call to the backend
 // (not just axios calls) picks up a sliding-refresh access token the
@@ -28,6 +29,14 @@ import { updateAccessToken } from "@/store/registerSlice";
           const data = JSON.parse(raw);
           data.accesstoken = newToken;
           localStorage.setItem("login", JSON.stringify(data));
+        }
+      }
+
+      if (res.status === 403) {
+        const clone = res.clone();
+        const data = await clone.json().catch(() => null);
+        if (data?.code === "TOKEN_INVALID") {
+          handleInvalidToken();
         }
       }
     } catch {
