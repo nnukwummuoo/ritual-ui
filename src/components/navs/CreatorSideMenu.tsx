@@ -30,6 +30,7 @@ import { IoIosTimer } from "react-icons/io";
 import Image from "next/image";
 import { useRouter, usePathname } from "next/navigation";
 import { AppDispatch } from "@/store/store";
+import handleLogout from "@/lib/service/logout";
 
 
 // ✅ Type for props
@@ -95,9 +96,13 @@ export const CreatorSideMenu: React.FC<CreatorSideMenuProps> = ({
     }
   };
 
-  const logout = () => {
-    localStorage.removeItem("login");
-    window.location.href = "/";
+  const logout = async () => {
+    localStorage.clear();
+    try {
+      await handleLogout();
+    } finally {
+      window.location.href = "/";
+    }
   };
 
   return (

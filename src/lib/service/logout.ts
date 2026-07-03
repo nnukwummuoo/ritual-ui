@@ -1,18 +1,12 @@
-"use server"
+"use server";
 
-import { revalidatePath } from 'next/cache';
-import { cookies } from 'next/headers';
-import { NextResponse } from 'next/server';
-
+import { cookies } from "next/headers";
 
 export default async function handleLogout() {
-  const cookieStore = await cookies()
+  const cookieStore = await cookies();
 
-  const response = NextResponse.next();
-  cookieStore.set('session', '', {
-    path: '/',
-    expires: new Date(0),
-  });
-  NextResponse.redirect(new URL('/', process.env.NEXT_PUBLIC_URL))
-  revalidatePath("/", "layout")
+  const expired = { path: "/", expires: new Date(0) };
+  cookieStore.set("session", "", expired);
+  cookieStore.set("auth_token", "", expired);
+  cookieStore.set("refresh_token", "", expired);
 }

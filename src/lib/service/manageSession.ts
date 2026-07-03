@@ -5,9 +5,9 @@ import { jwtVerify, SignJWT } from "jose";
 import axios from "axios";
 import { URL } from "../../api/config";
 
-export type user = { 
-  username: string; 
-  password: string; 
+export type user = {
+  username: string;
+  password: string;
   userId?: string;
   _id?: string;
   admin?: boolean;
@@ -18,7 +18,9 @@ export type payload = { user: user };
 
 const secret = process.env.ACCESS_TOKEN_SECRET || "NEXT_PUBLIC_SECERET";
 const key = new TextEncoder().encode(secret);
-// Removed unused variables
+
+const SESSION_LIFETIME_SECONDS = 30 * 24 * 60 * 60; // 30 days
+const REFRESH_THRESHOLD_SECONDS = SESSION_LIFETIME_SECONDS / 2; // reissue once under 15 days remain
 
 export async function encryptData(payload: payload) {
   return await new SignJWT(payload)
@@ -28,15 +30,20 @@ export async function encryptData(payload: payload) {
     .sign(key);
 }
 
-export async function decryptData(input: string): Promise<{ status: string; body: user }> {
+export async function decryptData(
+  input: string
+): Promise<{ status: "valid" | "expired" | "invalid"; body: user; exp?: number }> {
   try {
     const { payload } = await jwtVerify(input, key, { algorithms: ["HS256"] });
     const typedPayload = payload as payload;
-    
-    return { status: "valid", body: typedPayload.user };
+    return { status: "valid", body: typedPayload.user, exp: payload.exp };
   } catch (error: any) {
+    const isExpired = error?.code === "ERR_JWT_EXPIRED";
     console.error("JWT verification error:", error.message);
-    return { status: "expired", body: error?.payload?.user ?? { username: "", password: "" } };
+    return {
+      status: isExpired ? "expired" : "invalid",
+      body: error?.payload?.user ?? { username: "", password: "" },
+    };
   }
 }
 
@@ -47,18 +54,15 @@ export async function isRegistered(payload: { username: string; password: string
       { username: payload.username.toLowerCase().trim(), password: payload.password },
       { withCredentials: true }
     );
-    console.log("Backend response:", res.data);
     const data = res.data;
     if (!data.ok) {
-      // Check if user is banned
       if (data.banned || res.status === 403) {
         return { error: data.message || "Login failed", banned: true };
       }
       return { error: data.message || "Login failed" };
     }
-    // Use the complete user object from backend response
     const user = {
-      ...data.user, // Include all user data from backend
+      ...data.user,
       _id: data.userId,
       username: payload.username.toLowerCase().trim(),
       accessToken: data.accessToken,
@@ -68,126 +72,90 @@ export async function isRegistered(payload: { username: string; password: string
     return { user };
   } catch (error: any) {
     console.error("Login API error:", error.message);
-    
-    // Check if user is banned (403 status)
     if (error?.response?.status === 403 || error?.response?.data?.banned) {
       return { error: error?.response?.data?.message || "This account has been banned for violating our rules", banned: true };
     }
-    
     return { error: error?.response?.data?.message || "Login failed" };
   }
 }
 
 export async function sessionMng(request: NextRequest): Promise<string | undefined> {
-  // Check for session cookie first (preferred)
   let cookie = request.cookies.get("session")?.value;
-  
-  // If no session cookie, check for auth_token cookie
   if (!cookie) {
     cookie = request.cookies.get("auth_token")?.value;
   }
-  
   if (!cookie?.length) return undefined;
+
   const decryptCookie = await decryptData(cookie);
-  if (decryptCookie.status === "valid") return undefined;
-  // Expired -> refresh directly and return new token
-  const refreshed = await encryptData({ user: decryptCookie.body });
-  return refreshed;
+
+  // Corrupted/garbage token — don't trust it, don't refresh it
+  if (decryptCookie.status === "invalid") return undefined;
+
+  // Fully expired — recover the payload and issue a brand new session
+  if (decryptCookie.status === "expired") {
+    return await encryptData({ user: decryptCookie.body });
+  }
+
+  // Still valid — sliding refresh: proactively renew once past the halfway point,
+  // so an active user's session window keeps sliding forward rather than hard-expiring.
+  if (decryptCookie.exp) {
+    const remaining = decryptCookie.exp - Math.floor(Date.now() / 1000);
+    if (remaining < REFRESH_THRESHOLD_SECONDS) {
+      return await encryptData({ user: decryptCookie.body });
+    }
+  }
+
+  return undefined; // still fresh, nothing to do
 }
 
 export async function checkUserAdmin(request: NextRequest): Promise<boolean> {
   try {
-    // Check for session cookie first (preferred)
     let cookie = request.cookies.get("session")?.value;
-    
-    // If no session cookie, check for auth_token cookie
     if (!cookie) {
       cookie = request.cookies.get("auth_token")?.value;
     }
-    
     if (!cookie?.length) {
       return false;
     }
-    
+
     const decryptCookie = await decryptData(cookie);
     if (decryptCookie.status === "valid") {
       const userData = decryptCookie.body;
-      
-      // First check if admin status is already in JWT
+
       if (userData?.admin !== undefined) {
         return userData.admin === true;
       }
-      
-      // If not in JWT, try to get user ID and make API call
+
       const userId = userData?.userId || userData?._id;
-      
       if (!userId) {
         return false;
       }
-      
+
       try {
-        // Make API call to check current admin status from database
         const response = await axios.get(`${URL}/user/${userId}`, {
           headers: {
             'Authorization': `Bearer ${userData?.accessToken || cookie}`,
             'Content-Type': 'application/json'
           }
         });
-        
+
         if (response.data && response.data.ok) {
           const user = response.data.user || response.data;
-          const isAdmin = user?.admin === true || 
-                 user?.isAdmin === true || 
+          return user?.admin === true ||
+                 user?.isAdmin === true ||
                  user?.is_admin === true ||
                  user?.role === 'admin' ||
                  user?.userRole === 'admin';
-          
-          return isAdmin;
         }
-        
         return false;
       } catch (apiError) {
         console.error("API error checking admin status:", apiError);
-        // Fallback to JWT data if API fails
         return userData?.admin === true;
       }
     }
-    
     return false;
   } catch (error) {
     console.error("Error checking admin status:", error);
     return false;
   }
 }
-// export async function checkCreatorVerified(request: NextRequest): Promise<boolean> {
-//   try {
-//     let cookie = request.cookies.get("session")?.value;
-//     if (!cookie) {
-//       cookie = request.cookies.get("auth_token")?.value;
-//     }
-//     if (!cookie?.length) return false;
-
-//     const decryptCookie = await decryptData(cookie);
-//     if (decryptCookie.status !== "valid") return false;
-
-//     const userData = decryptCookie.body as any;
-//     console.log("🔍 [checkCreatorVerified] userData keys:", Object.keys(userData));
-//     console.log("🔍 [checkCreatorVerified] creator_verified:", userData?.creator_verified);
-
-//     // The session cookie (encrypted by encryptData) contains the full user object
-//     // from isRegistered() which includes creator_verified from the login response
-//     if (userData?.creator_verified !== undefined) {
-//       return userData.creator_verified === true;
-//     }
-
-//     // Fallback: check nested user object
-//     if (userData?.user?.creator_verified !== undefined) {
-//       return userData.user.creator_verified === true;
-//     }
-
-//     return false;
-//   } catch (error: any) {
-//     console.error("❌ [checkCreatorVerified] Error:", error.message);
-//     return false;
-//   }
-// }

@@ -218,6 +218,9 @@ const registerSlice = createSlice({
       state.vipStartDate = undefined;
       state.vipEndDate = undefined;
     },
+    updateAccessToken(state, action) {
+      state.accesstoken = action.payload;
+    },
     loginAuthUser(state, action) {
       state.email = action.payload.email;
       state.password = action.payload.password;
@@ -412,4 +415,5 @@ export const {
   loginAuthUser,
   changepasswordback,
   logout,
+  updateAccessToken,
 } = registerSlice.actions;

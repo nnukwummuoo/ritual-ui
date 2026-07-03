@@ -13,6 +13,10 @@ import { SNACKBAR_OPTIONS } from "@/constants";
 import dynamic from "next/dynamic";
 // Install global Axios interceptor fallback
 import "@/api/axiosSetup";
+// Install global Axios interceptor fallback
+import "@/api/axiosSetup";
+// Install global fetch() interceptor for sliding-refresh token sync
+import "@/api/fetchSetup";
 
 const Loader = () => (
   <div className="w-screen flex items-center justify-center h-screen">

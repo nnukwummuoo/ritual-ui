@@ -266,7 +266,7 @@ export const deleteprofile = createAsyncThunk<
     try {
       const state = getState();
       const userId = state.profile.userId;
-      const token = state.register.refreshtoken;
+      const token = state.register.accesstoken;
 
       if (!userId) {
         return rejectWithValue({ message: "User ID not found" });
