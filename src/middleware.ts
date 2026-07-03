@@ -10,6 +10,7 @@ const publicRoutes = [
   '/auth/register',
   '/auth/verify-email',
   '/api/session',
+  '/api/login', 
   '/post-image',
   '/privacy-policy',
   '/T_&_C',
