@@ -76,7 +76,7 @@ const EditProfile: React.FC = () => {
   const [firstnamepl, setFirstnamepl] = useState("first name");
   const [lastnamepl, setLastnamepl] = useState("last name");
   const [countrypl, setCountrypl] = useState("country");
-  const [biopl, setBiopl] = useState("about me");
+  const [biopl, setBiopl] = useState("Stay tuned ✨");
   const [usernamepl, setUsernamepl] = useState("username");
 
   // Form input values
@@ -691,10 +691,9 @@ const EditProfile: React.FC = () => {
 
       // Force full page reload to profile page after a short delay
       setTimeout(() => {
-        // Use window.location.href to force a complete page reload
-        // This ensures the entire web page loads fresh with updated data
-        window.location.href = `/${routeSlug}`;
-      }, 1500);
+  const newUsername = (username || usernamepl).replace(/^@/, "");
+  window.location.href = `/${newUsername}`;
+}, 1500);
     }
 
     // Handle failed profile update
@@ -728,33 +727,33 @@ const EditProfile: React.FC = () => {
   // Handle form submission
   const updateButton = async () => {
 
-    // Only validate username if user has entered one
-    // if (username && username.length >= 3) {
+     //Only validate username if user has entered one
+    if (username && username.length >= 3) {
     //   // Check username format first
-    //   const usernameRegex = /^[a-z0-9_]{3,15}$/;
-    //   if (!usernameRegex.test(username)) {
-    //     setErrorMessage("Username must be 3-15 characters, lowercase letters, numbers, and underscores only");
-    //     return;
-    //   }
+     const usernameRegex = /^[a-z0-9_]{3,15}$/;
+    if (!usernameRegex.test(username)) {
+     setErrorMessage("Username must be 3-15 characters, lowercase letters, numbers, and underscores only");
+     return;
+     }
 
     //   // Check if username validation is still in progress
-    //   if (isCheckingUsername) {
-    //     setErrorMessage("Please wait for username validation to complete");
-    //     return;
-    //   }
+      if (isCheckingUsername) {
+       setErrorMessage("Please wait for username validation to complete");
+      return;
+     }
 
     //   // Check if username is invalid
-    //   if (usernameStatus === "invalid") {
-    //     setErrorMessage("Please choose a different username");
-    //     return;
-    //   }
+     if (usernameStatus === "invalid") {
+       setErrorMessage("Please choose a different username");
+       return;
+      }
 
     //   // Check if username validation hasn't been completed yet
-    //   if (usernameStatus === "") {
-    //     setErrorMessage("Please wait for username validation to complete");
-    //     return;
-    //   }
-    // }
+      if (usernameStatus === "") {
+     setErrorMessage("Please wait for username validation to complete");
+      return;
+      }
+    }
 
     setLoading(true);
     setShowEdit(false);
