@@ -5,8 +5,6 @@ import { ToastContainer } from "react-toastify";
 import Input from "./Input";
 import Processing from "./tick-animation/LoginProcessing";
 import { useAuth } from "@/lib/context/auth-context";
-import { isRegistered } from "@/lib/service/manageSession";
-import "react-toastify/dist/ReactToastify.css";
 import { toast } from "react-toastify";
 import { FaHome } from "react-icons/fa";
 import { useRouter } from "next/navigation";
@@ -484,7 +482,22 @@ export const Loginview = () => {
       // Set loading state
       setStatus("checking");
 
-      const res = await isRegistered({ username, password }) as LoginResponse & { banned?: boolean };
+      let res: LoginResponse & { banned?: boolean };
+try {
+  const loginRes = await fetch("/api/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username, password }),
+  });
+  res = await loginRes.json();
+} catch (networkError) {
+  setStatus("idle");
+  toast.error("Network error — please check your connection and try again.", {
+    position: "top-center",
+    autoClose: 4000,
+  });
+  return;
+}
 
       // Check if user is banned
       if (res?.banned) {

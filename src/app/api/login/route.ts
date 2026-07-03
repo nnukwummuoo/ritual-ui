@@ -1,41 +1,60 @@
-import axios from 'axios';
-import { cookies } from 'next/headers';
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from "next/server";
+import { URL } from "@/api/config";
 
-// let token: string;
 export async function POST(request: NextRequest) {
-  const { username, password } = await request.json();
+  try {
+    const { username, password } = await request.json();
 
-  try{
-    const response = await fetch(`${process.env.NODE_ENV === 'development' ? 'http://localhost:3100' : (process.env.NEXT_PUBLIC_API || "")}/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password }),
-      credentials: 'include',
-    });
-    
-    const data = await response.json();
-    const res = new NextResponse(JSON.stringify(data), {
-      status: response.status,
-      headers: {
-        'Content-Type': 'application/json',
-        ...response.headers,
-      },
-    });
-    
-    // Forward cookies from backend response
-    const setCookieHeader = response.headers.get('set-cookie');
-    if (setCookieHeader) {
-      res.headers.set('set-cookie', setCookieHeader);
+    if (!username || !password) {
+      return NextResponse.json(
+        { error: "Username and password are required." },
+        { status: 400 }
+      );
     }
-    
-    return res;
-  } catch (error) {
-    console.error('Unexpected error:', error);
-    return new NextResponse(JSON.stringify({ ok: false, message: 'Internal server error' }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
+
+    const backendRes = await fetch(`${URL}/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        username: username.toLowerCase().trim(),
+        password,
+      }),
     });
+
+    const data = await backendRes.json();
+
+    if (!data.ok) {
+      const status = data.banned || backendRes.status === 403 ? 403 : 400;
+      return NextResponse.json(
+        { error: data.message || "Login failed", banned: !!data.banned },
+        { status }
+      );
+    }
+
+    const user = {
+      ...data.user,
+      _id: data.userId,
+      username: username.toLowerCase().trim(),
+      accessToken: data.accessToken,
+      refreshtoken: data.token,
+      admin: data.isAdmin || data.user?.admin || false,
+    };
+
+    const res = NextResponse.json({ user });
+
+    // Correctly forward multiple Set-Cookie headers from the backend.
+    // response.headers.get('set-cookie') would incorrectly join multiple
+    // cookies with commas, which breaks parsing (especially with Expires
+    // dates, which themselves contain commas). getSetCookie() returns
+    // each cookie separately so they can be appended individually.
+    const setCookies = backendRes.headers.getSetCookie?.() ?? [];
+    for (const cookie of setCookies) {
+      res.headers.append("Set-Cookie", cookie);
+    }
+
+    return res;
+  } catch (error: any) {
+    console.error("Login API error:", error.message);
+    return NextResponse.json({ error: "Login failed" }, { status: 500 });
   }
 }
