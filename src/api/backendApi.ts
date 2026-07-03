@@ -1,8 +1,6 @@
 import axios from "axios";
 import { URL } from "@/api/config";
-import { store } from "@/store/store";
-import { updateAccessToken } from "@/store/registerSlice";
-import { handleInvalidToken } from "@/utils/handleInvalidToken"
+import { handleInvalidToken } from "@/utils/handleInvalidToken";
 
 const backend = (token: String | undefined) => {
   const instance = axios.create({
@@ -14,9 +12,11 @@ const backend = (token: String | undefined) => {
   });
 
   instance.interceptors.response.use(
-    (res) => {
+    async (res) => {
       const newToken = res.headers?.["x-new-access-token"];
       if (newToken) {
+        const { store } = await import("@/store/store");
+        const { updateAccessToken } = await import("@/store/registerSlice");
         store.dispatch(updateAccessToken(newToken));
         try {
           const raw = localStorage.getItem("login");
@@ -25,9 +25,7 @@ const backend = (token: String | undefined) => {
             data.accesstoken = newToken;
             localStorage.setItem("login", JSON.stringify(data));
           }
-        } catch {
-          // Redux update above still applies even if localStorage fails
-        }
+        } catch {}
       }
       return res;
     },

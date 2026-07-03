@@ -1,14 +1,11 @@
 "use client";
 
-import { store } from "@/store/store";
-import { logout } from "@/store/registerSlice";
-
 let isHandling = false;
 
-export function handleInvalidToken() {
+export async function handleInvalidToken() {
   if (typeof window === "undefined") return;
   if (isHandling) return;
-  if (window.location.pathname.startsWith("/auth/")) return; // already on login/register, avoid a redirect loop
+  if (window.location.pathname.startsWith("/auth/")) return;
 
   isHandling = true;
 
@@ -16,6 +13,8 @@ export function handleInvalidToken() {
     localStorage.removeItem("login");
   } catch {}
 
+  const { store } = await import("@/store/store");
+  const { logout } = await import("@/store/registerSlice");
   store.dispatch(logout());
 
   window.location.href = "/auth/login";

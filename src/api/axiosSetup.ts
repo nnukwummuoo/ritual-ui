@@ -3,7 +3,6 @@
 import axios from "axios";
 import { URL as API_BASE } from "./config";
 import { store } from "@/store/store";
-import { updateAccessToken } from "@/store/registerSlice";
 import { handleInvalidToken } from "@/utils/handleInvalidToken"
 
 const PROD_BASE = process.env.NEXT_PUBLIC_API || "";
@@ -14,27 +13,30 @@ const PROD_BASE = process.env.NEXT_PUBLIC_API || "";
     if (g.__AXIOS_FALLBACK_INSTALLED__) return;
 
     axios.interceptors.response.use(
-  (res) => {
+  
     // Sliding-expiration: if the backend silently issued a fresh access token,
     // update every place the app reads it from — Redux state (used by a few
     // call sites) and localStorage's "login" object (used by most of the app).
-    const newToken = res.headers?.["x-new-access-token"];
-    if (newToken) {
-      store.dispatch(updateAccessToken(newToken));
-
-      try {
-        const raw = localStorage.getItem("login");
-        if (raw) {
-          const data = JSON.parse(raw);
-          data.accesstoken = newToken;
-          localStorage.setItem("login", JSON.stringify(data));
+    
+   async (res) => {
+        const newToken = res.headers?.["x-new-access-token"];
+        if (newToken) {
+          const { store } = await import("@/store/store");
+          const { updateAccessToken } = await import("@/store/registerSlice");
+          store.dispatch(updateAccessToken(newToken));
+          try {
+            const raw = localStorage.getItem("login");
+            if (raw) {
+              const data = JSON.parse(raw);
+              data.accesstoken = newToken;
+              localStorage.setItem("login", JSON.stringify(data));
+            }
+          } catch {
+            // if localStorage is unavailable or corrupted, Redux update above still applies
+          }
         }
-      } catch {
-        // if localStorage is unavailable or corrupted, Redux update above still applies
-      }
-    }
-    return res;
-  },
+        return res;
+      },
       async (error) => {
 
          if (error?.response?.status === 403 && error?.response?.data?.code === "TOKEN_INVALID") {

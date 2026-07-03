@@ -1,13 +1,7 @@
 "use client";
 
-import { store } from "@/store/store";
-import { updateAccessToken } from "@/store/registerSlice";
-import { handleInvalidToken } from "@/utils/handleInvalidToken"
+import { handleInvalidToken } from "@/utils/handleInvalidToken";
 
-// Globally patches window.fetch so any raw fetch() call to the backend
-// (not just axios calls) picks up a sliding-refresh access token the
-// same way the axios interceptor does. This covers every current and
-// future fetch() call site in the app without needing to touch each one.
 (function setupFetchTokenSync() {
   if (typeof window === "undefined") return;
 
@@ -22,6 +16,8 @@ import { handleInvalidToken } from "@/utils/handleInvalidToken"
     try {
       const newToken = res.headers.get("x-new-access-token");
       if (newToken) {
+        const { store } = await import("@/store/store");
+        const { updateAccessToken } = await import("@/store/registerSlice");
         store.dispatch(updateAccessToken(newToken));
 
         const raw = localStorage.getItem("login");
