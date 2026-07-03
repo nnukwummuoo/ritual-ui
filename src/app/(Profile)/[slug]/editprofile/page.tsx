@@ -729,26 +729,26 @@ const EditProfile: React.FC = () => {
 
      //Only validate username if user has entered one
     if (username && username.length >= 3) {
-    //   // Check username format first
+     // Check username format first
      const usernameRegex = /^[a-z0-9_]{3,15}$/;
     if (!usernameRegex.test(username)) {
      setErrorMessage("Username must be 3-15 characters, lowercase letters, numbers, and underscores only");
      return;
      }
 
-    //   // Check if username validation is still in progress
+    // Check if username validation is still in progress
       if (isCheckingUsername) {
        setErrorMessage("Please wait for username validation to complete");
       return;
      }
 
-    //   // Check if username is invalid
+     // Check if username is invalid
      if (usernameStatus === "invalid") {
        setErrorMessage("Please choose a different username");
        return;
       }
 
-    //   // Check if username validation hasn't been completed yet
+    // Check if username validation hasn't been completed yet
       if (usernameStatus === "") {
      setErrorMessage("Please wait for username validation to complete");
       return;
