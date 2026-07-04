@@ -5,6 +5,9 @@ export async function POST(request: NextRequest) {
   try {
     const { username, password } = await request.json();
 
+    console.log("[api/login] received:", { username, password, usernameType: typeof username, passwordType: typeof password });
+
+
     if (!username || !password) {
       return NextResponse.json(
         { error: "Username and password are required." },
