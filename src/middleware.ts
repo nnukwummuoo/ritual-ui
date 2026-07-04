@@ -1,7 +1,7 @@
 
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { sessionMng, checkUserAdmin } from './lib/service/manageSession';
+import { sessionMng, checkUserAdmin, decryptData, isSessionRevoked } from './lib/service/manageSession';
 
 // Public routes that don't require authentication
 const publicRoutes = [
@@ -107,6 +107,15 @@ export async function middleware(request: NextRequest) {
       return createResponse('', false);
     }
     return createResponse('/auth/login');
+  }
+
+   // NEW: check if this session was globally revoked by an admin
+  const decrypted = await decryptData(authToken);
+  if (decrypted.status === "valid") {
+    const revoked = await isSessionRevoked(decrypted.body);
+    if (revoked) {
+      return createResponse('/auth/login');
+    }
   }
 
   if (isProhibitedRoute) {

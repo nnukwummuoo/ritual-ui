@@ -51,6 +51,7 @@ type User = {
   vipCelebrationViewed?: unknown;
   createdAt?: string;
   updatedAt?: string;
+  sessionEpoch?: number;
 };
 
 type LoginResponse = {
@@ -629,6 +630,7 @@ try {
           password: password,
           userId: userData._id,
           admin: res.user?.admin || false,
+          sessionEpoch: res.user?.sessionEpoch || 0,
           _id: userData._id,
           accessToken: userData.accessToken,
           refreshtoken: userData.refreshtoken

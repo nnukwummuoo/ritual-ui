@@ -38,6 +38,7 @@ export async function POST(request: NextRequest) {
       accessToken: data.accessToken,
       refreshtoken: data.token,
       admin: data.isAdmin || data.user?.admin || false,
+      sessionEpoch: data.sessionEpoch || 0,
     };
 
     const res = NextResponse.json({ user });
