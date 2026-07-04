@@ -211,20 +211,17 @@ const [urlCopied, setUrlCopied] = useState(false);
     if (creatorUserId) dispatch(checkVipStatus(creatorUserId) as any);
   }, [creator?.userid, dispatch]);
 
-    useEffect(() => {
+  useEffect(() => {
   // Only auto-show to the owner of this portfolio
   if (!checkuser()) return;
 
-  // Check if they've already dismissed it permanently
+  // Check if they've already seen/dismissed it before
   const dismissedKey = `share_popup_dismissed_${creator.hostid}`;
   const alreadyDismissed = localStorage.getItem(dismissedKey);
   if (alreadyDismissed) return;
 
-  // Auto-open on ?new=1 (redirect here after portfolio creation)
-  const searchParams = new URLSearchParams(window.location.search);
-  if (searchParams.get("new") === "1") {
-    setTimeout(() => setShowSharePopup(true), 600);
-  }
+  // First time the owner is viewing their own portfolio — show it once
+  setTimeout(() => setShowSharePopup(true), 600);
 }, [creator.hostid, userid]); // re-run once userid resolves
 
   useEffect(() => {
@@ -642,8 +639,10 @@ useEffect(() => {
     <span className="mcp-nav-logo-name">mmeko</span>
   </a>
   <div className="mcp-nav-actions">
-    <button className="mcp-nav-share" onClick={handleShare}>Share</button>
     {checkuser() && (
+  <button className="mcp-nav-share" onClick={handleShare}>Share</button>
+)}
+{checkuser() && (
       <div style={{ position: "relative" }}>
         <button
           onClick={(e) => { e.stopPropagation(); setcloseOption(prev => !prev); }}
@@ -941,10 +940,15 @@ useEffect(() => {
 
         {showSharePopup && (
   <div
-    className="fixed inset-0 z-[300] flex items-end justify-center"
-    style={{ background: "rgba(0,0,0,.65)", backdropFilter: "blur(6px)" }}
-    onClick={() => setShowSharePopup(false)}
-  >
+  className="fixed inset-0 z-[300] flex items-end justify-center"
+  style={{ background: "rgba(0,0,0,.65)", backdropFilter: "blur(6px)" }}
+  onClick={() => {
+    if (creator.hostid) {
+      localStorage.setItem(`share_popup_dismissed_${creator.hostid}`, "true");
+    }
+    setShowSharePopup(false);
+  }}
+>
     <div
       className="w-full max-w-lg overflow-hidden"
       style={{ background: "#111824", borderRadius: "22px 22px 0 0", borderTop: "1px solid rgba(255,255,255,.08)", paddingBottom: 40 }}
