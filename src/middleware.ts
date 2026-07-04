@@ -30,6 +30,7 @@ const prohibitedRoutes = [
   '/auth/login',
   '/auth/register',
   '/auth/verify-email',
+   '/api/login',
 ];
 
 const publicRoutePrefixes = [
