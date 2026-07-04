@@ -50,6 +50,9 @@ const PUBLIC_FILE = /\.(.*)$/;
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  
+  console.log("[MW]", request.method, pathname, "hasCookie:", !!(request.cookies.get('session')?.value || request.cookies.get('auth_token')?.value));
+
   if (PUBLIC_FILE.test(pathname)) {
     const res = NextResponse.next();
     const refreshed = await sessionMng(request);
