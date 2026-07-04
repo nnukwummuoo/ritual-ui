@@ -727,7 +727,49 @@ const EditProfile: React.FC = () => {
   // Handle form submission
   const updateButton = async () => {
 
-     if (username) {
+     if (username && username !== usernamepl) {
+  const usernameRegex = /^[a-z0-9_]{3,15}$/;
+  if (!usernameRegex.test(username)) {
+    setErrorMessage("Username must be 3-15 characters, lowercase letters, numbers, and underscores only");
+    return;
+  }
+
+  if (isCheckingUsername) {
+    setErrorMessage("Please wait for username validation to complete");
+    return;
+  }
+
+  if (usernameStatus === "invalid") {
+    setErrorMessage("Please choose a different username");
+    return;
+  }
+
+  if (usernameStatus === "") {
+    setErrorMessage("Please wait for username validation to complete");
+    return;
+  }
+}if (username && username !== usernamepl) {
+  const usernameRegex = /^[a-z0-9_]{3,15}$/;
+  if (!usernameRegex.test(username)) {
+    setErrorMessage("Username must be 3-15 characters, lowercase letters, numbers, and underscores only");
+    return;
+  }
+
+  if (isCheckingUsername) {
+    setErrorMessage("Please wait for username validation to complete");
+    return;
+  }
+
+  if (usernameStatus === "invalid") {
+    setErrorMessage("Please choose a different username");
+    return;
+  }
+
+  if (usernameStatus === "") {
+    setErrorMessage("Please wait for username validation to complete");
+    return;
+  }
+}if (username && username !== usernamepl) {
   const usernameRegex = /^[a-z0-9_]{3,15}$/;
   if (!usernameRegex.test(username)) {
     setErrorMessage("Username must be 3-15 characters, lowercase letters, numbers, and underscores only");
