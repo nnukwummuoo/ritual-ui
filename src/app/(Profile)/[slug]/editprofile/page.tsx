@@ -76,7 +76,7 @@ const EditProfile: React.FC = () => {
   const [firstnamepl, setFirstnamepl] = useState("first name");
   const [lastnamepl, setLastnamepl] = useState("last name");
   const [countrypl, setCountrypl] = useState("country");
-  const [biopl, setBiopl] = useState("Stay tuned ✨");
+  const [biopl, setBiopl] = useState("No bio yet");
   const [usernamepl, setUsernamepl] = useState("username");
 
   // Form input values
