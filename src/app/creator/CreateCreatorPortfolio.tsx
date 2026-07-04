@@ -128,7 +128,7 @@ export default function CreateCreatorPortfolio() {
         const raw = localStorage.getItem("login");
         if (raw) {
           const data = JSON.parse(raw);
-          currentToken = data?.refreshtoken || data?.accesstoken;
+          currentToken = data?.accesstoken || data?.refreshtoken;
         }
       } catch {}
       if (currentToken) dispatch(getprofile({ userid: currentUserId, token: currentToken }));

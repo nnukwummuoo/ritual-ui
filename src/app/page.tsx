@@ -11,7 +11,7 @@ const CREATOR_AVATAR_COUNT = 10;
 
 export default function HomePage() {
   const reduxUserId = useSelector((s: RootState) => s.register.userID);
-  const reduxToken = useSelector((s: RootState) => s.register.refreshtoken);
+  const reduxToken = useSelector((s: RootState) => s.register.accesstoken);
   const [localUserid, setLocalUserid] = useState("");
   const [localToken, setLocalToken] = useState("");
   const [mounted, setMounted] = useState(false);
@@ -31,8 +31,8 @@ export default function HomePage() {
       if (raw) {
         const data = JSON.parse(raw);
         if (!reduxUserId && data?.userID) setLocalUserid(data.userID);
-        if (!reduxToken && (data?.refreshtoken || data?.accesstoken)) {
-          setLocalToken(data.refreshtoken || data.accesstoken);
+        if (!reduxToken && (data?.accesstoken || data?.refreshtoken)) {
+          setLocalToken(data.accesstoken || data.refreshtoken);
         }
       }
     } catch {

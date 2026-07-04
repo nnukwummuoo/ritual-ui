@@ -34,10 +34,10 @@ export const getchat = createAsyncThunk< { chats: any[]; chatInfo: any }, any>("
     console.log("🌐 [GETCHAT_API] API URL:", `${URL}/getcurrentchat`);
     
     const state = thunkAPI.getState() as RootState;
-    const token = state.register.refreshtoken || state.register.accesstoken || (() => {
+    const token = state.register.accesstoken || state.register.refreshtoken || (() => {
       try {
-        return JSON.parse(localStorage.getItem("login") || "{}").refreshtoken || 
-               JSON.parse(localStorage.getItem("login") || "{}").accesstoken;
+        return JSON.parse(localStorage.getItem("login") || "{}").accesstoken || 
+               JSON.parse(localStorage.getItem("login") || "{}").refreshtoken;
       } catch {
         return "";
       }
@@ -168,10 +168,10 @@ export const getmessagenotication = createAsyncThunk(
   async (data: any, thunkAPI) => {
     try {
       const state = thunkAPI.getState() as RootState;
-      const token = state.register.refreshtoken || state.register.accesstoken || (() => {
+      const token = state.register.accesstoken || state.register.refreshtoken || (() => {
         try {
-          return JSON.parse(localStorage.getItem("login") || "{}").refreshtoken || 
-                 JSON.parse(localStorage.getItem("login") || "{}").accesstoken;
+          return JSON.parse(localStorage.getItem("login") || "{}").accesstoken || 
+                 JSON.parse(localStorage.getItem("login") || "{}").refreshtoken;
         } catch {
           return "";
         }

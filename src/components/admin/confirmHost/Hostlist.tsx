@@ -57,7 +57,7 @@ const Hostlist: React.FC<HostProps> = ({ prob }) => {
   const [imageType, setImageType] = useState("");
   const [imageSrc, setImageSrc] = useState<string>(getImageSrc(proimage1));
   const dispatch = useDispatch<AppDispatch>();
-  const token = useSelector((s: RootState) => s.register.refreshtoken);
+  const token = useSelector((s: RootState) => s.register.accesstoken);
 
   // Normalize images to string src
   const userImage = getImageSrc(image || proimage1);

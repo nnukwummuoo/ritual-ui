@@ -164,7 +164,7 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({ creator_portfolio_id: propC
           const raw = localStorage.getItem("login");
           if (raw) {
             const data = JSON.parse(raw);
-            return data?.refreshtoken || data?.accesstoken;
+            return data?.accesstoken || data?.refreshtoken;
           }
         } catch (error) {
           console.error("[BlockUser] Error retrieving token from localStorage:", error);

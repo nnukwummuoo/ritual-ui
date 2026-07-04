@@ -157,7 +157,7 @@ export default function PostsCard() {
 
   // Get authentication data from Redux (same as Profile component)
   const reduxUserId = useSelector((s: RootState) => s.register.userID);
-  const reduxToken = useSelector((s: RootState) => s.register.refreshtoken);
+  const reduxToken = useSelector((s: RootState) => s.register.accesstoken);
 
   // Local state for auth data (fallback to localStorage)
   const [localUserid, setLocalUserid] = React.useState("");
@@ -249,8 +249,8 @@ export default function PostsCard() {
             setLocalUserid(data.userID);
           }
 
-          if (!reduxToken && (data?.refreshtoken || data?.accesstoken)) {
-            setLocalToken(data.refreshtoken || data.accesstoken);
+          if (!reduxToken && (data?.accesstoken || data?.refreshtoken)) {
+            setLocalToken(data.accesstoken || data.refreshtoken);
           }
         }
       } catch (error) {
@@ -396,7 +396,7 @@ export default function PostsCard() {
         const ln = [saved?.firstname, saved?.lastname].filter(Boolean).join(' ').trim();
         setSelfName(ln || saved?.name || undefined);
         try {
-          const token = saved?.refreshtoken || saved?.accesstoken;
+          const token = saved?.accesstoken || saved?.refreshtoken;
           if (lid && token) dispatch(getprofile({ userid: lid, token } as any));
         } catch { }
       } else {

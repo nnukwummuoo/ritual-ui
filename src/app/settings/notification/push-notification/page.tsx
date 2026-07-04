@@ -18,7 +18,7 @@ import type { AppDispatch, RootState } from "@/store/store";
   const emailnote = useSelector((s: RootState) => s.profile.emailnote);
   const pushnote = useSelector((s: RootState) => s.profile.pushnote);
   const userid = useSelector((s: RootState) => s.register.userID);
-  const token = useSelector((s: RootState) => s.register.refreshtoken);
+  const token = useSelector((s: RootState) => s.register.accesstoken);
   const [isOn, setIsOn] = useState(false);
 
   // Hydrate local toggle from store

@@ -69,7 +69,7 @@ const SONGS = [
 export default function UploadRitualPage() {
   const router = useRouter();
   const reduxUserId = useSelector((s: RootState) => s.register.userID);
-  const reduxToken  = useSelector((s: RootState) => s.register.refreshtoken);
+  const reduxToken  = useSelector((s: RootState) => s.register.accesstoken);
 
   const [title, setTitle]   = useState('');
   const [panels, setPanels] = useState<PanelData[]>(Array.from({ length: 15 }, EMPTY_PANEL));
@@ -244,7 +244,7 @@ const handlePreview = (song: typeof SONGS[0]) => {
           try {
             const d = JSON.parse(loginRaw);
             if (!userId) userId = d.userID || d.userId || d.id || d._id || '';
-            if (!token)  token  = d.refreshtoken || d.accesstoken || d.token || '';
+            if (!token)  token  = d.accesstoken || d.refreshtoken || d.token || '';
           } catch {}
         }
         if (!userId) userId = localStorage.getItem('userID') || localStorage.getItem('userId') || '';

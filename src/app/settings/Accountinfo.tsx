@@ -11,7 +11,7 @@ const AccountinfoPage = () => {
   const [avatarSrc, setAvatarSrc] = useState<string | undefined>(undefined);
 
   const userid = useSelector((s: RootState) => s.register.userID);
-  const token = useSelector((s: RootState) => s.register.refreshtoken);
+  const token = useSelector((s: RootState) => s.register.accesstoken);
   const isUploading = useSelector((s: RootState) => s.comprofile.updateEdit_stats === "loading");
 
   // Optional: if you already store current photo URL somewhere, hydrate it here.

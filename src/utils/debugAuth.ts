@@ -29,7 +29,7 @@ export function getValidToken(): string | null {
     if (!loginData) return null;
     
     const parsed = JSON.parse(loginData);
-    const token = parsed.refreshtoken || parsed.accesstoken;
+    const token = parsed.accessToken || parsed.refreshtoken;
     
     if (!token) return null;
     

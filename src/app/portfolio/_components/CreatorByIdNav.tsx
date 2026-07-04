@@ -38,7 +38,7 @@ const CreatorByIdNav = ({ creatorName, views, followingUser, id, creator_portfol
   const follow_stats = useSelector((state: any) => state.profile.follow_stats);
   const unfollow_stats = useSelector((state: any) => state.profile.unfollow_stats);
   const userid = useUserId();
-  const reduxToken = useSelector((state: any) => state.register.refreshtoken);
+  const reduxToken = useSelector((state: any) => state.register.accessToken);
   const profile = useSelector((state: any) => state.comprofile.profile);
   
   // Get token from localStorage if not in Redux (EXACT same as ProfilePage.tsx)
@@ -67,8 +67,8 @@ const CreatorByIdNav = ({ creatorName, views, followingUser, id, creator_portfol
           const data = JSON.parse(raw);
           
           // Set token if not in Redux
-          if (!reduxToken && (data?.refreshtoken || data?.accesstoken)) {
-            setLocalToken(data.refreshtoken || data.accesstoken);
+          if (!reduxToken && (data?.accesstoken || data?.refreshtoken)) {
+            setLocalToken(data.accesstoken || data.refreshtoken);
           }
         }
       } catch (error) {
@@ -172,7 +172,7 @@ const CreatorByIdNav = ({ creatorName, views, followingUser, id, creator_portfol
         const loginData = localStorage.getItem('login');
         if (loginData) {
           const parsedData = JSON.parse(loginData);
-          authToken = parsedData.refreshtoken || parsedData.accesstoken;
+          authToken = parsedData.accesstoken || parsedData.refreshtoken;
         }
         } catch (error) {
           // Silent fail

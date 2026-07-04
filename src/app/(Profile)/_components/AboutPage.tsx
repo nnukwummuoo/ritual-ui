@@ -105,7 +105,7 @@ const AboutPage = () => {
         const raw = localStorage.getItem("login");
         if (raw) {
           const saved = JSON.parse(raw);
-          token = saved?.refreshtoken || saved?.accesstoken;
+          token = saved?.accesstoken || saved?.refreshtoken;
         }
       } catch {}
     }

@@ -8,7 +8,7 @@ import { ToastContainer, toast } from "react-toastify";
 
 export default function MessageUsers() {
   const dispatch = useDispatch<AppDispatch>();
-  const token = useSelector((s: RootState) => s.register.refreshtoken);
+  const token = useSelector((s: RootState) => s.register.accesstoken);
   const selected = useSelector((s: RootState) => s.admin.marked_users) as string[];
   const sending = useSelector((s: RootState) => s.admin.send_stats) === "loading";
 

@@ -620,7 +620,7 @@ const [sizeWarningType, setSizeWarningType] = useState<"image" | "video" | null>
           const raw = localStorage.getItem("login");
           if (raw) {
             const data = JSON.parse(raw);
-            return data?.refreshtoken || data?.accesstoken;
+            return data?.accesstoken || data?.refreshtoken;
           }
         } catch (error) {
           console.error("[Chat] Error retrieving token from localStorage:", error);
@@ -648,7 +648,7 @@ const [sizeWarningType, setSizeWarningType] = useState<"image" | "video" | null>
           const raw = localStorage.getItem("login");
           if (raw) {
             const data = JSON.parse(raw);
-            return data?.refreshtoken || data?.accesstoken;
+            return data?.accesstoken || data?.refreshtoken;
           }
         } catch (error) {
           console.error("[Chat] Error retrieving token from localStorage:", error);
@@ -712,7 +712,7 @@ const [sizeWarningType, setSizeWarningType] = useState<"image" | "video" | null>
           const raw = localStorage.getItem("login");
           if (raw) {
             const data = JSON.parse(raw);
-            return data?.refreshtoken || data?.accesstoken;
+            return data?.accesstoken || data?.refreshtoken;
           }
         } catch (error) {
           console.error("[Chat] Error retrieving token from localStorage:", error);
@@ -796,7 +796,7 @@ const [sizeWarningType, setSizeWarningType] = useState<"image" | "video" | null>
         const raw = localStorage.getItem("login");
         if (raw) {
           const data = JSON.parse(raw);
-          return data?.refreshtoken || data?.accesstoken;
+          return data?.accesstoken || data?.refreshtoken;
         }
       } catch (error) {
         console.error("[Chat] Error retrieving token from localStorage:", error);

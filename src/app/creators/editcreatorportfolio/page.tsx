@@ -147,7 +147,7 @@ export default function Editcreator() {
         const raw = localStorage.getItem("login");
         if (raw) {
           const data = JSON.parse(raw);
-          currentToken = data?.refreshtoken || data?.accesstoken;
+          currentToken = data?.accesstoken || data?.refreshtoken;
         }
       } catch (error) {
         console.error("Error getting token for profile:", error);

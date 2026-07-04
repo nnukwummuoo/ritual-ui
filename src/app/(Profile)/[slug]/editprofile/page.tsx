@@ -40,7 +40,7 @@ const EditProfile: React.FC = () => {
   const isSlugObjectId = routeSlug && /^[a-f0-9]{24}$/i.test(String(routeSlug));
 
   const loggedInUserId = useSelector((state: RootState) => state.register.userID);
-  const token = useSelector((state: RootState) => state.register.refreshtoken);
+  const token = useSelector((state: RootState) => state.register.accesstoken);
   const currentUserProfile = useSelector((state: RootState) => state.profile);
 
   // Get profile data from Redux store
@@ -162,7 +162,7 @@ const EditProfile: React.FC = () => {
           const data = JSON.parse(raw);
 
           return {
-            token: data?.refreshtoken || data?.accesstoken || "",
+            token: data?.accesstoken || data?.refreshtoken || "",
             userID: data?.userID || "",
             rawData: data
           };
@@ -206,7 +206,7 @@ const EditProfile: React.FC = () => {
       if (raw) {
         const data = JSON.parse(raw);
         return {
-          token: data?.refreshtoken || data?.accesstoken || "",
+          token: data?.accesstoken || data?.refreshtoken || "",
           userID: data?.userID || "",
           rawData: data
         };

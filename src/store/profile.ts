@@ -1123,10 +1123,10 @@ state.fan_verified = (p as any).fan_verified ?? false;        state.userId = p.u
       .addCase(deleteprofile.fulfilled, (state, action) => {
         state.deleteaccstats = "succeeded";
       })
-      .addCase(deleteprofile.rejected, (state, action) => {
-        state.deleteaccstats = "failed";
-        state.testmsg = action.error?.message ?? "Check internet connection";
-      })
+     .addCase(deleteprofile.rejected, (state, action) => {
+  state.deleteaccstats = "failed";
+  state.testmsg = action.payload?.message ?? action.error?.message ?? "Check internet connection";
+})
       .addCase(getblockedUsers.pending, (state, action) => {
         state.blockuserstats = "loading";
       })

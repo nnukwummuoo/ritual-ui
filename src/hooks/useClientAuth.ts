@@ -15,7 +15,7 @@ export default function useClientAuth(initialAuth: boolean) {
             if (raw) {
                 const data = JSON.parse(raw);
                 const localUserid = data?.userID || data?.userid || data?.id || '';
-                const localToken = data?.refreshtoken || data?.accesstoken || '';
+                const localToken = data?.accesstoken || data?.refreshtoken || '';
 
                 if (localUserid && localToken) {
                     setUser(data);

@@ -35,7 +35,7 @@ export const Recentmessage: React.FC = () => {
 
   const dispatch = useDispatch<AppDispatch>();
 
-  const token = useSelector((state: RootState) => state.register.refreshtoken);
+  const token = useSelector((state: RootState) => state.register.accesstoken);
   const msgnotifystatus = useSelector((state: RootState) => state.message.msgnotifystatus);
   const messageList = useSelector((state: RootState) => state.message.recentmsg) as MessageItem[];
   const creator_portfolio_id = useSelector((state: RootState) => state.profile.creator_portfolio_id);

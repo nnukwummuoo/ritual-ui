@@ -31,7 +31,7 @@ const FollowerCard: React.FC<FollowerCardProps> = ({ image, name, creator_portfo
   const reduxUserId = useSelector((state: RootState) => state.register.userID);
   const [currentUserId, setCurrentUserId] = React.useState<string | undefined>(reduxUserId);
 
-  const token = useSelector((state: RootState) => state.register.refreshtoken);
+  const token = useSelector((state: RootState) => state.register.accesstoken);
 
   // Fallback: Get userId from localStorage if not in Redux
   useEffect(() => {
@@ -193,7 +193,7 @@ const FollowerCard: React.FC<FollowerCardProps> = ({ image, name, creator_portfo
         const loginData = localStorage.getItem('login');
         if (loginData) {
           const parsedData = JSON.parse(loginData);
-          authToken = parsedData.refreshtoken || parsedData.accesstoken;
+          authToken = parsedData.accesstoken || parsedData.refreshtoken;
         }
       } catch (error) {
         console.error("[FollowerCard] Error retrieving token from localStorage:", error);

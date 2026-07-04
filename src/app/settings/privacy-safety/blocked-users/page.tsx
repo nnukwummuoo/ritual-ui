@@ -66,7 +66,7 @@ const Blockusers = () => {
           const raw = localStorage.getItem("login");
           if (raw) {
             const data = JSON.parse(raw);
-            return data?.refreshtoken || data?.accesstoken;
+            return data?.accesstoken || data?.refreshtoken;
           }
         } catch (error) {
           console.error("[BlockedUsers] Error retrieving token:", error);

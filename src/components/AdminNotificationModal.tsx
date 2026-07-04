@@ -24,7 +24,7 @@ const AdminNotificationModal: React.FC = () => {
   const [hasInitialized, setHasInitialized] = useState(false);
   
   const userid = useSelector((s: RootState) => s.register.userID);
-  const token = useSelector((s: RootState) => s.register.refreshtoken);
+  const token = useSelector((s: RootState) => s.register.accesstoken);
   const userGender = useSelector((s: RootState) => s.profile.gender);
   const isCreator = useSelector((s: RootState) => s.profile.creator_verified);
   const router = useRouter();
@@ -45,7 +45,7 @@ const AdminNotificationModal: React.FC = () => {
           if (raw) {
             const saved = JSON.parse(raw);
             effectiveUserId = effectiveUserId || saved.userID;
-            effectiveToken = effectiveToken || saved.refreshtoken || saved.accesstoken;
+            effectiveToken = effectiveToken || saved.accesstoken || saved.refreshtoken;
           }
         } catch (error) {
           // Silent fail for localStorage read

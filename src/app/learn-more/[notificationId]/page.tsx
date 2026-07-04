@@ -21,7 +21,7 @@ const LearnMorePage = () => {
   const [error, setError] = useState<string | null>(null);
   
   const userid = useSelector((s: RootState) => s.register.userID);
-  const token = useSelector((s: RootState) => s.register.refreshtoken);
+  const token = useSelector((s: RootState) => s.register.accesstoken);
 
   useEffect(() => {
     const fetchNotificationDetails = async () => {
@@ -34,7 +34,7 @@ const LearnMorePage = () => {
           if (raw) {
             const saved = JSON.parse(raw);
             effectiveUserId = effectiveUserId || saved.userID;
-            effectiveToken = effectiveToken || saved.refreshtoken || saved.accesstoken;
+            effectiveToken = effectiveToken || saved.accesstoken || saved.refreshtoken;
           }
         } catch (error) {
           console.error('Error reading localStorage:', error);

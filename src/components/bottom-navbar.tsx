@@ -95,7 +95,7 @@ function BottomNavBarInner() {
 
   // ── Auth data ──────────────────────────────────────────────────────────────
   const userid = useSelector((state: RootState) => state.register.userID);
-  const token = useSelector((state: RootState) => state.register.refreshtoken);
+  const token = useSelector((state: RootState) => state.register.accesstoken);
   const msgnotifystatus = useSelector(
     (state: RootState) => state.message.msgnotifystatus
   );
@@ -124,7 +124,7 @@ function BottomNavBarInner() {
           const localUserid =
             data?.userID || data?.userid || data?.id || "";
           const localToken =
-            data?.refreshtoken || data?.accesstoken || "";
+            data?.accesstoken || data?.refreshtoken || "";
           if (localUserid && localToken)
             setLocalUserData({ userid: localUserid, token: localToken });
         }

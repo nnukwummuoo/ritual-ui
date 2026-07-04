@@ -60,7 +60,7 @@ export default function UploadExclusivePage() {
 
   // Get authentication data from Redux
   const loggedInUserId = useSelector((state: RootState) => state.register.userID);
-  const token = useSelector((state: RootState) => state.register.refreshtoken);
+  const token = useSelector((state: RootState) => state.register.accesstoken);
 
   // Get local userid from localStorage as fallback
   const localUserid = typeof window !== 'undefined' ? (() => {
@@ -113,7 +113,7 @@ const triggerFileInput = () => {
             const raw = localStorage.getItem("login");
             if (raw) {
               const data = JSON.parse(raw);
-              return data?.refreshtoken || data?.accesstoken || "";
+              return data?.accesstoken || data?.refreshtoken || "";
             }
           } catch { }
           return "";
@@ -236,7 +236,7 @@ const triggerFileInput = () => {
           const raw = localStorage.getItem("login");
           if (raw) {
             const data = JSON.parse(raw);
-            return data?.refreshtoken || data?.accesstoken || "";
+            return data?.accesstoken || data?.refreshtoken || "";
           }
         } catch { }
         return "";

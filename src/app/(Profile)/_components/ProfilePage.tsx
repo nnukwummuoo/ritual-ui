@@ -504,7 +504,7 @@ const isFanVerified = isViewingOwnProfile
 
   const reduxUserId = useSelector((s: RootState) => s.register.userID);
 
-  const reduxToken = useSelector((s: RootState) => s.register.refreshtoken);
+  const reduxToken = useSelector((s: RootState) => s.register.accesstoken);
 
 
 
@@ -591,9 +591,9 @@ const isFanVerified = isViewingOwnProfile
 
           // Set token if not in Redux
 
-          if (!reduxToken && (data?.refreshtoken || data?.accesstoken)) {
+          if (!reduxToken && (data?.accesstoken || data?.refreshtoken)) {
 
-            setLocalToken(data.refreshtoken || data.accesstoken);
+            setLocalToken(data.accesstoken || data.refreshtoken);
 
           }
 
@@ -798,7 +798,7 @@ const isFanVerified = isViewingOwnProfile
 
         const state = (dispatch as any).getState?.() as RootState | undefined;
 
-        return state?.register?.refreshtoken || state?.register?.accesstoken || undefined;
+        return state?.register?.accesstoken || state?.register?.refreshtoken || undefined;
 
       } catch {
 
@@ -822,7 +822,7 @@ const isFanVerified = isViewingOwnProfile
 
           const saved = JSON.parse(raw);
 
-          token = saved?.refreshtoken || saved?.accesstoken;
+          token = saved?.accesstoken || saved?.refreshtoken;
 
         }
 
@@ -2002,7 +2002,7 @@ const isFanVerified = isViewingOwnProfile
 
           const parsedData = JSON.parse(loginData);
 
-          authToken = parsedData.refreshtoken || parsedData.accesstoken;
+          authToken = parsedData.accesstoken || parsedData.refreshtoken;
 
         }
 

@@ -122,7 +122,7 @@ const [urlCopied, setUrlCopied] = useState(false);
         const stored = localStorage.getItem("login");
         if (stored) {
           const data = JSON.parse(stored);
-          setToken(data?.refreshtoken || data?.accesstoken || "");
+          setToken(data?.accesstoken || data?.refreshtoken || "");
         }
       } catch {}
     }

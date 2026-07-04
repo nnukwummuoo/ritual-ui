@@ -70,7 +70,7 @@ const Sidemenu = () => {
         const raw = localStorage.getItem("login");
         if (raw) {
           const data = JSON.parse(raw);
-          token = data?.refreshtoken || data?.accesstoken;
+          token = data?.accesstoken || data?.refreshtoken;
         }
       } catch (error) {
         console.error("Error getting token for side menu:", error);
@@ -91,7 +91,7 @@ const Sidemenu = () => {
         const raw = localStorage.getItem("login");
         if (raw) {
           const data = JSON.parse(raw);
-          token = data?.refreshtoken || data?.accesstoken;
+          token = data?.accesstoken || data?.refreshtoken;
         }
       } catch (error) {
         console.error("Error getting token for Edge fallback:", error);
@@ -392,4 +392,4 @@ const Sidemenu = () => {
   );
 };
 
-export default Sidemenu;
+export default Sidemenu; 

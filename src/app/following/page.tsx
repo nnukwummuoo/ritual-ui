@@ -34,7 +34,7 @@ const FollowingPage: React.FC = () => {
   const [toggle, setToggle] = useState(false);
   const [search, setSearch] = useState("");
   const userid = useSelector((s: RootState) => s.register.userID);
-  const token = useSelector((s: RootState) => s.register.refreshtoken);
+  const token = useSelector((s: RootState) => s.register.accesstoken);
   const getfollow_stats = useSelector((s: RootState) => s.profile.getfollow_stats);
   const getfollow_data = useSelector((s: RootState) => s.profile.getfollow_data as any);
   const getfollow_error = useSelector((s: RootState) => s.profile.fllowmsg as string);
@@ -81,7 +81,7 @@ const FollowingPage: React.FC = () => {
         const loginData = localStorage.getItem('login');
         if (loginData) {
           const parsedData = JSON.parse(loginData);
-          authToken = parsedData.refreshtoken || parsedData.accesstoken;
+          authToken = parsedData.accesstoken || parsedData.refreshtoken;
         }
       } catch (error) {
         // Silent fail

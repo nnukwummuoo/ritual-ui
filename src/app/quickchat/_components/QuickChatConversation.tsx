@@ -76,7 +76,7 @@ export const QuickChatConversation = () => {
           const raw = localStorage.getItem("login");
           if (raw) {
             const data = JSON.parse(raw);
-            return data?.refreshtoken || data?.accesstoken;
+            return data?.accesstoken || data?.refreshtoken;
           }
         } catch (error) {
           console.error("[QuickChat] Error retrieving token:", error);
@@ -252,7 +252,7 @@ export const QuickChatConversation = () => {
           const raw = localStorage.getItem("login");
           if (raw) {
             const data = JSON.parse(raw);
-            return data?.refreshtoken || data?.accesstoken;
+            return data?.accesstoken || data?.refreshtoken;
           }
         } catch (error) {
           console.error("[QuickChat] Error retrieving token:", error);

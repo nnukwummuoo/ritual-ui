@@ -33,7 +33,7 @@ export default function ReferAndEarnPage() {
     // Try to get from Redux first
     const reduxUserId = useSelector((state: RootState) => state.register.userID);
     const reduxIsLoggedIn = useSelector((state: RootState) => state.register.logedin);
-    const reduxToken = useSelector((state: RootState) => state.register.refreshtoken);
+    const reduxToken = useSelector((state: RootState) => state.register.accesstoken);
 
     // Local state
     const [userId, setUserId] = useState<string>('');
@@ -68,7 +68,7 @@ export default function ReferAndEarnPage() {
                         const parsedData = JSON.parse(storedData);
                         // Handle different casing/naming in localStorage
                         finalUserId = finalUserId || parsedData.userID || parsedData.userId || parsedData._id;
-                        finalToken = finalToken || parsedData.refreshtoken || parsedData.accesstoken || parsedData.token;
+                        finalToken = finalToken || parsedData.accesstoken || parsedData.refreshtoken || parsedData.token;
                         finalLoggedIn = true; // If we have data in logi, assume logged in
                         console.log('📦 Using localStorage fallback for user data');
                     }

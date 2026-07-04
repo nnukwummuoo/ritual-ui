@@ -554,7 +554,7 @@ const CollectionsPage: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const [activeTab, setActiveTab] = useState<"content" | "crush">("crush");
   const reduxUserid = useSelector((s: RootState) => s.register.userID);
-  const reduxToken = useSelector((s: RootState) => s.register.refreshtoken);
+  const reduxToken = useSelector((s: RootState) => s.register.accesstoken);
   
   // Get userid and token from Redux or localStorage as fallback
   const [userid, setUserid] = useState<string>("");
@@ -590,7 +590,7 @@ const CollectionsPage: React.FC = () => {
         const stored = localStorage.getItem("login");
         if (stored) {
           const data = JSON.parse(stored);
-          setToken(data?.refreshtoken || data?.accesstoken || "");
+          setToken(data?.accesstoken || data?.refreshtoken || "");
         }
       } catch (error) {
         console.error("Error getting token from localStorage:", error);

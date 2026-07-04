@@ -11,7 +11,7 @@ import { URL } from "@/api/config";
  */
 export function getAuthToken(state: any): string {
   // Try Redux state first
-  const reduxToken = state?.register?.refreshtoken || state?.register?.accesstoken;
+  const reduxToken = state?.register?.accesstoken || state?.register?.refreshtoken;
   if (reduxToken) {
     return reduxToken;
   }
@@ -22,7 +22,7 @@ export function getAuthToken(state: any): string {
       const loginData = localStorage.getItem('login');
       if (loginData) {
         const parsedData = JSON.parse(loginData);
-        return parsedData.refreshtoken || parsedData.accesstoken || '';
+        return parsedData.accesstoken || parsedData.refreshtoken || '';
       }
     } catch (error) {
       console.error('Error parsing login data:', error);

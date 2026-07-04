@@ -294,7 +294,7 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, isOpen, onClose
   const [loadingRequests, setLoadingRequests] = useState(false);
   const [isEditingReferral, setIsEditingReferral] = useState(false);
   const [editedRewardBalance, setEditedRewardBalance] = useState(0);
-  const token = useSelector((s: RootState) => s.register.refreshtoken);
+  const token = useSelector((s: RootState) => s.register.accesstoken);
 const [creatorVerificationDoc, setCreatorVerificationDoc] = useState<any>(null);
 
 useEffect(() => {
@@ -2509,7 +2509,7 @@ export default function Users(): JSX.Element {
   const [search_text, set_search_text] = useState("");
 
   const dispatch = useDispatch<AppDispatch>();
-  const token = useSelector((s: RootState) => s.register.refreshtoken);
+  const token = useSelector((s: RootState) => s.register.accesstoken);
   const userid = useSelector((s: RootState) => s.register.userID);
   const profileStatus = useSelector((s: RootState) => s.profile.status);
   const usersFromStore = useSelector((s: RootState) => s.admin.alluser_list) as User[];

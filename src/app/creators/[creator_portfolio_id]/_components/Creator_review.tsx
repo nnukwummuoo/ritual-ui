@@ -75,7 +75,7 @@ export const CreatorReview: React.FC<CreatorReviewProps> = ({
   const review_delete_stats = useSelector(
     (state: RootState) => state.creator.review_delete_stats
   );
-  const token = useSelector((state: any) => state.register.refreshtoken);
+  const token = useSelector((state: any) => state.register.accessToken);
   const dispatch = useDispatch<AppDispatch>();
 
   const [loading, setLoading] = useState(false);

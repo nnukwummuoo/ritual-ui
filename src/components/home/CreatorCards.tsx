@@ -159,7 +159,7 @@ const CreatorCards: React.FC = () => {
   // Use either context session or localStorage user
   const effectiveUser = session?._id ? session : localUserData;
   const effectiveUserId = session?._id || localUserData?.userID || localUserData?.userid || localUserData?.id;
-  const effectiveToken = session?.token || localUserData?.refreshtoken || localUserData?.accesstoken;
+  const effectiveToken = session?.token || localUserData?.accesstoken || localUserData?.refreshtoken;
 
   // console.log('[CreatorCards] Effective user ID:', effectiveUserId);
   // console.log('[CreatorCards] Effective token:', effectiveToken ? 'Present' : 'Missing');

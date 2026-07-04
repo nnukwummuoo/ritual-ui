@@ -46,7 +46,7 @@ function PostSingle() {
     
     // Get auth data
     const loggedInUserId = useSelector((s: RootState) => s.register.userID);
-    const authToken = useSelector((s: RootState) => s.register.refreshtoken || s.register.accesstoken);
+    const authToken = useSelector((s: RootState) => s.register.accesstoken || s.register.refreshtoken);
     const { username, firstname, lastname, photolink } = useSelector((s: RootState) => s.profile);
     
     // State for the post

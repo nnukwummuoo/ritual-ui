@@ -24,7 +24,7 @@ const FollowStrip: React.FC<FollowStripProps> = ({
 }) => {
   const dispatch = useDispatch<any>();
   const userid = useUserId();
-  const reduxToken = useSelector((state: any) => state.register.refreshtoken);
+  const reduxToken = useSelector((state: any) => state.register.accessToken);
   const [localToken, setLocalToken] = React.useState("");
   const [isFollowing, setIsFollowing] = useState(followingUser);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -56,8 +56,8 @@ const FollowStrip: React.FC<FollowStripProps> = ({
         const raw = localStorage.getItem("login");
         if (raw) {
           const data = JSON.parse(raw);
-          if (!reduxToken && (data?.refreshtoken || data?.accesstoken)) {
-            setLocalToken(data.refreshtoken || data.accesstoken);
+          if (!reduxToken && (data?.accesstoken || data?.refreshtoken)) {
+            setLocalToken(data.accesstoken || data.refreshtoken);
           }
         }
       } catch (error) {
@@ -89,7 +89,7 @@ const FollowStrip: React.FC<FollowStripProps> = ({
         const loginData = localStorage.getItem("login");
         if (loginData) {
           const parsedData = JSON.parse(loginData);
-          authToken = parsedData.refreshtoken || parsedData.accesstoken;
+          authToken = parsedData.accesstoken || parsedData.refreshtoken;
         }
       } catch (error) {
         // Silent fail

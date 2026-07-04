@@ -14,7 +14,7 @@ const DeleteaccountPage = () => {
   const dispatch = useDispatch<AppDispatch>();
 
   const useridFromStore = useSelector((s: RootState) => s.profile.userId);
-  const token = useSelector((s: RootState) => s.register.refreshtoken);
+  const token = useSelector((s: RootState) => s.register.accesstoken);
   const deleteaccstats = useSelector((s: RootState) => s.profile.deleteaccstats);
   const testmsg = useSelector((s: RootState) => s.profile.testmsg);
 
