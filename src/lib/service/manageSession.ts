@@ -5,30 +5,6 @@ import { jwtVerify, SignJWT } from "jose";
 import axios from "axios";
 import { URL } from "../../api/config";
 
-let cachedGlobalEpoch = 0;
-let cachedEpochAt = 0;
-const EPOCH_CACHE_MS = 30 * 1000;
-
-async function getCurrentGlobalEpoch(): Promise<number> {
-  const now = Date.now();
-  if (now - cachedEpochAt > EPOCH_CACHE_MS) {
-    try {
-      const res = await axios.get(`${URL}/session-epoch`);
-      cachedGlobalEpoch = res.data?.epoch || 0;
-    } catch {
-      // if the check itself fails, don't block navigation — fail open
-    }
-    cachedEpochAt = now;
-  }
-  return cachedGlobalEpoch;
-}
-
-export async function isSessionRevoked(body: any): Promise<boolean> {
-  const currentEpoch = await getCurrentGlobalEpoch();
-  const tokenEpoch = body?.sessionEpoch || 0;
-  return tokenEpoch < currentEpoch;
-}
-
 export type user = {
   username: string;
   password: string;
