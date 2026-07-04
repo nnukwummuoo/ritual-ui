@@ -110,11 +110,18 @@ export async function middleware(request: NextRequest) {
   }
 
    // NEW: check if this session was globally revoked by an admin
-  const decrypted = await decryptData(authToken);
-  if (decrypted.status === "valid") {
-    const revoked = await isSessionRevoked(decrypted.body);
-    if (revoked) {
-      return createResponse('/auth/login');
+  if (!pathname.startsWith('/auth/')) {
+    const decrypted = await decryptData(authToken);
+    if (decrypted.status === "valid") {
+      const revoked = await isSessionRevoked(decrypted.body);
+      if (revoked) {
+        const res = NextResponse.redirect(new URL('/auth/login', request.url));
+        const expired = { path: '/', expires: new Date(0) };
+        res.cookies.set('session', '', expired);
+        res.cookies.set('auth_token', '', expired);
+        res.cookies.set('refresh_token', '', expired);
+        return res;
+      }
     }
   }
 
