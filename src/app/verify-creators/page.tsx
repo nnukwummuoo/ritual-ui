@@ -19,6 +19,7 @@ interface RootState {
   register: {
     userID: string;
     refreshtoken: string;
+    accesstoken: string;
   };
   profile: {
     admin: boolean;
@@ -32,7 +33,7 @@ const VerifyCreatorsPage: React.FC = () => {
   const listofhost = useSelector((state: RootState) => state.creator.Listofunverifiedhost);
   const unverifiedhoststatus = useSelector((state: RootState) => state.creator.unverifiedhoststatus);
   const userid = useSelector((state: RootState) => state.register.userID);
-  const token = useSelector((state: RootState) => state.register.refreshtoken);
+  const token = useSelector((state: RootState) => state.register.accesstoken);
   const admin = useSelector((state: RootState) => state.profile.admin);
   const rejectcreatorstatus = useSelector((state: RootState) => state.creator.rejectcreatorstatus);
   const verifycreatorstatus = useSelector((state: RootState) => state.creator.verifycreatorstatus);

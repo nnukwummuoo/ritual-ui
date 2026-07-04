@@ -52,7 +52,7 @@ import { URL } from "@/api/config";
 
 // Types
 interface RootState {
-  register: { userID: string; logedin: boolean; refreshtoken: string };
+  register: { userID: string; logedin: boolean; refreshtoken: string; accesstoken: string };
   profile: { creator_portfolio_id: string; balance: string; photolink?: string };
   creator: {
     userid: string; hostid: string; name: string; age: string;
@@ -107,7 +107,7 @@ const [urlCopied, setUrlCopied] = useState(false);
 
 
 
-  const reduxToken = useSelector((state: RootState) => state.register.refreshtoken);
+  const reduxToken = useSelector((state: RootState) => state.register.accesstoken);
   const [token, setToken] = useState<string>("");
 
   useEffect(() => {
