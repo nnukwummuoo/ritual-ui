@@ -10,7 +10,7 @@ export default function LoginPromptBanner() {
           Join to interact with creators
         </p>
         <p className="text-gray-400 text-xs">
-          Follow, message, like posts and more
+          Book, follow, message, like posts and more
         </p>
       </div>
       <div className="flex gap-2 w-full sm:w-auto">

@@ -11,6 +11,7 @@ import {
   IoChatbubbleOutline,
   IoAnalyticsOutline,
   IoServerOutline,
+  IoPowerOutline,
   IoCardOutline,
   IoBarChartOutline,
   IoGiftOutline,
@@ -52,6 +53,7 @@ import MaintenanceToggle from "@/components/admin/MaintenanceToggle";
 import MaintenanceControl from "@/components/admin/MaintenanceControl";
 import SortToggle from "@/components/admin/SortToggle";
 import AdminFanVerificationPage from "./adminfan-verification/page";
+import SessionManagement from "./sessions/page";
 
 const AdminPage = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -283,6 +285,11 @@ useEffect(() => {
       name: "Backup Management",
       icon: <IoServerOutline size={22} />,
       component: <BackupManagement />,
+    },
+    {
+      name: "Sessions",
+      icon: <IoPowerOutline size={22} />,
+      component: <SessionManagement />,
     },
     // {
     //   name: "Updates",
