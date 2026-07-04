@@ -52,6 +52,8 @@ export async function POST(request: NextRequest) {
     // dates, which themselves contain commas). getSetCookie() returns
     // each cookie separately so they can be appended individually.
     const setCookies = backendRes.headers.getSetCookie?.() ?? [];
+    console.log("[api/login] backendRes status:", backendRes.status, "setCookies found:", setCookies.length, "raw:", setCookies);
+
     for (const cookie of setCookies) {
       res.headers.append("Set-Cookie", cookie);
     }
