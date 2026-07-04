@@ -133,17 +133,23 @@ export async function checkUserAdmin(request: NextRequest): Promise<boolean> {
     if (!cookie) {
       cookie = request.cookies.get("auth_token")?.value;
     }
+     console.log("[checkUserAdmin] cookie source:", request.cookies.get("session")?.value ? "session" : (request.cookies.get("auth_token")?.value ? "auth_token" : "none")); // ← add
+
     if (!cookie?.length) {
+      console.log("[checkUserAdmin] no cookie found at all"); // ← add
       return false;
     }
 
     const decryptCookie = await decryptData(cookie);
+     console.log("[checkUserAdmin] decrypt status:", decryptCookie.status, "body:", JSON.stringify(decryptCookie.body)); // ← add
     if (decryptCookie.status === "valid") {
       const userData = decryptCookie.body;
 
       if (userData?.admin !== undefined) {
+        console.log("[checkUserAdmin] admin field found:", userData.admin); // ← add
         return userData.admin === true;
       }
+        console.log("[checkUserAdmin] admin field undefined, falling through"); // ← add
 
       const userId = userData?.userId || userData?._id;
       if (!userId) {

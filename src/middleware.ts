@@ -116,6 +116,7 @@ export async function middleware(request: NextRequest) {
 
   if (isAdminRoute) {
     const isAdmin = await checkUserAdmin(request);
+     console.log("[middleware] admin check result:", isAdmin, "for path:", pathname); // ← add
     if (!isAdmin) {
       return createResponse('/');
     }
