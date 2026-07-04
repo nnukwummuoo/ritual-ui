@@ -14,6 +14,7 @@ type ForgetPasswordResponse = {
 export const ForgetPasswordView = () => {
   const [formError, setFormError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [username, setUsername] = useState("");
 
   async function handleForgetPassword(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -21,11 +22,12 @@ export const ForgetPasswordView = () => {
     setFormError(null);
 
     const formData = new FormData(e.currentTarget);
-    const username = formData.get("username")?.toString() || "";
+   const usernameInput = username.trim();
+const normalizedUsername = usernameInput.startsWith("@") ? usernameInput : (usernameInput ? `@${usernameInput}` : "");
     const secretPhrase = formData.get("secretPhrase")?.toString() || "";
     const newPassword = formData.get("newPassword")?.toString() || "";
 
-    if (!username || !secretPhrase || !newPassword) {
+    if (!normalizedUsername || !secretPhrase || !newPassword) {
       setFormError("Please fill in all fields.");
       toastError({ message: "Please fill in all fields." });
       setLoading(false);
@@ -42,7 +44,7 @@ export const ForgetPasswordView = () => {
 
     try {
       const response: ForgetPasswordResponse = await forgetpass({
-        username,
+        username: normalizedUsername,
         secretPhrase: secretPhraseArray,
         newPassword,
       });
@@ -95,6 +97,8 @@ export const ForgetPasswordView = () => {
               pattern="@[a-z0-9_]{3,15}"
               title="Username: @ followed by 3-15 lowercase letters, numbers, or _"
               required={true}
+               value={username}
+              onChange={(e) => setUsername(e.target.value.toLowerCase())}
             />
             <label htmlFor="username" className="text-gray-400 text-sm mt-1">
               Username
