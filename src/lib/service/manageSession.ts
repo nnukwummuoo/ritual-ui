@@ -35,8 +35,27 @@ export async function decryptData(
 ): Promise<{ status: "valid" | "expired" | "invalid"; body: user; exp?: number }> {
   try {
     const { payload } = await jwtVerify(input, key, { algorithms: ["HS256"] });
-    const typedPayload = payload as payload;
-    return { status: "valid", body: typedPayload.user, exp: payload.exp };
+    const typedPayload = payload as any;
+
+    // Two possible shapes can land here:
+    // 1) Our own "session" cookie (jose):        { user: { admin, username, ... } }
+    // 2) The backend's raw auth_token JWT:        { UserInfo: { username, userId, isAdmin } }
+    let userBody: user;
+    if (typedPayload.user) {
+      userBody = typedPayload.user;
+    } else if (typedPayload.UserInfo) {
+      userBody = {
+        username: typedPayload.UserInfo.username,
+        password: "",
+        userId: typedPayload.UserInfo.userId,
+        _id: typedPayload.UserInfo.userId,
+        admin: typedPayload.UserInfo.isAdmin,
+      };
+    } else {
+      userBody = { username: "", password: "" };
+    }
+
+    return { status: "valid", body: userBody, exp: payload.exp };
   } catch (error: any) {
     const isExpired = error?.code === "ERR_JWT_EXPIRED";
     console.error("JWT verification error:", error.message);
