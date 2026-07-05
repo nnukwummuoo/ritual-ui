@@ -6122,7 +6122,7 @@ const isFanVerified = isViewingOwnProfile
 
                   <div className="w-full overflow-x-hidden   mt-2">
 
-                    <p className="text-slate-400 break-words">{bio || "Hey, I am using mmeko"}</p>
+                    <p className="text-slate-400 break-words">{bio || "No bio yet"}</p>
 
                   </div>
 

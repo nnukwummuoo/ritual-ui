@@ -28,14 +28,14 @@ const CATEGORY_OPTIONS = [
   {
     value: "Fan meet",
     title: "Fan Meet & Greet",
-    description: "In-person meet in a public place - 30 min max",
+    description: "In-person meet",
     icon: "🤝",
     iconBg: "bg-[#6c63ff]/15",
   },
   {
     value: "Fan date",
     title: "Fan Date",
-    description: "An exclusive in-person date experience - public venues only",
+    description: "An exclusive in-person date experience",
     icon: "❤️",
     iconBg: "bg-[#f472b6]/15",
   },
