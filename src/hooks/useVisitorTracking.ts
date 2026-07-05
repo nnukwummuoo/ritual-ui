@@ -1,6 +1,7 @@
 
 import { useEffect, useRef } from 'react';
 import { URL } from '@/api/config';
+import { usePathname } from 'next/navigation';
 
 /**
  * Hook to track website visitors (for both logged-in and anonymous users)
@@ -11,6 +12,7 @@ export const useVisitorTracking = (userId?: string | null) => {
   const lastActivityRef = useRef<number>(Date.now());
   const trackingIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const lastUpdateTimeRef = useRef<number>(Date.now()); // Track last time we sent an update
+  const pathname = usePathname(); 
 
   useEffect(() => {
     // Always run tracking, even for anonymous users
@@ -312,5 +314,37 @@ export const useVisitorTracking = (userId?: string | null) => {
       }
     };
   }, [userId]);
+
+  // Track each page navigation (the effect above only fires once per session/mount)
+  useEffect(() => {
+    if (!pathname) return;
+
+    const trackPage = async () => {
+      try {
+        const API_URL = URL;
+        if (!API_URL) return;
+
+        const visitorId =
+          userId ||
+          visitorIdRef.current ||
+          localStorage.getItem('mmeko_temporary_visitor_id') ||
+          sessionStorage.getItem('visitor_session_id');
+
+        if (!visitorId) return;
+
+        await fetch(`${API_URL}/api/track-pageview`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ visitorId, userid: userId || null, path: pathname }),
+        });
+      } catch (error) {
+        console.error('❌ [Tracking] Error tracking page view:', error);
+      }
+    };
+
+    trackPage();
+  }, [pathname, userId]);
 };
+
+
 

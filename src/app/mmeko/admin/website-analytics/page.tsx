@@ -96,6 +96,7 @@ interface Visitor {
   visitDate: Date;
   totalTimeSpentHours: number;
   pageViews: number;
+    pagesVisited?: { path: string; timestamp: string }[];
   location: {
     ipAddress: string;
     country: string;
@@ -150,6 +151,7 @@ const WebsiteAnalyticsPage = () => {
   const [data, setData] = useState<WebsiteAnalyticsData | null>(null);
   const [selectedPeriod, setSelectedPeriod] = useState<string>('7days');
   const [activeTab, setActiveTab] = useState<'ranking' | 'visitors'>('ranking');
+  const [selectedVisitorPages, setSelectedVisitorPages] = useState<Visitor | null>(null);
   const [userRankingPage, setUserRankingPage] = useState<number>(1);
   const [visitorsPage, setVisitorsPage] = useState<number>(1);
   const [loading, setLoading] = useState<{ [key: string]: boolean }>({});
@@ -710,7 +712,13 @@ const WebsiteAnalyticsPage = () => {
                               <span className="text-white font-medium">{formatTime(visitor.totalTimeSpentHours)}</span>
                             </td>
                             <td className="py-4 px-4 text-right">
-                              <span className="text-white font-medium">{visitor.pageViews}</span>
+                             <button
+  onClick={() => setSelectedVisitorPages(visitor)}
+  className="text-white font-medium underline decoration-dotted hover:text-blue-400 transition-colors"
+  title="Click to see pages visited"
+>
+  {visitor.pageViews}
+</button>
                             </td>
                             <td className="py-4 px-4">
                               <div className="text-white text-sm font-mono">
@@ -823,6 +831,41 @@ const WebsiteAnalyticsPage = () => {
               No post data available for this period
             </div>
           )}
+
+          {selectedVisitorPages && (
+  <div
+    className="fixed inset-0 z-[300] flex items-center justify-center p-4"
+    style={{ background: "rgba(0,0,0,.65)", backdropFilter: "blur(6px)" }}
+    onClick={() => setSelectedVisitorPages(null)}
+  >
+    <div
+      className="bg-gray-800 rounded-lg p-6 max-w-md w-full max-h-[70vh] overflow-y-auto"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="text-white font-semibold text-lg">Pages Visited</h3>
+        <button onClick={() => setSelectedVisitorPages(null)} className="text-gray-400 hover:text-white">
+          ✕
+        </button>
+      </div>
+
+      {selectedVisitorPages.pagesVisited && selectedVisitorPages.pagesVisited.length > 0 ? (
+        <ul className="space-y-2">
+          {selectedVisitorPages.pagesVisited.map((p, i) => (
+            <li key={i} className="flex justify-between items-center border-b border-gray-700 pb-2 text-sm">
+              <span className="text-white break-all">{p.path}</span>
+              <span className="text-gray-400 ml-3 whitespace-nowrap">
+                {new Date(p.timestamp).toLocaleTimeString()}
+              </span>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="text-gray-400 text-sm">No page-level data recorded for this visitor yet.</p>
+      )}
+    </div>
+  </div>
+)}
         </div>
       </div>
     </div>
