@@ -701,7 +701,7 @@ export default function CreatorLandingContent({ prefetchedCreators }: Props) {
                   <tr>
                     <th className="th-feature">Feature</th>
                     <th className="th-mmeko"><div className="th-mmeko-inner"><div className="th-badge">🏆 Best for Creators</div>mmeko</div></th>
-                    <th className="th-other">OnlyFans / Others</th>
+                    <th className="th-other">Others</th>
                   </tr>
                 </thead>
                 <tbody>

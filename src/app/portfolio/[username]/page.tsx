@@ -990,7 +990,7 @@ useEffect(() => {
         <div style={{ display: "flex", alignItems: "flex-start", gap: 10, background: "rgba(108,99,255,.06)", border: "1px solid rgba(108,99,255,.12)", borderRadius: 10, padding: "12px 14px", marginBottom: 22 }}>
           <span style={{ fontSize: 14, flexShrink: 0, marginTop: 1 }}>💡</span>
           <div style={{ fontSize: 12, color: "#94a3b8", lineHeight: 1.6 }}>
-            <strong style={{ color: "#a89cff", fontWeight: 600 }}>Pro tip:</strong> Post your link in your Instagram bio, TikTok profile, or OnlyFans page to reach your existing fans instantly.
+            <strong style={{ color: "#a89cff", fontWeight: 600 }}>Pro tip:</strong> Post your link in your Instagram bio, TikTok profile, OnlyFans page or tryst profile to reach your existing fans instantly.
           </div>
         </div>
 

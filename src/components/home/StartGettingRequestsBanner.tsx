@@ -78,7 +78,7 @@ const portfolioUrl = `https://mmeko.com/portfolio/${cleanUsername}`;
 
         {/* Platform tags */}
         <div className="flex items-center gap-1.5 flex-wrap mb-3.5 pl-[30px]">
-          {[["TikTok", "T"], ["Instagram", "I"], ["Twitter", "X"], ["🔗 Anywhere", ""]].map(([label]) => (
+          {[["Tryst", "T"], ["Instagram", "I"], ["Twitter", "X"], ["🔗 Anywhere", ""]].map(([label]) => (
             <span key={label} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold text-[#475569]" style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.07)" }}>{label}</span>
           ))}
         </div>
