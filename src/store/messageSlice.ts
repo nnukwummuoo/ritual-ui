@@ -102,7 +102,7 @@ export const getmsgnitify = createAsyncThunk(
   async (data: any, thunkAPI) => {
     try {
       const state = thunkAPI.getState() as RootState;
-      const token = getValidToken() || state.register.refreshtoken || state.register.accesstoken;
+      const token = getValidToken() || state.register.accesstoken || state.register.refreshtoken;
 
       if (!token) {
         throw "No valid authentication token found";

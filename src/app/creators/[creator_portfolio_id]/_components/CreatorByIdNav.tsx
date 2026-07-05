@@ -172,7 +172,7 @@ const CreatorByIdNav = ({ creatorName, views, followingUser, id, creator_portfol
         const loginData = localStorage.getItem('login');
         if (loginData) {
           const parsedData = JSON.parse(loginData);
-          authToken = parsedData.refreshtoken || parsedData.accesstoken;
+          authToken = parsedData.accesstoken || parsedData.refreshtoken;
         }
         } catch (error) {
           // Silent fail

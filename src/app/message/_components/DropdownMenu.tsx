@@ -132,7 +132,7 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({ creator_portfolio_id: propC
         if (raw) {
           const data = JSON.parse(raw);
           // Try to extract user ID from token (JWT payload)
-          const token = data?.refreshtoken || data?.accesstoken;
+          const token = data?.accesstoken || data?.refreshtoken;
           if (token) {
             try {
               const payload = JSON.parse(atob(token.split('.')[1]));
