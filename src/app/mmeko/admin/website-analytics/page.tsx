@@ -855,7 +855,7 @@ const WebsiteAnalyticsPage = () => {
             <li key={i} className="flex justify-between items-center border-b border-gray-700 pb-2 text-sm">
               <span className="text-white break-all">{p.path}</span>
               <span className="text-gray-400 ml-3 whitespace-nowrap">
-                {new Date(p.timestamp).toLocaleTimeString()}
+                {new Date(p.timestamp).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true })}
               </span>
             </li>
           ))}
