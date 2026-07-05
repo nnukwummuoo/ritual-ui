@@ -90,16 +90,16 @@ const normalizedUsername = usernameInput.startsWith("@") ? usernameInput : (user
         </p>
         <form onSubmit={handleForgetPassword} className="mt-6 space-y-4">
           <div className="flex flex-col">
-            <Input
-              type="text"
-              name="username"
-              placeholder="@username"
-              pattern="@[a-z0-9_]{3,15}"
-              title="Username: @ followed by 3-15 lowercase letters, numbers, or _"
-              required={true}
-               value={username}
-              onChange={(e) => setUsername(e.target.value.toLowerCase())}
-            />
+           <Input
+  type="text"
+  name="username"
+  placeholder="@username"
+  pattern="^@?[a-z0-9_]{3,15}$"
+  title="Username: optional @ followed by 3-15 lowercase letters, numbers, or _"
+  required={true}
+  value={username}
+  onChange={(e) => setUsername(e.target.value.toLowerCase())}
+/>
             <label htmlFor="username" className="text-gray-400 text-sm mt-1">
               Username
             </label>
