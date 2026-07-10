@@ -13,6 +13,8 @@ import { editCreatorMultipart } from "@/api/creator";
 import { useUserId } from "@/lib/hooks/useUserId";
 import { getprofile } from "@/store/profile";
 import { countryList } from "@/components/CountrySelect/countryList";
+import { Country, State } from "country-state-city";
+import { formatTourDateRange } from "@/utils/tourFormat";
 
 const DAY_OPTIONS = [
   { value: "MON", label: "MON" },
@@ -28,27 +30,29 @@ const CATEGORY_OPTIONS = [
   {
     value: "Fan meet",
     title: "Fan Meet & Greet",
-    description: "In-person meet",
+    description: "In-person meet in a public place — 30 min max",
     icon: "🤝",
-    iconBg: "bg-[#6c63ff]/15",
+    iconClass: "ci-meet",
   },
   {
     value: "Fan date",
     title: "Fan Date",
-    description: "An exclusive in-person date experience",
+    description: "An exclusive in-person date experience — public venues only",
     icon: "❤️",
-    iconBg: "bg-[#f472b6]/15",
+    iconClass: "ci-date",
   },
   {
     value: "Fan call",
     title: "Fan Call",
     description: "One-on-one video or voice call with your fan",
     icon: "📱",
-    iconBg: "bg-[#2dd4bf]/15",
+    iconClass: "ci-call",
   },
 ];
 
 const MAX_PHOTOS = 9;
+
+type Tour = { state: string; countryCode: string; startDate: string; endDate: string };
 
 export default function Editcreator() {
   const userid = useUserId();
@@ -83,10 +87,27 @@ export default function Editcreator() {
   const [times, setTimes] = useState<string[]>([]);
   const [hours, setHours] = useState<string[]>([]);
 
+  // State/Province + Tours
+  const [selectedCountryCode, setSelectedCountryCode] = useState("");
+  const [stateQuery, setStateQuery] = useState("");
+  const [showStateDropdown, setShowStateDropdown] = useState(false);
+  const [selectedState, setSelectedState] = useState("");
+  const [tours, setTours] = useState<Tour[]>([]);
+  const [tourCountryCode, setTourCountryCode] = useState("");
+  const [tourStateQuery, setTourStateQuery] = useState("");
+  const [showTourStateDropdown, setShowTourStateDropdown] = useState(false);
+  const [tourSelectedState, setTourSelectedState] = useState("");
+  const [tourStartDate, setTourStartDate] = useState("");
+  const [tourEndDate, setTourEndDate] = useState("");
+  const [showTourDates, setShowTourDates] = useState(false);
+
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const hosttypeInitialized = useRef(false);
   const token = useAuthToken();
-  const imagesInitialized = useRef(false); 
+  const imagesInitialized = useRef(false);
+  const tourInitialized = useRef(false);
+
+  const allCountries = useMemo(() => Country.getAllCountries(), []);
 
   const filteredCountries = useMemo(() => {
     const query = countryQuery.trim().toLowerCase();
@@ -95,6 +116,55 @@ export default function Editcreator() {
       .filter((country) => country.toLowerCase().includes(query))
       .slice(0, 12);
   }, [countryQuery]);
+
+  const availableStates = useMemo(() => {
+    if (!selectedCountryCode) return [];
+    return State.getStatesOfCountry(selectedCountryCode);
+  }, [selectedCountryCode]);
+
+  const filteredStates = useMemo(() => {
+    const query = stateQuery.trim().toLowerCase();
+    const list = availableStates.map((s) => s.name);
+    if (!query) return list.slice(0, 12);
+    return list.filter((s) => s.toLowerCase().includes(query)).slice(0, 12);
+  }, [stateQuery, availableStates]);
+
+  const tourAvailableStates = useMemo(() => {
+    if (!tourCountryCode) return [];
+    return State.getStatesOfCountry(tourCountryCode);
+  }, [tourCountryCode]);
+
+  const filteredTourStates = useMemo(() => {
+    const query = tourStateQuery.trim().toLowerCase();
+    const list = tourAvailableStates.map((s) => s.name);
+    if (!query) return list.slice(0, 12);
+    return list.filter((s) => s.toLowerCase().includes(query)).slice(0, 12);
+  }, [tourStateQuery, tourAvailableStates]);
+
+  const addTour = () => {
+    if (!tourSelectedState || !tourCountryCode || !tourStartDate || !tourEndDate) {
+      toast.error("Select a state and both dates to add a tour");
+      return;
+    }
+    if (new Date(tourEndDate) < new Date(tourStartDate)) {
+      toast.error("End date must be after start date");
+      return;
+    }
+    setTours((prev) => [
+      ...prev,
+      { state: tourSelectedState, countryCode: tourCountryCode, startDate: tourStartDate, endDate: tourEndDate },
+    ]);
+    setTourSelectedState("");
+    setTourStateQuery("");
+    setTourCountryCode("");
+    setTourStartDate("");
+    setTourEndDate("");
+    setShowTourDates(false);
+  };
+
+  const removeTour = (index: number) => {
+    setTours((prev) => prev.filter((_, i) => i !== index));
+  };
 
   const durationValue = Math.max(1, Math.min(30, Number(duration) || 1));
 
@@ -198,16 +268,25 @@ export default function Editcreator() {
       setHours(toArray(creator.daysava));
     }
 
-   if (creator.photolink && !imagesInitialized.current) {
-  const existingImgArray =
-    typeof creator.photolink === "string"
-      ? creator.photolink.split(",").filter((url: string) => url.trim())
-      : Array.isArray(creator.photolink)
-        ? creator.photolink.filter((url: string) => url.trim())
-        : [];
-  setExistingImages(existingImgArray);
-  imagesInitialized.current = true;
-}
+    if (creator.photolink && !imagesInitialized.current) {
+      const existingImgArray =
+        typeof creator.photolink === "string"
+          ? creator.photolink.split(",").filter((url: string) => url.trim())
+          : Array.isArray(creator.photolink)
+            ? creator.photolink.filter((url: string) => url.trim())
+            : [];
+      setExistingImages(existingImgArray);
+      imagesInitialized.current = true;
+    }
+
+    if (!tourInitialized.current) {
+      setSelectedState(creator.state || "");
+      setStateQuery(creator.state || "");
+      const matched = allCountries.find((c) => c.name === creator.location);
+      setSelectedCountryCode(matched?.isoCode || "");
+      setTours(Array.isArray(creator.tours) ? creator.tours : []);
+      tourInitialized.current = true;
+    }
   }, [
     creator,
     creator_portfolio_id,
@@ -218,6 +297,7 @@ export default function Editcreator() {
     profile.status,
     reduxUserId,
     userid,
+    allCountries,
   ]);
 
   // Autofill full name from user profile
@@ -257,32 +337,14 @@ export default function Editcreator() {
   };
 
   const checkuserInput = async () => {
-    console.log("[EditCreatorPortfolio] Starting validation");
-    console.log("[EditCreatorPortfolio] Current state:", {
-      age,
-      hosttype,
-      newImagesCount: newImages.length,
-      existingImagesCount: existingImages.length,
-      totalImages: newImages.length + existingImages.length,
-      location,
-      price,
-      description,
-      userid,
-      token: token ? "present" : "missing",
-      creator_portfolio_id,
-    });
-
     if (!age) return toast.error("Age Empty", { autoClose: 2000 });
     if (!hosttype) return toast.error("Select host type", { autoClose: 2000 });
     if (newImages.length === 0 && existingImages.length === 0) {
-      return toast.error("Please upload at least one image", {
-        autoClose: 2000,
-      });
+      return toast.error("Please upload at least one image", { autoClose: 2000 });
     }
     if (!location) return toast.error("Location Empty", { autoClose: 2000 });
     if (!price) return toast.error("Price Empty", { autoClose: 2000 });
-    if (!description)
-      return toast.error("Write your description", { autoClose: 2000 });
+    if (!description) return toast.error("Write your description", { autoClose: 2000 });
 
     if (!userid) return toast.error("Missing user, please login again");
     if (!token) return toast.error("Missing token");
@@ -296,20 +358,14 @@ export default function Editcreator() {
         (img) => !imagesToDelete.includes(img),
       );
 
-      console.log("[EditCreatorPortfolio] Image analysis:", {
-        newImagesCount: newImages.length,
-        existingImagesCount: existingImages.length,
-        imagesToDeleteCount: imagesToDelete.length,
-        preservedExistingImagesCount: preservedExistingImages.length,
-        totalImagesAfterEdit: newImages.length + preservedExistingImages.length,
-      });
-
       const data = {
         userId: userid,
         creator_portfolio_id,
         name,
         age,
         location,
+        state: selectedState,
+        tours: JSON.stringify(tours),
         price,
         duration: days || `${durationValue}min`,
         description,
@@ -347,19 +403,14 @@ export default function Editcreator() {
 
   const removeExistingImage = (index: number) => {
     const imageToDelete = existingImages[index];
-
     setImagesToDelete((prev) => [...prev, imageToDelete]);
     setExistingImages((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleImageUpload = (files: FileList) => {
     if (files?.length) {
-      const selectedFiles = Array.from(files).filter((f) =>
-        f.type.startsWith("image/"),
-      );
-      const oversizedFiles = selectedFiles.filter(
-        (f: any) => f.size > 10 * 1024 * 1024,
-      );
+      const selectedFiles = Array.from(files).filter((f) => f.type.startsWith("image/"));
+      const oversizedFiles = selectedFiles.filter((f: any) => f.size > 10 * 1024 * 1024);
       if (oversizedFiles.length > 0) {
         setShowFileSizeModal(true);
         return;
@@ -386,611 +437,605 @@ export default function Editcreator() {
 
     const key = imageUrl.split("/").pop();
     const urlParts = imageUrl.split("/");
-    const bucketIndex =
-      urlParts.findIndex((part) => part === "gateway.storjshare.io") + 1;
+    const bucketIndex = urlParts.findIndex((part) => part === "gateway.storjshare.io") + 1;
     const bucket = urlParts[bucketIndex] || "creator";
 
     return `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3100"}/api/image/view?publicId=${key}&bucket=${bucket}`;
   };
 
   return (
-    <div
-      className="min-h-screen bg-[#080b14] text-slate-100"
-      style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
-    >
+    <div className="mcp-edit-portfolio">
       <ToastContainer position="top-center" theme="dark" />
 
-      <div className="sticky top-0 z-40 h-14 border-b border-white/10 bg-[#080b14]/95 px-4">
-        <div className="mx-auto flex h-full w-full max-w-[520px] items-center gap-3">
-          <button
-            type="button"
-            onClick={() => router.back()}
-            className="shrink-0 whitespace-nowrap text-sm text-slate-300 transition hover:text-white"
-          >
-            ← Back
-          </button>
-          <div className="flex items-center gap-2">
-            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-gradient-to-br from-[#6c63ff] to-[#9b59f5] text-xs font-bold text-white">
-              M
-            </div>
-            <span className="text-lg font-bold text-white">mmeko</span>
+      {/* NAV */}
+      <nav className="nav">
+        <button className="nav-back" type="button" onClick={() => router.back()}>← Back</button>
+        <a href="#" className="nav-logo" onClick={(e) => e.preventDefault()}>
+          <div className="nav-logo-icon">M</div>
+          <span className="nav-logo-name">mmeko</span>
+        </a>
+        <div style={{ width: 60 }} />
+      </nav>
+
+      <div className="page">
+        {/* HEADER */}
+        <div className="page-tag">✦ Edit Portfolio</div>
+        <div className="page-title">Edit Your Portfolio</div>
+        <p className="page-sub">Set up your creator profile so fans can discover and book a meet &amp; greet with you.</p>
+
+        {/* PERSONAL INFO */}
+        <div className="sec-label">Personal Info</div>
+
+        <div className="fg">
+          <label className="fl">Full Name <span className="req">*</span></label>
+          <input type="text" className="fi" value={name} readOnly />
+        </div>
+
+        <div className="frow">
+          <div className="fg">
+            <label className="fl">Age <span className="req">*</span></label>
+            <select className="fi" value={age} onChange={(e) => setage(e.currentTarget.value)}>
+              <option value="" disabled>Select age</option>
+              {Array.from({ length: 53 }, (_, index) => 18 + index).map((num) => (
+                <option key={num} value={num}>{num} years</option>
+              ))}
+            </select>
+          </div>
+          <div className="fg">
+            <label className="fl">Gender <span className="req">*</span></label>
+            <select className="fi" value={gender} onChange={(e) => setgender(e.currentTarget.value)}>
+              <option value="" disabled>Select gender</option>
+              <option value="Man">Man</option>
+              <option value="Woman">Woman</option>
+              <option value="Couple">Couples</option>
+              <option value="Trans">Trans</option>
+            </select>
           </div>
         </div>
-      </div>
 
-      <div className="max-w-[520px] mx-auto px-4 pb-16 pt-7">
-        <div className="inline-flex items-center gap-2 rounded-full border border-[#6c63ff]/25 bg-[#6c63ff]/10 px-3 py-1 mb-4 text-[11px] font-semibold uppercase tracking-[0.12em] text-[#a89cff]">
-          Edit Portfolio
+        <div className="fg" style={{ position: "relative" }}>
+          <label className="fl">Location <span className="req">*</span></label>
+          <input
+            type="text"
+            className="fi"
+            value={countryQuery}
+            onFocus={() => setShowCountryDropdown(true)}
+            onBlur={() => setTimeout(() => setShowCountryDropdown(false), 150)}
+            onChange={(e) => {
+              const value = e.currentTarget.value;
+              setCountryQuery(value);
+              setlocation(value.trim());
+            }}
+            placeholder="Search country..."
+            autoComplete="off"
+          />
+          {showCountryDropdown && filteredCountries.length > 0 && (
+            <div className="dropdown-panel">
+              {filteredCountries.map((country) => (
+                <button
+                  key={country}
+                  type="button"
+                  className="dropdown-item"
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    setCountryQuery(country);
+                    setlocation(country);
+                    setShowCountryDropdown(false);
+                    const matched = allCountries.find((c) => c.name === country);
+                    setSelectedCountryCode(matched?.isoCode || "");
+                    setSelectedState("");
+                    setStateQuery("");
+                  }}
+                >
+                  {country}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
-        <h1 className="text-xl lg:text-2xl leading-tight font-extrabold tracking-[-0.02em] text-white mb-2">
-          Edit Your Portfolio
-        </h1>
-        <p className="text-sm text-slate-400 leading-relaxed mb-8">
-          Set up your creator profile so fans can discover and book a meet and
-          greet with you.
-        </p>
-
-        <section className="mb-8">
-          <h2 className="mb-4 text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500 flex items-center gap-2">
-            <span className="block h-[2px] w-4 rounded bg-[#6c63ff]" />
-            Personal Info
-          </h2>
-
-          <div className="space-y-5">
-            <div>
-              <label className="mb-2 block text-sm font-semibold text-slate-300">
-                Full Name <span className="text-red-400">*</span>
-              </label>
-              <input
-                name="name"
-                value={name}
-                onChange={(e) => setname(e.currentTarget.value)}
-                readOnly
-                className="w-full rounded-xl border border-white/10 bg-[#111624] px-4 py-3 text-sm text-slate-200 outline-none opacity-80"
-              />
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label className="mb-2 block text-sm font-semibold text-slate-300">
-                  Age <span className="text-red-400">*</span>
-                </label>
-                <select
-                  value={age}
-                  onChange={(e) => setage(e.currentTarget.value)}
-                  className="w-full rounded-xl border border-white/10 bg-[#111624] px-4 py-3 text-sm text-slate-100 outline-none"
+        <div className="fg" style={{ position: "relative" }}>
+          <label className="fl">State / Province (optional)</label>
+          <input
+            type="text"
+            className="fi"
+            value={stateQuery}
+            disabled={!selectedCountryCode}
+            onFocus={() => setShowStateDropdown(true)}
+            onBlur={() => setTimeout(() => setShowStateDropdown(false), 150)}
+            onChange={(e) => setStateQuery(e.currentTarget.value)}
+            placeholder={selectedCountryCode ? "Search state/province..." : "Select a country first"}
+          />
+          {showStateDropdown && filteredStates.length > 0 && (
+            <div className="dropdown-panel">
+              {filteredStates.map((stateName) => (
+                <button
+                  key={stateName}
+                  type="button"
+                  className="dropdown-item"
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    setStateQuery(stateName);
+                    setSelectedState(stateName);
+                    setShowStateDropdown(false);
+                  }}
                 >
-                  <option value="">Select age</option>
-                  {Array.from({ length: 53 }, (_, index) => 18 + index).map(
-                    (num) => (
-                      <option key={num} value={num}>
-                        {num} years
-                      </option>
-                    ),
-                  )}
-                </select>
-              </div>
-
-              <div>
-                <label className="mb-2 block text-sm font-semibold text-slate-300">
-                  Gender <span className="text-red-400">*</span>
-                </label>
-                <select
-                  name="gender"
-                  value={gender}
-                  onChange={(e) => setgender(e.currentTarget.value)}
-                  className="w-full rounded-xl border border-white/10 bg-[#111624] px-4 py-3 text-sm text-slate-100 outline-none"
-                >
-                  <option value="">Select gender</option>
-                  <option value="Man">Man</option>
-                  <option value="Woman">Woman</option>
-                  <option value="Trans">Trans</option>
-                  <option value="Couple">Couple</option>
-                </select>
-              </div>
+                  {stateName}
+                </button>
+              ))}
             </div>
+          )}
+        </div>
 
-            <div className="relative">
-              <label className="mb-2 block text-sm font-semibold text-slate-300">
-                Location <span className="text-red-400">*</span>
-              </label>
-              <input
-                value={countryQuery}
-                onFocus={() => setShowCountryDropdown(true)}
-                onBlur={() =>
-                  setTimeout(() => setShowCountryDropdown(false), 150)
+        <div className="divider" />
+
+        {/* AVAILABLE DAYS */}
+        <div className="sec-label">Available Days</div>
+        <div className="days-wrap" style={{ marginBottom: 24 }}>
+          {DAY_OPTIONS.map((day) => {
+            const selected = hours.includes(day.value);
+            return (
+              <div
+                key={day.value}
+                className={`day-chip${selected ? " sel" : ""}`}
+                onClick={() =>
+                  setHours((prev: string[]) =>
+                    prev.includes(day.value) ? prev.filter((v) => v !== day.value) : [...prev, day.value],
+                  )
                 }
-                onChange={(e) => {
-                  const value = e.currentTarget.value;
-                  setCountryQuery(value);
-                  setlocation(value.trim());
-                }}
-                placeholder="Search country..."
-                className="w-full rounded-xl border border-white/10 bg-[#111624] px-4 py-3 text-sm text-slate-100 outline-none"
+              >
+                {day.label}
+              </div>
+            );
+          })}
+        </div>
+
+        {/* AVAILABLE HOURS */}
+        <div className="sec-label">Available Hours</div>
+        <div className="hours-section" style={{ marginBottom: 24 }}>
+          <div className="hours-tabs">
+            <button type="button" className={`h-tab${pm === "AM" ? " active" : ""}`} onClick={() => setpm("AM")}>🌞 AM</button>
+            <button type="button" className={`h-tab${pm === "PM" ? " active" : ""}`} onClick={() => setpm("PM")}>🌙 PM</button>
+          </div>
+          <div className="hours-grid">
+            {hourValues.map((value) => {
+              const selected = times.includes(value);
+              return (
+                <div
+                  key={value}
+                  className={`h-chip${selected ? " sel" : ""}`}
+                  onClick={() =>
+                    setTimes((prev: string[]) =>
+                      prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value],
+                    )
+                  }
+                >
+                  {value.replace(/(AM|PM)$/, " $1")}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="divider" />
+
+        {/* CATEGORY */}
+        <div className="sec-label">Choose Category</div>
+        <div className="cat-cards" style={{ marginBottom: 24 }}>
+          {CATEGORY_OPTIONS.map((option) => {
+            const selected = hosttype === option.value;
+            return (
+              <div
+                key={option.value}
+                className={`cat-card${selected ? " sel" : ""}`}
+                onClick={() => sethosttype(option.value)}
+              >
+                <div className={`cat-icon ${option.iconClass}`}>{option.icon}</div>
+                <div className="cat-info">
+                  <div className="cat-name">{option.title}</div>
+                  <div className="cat-desc">{option.description}</div>
+                </div>
+                <div className="cat-radio" />
+              </div>
+            );
+          })}
+        </div>
+
+        {/* PRICE */}
+        <div className="sec-label">Your Rate</div>
+        <div className="fg price-wrap" style={{ marginBottom: 6 }}>
+          <label className="fl">
+            {hosttype === "Fan call" ? "Enter your call rate" : "Enter your rate"} <span className="req">*</span>
+          </label>
+          <div className="price-row">
+            <div className="price-input-wrap">
+              <input
+                type="number"
+                className="fi"
+                value={price}
+                placeholder="e.g. 10000"
+                min={0}
+                onChange={(e) => setprice(e.currentTarget.value)}
               />
-              {showCountryDropdown && filteredCountries.length > 0 && (
-                <div className="absolute z-30 mt-2 max-h-56 w-full overflow-y-auto rounded-xl border border-white/10 bg-[#111624] shadow-2xl">
-                  {filteredCountries.map((country) => (
+              <div className="price-label-txt">{rateSubtitle}</div>
+            </div>
+            <button
+              type="button"
+              className="btn-hint"
+              title="Suggested rates"
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowPriceGuide((v) => !v);
+              }}
+            >
+              ?
+            </button>
+          </div>
+
+          <div className={`rates-pop${showPriceGuide ? " open" : ""}`}>
+            <div className="rates-pop-title">Suggested Rates</div>
+            <div className="rate-item">
+              <div className="rate-icon ri-call">📱</div>
+              <div>
+                <div className="rate-name">Fan Call (online)</div>
+                <div className="rate-val">100 gold / min</div>
+                <div className="rate-usd">≈ $4 / min</div>
+              </div>
+            </div>
+            <div className="rate-item">
+              <div className="rate-icon ri-meet">🤝</div>
+              <div>
+                <div className="rate-name">Fan Meet (in person)</div>
+                <div className="rate-val">10,000 gold</div>
+                <div className="rate-usd">≈ $400</div>
+              </div>
+            </div>
+            <div className="rate-item">
+              <div className="rate-icon ri-date">❤️</div>
+              <div>
+                <div className="rate-name">Fan Date (in person)</div>
+                <div className="rate-val">15,000 gold</div>
+                <div className="rate-usd">≈ $600</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="divider" />
+
+        {/* DURATION */}
+        {hosttype !== "Fan call" && (
+          <>
+            <div className="sec-label">Duration</div>
+            <p style={{ fontSize: 12, color: "rgba(148,163,184,.85)", marginTop: 6, marginBottom: 4, lineHeight: 1.4 }}>
+              <span style={{ color: "#6c63ff" }} className="font-bold text-xs uppercase tracking-wider flex items-center gap-1">
+                ✨ Premium Extension Available
+              </span>
+            </p>
+            <p className="text-gray-600 leading-relaxed text-xs sm:text-sm" style={{ marginTop: -4, marginBottom: 12 }}>
+              Fans can seamlessly extend their experience by sending an additional structured booking request at the end of each session if both parties wish to continue.
+            </p>
+
+            <div className="fg" style={{ marginBottom: 24 }}>
+              <div className="dur-wrap">
+                <button type="button" className="dur-btn" onClick={() => updateDuration(durationValue - 1)}>−</button>
+                <div className="dur-display">{durationValue} min</div>
+                <button type="button" className="dur-btn" onClick={() => updateDuration(durationValue + 1)}>+</button>
+              </div>
+              <input
+                type="range"
+                min={1}
+                max={30}
+                value={durationValue}
+                onChange={(e) => updateDuration(Number(e.currentTarget.value))}
+                style={{ marginTop: 12, width: "100%" }}
+              />
+              <div className="dur-bar"><div className="dur-fill" style={{ width: `${(durationValue / 30) * 100}%` }} /></div>
+              <div className="dur-note">Maximum 30 minutes per session</div>
+            </div>
+
+            <div className="divider" />
+          </>
+        )}
+
+        {/* SCHEDULE TOUR */}
+        <div className="sec-label">Schedule Tour (optional)</div>
+        <div className="fg" style={{ marginBottom: 24 }}>
+          {tours.map((tour, i) => (
+            <div key={i} className="cat-card" style={{ marginBottom: 8, cursor: "default" }}>
+              <div className="cat-info" style={{ flex: 1 }}>
+                <div className="cat-name" style={{ fontSize: 13 }}>
+                  {tour.state}, {tour.countryCode}. {formatTourDateRange(tour.startDate, tour.endDate)}
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => removeTour(i)}
+                style={{ color: "#f87171", background: "none", border: "none", cursor: "pointer", fontSize: 16 }}
+              >
+                ✕
+              </button>
+            </div>
+          ))}
+
+          <select
+            className="fi"
+            style={{ marginBottom: 8 }}
+            value={tourCountryCode}
+            onChange={(e) => {
+              setTourCountryCode(e.target.value);
+              setTourSelectedState("");
+              setTourStateQuery("");
+              setShowTourDates(false);
+            }}
+          >
+            <option value="">Select country for tour</option>
+            {allCountries.map((c) => (
+              <option key={c.isoCode} value={c.isoCode}>{c.name}</option>
+            ))}
+          </select>
+
+          {tourCountryCode && (
+            <div style={{ position: "relative", marginBottom: 8 }}>
+              <input
+                type="text"
+                className="fi"
+                value={tourStateQuery}
+                onFocus={() => setShowTourStateDropdown(true)}
+                onBlur={() => setTimeout(() => setShowTourStateDropdown(false), 150)}
+                onChange={(e) => setTourStateQuery(e.currentTarget.value)}
+                placeholder="Search state/province for tour..."
+              />
+              {showTourStateDropdown && filteredTourStates.length > 0 && (
+                <div className="dropdown-panel">
+                  {filteredTourStates.map((stateName) => (
                     <button
-                      key={country}
+                      key={stateName}
                       type="button"
+                      className="dropdown-item"
                       onMouseDown={(e) => {
                         e.preventDefault();
-                        setCountryQuery(country);
-                        setlocation(country);
-                        setShowCountryDropdown(false);
+                        setTourStateQuery(stateName);
+                        setTourSelectedState(stateName);
+                        setShowTourStateDropdown(false);
+                        setShowTourDates(true);
                       }}
-                      className="block w-full border-b border-white/5 px-4 py-2.5 text-left text-sm text-slate-200 hover:bg-white/5"
                     >
-                      {country}
+                      {stateName}
                     </button>
                   ))}
                 </div>
               )}
             </div>
-          </div>
-        </section>
+          )}
 
-        <div className="h-px bg-white/10 mb-8" />
-
-        <section className="mb-8">
-          <h2 className="mb-4 text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500 flex items-center gap-2">
-            <span className="block h-[2px] w-4 rounded bg-[#6c63ff]" />
-            Available Days
-          </h2>
-
-          <div className="flex flex-wrap gap-2">
-            {DAY_OPTIONS.map((day) => {
-              const selected = hours.includes(day.value);
-              return (
-                <button
-                  key={day.value}
-                  type="button"
-                  onClick={() =>
-                    setHours((prev: string[]) =>
-                      prev.includes(day.value)
-                        ? prev.filter((value) => value !== day.value)
-                        : [...prev, day.value],
-                    )
-                  }
-                  className={`h-12 w-14 rounded-xl border text-[11px] font-bold transition ${
-                    selected
-                      ? "border-[#22c55e]/40 bg-[#22c55e]/10 text-[#6ee7b7]"
-                      : "border-white/10 bg-[#111624] text-slate-500 hover:border-[#6c63ff]/40 hover:text-slate-200"
-                  }`}
-                >
-                  {day.label}
-                </button>
-              );
-            })}
-          </div>
-        </section>
-
-        <section className="mb-8">
-          <h2 className="mb-4 text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500 flex items-center gap-2">
-            <span className="block h-[2px] w-4 rounded bg-[#6c63ff]" />
-            Available Hours
-          </h2>
-
-          <div className="overflow-hidden rounded-2xl border border-white/10 bg-[#111624]">
-            <div className="grid grid-cols-2 border-b border-white/10">
-              <button
-                type="button"
-                onClick={() => setpm("AM")}
-                className={`py-3 text-sm font-bold transition flex items-center justify-center gap-2 ${
-                  pm === "AM"
-                    ? "bg-[#6c63ff]/15 text-[#a89cff]"
-                    : "text-slate-500"
-                }`}
-              >
-                <span aria-hidden>🌞</span>
-                <span>AM</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setpm("PM")}
-                className={`py-3 text-sm font-bold transition flex items-center justify-center gap-2 ${
-                  pm === "PM"
-                    ? "bg-[#6c63ff]/15 text-[#a89cff]"
-                    : "text-slate-500"
-                }`}
-              >
-                <span aria-hidden>🌙</span>
-                <span>PM</span>
+          {showTourDates && tourSelectedState && (
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center" }}>
+              <input type="date" className="fi" style={{ width: "auto" }} value={tourStartDate} onChange={(e) => setTourStartDate(e.target.value)} />
+              <span style={{ color: "var(--text3)", fontSize: 12 }}>to</span>
+              <input type="date" className="fi" style={{ width: "auto" }} value={tourEndDate} onChange={(e) => setTourEndDate(e.target.value)} />
+              <button type="button" className="btn-hint" style={{ width: "auto", borderRadius: 10, padding: "0 16px", height: 44, fontSize: 13, fontWeight: 700 }} onClick={addTour}>
+                Add Tour
               </button>
             </div>
+          )}
+        </div>
 
-            <div className="grid grid-cols-3 sm:grid-cols-3 gap-2 p-3">
-              {hourValues.map((value) => {
-                const selected = times.includes(value);
-                return (
-                  <button
-                    key={value}
-                    type="button"
-                    onClick={() =>
-                      setTimes((prev: string[]) =>
-                        prev.includes(value)
-                          ? prev.filter((hourValue) => hourValue !== value)
-                          : [...prev, value],
-                      )
-                    }
-                    className={`rounded-lg border px-2 py-2 text-xs font-semibold transition ${
-                      selected
-                        ? "border-[#6c63ff]/45 bg-[#6c63ff]/20 text-[#b8adff]"
-                        : "border-white/5 bg-[#0f1527] text-slate-400 hover:border-[#6c63ff]/35 hover:text-slate-200"
-                    }`}
-                  >
-                    {value.replace(/(AM|PM)$/, " $1")}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        </section>
+        <div className="divider" />
 
-        <div className="h-px bg-white/10 mb-8" />
-
-        <section className="mb-8">
-          <h2 className="mb-4 text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500 flex items-center gap-2">
-            <span className="block h-[2px] w-4 rounded bg-[#6c63ff]" />
-            Choose Category
-          </h2>
-
-          <div className="space-y-3 mb-6">
-            {CATEGORY_OPTIONS.map((option) => {
-              const selected = hosttype === option.value;
-              return (
-                <button
-                  key={option.value}
-                  type="button"
-                  onClick={() => sethosttype(option.value)}
-                  className={`w-full rounded-2xl border px-4 py-4 text-left transition ${
-                    selected
-                      ? "border-[#6c63ff]/50 bg-[#6c63ff]/10"
-                      : "border-white/10 bg-[#111624] hover:border-[#6c63ff]/25"
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <div
-                      className={`h-10 w-10 rounded-xl flex items-center justify-center text-xl ${option.iconBg}`}
-                    >
-                      <span aria-hidden>{option.icon}</span>
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-base font-bold text-white">
-                        {option.title}
-                      </p>
-                      <p className="text-xs text-slate-400 mt-0.5">
-                        {option.description}
-                      </p>
-                    </div>
-                    <span
-                      className={`h-5 w-5 rounded-full border-2 ${
-                        selected
-                          ? "border-[#6c63ff] bg-[#6c63ff]"
-                          : "border-white/15"
-                      }`}
-                    />
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-
-          <h2 className="mb-4 text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500 flex items-center gap-2">
-            <span className="block h-[2px] w-4 rounded bg-[#6c63ff]" />
-            Your Rate
-          </h2>
-
-          <div>
-            <label className="mb-2 block text-sm font-semibold text-slate-300">
-              {hosttype === "Fan call"
-                ? "Enter your call rate"
-                : "Enter your rate"}{" "}
-              <span className="text-red-400">*</span>
-            </label>
-            <div className="flex items-start gap-3">
-              <div className="flex-1">
-                <input
-                  className="w-full rounded-xl border border-white/10 bg-[#111624] px-4 py-3 text-sm text-slate-100 outline-none"
-                  type="number"
-                  value={price}
-                  placeholder="e.g. 10000"
-                  onChange={(e) => setprice(e.currentTarget.value)}
-                />
-                <p className="mt-2 text-xs text-slate-500">{rateSubtitle}</p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setShowPriceGuide(true)}
-                className="h-10 w-10 rounded-full border border-[#6c63ff]/30 bg-[#6c63ff]/15 text-[#a89cff] font-bold"
-                title="View Suggested Rates"
-              >
-                ?
-              </button>
-            </div>
-          </div>
-        </section>
-
-        <div className="h-px bg-white/10 mb-8" />
-       {/* only show if hosttype is not fancall */}
-        {hosttype !== "Fan call" && (
-          <section className="mb-8">
-            <h2 className="mb-4 text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500 flex items-center gap-2">
-              <span className="block h-[2px] w-4 rounded bg-[#6c63ff]" />
-              Duration
-            </h2>
-
-   <>
-  <p
-    style={{
-      fontSize: 12,
-      color: "rgba(148,163,184,.85)",
-      marginTop: 6,
-      marginBottom: 12,
-      lineHeight: 1.4,
-    }}
-  >
-    <span
-      style={{ color: "#6c63ff" }}
-      className="font-bold text-xs uppercase tracking-wider flex items-center gap-1"
-    >
-      ✨ Premium Extension Available
-    </span>
-  </p>
-  <p className="text-gray-600 leading-relaxed text-xs sm:text-sm"
-     style={{ marginTop: -8 }}>
-    Fans can seamlessly extend their experience by sending an additional structured booking request at the end of each session if both parties wish to continue.
-  </p>
-</>
-
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={() => updateDuration(durationValue - 1)}
-                className="h-10 w-10 rounded-full border border-white/10 bg-[#111624] text-xl text-slate-300 hover:border-[#6c63ff]/35"
-              >
-                -
-              </button>
-              <div className="flex-1 rounded-xl border border-white/10 bg-[#111624] py-3 text-center text-2xl font-extrabold">
-                {durationValue} min
-              </div>
-              <button
-                type="button"
-                onClick={() => updateDuration(durationValue + 1)}
-                className="h-10 w-10 rounded-full border border-white/10 bg-[#111624] text-xl text-slate-300 hover:border-[#6c63ff]/35"
-              >
-                +
-              </button>
-            </div>
-
-            <input
-              type="range"
-              min="1"
-              max="30"
-              value={durationValue}
-              onChange={(e) => updateDuration(Number(e.currentTarget.value))}
-              className="mt-4 w-full accent-[#7f6bff]"
-            />
-            <p className="mt-2 text-center text-xs text-slate-500">
-              Maximum 30 minutes per session
-            </p>
-          </section>
-        )}
-
-        <div className="h-px bg-white/10 mb-8" />
-
-        <section className="mb-8">
-          <h2 className="mb-4 text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500 flex items-center gap-2">
-            <span className="block h-[2px] w-4 rounded bg-[#6c63ff]" />
-            About Me
-          </h2>
-
-          <label className="mb-2 block text-sm font-semibold text-slate-300">
-            Tell fans about yourself <span className="text-red-400">*</span>
-          </label>
+        {/* ABOUT ME */}
+        <div className="sec-label">About Me</div>
+        <div className="fg" style={{ marginBottom: 0 }}>
+          <label className="fl">Tell fans about yourself <span className="req">*</span></label>
           <textarea
+            className="fi"
+            rows={4}
             value={description}
             onChange={(e) => setdescription(e.currentTarget.value)}
-            rows={5}
             placeholder="e.g. Laid back and fun to be around. I love good conversations and genuine connections..."
-            className="w-full rounded-xl border border-white/10 bg-[#111624] px-4 py-3 text-sm text-slate-100 outline-none resize-none"
           />
-        </section>
+        </div>
 
-        <div className="h-px bg-white/10 mb-8" />
+        <div className="divider" />
 
-        <section className="mb-8">
-          <h2 className="mb-4 text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500 flex items-center gap-2">
-            <span className="block h-[2px] w-4 rounded bg-[#6c63ff]" />
-            Portfolio Photos
-          </h2>
-
-          <div className="grid grid-cols-3 gap-3">
-            {displayedSlots.map((slot, slotIndex) => {
-              if (!slot) {
-                return (
-                  <button
-                    key={`empty-${slotIndex}`}
-                    type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    className="group flex aspect-square flex-col items-center justify-center gap-1.5 rounded-2xl border-[1.5px] border-dashed border-[#6c63ff]/25 bg-[#111624] transition hover:border-[#6c63ff]/50 hover:bg-[#6c63ff]/[0.04]"
-                  >
-                    <span aria-hidden className="text-2xl opacity-40 text-slate-400">
-                      📷
-                    </span>
-                    <span className="text-[10px] font-semibold text-slate-500">
-                      Add Photo
-                    </span>
-                  </button>
-                );
-              }
-
-              if (slot.kind === "existing") {
-                return (
-                  <div
-                    key={slot.id}
-                    className="group relative aspect-square overflow-hidden rounded-2xl border border-[#6c63ff]/30 bg-[#111624]"
-                  >
-                    <Image
-                      width={300}
-                      height={300}
-                      alt={`existing-${slot.index}`}
-                      src={resolveExistingImageSrc(slot.imageUrl)}
-                      className="h-full w-full object-cover"
-                      unoptimized
-                    />
-                    <button
-                      type="button"
-                      onClick={() => removeExistingImage(slot.index)}
-                      className="absolute right-2 top-2 h-6 w-6 rounded-full bg-black/70 text-xs text-white"
-                      title="Remove"
-                    >
-                      x
-                    </button>
-                  </div>
-                );
-              }
-
+        {/* PHOTOS */}
+        <div className="sec-label">Portfolio Photos</div>
+        <div className="photos-grid">
+          {displayedSlots.map((slot, slotIndex) => {
+            if (!slot) {
               return (
-                <div
-                  key={slot.id}
-                  className="group relative aspect-square overflow-hidden rounded-2xl border border-[#6c63ff]/30 bg-[#111624]"
-                >
+                <div key={`empty-${slotIndex}`} className="photo-slot" onClick={() => fileInputRef.current?.click()}>
+                  <div className="ps-inner">
+                    <div className="ps-icon">📷</div>
+                    <div className="ps-label">Add Photo</div>
+                  </div>
+                </div>
+              );
+            }
+
+            if (slot.kind === "existing") {
+              return (
+                <div key={slot.id} className="photo-slot filled">
                   <Image
                     width={300}
                     height={300}
-                    alt={`new-${slot.index}`}
-                    src={URL.createObjectURL(slot.file)}
-                    className="h-full w-full object-cover"
+                    alt={`existing-${slot.index}`}
+                    src={resolveExistingImageSrc(slot.imageUrl)}
+                    className="photo-thumb"
+                    unoptimized
                   />
-                  <button
-                    type="button"
-                    onClick={() => removeNewImage(slot.index)}
-                    className="absolute right-2 top-2 h-6 w-6 rounded-full bg-black/70 text-xs text-white"
-                    title="Remove"
-                  >
-                    x
-                  </button>
+                  <div className="photo-remove" onClick={() => removeExistingImage(slot.index)}>✕</div>
                 </div>
               );
-            })}
-          </div>
+            }
 
-          <input
-            type="file"
-            ref={fileInputRef}
-            className="hidden"
-            accept="image/*"
-            onChange={(e) => {
-              if (e.target.files?.[0]) handleImageUpload(e.target.files);
-            }}
-            multiple
-          />
+            return (
+              <div key={slot.id} className="photo-slot filled">
+                <Image
+                  width={300}
+                  height={300}
+                  alt={`new-${slot.index}`}
+                  src={URL.createObjectURL(slot.file)}
+                  className="photo-thumb"
+                />
+                <div className="photo-remove" onClick={() => removeNewImage(slot.index)}>✕</div>
+              </div>
+            );
+          })}
+        </div>
 
-          <p className="mt-3 text-xs leading-relaxed text-slate-500">
-            Tap x to remove an existing photo. Tap any empty slot to add a new
-            one. Updated photos are reviewed before going live.
-          </p>
-        </section>
+        <input
+          type="file"
+          ref={fileInputRef}
+          style={{ display: "none" }}
+          accept="image/*"
+          multiple
+          onChange={(e) => {
+            if (e.target.files?.[0]) handleImageUpload(e.target.files);
+          }}
+        />
 
-        <div className="h-px bg-white/10 mb-8" />
+        <div className="photos-note">
+          Tap ✕ to remove an existing photo. Tap any empty slot to add a new one. Updated photos are reviewed before going live.
+        </div>
 
-        <button
-          className="mb-3 flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#6c63ff] to-[#9b59f5] px-4 py-4 text-lg font-extrabold text-white shadow-[0_10px_36px_rgba(108,99,255,0.4)] disabled:opacity-50"
-          disabled={disablebut}
-          onClick={checkuserInput}
-        >
-          Save Changes -&gt;
+        <div className="divider" />
+
+        {/* PROCEED */}
+        <button className="btn-proceed" disabled={disablebut} onClick={checkuserInput}>
+          Save Changes →
         </button>
+        <button type="button" className="btn-cancel" onClick={() => router.back()}>Cancel</button>
 
-        <button
-          type="button"
-          onClick={() => router.back()}
-          className="w-full rounded-2xl border border-white/10 bg-transparent px-4 py-3 text-base font-semibold text-slate-300 hover:bg-white/5"
-        >
-          Cancel
-        </button>
-
-        <div className="mt-4 flex justify-between overflow-hidden">
-          <PacmanLoader color="#9b59f5" loading={loading} size={12} />
-          <PacmanLoader color="#9b59f5" loading={loading} size={12} />
+        <div style={{ marginTop: 16, display: "flex", justifyContent: "space-between", overflow: "hidden" }}>
           <PacmanLoader color="#9b59f5" loading={loading} size={12} />
         </div>
       </div>
 
-      {showPriceGuide && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
-          <div className="relative w-full max-w-md rounded-2xl border border-[#6c63ff]/35 bg-[#141928] p-5">
-            <button
-              type="button"
-              onClick={() => setShowPriceGuide(false)}
-              className="absolute right-4 top-3 text-xl text-slate-400 hover:text-white"
-            >
-              x
-            </button>
-
-            <h3 className="mb-4 text-lg font-bold text-white">
-              Suggested Rates
-            </h3>
-            <div className="space-y-3">
-              <div className="rounded-xl bg-[#111624] p-3">
-                <p className="text-sm font-semibold text-white">
-                  Fan call (online)
-                </p>
-                <p className="text-base font-bold text-amber-400">
-                  100 gold / min
-                </p>
-              </div>
-              <div className="rounded-xl bg-[#111624] p-3">
-                <p className="text-sm font-semibold text-white">
-                  Fan Meet (in person)
-                </p>
-                <p className="text-base font-bold text-amber-400">
-                  10,000 gold
-                </p>
-              </div>
-              <div className="rounded-xl bg-[#111624] p-3">
-                <p className="text-sm font-semibold text-white">
-                  Fan Date (in person)
-                </p>
-                <p className="text-base font-bold text-amber-400">
-                  15,000 gold
-                </p>
-              </div>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => setShowPriceGuide(false)}
-              className="mt-5 w-full rounded-xl bg-[#6c63ff] px-4 py-2.5 font-semibold text-white hover:bg-[#5d55ea]"
-            >
-              Got it
-            </button>
-          </div>
-        </div>
-      )}
-
       {showFileSizeModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
-          <div className="w-full max-w-md rounded-2xl bg-[#111624] p-5">
-            <h3 className="mb-3 text-lg font-bold text-red-400">
-              File Too Large
-            </h3>
-            <p className="mb-4 text-sm text-slate-200">
+        <div style={{ position: "fixed", inset: 0, zIndex: 300, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,.6)", padding: "0 16px" }}>
+          <div style={{ width: "100%", maxWidth: 420, borderRadius: 16, background: "var(--card)", padding: 20, border: "1px solid var(--border)" }}>
+            <h3 style={{ marginBottom: 10, fontSize: 17, fontWeight: 800, color: "#f87171" }}>File Too Large</h3>
+            <p style={{ marginBottom: 16, fontSize: 13.5, color: "var(--text)" }}>
               Max size is 10 MB. Please trim or compress before uploading.
             </p>
             <button
               type="button"
               onClick={() => setShowFileSizeModal(false)}
-              className="w-full rounded-xl bg-[#6c63ff] px-4 py-2.5 font-semibold text-white hover:bg-[#5d55ea]"
+              style={{ width: "100%", borderRadius: 10, background: "var(--accent)", padding: "10px 16px", fontWeight: 700, color: "#fff", border: "none", cursor: "pointer" }}
             >
               OK
             </button>
           </div>
         </div>
       )}
+
+      <style jsx>{`
+        *,*::before,*::after{box-sizing:border-box;}
+        .mcp-edit-portfolio{
+          --bg:#080b14;--bg2:#0b0f1c;--bg3:#0e1220;
+          --card:#111624;--card2:#161b2e;
+          --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.04);
+          --accent:#6c63ff;--accent2:#9b59f5;
+          --teal:#2dd4bf;--rose:#f472b6;
+          --success:#22c55e;--gold:#f59e0b;
+          --text:#f1f5f9;--text2:#94a3b8;--text3:#475569;
+          background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;min-height:100vh;
+        }
+        .nav{position:sticky;top:0;z-index:200;background:rgba(8,11,20,.97);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:0 20px;height:56px;display:flex;align-items:center;justify-content:space-between;}
+        .nav-logo{display:flex;align-items:center;gap:8px;text-decoration:none;}
+        .nav-logo-icon{width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,#6c63ff,#9b59f5);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:white;}
+        .nav-logo-name{font-size:15px;font-weight:700;color:var(--text);}
+        .nav-back{background:none;border:none;color:var(--text2);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:5px;transition:color .2s;}
+        .nav-back:hover{color:var(--text);}
+        .page{max-width:520px;margin:0 auto;padding:28px 20px 80px;}
+        .page-tag{display:inline-flex;align-items:center;gap:7px;background:rgba(108,99,255,.1);border:1px solid rgba(108,99,255,.2);border-radius:100px;padding:5px 12px;margin-bottom:14px;font-size:11px;font-weight:700;color:#a89cff;letter-spacing:.06em;text-transform:uppercase;}
+        .page-title{font-size:22px;font-weight:800;letter-spacing:-.02em;margin-bottom:6px;}
+        .page-sub{font-size:13px;color:var(--text2);line-height:1.65;margin-bottom:32px;}
+        .sec-label{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+        .sec-label::before{content:'';display:block;width:16px;height:2px;background:var(--accent);border-radius:2px;}
+        .fg{display:flex;flex-direction:column;gap:7px;margin-bottom:18px;}
+        .fg:last-child{margin-bottom:0;}
+        .fl{font-size:12.5px;font-weight:600;color:var(--text2);display:flex;align-items:center;gap:6px;}
+        .req{color:#ef4444;font-size:11px;}
+        .fi{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:13px 14px;font-size:13.5px;color:var(--text);font-family:inherit;outline:none;transition:border-color .2s;width:100%;}
+        .fi:focus{border-color:rgba(108,99,255,.4);}
+        .fi::placeholder{color:var(--text3);}
+        .fi:disabled{opacity:.4;}
+        select.fi{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23475569' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px;background-color:var(--card);}
+        textarea.fi{resize:none;line-height:1.65;}
+        .frow{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+        .divider{height:1px;background:var(--border);margin:28px 0;}
+        .dropdown-panel{position:absolute;z-index:30;margin-top:8px;max-height:224px;width:100%;overflow-y:auto;border-radius:12px;border:1px solid var(--border);background:var(--card);box-shadow:0 20px 60px rgba(0,0,0,.6);}
+        .dropdown-item{display:block;width:100%;border-bottom:1px solid var(--border2);padding:10px 16px;text-align:left;font-size:13px;color:var(--text2);background:none;border-left:none;border-right:none;border-top:none;cursor:pointer;font-family:inherit;}
+        .dropdown-item:hover{background:rgba(255,255,255,.05);}
+        .days-wrap{display:flex;gap:7px;flex-wrap:wrap;}
+        .day-chip{width:52px;height:48px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;letter-spacing:.03em;background:var(--card);border:1px solid var(--border);color:var(--text3);cursor:pointer;transition:all .2s;user-select:none;}
+        .day-chip:hover{border-color:rgba(108,99,255,.3);color:var(--text);}
+        .day-chip.sel{background:rgba(34,197,94,.08);border-color:rgba(34,197,94,.25);color:var(--success);}
+        .hours-section{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+        .hours-tabs{display:flex;border-bottom:1px solid var(--border);}
+        .h-tab{flex:1;padding:12px;font-size:13px;font-weight:700;font-family:inherit;background:transparent;border:none;color:var(--text3);cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:6px;}
+        .h-tab.active{background:rgba(108,99,255,.1);color:#a89cff;}
+        .hours-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:14px;}
+        .h-chip{padding:9px 8px;border-radius:8px;font-size:12px;font-weight:600;background:var(--bg3);border:1px solid var(--border2);color:var(--text2);cursor:pointer;transition:all .2s;text-align:center;user-select:none;}
+        .h-chip:hover{border-color:rgba(108,99,255,.3);color:#a89cff;}
+        .h-chip.sel{background:rgba(108,99,255,.14);border-color:rgba(108,99,255,.35);color:#a89cff;}
+        .cat-cards{display:flex;flex-direction:column;gap:10px;}
+        .cat-card{display:flex;align-items:center;gap:14px;background:var(--card);border:1.5px solid var(--border);border-radius:12px;padding:16px;cursor:pointer;transition:all .2s;user-select:none;}
+        .cat-card:hover{border-color:rgba(108,99,255,.25);}
+        .cat-card.sel{border-color:rgba(108,99,255,.45);background:rgba(108,99,255,.06);}
+        .cat-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+        .ci-meet{background:rgba(108,99,255,.12);}
+        .ci-date{background:rgba(244,114,182,.1);}
+        .ci-call{background:rgba(45,212,191,.1);}
+        .cat-name{font-size:14px;font-weight:700;margin-bottom:3px;}
+        .cat-desc{font-size:11.5px;color:var(--text2);line-height:1.4;}
+        .cat-radio{margin-left:auto;width:20px;height:20px;border-radius:50%;border:2px solid var(--border);flex-shrink:0;transition:all .2s;display:flex;align-items:center;justify-content:center;}
+        .cat-card.sel .cat-radio{border-color:var(--accent);background:var(--accent);}
+        .cat-card.sel .cat-radio::after{content:'';width:8px;height:8px;border-radius:50%;background:white;}
+        .price-wrap{position:relative;}
+        .price-row{display:flex;align-items:flex-start;gap:10px;}
+        .price-input-wrap{flex:1;}
+        .price-label-txt{font-size:12px;color:var(--text3);margin-top:6px;line-height:1.5;}
+        .btn-hint{width:36px;height:36px;border-radius:50%;background:rgba(108,99,255,.12);border:1px solid rgba(108,99,255,.2);color:#a89cff;font-size:15px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0;margin-top:0;font-family:inherit;}
+        .btn-hint:hover{background:rgba(108,99,255,.22);}
+        .rates-pop{display:none;position:absolute;right:0;top:48px;z-index:50;width:260px;background:#141928;border:1px solid rgba(108,99,255,.25);border-radius:14px;padding:18px;box-shadow:0 20px 60px rgba(0,0,0,.6);}
+        .rates-pop.open{display:block;}
+        .rates-pop-title{font-size:12px;font-weight:700;color:#a89cff;letter-spacing:.06em;text-transform:uppercase;margin-bottom:14px;}
+        .rate-item{display:flex;align-items:flex-start;gap:10px;margin-bottom:12px;}
+        .rate-item:last-child{margin-bottom:0;}
+        .rate-icon{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+        .ri-call{background:rgba(45,212,191,.1);}
+        .ri-meet{background:rgba(108,99,255,.12);}
+        .ri-date{background:rgba(244,114,182,.1);}
+        .rate-name{font-size:12px;font-weight:700;margin-bottom:2px;}
+        .rate-val{font-size:13px;font-weight:800;color:var(--gold);}
+        .rate-usd{font-size:11px;color:var(--text3);margin-top:1px;}
+        .dur-wrap{display:flex;align-items:center;gap:12px;}
+        .dur-btn{width:38px;height:38px;border-radius:50%;background:var(--card);border:1px solid var(--border);color:var(--text2);font-size:20px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;font-family:inherit;line-height:1;}
+        .dur-btn:hover{border-color:rgba(108,99,255,.35);color:#a89cff;background:rgba(108,99,255,.08);}
+        .dur-display{flex:1;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:13px;text-align:center;font-size:16px;font-weight:800;letter-spacing:-.01em;}
+        .dur-note{font-size:11px;color:var(--text3);text-align:center;margin-top:6px;}
+        .dur-bar{height:4px;background:var(--border2);border-radius:2px;margin-top:10px;overflow:hidden;}
+        .dur-fill{height:100%;background:linear-gradient(90deg,#6c63ff,#9b59f5);border-radius:2px;transition:width .3s;}
+        .photos-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+        .photo-slot{aspect-ratio:1;border-radius:12px;background:var(--card);border:1.5px dashed rgba(108,99,255,.25);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;position:relative;overflow:hidden;}
+        .photo-slot:hover{border-color:rgba(108,99,255,.5);background:rgba(108,99,255,.04);}
+        .photo-slot.filled{border-style:solid;border-color:rgba(108,99,255,.3);}
+        .ps-inner{display:flex;flex-direction:column;align-items:center;gap:6px;}
+        .ps-icon{font-size:24px;opacity:.4;}
+        .ps-label{font-size:10px;color:var(--text3);font-weight:600;}
+        .photo-remove{position:absolute;top:6px;right:6px;width:22px;height:22px;border-radius:50%;background:rgba(0,0,0,.7);border:1px solid rgba(255,255,255,.15);color:white;font-size:12px;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:5;}
+        .photo-thumb{position:absolute;inset:0;object-fit:cover;width:100%;height:100%;}
+        .photos-note{margin-top:10px;font-size:11.5px;color:var(--text3);line-height:1.55;}
+        .btn-proceed{width:100%;padding:16px;border-radius:14px;background:linear-gradient(135deg,#6c63ff,#9b59f5);border:none;color:white;font-size:15px;font-weight:800;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 6px 28px rgba(108,99,255,.4);transition:all .25s;margin-bottom:12px;}
+        .btn-proceed:hover{transform:translateY(-2px);box-shadow:0 10px 36px rgba(108,99,255,.55);}
+        .btn-proceed:disabled{opacity:.4;cursor:not-allowed;transform:none;box-shadow:none;}
+        .btn-cancel{width:100%;padding:14px;border-radius:12px;background:transparent;border:1px solid var(--border);color:var(--text2);font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;transition:all .2s;}
+        .btn-cancel:hover{background:rgba(255,255,255,.04);color:var(--text);}
+        @media(max-width:480px){.frow{grid-template-columns:1fr;}}
+      `}</style>
     </div>
   );
 }

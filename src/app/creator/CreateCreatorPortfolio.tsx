@@ -15,6 +15,8 @@ import { useSelector, useDispatch } from "react-redux";
 import type { RootState, AppDispatch } from "@/store/store";
 import { getprofile } from "@/store/profile";
 import { countryList } from "@/components/CountrySelect/countryList";
+import { Country, State } from "country-state-city";
+import { formatTourDateRange } from "@/utils/tourFormat";
 
 const DAY_OPTIONS = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"];
 
@@ -90,11 +92,75 @@ export default function CreateCreatorPortfolio() {
   const [selectedTimes, setSelectedTimes] = useState<string[]>([]);
   const [selectedDays, setSelectedDays] = useState<string[]>([]);
 
-  const filteredCountries = useMemo(() => {
-    const query = countryQuery.trim().toLowerCase();
-    if (!query) return countryList.slice(0, 12);
-    return countryList.filter((c) => c.toLowerCase().includes(query)).slice(0, 12);
-  }, [countryQuery]);
+ const allCountries = useMemo(() => Country.getAllCountries(), []);
+
+const filteredCountries = useMemo(() => {
+  const query = countryQuery.trim().toLowerCase();
+  const names = allCountries.map((c) => c.name);
+  if (!query) return names.slice(0, 12);
+  return names.filter((c) => c.toLowerCase().includes(query)).slice(0, 12);
+}, [countryQuery, allCountries]);
+
+  const [selectedCountryCode, setSelectedCountryCode] = useState("");
+const [stateQuery, setStateQuery] = useState("");
+const [showStateDropdown, setShowStateDropdown] = useState(false);
+const [selectedState, setSelectedState] = useState("");
+
+const availableStates = useMemo(() => {
+  if (!selectedCountryCode) return [];
+  return State.getStatesOfCountry(selectedCountryCode);
+}, [selectedCountryCode]);
+
+const filteredStates = useMemo(() => {
+  const query = stateQuery.trim().toLowerCase();
+  const list = availableStates.map((s) => s.name);
+  if (!query) return list.slice(0, 12);
+  return list.filter((s) => s.toLowerCase().includes(query)).slice(0, 12);
+}, [stateQuery, availableStates]);
+
+// Tour scheduling (optional, multiple allowed)
+type Tour = { state: string; countryCode: string; startDate: string; endDate: string };
+const [tours, setTours] = useState<Tour[]>([]);
+const [tourCountryCode, setTourCountryCode] = useState("");
+const [tourStateQuery, setTourStateQuery] = useState("");
+const [showTourStateDropdown, setShowTourStateDropdown] = useState(false);
+const [tourSelectedState, setTourSelectedState] = useState("");
+const [tourStartDate, setTourStartDate] = useState("");
+const [tourEndDate, setTourEndDate] = useState("");
+const [showTourDates, setShowTourDates] = useState(false);
+
+const tourAvailableStates = useMemo(() => {
+  if (!tourCountryCode) return [];
+  return State.getStatesOfCountry(tourCountryCode);
+}, [tourCountryCode]);
+
+const filteredTourStates = useMemo(() => {
+  const query = tourStateQuery.trim().toLowerCase();
+  const list = tourAvailableStates.map((s) => s.name);
+  if (!query) return list.slice(0, 12);
+  return list.filter((s) => s.toLowerCase().includes(query)).slice(0, 12);
+}, [tourStateQuery, tourAvailableStates]);
+
+const addTour = () => {
+  if (!tourSelectedState || !tourCountryCode || !tourStartDate || !tourEndDate) {
+    toast.error("Select a state and both dates to add a tour");
+    return;
+  }
+  if (new Date(tourEndDate) < new Date(tourStartDate)) {
+    toast.error("End date must be after start date");
+    return;
+  }
+  setTours((prev) => [...prev, { state: tourSelectedState, countryCode: tourCountryCode, startDate: tourStartDate, endDate: tourEndDate }]);
+  setTourSelectedState("");
+  setTourStateQuery("");
+  setTourStartDate("");
+  setTourEndDate("");
+  setShowTourDates(false);
+};
+
+const removeTour = (index: number) => {
+  setTours((prev) => prev.filter((_, i) => i !== index));
+};
 
   // ── CHANGED: step 5, min 5, max 30 ──
   const durationValue = Math.max(5, Math.min(30, Number(duration) || 30));
@@ -209,6 +275,8 @@ export default function CreateCreatorPortfolio() {
         name: name.trim(),
         age: String(age),
         location: location.trim(),
+         state: selectedState,
+  tours: JSON.stringify(tours),
         price: priceValue != null ? String(priceValue) : "",
         displayPrice: price,
         duration,
@@ -373,9 +441,13 @@ export default function CreateCreatorPortfolio() {
                   type="button"
                   onMouseDown={(e) => {
                     e.preventDefault();
-                    setCountryQuery(country);
-                    setlocation(country);
-                    setShowCountryDropdown(false);
+                   setCountryQuery(country);
+setlocation(country);
+setShowCountryDropdown(false);
+const matched = allCountries.find((c) => c.name === country);
+setSelectedCountryCode(matched?.isoCode || "");
+setSelectedState("");
+setStateQuery("");
                   }}
                   className="block w-full border-b border-white/5 px-4 py-2.5 text-left text-sm text-slate-200 hover:bg-white/5"
                 >
@@ -386,7 +458,41 @@ export default function CreateCreatorPortfolio() {
           )}
         </div>
 
+        <div className="relative mb-[18px]">
+  <FieldLabel>State / Province (optional)</FieldLabel>
+  <input
+    value={stateQuery}
+    disabled={!selectedCountryCode}
+    onFocus={() => setShowStateDropdown(true)}
+    onBlur={() => setTimeout(() => setShowStateDropdown(false), 150)}
+    onChange={(e) => setStateQuery(e.currentTarget.value)}
+    placeholder={selectedCountryCode ? "Search state/province..." : "Select a country first"}
+    className="w-full rounded-[10px] border border-white/7 bg-[#111624] px-[14px] py-[13px] text-[13.5px] text-slate-100 outline-none focus:border-[#6c63ff]/40 disabled:opacity-40"
+  />
+  {showStateDropdown && filteredStates.length > 0 && (
+    <div className="absolute z-30 mt-2 max-h-56 w-full overflow-y-auto rounded-xl border border-white/10 bg-[#111624] shadow-2xl">
+      {filteredStates.map((stateName) => (
+        <button
+          key={stateName}
+          type="button"
+          onMouseDown={(e) => {
+            e.preventDefault();
+            setStateQuery(stateName);
+            setSelectedState(stateName);
+            setShowStateDropdown(false);
+          }}
+          className="block w-full border-b border-white/5 px-4 py-2.5 text-left text-sm text-slate-200 hover:bg-white/5"
+        >
+          {stateName}
+        </button>
+      ))}
+    </div>
+  )}
+</div>
+
         <Divider />
+
+
 
         {/* ── AVAILABLE DAYS ── */}
         <SectionLabel>Available Days</SectionLabel>
@@ -464,6 +570,76 @@ export default function CreateCreatorPortfolio() {
         </div>
 
         <Divider />
+
+        <SectionLabel>Schedule Tour (optional)</SectionLabel>
+<div className="mb-6">
+  {tours.map((tour, i) => (
+    <div key={i} className="flex items-center justify-between rounded-[10px] border border-white/7 bg-[#111624] px-[14px] py-[10px] mb-2 text-[13.5px] text-slate-100">
+      <span>{tour.state}, {tour.countryCode}. {formatTourDateRange(tour.startDate, tour.endDate)}</span>
+      <button type="button" onClick={() => removeTour(i)} className="text-red-400 hover:text-red-300">✕</button>
+    </div>
+  ))}
+
+  <select
+    value={tourCountryCode}
+    onChange={(e) => {
+      setTourCountryCode(e.target.value);
+      setTourSelectedState("");
+      setTourStateQuery("");
+      setShowTourDates(false);
+    }}
+    className="fi w-full appearance-none rounded-[10px] border border-white/7 bg-[#111624] px-[14px] py-[13px] text-[13.5px] text-slate-100 outline-none mb-2"
+  >
+    <option value="">Select country for tour</option>
+    {allCountries.map((c) => (
+      <option key={c.isoCode} value={c.isoCode}>{c.name}</option>
+    ))}
+  </select>
+
+  {tourCountryCode && (
+    <div className="relative mb-2">
+      <input
+        value={tourStateQuery}
+        onFocus={() => setShowTourStateDropdown(true)}
+        onBlur={() => setTimeout(() => setShowTourStateDropdown(false), 150)}
+        onChange={(e) => setTourStateQuery(e.currentTarget.value)}
+        placeholder="Search state/province for tour..."
+        className="w-full rounded-[10px] border border-white/7 bg-[#111624] px-[14px] py-[13px] text-[13.5px] text-slate-100 outline-none focus:border-[#6c63ff]/40"
+      />
+      {showTourStateDropdown && filteredTourStates.length > 0 && (
+        <div className="absolute z-30 mt-2 max-h-56 w-full overflow-y-auto rounded-xl border border-white/10 bg-[#111624] shadow-2xl">
+          {filteredTourStates.map((stateName) => (
+            <button
+              key={stateName}
+              type="button"
+              onMouseDown={(e) => {
+                e.preventDefault();
+                setTourStateQuery(stateName);
+                setTourSelectedState(stateName);
+                setShowTourStateDropdown(false);
+                setShowTourDates(true);
+              }}
+              className="block w-full border-b border-white/5 px-4 py-2.5 text-left text-sm text-slate-200 hover:bg-white/5"
+            >
+              {stateName}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  )}
+
+  {showTourDates && tourSelectedState && (
+    <div className="flex flex-wrap items-center gap-2">
+      <input type="date" value={tourStartDate} onChange={(e) => setTourStartDate(e.target.value)} className="rounded-[10px] border border-white/7 bg-[#111624] px-[14px] py-[10px] text-[13.5px] text-slate-100 outline-none" />
+      <span className="text-slate-400 text-sm">to</span>
+      <input type="date" value={tourEndDate} onChange={(e) => setTourEndDate(e.target.value)} className="rounded-[10px] border border-white/7 bg-[#111624] px-[14px] py-[10px] text-[13.5px] text-slate-100 outline-none" />
+      <button type="button" onClick={addTour} className="rounded-[10px] bg-[#6c63ff] px-4 py-[10px] text-[13.5px] font-medium text-white hover:bg-[#6c63ff]/90">
+        Add Tour
+      </button>
+    </div>
+  )}
+</div>
 
         {/* ── CATEGORY ── */}
         <SectionLabel>Choose Category</SectionLabel>

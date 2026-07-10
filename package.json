@@ -21,6 +21,7 @@
     "axios": "^1.11.0",
     "axios-retry": "^4.5.0",
     "bcrypt": "^6.0.0",
+    "country-state-city": "^3.2.1",
     "date-fns": "^4.1.0",
     "framer-motion": "^12.23.12",
     "jose": "^6.0.12",

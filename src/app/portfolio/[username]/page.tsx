@@ -50,6 +50,7 @@ import {
 import { checkVipStatus } from "@/store/vip";
 import { URL } from "@/api/config";
 import LoginPromptBanner from "@/components/LoginPromptBanner";
+import { formatTourDateRange } from "@/utils/tourFormat";
 
 // Types
 interface RootState {
@@ -72,7 +73,9 @@ interface RootState {
       hosttype: string; photolink: string | string[]; verify: boolean;
       active: boolean; add: boolean; followingUser: boolean;
       isVip?: boolean; vipEndDate?: string;
-      userPhotolink?: string | null; 
+      userPhotolink?: string | null;
+       state?: string;
+  tours?: { state: string; countryCode: string; startDate: string; endDate: string }[]; 
     };
   };
 }
@@ -817,7 +820,7 @@ useEffect(() => {
 </div>
 <div className="mcp-di">
   <div className="mcp-dk">🏙️ State</div>
-  <div className="mcp-dv">{creator.location?.split(",")[1]?.trim() || "Not specified"}</div>
+  <div className="mcp-dv">{creator.state || "Not specified"}</div>
 </div>
             {!isFanCallCreator && <div className="mcp-di"><div className="mcp-dk">⏱️ Duration</div><div className="mcp-dv">{creatorDurationText}</div></div>}
             <div className="mcp-di"><div className="mcp-dk">✅ Status</div><div className="mcp-dv" style={{ color: creator.verify ? "var(--mcp-teal)" : "#f59e0b" }}>{creator.verify ? "✓ Verified Creator" : "Not verified"}</div></div>
@@ -835,6 +838,22 @@ useEffect(() => {
             </div>
           </div>
         </div>
+
+        {/* ── SCHEDULED TOUR ── */}
+{creator.tours && creator.tours.length > 0 && (
+  <div className="mcp-section">
+    <div className="mcp-sec-title">Scheduled Tour</div>
+    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+      {creator.tours.map((tour: any, i: number) => (
+        <div key={i} className="mcp-di full">
+          <div className="mcp-dv">
+            📍 {tour.state}, {tour.countryCode}. {formatTourDateRange(tour.startDate, tour.endDate)}
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+)}
 
         {/* ── ABOUT ── */}
         <div className="mcp-section">
