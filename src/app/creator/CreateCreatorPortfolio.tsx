@@ -702,7 +702,7 @@ setStateQuery("");
               <div className="dur-note">Maximum 30 minutes per session</div>
             </div>
 
-            <hr style={{ border: "none", borderTop: "1px solid rgba(255,255,255,0.07)", margin: "28px 0", height: 0, background: "none" }} />
+           <div className="divider" />
           </>
         )}
 
