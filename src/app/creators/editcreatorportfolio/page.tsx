@@ -30,14 +30,14 @@ const CATEGORY_OPTIONS = [
   {
     value: "Fan meet",
     title: "Fan Meet & Greet",
-    description: "In-person meet in a public place — 30 min max",
+    description: "In-person meet",
     icon: "🤝",
     iconClass: "ci-meet",
   },
   {
     value: "Fan date",
     title: "Fan Date",
-    description: "An exclusive in-person date experience — public venues only",
+    description: "An exclusive in-person date experience",
     icon: "❤️",
     iconClass: "ci-date",
   },
@@ -570,7 +570,7 @@ export default function Editcreator() {
     )}
   </div>
 </div>
-        <div className="divider" />
+        <hr style={{ border: "none", borderTop: "1px solid rgba(255,255,255,0.07)", margin: "28px 0", height: 0, background: "none" }} />
 
         {/* AVAILABLE DAYS */}
         <div className="sec-label">Available Days</div>
@@ -620,7 +620,7 @@ export default function Editcreator() {
           </div>
         </div>
 
-        <div className="divider" />
+        <hr style={{ border: "none", borderTop: "1px solid rgba(255,255,255,0.07)", margin: "28px 0", height: 0, background: "none" }} />
 
         {/* CATEGORY */}
         <div className="sec-label">Choose Category</div>
@@ -704,7 +704,7 @@ export default function Editcreator() {
           </div>
         </div>
 
-        <div className="divider" />
+        <hr style={{ border: "none", borderTop: "1px solid rgba(255,255,255,0.07)", margin: "28px 0", height: 0, background: "none" }} />
 
         {/* DURATION */}
         {hosttype !== "Fan call" && (
@@ -725,19 +725,12 @@ export default function Editcreator() {
                 <div className="dur-display">{durationValue} min</div>
                 <button type="button" className="dur-btn" onClick={() => updateDuration(durationValue + 1)}>+</button>
               </div>
-              <input
-                type="range"
-                min={1}
-                max={30}
-                value={durationValue}
-                onChange={(e) => updateDuration(Number(e.currentTarget.value))}
-                style={{ marginTop: 12, width: "100%" }}
-              />
+             
               <div className="dur-bar"><div className="dur-fill" style={{ width: `${(durationValue / 30) * 100}%` }} /></div>
               <div className="dur-note">Maximum 30 minutes per session</div>
             </div>
 
-            <div className="divider" />
+            <hr style={{ border: "none", borderTop: "1px solid rgba(255,255,255,0.07)", margin: "28px 0", height: 0, background: "none" }} />
           </>
         )}
 
@@ -824,7 +817,7 @@ export default function Editcreator() {
           )}
         </div>
 
-        <div className="divider" />
+       <hr style={{ border: "none", borderTop: "1px solid rgba(255,255,255,0.07)", margin: "28px 0", height: 0, background: "none" }} />
 
         {/* ABOUT ME */}
         <div className="sec-label">About Me</div>
@@ -839,7 +832,7 @@ export default function Editcreator() {
           />
         </div>
 
-        <div className="divider" />
+        <hr style={{ border: "none", borderTop: "1px solid rgba(255,255,255,0.07)", margin: "28px 0", height: 0, background: "none" }} />
 
         {/* PHOTOS */}
         <div className="sec-label">Portfolio Photos</div>
@@ -902,7 +895,7 @@ export default function Editcreator() {
           Tap ✕ to remove an existing photo. Tap any empty slot to add a new one. Updated photos are reviewed before going live.
         </div>
 
-        <div className="divider" />
+        <hr style={{ border: "none", borderTop: "1px solid rgba(255,255,255,0.07)", margin: "28px 0", height: 0, background: "none" }} />
 
         {/* PROCEED */}
         <button className="btn-proceed" disabled={disablebut} onClick={checkuserInput}>
