@@ -493,80 +493,83 @@ export default function Editcreator() {
           </div>
         </div>
 
-        <div className="fg" style={{ position: "relative" }}>
-          <label className="fl">Location <span className="req">*</span></label>
-          <input
-            type="text"
-            className="fi"
-            value={countryQuery}
-            onFocus={() => setShowCountryDropdown(true)}
-            onBlur={() => setTimeout(() => setShowCountryDropdown(false), 150)}
-            onChange={(e) => {
-              const value = e.currentTarget.value;
-              setCountryQuery(value);
-              setlocation(value.trim());
+        <div className="fg">
+  <label className="fl">Location <span className="req">*</span></label>
+  <div style={{ position: "relative" }}>
+    <input
+      type="text"
+      className="fi"
+      value={countryQuery}
+      onFocus={() => setShowCountryDropdown(true)}
+      onBlur={() => setTimeout(() => setShowCountryDropdown(false), 150)}
+      onChange={(e) => {
+        const value = e.currentTarget.value;
+        setCountryQuery(value);
+        setlocation(value.trim());
+      }}
+      placeholder="Search country..."
+      autoComplete="off"
+    />
+    {showCountryDropdown && filteredCountries.length > 0 && (
+      <div className="dropdown-panel">
+        {filteredCountries.map((country) => (
+          <button
+            key={country}
+            type="button"
+            className="dropdown-item"
+            onMouseDown={(e) => {
+              e.preventDefault();
+              setCountryQuery(country);
+              setlocation(country);
+              setShowCountryDropdown(false);
+              const matched = allCountries.find((c) => c.name === country);
+              setSelectedCountryCode(matched?.isoCode || "");
+              setSelectedState("");
+              setStateQuery("");
             }}
-            placeholder="Search country..."
-            autoComplete="off"
-          />
-          {showCountryDropdown && filteredCountries.length > 0 && (
-            <div className="dropdown-panel">
-              {filteredCountries.map((country) => (
-                <button
-                  key={country}
-                  type="button"
-                  className="dropdown-item"
-                  onMouseDown={(e) => {
-                    e.preventDefault();
-                    setCountryQuery(country);
-                    setlocation(country);
-                    setShowCountryDropdown(false);
-                    const matched = allCountries.find((c) => c.name === country);
-                    setSelectedCountryCode(matched?.isoCode || "");
-                    setSelectedState("");
-                    setStateQuery("");
-                  }}
-                >
-                  {country}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
+          >
+            {country}
+          </button>
+        ))}
+      </div>
+    )}
+  </div>
+</div>
 
-        <div className="fg" style={{ position: "relative" }}>
-          <label className="fl">State / Province (optional)</label>
-          <input
-            type="text"
-            className="fi"
-            value={stateQuery}
-            disabled={!selectedCountryCode}
-            onFocus={() => setShowStateDropdown(true)}
-            onBlur={() => setTimeout(() => setShowStateDropdown(false), 150)}
-            onChange={(e) => setStateQuery(e.currentTarget.value)}
-            placeholder={selectedCountryCode ? "Search state/province..." : "Select a country first"}
-          />
-          {showStateDropdown && filteredStates.length > 0 && (
-            <div className="dropdown-panel">
-              {filteredStates.map((stateName) => (
-                <button
-                  key={stateName}
-                  type="button"
-                  className="dropdown-item"
-                  onMouseDown={(e) => {
-                    e.preventDefault();
-                    setStateQuery(stateName);
-                    setSelectedState(stateName);
-                    setShowStateDropdown(false);
-                  }}
-                >
-                  {stateName}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-
+       <div className="fg">
+  <label className="fl">State / Province (optional)</label>
+  <div style={{ position: "relative" }}>
+    <input
+      type="text"
+      className="fi"
+      value={stateQuery}
+      disabled={!selectedCountryCode}
+      onFocus={() => setShowStateDropdown(true)}
+      onBlur={() => setTimeout(() => setShowStateDropdown(false), 150)}
+      onChange={(e) => setStateQuery(e.currentTarget.value)}
+      placeholder={selectedCountryCode ? "Search state/province..." : "Select a country first"}
+    />
+    {showStateDropdown && filteredStates.length > 0 && (
+      <div className="dropdown-panel">
+        {filteredStates.map((stateName) => (
+          <button
+            key={stateName}
+            type="button"
+            className="dropdown-item"
+            onMouseDown={(e) => {
+              e.preventDefault();
+              setStateQuery(stateName);
+              setSelectedState(stateName);
+              setShowStateDropdown(false);
+            }}
+          >
+            {stateName}
+          </button>
+        ))}
+      </div>
+    )}
+  </div>
+</div>
         <div className="divider" />
 
         {/* AVAILABLE DAYS */}
@@ -907,9 +910,11 @@ export default function Editcreator() {
         </button>
         <button type="button" className="btn-cancel" onClick={() => router.back()}>Cancel</button>
 
-        <div style={{ marginTop: 16, display: "flex", justifyContent: "space-between", overflow: "hidden" }}>
-          <PacmanLoader color="#9b59f5" loading={loading} size={12} />
-        </div>
+       <div style={{ marginTop: 16, display: "flex", justifyContent: "space-between", overflow: "hidden" }}>
+  <PacmanLoader color="#9b59f5" loading={loading} size={12} />
+  <PacmanLoader color="#9b59f5" loading={loading} size={12} />
+  <PacmanLoader color="#9b59f5" loading={loading} size={12} />
+</div>
       </div>
 
       {showFileSizeModal && (
