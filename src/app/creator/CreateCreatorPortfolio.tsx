@@ -421,7 +421,7 @@ const removeTour = (index: number) => {
         </div>
 
         <div className="relative mb-[18px]">
-          <FieldLabel required>Location</FieldLabel>
+          <FieldLabel required>Country</FieldLabel>
           <input
             value={countryQuery}
             onFocus={() => setShowCountryDropdown(true)}

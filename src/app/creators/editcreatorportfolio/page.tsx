@@ -494,7 +494,7 @@ export default function Editcreator() {
         </div>
 
         <div className="fg">
-  <label className="fl">Location <span className="req">*</span></label>
+  <label className="fl">Country<span className="req">*</span></label>
   <div style={{ position: "relative" }}>
     <input
       type="text"
