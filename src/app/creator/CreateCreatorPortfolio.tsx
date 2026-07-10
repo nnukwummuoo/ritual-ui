@@ -571,76 +571,6 @@ setStateQuery("");
 
         <Divider />
 
-        <SectionLabel>Schedule Tour (optional)</SectionLabel>
-<div className="mb-6">
-  {tours.map((tour, i) => (
-    <div key={i} className="flex items-center justify-between rounded-[10px] border border-white/7 bg-[#111624] px-[14px] py-[10px] mb-2 text-[13.5px] text-slate-100">
-      <span>{tour.state}, {tour.countryCode}. {formatTourDateRange(tour.startDate, tour.endDate)}</span>
-      <button type="button" onClick={() => removeTour(i)} className="text-red-400 hover:text-red-300">✕</button>
-    </div>
-  ))}
-
-  <select
-    value={tourCountryCode}
-    onChange={(e) => {
-      setTourCountryCode(e.target.value);
-      setTourSelectedState("");
-      setTourStateQuery("");
-      setShowTourDates(false);
-    }}
-    className="fi w-full appearance-none rounded-[10px] border border-white/7 bg-[#111624] px-[14px] py-[13px] text-[13.5px] text-slate-100 outline-none mb-2"
-  >
-    <option value="">Select country for tour</option>
-    {allCountries.map((c) => (
-      <option key={c.isoCode} value={c.isoCode}>{c.name}</option>
-    ))}
-  </select>
-
-  {tourCountryCode && (
-    <div className="relative mb-2">
-      <input
-        value={tourStateQuery}
-        onFocus={() => setShowTourStateDropdown(true)}
-        onBlur={() => setTimeout(() => setShowTourStateDropdown(false), 150)}
-        onChange={(e) => setTourStateQuery(e.currentTarget.value)}
-        placeholder="Search state/province for tour..."
-        className="w-full rounded-[10px] border border-white/7 bg-[#111624] px-[14px] py-[13px] text-[13.5px] text-slate-100 outline-none focus:border-[#6c63ff]/40"
-      />
-      {showTourStateDropdown && filteredTourStates.length > 0 && (
-        <div className="absolute z-30 mt-2 max-h-56 w-full overflow-y-auto rounded-xl border border-white/10 bg-[#111624] shadow-2xl">
-          {filteredTourStates.map((stateName) => (
-            <button
-              key={stateName}
-              type="button"
-              onMouseDown={(e) => {
-                e.preventDefault();
-                setTourStateQuery(stateName);
-                setTourSelectedState(stateName);
-                setShowTourStateDropdown(false);
-                setShowTourDates(true);
-              }}
-              className="block w-full border-b border-white/5 px-4 py-2.5 text-left text-sm text-slate-200 hover:bg-white/5"
-            >
-              {stateName}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  )}
-
-  {showTourDates && tourSelectedState && (
-    <div className="flex flex-wrap items-center gap-2">
-      <input type="date" value={tourStartDate} onChange={(e) => setTourStartDate(e.target.value)} className="rounded-[10px] border border-white/7 bg-[#111624] px-[14px] py-[10px] text-[13.5px] text-slate-100 outline-none" />
-      <span className="text-slate-400 text-sm">to</span>
-      <input type="date" value={tourEndDate} onChange={(e) => setTourEndDate(e.target.value)} className="rounded-[10px] border border-white/7 bg-[#111624] px-[14px] py-[10px] text-[13.5px] text-slate-100 outline-none" />
-      <button type="button" onClick={addTour} className="rounded-[10px] bg-[#6c63ff] px-4 py-[10px] text-[13.5px] font-medium text-white hover:bg-[#6c63ff]/90">
-        Add Tour
-      </button>
-    </div>
-  )}
-</div>
-
         {/* ── CATEGORY ── */}
         <SectionLabel>Choose Category</SectionLabel>
         <div className="mb-6 flex flex-col gap-[10px]">
@@ -748,80 +678,105 @@ setStateQuery("");
 
         <Divider />
 
-        {/* ── DURATION (hidden for Fan Call) ── */}
+        {/* DURATION */}
         {hosttype !== "Fan call" && (
-          <section className="mb-8">
-            <SectionLabel>Duration</SectionLabel>
+          <>
+            <div className="sec-label">Duration</div>
+            <p style={{ fontSize: 12, color: "rgba(148,163,184,.85)", marginTop: 6, marginBottom: 4, lineHeight: 1.4 }}>
+              <span style={{ color: "#6c63ff" }} className="font-bold text-xs uppercase tracking-wider flex items-center gap-1">
+                ✨ Premium Extension Available
+              </span>
+            </p>
+            <p className="text-gray-600 leading-relaxed text-xs sm:text-sm" style={{ marginTop: -4, marginBottom: 12 }}>
+              Fans can seamlessly extend their experience by sending an additional structured booking request at the end of each session if both parties wish to continue.
+            </p>
 
-      <>
-  <p
-    style={{
-      fontSize: 12,
-      color: "rgba(148,163,184,.85)",
-      marginTop: 6,
-      marginBottom: 12,
-      lineHeight: 1.4,
-    }}
-  >
-    <span
-      style={{ color: "#6c63ff" }}
-      className="font-bold text-xs uppercase tracking-wider flex items-center gap-1"
-    >
-      ✨ Premium Extension Available
-    </span>
-  </p>
-  <p className="text-gray-600 leading-relaxed text-xs sm:text-sm"
-     style={{ marginTop: -8 }}>
-    Fans can seamlessly extend their experience by sending an additional structured booking request at the end of each session if both parties wish to continue.
-  </p>
-</>
-
-            {/* ── CHANGED: step 5, visual progress bar ── */}
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={() => updateDuration(durationValue - 5)}
-                style={{
-                  width: 38, height: 38, borderRadius: "50%", fontSize: 20, fontWeight: 700,
-                  background: "#111624", border: "1px solid rgba(255,255,255,.07)",
-                  color: "#94a3b8", cursor: "pointer", display: "flex", alignItems: "center",
-                  justifyContent: "center", transition: "all .2s", lineHeight: 1,
-                }}
-              >
-                −
-              </button>
-              <div
-                style={{
-                  flex: 1, background: "#111624", border: "1px solid rgba(255,255,255,.07)",
-                  borderRadius: 10, padding: 13, textAlign: "center",
-                  fontSize: 16, fontWeight: 800, letterSpacing: "-.01em",
-                }}
-              >
-                {durationValue} min
+            <div className="fg" style={{ marginBottom: 24 }}>
+              <div className="dur-wrap">
+                <button type="button" className="dur-btn" onClick={() => updateDuration(durationValue - 1)}>−</button>
+                <div className="dur-display">{durationValue} min</div>
+                <button type="button" className="dur-btn" onClick={() => updateDuration(durationValue + 1)}>+</button>
               </div>
-              <button
-                type="button"
-                onClick={() => updateDuration(durationValue + 5)}
-                style={{
-                  width: 38, height: 38, borderRadius: "50%", fontSize: 20, fontWeight: 700,
-                  background: "#111624", border: "1px solid rgba(255,255,255,.07)",
-                  color: "#94a3b8", cursor: "pointer", display: "flex", alignItems: "center",
-                  justifyContent: "center", transition: "all .2s", lineHeight: 1,
-                }}
-              >
-                +
-              </button>
+             
+              <div className="dur-bar"><div className="dur-fill" style={{ width: `${(durationValue / 30) * 100}%` }} /></div>
+              <div className="dur-note">Maximum 30 minutes per session</div>
             </div>
 
-            {/* ── CHANGED: progress bar replaces range slider ── */}
-            <div style={{ height: 4, background: "rgba(255,255,255,.04)", borderRadius: 2, marginTop: 10, overflow: "hidden" }}>
-              <div style={{ height: "100%", width: `${durFillPct}%`, background: "linear-gradient(90deg,#6c63ff,#9b59f5)", borderRadius: 2, transition: "width .3s" }} />
-            </div>
-            <p className="mt-1.5 text-center text-[11px] text-slate-500">Maximum 30 minutes per session</p>
-          </section>
+            <hr style={{ border: "none", borderTop: "1px solid rgba(255,255,255,0.07)", margin: "28px 0", height: 0, background: "none" }} />
+          </>
         )}
 
-        <Divider />
+        
+          <SectionLabel>Schedule Tour (optional)</SectionLabel>
+<div className="mb-6">
+  {tours.map((tour, i) => (
+    <div key={i} className="flex items-center justify-between rounded-[10px] border border-white/7 bg-[#111624] px-[14px] py-[10px] mb-2 text-[13.5px] text-slate-100">
+      <span>{tour.state}, {tour.countryCode}. {formatTourDateRange(tour.startDate, tour.endDate)}</span>
+      <button type="button" onClick={() => removeTour(i)} className="text-red-400 hover:text-red-300">✕</button>
+    </div>
+  ))}
+
+  <select
+    value={tourCountryCode}
+    onChange={(e) => {
+      setTourCountryCode(e.target.value);
+      setTourSelectedState("");
+      setTourStateQuery("");
+      setShowTourDates(false);
+    }}
+    className="fi w-full appearance-none rounded-[10px] border border-white/7 bg-[#111624] px-[14px] py-[13px] text-[13.5px] text-slate-100 outline-none mb-2"
+  >
+    <option value="">Select country for tour</option>
+    {allCountries.map((c) => (
+      <option key={c.isoCode} value={c.isoCode}>{c.name}</option>
+    ))}
+  </select>
+
+  {tourCountryCode && (
+    <div className="relative mb-2">
+      <input
+        value={tourStateQuery}
+        onFocus={() => setShowTourStateDropdown(true)}
+        onBlur={() => setTimeout(() => setShowTourStateDropdown(false), 150)}
+        onChange={(e) => setTourStateQuery(e.currentTarget.value)}
+        placeholder="Search state/province for tour..."
+        className="w-full rounded-[10px] border border-white/7 bg-[#111624] px-[14px] py-[13px] text-[13.5px] text-slate-100 outline-none focus:border-[#6c63ff]/40"
+      />
+      {showTourStateDropdown && filteredTourStates.length > 0 && (
+        <div className="absolute z-30 mt-2 max-h-56 w-full overflow-y-auto rounded-xl border border-white/10 bg-[#111624] shadow-2xl">
+          {filteredTourStates.map((stateName) => (
+            <button
+              key={stateName}
+              type="button"
+              onMouseDown={(e) => {
+                e.preventDefault();
+                setTourStateQuery(stateName);
+                setTourSelectedState(stateName);
+                setShowTourStateDropdown(false);
+                setShowTourDates(true);
+              }}
+              className="block w-full border-b border-white/5 px-4 py-2.5 text-left text-sm text-slate-200 hover:bg-white/5"
+            >
+              {stateName}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  )}
+
+  {showTourDates && tourSelectedState && (
+    <div className="flex flex-wrap items-center gap-2">
+      <input type="date" value={tourStartDate} onChange={(e) => setTourStartDate(e.target.value)} className="rounded-[10px] border border-white/7 bg-[#111624] px-[14px] py-[10px] text-[13.5px] text-slate-100 outline-none" />
+      <span className="text-slate-400 text-sm">to</span>
+      <input type="date" value={tourEndDate} onChange={(e) => setTourEndDate(e.target.value)} className="rounded-[10px] border border-white/7 bg-[#111624] px-[14px] py-[10px] text-[13.5px] text-slate-100 outline-none" />
+      <button type="button" onClick={addTour} className="rounded-[10px] bg-[#6c63ff] px-4 py-[10px] text-[13.5px] font-medium text-white hover:bg-[#6c63ff]/90">
+        Add Tour
+      </button>
+    </div>
+  )}
+</div>
+
 
         {/* ── ABOUT ME ── */}
         <SectionLabel>About Me</SectionLabel>
