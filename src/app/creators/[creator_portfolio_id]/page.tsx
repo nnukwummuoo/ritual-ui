@@ -74,6 +74,7 @@ interface RootState {
       isVip?: boolean; vipEndDate?: string;
       userPhotolink?: string | null;
        state?: string;
+       city?: string;
   tours?: { state: string; countryCode: string; startDate: string; endDate: string }[]; 
     };
   };
@@ -795,9 +796,15 @@ const [urlCopied, setUrlCopied] = useState(false);
   <div className="mcp-dk">📍 Country</div>
   <div className="mcp-dv">{creator.location?.split(",")[0]?.trim() || "Not specified"}</div>
 </div>
+
 <div className="mcp-di">
   <div className="mcp-dk">🏙️ State</div>
   <div className="mcp-dv">{creator.state || "Not specified"}</div>
+</div>
+
+<div className="mcp-di">
+  <div className="mcp-dk">🏘️ City</div>
+  <div className="mcp-dv">{creator.city || "Not specified"}</div>
 </div>
             {!isFanCallCreator && <div className="mcp-di"><div className="mcp-dk">⏱️ Duration</div><div className="mcp-dv">{creatorDurationText}</div></div>}
             <div className="mcp-di"><div className="mcp-dk">✅ Status</div><div className="mcp-dv" style={{ color: creator.verify ? "var(--mcp-teal)" : "#f59e0b" }}>{creator.verify ? "✓ Verified Creator" : "Not verified"}</div></div>

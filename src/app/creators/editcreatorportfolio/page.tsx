@@ -13,7 +13,7 @@ import { editCreatorMultipart } from "@/api/creator";
 import { useUserId } from "@/lib/hooks/useUserId";
 import { getprofile } from "@/store/profile";
 import { countryList } from "@/components/CountrySelect/countryList";
-import { Country, State } from "country-state-city";
+import { Country, State, City } from "country-state-city";
 import { formatTourDateRange } from "@/utils/tourFormat";
 
 const DAY_OPTIONS = [
@@ -86,11 +86,16 @@ export default function Editcreator() {
   const [imagesToDelete, setImagesToDelete] = useState<string[]>([]);
   const [times, setTimes] = useState<string[]>([]);
   const [hours, setHours] = useState<string[]>([]);
+  
 
   // State/Province + Tours
   const [selectedCountryCode, setSelectedCountryCode] = useState("");
   const [stateQuery, setStateQuery] = useState("");
   const [showStateDropdown, setShowStateDropdown] = useState(false);
+  const [selectedStateCode, setSelectedStateCode] = useState("");
+  const [cityQuery, setCityQuery] = useState("");
+  const [showCityDropdown, setShowCityDropdown] = useState(false);
+  const [selectedCity, setSelectedCity] = useState("");
   const [selectedState, setSelectedState] = useState("");
   const [tours, setTours] = useState<Tour[]>([]);
   const [tourCountryCode, setTourCountryCode] = useState("");
@@ -122,12 +127,24 @@ export default function Editcreator() {
     return State.getStatesOfCountry(selectedCountryCode);
   }, [selectedCountryCode]);
 
+  const availableCities = useMemo(() => {
+  if (!selectedCountryCode || !selectedStateCode) return [];
+  return City.getCitiesOfState(selectedCountryCode, selectedStateCode);
+}, [selectedCountryCode, selectedStateCode]);
+
   const filteredStates = useMemo(() => {
     const query = stateQuery.trim().toLowerCase();
     const list = availableStates.map((s) => s.name);
     if (!query) return list.slice(0, 12);
     return list.filter((s) => s.toLowerCase().includes(query)).slice(0, 12);
   }, [stateQuery, availableStates]);
+
+  const filteredCities = useMemo(() => {
+  const query = cityQuery.trim().toLowerCase();
+  const list = availableCities.map((c) => c.name);
+  if (!query) return list.slice(0, 12);
+  return list.filter((c) => c.toLowerCase().includes(query)).slice(0, 12);
+}, [cityQuery, availableCities]);
 
   const tourAvailableStates = useMemo(() => {
     if (!tourCountryCode) return [];
@@ -286,6 +303,14 @@ export default function Editcreator() {
       setSelectedCountryCode(matched?.isoCode || "");
       setTours(Array.isArray(creator.tours) ? creator.tours : []);
       tourInitialized.current = true;
+
+      setSelectedCity(creator.city || "");
+setCityQuery(creator.city || "");
+if (matched?.isoCode && creator.state) {
+  const statesForCountry = State.getStatesOfCountry(matched.isoCode);
+  const matchedState = statesForCountry.find((s) => s.name === creator.state);
+  setSelectedStateCode(matchedState?.isoCode || "");
+}
     }
   }, [
     creator,
@@ -365,6 +390,7 @@ export default function Editcreator() {
         age,
         location,
         state: selectedState,
+        city: selectedCity,
         tours: JSON.stringify(tours),
         price,
         duration: days || `${durationValue}min`,
@@ -556,12 +582,16 @@ export default function Editcreator() {
             key={stateName}
             type="button"
             className="dropdown-item"
-            onMouseDown={(e) => {
-              e.preventDefault();
-              setStateQuery(stateName);
-              setSelectedState(stateName);
-              setShowStateDropdown(false);
-            }}
+           onMouseDown={(e) => {
+  e.preventDefault();
+  setStateQuery(stateName);
+  setSelectedState(stateName);
+  const matchedState = availableStates.find((s) => s.name === stateName);
+  setSelectedStateCode(matchedState?.isoCode || "");
+  setShowStateDropdown(false);
+  setSelectedCity("");
+  setCityQuery("");
+}}
           >
             {stateName}
           </button>
@@ -570,8 +600,47 @@ export default function Editcreator() {
     )}
   </div>
 </div>
+
+  <div className="fg">
+  <label className="fl">City (optional)</label>
+  <div style={{ position: "relative" }}>
+    <input
+      type="text"
+      className="fi"
+      value={cityQuery}
+      disabled={!selectedStateCode}
+      onFocus={() => setShowCityDropdown(true)}
+      onBlur={() => setTimeout(() => setShowCityDropdown(false), 150)}
+      onChange={(e) => setCityQuery(e.currentTarget.value)}
+      placeholder={selectedStateCode ? "Search city..." : "Select a state first"}
+    />
+    {showCityDropdown && filteredCities.length > 0 && (
+      <div className="dropdown-panel">
+        {filteredCities.map((cityName) => (
+          <button
+            key={cityName}
+            type="button"
+            className="dropdown-item"
+            onMouseDown={(e) => {
+              e.preventDefault();
+              setCityQuery(cityName);
+              setSelectedCity(cityName);
+              setShowCityDropdown(false);
+            }}
+          >
+            {cityName}
+          </button>
+        ))}
+      </div>
+    )}
+  </div>
+</div>
+
+
+
         <hr style={{ border: "none", borderTop: "1px solid rgba(255,255,255,0.07)", margin: "28px 0", height: 0, background: "none" }} />
 
+      
         {/* AVAILABLE DAYS */}
         <div className="sec-label">Available Days</div>
         <div className="days-wrap" style={{ marginBottom: 24 }}>

@@ -15,7 +15,7 @@ import { useSelector, useDispatch } from "react-redux";
 import type { RootState, AppDispatch } from "@/store/store";
 import { getprofile } from "@/store/profile";
 import { countryList } from "@/components/CountrySelect/countryList";
-import { Country, State } from "country-state-city";
+import { Country, State, City } from "country-state-city";
 import { formatTourDateRange } from "@/utils/tourFormat";
 
 const DAY_OPTIONS = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"];
@@ -105,11 +105,20 @@ const filteredCountries = useMemo(() => {
 const [stateQuery, setStateQuery] = useState("");
 const [showStateDropdown, setShowStateDropdown] = useState(false);
 const [selectedState, setSelectedState] = useState("");
+const [selectedStateCode, setSelectedStateCode] = useState("");
+const [cityQuery, setCityQuery] = useState("");
+const [showCityDropdown, setShowCityDropdown] = useState(false);
+const [selectedCity, setSelectedCity] = useState("");
 
 const availableStates = useMemo(() => {
   if (!selectedCountryCode) return [];
   return State.getStatesOfCountry(selectedCountryCode);
 }, [selectedCountryCode]);
+
+const availableCities = useMemo(() => {
+  if (!selectedCountryCode || !selectedStateCode) return [];
+  return City.getCitiesOfState(selectedCountryCode, selectedStateCode);
+}, [selectedCountryCode, selectedStateCode]);
 
 const filteredStates = useMemo(() => {
   const query = stateQuery.trim().toLowerCase();
@@ -117,6 +126,13 @@ const filteredStates = useMemo(() => {
   if (!query) return list.slice(0, 12);
   return list.filter((s) => s.toLowerCase().includes(query)).slice(0, 12);
 }, [stateQuery, availableStates]);
+
+const filteredCities = useMemo(() => {
+  const query = cityQuery.trim().toLowerCase();
+  const list = availableCities.map((c) => c.name);
+  if (!query) return list.slice(0, 12);
+  return list.filter((c) => c.toLowerCase().includes(query)).slice(0, 12);
+}, [cityQuery, availableCities]);
 
 // Tour scheduling (optional, multiple allowed)
 type Tour = { state: string; countryCode: string; startDate: string; endDate: string };
@@ -276,6 +292,7 @@ const removeTour = (index: number) => {
         age: String(age),
         location: location.trim(),
          state: selectedState,
+         city: selectedCity,
   tours: JSON.stringify(tours),
         price: priceValue != null ? String(priceValue) : "",
         displayPrice: price,
@@ -476,11 +493,15 @@ setStateQuery("");
           key={stateName}
           type="button"
           onMouseDown={(e) => {
-            e.preventDefault();
-            setStateQuery(stateName);
-            setSelectedState(stateName);
-            setShowStateDropdown(false);
-          }}
+  e.preventDefault();
+  setStateQuery(stateName);
+  setSelectedState(stateName);
+  const matchedState = availableStates.find((s) => s.name === stateName);
+  setSelectedStateCode(matchedState?.isoCode || "");
+  setShowStateDropdown(false);
+  setSelectedCity("");
+  setCityQuery("");
+}}
           className="block w-full border-b border-white/5 px-4 py-2.5 text-left text-sm text-slate-200 hover:bg-white/5"
         >
           {stateName}
@@ -488,6 +509,40 @@ setStateQuery("");
       ))}
     </div>
   )}
+</div>
+
+<div className="mb-[18px]">
+  <FieldLabel>City (optional)</FieldLabel>
+  <div className="relative">
+    <input
+      value={cityQuery}
+      disabled={!selectedStateCode}
+      onFocus={() => setShowCityDropdown(true)}
+      onBlur={() => setTimeout(() => setShowCityDropdown(false), 150)}
+      onChange={(e) => setCityQuery(e.currentTarget.value)}
+      placeholder={selectedStateCode ? "Search city..." : "Select a state first"}
+      className="w-full rounded-[10px] border border-white/7 bg-[#111624] px-[14px] py-[13px] text-[13.5px] text-slate-100 outline-none focus:border-[#6c63ff]/40 disabled:opacity-40"
+    />
+    {showCityDropdown && filteredCities.length > 0 && (
+      <div className="absolute z-30 mt-2 max-h-56 w-full overflow-y-auto rounded-xl border border-white/10 bg-[#111624] shadow-2xl">
+        {filteredCities.map((cityName) => (
+          <button
+            key={cityName}
+            type="button"
+            onMouseDown={(e) => {
+              e.preventDefault();
+              setCityQuery(cityName);
+              setSelectedCity(cityName);
+              setShowCityDropdown(false);
+            }}
+            className="block w-full border-b border-white/5 px-4 py-2.5 text-left text-sm text-slate-200 hover:bg-white/5"
+          >
+            {cityName}
+          </button>
+        ))}
+      </div>
+    )}
+  </div>
 </div>
 
         <Divider />
