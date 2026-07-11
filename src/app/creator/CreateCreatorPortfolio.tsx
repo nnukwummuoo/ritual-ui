@@ -624,6 +624,8 @@ setStateQuery("");
           </div>
         </div>
 
+        <Divider />
+
            <SectionLabel>Schedule Tour (optional)</SectionLabel>
 <div className="mb-6">
   {tours.map((tour, i) => (
@@ -875,6 +877,8 @@ setStateQuery("");
             <p className="mt-1.5 text-center text-[11px] text-slate-500">Maximum 30 minutes per session</p>
           </section>
         )}
+
+        <Divider />
 
 
         {/* ── ABOUT ME ── */}
