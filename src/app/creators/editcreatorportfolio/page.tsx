@@ -691,6 +691,91 @@ if (matched?.isoCode && creator.state) {
 
         <hr style={{ border: "none", borderTop: "1px solid rgba(255,255,255,0.07)", margin: "28px 0", height: 0, background: "none" }} />
 
+         {/* SCHEDULE TOUR */}
+        <div className="sec-label">Schedule Tour (optional)</div>
+        <div className="fg" style={{ marginBottom: 24 }}>
+          {tours.map((tour, i) => (
+            <div key={i} className="cat-card" style={{ marginBottom: 8, cursor: "default" }}>
+              <div className="cat-info" style={{ flex: 1 }}>
+                <div className="cat-name" style={{ fontSize: 13 }}>
+                  {tour.state}, {tour.countryCode}. {formatTourDateRange(tour.startDate, tour.endDate)}
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => removeTour(i)}
+                style={{ color: "#f87171", background: "none", border: "none", cursor: "pointer", fontSize: 16 }}
+              >
+                ✕
+              </button>
+            </div>
+          ))}
+
+          <select
+            className="fi"
+            style={{ marginBottom: 8 }}
+            value={tourCountryCode}
+            onChange={(e) => {
+              setTourCountryCode(e.target.value);
+              setTourSelectedState("");
+              setTourStateQuery("");
+              setShowTourDates(false);
+            }}
+          >
+            <option value="">Select country for tour</option>
+            {allCountries.map((c) => (
+              <option key={c.isoCode} value={c.isoCode}>{c.name}</option>
+            ))}
+          </select>
+
+          {tourCountryCode && (
+            <div style={{ position: "relative", marginBottom: 8 }}>
+              <input
+                type="text"
+                className="fi"
+                value={tourStateQuery}
+                onFocus={() => setShowTourStateDropdown(true)}
+                onBlur={() => setTimeout(() => setShowTourStateDropdown(false), 150)}
+                onChange={(e) => setTourStateQuery(e.currentTarget.value)}
+                placeholder="Search state/province for tour..."
+              />
+              {showTourStateDropdown && filteredTourStates.length > 0 && (
+                <div className="dropdown-panel">
+                  {filteredTourStates.map((stateName) => (
+                    <button
+                      key={stateName}
+                      type="button"
+                      className="dropdown-item"
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        setTourStateQuery(stateName);
+                        setTourSelectedState(stateName);
+                        setShowTourStateDropdown(false);
+                        setShowTourDates(true);
+                      }}
+                    >
+                      {stateName}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {showTourDates && tourSelectedState && (
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center" }}>
+              <input type="date" className="fi" style={{ width: "auto" }} value={tourStartDate} onChange={(e) => setTourStartDate(e.target.value)} />
+              <span style={{ color: "var(--text3)", fontSize: 12 }}>to</span>
+              <input type="date" className="fi" style={{ width: "auto" }} value={tourEndDate} onChange={(e) => setTourEndDate(e.target.value)} />
+              <button type="button" className="btn-hint" style={{ width: "auto", borderRadius: 10, padding: "0 16px", height: 44, fontSize: 13, fontWeight: 700 }} onClick={addTour}>
+                Add Tour
+              </button>
+            </div>
+          )}
+        </div>
+
+       <hr style={{ border: "none", borderTop: "1px solid rgba(255,255,255,0.07)", margin: "28px 0", height: 0, background: "none" }} />
+
         {/* CATEGORY */}
         <div className="sec-label">Choose Category</div>
         <div className="cat-cards" style={{ marginBottom: 24 }}>
@@ -803,90 +888,6 @@ if (matched?.isoCode && creator.state) {
           </>
         )}
 
-        {/* SCHEDULE TOUR */}
-        <div className="sec-label">Schedule Tour (optional)</div>
-        <div className="fg" style={{ marginBottom: 24 }}>
-          {tours.map((tour, i) => (
-            <div key={i} className="cat-card" style={{ marginBottom: 8, cursor: "default" }}>
-              <div className="cat-info" style={{ flex: 1 }}>
-                <div className="cat-name" style={{ fontSize: 13 }}>
-                  {tour.state}, {tour.countryCode}. {formatTourDateRange(tour.startDate, tour.endDate)}
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => removeTour(i)}
-                style={{ color: "#f87171", background: "none", border: "none", cursor: "pointer", fontSize: 16 }}
-              >
-                ✕
-              </button>
-            </div>
-          ))}
-
-          <select
-            className="fi"
-            style={{ marginBottom: 8 }}
-            value={tourCountryCode}
-            onChange={(e) => {
-              setTourCountryCode(e.target.value);
-              setTourSelectedState("");
-              setTourStateQuery("");
-              setShowTourDates(false);
-            }}
-          >
-            <option value="">Select country for tour</option>
-            {allCountries.map((c) => (
-              <option key={c.isoCode} value={c.isoCode}>{c.name}</option>
-            ))}
-          </select>
-
-          {tourCountryCode && (
-            <div style={{ position: "relative", marginBottom: 8 }}>
-              <input
-                type="text"
-                className="fi"
-                value={tourStateQuery}
-                onFocus={() => setShowTourStateDropdown(true)}
-                onBlur={() => setTimeout(() => setShowTourStateDropdown(false), 150)}
-                onChange={(e) => setTourStateQuery(e.currentTarget.value)}
-                placeholder="Search state/province for tour..."
-              />
-              {showTourStateDropdown && filteredTourStates.length > 0 && (
-                <div className="dropdown-panel">
-                  {filteredTourStates.map((stateName) => (
-                    <button
-                      key={stateName}
-                      type="button"
-                      className="dropdown-item"
-                      onMouseDown={(e) => {
-                        e.preventDefault();
-                        setTourStateQuery(stateName);
-                        setTourSelectedState(stateName);
-                        setShowTourStateDropdown(false);
-                        setShowTourDates(true);
-                      }}
-                    >
-                      {stateName}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-
-          {showTourDates && tourSelectedState && (
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center" }}>
-              <input type="date" className="fi" style={{ width: "auto" }} value={tourStartDate} onChange={(e) => setTourStartDate(e.target.value)} />
-              <span style={{ color: "var(--text3)", fontSize: 12 }}>to</span>
-              <input type="date" className="fi" style={{ width: "auto" }} value={tourEndDate} onChange={(e) => setTourEndDate(e.target.value)} />
-              <button type="button" className="btn-hint" style={{ width: "auto", borderRadius: 10, padding: "0 16px", height: 44, fontSize: 13, fontWeight: 700 }} onClick={addTour}>
-                Add Tour
-              </button>
-            </div>
-          )}
-        </div>
-
-       <hr style={{ border: "none", borderTop: "1px solid rgba(255,255,255,0.07)", margin: "28px 0", height: 0, background: "none" }} />
 
         {/* ABOUT ME */}
         <div className="sec-label">About Me</div>
