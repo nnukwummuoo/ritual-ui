@@ -806,82 +806,29 @@ setStateQuery("");
         <Divider />
 
         {/* ── DURATION (hidden for Fan Call) ── */}
-        {hosttype !== "Fan call" && (
-          <section className="mb-8">
-            <SectionLabel>Duration</SectionLabel>
+       {hosttype !== "Fan call" && (
+  <section className="mb-8">
+    <SectionLabel>Duration</SectionLabel>
 
-      <>
-  <p
-    style={{
-      fontSize: 12,
-      color: "rgba(148,163,184,.85)",
-      marginTop: 6,
-      marginBottom: 12,
-      lineHeight: 1.4,
-    }}
-  >
-    <span
-      style={{ color: "#6c63ff" }}
-      className="font-bold text-xs uppercase tracking-wider flex items-center gap-1"
-    >
-      ✨ Premium Extension Available
-    </span>
-  </p>
-  <p className="text-gray-600 leading-relaxed text-xs sm:text-sm"
-     style={{ marginTop: -8 }}>
-    Fans can seamlessly extend their experience by sending an additional structured booking request at the end of each session if both parties wish to continue.
-  </p>
-</>
+    <p style={{ fontSize: 12, color: "rgba(148,163,184,.85)", marginTop: 6, marginBottom: 4, lineHeight: 1.4 }}>
+      <span style={{ color: "#6c63ff" }} className="font-bold text-xs uppercase tracking-wider flex items-center gap-1">
+        ✨ Premium Extension Available
+      </span>
+    </p>
+    <p className="text-gray-600 leading-relaxed text-xs sm:text-sm" style={{ marginTop: -4, marginBottom: 12 }}>
+      Fans can seamlessly extend their experience by sending an additional structured booking request at the end of each session if both parties wish to continue.
+    </p>
 
-            {/* ── CHANGED: step 5, visual progress bar ── */}
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={() => updateDuration(durationValue - 5)}
-                style={{
-                  width: 38, height: 38, borderRadius: "50%", fontSize: 20, fontWeight: 700,
-                  background: "#111624", border: "1px solid rgba(255,255,255,.07)",
-                  color: "#94a3b8", cursor: "pointer", display: "flex", alignItems: "center",
-                  justifyContent: "center", transition: "all .2s", lineHeight: 1,
-                }}
-              >
-                −
-              </button>
-              <div
-                style={{
-                  flex: 1, background: "#111624", border: "1px solid rgba(255,255,255,.07)",
-                  borderRadius: 10, padding: 13, textAlign: "center",
-                  fontSize: 16, fontWeight: 800, letterSpacing: "-.01em",
-                }}
-              >
-                {durationValue} min
-              </div>
-              <button
-                type="button"
-                onClick={() => updateDuration(durationValue + 5)}
-                style={{
-                  width: 38, height: 38, borderRadius: "50%", fontSize: 20, fontWeight: 700,
-                  background: "#111624", border: "1px solid rgba(255,255,255,.07)",
-                  color: "#94a3b8", cursor: "pointer", display: "flex", alignItems: "center",
-                  justifyContent: "center", transition: "all .2s", lineHeight: 1,
-                }}
-              >
-                +
-              </button>
-            </div>
-
-            {/* ── CHANGED: progress bar replaces range slider ── */}
-            <div style={{ height: 4, background: "rgba(255,255,255,.04)", borderRadius: 2, marginTop: 10, overflow: "hidden" }}>
-              <div style={{ height: "100%", width: `${durFillPct}%`, background: "linear-gradient(90deg,#6c63ff,#9b59f5)", borderRadius: 2, transition: "width .3s" }} />
-            </div>
-            <p className="mt-1.5 text-center text-[11px] text-slate-500">Maximum 30 minutes per session</p>
-            <Divider />
-          </section>
-
-          
-        )}
-
-
+    <div className="dur-wrap">
+      <button type="button" className="dur-btn" onClick={() => updateDuration(durationValue - 5)}>−</button>
+      <div className="dur-display">{durationValue} min</div>
+      <button type="button" className="dur-btn" onClick={() => updateDuration(durationValue + 5)}>+</button>
+    </div>
+    <div className="dur-bar"><div className="dur-fill" style={{ width: `${durFillPct}%` }} /></div>
+    <div className="dur-note">Maximum 30 minutes per session</div>
+    <Divider />
+  </section>
+)}
 
 
         {/* ── ABOUT ME ── */}
