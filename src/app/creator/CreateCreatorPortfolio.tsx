@@ -875,10 +875,13 @@ setStateQuery("");
               <div style={{ height: "100%", width: `${durFillPct}%`, background: "linear-gradient(90deg,#6c63ff,#9b59f5)", borderRadius: 2, transition: "width .3s" }} />
             </div>
             <p className="mt-1.5 text-center text-[11px] text-slate-500">Maximum 30 minutes per session</p>
+            <Divider />
           </section>
+
+          
         )}
 
-        <Divider />
+
 
 
         {/* ── ABOUT ME ── */}
