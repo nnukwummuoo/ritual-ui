@@ -785,7 +785,7 @@ useEffect(() => {
           </div>
           <div className="mcp-price-sub">Fan pays {isFanCallCreator ? "per minute" : "upfront"} — you keep 100%</div>
           <div className="mcp-price-perks">
-            <div className="mcp-perk"><div className="mcp-perk-dot">✓</div>{creatorDurationText}{!isFanCallCreator && ", premium extension available"}</div>
+            <div className="mcp-perk"><div className="mcp-perk-dot">✓</div>{creatorDurationText}{!isFanCallCreator && ", session extension available"}</div>
             <div className="mcp-perk">
   <div className="mcp-perk-dot">✓</div>
   {isFanCallCreator ? "No surprise calls — you choose who to accept" : `Payment secured before the ${creatorServiceNoun}`}

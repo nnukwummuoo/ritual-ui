@@ -183,7 +183,7 @@ export default function Editcreator() {
     setTours((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const durationValue = Math.max(1, Math.min(30, Number(duration) || 1));
+  const durationValue = 30;
 
   const hourValues = useMemo(() => {
     const values: string[] = [`12:00${pm}`];
@@ -527,7 +527,25 @@ if (matched?.isoCode && creator.state) {
       className="fi"
       value={countryQuery}
       onFocus={() => setShowCountryDropdown(true)}
-      onBlur={() => setTimeout(() => setShowCountryDropdown(false), 150)}
+      onBlur={() => {
+  setTimeout(() => {
+    setShowCountryDropdown(false);
+    const match = countryList.find(
+      (c) => c.toLowerCase() === countryQuery.trim().toLowerCase()
+    );
+    if (!match) {
+      setCountryQuery("");
+      setlocation("");
+      setSelectedCountryCode("");
+      setSelectedState("");
+      setStateQuery("");
+      setSelectedStateCode("");
+      setSelectedCity("");
+      setCityQuery("");
+      toast.error("Please select a country from the list");
+    }
+  }, 150);
+}}
       onChange={(e) => {
         const value = e.currentTarget.value;
         setCountryQuery(value);
@@ -571,7 +589,24 @@ if (matched?.isoCode && creator.state) {
       value={stateQuery}
       disabled={!selectedCountryCode}
       onFocus={() => setShowStateDropdown(true)}
-      onBlur={() => setTimeout(() => setShowStateDropdown(false), 150)}
+     onBlur={() => {
+  setTimeout(() => {
+    setShowStateDropdown(false);
+    const match = availableStates.find(
+      (s) => s.name.toLowerCase() === stateQuery.trim().toLowerCase()
+    );
+    if (!match) {
+      setStateQuery("");
+      setSelectedState("");
+      setSelectedStateCode("");
+      setSelectedCity("");
+      setCityQuery("");
+      if (stateQuery.trim()) {
+        toast.error("Please select a state/province from the list");
+      }
+    }
+  }, 150);
+}}
       onChange={(e) => setStateQuery(e.currentTarget.value)}
       placeholder={selectedCountryCode ? "Search state/province..." : "Select a country first"}
     />
@@ -610,7 +645,21 @@ if (matched?.isoCode && creator.state) {
       value={cityQuery}
       disabled={!selectedStateCode}
       onFocus={() => setShowCityDropdown(true)}
-      onBlur={() => setTimeout(() => setShowCityDropdown(false), 150)}
+      onBlur={() => {
+  setTimeout(() => {
+    setShowCityDropdown(false);
+    const match = availableCities.find(
+      (c) => c.name.toLowerCase() === cityQuery.trim().toLowerCase()
+    );
+    if (!match) {
+      setCityQuery("");
+      setSelectedCity("");
+      if (cityQuery.trim()) {
+        toast.error("Please select a city from the list");
+      }
+    }
+  }, 150);
+}}
       onChange={(e) => setCityQuery(e.currentTarget.value)}
       placeholder={selectedStateCode ? "Search city..." : "Select a state first"}
     />
@@ -866,7 +915,7 @@ if (matched?.isoCode && creator.state) {
             <div className="sec-label">Duration</div>
             <p style={{ fontSize: 12, color: "rgba(148,163,184,.85)", marginTop: 6, marginBottom: 4, lineHeight: 1.4 }}>
               <span style={{ color: "#6c63ff" }} className="font-bold text-xs uppercase tracking-wider flex items-center gap-1">
-                ✨ Premium Extension Available
+                ✨ Session Extension Available
               </span>
             </p>
             <p className="text-gray-600 leading-relaxed text-xs sm:text-sm" style={{ marginTop: -4, marginBottom: 12 }}>
@@ -875,9 +924,9 @@ if (matched?.isoCode && creator.state) {
 
             <div className="fg" style={{ marginBottom: 24 }}>
               <div className="dur-wrap">
-                <button type="button" className="dur-btn" onClick={() => updateDuration(durationValue - 1)}>−</button>
+                <button type="button" className="dur-btn" onClick={() => {}}>−</button>
                 <div className="dur-display">{durationValue} min</div>
-                <button type="button" className="dur-btn" onClick={() => updateDuration(durationValue + 1)}>+</button>
+                <button type="button" className="dur-btn" onClick={() => {}}>+</button>
               </div>
              
               <div className="dur-bar"><div className="dur-fill" style={{ width: `${(durationValue / 30) * 100}%` }} /></div>
@@ -1032,7 +1081,8 @@ if (matched?.isoCode && creator.state) {
         .fi:disabled{opacity:.4;}
         select.fi{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23475569' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px;background-color:var(--card);}
         textarea.fi{resize:none;line-height:1.65;}
-        .frow{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+        .frow{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px;}
+        .frow .fg{margin-bottom:0;}
         .divider{height:1px;background:var(--border);margin:28px 0;}
         .dropdown-panel{position:absolute;z-index:30;margin-top:8px;max-height:224px;width:100%;overflow-y:auto;border-radius:12px;border:1px solid var(--border);background:var(--card);box-shadow:0 20px 60px rgba(0,0,0,.6);}
         .dropdown-item{display:block;width:100%;border-bottom:1px solid var(--border2);padding:10px 16px;text-align:left;font-size:13px;color:var(--text2);background:none;border-left:none;border-right:none;border-top:none;cursor:pointer;font-family:inherit;}

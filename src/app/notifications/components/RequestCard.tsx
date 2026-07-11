@@ -1830,7 +1830,7 @@ const formatTimer = (seconds: number) => {
     <span className="text-xl mt-1">⏱️</span>
     <div className="w-full">
       <h3 className="font-semibold text-gray-800">Duration</h3>
-      <p className="text-gray-600">{details.duration || "Maximum 30 minutes"}</p>
+      <p className="text-gray-600">{details.duration || "Maximum 30 minutes per session"}</p>
       
       {/* Premium Extension Box */}
       {["request", "accepted"].includes(currentStatus || "") && (
@@ -1842,7 +1842,7 @@ const formatTimer = (seconds: number) => {
           }}
         >
           <p style={{ color: "#6c63ff" }} className="font-bold text-xs uppercase tracking-wider mb-1 flex items-center gap-1">
-            ✨ Premium Extension Available
+            ✨ Session Extension Available
           </p>
           <p className="text-gray-600 leading-relaxed text-xs sm:text-sm">
             Fans can seamlessly extend their experience by sending an additional structured booking request at the end of each session if both parties wish to continue.

@@ -544,7 +544,7 @@ export default function CreatorProfile({
           </div>
           <div className="mcp-price-sub">Fan pays upfront — you keep 100%</div>
           <div className="mcp-price-perks">
-            <div className="mcp-perk"><div className="mcp-perk-dot">✓</div>{creator.duration} minutes, premium extension available</div>
+            <div className="mcp-perk"><div className="mcp-perk-dot">✓</div>{creator.duration} minutes, Session extension available</div>
             <div className="mcp-perk"><div className="mcp-perk-dot">✓</div>Payment secured before the meet</div>
             <div className="mcp-perk"><div className="mcp-perk-dot">✓</div>All communication on-platform</div>
           </div>

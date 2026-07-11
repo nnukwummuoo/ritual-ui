@@ -178,8 +178,8 @@ const removeTour = (index: number) => {
   setTours((prev) => prev.filter((_, i) => i !== index));
 };
 
-  // ── CHANGED: step 5, min 5, max 30 ──
-  const durationValue = Math.max(5, Math.min(30, Number(duration) || 30));
+  // ── CHANGED: step 5, min 30, max 30 ──
+  const durationValue = 30;
 
   const hourValues = pm === "AM" ? AM_HOURS : PM_HOURS;
 
@@ -442,7 +442,25 @@ const removeTour = (index: number) => {
           <input
             value={countryQuery}
             onFocus={() => setShowCountryDropdown(true)}
-            onBlur={() => setTimeout(() => setShowCountryDropdown(false), 150)}
+            onBlur={() => {
+  setTimeout(() => {
+    setShowCountryDropdown(false);
+    const match = countryList.find(
+      (c) => c.toLowerCase() === countryQuery.trim().toLowerCase()
+    );
+    if (!match) {
+      setCountryQuery("");
+      setlocation("");
+      setSelectedCountryCode("");
+      setSelectedState("");
+      setStateQuery("");
+      setSelectedStateCode("");
+      setSelectedCity("");
+      setCityQuery("");
+      toast.error("Please select a country from the list");
+    }
+  }, 150);
+}}
             onChange={(e) => {
               setCountryQuery(e.currentTarget.value);
               setlocation(e.currentTarget.value.trim());
@@ -481,7 +499,24 @@ setStateQuery("");
     value={stateQuery}
     disabled={!selectedCountryCode}
     onFocus={() => setShowStateDropdown(true)}
-    onBlur={() => setTimeout(() => setShowStateDropdown(false), 150)}
+    onBlur={() => {
+  setTimeout(() => {
+    setShowStateDropdown(false);
+    const match = availableStates.find(
+      (s) => s.name.toLowerCase() === stateQuery.trim().toLowerCase()
+    );
+    if (!match) {
+      setStateQuery("");
+      setSelectedState("");
+      setSelectedStateCode("");
+      setSelectedCity("");
+      setCityQuery("");
+      if (stateQuery.trim()) {
+        toast.error("Please select a state/province from the list");
+      }
+    }
+  }, 150);
+}}
     onChange={(e) => setStateQuery(e.currentTarget.value)}
     placeholder={selectedCountryCode ? "Search state/province..." : "Select a country first"}
     className="w-full rounded-[10px] border border-white/7 bg-[#111624] px-[14px] py-[13px] text-[13.5px] text-slate-100 outline-none focus:border-[#6c63ff]/40 disabled:opacity-40"
@@ -518,7 +553,21 @@ setStateQuery("");
       value={cityQuery}
       disabled={!selectedStateCode}
       onFocus={() => setShowCityDropdown(true)}
-      onBlur={() => setTimeout(() => setShowCityDropdown(false), 150)}
+      onBlur={() => {
+  setTimeout(() => {
+    setShowCityDropdown(false);
+    const match = availableCities.find(
+      (c) => c.name.toLowerCase() === cityQuery.trim().toLowerCase()
+    );
+    if (!match) {
+      setCityQuery("");
+      setSelectedCity("");
+      if (cityQuery.trim()) {
+        toast.error("Please select a city from the list");
+      }
+    }
+  }, 150);
+}}
       onChange={(e) => setCityQuery(e.currentTarget.value)}
       placeholder={selectedStateCode ? "Search city..." : "Select a state first"}
       className="w-full rounded-[10px] border border-white/7 bg-[#111624] px-[14px] py-[13px] text-[13.5px] text-slate-100 outline-none focus:border-[#6c63ff]/40 disabled:opacity-40"
@@ -812,7 +861,7 @@ setStateQuery("");
 
     <p style={{ fontSize: 12, color: "rgba(148,163,184,.85)", marginTop: 6, marginBottom: 4, lineHeight: 1.4 }}>
       <span style={{ color: "#6c63ff" }} className="font-bold text-xs uppercase tracking-wider flex items-center gap-1">
-        ✨ Premium Extension Available
+        ✨ Session Extension Available
       </span>
     </p>
     <p className="text-gray-600 leading-relaxed text-xs sm:text-sm" style={{ marginTop: -4, marginBottom: 12 }}>
@@ -820,9 +869,9 @@ setStateQuery("");
     </p>
 
     <div className="dur-wrap">
-      <button type="button" className="dur-btn" onClick={() => updateDuration(durationValue - 5)}>−</button>
+      <button type="button" className="dur-btn" onClick={() => {}}>−</button>
       <div className="dur-display">{durationValue} min</div>
-      <button type="button" className="dur-btn" onClick={() => updateDuration(durationValue + 5)}>+</button>
+      <button type="button" className="dur-btn" onClick={() => {}}>+</button>
     </div>
     <div className="dur-bar"><div className="dur-fill" style={{ width: `${durFillPct}%` }} /></div>
     <div className="dur-note">Maximum 30 minutes per session</div>
