@@ -122,8 +122,8 @@ const SupportPage: React.FC = () => {
       section: "❓ FAQ – Fan Meet / Fan Date Expiration",
       questions: [
         {
-          question: "What happens if the meet or date doesn't happen within 14 days?",
-          answer: "🕒 If 14 days pass and the fan didn't marks it as complete, the system automatically refunds the fan's payment (unless a creator complaint was filed within 18 days)."
+          question: "What happens if the meet or date doesn't happen within 20 days?",
+          answer: "🕒 If 20 days pass and the fan didn't marks it as complete, the system automatically refunds the fan's payment."
         },
         {
           question: "What if the creator didn't show up?",
@@ -157,7 +157,7 @@ const SupportPage: React.FC = () => {
           answer: "💰 No. Fan Call payments are only deducted during the live call, not before."
         },
         {
-          question: "Why is there a 7-days limit?",
+          question: "Why is there a 10-days limit?",
           answer: "⏳ This helps fans and creators stay active and ensures requests don't pile up or get forgotten."
         }
       ]
@@ -175,7 +175,7 @@ const SupportPage: React.FC = () => {
         },
         {
           question: "How do both sides stay protected?",
-          answer: "🛡 The platform tracks confirmations, time logs, and attendance reports to ensure fairness.\nWe recommend both sides take a quick photo or check-in proof at the public venue for verification if needed."
+          answer: "🛡 The platform tracks confirmations, time logs, booking history and chat history.\nWe recommend both sides take a quick photo or check-in proof at the public venue for verification if needed."
         }
       ]
     },

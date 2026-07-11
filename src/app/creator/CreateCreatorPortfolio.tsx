@@ -957,7 +957,21 @@ setStateQuery("");
           </div>
         </div>
       )}
+
+      <style jsx>{`
+  .dur-wrap{display:flex;align-items:center;gap:12px;}
+  .dur-btn{width:38px;height:38px;border-radius:50%;background:#111624;border:1px solid rgba(255,255,255,.07);color:#94a3b8;font-size:20px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;font-family:inherit;line-height:1;}
+  .dur-btn:hover{border-color:rgba(108,99,255,.35);color:#a89cff;background:rgba(108,99,255,.08);}
+  .dur-display{flex:1;background:#111624;border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:13px;text-align:center;font-size:16px;font-weight:800;letter-spacing:-.01em;}
+  .dur-note{font-size:11px;color:#475569;text-align:center;margin-top:6px;}
+  .dur-bar{height:4px;background:rgba(255,255,255,.04);border-radius:2px;margin-top:10px;overflow:hidden;}
+  .dur-fill{height:100%;background:linear-gradient(90deg,#6c63ff,#9b59f5);border-radius:2px;transition:width .3s;}
+`}</style>
+
+
     </div>
+
+
   );
 }
 
