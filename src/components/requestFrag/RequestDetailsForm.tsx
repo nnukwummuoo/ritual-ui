@@ -113,7 +113,7 @@ export const RequestDetailsForm: React.FC<RequestDetailsFormProps> = ({
       return;
     }
     if (selectedDate > endDate) {
-      const daysAllowed = isFanCall ? "10" : "17";
+      const daysAllowed = isFanCall ? "7" : "14";
       toast.error(`Please select a date within the next ${daysAllowed} available days`, { autoClose: 2000 });
       return;
     }
