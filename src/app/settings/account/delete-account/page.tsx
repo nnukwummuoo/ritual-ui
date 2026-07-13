@@ -7,6 +7,7 @@ import Head from "../../../../components/Head";
 import { useDispatch, useSelector } from "react-redux";
 import { deleteprofile, ProfilechangeStatus } from "@/store/profile";
 import type { AppDispatch, RootState } from "@/store/store";
+import handleLogout from "@/lib/service/logout";
 
 const DeleteaccountPage = () => {
   const [buttonstop, set_buttonstop] = useState(false);
@@ -18,9 +19,6 @@ const DeleteaccountPage = () => {
   const deleteaccstats = useSelector((s: RootState) => s.profile.deleteaccstats);
   const testmsg = useSelector((s: RootState) => s.profile.testmsg);
 
-  // Fallback userid if not in store (from prompt)
-  const fallbackUserId = "689ef5dca5f754cf0de07e62";
-  const userid = useridFromStore || fallbackUserId;
 
   const deleteClick = () => {
     if (deleteaccstats === "loading") return;
@@ -38,15 +36,20 @@ const DeleteaccountPage = () => {
   };
 
   useEffect(() => {
-    if (deleteaccstats === "succeeded") {
+  if (deleteaccstats === "succeeded") {
+    (async () => {
       try {
         if (typeof window !== "undefined") {
-          localStorage.removeItem("login");
+          localStorage.clear();
         }
       } catch {}
+      try {
+        await handleLogout();
+      } catch {}
       dispatch(ProfilechangeStatus("idle"));
-      router.push("/");
-    }
+      window.location.href = "/";
+    })();
+  }
 
     if (deleteaccstats === "failed") {
       toast.error(testmsg || "Unable to delete account. Check internet connection.");
