@@ -792,12 +792,22 @@ useEffect(() => {
             {creatorPriceValue}
             <span className="mcp-price-amount-suffix">{creatorRateSuffix}</span>
           </div>
-          <div className="mcp-price-sub">Fan pays {isFanCallCreator ? "per minute" : "upfront"} — you keep 100%</div>
+          <div className="mcp-price-sub">
+  {checkuser()
+    ? `Fan pays ${isFanCallCreator ? "per minute" : "upfront"} — you keep 100%`
+    : "Your payment is protected"}
+</div>
           <div className="mcp-price-perks">
             <div className="mcp-perk"><div className="mcp-perk-dot">✓</div>{creatorDurationText}{!isFanCallCreator && ", session extension available"}</div>
             <div className="mcp-perk">
   <div className="mcp-perk-dot">✓</div>
-  {isFanCallCreator ? "No surprise calls — you choose who to accept" : `Payment secured before the ${creatorServiceNoun}`}
+{isFanCallCreator
+  ? checkuser()
+    ? "No surprise calls — you choose who to accept"
+    : `Call ${creator.name?.split(" ")[0] || "them"} with confidence`
+  : checkuser()
+    ? `Payment secured before the ${creatorServiceNoun}`
+    : `Book ${creator.name?.split(" ")[0] || "them"} with confidence`}
 </div>
             <div className="mcp-perk"><div className="mcp-perk-dot">✓</div>All communication on-platform</div>
           </div>
