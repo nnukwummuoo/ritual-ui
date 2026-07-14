@@ -776,7 +776,6 @@ const [urlCopied, setUrlCopied] = useState(false);
     : "Your payment is protected"}
 </div>
           <div className="mcp-price-perks">
-            <div className="mcp-perk"><div className="mcp-perk-dot">✓</div>{creatorDurationText}{!isFanCallCreator && ", session extension available"}</div>
             <div className="mcp-perk">
   <div className="mcp-perk-dot">✓</div>
 {isFanCallCreator
@@ -787,6 +786,7 @@ const [urlCopied, setUrlCopied] = useState(false);
     ? `Payment secured before the ${creatorServiceNoun}`
     : `Book ${creator.name?.split(" ")[0] || "them"} with confidence`}
 </div>
+ <div className="mcp-perk"><div className="mcp-perk-dot">✓</div>{creatorDurationText}{!isFanCallCreator && ", session extension available"}</div>
             <div className="mcp-perk"><div className="mcp-perk-dot">✓</div>All communication on-platform</div>
           </div>
         </div>
