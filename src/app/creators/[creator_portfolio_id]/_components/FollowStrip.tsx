@@ -214,32 +214,34 @@ const FollowStrip: React.FC<FollowStripProps> = ({
     }
   };
 
-  // Don't show if user is viewing their own profile
-  if (checkuser) {
-    return null;
-  }
 
   return (
-    <div className="mb-6 px-4 py-3 rounded-lg border border-purple-400 flex items-center justify-between gap-3">
-      <div className="flex-1">
+  <div className="mb-6 px-4 py-3 rounded-lg border border-purple-400 flex items-center justify-between gap-3">
+    <div className="flex-1">
+      {checkuser ? (
+        <p className="text-xs sm:text-sm text-gray-300 leading-relaxed">
+          Fans can follow you to be notified when you&apos;re available.
+        </p>
+      ) : (
         <p className="text-xs sm:text-sm text-gray-300 leading-relaxed">
           <strong className="text-gray-100 text-xs lg:text-sm">Like what you see?</strong> Follow{" "}
           {creatorName.split(" ")[0]} to get notified when she&apos;s available.
         </p>
-      </div>
-      <button
-        onClick={handleFollowClick}
-        disabled={isProcessing}
-        className={`flex-shrink-0 px-3  py-2 rounded-lg font-semibold text-[12px] lg:text-sm whitespace-nowrap transition-all duration-200 ${
-          isFollowing
-            ? "bg-purple-400/20 border border-purple-400/40 text-purple-200 hover:bg-purple-400/30"
-            : "bg-gradient-to-r from-purple-600 to-purple-500 text-white hover:from-purple-700 hover:to-purple-600"
-        } ${isProcessing ? "opacity-70 cursor-not-allowed" : ""}`}
-      >
-        {isProcessing ? "..." : isFollowing ? "Following ✓" : "Follow"}
-      </button>
+      )}
     </div>
-  );
+    <button
+      onClick={handleFollowClick}
+      disabled={isProcessing || checkuser}
+      className={`flex-shrink-0 px-3  py-2 rounded-lg font-semibold text-[12px] lg:text-sm whitespace-nowrap transition-all duration-200 ${
+        isFollowing
+          ? "bg-purple-400/20 border border-purple-400/40 text-purple-200 hover:bg-purple-400/30"
+          : "bg-gradient-to-r from-purple-600 to-purple-500 text-white hover:from-purple-700 hover:to-purple-600"
+      } ${isProcessing || checkuser ? "opacity-70 cursor-not-allowed" : ""}`}
+    >
+      {isProcessing ? "..." : isFollowing ? "Following ✓" : "Follow"}
+    </button>
+  </div>
+);
 };
 
 export default FollowStrip;

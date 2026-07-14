@@ -554,6 +554,7 @@ const [urlCopied, setUrlCopied] = useState(false);
         .mcp-action-btns{display:flex;gap:10px;padding:0 18px 14px;}
         .mcp-btn-msg{flex:1;padding:12px;border-radius:11px;background:var(--mcp-card);border:1px solid var(--mcp-border);color:var(--mcp-text);font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:7px;}
         .mcp-btn-msg:hover{border-color:rgba(108,99,255,.3);background:var(--mcp-card2);}
+        .mcp-btn-msg:disabled{opacity:.5;cursor:not-allowed;}
         .mcp-btn-crush{flex:1;padding:12px;border-radius:11px;background:rgba(244,114,182,.08);border:1px solid rgba(244,114,182,.2);color:var(--mcp-rose);font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:7px;}
         .mcp-btn-crush:hover{background:rgba(244,114,182,.15);}
         .mcp-btn-crush.active{background:rgba(244,114,182,.2);border-color:rgba(244,114,182,.4);}
@@ -571,6 +572,7 @@ const [urlCopied, setUrlCopied] = useState(false);
         .mcp-perk-dot{width:18px;height:18px;border-radius:50%;background:rgba(108,99,255,.12);border:1px solid rgba(108,99,255,.2);display:flex;align-items:center;justify-content:center;font-size:8px;color:#a89cff;flex-shrink:0;}
         .mcp-btn-rq-wrap{padding:0 18px 20px;}
         .mcp-btn-rq{width:100%;padding:16px;border-radius:14px;background:linear-gradient(135deg,#6c63ff,#9b59f5);border:none;color:white;font-size:15px;font-weight:800;font-family:inherit;cursor:pointer;letter-spacing:-.01em;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 6px 28px rgba(108,99,255,.4);transition:all .25s;}
+        .mcp-btn-rq:disabled{opacity:.5;cursor:not-allowed;box-shadow:none;}
         .mcp-btn-rq:hover{transform:translateY(-2px);box-shadow:0 10px 36px rgba(108,99,255,.55);}
         .mcp-section{padding:0 18px;margin-bottom:24px;}
         .mcp-sec-title{font-size:11px;font-weight:700;color:var(--mcp-text);margin-bottom:14px;display:flex;align-items:center;gap:8px;letter-spacing:.08em;text-transform:uppercase;}
@@ -730,24 +732,32 @@ const [urlCopied, setUrlCopied] = useState(false);
         </div>
 
         {/* ── ACTION BUTTONS ── */}
-        {Cantchat() && (
-          <div className="mcp-action-btns">
-            <button className="mcp-btn-msg" onClick={() => { if (!userid) { toast.info("login to access this operation", { autoClose: 2000 }); return; } navigate(`/message/${creator.userid}`); }}>
-              💬 Message
-            </button>
-            <button
-              className={`mcp-btn-crush${removeCrush ? " active" : ""}`}
-              disabled={dcb}
-              onClick={() => {
-                if (!userid) { toast.info("login to access this operation", { autoClose: 2000 }); return; }
-                addTocrush();
-                if (!removeCrush) setTimeout(() => navigate("/collections"), 1000);
-              }}
-            >
-              {dcb ? "⏳ Processing..." : removeCrush ? "💖 Crushing" : `🎯 ${crush_text}`}
-            </button>
-          </div>
-        )}
+        <div className="mcp-action-btns">
+  <button
+    className="mcp-btn-msg"
+    disabled={!Cantchat()}
+    onClick={() => {
+      if (!Cantchat()) return;
+      if (!userid) { toast.info("login to access this operation", { autoClose: 2000 }); return; }
+      navigate(`/message/${creator.userid}`);
+    }}
+  >
+    💬 Message
+  </button>
+  <button
+    className={`mcp-btn-crush${removeCrush ? " active" : ""}`}
+    disabled={dcb || !Cantchat()}
+    onClick={() => {
+      if (!Cantchat()) return;
+      if (!userid) { toast.info("login to access this operation", { autoClose: 2000 }); return; }
+      addTocrush();
+      if (!removeCrush) setTimeout(() => navigate("/collections"), 1000);
+    }}
+  >
+    {dcb ? "⏳ Processing..." : removeCrush ? "💖 Crushing" : `🎯 ${crush_text}`}
+  </button>
+</div>
+      
 
         {/* ── PRICE CARD ── */}
         <div className="mcp-price-card">
@@ -772,20 +782,24 @@ const [urlCopied, setUrlCopied] = useState(false);
         </div>
 
         {/* ── REQUEST BUTTON ── */}
-        {Cantchat() && (
-          <div className="mcp-btn-rq-wrap">
-            <button className="mcp-btn-rq" onClick={() => { if (!userid) { toast.info("login to access this operation", { autoClose: 2000 }); return; } setShowRequestDetails(true); }}>
-              🎯 Request {creatorServiceTitle}
-            </button>
-          </div>
-        )}
+       <div className="mcp-btn-rq-wrap">
+  <button
+    className="mcp-btn-rq"
+    disabled={!Cantchat()}
+    onClick={() => {
+      if (!Cantchat()) return;
+      if (!userid) { toast.info("login to access this operation", { autoClose: 2000 }); return; }
+      setShowRequestDetails(true);
+    }}
+  >
+    🎯 Request {creatorServiceTitle}
+  </button>
+</div>
 
         {/* ── FOLLOW STRIP ── */}
-        {!checkuser() && (
-          <div className="mcp-follow-wrap">
-            <FollowStrip creatorName={creator.name || "Creator"} creatorId={creator.hostid || ""} creatorUserId={creator.userid || ""} followingUser={creator.followingUser || false} checkuser={checkuser()} />
-          </div>
-        )}
+       <div className="mcp-follow-wrap">
+  <FollowStrip creatorName={creator.name || "Creator"} creatorId={creator.hostid || ""} creatorUserId={creator.userid || ""} followingUser={creator.followingUser || false} checkuser={checkuser()} />
+</div>
 
         {/* ── MEET DETAILS ── */}
         <div className="mcp-section">
