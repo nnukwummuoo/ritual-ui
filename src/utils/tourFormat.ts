@@ -21,6 +21,7 @@ export function formatTourDateRange(startDate: string | Date, endDate: string | 
   return `${startStr} - ${endStr}`;
 }
 
-export function formatTourLabel(state: string, countryCode: string, startDate: string | Date, endDate: string | Date): string {
-  return `${state}, ${countryCode}. ${formatTourDateRange(startDate, endDate)}`;
+export function formatTourLabel(city: string, stateCode: string, countryCode: string, startDate: string | Date, endDate: string | Date): string {
+  const locationParts = [city, stateCode, countryCode].filter(Boolean);
+  return `${locationParts.join(", ")}. ${formatTourDateRange(startDate, endDate)}`;
 }

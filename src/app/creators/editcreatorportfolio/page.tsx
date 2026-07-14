@@ -52,7 +52,7 @@ const CATEGORY_OPTIONS = [
 
 const MAX_PHOTOS = 9;
 
-type Tour = { state: string; countryCode: string; startDate: string; endDate: string };
+type Tour = { city: string; stateCode: string; state: string; countryCode: string; startDate: string; endDate: string };
 
 export default function Editcreator() {
   const userid = useUserId();
@@ -101,6 +101,10 @@ export default function Editcreator() {
   const [tourCountryCode, setTourCountryCode] = useState("");
   const [tourStateQuery, setTourStateQuery] = useState("");
   const [showTourStateDropdown, setShowTourStateDropdown] = useState(false);
+  const [tourSelectedStateCode, setTourSelectedStateCode] = useState("");
+  const [tourCityQuery, setTourCityQuery] = useState("");
+  const [showTourCityDropdown, setShowTourCityDropdown] = useState(false);
+  const [tourSelectedCity, setTourSelectedCity] = useState("");
   const [tourSelectedState, setTourSelectedState] = useState("");
   const [tourStartDate, setTourStartDate] = useState("");
   const [tourEndDate, setTourEndDate] = useState("");
@@ -146,6 +150,11 @@ export default function Editcreator() {
   return list.filter((c) => c.toLowerCase().includes(query)).slice(0, 12);
 }, [cityQuery, availableCities]);
 
+const tourAvailableCities = useMemo(() => {
+  if (!tourCountryCode || !tourSelectedStateCode) return [];
+  return City.getCitiesOfState(tourCountryCode, tourSelectedStateCode);
+}, [tourCountryCode, tourSelectedStateCode]);
+
   const tourAvailableStates = useMemo(() => {
     if (!tourCountryCode) return [];
     return State.getStatesOfCountry(tourCountryCode);
@@ -158,6 +167,13 @@ export default function Editcreator() {
     return list.filter((s) => s.toLowerCase().includes(query)).slice(0, 12);
   }, [tourStateQuery, tourAvailableStates]);
 
+  const filteredTourCities = useMemo(() => {
+  const query = tourCityQuery.trim().toLowerCase();
+  const list = tourAvailableCities.map((c) => c.name);
+  if (!query) return list.slice(0, 12);
+  return list.filter((c) => c.toLowerCase().includes(query)).slice(0, 12);
+}, [tourCityQuery, tourAvailableCities]);
+
   const addTour = () => {
     if (!tourSelectedState || !tourCountryCode || !tourStartDate || !tourEndDate) {
       toast.error("Select a state and both dates to add a tour");
@@ -169,9 +185,12 @@ export default function Editcreator() {
     }
     setTours((prev) => [
       ...prev,
-      { state: tourSelectedState, countryCode: tourCountryCode, startDate: tourStartDate, endDate: tourEndDate },
+      { city: tourSelectedCity, stateCode: tourSelectedStateCode, state: tourSelectedState, countryCode: tourCountryCode, startDate: tourStartDate, endDate: tourEndDate },
     ]);
+    setTourSelectedCity("");
+    setTourCityQuery("");
     setTourSelectedState("");
+    setTourSelectedStateCode("");
     setTourStateQuery("");
     setTourCountryCode("");
     setTourStartDate("");
@@ -746,9 +765,9 @@ if (matched?.isoCode && creator.state) {
           {tours.map((tour, i) => (
             <div key={i} className="cat-card" style={{ marginBottom: 8, cursor: "default" }}>
               <div className="cat-info" style={{ flex: 1 }}>
-                <div className="cat-name" style={{ fontSize: 13 }}>
-                  {tour.state}, {tour.countryCode}. {formatTourDateRange(tour.startDate, tour.endDate)}
-                </div>
+               <div className="cat-name" style={{ fontSize: 13 }}>
+  {[tour.city, tour.stateCode, tour.countryCode].filter(Boolean).join(", ")}. {formatTourDateRange(tour.startDate, tour.endDate)}
+</div>
               </div>
               <button
                 type="button"
@@ -795,13 +814,16 @@ if (matched?.isoCode && creator.state) {
                       key={stateName}
                       type="button"
                       className="dropdown-item"
-                      onMouseDown={(e) => {
-                        e.preventDefault();
-                        setTourStateQuery(stateName);
-                        setTourSelectedState(stateName);
-                        setShowTourStateDropdown(false);
-                        setShowTourDates(true);
-                      }}
+                     onMouseDown={(e) => {
+  e.preventDefault();
+  setTourStateQuery(stateName);
+  setTourSelectedState(stateName);
+  const matchedState = tourAvailableStates.find((s) => s.name === stateName);
+  setTourSelectedStateCode(matchedState?.isoCode || "");
+  setShowTourStateDropdown(false);
+  setTourSelectedCity("");
+  setTourCityQuery("");
+}}
                     >
                       {stateName}
                     </button>
@@ -810,6 +832,55 @@ if (matched?.isoCode && creator.state) {
               )}
             </div>
           )}
+
+          {tourSelectedStateCode && (
+  <div style={{ position: "relative", marginBottom: 8 }}>
+    <input
+      type="text"
+      className="fi"
+      value={tourCityQuery}
+      onFocus={() => setShowTourCityDropdown(true)}
+      onBlur={() => {
+        setTimeout(() => {
+          setShowTourCityDropdown(false);
+          const match = tourAvailableCities.find(
+            (c) => c.name.toLowerCase() === tourCityQuery.trim().toLowerCase()
+          );
+          if (!match) {
+            setTourCityQuery("");
+            setTourSelectedCity("");
+            setShowTourDates(false);
+            if (tourCityQuery.trim()) {
+              toast.error("Please select a city from the list");
+            }
+          }
+        }, 150);
+      }}
+      onChange={(e) => setTourCityQuery(e.currentTarget.value)}
+      placeholder="Search city for tour..."
+    />
+    {showTourCityDropdown && filteredTourCities.length > 0 && (
+      <div className="dropdown-panel">
+        {filteredTourCities.map((cityName) => (
+          <button
+            key={cityName}
+            type="button"
+            className="dropdown-item"
+            onMouseDown={(e) => {
+              e.preventDefault();
+              setTourCityQuery(cityName);
+              setTourSelectedCity(cityName);
+              setShowTourCityDropdown(false);
+              setShowTourDates(true);
+            }}
+          >
+            {cityName}
+          </button>
+        ))}
+      </div>
+    )}
+  </div>
+)}
 
           {showTourDates && tourSelectedState && (
             <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center" }}>

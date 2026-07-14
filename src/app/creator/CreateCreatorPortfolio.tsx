@@ -92,15 +92,7 @@ export default function CreateCreatorPortfolio() {
   const [selectedTimes, setSelectedTimes] = useState<string[]>([]);
   const [selectedDays, setSelectedDays] = useState<string[]>([]);
 
- const allCountries = useMemo(() => Country.getAllCountries(), []);
-
-const filteredCountries = useMemo(() => {
-  const query = countryQuery.trim().toLowerCase();
-  const names = allCountries.map((c) => c.name);
-  if (!query) return names.slice(0, 12);
-  return names.filter((c) => c.toLowerCase().includes(query)).slice(0, 12);
-}, [countryQuery, allCountries]);
-
+  // State/Province + country
   const [selectedCountryCode, setSelectedCountryCode] = useState("");
 const [stateQuery, setStateQuery] = useState("");
 const [showStateDropdown, setShowStateDropdown] = useState(false);
@@ -109,6 +101,16 @@ const [selectedStateCode, setSelectedStateCode] = useState("");
 const [cityQuery, setCityQuery] = useState("");
 const [showCityDropdown, setShowCityDropdown] = useState(false);
 const [selectedCity, setSelectedCity] = useState("");
+
+
+ const allCountries = useMemo(() => Country.getAllCountries(), []);
+
+const filteredCountries = useMemo(() => {
+  const query = countryQuery.trim().toLowerCase();
+  const names = allCountries.map((c) => c.name);
+  if (!query) return names.slice(0, 12);
+  return names.filter((c) => c.toLowerCase().includes(query)).slice(0, 12);
+}, [countryQuery, allCountries]);
 
 const availableStates = useMemo(() => {
   if (!selectedCountryCode) return [];
@@ -135,7 +137,7 @@ const filteredCities = useMemo(() => {
 }, [cityQuery, availableCities]);
 
 // Tour scheduling (optional, multiple allowed)
-type Tour = { state: string; countryCode: string; startDate: string; endDate: string };
+type Tour = { city: string; stateCode: string; state: string; countryCode: string; startDate: string; endDate: string };
 const [tours, setTours] = useState<Tour[]>([]);
 const [tourCountryCode, setTourCountryCode] = useState("");
 const [tourStateQuery, setTourStateQuery] = useState("");
@@ -144,11 +146,27 @@ const [tourSelectedState, setTourSelectedState] = useState("");
 const [tourStartDate, setTourStartDate] = useState("");
 const [tourEndDate, setTourEndDate] = useState("");
 const [showTourDates, setShowTourDates] = useState(false);
+const [tourSelectedStateCode, setTourSelectedStateCode] = useState("");
+const [tourCityQuery, setTourCityQuery] = useState("");
+const [showTourCityDropdown, setShowTourCityDropdown] = useState(false);
+const [tourSelectedCity, setTourSelectedCity] = useState("");
+
+const tourAvailableCities = useMemo(() => {
+  if (!tourCountryCode || !tourSelectedStateCode) return [];
+  return City.getCitiesOfState(tourCountryCode, tourSelectedStateCode);
+}, [tourCountryCode, tourSelectedStateCode]);
 
 const tourAvailableStates = useMemo(() => {
   if (!tourCountryCode) return [];
   return State.getStatesOfCountry(tourCountryCode);
 }, [tourCountryCode]);
+
+const filteredTourCities = useMemo(() => {
+  const query = tourCityQuery.trim().toLowerCase();
+  const list = tourAvailableCities.map((c) => c.name);
+  if (!query) return list.slice(0, 12);
+  return list.filter((c) => c.toLowerCase().includes(query)).slice(0, 12);
+}, [tourCityQuery, tourAvailableCities]);
 
 const filteredTourStates = useMemo(() => {
   const query = tourStateQuery.trim().toLowerCase();
@@ -166,9 +184,13 @@ const addTour = () => {
     toast.error("End date must be after start date");
     return;
   }
-  setTours((prev) => [...prev, { state: tourSelectedState, countryCode: tourCountryCode, startDate: tourStartDate, endDate: tourEndDate }]);
+  setTours((prev) => [...prev, { city: tourSelectedCity, stateCode: tourSelectedStateCode, state: tourSelectedState, countryCode: tourCountryCode, startDate: tourStartDate, endDate: tourEndDate }]);
+  setTourSelectedCity("");
+  setTourCityQuery("");
   setTourSelectedState("");
+  setTourSelectedStateCode("");
   setTourStateQuery("");
+  setTourCountryCode("");
   setTourStartDate("");
   setTourEndDate("");
   setShowTourDates(false);
@@ -717,12 +739,15 @@ setStateQuery("");
               key={stateName}
               type="button"
               onMouseDown={(e) => {
-                e.preventDefault();
-                setTourStateQuery(stateName);
-                setTourSelectedState(stateName);
-                setShowTourStateDropdown(false);
-                setShowTourDates(true);
-              }}
+  e.preventDefault();
+  setTourStateQuery(stateName);
+  setTourSelectedState(stateName);
+  const matchedState = tourAvailableStates.find((s) => s.name === stateName);
+  setTourSelectedStateCode(matchedState?.isoCode || "");
+  setShowTourStateDropdown(false);
+  setTourSelectedCity("");
+  setTourCityQuery("");
+}}
               className="block w-full border-b border-white/5 px-4 py-2.5 text-left text-sm text-slate-200 hover:bg-white/5"
             >
               {stateName}
@@ -732,6 +757,55 @@ setStateQuery("");
       )}
     </div>
   )}
+
+  {tourSelectedStateCode && (
+  <div style={{ position: "relative", marginBottom: 8 }}>
+    <input
+      type="text"
+      className="fi"
+      value={tourCityQuery}
+      onFocus={() => setShowTourCityDropdown(true)}
+      onBlur={() => {
+        setTimeout(() => {
+          setShowTourCityDropdown(false);
+          const match = tourAvailableCities.find(
+            (c) => c.name.toLowerCase() === tourCityQuery.trim().toLowerCase()
+          );
+          if (!match) {
+            setTourCityQuery("");
+            setTourSelectedCity("");
+            setShowTourDates(false);
+            if (tourCityQuery.trim()) {
+              toast.error("Please select a city from the list");
+            }
+          }
+        }, 150);
+      }}
+      onChange={(e) => setTourCityQuery(e.currentTarget.value)}
+      placeholder="Search city for tour..."
+    />
+    {showTourCityDropdown && filteredTourCities.length > 0 && (
+      <div className="dropdown-panel">
+        {filteredTourCities.map((cityName) => (
+          <button
+            key={cityName}
+            type="button"
+            className="dropdown-item"
+            onMouseDown={(e) => {
+              e.preventDefault();
+              setTourCityQuery(cityName);
+              setTourSelectedCity(cityName);
+              setShowTourCityDropdown(false);
+              setShowTourDates(true);
+            }}
+          >
+            {cityName}
+          </button>
+        ))}
+      </div>
+    )}
+  </div>
+)}
 
   {showTourDates && tourSelectedState && (
     <div className="flex flex-wrap items-center gap-2">

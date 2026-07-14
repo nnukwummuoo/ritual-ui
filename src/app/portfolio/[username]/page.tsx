@@ -76,7 +76,7 @@ interface RootState {
       userPhotolink?: string | null;
        state?: string;
        city?: string;
-  tours?: { state: string; countryCode: string; startDate: string; endDate: string }[]; 
+  tours?: { city?: string; stateCode?: string; state: string; countryCode: string; startDate: string; endDate: string }[]; 
     };
   };
 }
@@ -852,7 +852,7 @@ useEffect(() => {
       {creator.tours.map((tour: any, i: number) => (
         <div key={i} className="mcp-di full">
           <div className="mcp-dv">
-            📍 {tour.state}, {tour.countryCode}. {formatTourDateRange(tour.startDate, tour.endDate)}
+           📍 {[tour.city, tour.stateCode, tour.countryCode].filter(Boolean).join(", ")}. {formatTourDateRange(tour.startDate, tour.endDate)}
           </div>
         </div>
       ))}
