@@ -17,7 +17,7 @@ import NavigateForward from "../_components/NavigateForward";
    {
       name: "Speak with support",
       icon: <BiSupport color="white" size={20} />,
-      linktitle: "message",
+      linktitle: "message/supportchat",
     },
     {
       name: "Term and conditions",
