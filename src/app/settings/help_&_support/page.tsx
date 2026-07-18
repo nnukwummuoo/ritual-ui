@@ -15,9 +15,9 @@ import NavigateForward from "../_components/NavigateForward";
 
   const navdata = [
    {
-      name: "Speaker with support",
+      name: "Speak with support",
       icon: <BiSupport color="white" size={20} />,
-      linktitle: "speak-to-help",
+      linktitle: "supportchat",
     },
     {
       name: "Term and conditions",
