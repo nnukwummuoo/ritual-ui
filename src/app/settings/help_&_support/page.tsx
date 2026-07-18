@@ -48,7 +48,7 @@ import NavigateForward from "../_components/NavigateForward";
       </p>
       <div className="pt-4">
         {navdata.map((nav, index) => (
-          <NavigateForward to={`help_&_support/${nav.linktitle}`} name={nav.name} icon={nav.icon} key={index} />
+          <NavigateForward to={nav.linktitle.startsWith("/") ? nav.linktitle : `help_&_support/${nav.linktitle}`} name={nav.name} icon={nav.icon} key={index} />
         ))}
       </div>
       </div>

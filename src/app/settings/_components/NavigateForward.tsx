@@ -7,7 +7,7 @@ export default function NavigateForward({to, name, icon}: {to: string, name: str
     const router = useRouter()
   return <div
         className="flex items-center justify-between mb-6 "
-        onClick={() => router.push(`/settings/${to}`)}
+        onClick={() => router.push(to.startsWith("/") ? to : `/settings/${to}`)}
         >
         <div className="flex items-center gap-2">
             <div>{icon}</div>
