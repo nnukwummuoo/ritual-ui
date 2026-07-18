@@ -483,7 +483,7 @@ if (matched?.isoCode && creator.state) {
     const key = imageUrl.split("/").pop();
     const urlParts = imageUrl.split("/");
     const bucketIndex = urlParts.findIndex((part) => part === "gateway.storjshare.io") + 1;
-    const bucket = urlParts[bucketIndex] || "creator";
+    const bucket = urlParts[bucketIndex] || "post";
 
     return `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3100"}/api/image/view?publicId=${key}&bucket=${bucket}`;
   };
