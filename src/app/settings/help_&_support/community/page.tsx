@@ -1,3 +1,5 @@
+'use client'; 
+
 import React from "react";
 import Head from "../../../../components/Head"
 import { useRouter } from "next/navigation";
