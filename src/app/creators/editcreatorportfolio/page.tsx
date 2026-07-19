@@ -476,17 +476,17 @@ if (matched?.isoCode && creator.state) {
     }
   };
 
-  const resolveExistingImageSrc = (imageUrl: string) => {
-    const isStorj = imageUrl.startsWith("https://gateway.storjshare.io/");
-    if (!isStorj) return imageUrl;
+ const resolveExistingImageSrc = (imageUrl: string) => {
+  const isStorj = imageUrl.startsWith("https://gateway.storjshare.io/");
+  if (!isStorj) return imageUrl;
 
-    const key = imageUrl.split("/").pop();
-    const urlParts = imageUrl.split("/");
-    const bucketIndex = urlParts.findIndex((part) => part === "gateway.storjshare.io") + 1;
-    const bucket = urlParts[bucketIndex] || "post";
+  const key = imageUrl.split("/").pop();
+  const urlParts = imageUrl.split("/");
+  const bucketIndex = urlParts.findIndex((part) => part === "gateway.storjshare.io") + 1;
+  const bucket = urlParts[bucketIndex] || "post";
 
-    return `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3100"}/api/image/view?publicId=${key}&bucket=${bucket}`;
-  };
+  return `${API_BASE_URL}/api/image/view?publicId=${key}&bucket=${bucket}`;
+};
 
   return (
     <div className="mcp-edit-portfolio">
