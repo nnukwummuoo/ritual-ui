@@ -15,6 +15,7 @@ import { getprofile } from "@/store/profile";
 import { countryList } from "@/components/CountrySelect/countryList";
 import { Country, State, City } from "country-state-city";
 import { formatTourDateRange } from "@/utils/tourFormat";
+import { URL as API_BASE_URL } from "@/api/config";
 
 const DAY_OPTIONS = [
   { value: "MON", label: "MON" },
