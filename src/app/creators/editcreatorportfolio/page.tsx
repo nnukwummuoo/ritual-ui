@@ -265,7 +265,7 @@ const tourAvailableCities = useMemo(() => {
       }
     }
 
-    setname(creator.name || "");
+  
     setage(creator.age || "");
     setlocation(creator.location || "");
     setCountryQuery(creator.location || "");
@@ -351,9 +351,9 @@ if (matched?.isoCode && creator.state) {
 
     if (profile?.firstname && profile.userId === currentUserId) {
       const fullName = `${profile.firstname} ${profile.lastname || ""}`.trim();
-      if (fullName && (!name || name.trim() === "")) {
-        setname(fullName);
-      }
+     if (fullName) {
+  setname(fullName);
+}
     } else {
       try {
         if (typeof window !== "undefined") {
@@ -363,9 +363,9 @@ if (matched?.isoCode && creator.state) {
             if (data?.firstname && data?.userID === currentUserId) {
               const fullName =
                 `${data.firstname} ${data.lastname || ""}`.trim();
-              if (fullName && (!name || name.trim() === "")) {
-                setname(fullName);
-              }
+             if (fullName) {
+  setname(fullName);
+}
             }
           }
         }
