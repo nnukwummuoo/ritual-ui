@@ -6404,6 +6404,11 @@ const isFanVerified = isViewingOwnProfile
 
                         const { src, postType, pathUrlPrimary, queryUrlFallback, pathUrlFallback, posterSource } = getMediaSource(post);
 
+                        const mediaItemsArr = Array.isArray(post?.mediaItems) ? post.mediaItems.filter((m: any) => m && m.url) : [];
+                        const firstMediaItem = mediaItemsArr[0];
+                        const thumbSrc = firstMediaItem ? firstMediaItem.url : src;
+                        const thumbType = firstMediaItem ? firstMediaItem.type : postType;
+
 
 
                         return (
@@ -6427,12 +6432,9 @@ const isFanVerified = isViewingOwnProfile
                           >
 
                             {/* Image Post */}
-
-                            {postType === "image" && src && (
-
-                              <img
-
-                                src={src}
+                          {thumbType === "image" && thumbSrc && (
+                                  <img
+                            src={thumbSrc}
 
                                 alt={post?.content || "post image"}
 
@@ -6485,14 +6487,10 @@ const isFanVerified = isViewingOwnProfile
 
 
                             {/* Video Post */}
-
-                            {postType === "video" && src && (
-
-                              <div className="absolute inset-0 w-full h-full flex items-center justify-center bg-[#080b14]">
-
-                                <video
-
-                                  src={src}
+                   {thumbType === "video" && thumbSrc && (
+                 <div className="absolute inset-0 w-full h-full flex items-center justify-center bg-[#080b14]">
+                                  <video
+                                  src={thumbSrc}
 
                                   poster={posterSource}
 
@@ -6563,6 +6561,12 @@ const isFanVerified = isViewingOwnProfile
                               </div>
 
                             )}
+
+                            {mediaItemsArr.length > 1 && (
+  <div className="absolute top-1.5 right-1.5 bg-black/60 rounded-full p-1">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="white"><rect x="3" y="3" width="14" height="14" rx="2" /><path d="M7 7h14v14H7z" fillOpacity="0.5" /></svg>
+  </div>
+)}
 
 
 
