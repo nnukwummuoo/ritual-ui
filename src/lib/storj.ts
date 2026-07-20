@@ -87,8 +87,7 @@ export async function uploadPostMediaFiles(
 ): Promise<{ url: string; publicId: string; type: "image" | "video" }[]> {
   const results: { url: string; publicId: string; type: "image" | "video" }[] = [];
 
-  for (let i = 0; i < files.length; i++) {
-    const file = files[i];
+  const uploadOnce = async (file: File): Promise<{ url: string; publicId: string; type: "image" | "video" }> => {
     const fieldName = file.type.startsWith("video/") ? "video" : "image";
     const formData = new FormData();
     formData.append(fieldName, file);
@@ -106,21 +105,49 @@ export async function uploadPostMediaFiles(
       } catch {}
     }
     if (!res || !res.ok) {
-      throw new Error(`Upload failed for file ${i + 1} of ${files.length}`);
+      throw new Error(`Upload failed for ${file.name}`);
     }
 
     const result: UploadResponse = await res.json();
-    results.push({
+    return {
       url: result.file_link || result.proxy_view || "",
       publicId: (result as any).public_id || "",
       type: fieldName as "image" | "video",
-    });
+    };
+  };
+
+  const MAX_ATTEMPTS = 3;
+  const RETRY_DELAY_MS = 1500;
+
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i];
+    let lastError: any = null;
+
+    for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+      try {
+        const uploaded = await uploadOnce(file);
+        results.push(uploaded);
+        lastError = null;
+        break;
+      } catch (err) {
+        lastError = err;
+        console.warn(`⚠️ [Storj] Upload attempt ${attempt}/${MAX_ATTEMPTS} failed for ${file.name}`, err);
+        if (attempt < MAX_ATTEMPTS) {
+          await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY_MS * attempt));
+        }
+      }
+    }
+
+    if (lastError) {
+      throw new Error(`Upload failed for file ${i + 1} of ${files.length} (${file.name}) after ${MAX_ATTEMPTS} attempts`);
+    }
 
     onEachUploaded?.(i + 1, files.length);
   }
 
   return results;
 }
+      
 
 /**
  * Upload multiple files to Storj via backend API
