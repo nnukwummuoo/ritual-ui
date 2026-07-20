@@ -78,6 +78,51 @@ export async function uploadToStorj(file: File, folder: string = 'post'): Promis
 }
 
 /**
+ * a proper multi-file upload helper that preserves publicId and type per file (reusing the same proven single-file endpoint in a loop):
+ */
+
+export async function uploadPostMediaFiles(
+  files: File[],
+  onEachUploaded?: (index: number, total: number) => void
+): Promise<{ url: string; publicId: string; type: "image" | "video" }[]> {
+  const results: { url: string; publicId: string; type: "image" | "video" }[] = [];
+
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i];
+    const fieldName = file.type.startsWith("video/") ? "video" : "image";
+    const formData = new FormData();
+    formData.append(fieldName, file);
+
+    const tryOnce = async (base: string) =>
+      fetch(`${base}/api/image/save`, { method: "POST", body: formData, credentials: "include" });
+
+    let res: Response | undefined;
+    try {
+      res = await tryOnce(API_BASE);
+    } catch {}
+    if (!res || !res.ok) {
+      try {
+        res = await tryOnce(PROD_BASE);
+      } catch {}
+    }
+    if (!res || !res.ok) {
+      throw new Error(`Upload failed for file ${i + 1} of ${files.length}`);
+    }
+
+    const result: UploadResponse = await res.json();
+    results.push({
+      url: result.file_link || result.proxy_view || "",
+      publicId: (result as any).public_id || "",
+      type: fieldName as "image" | "video",
+    });
+
+    onEachUploaded?.(i + 1, files.length);
+  }
+
+  return results;
+}
+
+/**
  * Upload multiple files to Storj via backend API
  */
 export async function uploadMultipleFilesToStorj(files: File[], folder: string = 'post'): Promise<string[]> {

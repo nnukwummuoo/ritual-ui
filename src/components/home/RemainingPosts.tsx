@@ -18,6 +18,7 @@ import { getImageSource } from "@/lib/imageUtils";
 import { useVideoAutoPlay } from "@/hooks/useVideoAutoPlayNew";
 import ExpandableText from "../ExpandableText";
 import { generateInitials } from "@/utils/generateInitials";
+import PostMediaCollage from "./PostMediaCollage";
 
 // Utility function to format relative time
 const formatRelativeTime = (timestamp: string | number | Date): string => {
@@ -470,6 +471,7 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
   return (
     <>
       {posts.map((p: any, idx: number) => {
+        const mediaItemsArr = Array.isArray(p?.mediaItems) ? p.mediaItems.filter((m: any) => m && m.url) : [];
         let postType: string = p?.posttype || p?.type || "text";
         if (!postType) {
           if (p?.postphoto || p?.image) postType = "image";
@@ -675,7 +677,11 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
               />
             )}
 
-            {postType == "image" && src && (
+            {mediaItemsArr.length > 1 && (
+              <PostMediaCollage items={mediaItemsArr} />
+            )}
+
+            {mediaItemsArr.length <= 1 && postType == "image" && src && (
               <div className="w-full aspect-[4/5] relative rounded overflow-hidden">
                 <Image
                   src={src}
@@ -710,7 +716,7 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
               </div>
             )}
 
-            {postType == "video" && src && (
+            {mediaItemsArr.length <= 1 && postType == "video" && src && (
               <VideoComponent
                 post={p}
                 src={src}

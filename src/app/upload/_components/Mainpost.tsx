@@ -1,535 +1,247 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { toast } from "react-toastify";
-// import { useDispatch, useSelector } from "react-redux";
-// import { createpost } from "../../app/features/post/post";
-// import { PostImage } from "./postImage";
-// import { Postvideo } from "./Postvideo";
-// import person from "../../icons/icons8-profile_Icon.png";
-// import "../../styles/Toastify__toast.css";
-
-import { FaImage, FaVideo, FaPlus, FaCheck } from "react-icons/fa";
-import FileInput from "../../../components/fileUpload";
-import { uploadImage, getViewUrl } from "../../../api/sendImage";
-import { URL as API_BASE } from "@/api/config";
+import { FaImage, FaVideo, FaPlus, FaTimes } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "@/store/store";
-import { createpost, getallpost, hydrateFromCache } from "@/store/post";
+import { getallpost, hydrateFromCache } from "@/store/post";
+import { createMultiMediaPost } from "@/store/post";
 import { useRouter } from "next/navigation";
 import { useUserId } from "@/lib/hooks/useUserId";
 import { useAuthToken } from "@/lib/hooks/useAuthToken";
+import { uploadPostMediaFiles } from "@/lib/storj";
 import FileLimitPopup from "@/app/upload/_components/FileLimitPopup";
 
+const MAX_FILES = 10;
+const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB
+const MAX_VIDEO_SIZE = 500 * 1024 * 1024; // 500MB
+
+type SelectedFile = {
+  file: File;
+  previewUrl: string;
+  type: "image" | "video";
+};
 
 export const Mainpost = () => {
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
-  // const photo = useSelector((state) => state.comprofile.profilephoto);
-  // const token = useSelector((state) => state.register.refreshtoken);
-  // const poststatus = useSelector((state) => state.post.poststatus);
   const { firstname, lastname, username } = useSelector((s: RootState) => s.profile);
   const posts = useSelector((s: RootState) => s.post.allPost as any[]);
-  // const userid = useSelector((state) => state.register.userID);
-  // const [propics, setpropics] = useState(person);
-  const [postcontent, setpostcontent] = useState<string>("");
-  const [loading, setLoading] = useState<boolean>(false);
-  const [imageFile, setImageFile] = useState<File | undefined>(undefined);
-  const [imagePreview, setImagePreview] = useState<string>("");
-  const [uploading, setUploading] = useState<boolean>(false);
-  const [uploadedPublicId, setUploadedPublicId] = useState<string>("");
-  const [uploadedUrl, setUploadedUrl] = useState<string>("");
-  const [showImageModal, setShowImageModal] = useState<boolean>(false);
-  const [showVideoModal, setShowVideoModal] = useState<boolean>(false);
-  const [videoFile, setVideoFile] = useState<File | undefined>(undefined);
-  const [videoPreview, setVideoPreview] = useState<string>("");
-  const [videoUploading, setVideoUploading] = useState<boolean>(false);
-  const [videoCaption, setVideoCaption] = useState<string>("");
 
-  const [showBanWarning, setShowBanWarning] = useState<boolean>(false);
-  const [showSizeWarning, setShowSizeWarning] = useState<boolean>(false);
-  const [agreedToPolicy, setAgreedToPolicy] = useState<boolean>(false);
-  const [fileTypeForSizeWarning, setFileTypeForSizeWarning] = useState<'image' | 'video' | null>(null);
-
-  // Auth consistent with Profile page
   const userid = useUserId();
   const token = useAuthToken();
 
-  // useEffect(() => {
-  //   if (photo) setpropics(photo);
-  // }, [photo]);
+  const [postcontent, setpostcontent] = useState<string>("");
+  const [selectedFiles, setSelectedFiles] = useState<SelectedFile[]>([]);
+  const [showModal, setShowModal] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<{ current: number; total: number } | null>(null);
 
-  // const mypost = async () => {
-  //   if (!postcontent.trim()) {
-  //     toast.error("You have not said anything", { autoClose: 2000 });
-  //     return;
-  //   }
-  //   setLoading(true);
-  //   try {
-  //     // const response = await dispatch(
-  //     //   createpost({
-  //     //     userid,
-  //     //     postlink: "",
-  //     //     content: postcontent,
-  //     //     token,
-  //     //     posttype: "text",
-  //     //   })
-  //     // );
-  //     console.log(response);
-  //     if (response.payload.ok) {
-  //       toast.success(response.payload.message, { autoClose: 1000 });
+  const [showBanWarning, setShowBanWarning] = useState(false);
+  const [agreedToPolicy, setAgreedToPolicy] = useState(false);
+  const [showSizeWarning, setShowSizeWarning] = useState(false);
+  const [oversizedFileType, setOversizedFileType] = useState<"image" | "video" | null>(null);
 
-  //       setpostcontent("");
-  //     }
-  //   } catch (error) {
-  //     console.log(error);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-
-  const handleUploadStart = (fileType: 'image' | 'video') => {
-    if (fileType === 'image' && imageFile) {
-      if (imageFile.size > 10 * 1024 * 1024) {
-        setFileTypeForSizeWarning('image');
-        setShowSizeWarning(true);
-        return;
-      }
-      setShowBanWarning(true);
-    } else if (fileType === 'video' && videoFile) {
-      if (videoFile.size > 500 * 1024 * 1024) {
-        setFileTypeForSizeWarning('video');
-        setShowSizeWarning(true);
-        return;
-      }
-      setShowBanWarning(true);
-    }
+  const getAuthorFields = () => {
+    const currentUsername = username || (() => { try { return localStorage.getItem('username') || ''; } catch { return ''; } })();
+    const currentName = [firstname, lastname].filter(Boolean).join(' ') || currentUsername;
+    return { currentUsername, currentName };
   };
 
-  const handleContinueUpload = async (fileType: 'image' | 'video') => {
-    setShowBanWarning(false);
-    if (fileType === 'image' && imageFile) {
-      await handleImagePost();
-    } else if (fileType === 'video' && videoFile) {
-      await handleVideoPost();
-    }
-  };
+  const handleFilesSelected = (files: FileList | null) => {
+    if (!files || files.length === 0) return;
 
-  const handleSizeWarningContinue = async () => {
-    setShowSizeWarning(false);
-    if (fileTypeForSizeWarning === 'image' && imageFile) {
-      setShowBanWarning(true);
-    } else if (fileTypeForSizeWarning === 'video' && videoFile) {
-      setShowBanWarning(true);
-    }
-  };
-
-  const handleImagePost = async () => {
-    if (!userid || !token || !imageFile) {
-      toast.error('Please log in to post');
+    const remaining = MAX_FILES - selectedFiles.length;
+    if (remaining <= 0) {
+      toast.info(`You can only attach up to ${MAX_FILES} files per post`);
       return;
     }
+
+    const incoming = Array.from(files).slice(0, remaining);
+    if (incoming.length < files.length) {
+      toast.info(`Only ${MAX_FILES} files are allowed per post — some files were skipped`);
+    }
+
+    const validFiles: SelectedFile[] = [];
+    for (const file of incoming) {
+      const isImage = file.type.startsWith("image/");
+      const isVideo = file.type.startsWith("video/");
+
+      if (!isImage && !isVideo) {
+        toast.error(`${file.name} is not a supported image or video file`);
+        continue;
+      }
+
+      if (isImage && file.size > MAX_IMAGE_SIZE) {
+        setOversizedFileType("image");
+        setShowSizeWarning(true);
+        continue;
+      }
+      if (isVideo && file.size > MAX_VIDEO_SIZE) {
+        setOversizedFileType("video");
+        setShowSizeWarning(true);
+        continue;
+      }
+
+      validFiles.push({
+        file,
+        previewUrl: URL.createObjectURL(file),
+        type: isImage ? "image" : "video",
+      });
+    }
+
+    if (validFiles.length > 0) {
+      setSelectedFiles((prev) => [...prev, ...validFiles]);
+    }
+  };
+
+  const removeFile = (index: number) => {
+    setSelectedFiles((prev) => {
+      const next = [...prev];
+      try { URL.revokeObjectURL(next[index].previewUrl); } catch {}
+      next.splice(index, 1);
+      return next;
+    });
+  };
+
+  const resetForm = () => {
+    selectedFiles.forEach((f) => { try { URL.revokeObjectURL(f.previewUrl); } catch {} });
+    setSelectedFiles([]);
+    setpostcontent("");
+    setShowModal(false);
+    setUploadProgress(null);
+  };
+
+  const submitPost = async () => {
+    if (!userid || !token) {
+      toast.error("Please log in to post");
+      return;
+    }
+    if (!postcontent.trim() && selectedFiles.length === 0) {
+      toast.error("Write something or attach media before posting");
+      return;
+    }
+
     try {
       setLoading(true);
-      setUploading(true);
-      const currentUsername = (() => {
-        try {
-          return (
-            username ||
-            localStorage.getItem('username') ||
-            localStorage.getItem('userName') ||
-            localStorage.getItem('profileusername') ||
-            ''
-          );
-        } catch { return ''; }
-      })();
-      const currentName = (() => {
-        try {
-          return (
-            [firstname, lastname].filter(Boolean).join(' ') ||
-            localStorage.getItem('fullname') ||
-            localStorage.getItem('fullName') ||
-            localStorage.getItem('name') ||
-            ''
-          );
-        } catch { return ''; }
-      })();
+      const { currentUsername, currentName } = getAuthorFields();
 
-      const result = await dispatch(
-        createpost({
-          userid: userid!,
-          token: token!,
+      let mediaItems: { url: string; publicId: string; type: "image" | "video" }[] = [];
+
+      if (selectedFiles.length > 0) {
+        setUploadProgress({ current: 0, total: selectedFiles.length });
+        mediaItems = await uploadPostMediaFiles(
+          selectedFiles.map((f) => f.file),
+          (current, total) => setUploadProgress({ current, total })
+        );
+      }
+
+      await dispatch(
+        createMultiMediaPost({
+          userid,
+          token,
           content: postcontent,
-          posttype: "image",
-          filelink: imageFile,
-          // Provide display fields for optimistic post header
+          mediaItems,
           authorUsername: currentUsername || undefined,
           authorName: currentName || undefined,
-          handle: (currentUsername || '').toString() || undefined,
+          handle: currentUsername || undefined,
         }) as any
-      )
-        .unwrap()
-        .then(async (payload: any) => {
-          const pub = payload?.publicId || payload?.public_id || payload?.data?.publicId || payload?.data?.public_id;
-          const url = payload?.url || payload?.secure_url || payload?.data?.url || payload?.data?.secure_url;
-          toast.success('Post created', { autoClose: 600 });
+      ).unwrap();
 
-          // Reset form and close modal
-          setShowImageModal(false);
-          setImageFile(undefined);
-          setImagePreview("");
-          setUploadedPublicId("");
-          setUploadedUrl("");
-          setpostcontent("");
-          setUploading(false);
-          setLoading(false);
+      toast.success("Post created", { autoClose: 800 });
+      resetForm();
 
-          // Refresh feed to ensure persistence immediately 
-          try {
-            await dispatch(getallpost({} as any)).unwrap();
-          } catch (err) {
-            toast.error("Something Went Wrong");
-            console.error(err);
-          }
+      try {
+        await dispatch(getallpost({} as any)).unwrap();
+      } catch (err) {
+        console.error(err);
+      }
 
-          // Redirect to home
-          setTimeout(() => router.push('/'), 100);
-        })
-        .catch((e: any) => {
-          const msg = typeof e === 'string' ? e : (e?.message || 'Failed to create post');
-          if (imagePreview) {
-            try {
-              const currentUsername = (() => {
-                try {
-                  return (
-                    username ||
-                    localStorage.getItem('username') ||
-                    localStorage.getItem('userName') ||
-                    localStorage.getItem('profileusername') ||
-                    ''
-                  );
-                } catch { return ''; }
-              })();
-              const currentName = (() => {
-                try {
-                  return (
-                    [firstname, lastname].filter(Boolean).join(' ') ||
-                    localStorage.getItem('fullname') ||
-                    localStorage.getItem('fullName') ||
-                    localStorage.getItem('name') ||
-                    ''
-                  );
-                } catch { return ''; }
-              })();
-              const localPost: any = {
-                postid: Date.now(),
-                userid: userid || 'you',
-                content: postcontent,
-                posttype: 'image',
-                image: imagePreview, // blob/object URL for demo
-                createdAt: new Date().toISOString(),
-                username: currentUsername || 'you',
-                name: currentName || currentUsername || 'You',
-                handle: currentUsername || undefined,
-              };
-              const nextPosts = [localPost, ...(Array.isArray(posts) ? posts : [])];
-              try { localStorage.setItem('feedPosts', JSON.stringify(nextPosts)); } catch { }
-              dispatch(hydrateFromCache(nextPosts as any));
-              toast.success('Post created (local demo)', { autoClose: 800 });
-              setTimeout(() => router.push('/'), 100);
-              return;
-            } catch { }
-          }
-          toast.error(msg);
-        });
+      setTimeout(() => router.push("/"), 100);
     } catch (e: any) {
-      const msg = e?.message || 'Failed to create post';
+      const msg = typeof e === "string" ? e : e?.message || "Failed to create post";
       toast.error(msg);
     } finally {
-      // Only reset loading states on error, success is handled in .then()
-      setUploading(false);
       setLoading(false);
+      setUploadProgress(null);
     }
   };
 
-
-  const handleVideoPost = async () => {
-    if (!userid || !token || !videoFile) {
-      toast.error('Please log in to post');
-      return;
-    }
-    try {
-      setVideoUploading(true);
-      setLoading(true);
-      setUploading(true);
-
-      const currentUsername = (() => {
-        try {
-          return (
-            username ||
-            localStorage.getItem('username') ||
-            localStorage.getItem('userName') ||
-            localStorage.getItem('profileusername') ||
-            ''
-          );
-        } catch { return ''; }
-      })();
-
-      const currentName = (() => {
-        try {
-          return (
-            [firstname, lastname].filter(Boolean).join(' ') ||
-            localStorage.getItem('fullname') ||
-            localStorage.getItem('fullName') ||
-            localStorage.getItem('name') ||
-            ''
-          );
-        } catch { return ''; }
-      })();
-
-      const result = await dispatch(
-        createpost({
-          userid: userid!,
-          token: token!,
-          content: videoCaption,
-          posttype: "video",
-          filelink: videoFile,
-          // Provide display fields for optimistic post header
-          authorUsername: currentUsername || undefined,
-          authorName: currentName || undefined,
-          handle: (currentUsername || '').toString() || undefined,
-        }) as any
-      )
-        .unwrap()
-        .then(async (payload: any) => {
-          const pub = payload?.publicId || payload?.public_id || payload?.data?.publicId || payload?.data?.public_id;
-          const url = payload?.url || payload?.secure_url || payload?.data?.url || payload?.data?.secure_url;
-          toast.success('Post created', { autoClose: 600 });
-
-          // Reset form and close modal
-          setShowVideoModal(false);
-          setVideoFile(undefined);
-          setVideoPreview("");
-          setVideoCaption("");
-          setVideoUploading(false);
-          setUploading(false);
-          setLoading(false);
-
-          try {
-            await dispatch(getallpost({} as any)).unwrap();
-          } catch (err) {
-            toast.error("Something Went Wrong");
-            console.error(err);
-          }
-
-          // Redirect to home
-          setTimeout(() => router.push('/'), 100);
-        })
-        .catch((e: any) => {
-          // 👇 This will show "You can only upload 5 videos per day."
-          const msg = e?.message || 'Failed to create post';
-          toast.error(msg);
-          setVideoUploading(false);
-          setLoading(false);
-          setUploading(false);
-        });
-    } catch (e: any) {
-      const msg = e?.message || 'Failed to create post';
-      toast.error(msg);
-      setVideoUploading(false);
-      setLoading(false);
-      setUploading(false);
-    }
-  };
-
-  // fallback demo post if preview exists
-  // if (videoPreview) {
-  //   try {
-  //     const localPost: any = {
-  //       postid: Date.now(),
-  //       userid: userid || 'you',
-  //       content: videoCaption,
-  //       posttype: 'video',
-  //       video: videoPreview, // blob/object URL for demo
-  //       createdAt: new Date().toISOString(),
-  //       username: currentUsername || 'you',
-  //       name: currentName || currentUsername || 'You',
-  //       handle: currentUsername || undefined,
-  //     };
-  //     const nextPosts = [localPost, ...(Array.isArray(posts) ? posts : [])];
-  //     try { localStorage.setItem('feedPosts', JSON.stringify(nextPosts)); } catch {}
-  //     dispatch(hydrateFromCache(nextPosts as any));
-  //     toast.success('Post created (local demo)', { autoClose: 800 });
-  //     setTimeout(() => router.push('/'), 100);
-  //     return;
-  //   } catch {}
-  // }
-
-  const handleImageSelected = async (file: File) => {
-    if (uploading) return;
-    try {
-      const url = URL.createObjectURL(file);
-      setImageFile(file);
-      setImagePreview(url);
-      setUploadedPublicId("");
-      setUploadedUrl("");
-    } catch (error) {
-      console.error("Image selection failed:", error);
-      toast.error("Failed to load image.");
+  const handlePostClick = () => {
+    if (selectedFiles.length > 0) {
+      setShowBanWarning(true);
+    } else {
+      submitPost();
     }
   };
 
   return (
-    <div className="bg-[#080b14] text-white p-4 rounded-md space-y-5 max-w-4xl mx-auto border border-gray-700">
+    <div className="bg-[#080b14] text-white p-4 rounded-md space-y-4 max-w-4xl mx-auto border border-gray-700">
+      <div className="flex flex-col gap-3">
+        <textarea
+          className="w-full p-2 text-white bg-transparent border border-gray-600 rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+          placeholder="What's hot?!"
+          rows={3}
+          value={postcontent}
+          onChange={(e) => setpostcontent(e.target.value)}
+        />
+        <p className="text-xs text-gray-400">
+          Tip: Add hashtags like #fun #lifestyle to help others discover your posts
+        </p>
 
-      {/* Text Post Section */}
-      <div className="space-y-3">
-        <div className="flex flex-col items-start gap-3">
-          <textarea
-            required
-            className="w-full p-2 text-white bg-transparent border border-gray-600 rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="What's hot?!"
-            rows={3}
-            value={postcontent}
-            onChange={(e) => setpostcontent(e.target.value)}
-          />
-          <p className="text-xs text-gray-400 mt-1">
-            Tip: Add hashtags like #fun #lifestyle to help others discover your posts
-          </p>
-        </div>
-        {/* Live preview card removed as requested */}
+        {selectedFiles.length > 0 && (
+          <div className="flex gap-2 overflow-x-auto pb-1">
+            {selectedFiles.map((f, i) => (
+              <div key={i} className="relative flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden bg-black border border-gray-700">
+                {f.type === "image" ? (
+                  <img src={f.previewUrl} className="w-full h-full object-cover" alt="" />
+                ) : (
+                  <video src={f.previewUrl} className="w-full h-full object-cover" muted />
+                )}
+                <button
+                  onClick={() => removeFile(i)}
+                  className="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/70 flex items-center justify-center text-white text-xs"
+                >
+                  <FaTimes size={10} />
+                </button>
+              </div>
+            ))}
+            {selectedFiles.length < MAX_FILES && (
+              <label className="flex-shrink-0 w-20 h-20 rounded-lg border-2 border-dashed border-gray-600 flex items-center justify-center cursor-pointer hover:bg-[#111624]">
+                <FaPlus className="text-gray-400" />
+                <input
+                  type="file"
+                  accept="image/*,video/*"
+                  multiple
+                  className="hidden"
+                  onChange={(e) => { handleFilesSelected(e.target.files); e.target.value = ""; }}
+                />
+              </label>
+            )}
+          </div>
+        )}
 
-        <div className="flex justify-end">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex gap-2">
+            <label className="flex items-center gap-2 px-3 py-2 border border-gray-600 border-dashed rounded-lg cursor-pointer hover:bg-[#111624] text-sm">
+              <FaImage className="text-green-400" />
+              <span>Photo/Video</span>
+              <input
+                type="file"
+                accept="image/*,video/*"
+                multiple
+                className="hidden"
+                onChange={(e) => { handleFilesSelected(e.target.files); e.target.value = ""; }}
+              />
+            </label>
+          </div>
+
           <button
-            disabled={loading || !postcontent.trim()}
-            onClick={async () => {
-              if (!userid || !token) {
-                toast.error('Please log in to post');
-                return;
-              }
-              try {
-                if (!userid || !token) {
-                  toast.error('Not authenticated');
-                  return;
-                }
-                setLoading(true);
-                setUploading(true);
-                const currentUsername = (() => {
-                  try {
-                    return (
-                      username ||
-                      localStorage.getItem('username') ||
-                      localStorage.getItem('userName') ||
-                      localStorage.getItem('profileusername') ||
-                      ''
-                    );
-                  } catch { return ''; }
-                })();
-                const currentName = (() => {
-                  try {
-                    return (
-                      [firstname, lastname].filter(Boolean).join(' ') ||
-                      localStorage.getItem('fullname') ||
-                      localStorage.getItem('fullName') ||
-                      localStorage.getItem('name') ||
-                      ''
-                    );
-                  } catch { return ''; }
-                })();
-
-                const result = await dispatch(
-                  createpost({
-                    userid: userid!,
-                    token: token!,
-                    content: postcontent,
-                    posttype: "text",
-                    filelink: "",
-                    // Provide display fields for optimistic post header
-                    authorUsername: currentUsername || undefined,
-                    authorName: currentName || undefined,
-                    handle: (currentUsername || '').toString() || undefined,
-                  }) as any
-                )
-                  .unwrap()
-                  .then(async (payload: any) => {
-                    const pub = payload?.publicId || payload?.public_id || payload?.data?.publicId || payload?.data?.public_id;
-                    const url = payload?.url || payload?.secure_url || payload?.data?.url || payload?.data?.secure_url;
-                    toast.success('Post created', { autoClose: 600 });
-
-                    // Reset form
-                    setpostcontent("");
-                    setUploading(false);
-                    setLoading(false);
-
-                    // Refresh feed to ensure persistence immediately 
-                    try {
-                      await dispatch(getallpost({} as any)).unwrap();
-                    } catch (err) {
-                      toast.error("Something Went Wrong");
-                      console.error(err);
-                    }
-
-                    // Redirect to home
-                    setTimeout(() => router.push('/'), 100);
-                  })
-                  .catch((e: any) => {
-                    const msg = typeof e === 'string' ? e : (e?.message || 'Failed to create post');
-                    if (imagePreview) {
-                      try {
-                        const currentUsername = (() => {
-                          try {
-                            return (
-                              username ||
-                              localStorage.getItem('username') ||
-                              localStorage.getItem('userName') ||
-                              localStorage.getItem('profileusername') ||
-                              ''
-                            );
-                          } catch { return ''; }
-                        })();
-                        const currentName = (() => {
-                          try {
-                            return (
-                              [firstname, lastname].filter(Boolean).join(' ') ||
-                              localStorage.getItem('fullname') ||
-                              localStorage.getItem('fullName') ||
-                              localStorage.getItem('name') ||
-                              ''
-                            );
-                          } catch { return ''; }
-                        })();
-                        const localPost: any = {
-                          postid: Date.now(),
-                          userid: userid || 'you',
-                          content: postcontent,
-                          posttype: 'text',
-                          image: "", // blob/object URL for demo
-                          createdAt: new Date().toISOString(),
-                          username: currentUsername || 'you',
-                          name: currentName || currentUsername || 'You',
-                          handle: currentUsername || undefined,
-                        };
-                        const nextPosts = [localPost, ...(Array.isArray(posts) ? posts : [])];
-                        try { localStorage.setItem('feedPosts', JSON.stringify(nextPosts)); } catch { }
-                        dispatch(hydrateFromCache(nextPosts as any));
-                        toast.success('Post created (local demo)', { autoClose: 800 });
-                        setTimeout(() => router.push('/'), 100);
-                        return;
-                      } catch { }
-                    }
-                    toast.error(msg);
-                  });
-              } catch (e: any) {
-                const msg = typeof e === 'string' ? e : (e?.message || 'Failed to create post');
-                toast.error(msg);
-              } finally {
-                // Only reset loading states on error, success is handled in .then()
-                setUploading(false);
-                setLoading(false);
-              }
-            }}
-            className="w-full py-2 font-semibold text-white transition bg-orange-600 rounded-lg hover:bg-orange-500 disabled:opacity-60 flex items-center justify-center gap-2"
+            disabled={loading || (!postcontent.trim() && selectedFiles.length === 0)}
+            onClick={handlePostClick}
+            className="px-6 py-2 font-semibold text-white transition bg-orange-600 rounded-lg hover:bg-orange-500 disabled:opacity-60 flex items-center justify-center gap-2 min-w-[100px]"
           >
             {loading && (
               <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -537,264 +249,9 @@ export const Mainpost = () => {
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
             )}
-            {loading ? "Posting" : "Post"}
+            {uploadProgress ? `Uploading ${uploadProgress.current}/${uploadProgress.total}` : loading ? "Posting" : "Post"}
           </button>
         </div>
-      </div>
-
-      {/* Image Upload Section */}
-      <div className="space-y-3 p-4 border border-gray-500 border-dashed rounded-lg">
-        <div className="flex items-center gap-3">
-          <FaImage className="text-xl text-green-400" />
-          <span className="text-sm">Upload image</span>
-        </div>
-
-        <FileInput
-          label="Click to post image"
-          name="image"
-          accept="image/*"
-          icon={<FaImage />}
-          openAsModal
-          onOpenModal={() => setShowImageModal(true)}
-        />
-        <div className="flex gap-3" />
-      </div>
-      {showImageModal && (
-        <div className="fixed inset-0 bg-black/60" style={{ zIndex: 1000 }}>
-          <div className="w-full h-full bg-[#0b0f1f] flex flex-col">
-            {/* Fixed Header */}
-            <div className="flex items-center justify-between p-4 border-b border-gray-700 flex-shrink-0">
-              <button
-                onClick={() => {
-                  setShowImageModal(false);
-                  setImageFile(undefined);
-                  setImagePreview("");
-                  setUploading(false);
-                }}
-                className="text-gray-300 hover:text-white"
-                aria-label="Back"
-              >
-                ←
-              </button>
-              <h3 className="text-lg font-semibold">Post</h3>
-              <button
-                onClick={() => {
-                  setShowImageModal(false);
-                  setImageFile(undefined);
-                  setImagePreview("");
-                  setUploading(false);
-                }}
-                className="text-gray-300 hover:text-white"
-                aria-label="Close"
-              >
-                ✕
-              </button>
-            </div>
-            {/* Scrollable Content */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
-              <div
-                className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-gray-600 rounded-xl hover:bg-[#111624] cursor-pointer"
-                onClick={() => {
-                  const el = document.getElementById('image-upload-modal') as HTMLInputElement | null;
-                  if (el && !uploading) el.click();
-                }}
-                onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
-                onDrop={async (e) => {
-                  e.preventDefault();
-                  if (uploading) return;
-                  const file = e.dataTransfer.files?.[0];
-                  if (file && file.type.startsWith('image/')) {
-                    await handleImageSelected(file);
-                  } else {
-                    toast.error('Only image files are allowed');
-                  }
-                }}
-              >
-                <FaPlus className="w-10 h-10 mb-2 text-slate-300 opacity-70" />
-                <p className="text-slate-300">
-                  {uploading ? 'Uploading…' : 'Click or drag an image to upload'}
-                </p>
-                <input
-                  id="image-upload-modal"
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={async (e) => {
-                    const file = e.target.files?.[0] || undefined;
-                    if (!file) return;
-                    await handleImageSelected(file);
-                  }}
-                />
-              </div>
-
-              <div
-                className="mt-2 border border-gray-700 rounded-xl min-h-[400px] flex items-center justify-center bg-[#0b1026]"
-              >
-                {imagePreview && (
-                  <img
-                    src={imagePreview}
-                    alt="preview"
-                    className="max-w-full object-contain rounded-md"
-                    onError={(e) => {
-                      (e.currentTarget as HTMLImageElement).src = "/fallback.jpg"; // 👈 replace with your fallback asset
-                    }}
-                  />
-                )}
-              </div>
-
-              <textarea
-                className="w-full h-40 p-2 rounded-lg bg-[#2a2a2a] text-gray-200 placeholder-gray-400 resize-none focus:outline-none focus:ring-2 focus:ring-orange-500"
-                placeholder="What's on your mind? Use #hashtags to make your post discoverable"
-                value={postcontent}
-                onChange={(e) => setpostcontent(e.target.value)}
-              />
-              <p className="text-xs text-gray-400 mt-1">
-                Tip: Add hashtags like #fun #lifestyle to help others discover your posts
-              </p>
-            </div>
-            {/* Fixed Footer */}
-            <div className="flex items-center justify-end gap-3 p-4 border-t border-gray-700 flex-shrink-0">
-              <button
-                disabled={loading}
-                className="w-full py-2 font-semibold text-white transition bg-green-600 hover:bg-green-500 rounded-lg disabled:opacity-60 flex items-center justify-center gap-2"
-                onClick={() => handleUploadStart('image')}
-              >
-                {uploading && (
-                  <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                )}
-                {uploading ? 'Uploading…' : (imageFile ? 'Post' : 'Choose image')}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Video Modal */}
-      {showVideoModal && (
-        <div className="fixed inset-0 bg-black/60" style={{ zIndex: 1000 }}>
-          <div className="w-full h-full bg-[#0b0f1f] flex flex-col">
-            {/* Fixed Header */}
-            <div className="flex items-center justify-between p-4 border-b border-gray-700 flex-shrink-0">
-              <button
-                onClick={() => {
-                  setShowVideoModal(false);
-                  setVideoFile(undefined);
-                  setVideoPreview("");
-                  setVideoCaption("");
-                  setVideoUploading(false);
-                  setUploading(false);
-                }}
-                className="text-gray-300 hover:text-white"
-                aria-label="Back"
-              >
-                ←
-              </button>
-              <h3 className="text-lg font-semibold">Post</h3>
-              <button
-                onClick={() => {
-                  setShowVideoModal(false);
-                  setVideoFile(undefined);
-                  setVideoPreview("");
-                  setVideoCaption("");
-                  setVideoUploading(false);
-                  setUploading(false);
-                }}
-                className="text-gray-300 hover:text-white"
-                aria-label="Close"
-              >
-                ✕
-              </button>
-            </div>
-            {/* Scrollable Content */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
-              <div
-                className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-gray-600 rounded-xl hover:bg-[#111624] cursor-pointer"
-                onClick={() => {
-                  const el = document.getElementById('video-upload-modal') as HTMLInputElement | null;
-                  if (el && !videoUploading) el.click();
-                }}
-                onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
-                onDrop={async (e) => {
-                  e.preventDefault();
-                  if (videoUploading) return;
-                  const file = e.dataTransfer.files?.[0];
-                  if (file && file.type.startsWith('video/')) {
-                    const url = URL.createObjectURL(file);
-                    setVideoFile(file);
-                    setVideoPreview(url);
-                  } else {
-                    toast.error('Only video files are allowed');
-                  }
-                }}
-              >
-                <FaPlus className="w-10 h-10 mb-2 text-slate-300 opacity-70" />
-                <p className="text-slate-300">
-                  {videoUploading ? 'Uploading…' : 'Click or drag a video to upload'}
-                </p>
-                <input
-                  id="video-upload-modal"
-                  type="file"
-                  accept="video/*"
-                  className="hidden"
-                  onChange={async (e) => {
-                    const file = e.target.files?.[0] || undefined;
-                    if (!file) return;
-
-                    const url = URL.createObjectURL(file);
-                    setVideoFile(file);
-                    setVideoPreview(url);
-                  }}
-                />
-              </div>
-
-              <div className="mt-2 border border-gray-700 rounded-xl min-h-[400px] flex items-center justify-center bg-[#0b1026] overflow-hidden">
-                {videoPreview ? (
-                  <video src={videoPreview} controls className="w-full h-full object-contain" />
-                ) : (
-                  <p className="text-slate-300">Preview Upload</p>
-                )}
-              </div>
-
-              <textarea
-                className="w-full h-40 p-2 rounded-lg bg-[#2a2a2a] text-gray-200 placeholder-gray-400 resize-none focus:outline-none focus:ring-2 focus:ring-orange-500"
-                placeholder="What's on your mind? Use #hashtags to make your post discoverable"
-                value={videoCaption}
-                onChange={(e) => setVideoCaption(e.target.value)}
-              />
-              <p className="text-xs text-gray-400 mt-1">
-                Tip: Add hashtags like #fun #lifestyle to help others discover your posts
-              </p>
-            </div>
-            {/* Fixed Footer */}
-            <div className="flex items-center justify-end gap-3 p-4 border-t border-gray-700 flex-shrink-0">
-              <button
-                disabled={videoUploading || !videoFile}
-                className="w-full py-2 font-semibold text-white transition bg-green-600 hover:bg-green-500 rounded-lg disabled:opacity-60 flex items-center justify-center gap-2"
-                onClick={() => handleUploadStart('video')}
-              >
-                {videoUploading && (
-                  <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                )}
-                {videoUploading ? 'Uploading…' : (videoFile ? 'Post' : 'Choose video')}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Video Upload Section */}
-      <div
-        className="flex items-center gap-3 p-4 transition border border-gray-500 border-dashed rounded-lg cursor-pointer hover:bg-[#111624]"
-        onClick={() => setShowVideoModal(true)}
-      >
-        <FaVideo className="text-xl text-purple-400" />
-        <span className="text-sm">Click to post video</span>
       </div>
 
       {showBanWarning && (
@@ -817,17 +274,17 @@ export const Mainpost = () => {
             </div>
             <div className="flex items-center justify-end gap-3 p-4 border-t border-gray-700">
               <button
-                onClick={() => {
-                  setShowBanWarning(false);
-                  setUploading(false);
-                  setVideoUploading(false);
-                }}
+                onClick={() => setShowBanWarning(false)}
                 className="px-4 py-2 text-gray-300 hover:text-white transition"
               >
                 Cancel
               </button>
               <button
-                onClick={() => agreedToPolicy && handleContinueUpload(showImageModal ? 'image' : 'video')}
+                onClick={() => {
+                  if (!agreedToPolicy) return;
+                  setShowBanWarning(false);
+                  submitPost();
+                }}
                 disabled={!agreedToPolicy}
                 className="px-4 py-2 font-semibold text-white bg-orange-600 rounded-lg hover:bg-orange-500 disabled:opacity-60"
               >
@@ -838,30 +295,12 @@ export const Mainpost = () => {
         </div>
       )}
 
-     <FileLimitPopup
-  open={showSizeWarning}
-  type={fileTypeForSizeWarning || "video"}
-  onClose={() => setShowSizeWarning(false)}
-  onChooseDifferent={() => {
-    setShowSizeWarning(false);
-
-    if (fileTypeForSizeWarning === "image") {
-      setShowImageModal(true);
-    } else {
-      setShowVideoModal(true);
-    }
-  }}
-/>
+      <FileLimitPopup
+        open={showSizeWarning}
+        type={oversizedFileType || "video"}
+        onClose={() => setShowSizeWarning(false)}
+        onChooseDifferent={() => setShowSizeWarning(false)}
+      />
     </div>
   );
 };
-
-// Helper component to cleanup object URLs when they change/unmount
-function CleanupObjectUrl({ url }: { url: string }) {
-  useEffect(() => {
-    return () => {
-      try { URL.revokeObjectURL(url); } catch { }
-    };
-  }, [url]);
-  return null;
-}

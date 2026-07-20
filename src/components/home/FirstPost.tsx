@@ -19,6 +19,7 @@ import { useVideoAutoPlay } from "@/hooks/useVideoAutoPlayNew";
 import ExpandableText from "../ExpandableText";
 import { generateInitials } from "@/utils/generateInitials";
 import { BadgeCheck } from "lucide-react";
+import PostMediaCollage from "./PostMediaCollage";
 
 
 // Utility function to format relative time
@@ -250,6 +251,8 @@ const FirstPost: React.FC<FirstPostProps> = ({
   };
 
   if (!post) return null;
+
+  const mediaItemsArr = Array.isArray(post?.mediaItems) ? post.mediaItems.filter((m: any) => m && m.url) : [];
 
   let postType: string = post?.posttype || post?.type || "text";
   if (!postType) {
@@ -496,7 +499,11 @@ className={`text-white px-2 bg-gradient-to-r from-[#6c63ff] to-[#9b59f5] cursor-
         />
       )}
 
-      {postType == "image" && src && (
+      {mediaItemsArr.length > 1 && (
+        <PostMediaCollage items={mediaItemsArr} />
+      )}
+
+      {mediaItemsArr.length <= 1 && postType == "image" && src && (
         <div className="w-full aspect-[4/5] relative rounded overflow-hidden">
           <Image
             src={src}
@@ -531,7 +538,7 @@ className={`text-white px-2 bg-gradient-to-r from-[#6c63ff] to-[#9b59f5] cursor-
         </div>
       )}
 
-      {postType == "video" && src && (
+      {mediaItemsArr.length <= 1 && postType == "video" && src && (
         <div className="relative w-full aspect-[4/5] rounded overflow-hidden">
           {/* Video skeleton - show while video is loading and no poster is available */}
           {!isVideoLoaded && !posterSource && (

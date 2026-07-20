@@ -95,6 +95,45 @@ const initialState: PostState = {
   postphoto: null,
 };
 
+export const createMultiMediaPost = createAsyncThunk(
+  "post/createMultiMediaPost",
+  async (payload: {
+    userid: string;
+    token: string;
+    content: string;
+    mediaItems: { url: string; publicId: string; type: "image" | "video" }[];
+    authorUsername?: string;
+    authorName?: string;
+    handle?: string;
+  }) => {
+    try {
+      const api = backend(String(payload.token));
+      const posttype = payload.mediaItems.length > 1 ? "mixed" : (payload.mediaItems[0]?.type || "image");
+
+      const resPost = await api.post("/post", {
+        userid: payload.userid,
+        content: payload.content,
+        posttype,
+        mediaItems: payload.mediaItems,
+        authorUsername: payload.authorUsername,
+        authorName: payload.authorName,
+        handle: payload.handle,
+      });
+
+      return resPost.data;
+    } catch (err: any) {
+      let message = "Upload failed";
+      if (err?.response?.data) {
+        const d = err.response.data;
+        message = typeof d === "string" ? d : d?.message || JSON.stringify(d);
+      } else if (typeof err?.message === "string") {
+        message = err.message;
+      }
+      throw message;
+    }
+  }
+);
+
 export const getallpost = createAsyncThunk("post/getallpost", async (data: any) => {
   try {
     // Get posts

@@ -20,6 +20,7 @@ import { useVideoAutoPlay } from "@/hooks/useVideoAutoPlayNew";
 import ExpandableText from "../ExpandableText";
 import { generateInitials } from "@/utils/generateInitials";
 import { BadgeCheck } from "lucide-react";
+import PostMediaCollage from "./PostMediaCollage";
 
 
 // Video component for lazy-loaded videos - moved outside to prevent re-creation
@@ -575,6 +576,8 @@ const LazyPost: React.FC<LazyPostProps> = ({
     );
   }
 
+  const mediaItemsArr = Array.isArray(post?.mediaItems) ? post.mediaItems.filter((m: any) => m && m.url) : [];
+
   let postType: string = post?.posttype || post?.type || "text";
   if (!postType) {
     if (post?.postphoto || post?.image) postType = "image";
@@ -814,7 +817,11 @@ className={`text-white px-2 bg-gradient-to-r from-[#6c63ff] to-[#9b59f5] cursor-
         />
       )}
 
-      {postType == "image" && src && (
+      {mediaItemsArr.length > 1 && (
+        <PostMediaCollage items={mediaItemsArr} />
+      )}
+
+      {mediaItemsArr.length <= 1 && postType == "image" && src && (
         <div className="w-full aspect-[4/5] relative rounded overflow-hidden">
           <LazyImage
             src={src}
@@ -831,7 +838,7 @@ className={`text-white px-2 bg-gradient-to-r from-[#6c63ff] to-[#9b59f5] cursor-
       }
 
       {
-        postType == "video" && src && (
+        mediaItemsArr.length <= 1 && postType == "video" && src && (
           <VideoComponent
             post={post}
             src={src}
