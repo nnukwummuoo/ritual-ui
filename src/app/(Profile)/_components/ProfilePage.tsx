@@ -66,6 +66,8 @@ import VIPBadge from "@/components/VIPBadge";
 
 import { checkVipCelebration, markVipCelebrationViewed } from "@/api/vipCelebration";
 
+import PostMediaCollage from "@/components/home/PostMediaCollage";
+
 
 
 // Add the same constants from PostsCard
@@ -3302,6 +3304,7 @@ const isFanVerified = isViewingOwnProfile
             {userPosts.map((post, index) => {
 
               const { src, postType, pathUrlPrimary, queryUrlFallback, pathUrlFallback, posterSource } = getMediaSource(post);
+              const mediaItemsArr = Array.isArray(post?.mediaItems) ? post.mediaItems.filter((m: any) => m && m.url) : [];
 
 
 
@@ -3518,14 +3521,14 @@ const isFanVerified = isViewingOwnProfile
 
 
                   {/* Post Media */}
+{mediaItemsArr.length > 1 && (
+  <PostMediaCollage items={mediaItemsArr} />
+)}
 
-                  {postType === "image" && src && (
-
-                    <div className="w-full max-h-[400px] relative rounded overflow-hidden">
-
-                      <Image
-
-                        src={src}
+{mediaItemsArr.length <= 1 && postType === "image" && src && (
+  <div className="w-full max-h-[400px] relative rounded overflow-hidden">
+    <Image
+      src={src}
 
                         alt={post?.content || "post image"}
 
@@ -3594,10 +3597,8 @@ const isFanVerified = isViewingOwnProfile
                   )}
 
 
-
-                  {postType === "video" && src && (
-
-                    <VideoComponent
+{mediaItemsArr.length <= 1 && postType === "video" && src && (
+  <VideoComponent
 
                       post={post}
 
