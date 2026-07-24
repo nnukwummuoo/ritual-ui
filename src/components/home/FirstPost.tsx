@@ -445,12 +445,12 @@ const clampAspectRatio = (ratio: number) => {
             {(() => {
               // Check if current user is VIP
               if (isSelf && vipStatus?.isVip) {
-                return <VIPBadge size="xl" className="absolute -top-5 -right-5" isVip={vipStatus.isVip} vipEndDate={vipStatus.vipEndDate} />;
+              return <VIPBadge size="md" className="absolute -top-1.5 -right-1.5" isVip={vipStatus.isVip} vipEndDate={vipStatus.vipEndDate} />;
               }
 
               // Check if post author is VIP
               if (!isSelf && post?.user?.isVip) {
-                return <VIPBadge size="xl" className="absolute -top-5 -right-5" isVip={post.user.isVip} vipEndDate={post.user.vipEndDate} />;
+                return <VIPBadge size="md" className="absolute -top-1.5 -right-1.5" isVip={post.user.isVip} vipEndDate={post.user.vipEndDate} />;
               }
 
               return null;
@@ -465,7 +465,7 @@ const clampAspectRatio = (ratio: number) => {
                 e.stopPropagation();
                 router.push(`/${post?.user?.username || postAuthorId}`);
               }}>
-                {post?.user?.firstname} {post?.user?.lastname}
+                {post?.user?.firstname}
                 {(() => {
                   const isVerified = post?.user?.creator_verified;
                   return isVerified && (
@@ -487,6 +487,7 @@ const clampAspectRatio = (ratio: number) => {
               )}
             </div>
           </div>
+          {/* Hosttype/portfolio button — disabled for now, uncomment to re-enable
           {post?.user?.creator_portfolio_id && (
             <div className="flex items-end gap-1">
               <button
@@ -494,8 +495,10 @@ const clampAspectRatio = (ratio: number) => {
 className={`text-white px-2 bg-gradient-to-r from-[#6c63ff] to-[#9b59f5] cursor-pointer text-sm py-1 rounded shadow-[0_2px_8px_rgba(108,99,255,0.4)] ${shouldAnimate ? 'animate-wiggle-periodic' : ''}`}>                {post?.user?.hosttype}
               </button>
             </div>)}
+            */}
         </div>
       </div>
+      
 
 
       {post?.content && (
