@@ -35,7 +35,7 @@ export default function PostMediaCollage({ items }: { items: MediaItem[] }) {
     <>
       <div className="w-full">
         {items.length === 1 && (
-          <div className="w-full aspect-square">
+          <div className="w-full aspect-[4/5] rounded-xl overflow-hidden">
             <Tile item={items[0]} index={0} className="w-full h-full" />
           </div>
         )}

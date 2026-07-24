@@ -172,6 +172,14 @@ const FirstPost: React.FC<FirstPostProps> = ({
   const [selectedImage, setSelectedImage] = React.useState("");
   const router = useRouter();
 
+  const [mediaAspectRatio, setMediaAspectRatio] = React.useState<number | null>(null);
+
+const clampAspectRatio = (ratio: number) => {
+  const MIN_RATIO = 4 / 5;   // tallest allowed (portrait)
+  const MAX_RATIO = 1.91;    // widest allowed (landscape)
+  return Math.min(MAX_RATIO, Math.max(MIN_RATIO, ratio));
+};
+
   // State for animation - always true since FirstPost is always visible
   const [isInView] = React.useState(true);
   const [shouldAnimate, setShouldAnimate] = React.useState(false);
@@ -382,12 +390,12 @@ const FirstPost: React.FC<FirstPostProps> = ({
 
 
   return (
-    <div className="mx-auto max-w-[30rem] w-full bg-[#111624] rounded-md p-3">
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-3 w-full">
+   <div className="mx-auto max-w-[30rem] w-full bg-[#111624] rounded-2xl p-3.5">
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center gap-2.5 w-full">
           <div className="relative">
             <div
-              className="size-10 rounded-full overflow-hidden bg-gray-700 cursor-pointer hover:opacity-80 transition-opacity"
+              className="size-8 rounded-full overflow-hidden bg-gray-700 cursor-pointer hover:opacity-80 transition-opacity flex-shrink-0"
               onClick={(e) => {
                 e.stopPropagation();
                 router.push(`/${post?.user?.username || postAuthorId}`);
@@ -452,21 +460,32 @@ const FirstPost: React.FC<FirstPostProps> = ({
             className="flex-1 cursor-pointer"
 
           >
-            <p className="font-medium text-white flex items-center gap-1 text-sm sm:text-base" onClick={(e) => {
-              e.stopPropagation();
-              router.push(`/${post?.user?.username || postAuthorId}`);
-            }}>
-              {post?.user?.firstname} {post?.user?.lastname}
-              {(() => {
-                const isVerified = post?.user?.creator_verified;
-                return isVerified && (
-                  <>
-                    <span> <BadgeCheck size={17} fill="white" className="text-black" /> </span>
-                  </>
-                );
-              })()}
-            </p>
-            <span className="text-gray-400 text-xs sm:text-sm">{handleStr ? `${handleStr}` : ""}</span>
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <p className="font-semibold text-white flex items-center gap-1 text-[14.5px] leading-tight" onClick={(e) => {
+                e.stopPropagation();
+                router.push(`/${post?.user?.username || postAuthorId}`);
+              }}>
+                {post?.user?.firstname} {post?.user?.lastname}
+                {(() => {
+                  const isVerified = post?.user?.creator_verified;
+                  return isVerified && (
+                    <BadgeCheck size={15} fill="white" className="text-black" />
+                  );
+                })()}
+              </p>
+              {handleStr && <span className="text-gray-500 text-[13px]">{handleStr}</span>}
+              {post?.createdAt && (
+                <>
+                  <span className="text-gray-600 text-[13px]">·</span>
+                  <span className="text-gray-500 text-[13px]">
+                    {(() => {
+                      const formatted = formatRelativeTime(post.createdAt);
+                      return formatted === 'Invalid time' || formatted === 'Unknown time' ? 'recently' : formatted;
+                    })()}
+                  </span>
+                </>
+              )}
+            </div>
           </div>
           {post?.user?.creator_portfolio_id && (
             <div className="flex items-end gap-1">
@@ -478,24 +497,12 @@ className={`text-white px-2 bg-gradient-to-r from-[#6c63ff] to-[#9b59f5] cursor-
         </div>
       </div>
 
-      {post?.createdAt && (
-        <p className="my-3 text-gray-400 text-sm cursor-pointer" >
-          {(() => {
-            const formatted = formatRelativeTime(post.createdAt);
-            if (formatted === 'Invalid time' || formatted === 'Unknown time') {
-              return 'recently';
-            }
-            return formatted;
-          })()}
-        </p>
-      )}
 
       {post?.content && (
         <ExpandableText
           text={post.content}
           maxLength={100}
-          className="my-2"
-
+          className="mb-2.5 text-[14.5px] leading-snug"
         />
       )}
 
@@ -504,14 +511,23 @@ className={`text-white px-2 bg-gradient-to-r from-[#6c63ff] to-[#9b59f5] cursor-
       )}
 
       {mediaItemsArr.length <= 1 && postType == "image" && src && (
-        <div className="w-full aspect-[4/5] relative rounded overflow-hidden">
+        <div
+          className="w-full relative rounded-xl overflow-hidden bg-black"
+          style={{ aspectRatio: mediaAspectRatio ? clampAspectRatio(mediaAspectRatio) : 4 / 5 }}
+        >
           <Image
             src={src}
             alt={post?.content || "post image"}
             width={800}
             height={400}
-            className="w-full h-full aspect-[4/5] object-cover cursor-pointer hover:opacity-90 transition-opacity duration-200"
+            className="w-full h-full object-cover cursor-pointer hover:opacity-95 transition-opacity duration-200"
             onClick={() => openModal(src)}
+            onLoad={(e) => {
+              const img = e.currentTarget as HTMLImageElement;
+              if (img.naturalWidth && img.naturalHeight) {
+                setMediaAspectRatio(img.naturalWidth / img.naturalHeight);
+              }
+            }}
             onError={(e) => {
               const img = e.currentTarget as HTMLImageElement & { dataset: any };
               if (!img.dataset.fallback1 && pathUrlPrimary) {
@@ -539,7 +555,10 @@ className={`text-white px-2 bg-gradient-to-r from-[#6c63ff] to-[#9b59f5] cursor-
       )}
 
       {mediaItemsArr.length <= 1 && postType == "video" && src && (
-        <div className="relative w-full aspect-[4/5] rounded overflow-hidden">
+        <div
+          className="relative w-full rounded-xl overflow-hidden bg-black"
+          style={{ aspectRatio: mediaAspectRatio ? clampAspectRatio(mediaAspectRatio) : 4 / 5 }}
+        >
           {/* Video skeleton - show while video is loading and no poster is available */}
           {!isVideoLoaded && !posterSource && (
             <VideoSkeleton />
@@ -567,9 +586,15 @@ className={`text-white px-2 bg-gradient-to-r from-[#6c63ff] to-[#9b59f5] cursor-
               playsInline
               preload="metadata"
               poster={posterSource}
-              className={`w-full object-cover rounded cursor-pointer transition-all ${isFullscreen ? 'h-screen' : 'aspect-[4/5]'}`}
+              className={`w-full h-full object-cover cursor-pointer transition-all ${isFullscreen ? 'h-screen' : ''}`}
               onLoadedData={() => {
                 setIsVideoLoaded(true);
+              }}
+              onLoadedMetadata={(e) => {
+                const video = e.currentTarget;
+                if (video.videoWidth && video.videoHeight) {
+                  setMediaAspectRatio(video.videoWidth / video.videoHeight);
+                }
               }}
               onTimeUpdate={(e) => {
                 const video = e.currentTarget;
@@ -764,7 +789,7 @@ className={`text-white px-2 bg-gradient-to-r from-[#6c63ff] to-[#9b59f5] cursor-
       )}
 
       <PostActions
-        className="mt-3 border-t border-gray-700 pt-2"
+        className="mt-2.5 pt-1"
         starred={uiIsFollowing}
         liked={uiLiked}
         likeCount={uiLikeCount}
