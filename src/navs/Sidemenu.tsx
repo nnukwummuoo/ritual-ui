@@ -270,7 +270,7 @@ const Sidemenu = () => {
               </div>
               <div>
                 <div className="sb-uname">{fullName}</div>
-                <div className="sb-tier">{isVip ? "⭐ VIP Member" : "⭐ Basic Member"}</div>
+               <div className="sb-tier">{isVip ? "⭐ VIP Member" : verified ? "✓ Verified Creator" : "⭐ Basic Member"}</div>
                 <div className="sb-handle">{username}</div>
               </div>
             </div>
