@@ -181,6 +181,7 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
       loop: true,
       postId: post?._id || post?.postid || post?.id || `post-${Math.random()}`
     });
+    const [aspectRatio, setAspectRatio] = React.useState<number | null>(null);
 
     // State and ref for auto-hiding video controls
     const [showControls, setShowControls] = React.useState(false);
@@ -219,7 +220,10 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
     }, []);
 
     return (
-      <div className="relative w-full aspect-[4/5] rounded overflow-hidden">
+      <div
+        className="relative w-full rounded-xl overflow-hidden bg-black"
+        style={{ aspectRatio: aspectRatio ? Math.min(1.91, Math.max(4 / 5, aspectRatio)) : 4 / 5 }}
+      >
         {/* Video skeleton - show while video is loading */}
         {!isVideoLoaded && (
           <VideoSkeleton />
@@ -239,15 +243,21 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
             }, 1000); // Changed from 3000ms to 1000ms
           }}
         >
-          <video
+         <video
             ref={videoRef}
             src={src}
             muted
             loop
             playsInline
-            className={`w-full object-cover rounded cursor-pointer transition-all ${isFullscreen ? 'h-screen' : 'aspect-[4/5]'}`}
+            className={`w-full h-full object-cover cursor-pointer transition-all ${isFullscreen ? 'h-screen' : ''}`}
             onLoadedData={() => {
               setIsVideoLoaded(true);
+            }}
+            onLoadedMetadata={(e) => {
+              const video = e.currentTarget;
+              if (video.videoWidth && video.videoHeight) {
+                setAspectRatio(video.videoWidth / video.videoHeight);
+              }
             }}
             onTimeUpdate={(e) => {
               const video = e.currentTarget;
@@ -447,6 +457,14 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
   const [isModalOpen, setIsModalOpen] = React.useState(false);
   const [selectedImage, setSelectedImage] = React.useState("");
 
+  const [mediaAspectRatios, setMediaAspectRatios] = React.useState<Record<string, number>>({});
+
+const clampAspectRatio = (ratio: number) => {
+  const MIN_RATIO = 4 / 5;
+  const MAX_RATIO = 1.91;
+  return Math.min(MAX_RATIO, Math.max(MIN_RATIO, ratio));
+};
+
   // Modal functions
   const openModal = (imageSrc: string) => {
     setSelectedImage(imageSrc);
@@ -472,6 +490,8 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
     <>
       {posts.map((p: any, idx: number) => {
         const mediaItemsArr = Array.isArray(p?.mediaItems) ? p.mediaItems.filter((m: any) => m && m.url) : [];
+        const pidForRatio = p?.postid || p?.id || p?._id || idx;
+        const currentAspectRatio = mediaAspectRatios[pidForRatio];
         let postType: string = p?.posttype || p?.type || "text";
         if (!postType) {
           if (p?.postphoto || p?.image) postType = "image";
@@ -575,12 +595,12 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
         const uiIsFollowing = uiState.isFollowing ?? false;
 
         return (
-          <div key={`${p?.postid || p?.id || idx}`} className="mx-auto max-w-[30rem] w-full bg-[#111624] rounded-md p-3">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-3">
+          <div key={`${p?.postid || p?.id || idx}`} className="mx-auto max-w-[30rem] w-full bg-[#111624] rounded-2xl p-3.5">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2.5">
                 <div className="relative">
                   <div
-                    className="size-10 rounded-full overflow-hidden bg-gray-700 cursor-pointer hover:opacity-80 transition-opacity"
+                    className="size-8 rounded-full overflow-hidden bg-gray-700 cursor-pointer hover:opacity-80 transition-opacity flex-shrink-0"
                     onClick={(e) => {
                       e.stopPropagation();
                       router.push(`/${post?.user?.username || postAuthorId}`);
@@ -630,50 +650,47 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
                   {(() => {
                     // Check if current user is VIP
                     if (isSelf && vipStatus?.isVip) {
-                      return <VIPBadge size="xl" className="absolute -top-5 -right-5" isVip={vipStatus.isVip} vipEndDate={vipStatus.vipEndDate} />;
+                      return <VIPBadge size="md" className="absolute -top-1.5 -right-1.5" isVip={vipStatus.isVip} vipEndDate={vipStatus.vipEndDate} />;
                     }
 
                     // Check if post author is VIP
                     if (!isSelf && p?.user?.isVip) {
-                      return <VIPBadge size="xl" className="absolute -top-5 -right-5" isVip={p.user.isVip} vipEndDate={p.user.vipEndDate} />;
+                    return <VIPBadge size="md" className="absolute -top-1.5 -right-1.5" isVip={p.user.isVip} vipEndDate={p.user.vipEndDate} />;
                     }
 
                     return null;
                   })()}
                 </div>
-                <div
-                  className="flex-1 cursor-pointer"
-
-                >
-                  <p className="font-medium text-white"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      router.push(`/${post?.user?.username || postAuthorId}`);
-                    }}
-                  >{p?.user?.firstname} {p?.user?.lastname}</p>
-                  <span className="text-gray-400 text-sm">{handleStr ? `${handleStr}` : ""}</span>
+              <div className="flex-1 cursor-pointer">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <p className="font-semibold text-white text-[14.5px] leading-tight"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        router.push(`/${p?.user?.username || postAuthorId}`);
+                      }}
+                    >{p?.user?.firstname}</p>
+                    {handleStr && <span className="text-gray-500 text-[13px]">{handleStr}</span>}
+                    {p?.createdAt && (
+                      <>
+                        <span className="text-gray-600 text-[13px]">·</span>
+                        <span className="text-gray-500 text-[13px]">
+                          {(() => {
+                            const formatted = formatRelativeTime(p.createdAt);
+                            return formatted === 'Invalid time' || formatted === 'Unknown time' ? 'recently' : formatted;
+                          })()}
+                        </span>
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
 
-            {p?.createdAt && (
-              <p className="my-3 text-gray-400 text-sm cursor-pointer" >
-                {(() => {
-                  const formatted = formatRelativeTime(p.createdAt);
-                  if (formatted === 'Invalid time' || formatted === 'Unknown time') {
-                    return 'recently';
-                  }
-                  return formatted;
-                })()}
-              </p>
-            )}
-
-            {p?.content && (
+           {p?.content && (
               <ExpandableText
                 text={p.content}
                 maxLength={100}
-                className="my-2"
-
+                className="mb-2.5 text-[14.5px] leading-snug"
               />
             )}
 
@@ -682,14 +699,23 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
             )}
 
             {mediaItemsArr.length <= 1 && postType == "image" && src && (
-              <div className="w-full aspect-[4/5] relative rounded overflow-hidden">
+              <div
+                className="w-full relative rounded-xl overflow-hidden bg-black"
+                style={{ aspectRatio: currentAspectRatio ? clampAspectRatio(currentAspectRatio) : 4 / 5 }}
+              >
                 <Image
                   src={src}
                   alt={p?.content || "post image"}
                   width={800}
                   height={400}
-                  className="w-full h-full aspect-[4/5] object-cover cursor-pointer hover:opacity-90 transition-opacity duration-200"
+                  className="w-full h-full object-cover cursor-pointer hover:opacity-95 transition-opacity duration-200"
                   onClick={() => openModal(src)}
+                  onLoad={(e) => {
+                    const img = e.currentTarget as HTMLImageElement;
+                    if (img.naturalWidth && img.naturalHeight) {
+                      setMediaAspectRatios((prev) => ({ ...prev, [pidForRatio]: img.naturalWidth / img.naturalHeight }));
+                    }
+                  }}
                   onError={(e) => {
                     const img = e.currentTarget as HTMLImageElement & { dataset: any };
                     if (!img.dataset.fallback1 && pathUrlPrimary) {
@@ -727,7 +753,7 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
             )}
 
             <PostActions
-              className="mt-3 border-t border-gray-700 pt-2"
+              className="mt-2.5 pt-1"
               starred={uiIsFollowing}
               liked={uiLiked}
               likeCount={uiLikeCount}
