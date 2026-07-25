@@ -417,6 +417,14 @@ export const Profile = () => {
 
   const [showProfilePictureModal, setShowProfilePictureModal] = useState(false);
 
+  const [profilePostAspectRatios, setProfilePostAspectRatios] = useState<Record<string, number>>({});
+
+const clampAspectRatio = (ratio: number) => {
+  const MIN_RATIO = 4 / 5;
+  const MAX_RATIO = 1.91;
+  return Math.min(MAX_RATIO, Math.max(MIN_RATIO, ratio));
+};
+
 
 
   // VIP status state for the profile owner (the user whose profile is being viewed)
@@ -3346,19 +3354,13 @@ const isFanVerified = isViewingOwnProfile
 
                   data-post-id={post._id || post.postid || post.id}
 
-                  className="mx-auto max-w-[30rem] w-full bg-[#111624] rounded-md p-3"
-
+                 className="mx-auto max-w-[30rem] w-full bg-[#111624] rounded-2xl p-3.5"
                 >
-
                   {/* Post Header */}
-
-                  <div className="flex items-center justify-between mb-3">
-
-                    <div className="flex items-center gap-3">
-
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2.5">
                       <div className="relative">
-
-                        <div className="size-10 rounded-full overflow-hidden bg-gray-700">
+                        <div className="size-8 rounded-full overflow-hidden bg-gray-700 flex-shrink-0">
 
                           {(() => {
 
@@ -3420,7 +3422,7 @@ const isFanVerified = isViewingOwnProfile
 
                           if (isViewingOwnProfile && vipStatus?.isVip) {
 
-                            return <VIPBadge size="xl" className="absolute -top-5 -right-5" isVip={vipStatus.isVip} vipEndDate={vipStatus.vipEndDate} />;
+                          return <VIPBadge size="md" className="absolute -top-1.5 -right-1.5" isVip={vipStatus.isVip} vipEndDate={vipStatus.vipEndDate} />;
 
                           }
 
@@ -3430,7 +3432,7 @@ const isFanVerified = isViewingOwnProfile
 
                           if (!isViewingOwnProfile && profileOwnerVipStatus) {
 
-                            return <VIPBadge size="xl" className="absolute -top-5 -right-5" isVip={profileOwnerVipStatus} vipEndDate={vipStatus?.vipEndDate} />;
+                            return <VIPBadge size="md" className="absolute -top-1.5 -right-1.5" isVip={profileOwnerVipStatus} vipEndDate={vipStatus?.vipEndDate} />;
 
                           }
 
@@ -3441,102 +3443,80 @@ const isFanVerified = isViewingOwnProfile
                         })()}
 
                       </div>
-
-                      <div className="flex-1">
-
-                        <p className="font-medium text-white flex items-center gap-1">
-
-                          {isViewingOwnProfile ? `${firstname} ${lastname}`.trim() :
-
-                            `${profileData?.firstname || ""} ${profileData?.lastname || ""}`.trim()}
-
-                          {/* Creator Verified Badge */}
-
-                          {(() => {
-
-                            const isVerified = isViewingOwnProfile ? creator_verified : profileData?.creator_verified;
-
-                            return isVerified && (
-
-                              <BadgeCheck size={17} fill="white" className="text-black" />
-
-                            );
-
-                          })()}
-
-                        </p>
-
-                        <span className="text-gray-400 text-sm">
-
-                          {isViewingOwnProfile ? username : profileData?.username || ""}
-
-                        </span>
-
+<div className="flex-1">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <p className="font-semibold text-white flex items-center gap-1 text-[14.5px] leading-tight">
+                            {isViewingOwnProfile ? firstname : profileData?.firstname || ""}
+                            {/* Creator Verified Badge */}
+                            {(() => {
+                              const isVerified = isViewingOwnProfile ? creator_verified : profileData?.creator_verified;
+                              return isVerified && (
+                                <BadgeCheck size={15} fill="white" className="text-black" />
+                              );
+                            })()}
+                          </p>
+                          <span className="text-gray-500 text-[13px]">
+                            {isViewingOwnProfile ? username : profileData?.username || ""}
+                          </span>
+                          {post?.createdAt && (
+                            <>
+                              <span className="text-gray-600 text-[13px]">·</span>
+                              <span className="text-gray-500 text-[13px]">
+                                {(() => {
+                                  const formatted = formatRelativeTime(post.createdAt);
+                                  return formatted === 'Invalid time' || formatted === 'Unknown time' ? 'recently' : formatted;
+                                })()}
+                              </span>
+                            </>
+                          )}
+                        </div>
                       </div>
-
                     </div>
-
                   </div>
 
 
 
-                  {/* Post Timestamp */}
-
-                  {post?.createdAt && (
-
-                    <p className="my-3 text-gray-400 text-sm cursor-pointer">
-
-                      {(() => {
-
-                        const formatted = formatRelativeTime(post.createdAt);
-
-                        if (formatted === 'Invalid time' || formatted === 'Unknown time') {
-
-                          return 'recently';
-
-                        }
-
-                        return formatted;
-
-                      })()}
-
-                    </p>
-
-                  )}
-
-
-
-                  {/* Post Content */}
-
+               {/* Post Content */}
                   {post?.content && (
-
-                    <div className="my-2">
-
-                      <p className="text-white">{post.content}</p>
-
+                    <div className="mb-2.5">
+                      <p className="text-white text-[14.5px] leading-snug">{post.content}</p>
                     </div>
-
                   )}
 
 
 
                   {/* Post Media */}
-{mediaItemsArr.length > 1 && (
-  <PostMediaCollage items={mediaItemsArr} />
-)}
-
+                  {mediaItemsArr.length > 1 && (
+                    <PostMediaCollage items={mediaItemsArr} />
+                  )}
 {mediaItemsArr.length <= 1 && postType === "image" && src && (
-  <div className="w-full max-h-[400px] relative rounded overflow-hidden">
-    <Image
-      src={src}
-
+                    <div
+                      className="w-full relative rounded-xl overflow-hidden bg-black"
+                      style={{ aspectRatio: profilePostAspectRatios[post?._id || post?.postid || post?.id] ? clampAspectRatio(profilePostAspectRatios[post?._id || post?.postid || post?.id]) : 4 / 5 }}
+                    >
+                      <Image
+                        src={src}
                         alt={post?.content || "post image"}
 
                         width={800}
 
                         height={400}
 
-                        className="w-full h-auto object-contain cursor-pointer hover:opacity-90 transition-opacity duration-200"
+                        className="w-full h-full object-cover cursor-pointer hover:opacity-95 transition-opacity duration-200"
+
+                        onLoad={(e) => {
+
+                          const img = e.currentTarget as HTMLImageElement;
+
+                          const pid = post?._id || post?.postid || post?.id;
+
+                          if (img.naturalWidth && img.naturalHeight && pid) {
+
+                            setProfilePostAspectRatios((prev) => ({ ...prev, [pid]: img.naturalWidth / img.naturalHeight }));
+
+                          }
+
+                        }}
 
                         onClick={() => {
 
@@ -3620,9 +3600,8 @@ const isFanVerified = isViewingOwnProfile
 
                   {/* Post Actions */}
 
-                  <PostActions
-
-                    className="mt-3 border-t border-gray-700 pt-2"
+                <PostActions
+                    className="mt-2.5 pt-1"
 
                     starred={uiIsFollowing}
 

@@ -12,6 +12,7 @@ interface LazyImageProps {
   height?: number;
   className?: string;
   onClick?: () => void;
+  onLoad?: (e: any) => void;
   onError?: (e: any) => void;
   fallbackUrls?: string[];
   priority?: boolean;
@@ -24,6 +25,7 @@ const LazyImage: React.FC<LazyImageProps> = ({
   height = 480,
   className = "",
   onClick,
+  onLoad,
   onError,
   fallbackUrls = [],
   priority = false
@@ -63,8 +65,9 @@ const LazyImage: React.FC<LazyImageProps> = ({
   }, []);
 
   // Handle image load
-  const handleLoad = () => {
+  const handleLoad = (e: any) => {
     setIsLoaded(true);
+    onLoad?.(e);
   };
 
   // Handle image error with fallback URLs
