@@ -612,7 +612,11 @@ export default function PostsCard() {
   // Always show skeleton until posts are ready
   const hasPosts = directPosts.length > 0 || posts.length > 0 || postResolve.length > 0;
   if (status === "loading" || !hasPosts || !hasAttemptedFetch) {
-    return <PostSkeleton />;
+    return (
+      <div className="pt-4">
+        <PostSkeleton />
+      </div>
+    );
   }
 
   // Show message if no posts match the filter
