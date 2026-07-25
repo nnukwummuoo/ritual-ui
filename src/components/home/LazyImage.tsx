@@ -84,21 +84,20 @@ const LazyImage: React.FC<LazyImageProps> = ({
 
   // Skeleton placeholder
   const SkeletonPlaceholder = () => (
-    <div
-      className={`bg-gray-700 animate-pulse rounded ${className}`}
-    >
+    <div className="bg-gray-700 animate-pulse rounded w-full h-full">
       <div className="w-full h-full flex items-center justify-center">
         <div className="w-8 h-8 bg-gray-600 rounded-full"></div>
       </div>
     </div>
   );
 
+
   return (
-    <div ref={imgRef} className="relative">
+    <div ref={imgRef} className="relative w-full h-full">
       {!isInView ? (
         <SkeletonPlaceholder />
       ) : (
-        <div className="relative">
+        <div className="relative w-full h-full">
           {!isLoaded && <SkeletonPlaceholder />}
           <Image
             src={currentSrc}
