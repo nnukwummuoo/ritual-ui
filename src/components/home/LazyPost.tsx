@@ -740,11 +740,9 @@ const clampAspectRatio = (ratio: number) => {
                   post?.user?.profileImage ||
                   post?.user?.avatar ||
                   post?.user?.image;
-
-                const userName = isSelf ? `${firstname} ${lastname}`.trim() :
-                  `${post?.user?.firstname || ""} ${post?.user?.lastname || ""}`.trim();
-
-                const initials = userName.split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2) || "?";
+                  
+const userName = isSelf ? firstname : (post?.user?.firstname || "");
+const initials = userName.trim().charAt(0).toUpperCase() || "?";
 
                 if (profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined") {
                   const imageSource = getImageSource(profileImage, 'profile');
