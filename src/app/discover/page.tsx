@@ -731,9 +731,11 @@ function DiscoverPageContent() {
                                   p?.user?.photoLink ||
                                   p?.user?.photolink ||
                                   "";
-                                  
-const userName = isSelf ? firstname : (p?.user?.firstname || "");
-const initials = userName.trim().charAt(0).toUpperCase() || "?";
+
+                                const userName = isSelf ? `${firstname} ${lastname}`.trim() :
+                                  `${p?.user?.firstname || ""} ${p?.user?.lastname || ""}`.trim();
+
+                                const initials = userName.split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2) || "?";
 
                                 if (profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined") {
                                   const imageSource = getImageSource(profileImage, 'profile');
