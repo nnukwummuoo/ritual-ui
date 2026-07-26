@@ -18,7 +18,7 @@ export default function FileLimitPopup({
   if (!open) return null;
 
   const isVideo = type === "video";
-  const limit = isVideo ? "500 MB" : "10 MB";
+  const limit = isVideo ? "50 MB" : "10 MB";
 
   const compressUrl = "https://www.clideo.com/compress-video";
 

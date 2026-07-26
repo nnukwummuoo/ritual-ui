@@ -7755,14 +7755,14 @@ const isFanVerified = isViewingOwnProfile
                       if (file) {
 
                         const maxImageSize = 10 * 1024 * 1024; // 10MB
-                        const maxVideoSize = 500 * 1024 * 1024; // 500MB
+                        const maxVideoSize = 50 * 1024 * 1024; // 50MB
 
                         if (file.type.startsWith('image/') && file.size > maxImageSize) {
                           toast.error("Image too large. Max size is 10 MB.");
                           return;
                         }
                         if (file.type.startsWith('video/') && file.size > maxVideoSize) {
-                          toast.error("Video too large. Max size is 500 MB.");
+                          toast.error("Video too large. Max size is 50 MB.");
                           return;
                         }
 

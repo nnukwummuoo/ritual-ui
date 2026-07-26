@@ -172,7 +172,7 @@ const triggerFileInput = () => {
     if (file) {
       // Check file size based on file type
       const maxImageSize = 10 * 1024 * 1024; // 10MB in bytes
-      const maxVideoSize = 500 * 1024 * 1024; // 500MB in bytes
+      const maxVideoSize = 50 * 1024 * 1024; // 50MB in bytes
 
       if (file.type.startsWith('image/')) {
         if (file.size > maxImageSize) {

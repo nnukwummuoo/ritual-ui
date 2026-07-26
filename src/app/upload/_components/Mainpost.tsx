@@ -16,7 +16,7 @@ import FileLimitPopup from "@/app/upload/_components/FileLimitPopup";
 
 const MAX_FILES = 10;
 const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB
-const MAX_VIDEO_SIZE = 500 * 1024 * 1024; // 500MB
+const MAX_VIDEO_SIZE = 50 * 1024 * 1024; // 50MB
 
 type SelectedFile = {
   file: File;
