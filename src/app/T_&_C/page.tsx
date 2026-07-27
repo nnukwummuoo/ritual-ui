@@ -44,7 +44,7 @@ const TermsAndConditions = () => {
         <p className="mb-6">2. Fan Meet</p>
         <p className="mb-6">Creator sets availability; fans cover rate.</p>
         <p className="mb-6">3. Fan Date</p>
-        <p className="mb-6">Creator sets availability; fans pay all costs upfront (including transport).</p>
+        <p className="mb-6">Creator sets availability; fans cover rate.</p>
         <p className="mb-6">Creators always have the right to accept or decline any request.</p>
 
         <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">4. Client Verification & Booking Transparency</h3>
@@ -87,20 +87,20 @@ const TermsAndConditions = () => {
         <p className="mb-6">
           If a fan does not attend the scheduled appointment, the creator must contact Support immediately.
           Support will review the case and release the creator's payment immediately as compensation for time and travel.
-          Creators must contact Support within 18 days from the appointment date.
+          Creators must contact Support within 18 days from the booking request date.
           If Support is not contacted within this window, the payment will be automatically refunded to the fan.
         </p>
 
         <p className="mb-6">2. Creator No-Show</p>
         <p className="mb-6">
           If a creator does not attend the scheduled appointment, the fan will automatically receive a full refund.
-          Refunds are released to the fan automatically on the 20th day from the appointment date, without requiring any action.
+          Refunds are released to the fan automatically on the 20th day from the booking request date, without requiring any action.
         </p>
 
         <p className="mb-6">3. Auto-Refund System</p>
         <p className="mb-6">
-          If the fan didn't mark the meet or date as "Completed" within 20 days after the scheduled event,
-          and no complaint or dispute has been filed by the creator within 18 days from the appointment date,
+          If the fan didn't mark the meet or date as "Completed" within 20 days after the booking request date,
+          and no complaint or dispute has been filed by the creator within 18 days from the booking request date,
           the fan will automatically receive a full refund of the payment on the 20th day.
           This ensures fairness and protects both parties in cases where no meeting occurred.
         </p>
@@ -118,10 +118,10 @@ const TermsAndConditions = () => {
         <p className="mb-6">
           If a meeting does not happen and the fan didn't mark it as complete within 20 days, the system
           will automatically refund the fan in full — provided no complaint was filed by the creator within
-          18 days from the appointment date.
+          18 days from the booking request date.
         </p>
         <p className="mb-6">
-          After the 20 days, if there's no confirmation or complaint, the request will expire automatically
+          On the 20th day, if there's no confirmation or complaint, the request will expire automatically
           and the pending payment is released back to the fan.
         </p>
         <p className="mb-6">
@@ -148,7 +148,7 @@ const TermsAndConditions = () => {
           This rule is in place to promote safety, fairness, and a casual, non-exploitative fan experience.
         </p>
 
-        <p className="mb-6">2. Premium Extensions</p>
+        <p className="mb-6">2. Session Extensions</p>
         <p className="mb-6">
           If both parties wish to continue after the initial session, fans may send a new structured booking
           request at the end of each date. Each extension is a separate booking with its own upfront payment
@@ -231,19 +231,20 @@ const TermsAndConditions = () => {
 
         <p className="mb-6">4. Earnings & Withdrawals</p>
         <p className="mb-6">
-          Creators can request a withdrawal once their account balance reaches $50 or more.
+          Creators can request a withdrawal once their account balance reaches $5 or more.
           Balances below this threshold will remain in the account until the minimum is met.
-          Withdrawals are processed via USDT (BEP20 - Binance Smart Chain).
+          Withdrawals are processed via USDT or USDC (BEP20 - Binance Smart Chain).
         </p>
 
         <p className="mb-6">5. Payout Requests</p>
         <p className="mb-6">
-          Payouts must be manually requested from your dashboard. Processing may take up to 3 business days.
+          Payouts must be manually requested from your dashboard. Processing may take up to 24 hours.
         </p>
 
         <p className="mb-6">6. Payout Methods Available</p>
         <p className="mb-6">We currently support the following withdrawal options:</p>
         <p className="mb-6">USDT (BEP20 - Binance Smart Chain)</p>
+        <p className="mb-2">USDC (BEP20 - Binance Smart Chain)</p>
         <p className="mb-6">
           Please ensure your wallet or account details are correct before requesting a payout.
           We are not responsible for losses due to incorrect or incomplete information.
@@ -307,13 +308,12 @@ const TermsAndConditions = () => {
         <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">21. Dispute Resolution</h3>
         <p className="mb-6">
           In case of disputes between fans and creators, users are encouraged to contact support within
-          24 hours with clear evidence (screenshots, photos, videos).
+          24 hours.
           We will act as a neutral third-party, but do not guarantee resolution outcomes.
         </p>
 
         <p className="mb-6">
-          If a fan refuses to mark a meet/date as complete, the platform reserves the right to review
-          and release payment based on on-platform chat history and evidence of attendance.
+         If a fan refuses to mark a meet/date as complete, fails to respond to messages within 24 hours, or requests cancellation after the meet/date has already been accepted, the platform reserves the right to review the case and release payment based on on‑platform chat history and evidence of attendance.
         </p>
 
         <p className="mb-6">

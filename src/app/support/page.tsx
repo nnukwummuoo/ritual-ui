@@ -110,7 +110,7 @@ const SupportPage: React.FC = () => {
         },
         {
           question: "Can a fan cancel a request I already accepted?",
-          answer: "❌ No. Once a creator accepts a request, it is final. If a fan does not show up, stops responding to messages, or asks to cancel, contact Support immediately and we will review and release your payment immediately. If Support is not contacted within 18 days from the appointment date, the payment will be automatically refunded to the fan.."
+          answer: "❌ No. Once a creator accepts a request, it is final. If a fan does not show up, fails to respond to messages within 24 hours, or asks to cancel, contact Support immediately and we will review and release your payment immediately. If Support is not contacted within 18 days from the booking request date, the payment will be automatically refunded to the fan.."
         },
         {
           question: "Is this safe?",
@@ -127,11 +127,11 @@ const SupportPage: React.FC = () => {
         },
         {
           question: "What if the creator didn't show up?",
-          answer: "🚫 If a creator does not attend the scheduled appointment, the fan will automatically receive a full refund. Refunds are released to the fan automatically on the 20th day from the appointment date."
+          answer: "🚫 If a creator does not attend the scheduled appointment, the fan will automatically receive a full refund. Refunds are released to the fan automatically on the 20th day from the booking request date."
         },
         {
           question: "What if the fan didn't show up?",
-          answer: "❌ just contact mmeko Support directly through the platform. Our team reviews the situation using your on-platform chat history and releases your payment immediately. If Support is not contacted within 18 days from the appointment date, the payment will be automatically refunded to the fan."
+          answer: "❌ just contact mmeko Support directly through the platform. Our team reviews the situation using your on-platform chat history and releases your payment immediately. If Support is not contacted within 18 days from the booking request date, the payment will be automatically refunded to the fan."
         },
     
       ]
@@ -166,8 +166,8 @@ const SupportPage: React.FC = () => {
       section: "❓ FAQ: Attendance & No-Show Policy",
       questions: [
         {
-          question: "What if a fan stops responding to messages, asks to cancel, doesn't show up or doesn't mark as complete?",
-          answer: "🚫 The payment will be automatically released to the creator."
+          question: "What If a fan refuses to mark a meet/date as complete, fails to respond to messages within 24 hours, doesn't show up or requests cancellation after the meet/date has already been accepted?",
+          answer: "🚫 Simply contact mmeko support and we will release your payment immediately."
         },
         {
           question: "What if a creator doesn't show up for a Fan Meet or Fan Date?",

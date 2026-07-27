@@ -1744,7 +1744,7 @@ const formatTimer = (seconds: number) => {
     <div>
       <h3 className="font-semibold text-gray-800">No show?? No problem!</h3>
       <p className="text-gray-600 text-sm mt-1">
-        Cancellation by the fan is not allowed after you accept a booking request. If the fan does not show up, stops responding to messages, or asks to cancel, simply contact <strong>Mmeko Support</strong> and we will release your payment immediately. 🙂
+        Cancellation by the fan is not allowed after you accept a booking request. If the fan does not show up, fails to respond to messages within 24 hours, or asks to cancel, simply contact <strong>Mmeko Support</strong> and we will release your payment immediately. 🙂
       </p>
     </div>
   </div>
@@ -1757,7 +1757,7 @@ const formatTimer = (seconds: number) => {
     <div>
       <h3 className="font-semibold text-gray-800">Protected Booking</h3>
       <p className="text-gray-600 text-sm mt-1">
-           Cancellations are not allowed after acceptance. If you fail to show up, stop responding to messages, or request a cancellation, your payment is forfeited to the creator. However, <strong>if the creator does not show up or respond</strong>, your payment is fully protected—simply do not mark it complete, and the funds will automatically refund to you on day 20. 🙂
+           Cancellations are not allowed after acceptance. If you don't show up, fail to respond to messages within 24 hours, or request a cancellation, your payment is forfeited to the creator. However, <strong>if the creator does not show up or respond</strong>, your payment is fully protected—simply do not mark it complete, and the funds will automatically refund to you on day 20. 🙂
       </p>
     </div>
   </div>
