@@ -270,8 +270,8 @@ const TermsAndConditions = () => {
 
         <p className="mb-6">6. Payout Methods Available</p>
         <p className="mb-6">We currently support the following withdrawal options:</p>
-        <p className="mb-6">USDT (BEP20 - Binance Smart Chain)</p>
-        <p className="mb-2">USDC (BEP20 - Binance Smart Chain)</p>
+        <p className="mb-2">USDT (BEP20 - Binance Smart Chain)</p>
+        <p className="mb-6">USDC (BEP20 - Binance Smart Chain)</p>
         <p className="mb-6">
           Please ensure your wallet or account details are correct before requesting a payout.
           We are not responsible for losses due to incorrect or incomplete information.
