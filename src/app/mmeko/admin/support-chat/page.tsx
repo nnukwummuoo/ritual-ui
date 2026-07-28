@@ -24,6 +24,7 @@ import VIPBadge from '@/components/VIPBadge';
 import axios from 'axios';
 import { Paperclip, X, Send, File, Download, BadgeCheck } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import FileLimitPopup from "@/app/upload/_components/FileLimitPopup";
 
 interface SupportChat {
   _id: string;
@@ -96,6 +97,8 @@ const AdminSupportChat = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const [showVideoLimitPopup, setShowVideoLimitPopup] = useState(false);
+
   // Load all support chats
   const loadSupportChats = async () => {
     try {
@@ -153,22 +156,22 @@ const AdminSupportChat = () => {
   };
 
   // File validation function
-  const validateFile = (file: File): { valid: boolean; error?: string } => {
+  const validateFile = (file: File): { valid: boolean; error?: string; isVideoSizeError?: boolean } => {
     const maxImageSize = 10 * 1024 * 1024; // 10MB
     const maxVideoSize = 50 * 1024 * 1024; // 50MB
-
+    
     if (file.type.startsWith('image/')) {
       if (file.size > maxImageSize) {
         return { valid: false, error: 'Image size must be less than 10MB' };
       }
     } else if (file.type.startsWith('video/')) {
       if (file.size > maxVideoSize) {
-        return { valid: false, error: 'Video size must be less than 50MB' };
+        return { valid: false, error: 'Video size must be less than 50MB', isVideoSizeError: true };
       }
     } else {
       return { valid: false, error: 'Only images and videos are allowed' };
     }
-
+    
     return { valid: true };
   };
 
@@ -177,16 +180,22 @@ const AdminSupportChat = () => {
     const files = Array.from(event.target.files || []);
     const validFiles: File[] = [];
     const errors: string[] = [];
+    let hasVideoSizeError = false;
 
     files.forEach(file => {
       const validation = validateFile(file);
       if (validation.valid) {
         validFiles.push(file);
+      } else if (validation.isVideoSizeError) {
+        hasVideoSizeError = true;
       } else {
         errors.push(`${file.name}: ${validation.error}`);
       }
     });
 
+    if (hasVideoSizeError) {
+      setShowVideoLimitPopup(true);
+    }
     if (errors.length > 0) {
       errors.forEach(error => toast.error(error));
     }
@@ -1166,6 +1175,16 @@ const AdminSupportChat = () => {
             </div>
           </div>
         )}
+
+        <FileLimitPopup
+          open={showVideoLimitPopup}
+          type="video"
+          onClose={() => setShowVideoLimitPopup(false)}
+          onChooseDifferent={() => {
+            setShowVideoLimitPopup(false);
+            fileInputRef.current?.click();
+          }}
+        />
       </div>
     </div>
   );
