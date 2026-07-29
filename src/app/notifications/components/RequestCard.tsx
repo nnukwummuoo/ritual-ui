@@ -1999,7 +1999,7 @@ const formatTimer = (seconds: number) => {
 )}
 
  {/* Creator FAQ - Only shown to creators */}
-        {type === "creator" && (
+      {type === "creator" && hosttype?.toLowerCase() !== "fan call" && (
           <div className="flex items-start gap-3 mb-6">
             <span className="text-xl mt-1">❓</span>
             <div>
@@ -2025,7 +2025,7 @@ const formatTimer = (seconds: number) => {
               </p>
 
               <p className="text-gray-800 text-sm font-semibold mt-3">
-                How many days do I have to contact Mmeko Support if a client refuses to mark a meet/date as complete, fails to respond to messages within 24 hours, doesn&apos;t show up, or requests cancellation after the booking has already been accepted?
+                How many days do I have to contact Mmeko Support if a fan refuses to mark a meet/date as complete, fails to respond to messages within 24 hours, doesn&apos;t show up, or requests cancellation after the booking has already been accepted?
               </p>
               <p className="text-gray-600 text-sm mt-1">
                 You have 18 days from the booking request date to contact Mmeko Support. If Support is not contacted within 18 days, the client will automatically receive a refund on day 20.
