@@ -1998,7 +1998,34 @@ const formatTimer = (seconds: number) => {
   </div>
 )}
 
- 
+ {/* Creator FAQ - Only shown to creators */}
+        {type === "creator" && (
+          <div className="flex items-start gap-3 mb-6">
+            <span className="text-xl mt-1">❓</span>
+            <div>
+              <h3 className="font-semibold text-gray-800 mb-2">Good to Know</h3>
+
+              <p className="text-gray-800 text-sm font-semibold mt-2">
+                What happens if a fan claims they had a bad experience or that you left early?
+              </p>
+              <p className="text-gray-600 text-sm mt-1">
+                Mmeko does not judge the quality or content of the date; we only verify that the meet occurred. Here&apos;s exactly how you&apos;re protected:
+              </p>
+              <ul className="text-gray-600 text-sm mt-1 space-y-1">
+                <li>• <span className="font-medium text-gray-700">The Paper Trail:</span> Keep your communication on the Mmeko platform. Let the fan know when you&apos;re leaving home, when you arrive, and when you&apos;re at the meeting point.</li>
+                <li>• <span className="font-medium text-gray-700">No &quot;He Said, She Said&quot;:</span> If a fan attempts a dispute, Mmeko reviews the platform chat history — not the fan&apos;s version of events. Their word means nothing when the chat logs prove you arrived and were present.</li>
+                <li>• <span className="font-medium text-gray-700">Guaranteed Payouts:</span> A fan cannot reduce or withhold your payment based on what happened during the date. Either the meet occurred, or it didn&apos;t.</li>
+              </ul>
+
+              <p className="text-gray-800 text-sm font-semibold mt-3">
+                What if I get sick or have an emergency and can&apos;t make a booking?
+              </p>
+              <p className="text-gray-600 text-sm mt-1">
+                You have up to 20 days to reschedule. The fan&apos;s payment stays secured during this time, so you don&apos;t lose the booking or feel pressured to rush back before you&apos;re ready.
+              </p>
+            </div>
+          </div>
+        )}
 
     {/* Safety Rules */}
         <div className="flex items-start gap-3 mb-4">
