@@ -336,7 +336,11 @@ const CSS = `
 .lp .faq-arrow { width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0; background: var(--bg3); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 12px; color: var(--text2); transition: all .25s; }
 .lp .faq-item.open .faq-arrow { background: rgba(108,99,255,.12); border-color: rgba(108,99,255,.2); color: #a89cff; transform: rotate(45deg); }
 .lp .faq-a { max-height: 0; overflow: hidden; transition: max-height .35s cubic-bezier(.16,1,.3,1), padding .35s; font-size: 13.5px; color: var(--text2); line-height: 1.75; padding: 0 24px; white-space: pre-line; }
-.lp .faq-item.open .faq-a { max-height: 300px; padding: 0 24px 20px; }
+.lp .faq-item.open .faq-a { max-height: 240px; padding: 0 24px 20px; overflow-y: auto; }
+.lp .faq-a::-webkit-scrollbar { width: 5px; }
+.lp .faq-a::-webkit-scrollbar-track { background: transparent; }
+.lp .faq-a::-webkit-scrollbar-thumb { background: rgba(255,255,255,.15); border-radius: 10px; }
+.lp .faq-a::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,.25); }
 .lp .faq-still { margin-top: 32px; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px 28px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
 .lp .faq-still-title { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
 .lp .faq-still-desc { font-size: 13px; color: var(--text2); }
@@ -388,7 +392,8 @@ const CSS = `
 // ── FAQ data ──────────────────────────────────────────────────────────────────
 
 const FAQ_CREATORS = [
-  { q: "What if a fan claims they had a bad experience or says I left early?", a: "Mmeko does not judge the quality of the date — we only verify if the meet occurred. You're protected because:\n\n• Paper Trail: Keep communication on Mmeko (leaving home, arrival, meeting point).\n• No \"He Said, She Said\": Disputes are reviewed against chat logs, not fan claims.\n• Guaranteed Payouts: Payment cannot be reduced or withheld based on what happened during the meet." },
+  { q: "What happens if a fan claims they had a bad experience or that you left early?", a: "Mmeko does not judge the quality or content of the date; we only verify that the meet occurred. Here's exactly how you're protected: • The Paper Trail: Keep your communication on the Mmeko platform. Let the fan know when you're leaving home, when you arrive, and when you're at the meeting point. • No \"He Said, She Said\": If a fan attempts a dispute, Mmeko reviews the platform chat history — not the fan's version of events. Their word means nothing when the chat logs prove you arrived and were present. • Guaranteed Payouts: A fan cannot reduce or withhold your payment based on what happened during the date. Either the meet occurred, or it didn't." },
+  { q: "What if I get sick or have an emergency and can't make a booking?", a: "You have up to 20 days to reschedule. The fan's payment stays secured during this time, so you don't lose the booking or feel pressured to rush back before you're ready." },
   { q: "What if I get sick or have an emergency and can't make a booking?", a: "You have up to 20 days to reschedule. The fan's payment stays secured during this time, so you don't lose the booking or feel pressured to rush back before you're ready." },
   { q: "Why do clients trust Mmeko?", a: "Hesitant clients prefer Mmeko because their payment is protected until the booking is complete. Instead of handing money to a stranger, Mmeko holds it securely, giving them confidence to pay upfront." },
   { q: "How does mmeko make money if creators keep 100%?", a: "Mmeko earns revenue through a processing fee when fans purchase Gold, the in-app currency used to request meetups, unlock messages, and buy content. Creators keep 100% of what they earn, with no subscriptions or hidden commissions. This model keeps things simple, transparent, and creator-first." },
