@@ -328,6 +328,10 @@ const FAQ_DATA: Record<CategoryKey, FAQSection[]> = {
             'Yes. You don\'t have to manually request IDs from fans. Fans verify their Mmeko account first, and the moment they click "Request" on your booking page, Mmeko automatically deducts full payment and sends you their verified ID and selfie confirmation — all before you accept or confirm anything. This ensures a smoother, more professional experience for both sides right from the start.',
         },
          {
+          question: "How do both sides stay protected?",
+          answer: "🛡 The platform tracks confirmations, time logs, booking history and chat history.\nWe recommend both sides keep all communication and arrangements within the Mmeko platform. This ensures a clear paper trail, protects creators and fans, and makes dispute resolution simple and transparent.",
+        },
+         {
           question: "Why do fans trust Mmeko?",
           answer: "Hesitant fans prefer Mmeko because their payment is protected until the booking is complete. Instead of handing money to a stranger, Mmeko holds it securely, giving them confidence to pay upfront.",
         },

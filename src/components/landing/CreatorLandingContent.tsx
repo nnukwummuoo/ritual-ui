@@ -408,16 +408,19 @@ const FAQ_CREATORS = [
   { q: "Can I lock my message replies for fans to pay to unlock?", a: "Yes — this is one of mmeko's unique features. You can lock specific replies in a conversation, requiring the fan to pay to see your response. It's a powerful way to monetize your engagement without leaving the chat." },
   { q: "Is fan verification mandatory before I accept a meet?", a: "No — fan verification is optional and creator-controlled. You can choose to require it for your bookings or leave it open. We recommend enabling it for in-person meets as an extra layer of confidence, but the choice is entirely yours." },
   { q: "What are Fan Meet and Fan Date?", a: "• 🤝 Fan Meet – A short, casual meeting where you can greet your favorite creator, chat, and even take a selfie. It's about making a quick personal connection - limited to 30 minutes maximum for safety and fairness.\n• 🍽 Fan Date – A slightly more relaxed session where you spend time together in a safe public place — like grabbing coffee, eating, or walking — but still limited to 30 minutes maximum for safety and fairness." },
+  { q: "How do both sides stay protected?", a: "• 🛡 The platform tracks confirmations, time logs, booking history and chat history.\nWe recommend both sides keep all communication and arrangements within the Mmeko platform. This ensures a clear paper trail, protects creators and fans, and makes dispute resolution simple and transparent." },
 ];
 
 const FAQ_FANS = [
-  { q: "How do I book a meet with a creator?", a: "Browse creator profiles and select the type of experience you want — fan meet, call, or content. Choose a time slot the creator has made available, pay securely through mmeko, and your booking is confirmed. The creator will see your request and can confirm or decline." },
+  { q: "How do I book a meet with a creator?", a: "Browse creator portfolios and select the type of experience you want — fan meet, fan date, or call. Choose a time slot the creator has made available, pay securely through mmeko, and your booking is confirmed. The creator will see your request and can confirm or decline." },
   { q: "Where do fan meets take place?", a: "All in-person fan meets happen in public venues — cafés, restaurants, hotel lobbies, parks, and similar spaces. Private locations are never permitted on mmeko. This rule protects both you and the creator." },
   { q: "How long do fan meets last?", a: "All fan meets on mmeko are capped at 30 minutes. This is a platform-wide rule with no exceptions — it ensures a clear, comfortable experience for everyone involved." },
   { q: "What if the creator doesn't show up?", a: "If a creator does not attend the scheduled appointment, the fan will automatically receive a full refund. Refunds are released to the fan automatically on the 20th day from the booking request date." },
   { q: "How do I mark a meet as complete?", a: "After the creator accepts your fan meet request, you'll receive a prompt in the app to mark it as complete. Doing so releases the payment to the creator instantly." },
   { q: "Can I message a creator before booking?", a: "Yes — mmeko has built-in messaging so you can connect with creators directly on the platform. All conversations must stay on mmeko; sharing external contact details is against platform rules and exists to protect both parties." },
+  { q: "How do both sides stay protected?", a: "• 🛡 The platform tracks confirmations, time logs, booking history and chat history.\nWe recommend both sides keep all communication and arrangements within the Mmeko platform. This ensures a clear paper trail, protects creators and fans, and makes dispute resolution simple and transparent." },
 ];
+
 
 // ── COMPONENTS ────────────────────────────────────────────────────────────────
 
