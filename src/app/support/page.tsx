@@ -261,7 +261,7 @@ const FAQ_DATA: Record<CategoryKey, FAQSection[]> = {
         {
           question: "How do both sides stay protected?",
           answer:
-            "🛡 The platform tracks confirmations, time logs, booking history and chat history.\nWe recommend both sides take a quick photo or check-in proof at the public venue for verification if needed.",
+            "🛡 The platform tracks confirmations, time logs, booking history and chat history.\nWe recommend both sides keep all communication and arrangements within the Mmeko platform. This ensures a clear paper trail, protects creators and fans, and makes dispute resolution simple and transparent.",
         },
       ],
     },
@@ -290,7 +290,7 @@ const FAQ_DATA: Record<CategoryKey, FAQSection[]> = {
         {
           question: "Step 4: Start Earning",
           answer:
-            "💡 Once your portfolio is live, you can start receiving Fan Meets, Fan Dates, and Fan Calls — and earn Gold that you can withdraw in USDT (BEP20).",
+            "💡 Once your portfolio is live, you can start receiving Fan Meets, Fan Dates, and Fan Calls — and earn Gold that you can withdraw in USDT or USDC (BEP20).",
         },
         {
           question: "Important Note",
@@ -312,6 +312,24 @@ const FAQ_DATA: Record<CategoryKey, FAQSection[]> = {
           question: "What if I get sick or have an emergency and can't make a booking?",
           answer:
             "You have up to 20 days to reschedule. The fan's payment stays secured during this time, so you don't lose the booking or feel pressured to rush back before you're ready.",
+        },
+         {
+          question: "What If a fan refuses to mark a meet/date as complete, fails to respond to messages within 24 hours, doesn't show up or requests cancellation after the meet/date has already been accepted?",
+          answer: "Simply contact mmeko support and we will release your payment immediately. We always have your back.",
+        },
+        {
+          question: "How many days do I have to contact Mmeko Support if a fan refuses to mark a meet/date as complete, fails to respond to messages within 24 hours, doesn’t show up, or requests cancellation after the booking has already been accepted?",
+          answer:
+            "You have 18 days from the booking request date to contact Mmeko Support. If Support is not contacted within 18 days, the fan will automatically receive a refund on day 20.",
+        },
+        {
+          question: "Does Mmeko truly automatically send you a fan\'s government ID and selfie confirmation?",
+          answer:
+            'Yes. You don\'t have to manually request IDs from fans. Fans verify their Mmeko account first, and the moment they click "Request" on your booking page, Mmeko automatically deducts full payment and sends you their verified ID and selfie confirmation — all before you accept or confirm anything. This ensures a smoother, more professional experience for both sides right from the start.',
+        },
+         {
+          question: "Why do fans trust Mmeko?",
+          answer: "Hesitant fans prefer Mmeko because their payment is protected until the booking is complete. Instead of handing money to a stranger, Mmeko holds it securely, giving them confidence to pay upfront.",
         },
       ],
     },
@@ -340,9 +358,13 @@ const FAQ_DATA: Record<CategoryKey, FAQSection[]> = {
           answer:
             "Fans are charged per minute, and the money is transferred live to the Creator's account during the call.",
         },
-        {
+         {
           question: "Do Creators keep 100% of their money?",
           answer: "Yes 💯. Creators always keep 100% of their earnings.",
+        },
+        {
+          question: "Do I really get instant crypto payouts with Mmeko?",
+          answer: "Yes. Once a booking is marked complete, you can request a payout and your full earnings are released instantly via crypto. There are no commissions, no subscription fees, and no delays — you receive 100% of your payment right away.",
         },
         {
           question: "How does mmeko make money if creators keep 100%?",
@@ -352,7 +374,7 @@ const FAQ_DATA: Record<CategoryKey, FAQSection[]> = {
         {
           question: "How do creators earn from Gold?",
           answer:
-            "👑 When fans spend Gold on Fan Calls, Fan Meets, Fan Dates, PPVs, or Exclusive Contents the full value goes directly to the creator's earnings dashboard.\nCreators can withdraw anytime in USDT (BEP20) to their connected wallet.",
+            "👑 When fans spend Gold on Fan Calls, Fan Meets, Fan Dates, PPVs, or Exclusive Contents the full value goes directly to the creator's earnings dashboard.\nCreators can withdraw anytime in USDT or USDC (BEP20) to their connected wallet.",
         },
       ],
     },
