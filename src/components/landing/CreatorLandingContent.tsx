@@ -386,7 +386,11 @@ const CSS = `
   .lp .td-mmeko, .lp .td-other { padding: 0; border: none; background: transparent; display: flex; align-items: center; justify-content: space-between; font-size: 12.5px; }
   .lp .td-mmeko::before { content: 'mmeko'; font-size: 11px; font-weight: 600; color: #a89cff; }
   .lp .td-other::before  { content: 'Others'; font-size: 11px; font-weight: 600; color: var(--text3); }
-  .lp .cmp-table tr:last-child .td-mmeko { border-bottom: 1px solid rgba(255,255,255,0.04); }
+  .lp .cmp-table tr:last-child .td-feature,
+  .lp .cmp-table tr:last-child .td-mmeko,
+  .lp .cmp-table tr:last-child .td-other {
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
 }
 `;
 
