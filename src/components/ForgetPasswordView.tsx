@@ -129,17 +129,17 @@ const normalizedUsername = usernameInput.startsWith("@") ? usernameInput : (user
           </div>
          <div className="flex flex-col">
             <label className="text-gray-400 text-sm mb-2">Recovery Phrase</label>
-            <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+            <div className="grid grid-cols-2 gap-x-3 gap-y-2">
               {phraseWords.map((word, index) => (
-                <div key={index} className="flex items-center gap-2">
-                  <span className="text-gray-500 text-xs w-5 text-right">{index + 1}.</span>
+                <div key={index} className="flex items-center gap-1.5">
+                  <span className="text-gray-500 text-xs w-4 shrink-0 text-right">{index + 1}.</span>
                   <input
                     type="text"
                     value={word}
                     autoComplete="off"
                     onChange={(e) => handlePhraseWordChange(index, e.target.value)}
                     onPaste={(e) => handlePhrasePaste(index, e)}
-                    className="flex-1 bg-[#0a0d18] border border-white/10 rounded-md px-3 py-2 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-blue-500"
+                    className="w-full min-w-0 bg-[#0a0d18] border border-white/10 rounded-md px-2 py-1.5 text-xs text-white placeholder:text-gray-600 focus:outline-none focus:border-blue-500"
                   />
                 </div>
               ))}
