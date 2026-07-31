@@ -16,6 +16,30 @@ export const ForgetPasswordView = () => {
   const [loading, setLoading] = useState(false);
   const [username, setUsername] = useState("");
 
+  const [phraseWords, setPhraseWords] = useState<string[]>(Array(12).fill(""));
+
+  const handlePhraseWordChange = (index: number, value: string) => {
+    setPhraseWords((prev) => {
+      const next = [...prev];
+      next[index] = value.trim();
+      return next;
+    });
+  };
+
+  const handlePhrasePaste = (index: number, e: React.ClipboardEvent<HTMLInputElement>) => {
+    const pasted = e.clipboardData.getData("text").trim().split(/\s+/);
+    if (pasted.length > 1) {
+      e.preventDefault();
+      setPhraseWords((prev) => {
+        const next = [...prev];
+        for (let i = 0; i < pasted.length && index + i < 12; i++) {
+          next[index + i] = pasted[i];
+        }
+        return next;
+      });
+    }
+  };
+
   async function handleForgetPassword(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setLoading(true);
@@ -24,20 +48,19 @@ export const ForgetPasswordView = () => {
     const formData = new FormData(e.currentTarget);
    const usernameInput = username.trim();
 const normalizedUsername = usernameInput.startsWith("@") ? usernameInput : (usernameInput ? `@${usernameInput}` : "");
-    const secretPhrase = formData.get("secretPhrase")?.toString() || "";
     const newPassword = formData.get("newPassword")?.toString() || "";
 
-    if (!normalizedUsername || !secretPhrase || !newPassword) {
+    if (!normalizedUsername || !newPassword) {
       setFormError("Please fill in all fields.");
       toastError({ message: "Please fill in all fields." });
       setLoading(false);
       return;
     }
 
-    const secretPhraseArray = secretPhrase.trim().split(/\s+/);
-    if (secretPhraseArray.length !== 12) {
-      setFormError("Secret phrase must be exactly 12 words.");
-      toastError({ message: "Secret phrase must be exactly 12 words." });
+    const secretPhraseArray = phraseWords.map((w) => w.trim());
+    if (secretPhraseArray.some((w) => !w) || secretPhraseArray.length !== 12) {
+      setFormError("Please fill in all 12 words of your recovery phrase.");
+      toastError({ message: "Please fill in all 12 words of your recovery phrase." });
       setLoading(false);
       return;
     }
@@ -104,16 +127,23 @@ const normalizedUsername = usernameInput.startsWith("@") ? usernameInput : (user
               Username
             </label>
           </div>
-          <div className="flex flex-col">
-            <Input
-              type="text"
-              name="secretPhrase"
-              placeholder="Enter your 12-word recovery phrase"
-              required={true}
-            />
-            <label htmlFor="secretPhrase" className="text-gray-400 text-sm mt-1">
-              Recovery Phrase
-            </label>
+         <div className="flex flex-col">
+            <label className="text-gray-400 text-sm mb-2">Recovery Phrase</label>
+            <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+              {phraseWords.map((word, index) => (
+                <div key={index} className="flex items-center gap-2">
+                  <span className="text-gray-500 text-xs w-5 text-right">{index + 1}.</span>
+                  <input
+                    type="text"
+                    value={word}
+                    autoComplete="off"
+                    onChange={(e) => handlePhraseWordChange(index, e.target.value)}
+                    onPaste={(e) => handlePhrasePaste(index, e)}
+                    className="flex-1 bg-[#0a0d18] border border-white/10 rounded-md px-3 py-2 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-blue-500"
+                  />
+                </div>
+              ))}
+            </div>
           </div>
           <div className="flex flex-col">
             <Input

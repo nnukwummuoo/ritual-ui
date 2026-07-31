@@ -252,7 +252,13 @@ export const Register = () => {
     setIsStepValid(validateStep(step));
   }, [formValues, country, step, usernameStatus]);
 
-  const copyToClipboard = () => { navigator.clipboard.writeText(secretPhrase.join(" ")); setCopied(true); toast.success("Phrase copied!", { style: { backgroundColor: "#111" } }); setTimeout(() => setCopied(false), 2000); };
+  const copyToClipboard = () => {
+  const numbered = secretPhrase.map((word, index) => `${index + 1}. ${word}`).join("\n");
+  navigator.clipboard.writeText(numbered);
+  setCopied(true);
+  toast.success("Phrase copied!", { style: { backgroundColor: "#111" } });
+  setTimeout(() => setCopied(false), 2000);
+};
 
   const downloadPhrase = () => {
     const htmlContent = `
@@ -279,7 +285,7 @@ export const Register = () => {
       </head>
       <body>
         ${secretPhrase
-        .map((word) => `<div class="word">${word}</div>`)
+        .map((word, index) => `<div class="word">${index + 1}. ${word}</div>`)
         .join("")}
       </body>
     </html>
