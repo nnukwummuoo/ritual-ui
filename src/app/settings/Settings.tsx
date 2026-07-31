@@ -65,11 +65,7 @@ useEffect(() => {
       icon: <IoMdInformationCircleOutline color="white" size={20} />,
       linktitle: "help_&_support",
     },
-    {
-      name: "About us",
-      icon: <FiInfo color="white" size={20} />,
-      linktitle: "/anya",
-    },
+   
   ];
   return (
     <div className="w-screen pt-8 mx-auto sm:w-11/12 md:w-10/12 lg:w-9/12 xl:w-8/12 md:pt-0">
