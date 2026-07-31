@@ -87,7 +87,7 @@ const generateSecretPhrase = (): string[] => {
   const phrase = new Set<string>();
   while (phrase.size < 12) {
     const randomIndex = Math.floor(Math.random() * wordList.length);
-    phrase.add(wordList[randomIndex]);
+    phrase.add(wordList[randomIndex].toLowerCase());
   }
   return Array.from(phrase);
 };
@@ -253,7 +253,7 @@ export const Register = () => {
   }, [formValues, country, step, usernameStatus]);
 
   const copyToClipboard = () => {
-  const numbered = secretPhrase.map((word, index) => `${index + 1}. ${word}`).join("\n");
+  const numbered = secretPhrase.map((word, index) => `${index + 1}. ${word.toLowerCase()}`).join("\n");
   navigator.clipboard.writeText(numbered);
   setCopied(true);
   toast.success("Phrase copied!", { style: { backgroundColor: "#111" } });
@@ -285,7 +285,7 @@ export const Register = () => {
       </head>
       <body>
         ${secretPhrase
-        .map((word, index) => `<div class="word">${index + 1}. ${word}</div>`)
+        .map((word, index) => `<div class="word">${index + 1}. ${word.toLowerCase()}</div>`)
         .join("")}
       </body>
     </html>

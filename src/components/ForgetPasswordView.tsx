@@ -21,13 +21,13 @@ export const ForgetPasswordView = () => {
   const handlePhraseWordChange = (index: number, value: string) => {
     setPhraseWords((prev) => {
       const next = [...prev];
-      next[index] = value.trim();
+      next[index] = value.toLowerCase().trim();
       return next;
     });
   };
 
   const handlePhrasePaste = (index: number, e: React.ClipboardEvent<HTMLInputElement>) => {
-    const pasted = e.clipboardData.getData("text").trim().split(/\s+/);
+    const pasted = e.clipboardData.getData("text").toLowerCase().trim().split(/\s+/);
     if (pasted.length > 1) {
       e.preventDefault();
       setPhraseWords((prev) => {
