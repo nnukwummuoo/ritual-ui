@@ -93,18 +93,7 @@ const normalizedUsername = usernameInput.startsWith("@") ? usernameInput : (user
   }
 
   return (
-    <div
-      className="flex flex-col items-center justify-center h-screen bg-[#080b14] text-white px-4 overflow-y-auto py-8"
-      style={{
-        position: "fixed",
-        right: 0,
-        top: 0,
-        bottom: 0,
-        margin: "0 10px",
-        width: "90%",
-        maxWidth: "450px",
-      }}
-    >
+    <div className="fixed inset-0 flex flex-col items-center justify-center bg-[#080b14] text-white px-4 overflow-y-auto py-8">
       {/* Ambient background glow */}
       <div className="pointer-events-none fixed -top-32 -left-32 w-96 h-96 rounded-full bg-[#6c63ff]/20 blur-3xl" />
       <div className="pointer-events-none fixed -bottom-32 -right-32 w-96 h-96 rounded-full bg-[#9b59f5]/15 blur-3xl" />
