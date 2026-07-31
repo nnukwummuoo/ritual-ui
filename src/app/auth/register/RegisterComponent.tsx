@@ -434,10 +434,10 @@ export const Register = () => {
 
   // Step descriptions mapping
   const stepDescriptions = [
-    "Meet Your Fans • Keep 100% • Stay Safe ",
-    "Meet Your Fans • Keep 100% • Stay Safe ",
-    "Meet Your Fans • Keep 100% • Stay Safe ",
-    "Meet Your Fans • Keep 100% • Stay Safe "
+    "Where Creators Meet With Dignity ",
+    "Where Creators Meet With Dignity ",
+    "Where Creators Meet With Dignity ",
+    "Where Creators Meet With Dignity "
   ];
 
   const inputs = [
