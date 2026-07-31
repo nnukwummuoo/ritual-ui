@@ -1235,7 +1235,7 @@ export default function CreatorPage() {
 
     if (!list.length) {
       return (
-        <div className="mt-6 text-sm text-slate-400">
+        <div className="mt-10 text-sm text-slate-400 text-center bg-[#111624] border border-white/[0.06] rounded-xl py-10 px-4">
           {user?.session?._id ? "No portfolio yet." : "No creators found."}
         </div>
       );
@@ -1243,14 +1243,14 @@ export default function CreatorPage() {
 
     if (!sortedList.length && list.length > 0) {
       return (
-        <div className="mt-6 text-sm text-slate-400">
+        <div className="mt-10 text-sm text-slate-400 text-center bg-[#111624] border border-white/[0.06] rounded-xl py-10 px-4">
           No creators found for {categoryButton !== "All" ? `"${categoryButton}" category` : ""} {regionFilter && regionFilter !== "All" ? `in "${regionFilter}" region` : ""}.
         </div>
       );
     }
 
     return (
-      <ul className="grid grid-cols-2 gap-2 mt-4 mb-12 md:grid-cols-3">
+      <ul className="grid grid-cols-2 gap-3 mt-4 mb-12 md:grid-cols-3 md:gap-4">
         {/* CRITICAL FIX: Use paginatedList instead of sortedList */}
         {paginatedList.map((value: CreatorCardProps) => (
           <li key={value.creator_portfolio_id || Math.random().toString(36)} className="relative">
@@ -1274,7 +1274,7 @@ export default function CreatorPage() {
       {/* Filter Button - Fixed position like in the image */}
       <button
         onClick={() => setShowFilterModal(true)}
-        className="fixed bottom-32 right-4 z-50 bg-[#080b14] hover:bg-blue-800 text-white rounded-full w-16 h-16 flex flex-col items-center justify-center shadow-lg transition-all duration-200 hover:scale-110"
+        className="fixed bottom-32 right-4 z-50 bg-gradient-to-br from-[#6c63ff] to-[#9b59f5] text-white rounded-full w-16 h-16 flex flex-col items-center justify-center shadow-[0_10px_30px_-8px_rgba(108,99,255,0.7)] transition-all duration-200 hover:scale-110 border border-white/10"
         aria-label="Open filter"
       >
         <svg

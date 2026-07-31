@@ -4,10 +4,6 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 
-// import DummyCreatorImage from "/icons/mmekoDummy.png";
-// import femaleIcon from "/icons/femaleIcon.svg";
-// import maleIcon from "/icons/maleIcon.svg";
-// import transIcon from "/icons/transIcon.svg";
 import { getCountryData } from "@/api/getCountries";
 import VIPBadge from "@/components/VIPBadge";
 import { URL as API_BASE } from "@/api/config";
@@ -63,7 +59,6 @@ export const CreatorCard = ({
   isFollowing = false,
 }: CreatorCardProps) => {
   const router = useRouter();
-  // const [hostImg, setHostImg] = useState<string>("/icons/mmekoDummy.png");
   const [countryData, setCountryData] = useState<CountryData>({
     flag: "",
     abbreviation: "",
@@ -76,16 +71,14 @@ export const CreatorCard = ({
     if (createdAt && createdAt !== '') {
       const creationDate = new Date(createdAt);
       const currentDate = new Date();
-      
-      // Check if the date is valid
+
       if (isNaN(creationDate.getTime())) {
         return;
       }
-      
+
       const diffInMs = currentDate.getTime() - creationDate.getTime();
       const diffInDays = diffInMs / (1000 * 60 * 60 * 24);
-      
-      // Show NEW badge for creators created within 7 days
+
       setIsNew(diffInDays <= 7);
     }
   }, [createdAt]);
@@ -98,19 +91,13 @@ export const CreatorCard = ({
     fetchData();
   }, [location]);
 
-  // useEffect(() => {
-  //   if (photolink?.length > 0) {
-  //     setHostImg(photolink[0]);
-  //   }
-  // }, [photolink]);
-
   const fetchGenderIcon = () => {
     if (gender === "Man") return "/icons/maleIcon.svg";
     if (gender === "Woman") return "/icons/femaleIcon.svg";
     return "/icons/transIcon.svg";
   };
 
-  const handleClick = () => {    
+  const handleClick = () => {
     router.push(`/creators/${hostid}`);
   };
 
@@ -118,7 +105,6 @@ export const CreatorCard = ({
   const imageSource = getImageSource(photolink || '', 'creator');
   const [currentSrc, setCurrentSrc] = useState(imageSource.src || "/icons/mmekoDummy.png");
 
-  // Update src when photolink changes
   useEffect(() => {
     if (photolink) {
       const newImageSource = getImageSource(photolink, 'creator');
@@ -128,26 +114,22 @@ export const CreatorCard = ({
     }
   }, [photolink]);
 
-  // Handle image error with multiple fallback URLs
   const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>) => {
     const target = e.currentTarget as HTMLImageElement & { dataset: any };
     const failedSrc = target.src || currentSrc || photolink || "";
-    
-    // Only log if we have meaningful information (avoid empty object logs)
+
     if (failedSrc && failedSrc !== "/icons/mmekoDummy.png" && failedSrc.length > 0) {
-      console.warn('[CreatorCard] Image failed to load, trying fallbacks:', { 
+      console.warn('[CreatorCard] Image failed to load, trying fallbacks:', {
         failedSrc: failedSrc.length > 100 ? failedSrc.substring(0, 100) + '...' : failedSrc,
         originalUrl: photolink ? (photolink.length > 100 ? photolink.substring(0, 100) + '...' : photolink) : "N/A"
       });
     }
-    
-    // Get current image source for fallback URL generation
+
     const currentImageSource = getImageSource(photolink || '', 'creator');
-    const fallbackKey = currentImageSource.isStorj && currentImageSource.key 
-      ? currentImageSource.key 
+    const fallbackKey = currentImageSource.isStorj && currentImageSource.key
+      ? currentImageSource.key
       : (photolink || "");
-    
-    // Prepare fallback URLs
+
     const pathUrlPrimary = fallbackKey ? `${API_BASE}/api/image/view/${encodeURIComponent(fallbackKey)}` : "";
     const queryUrlFallback = currentImageSource.isStorj && currentImageSource.key && currentImageSource.bucket
       ? `${PROD_BASE}/api/image/view?publicId=${encodeURIComponent(currentImageSource.key)}&bucket=${currentImageSource.bucket}`
@@ -157,39 +139,37 @@ export const CreatorCard = ({
       ? `${RENDER_BASE}/api/image/view?publicId=${encodeURIComponent(currentImageSource.key)}&bucket=${currentImageSource.bucket}`
       : (fallbackKey ? `${RENDER_BASE}/api/image/view?publicId=${encodeURIComponent(fallbackKey)}` : "");
     const renderPathUrl = fallbackKey ? `${RENDER_BASE}/api/image/view/${encodeURIComponent(fallbackKey)}` : "";
-    
-    // Try fallback URLs in sequence
+
     if (!target.dataset.fallback1 && pathUrlPrimary && currentSrc !== pathUrlPrimary) {
       target.dataset.fallback1 = "1";
       setCurrentSrc(pathUrlPrimary);
       return;
     }
-    
+
     if (!target.dataset.fallback2 && queryUrlFallback && currentSrc !== queryUrlFallback) {
       target.dataset.fallback2 = "1";
       setCurrentSrc(queryUrlFallback);
       return;
     }
-    
+
     if (!target.dataset.fallback3 && pathUrlFallback && currentSrc !== pathUrlFallback) {
       target.dataset.fallback3 = "1";
       setCurrentSrc(pathUrlFallback);
       return;
     }
-    
+
     if (!target.dataset.fallback4 && renderQueryUrl && currentSrc !== renderQueryUrl) {
       target.dataset.fallback4 = "1";
       setCurrentSrc(renderQueryUrl);
       return;
     }
-    
+
     if (!target.dataset.fallback5 && renderPathUrl && currentSrc !== renderPathUrl) {
       target.dataset.fallback5 = "1";
       setCurrentSrc(renderPathUrl);
       return;
     }
-    
-    // Final fallback to dummy image
+
     if (!target.dataset.fallback6 && currentSrc !== "/icons/mmekoDummy.png") {
       target.dataset.fallback6 = "1";
       setCurrentSrc("/icons/mmekoDummy.png");
@@ -197,56 +177,63 @@ export const CreatorCard = ({
   };
 
   return (
-    <div className="relative overflow-hidden" onClick={handleClick}>
+    <div
+      className="relative overflow-hidden rounded-xl cursor-pointer group border border-white/[0.06] transition-transform duration-200 active:scale-[0.98] hover:-translate-y-0.5"
+      onClick={handleClick}
+    >
       {/* Host Image */}
-      <div>
+      <div className="relative">
         <img
           alt="creator"
           src={currentSrc}
           width={400}
           height={300}
-          className="object-cover w-full rounded h-64 sm:h-80 md:h-96"
+          className="object-cover w-full rounded-xl h-64 sm:h-80 md:h-96 transition-transform duration-300 group-hover:scale-105"
           onError={handleImageError}
         />
+        {/* Bottom gradient scrim for legibility */}
+        <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/85 via-black/20 to-transparent rounded-b-xl pointer-events-none" />
       </div>
 
+      {/* Online indicator */}
+      {isOnline && (
+        <div className="absolute top-2 left-2 flex items-center gap-1.5 px-2 py-1 bg-black/50 backdrop-blur-sm rounded-full">
+          <span className="w-1.5 h-1.5 rounded-full bg-[#22c55e] shadow-[0_0_6px_#22c55e]" />
+          <span className="text-[10px] font-medium text-white">Online</span>
+        </div>
+      )}
 
       {/* New Badge */}
       {isNew && (
-        <div className="absolute top-0 right-0 m-2">
-          <span className="inline-flex items-center px-1 py-0.5 text-xs font-semibold text-white bg-gradient-to-br from-blue-500 to-purple-600 shadow-2xl rounded-md">
+        <div className="absolute top-2 right-2">
+          <span className="inline-flex items-center px-2 py-0.5 text-[10px] font-semibold text-white bg-gradient-to-r from-[#6c63ff] to-[#9b59f5] shadow-lg rounded-full">
             New
           </span>
         </div>
       )}
 
       {/* Bottom Info */}
-      <div className="absolute bottom-2">
-        <div className="flex flex-col items-start gap-1.5 px-1 overflow-auto sm:gap-2">
-          {/* Country */}
-          <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-black bg-opacity-40 rounded-lg">
-            {countryData.flag && (
-              <div className="rounded-full overflow-hidden size-4">
-                <img                  src={countryData.flag}
-                  alt={`${countryData.abbreviation} flag`}
-                  width={200}
-                  height={200}
-                  className="size-full object-fill object-center"
-                />
-              </div>
-            )}
-            <span className="text-xs text-white">{countryData.fifa}</span>
-          </div>
-
-          {/* Host Type */}
-          <h4 className="px-2.5 py-1.5 text-xs bg-black bg-opacity-40 rounded-lg whitespace-nowrap">
-            {hosttype}
-          </h4>
-
-          {/* First Name */}
-          <h4 className="px-2.5 py-1.5 text-xs bg-black bg-opacity-50 rounded-lg overflow-auto">
+      <div className="absolute bottom-0 left-0 right-0 p-2.5">
+        <div className="flex items-center justify-between gap-1">
+          <h4 className="text-sm font-semibold text-white truncate drop-shadow-sm">
             {name?.split?.(" ")[0] ?? "Name"}
           </h4>
+          {countryData.flag && (
+            <div className="rounded-full overflow-hidden size-4 shrink-0 ring-1 ring-white/20">
+              <img
+                src={countryData.flag}
+                alt={`${countryData.abbreviation} flag`}
+                width={200}
+                height={200}
+                className="size-full object-fill object-center"
+              />
+            </div>
+          )}
+        </div>
+        <div className="flex items-center gap-1.5 mt-1">
+          <span className="px-2 py-0.5 text-[10px] font-medium text-[#c9c4ff] bg-[#6c63ff]/15 border border-[#6c63ff]/25 rounded-full whitespace-nowrap">
+            {hosttype}
+          </span>
         </div>
       </div>
     </div>
