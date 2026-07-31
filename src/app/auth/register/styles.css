@@ -155,6 +155,8 @@
     flex-direction: column;
     justify-content: center;
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
 }
 
 .form-head {
@@ -497,6 +499,8 @@
 
 /* ---- Secret Phrase Step ---- */
 .secret-phrase-container {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
   width: 100%;
   max-width: 600px;
   margin: 0 auto;
