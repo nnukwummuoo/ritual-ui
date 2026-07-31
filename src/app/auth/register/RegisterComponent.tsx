@@ -18,7 +18,7 @@ import { registernewUser } from "@/store/registerSlice";
 import type { AppDispatch } from "@/store/store";
 import axios from "axios";
 import { URL as API_URL } from "@/api/config";
-import { FaHome } from "react-icons/fa";
+import { FaHome, FaLock, FaBolt, FaUserShield } from "react-icons/fa";
 import Cookies from "js-cookie";
 import { useDeviceFingerprint } from "@/hooks/useDeviceFingerprint";
 
@@ -104,6 +104,8 @@ const calculateAge = (dob: string): number => {
   }
   return age;
 };
+
+const STEP_LABELS = ["Basics", "Profile", "Security", "Recovery"];
 
 export const Register = () => {
   const [agreedTerms, setAgreedTerms] = useState<boolean>(false);
@@ -580,7 +582,7 @@ export const Register = () => {
       <div className="absolute top-4 right-4 z-10">
         <button
           onClick={() => router.push('/')}
-          className="p-2 rounded-full hover:bg-gray-700 transition-colors"
+          className="p-2 rounded-full hover:bg-white/10 transition-colors"
           title="Go to Home"
         >
           <FaHome className="text-2xl" style={{ color: '#bec8fa' }} />
@@ -588,17 +590,40 @@ export const Register = () => {
       </div>
 
       <div className="form-container-wrapper w-full mt-12 min-h-screen">
-        <Image src={"/register.png"} alt="Register" width={500} height={300} className="min-h-full" />
+        {/* Hero / brand panel */}
+        <div className="hero-panel">
+          <Image src={"/register.png"} alt="Register" fill className="hero-image" />
+          <div className="hero-overlay" />
+          <div className="hero-content">
+            <div className="hero-brand">
+              <div className="hero-logo">M</div>
+              <span>mmeko</span>
+            </div>
+            <h1 className="hero-title">Meet your fans.<br />Keep 100%.</h1>
+            <p className="hero-subtitle">Create your creator or fan account in a few quick, secure steps.</p>
+            <ul className="hero-points">
+              <li><FaBolt /> Instant payouts, no delays</li>
+              <li><FaUserShield /> Verified, safety-first platform</li>
+              <li><FaLock /> Your data stays encrypted</li>
+            </ul>
+          </div>
+        </div>
 
         <form onSubmit={handleSubmit} noValidate>
-          <h2 className="!bg-gradient-to-r !from-blue-500 !to-purple-600 !bg-clip-text !text-transparent">Register</h2>
-          <p>{stepDescriptions[step - 1]}</p>
+          <div className="form-head">
+            <h2>Create your account</h2>
+            <p className="form-tagline">{stepDescriptions[step - 1]}</p>
+          </div>
 
+          {/* Stepper */}
           <div className="pagination">
-            <DotSlideBtn setStep={setStep} step={step} slide={1} disabled={!accessibleSteps.includes(1)} />
-            <DotSlideBtn setStep={setStep} step={step} slide={2} disabled={!accessibleSteps.includes(2)} />
-            <DotSlideBtn setStep={setStep} step={step} slide={3} disabled={!accessibleSteps.includes(3)} />
-            <DotSlideBtn setStep={setStep} step={step} slide={4} disabled={!accessibleSteps.includes(4)} />
+            <div className="pagination-track" style={{ ["--progress" as any]: `${((step - 1) / 3) * 100}%` }} />
+            {[1, 2, 3, 4].map((s) => (
+              <div className="step-wrap" key={s}>
+                <DotSlideBtn setStep={setStep} step={step} slide={s} disabled={!accessibleSteps.includes(s)} />
+                <span className={`step-label ${step === s ? "active" : ""}`}>{STEP_LABELS[s - 1]}</span>
+              </div>
+            ))}
           </div>
 
           <div className="form-input-wrapper">
@@ -654,8 +679,8 @@ export const Register = () => {
                 </div>
               ))}
 
-              <Agree id="terms" toThe={<Link href="/auth/T_&_C" className='!text-blue-500'>the Terms & Conditions.</Link>} agree={agreedTerms} setAgree={() => setAgreedTerms(prev => !prev)} />
-              < Agree id="privacy" toThe={<Link href={"/auth/privacy-policy"} className='!text-blue-500'>Privacy Policy</Link>} agree={agreedPrivacy} setAgree={() => setAgreedPrivacy(prev => !prev)} />
+              <Agree id="terms" toThe={<Link href="/auth/T_&_C" className='!text-[#9b59f5]'>the Terms & Conditions.</Link>} agree={agreedTerms} setAgree={() => setAgreedTerms(prev => !prev)} />
+              < Agree id="privacy" toThe={<Link href={"/auth/privacy-policy"} className='!text-[#9b59f5]'>Privacy Policy</Link>} agree={agreedPrivacy} setAgree={() => setAgreedPrivacy(prev => !prev)} />
 
               <NextSlide onClick={handleNextClick} setStep={setStep} disabled={!isStepValid} />
             </Step>
@@ -663,7 +688,11 @@ export const Register = () => {
             {/* Step 4 - Secret Phrase */}
             <Step step={step} slide={4}>
               <div className="secret-phrase-container max-h-[60vh] overflow-y-auto">
-                <h3 className="text-center mb-4 !bg-gradient-to-r !from-blue-500 !to-purple-600 !bg-clip-text !text-transparent">Save Your Recovery Phrase</h3>
+                <div className="phrase-heading">
+                  <span className="phrase-heading-icon">🔐</span>
+                  <h3>Save Your Recovery Phrase</h3>
+                  <p>This is the only way to recover your account.</p>
+                </div>
 
                 <div className="phrase-grid">
                   {secretPhrase.map((word, index) => (
@@ -676,13 +705,11 @@ export const Register = () => {
 
                 <div className="phrase-warning">
                   <p>
-                    <span style={{ color: '#ff4d4d', fontSize: '16px' }}>⚠️ IMPORTANT</span><br />
-                    <span style={{ color: '#ff4d4d', fontWeight: 'bold' }}>Save Your Recovery Phrase</span><br />
-                    <span style={{ color: '#ffffff' }}>
+                    <span className="phrase-warning-title">⚠️ Important — Save Your Recovery Phrase</span>
+                    <span className="phrase-warning-text">
                       This phrase is the only way to recover your account. If you lose it, we cannot help you.
-                    </span><br />
-                    <span style={{ color: '#ffffff' }}>→ Keep it safe.</span><br />
-                    <span style={{ color: '#ffffff' }}>× Never share it with anyone.</span>
+                    </span>
+                    <span className="phrase-warning-text">→ Keep it safe. × Never share it with anyone.</span>
                   </p>
                 </div>
 
@@ -699,16 +726,16 @@ export const Register = () => {
                   </label>
                 </div>
 
-                <button type="submit" className="btn flex items-center justify-center mx-auto !bg-gradient-to-r !from-blue-500 !to-purple-600" disabled={loading || !saved || !agreedTerms || !agreedPrivacy}>
-                  {loading ? <p style={{ color: "white" }} className="flex items-center justify-center gap-3 text-white"><BtnLoader /> Please wait...</p> : "Register"}
+                <button type="submit" className="btn flex items-center justify-center mx-auto" disabled={loading || !saved || !agreedTerms || !agreedPrivacy}>
+                  {loading ? <p style={{ color: "white" }} className="flex items-center justify-center gap-3 text-white"><BtnLoader /> Please wait...</p> : "Create Account"}
                 </button>
               </div>
             </Step>
           </div>
 
           {/* Login link is now outside the steps, visible on all of them */}
-          <p className="mt-4 text-center">
-            I already have an account <Link href="/auth/login" className="!text-blue-500">Login</Link>
+          <p className="mt-4 text-center login-link">
+            I already have an account <Link href="/auth/login">Login</Link>
           </p>
 
         </form>
@@ -716,4 +743,3 @@ export const Register = () => {
     </div>
   );
 };
-

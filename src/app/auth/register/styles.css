@@ -1,5 +1,22 @@
+:root {
+  --bg: #080b14;
+  --card: #111624;
+  --card2: #161b2e;
+  --border: rgba(255, 255, 255, 0.08);
+  --border2: rgba(255, 255, 255, 0.05);
+  --accent: #6c63ff;
+  --accent2: #9b59f5;
+  --accent-g: linear-gradient(135deg, #6c63ff, #9b59f5);
+  --text: #f1f5f9;
+  --text2: #94a3b8;
+  --text3: #64748b;
+  --danger: #ef4444;
+  --warning: #f59e0b;
+  --success: #22c55e;
+}
+
 .body {
-    background-color: #0c0f27;
+    background-color: var(--bg);
     min-height: 100vh;
     overflow: hidden;
     margin: 0;
@@ -22,169 +39,325 @@
 
 .no-spinner {
     -moz-appearance: textfield;
-    /* Firefox */
 }
 
 .form-container-wrapper {
     display: flex;
     height: 90%;
-    align-items: center;
-    border-radius: 10px;
+    max-height: 780px;
+    width: 92%;
+    max-width: 1100px;
+    align-items: stretch;
+    border-radius: 20px;
     overflow: hidden;
-    color: #bec8fa;
-
+    color: var(--text2);
+    border: 1px solid var(--border);
+    box-shadow: 0 30px 80px -20px rgba(0, 0, 0, 0.6);
 }
 
-.form-container-wrapper img {
-    width: 60%;
-    height: 100%;
+/* ---- Hero / brand panel ---- */
+.hero-panel {
+    position: relative;
+    width: 46%;
+    overflow: hidden;
+    display: flex;
+    align-items: flex-end;
+}
+
+.hero-image {
     object-fit: cover;
     object-position: center;
-
+    opacity: 0.55;
 }
 
-.form-container-wrapper form {
-    background-color: #111624;
-    height: 100%;
-    width: 40%;
-    text-align: center;
-
+.hero-overlay {
+    position: absolute;
+    inset: 0;
+    background:
+        linear-gradient(180deg, rgba(8, 11, 20, 0.2) 0%, rgba(8, 11, 20, 0.55) 45%, rgba(8, 11, 20, 0.96) 100%),
+        radial-gradient(circle at 20% 10%, rgba(108, 99, 255, 0.35), transparent 55%);
 }
 
-.form-container-wrapper h2 {
-    color: #ff8a23;
-    font-size: 3.3rem;
-    margin: 5px 0;
+.hero-content {
+    position: relative;
+    z-index: 2;
+    padding: 40px 36px;
+    width: 100%;
 }
 
-.form-container-wrapper p {
-    color: #bec8fa;
-    margin: 7px 0;
+.hero-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 28px;
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--text);
 }
 
-.form-container-wrapper .pagination {
+.hero-logo {
+    width: 32px;
+    height: 32px;
+    border-radius: 9px;
+    background: var(--accent-g);
     display: flex;
     align-items: center;
     justify-content: center;
+    font-weight: 800;
+    color: #fff;
+}
+
+.hero-title {
+    font-size: 2.1rem;
+    line-height: 1.2;
+    font-weight: 800;
+    color: var(--text);
+    margin: 0 0 12px;
+}
+
+.hero-subtitle {
+    color: var(--text2);
+    font-size: 0.95rem;
+    line-height: 1.5;
+    margin: 0 0 24px;
+    max-width: 340px;
+}
+
+.hero-points {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.hero-points li {
+    display: flex;
+    align-items: center;
     gap: 10px;
-    margin: 15px 0;
+    font-size: 0.85rem;
+    color: var(--text2);
+}
+
+.hero-points li svg {
+    color: var(--accent2);
+    flex-shrink: 0;
+}
+
+/* ---- Form panel ---- */
+.form-container-wrapper form {
+    background-color: var(--card);
+    height: 100%;
+    width: 54%;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    overflow-y: auto;
+}
+
+.form-head {
+    margin-bottom: 4px;
+}
+
+.form-container-wrapper h2 {
+    background: var(--accent-g);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    font-size: 1.9rem;
+    font-weight: 800;
+    margin: 5px 0;
+}
+
+.form-tagline {
+    display: inline-block;
+    color: var(--text2);
+    font-size: 0.78rem;
+    letter-spacing: 0.03em;
+    margin: 4px 0 6px;
+    padding: 5px 14px;
+    border-radius: 999px;
+    background: rgba(108, 99, 255, 0.1);
+    border: 1px solid rgba(108, 99, 255, 0.2);
+}
+
+/* ---- Stepper ---- */
+.form-container-wrapper .pagination {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 34px;
+    margin: 22px 0 26px;
+    padding: 0 10px;
+}
+
+.pagination-track {
+    position: absolute;
+    top: 9px;
+    left: 10%;
+    right: 10%;
+    height: 2px;
+    background: var(--border);
+    z-index: 0;
+}
+
+.pagination-track::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: var(--progress, 0%);
+    background: var(--accent-g);
+    transition: width 0.35s ease;
+}
+
+.step-wrap {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
 }
 
 .form-container-wrapper .pagination .step {
     width: 20px;
     height: 20px;
     border-radius: 50%;
-    background-color: #080b14;
+    background-color: var(--card2);
+    border: 2px solid var(--border);
     cursor: pointer;
+    transition: all 0.2s ease;
 }
 
 .step.active {
-    background-color: #ff8a23 !important;
+    background: var(--accent-g) !important;
+    border-color: transparent !important;
+    box-shadow: 0 0 0 4px rgba(108, 99, 255, 0.18);
+}
+
+.step-label {
+    font-size: 0.68rem;
+    color: var(--text3);
+    letter-spacing: 0.02em;
+    transition: color 0.2s ease;
+}
+
+.step-label.active {
+    color: var(--text);
+    font-weight: 600;
 }
 
 .form-container-wrapper a {
-    color: #ff8a23;
-    font-weight: bold;
-    margin-top: 20px;
+    color: var(--accent2);
+    font-weight: 600;
 }
 
+.login-link {
+    color: var(--text2);
+    font-size: 0.9rem;
+}
+
+.login-link a {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+/* ---- Inputs ---- */
 .floating-label-group {
     position: relative;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1.4rem;
 }
 
-/* Style the input */
 .floating-label-group input,
 .floating-label-group select {
     width: 100%;
-    padding: .7rem;
-    padding-top: 1rem;
-    /* Give space for the floating label */
-    font-size: 1rem;
-    border: 1px solid #bec8fa;
-    border-radius: 4px;
-    background: transparent;
+    padding: .8rem .9rem;
+    padding-top: 1.1rem;
+    font-size: 0.95rem;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.02);
     box-sizing: border-box;
-    color: #bec8fa;
+    color: var(--text);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .floating-label-group input:focus,
 .floating-label-group select {
-    background-color: transparent;
+    background-color: rgba(255, 255, 255, 0.02);
     outline: none;
 }
 
-/* Style the label */
 .floating-label-group label {
     position: absolute;
     top: 50%;
-    left: 1rem;
+    left: 0.9rem;
     transform: translateY(-50%);
     transition: 0.2s ease all;
-    color: #bec8fa;
+    color: var(--text2);
     pointer-events: none;
-    background-color: #111624 !important;
+    background-color: var(--card) !important;
     width: 95%;
     height: 30px;
     text-align: left;
 }
 
-/* Add this to your CSS */
 .floating-label-group input:focus + label,
 .floating-label-group input:not(:placeholder-shown) + label,
 .floating-label-group select:focus + label,
 .floating-label-group select:not([value=""]) + label {
     top: -0.5rem;
-    font-size: 0.75rem;
-    color: #bec8fa;
-    background-color: #111624 !important;
+    font-size: 0.72rem;
+    color: var(--accent2);
+    background-color: transparent !important;
     width: fit-content;
     height: fit-content;
     text-align: left;
-    background-color: transparent;
 }
 
-/* When the input is focused, move the label */
 .floating-label-group input:focus+label,
 .floating-label-group input:not(:placeholder-shown)+label {
     top: -0.5rem;
-    font-size: 0.75rem;
-    color: #bec8fa;
-    background-color: #111624 !important;
+    font-size: 0.72rem;
+    color: var(--accent2);
+    background-color: transparent !important;
     width: fit-content;
     height: fit-content;
     text-align: left;
-    background-color: transparent;
-
 }
 
-/* Optional: style the input when it's focused */
 .floating-label-group input:focus {
-    border-color: #bec8fa;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(108, 99, 255, 0.18);
 }
 
 .btn {
-    background-color: #ff8a23;
+    background: var(--accent-g);
     width: 90%;
-    height: 3.5rem;
+    height: 3.3rem;
     border: none;
-    border-radius: 5px;
+    border-radius: 10px;
     color: #fff;
-    font-weight: bold;
-    font-size: 18px;
+    font-weight: 700;
+    font-size: 16px;
+    letter-spacing: 0.02em;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+    box-shadow: 0 12px 30px -10px rgba(108, 99, 255, 0.55);
 }
 
-.form-container-wrapper form {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
+.btn:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 16px 34px -8px rgba(108, 99, 255, 0.65);
 }
 
 .form-container-wrapper select {
-    background-color: #111624;
-    /* Forest green */
-    color: white;
-
+    background-color: var(--card);
+    color: var(--text);
 }
 
 .custom-checkbox {
@@ -192,34 +365,34 @@
     align-items: center;
     justify-content: left;
     cursor: pointer;
-    font-size: 16px;
+    font-size: 0.85rem;
+    color: var(--text2);
     user-select: none;
     text-align: left;
-    margin: 10px 0;
+    margin: 8px 0;
     width: 100%;
 }
 
 .custom-checkbox input {
     display: none;
-    /* Hide the default checkbox */
 }
 
 .custom-checkbox .checkmark {
-    width: 20px;
-    height: 20px;
+    width: 19px;
+    height: 19px;
     display: inline-block;
-    background-color: #eee;
-    border: 2px solid #ccc;
-    border-radius: 4px;
+    background-color: rgba(255, 255, 255, 0.04);
+    border: 2px solid var(--border);
+    border-radius: 5px;
     margin-right: 10px;
     position: relative;
     transition: all 0.2s ease;
+    flex-shrink: 0;
 }
 
-/* When checkbox is checked */
 .custom-checkbox input:checked+.checkmark {
-    background-color: #3b82f6;
-    border-color: #111624;
+    background: var(--accent-g);
+    border-color: transparent;
 }
 
 .custom-checkbox .checkmark::after {
@@ -228,12 +401,11 @@
     display: none;
 }
 
-/* Show checkmark when checked */
 .custom-checkbox input:checked+.checkmark::after {
     display: block;
-    left: 7.5px;
-    top: -1.4px;
-    width: 10px;
+    left: 6px;
+    top: 1.5px;
+    width: 5px;
     height: 10px;
     border: solid white;
     border-width: 0 2px 2px 0;
@@ -267,129 +439,184 @@
 .username {
     display: flex;
     align-items: center;
-    border: 1px solid #bec8fa;
+    border: 1px solid var(--border);
     padding: 0px 10px;
-    border-radius: 5px;
+    border-radius: 10px;
 }
 
 .username input {
     border: 0;
 }
 
-@media (max-width:700px) {
+@media (max-width:900px) {
     .form-container-wrapper {
         position: relative;
         justify-content: center;
-
+        flex-direction: column;
+        height: auto;
+        max-height: 94vh;
+        width: 94%;
     }
 
-    .form-container-wrapper img {
+    .hero-panel {
         width: 100%;
+        height: 180px;
+    }
+
+    .hero-content {
+        padding: 20px 24px;
+    }
+
+    .hero-title {
+        font-size: 1.4rem;
+    }
+
+    .hero-subtitle,
+    .hero-points {
+        display: none;
     }
 
     .form-container-wrapper form {
-        position: absolute;
-        width: 90%;
-        max-width: 450px;
-        height: fit-content;
-        border-radius: 10px;
-
-
+        width: 100%;
+        max-height: 74vh;
+        border-radius: 0 0 20px 20px;
     }
-
-
 }
 
 .error-text {
-  color: red !important; /* Reinforce red color */
+  color: var(--danger) !important;
   font-size: 12px;
   margin-top: 5px;
 }
 
 .btn:disabled {
-  opacity: 0.5;
+  opacity: 0.45;
   cursor: not-allowed;
+  box-shadow: none;
 }
 
-/* Secret Phrase Styles */
+/* ---- Secret Phrase Step ---- */
 .secret-phrase-container {
   width: 100%;
   max-width: 600px;
   margin: 0 auto;
 }
 
+.phrase-heading {
+  margin-bottom: 18px;
+}
+
+.phrase-heading-icon {
+  font-size: 1.6rem;
+  display: block;
+  margin-bottom: 6px;
+}
+
+.phrase-heading h3 {
+  background: var(--accent-g);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin: 0 0 4px;
+}
+
+.phrase-heading p {
+  color: var(--text3);
+  font-size: 0.8rem;
+  margin: 0;
+}
+
 .phrase-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr); /* 3 columns on mobile */
-  gap: 12px;
-  margin-bottom: 20px;
-  background: rgba(255, 255, 255, 0.05);
-  padding: 20px;
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 18px;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 18px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
 }
 
 .phrase-item {
   display: flex;
   align-items: center;
-  padding: 10px;
+  padding: 9px 10px;
   background: rgba(255, 255, 255, 0.03);
-  border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 9px;
+  border: 1px solid var(--border2);
+  transition: border-color 0.2s ease;
+}
+
+.phrase-item:hover {
+  border-color: rgba(108, 99, 255, 0.4);
 }
 
 .phrase-number {
-  font-weight: bold;
-  margin-right: 8px;
-  color: #888;
-  min-width: 24px;
+  font-weight: 700;
+  margin-right: 7px;
+  color: var(--accent2);
+  min-width: 20px;
+  font-size: 0.8rem;
 }
 
 .phrase-word {
   font-weight: 500;
-  color: #fff;
+  color: var(--text);
+  font-size: 0.88rem;
 }
 
 .phrase-warning {
-  background-color: #4a1e1e;
-  border: 2px solid #ff4d4d;
-  border-radius: 8px;
-  padding: 10px;
-  margin: 10px 0;
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.12), rgba(239, 68, 68, 0.04));
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  border-radius: 12px;
+  padding: 14px;
+  margin: 14px 0;
   text-align: left;
-  color: #ffffff;
 }
 
 .phrase-warning p {
   margin: 0;
-  line-height: 1.5;
+  line-height: 1.55;
 }
 
-.phrase-warning svg {
-  color: #ff4d4d; /* Match the warning icon color to the text */
-  font-size: 16px; /* Adjust size as needed */
+.phrase-warning-title {
+  display: block;
+  color: #ff6b6b;
+  font-weight: 700;
+  font-size: 0.85rem;
+  margin-bottom: 4px;
+}
+
+.phrase-warning-text {
+  display: block;
+  color: var(--text2);
+  font-size: 0.8rem;
 }
 
 .phrase-actions {
   display: flex;
-  gap: 10px;
+  gap: 8px;
   justify-content: center;
-  margin-bottom: 20px;
+  margin-bottom: 18px;
   flex-wrap: wrap;
 }
 
 .phrase-btn {
-  padding: 8px 16px;
-  border-radius: 6px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  background: rgba(255, 255, 255, 0.05);
-  color: #fff;
+  padding: 8px 15px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text);
+  font-size: 0.82rem;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .phrase-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(108, 99, 255, 0.12);
+  border-color: rgba(108, 99, 255, 0.4);
 }
 
 .phrase-btn.secondary {
@@ -397,7 +624,7 @@
 }
 
 .saved-confirmation {
-  margin-bottom: 20px;
+  margin-bottom: 18px;
 }
 
 .saved-checkbox {
@@ -405,51 +632,39 @@
   align-items: center;
   gap: 8px;
   cursor: pointer;
+  justify-content: center;
+  color: var(--text2);
+  font-size: 0.85rem;
 }
 
 .saved-checkbox input[type="checkbox"] {
-  width: 18px;
-  height: 18px;
-  margin-left: 18px;
-}
-
-/* Responsive adjustments */
-@media (min-width: 768px) {
-  .phrase-grid {
-    grid-template-columns: repeat(3, 1fr); /* 4 columns on tablet and desktop */
-  }
+  width: 17px;
+  height: 17px;
+  accent-color: var(--accent);
 }
 
 @media (max-width: 480px) {
   .phrase-grid {
-    grid-template-columns: repeat(2, 1fr); /* 2 columns on very small screens */
+    grid-template-columns: repeat(2, 1fr);
     gap: 8px;
-    padding: 15px;
+    padding: 14px;
   }
-  
+
   .phrase-item {
-    padding: 8px;
-    flex-direction: column;
-    text-align: center;
+    padding: 7px;
   }
-  
-  .phrase-number {
-    margin-right: 0;
-    margin-bottom: 4px;
-  }
-  
+
   .phrase-actions {
     flex-direction: column;
   }
-  
+
   .phrase-btn {
     width: 100%;
   }
 }
 
-/* For extremely small screens */
 @media (max-width: 320px) {
   .phrase-grid {
-    grid-template-columns: 1fr; /* Single column on tiny screens */
+    grid-template-columns: 1fr;
   }
 }
