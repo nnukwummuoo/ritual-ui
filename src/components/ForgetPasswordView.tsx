@@ -92,7 +92,7 @@ const normalizedUsername = usernameInput.startsWith("@") ? usernameInput : (user
 
   return (
     <div
-      className="flex flex-col items-center justify-center h-screen bg-[#080b14] text-white px-4"
+      className="flex flex-col items-center justify-center h-screen bg-[#080b14] text-white px-4 overflow-y-auto py-8"
       style={{
         position: "fixed",
         right: 0,
@@ -104,7 +104,7 @@ const normalizedUsername = usernameInput.startsWith("@") ? usernameInput : (user
       }}
     >
       <ToastContainer position="top-center" theme="dark" />
-      <div className="bg-[#111624] rounded-lg shadow-lg p-6 w-full max-w-md">
+      <div className="bg-[#111624] rounded-lg shadow-lg p-6 w-full max-w-md my-auto">
         <h1 className="bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent text-3xl font-bold text-center">
           Reset Your Password
         </h1>
