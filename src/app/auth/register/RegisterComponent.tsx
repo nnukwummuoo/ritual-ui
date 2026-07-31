@@ -644,7 +644,7 @@ export const Register = () => {
               {inputs[0].step_2.map((v, i) => (
                 <div className="floating-label-group" key={i}>
                   {v.input}
-                  {v.name !== "username" && <label htmlFor={v.name}>{v.label}</label>}
+                  {v.name !== "username" && v.name !== "gender" && <label htmlFor={v.name}>{v.label}</label>}
                   <p className="error-text h-6">{errors[v.name] || ""}</p>
                   {/* Username specific messages */}
                   {v.name === "username" && (
