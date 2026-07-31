@@ -455,6 +455,7 @@
         overflow-x: hidden;
         height: auto;
         min-height: 100dvh;
+        align-items: flex-start;
     }
 
     .form-container-wrapper {
@@ -463,6 +464,7 @@
         flex-direction: column;
         height: auto;
         width: 94%;
+        margin-top: 16px !important;
     }
 
     .hero-panel {
