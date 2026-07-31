@@ -668,6 +668,7 @@ export const Register = () => {
                 <div className="phrase-grid">
                   {secretPhrase.map((word, index) => (
                     <div className="phrase-item" key={index}>
+                      <span className="phrase-number">{index + 1}.</span>
                       <span className="phrase-word">{word}</span>
                     </div>
                   ))}
