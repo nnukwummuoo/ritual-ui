@@ -4,6 +4,7 @@ import { FaAngleLeft, FaAngleRight } from "react-icons/fa";
 import { MdLockOutline } from "react-icons/md";
 import { RiDeleteBinLine } from "react-icons/ri";
 import { useRouter } from "next/navigation";
+import { FaKey } from "react-icons/fa";
 // import setting from "../../icons/settings.png";
 // import { NavButton } from "../_components/navbutton";
 // import { Header } from "../_components/header";
@@ -20,6 +21,11 @@ const AccountPage = () => {
       name: "Password & security setting",
       icon: <MdLockOutline color="white" size={20} />,
       linktitle: "change-password",
+    },
+     {
+      name: "Recovery phrase",
+      icon: <FaKey color="white" size={18} />,
+      linktitle: "secret-phrase",
     },
     {
       name: "Delete my account",
