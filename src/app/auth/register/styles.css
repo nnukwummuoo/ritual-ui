@@ -155,8 +155,6 @@
     flex-direction: column;
     justify-content: center;
     overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior: contain;
 }
 
 .form-head {
@@ -451,12 +449,19 @@
 }
 
 @media (max-width:900px) {
+    .body {
+        position: relative;
+        overflow-y: auto;
+        overflow-x: hidden;
+        height: auto;
+        min-height: 100dvh;
+    }
+
     .form-container-wrapper {
         position: relative;
         justify-content: center;
         flex-direction: column;
         height: auto;
-        max-height: 94vh;
         width: 94%;
     }
 
@@ -480,8 +485,13 @@
 
     .form-container-wrapper form {
         width: 100%;
-        max-height: 74vh;
+        max-height: none;
+        overflow-y: visible;
         border-radius: 0 0 20px 20px;
+    }
+
+    .form-input-wrapper {
+        padding-bottom: 24px;
     }
 }
 
@@ -499,8 +509,6 @@
 
 /* ---- Secret Phrase Step ---- */
 .secret-phrase-container {
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior: contain;
   width: 100%;
   max-width: 600px;
   margin: 0 auto;
