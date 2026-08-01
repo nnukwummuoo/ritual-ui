@@ -17,7 +17,8 @@ import { ContentFilterProvider } from "@/lib/context/content-filter-context";
 import MaintenanceBanner from "@/components/MaintenanceBanner";
 import ReferralTracker from "@/components/ReferralTracker";
 import UpdateNotification from "@/components/UpdateNotification";
-import GlobalLoader from "@/components/GlobalLoader"; // ← ADD
+import GlobalLoader from "@/components/GlobalLoader";
+import ChunkErrorHandler from "@/components/ChunkErrorHandler";
 
 const inter = Inter({
   weight: ["100", "300", "400", "500", "700"],
@@ -68,6 +69,7 @@ export default async function RootLayout({
       </head>
       <body className={`${inter.className} antialiased bg-background`}>
         <GlobalLoader /> {/* ← ADD — shows on every route change + offline */}
+        <ChunkErrorHandler />
         <ServiceWorkerProvider />
         <StorageCleanup />
         <PWAInstallPrompt />
