@@ -354,22 +354,6 @@ const Topup: React.FC = () => {
 
         {/* Payment Form */}
         <div className="flex flex-col items-center gap-4 w-full">
-
-          <select
-            required
-            className="block bg-[#23243c] text-white rounded-lg px-3 py-2 sm:px-4 sm:py-3 w-full appearance-none border border-[#23243c] focus:outline-none focus:ring-2 focus:ring-[#FFD682] font-medium text-sm sm:text-base"
-            value={selectedPackId}
-            onChange={(e) => setSelectedPackId(e.target.value)}
-          >
-            <option value="" disabled>
-              Choose Gold Pack
-            </option>
-            {golds.map((value) => (
-              <option key={value.id} value={value.id}>
-                {value.value} Gold / ${value.amount.replace(/[^0-9.]/g, "")}
-              </option>
-            ))}
-          </select>
           
           <select
             required
