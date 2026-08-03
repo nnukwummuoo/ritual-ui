@@ -9,7 +9,7 @@ import { toast } from "react-toastify";
 import { golds } from "@/data/intresttypes";
 import { createWeb3Payment, checkWeb3PaymentStatus, cancelWeb3Payment, verifyTransactionHash } from "@/api/web3payment";
 import { RootState } from "@/store/store"
-import { Copy, Check } from "lucide-react";
+import { Copy, Check, ShieldCheck, Lock, RefreshCw } from "lucide-react";
 
 // Icons for tags
 const tagIcons: Record<string, React.ReactNode> = {
@@ -33,9 +33,9 @@ const Topup: React.FC = () => {
   const [copiedWallet, setCopiedWallet] = useState<boolean>(false);
   const [copiedOrderId, setCopiedOrderId] = useState<boolean>(false);
   const [txHash, setTxHash] = useState<string>("");
-  const [fromAddress, setFromAddress] = useState<string>("");
   const [verifyingTx, setVerifyingTx] = useState<boolean>(false);
   const [timeLeft, setTimeLeft] = useState<number>(0);
+  const [fromAddress, setFromAddress] = useState<string>("");
 
   const userId = useSelector((state: RootState) => state.profile.userId);
   const login = useSelector((state: RootState) => state.register.logedin);
@@ -118,7 +118,7 @@ const Topup: React.FC = () => {
       return;
     }
     if (!fromAddress.trim() || !/^0x[a-fA-F0-9]{40}$/.test(fromAddress.trim())) {
-      toast.error("Enter the wallet address you'll be sending USDT from (starts with 0x).", { autoClose: 3000 });
+      toast.error("Enter the wallet address you'll be sending from (starts with 0x).", { autoClose: 3000 });
       return;
     }
     if (web3Payment) {
@@ -154,7 +154,7 @@ const Topup: React.FC = () => {
       const remaining = Math.max(0, Math.floor((expiryTime - now) / 1000));
       setTimeLeft(remaining);
 
-      toast.success("Web3 payment created! Send USDT and paste your transaction hash.", { autoClose: 5000 });
+      toast.success("Payment created! Send USDT or USDC and paste your transaction hash.", { autoClose: 5000 });
     } catch (error) {
       console.error("Payment error details:", error);
       toast.error("An error occurred during payment", { autoClose: 2000 });
@@ -285,67 +285,81 @@ const Topup: React.FC = () => {
 
   // Table data from golds array
   const tableRows = golds.map((gold) => (
-    <tr key={gold.value} className="border-b border-[#323544] last:border-b-0">
-      <td className="py-2 px-2 text-center text-sm sm:text-base border-r border-[#323544] whitespace-nowrap">
+    <tr
+      key={gold.value}
+      className={`border-b border-white/[0.05] last:border-b-0 transition-colors ${
+        selectedPackId === gold.id ? "bg-[#6c63ff]/[0.08]" : ""
+      }`}
+    >
+      <td className="py-2.5 px-2 text-center text-sm sm:text-base border-r border-white/[0.05] whitespace-nowrap text-white font-medium">
         {gold.value}
       </td>
-      <td className="py-2 px-2 text-center text-sm sm:text-base border-r border-[#323544] whitespace-nowrap">
+      <td className="py-2.5 px-2 text-center text-sm sm:text-base border-r border-white/[0.05] whitespace-nowrap text-gray-300">
         {gold.amount}
       </td>
-      <td className="py-2 px-2 text-center text-sm sm:text-base whitespace-nowrap">
+      <td className="py-2.5 px-2 text-center text-sm sm:text-base whitespace-nowrap">
         {gold.tag ? (
-          <span className="flex items-center gap-1 justify-center whitespace-nowrap">
+          <span className="flex items-center gap-1 justify-center whitespace-nowrap text-[#c9c4ff]">
             {tagIcons[gold.tag] || null}
             {gold.tag}
           </span>
-        ) : "-"}
+        ) : <span className="text-gray-600">-</span>}
       </td>
     </tr>
   ));
 
   return (
-    <div className="min-h-screen w-full flex items-start justify-center px-4 sm:px-6 pt-4 sm:pt-6">
+    <div className="min-h-screen w-full flex items-start justify-center px-4 sm:px-6 pt-4 sm:pt-6 pb-16">
       <div className="flex flex-col items-center w-full max-w-md mx-auto">
-        {/* Gold Shop Avatar */}
-        {/* <div>
-           <Image
-            src="icons/m-logo.png"
-            alt="Gold Shop Logo"
-            width={60}
-            height={60}
-            className="object-contain sm:w-[77px] sm:h-[77px]"
-          /> 
-        </div> */}
+
+        {/* Brand mark */}
+        <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#f5c451] to-[#e8a93a] flex items-center justify-center text-xl font-extrabold text-[#1A1C2C] shadow-[0_12px_28px_-10px_rgba(245,196,81,0.6)]">
+          ✦
+        </div>
+
         {/* Title */}
-        <h1 className="mt-2 sm:mt-4 text-white text-2xl sm:text-3xl font-bold text-center">Gold Shop</h1>
+        <h1 className="mt-3 text-white text-2xl sm:text-3xl font-bold text-center">Gold Shop</h1>
+
         {/* Subtitle */}
-        <div className="flex items-center mt-2 gap-2">
+        <p className="text-[#8b8fa3] text-sm text-center mt-1.5 max-w-xs">
+          Fuel real connections. Buy Gold securely and book creators with confidence.
+        </p>
+
+        {/* Trust badges row */}
+        <div className="flex items-center gap-2 mt-4 flex-wrap justify-center">
+          <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-[#a7e3c4] bg-[#22c55e]/10 border border-[#22c55e]/25 rounded-full px-3 py-1.5">
+            <ShieldCheck className="w-3 h-3" /> Payment protected
+          </span>
+          <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-[#c9c4ff] bg-[#6c63ff]/10 border border-[#6c63ff]/25 rounded-full px-3 py-1.5">
+            <Lock className="w-3 h-3" /> Verified on-chain
+          </span>
+        </div>
+
+        {/* Accepted tokens line */}
+        <div className="flex items-center mt-5 gap-2">
           <span
-            className="rounded-full flex items-center justify-center"
+            className="rounded-full flex items-center justify-center shrink-0"
             style={{
-              background: "#FFD682",
+              background: "linear-gradient(135deg, #f5c451, #e8a93a)",
               width: 24,
               height: 24,
             }}
           >
-            <span className="text-[#1A1C2C] text-base sm:text-lg font-bold">$</span>
+            <span className="text-[#1A1C2C] text-base font-bold">$</span>
           </span>
-          <span className="text-[#b6b7c7] text-sm sm:text-base font-medium whitespace-nowrap">
-            Buy Gold with USDT <span className="text-[#636583] font-normal">(BEP20)</span>
+          <span className="text-[#b6b7c7] text-sm sm:text-base font-medium">
+            Buy Gold with USDT or USDC <span className="text-[#636583] font-normal">(BEP20)</span>
           </span>
         </div>
 
         {/* Table Card */}
-        <div
-          className="w-full bg-[#191c2f] rounded-2xl shadow-md p-0 mb-6 mt-4 sm:mt-6 overflow-x-auto"
-          style={{ border: "1px solid #23243c" }}
-        >
+        <div className="w-full bg-[#111624] rounded-2xl shadow-[0_20px_50px_-25px_rgba(0,0,0,0.6)] p-0 mb-6 mt-4 sm:mt-6 overflow-x-auto border border-white/[0.06]">
           <table className="w-full text-white border-collapse">
             <thead>
-              <tr className="border-b border-[#323544]">
-                <th className="py-2 px-2 font-semibold text-sm sm:text-base text-center border-r border-[#323544] whitespace-nowrap">Pack</th>
-                <th className="py-2 px-2 font-semibold text-sm sm:text-base text-center border-r border-[#323544] whitespace-nowrap">Price</th>
-                <th className="py-2 px-2 font-semibold text-sm sm:text-base text-center whitespace-nowrap">Tag</th>
+              <tr className="border-b border-white/[0.06]">
+                <th className="py-3 px-2 font-semibold text-sm sm:text-base text-center border-r border-white/[0.06] whitespace-nowrap text-gray-400">Pack</th>
+                <th className="py-3 px-2 font-semibold text-sm sm:text-base text-center border-r border-white/[0.06] whitespace-nowrap text-gray-400">Price</th>
+                <th className="py-3 px-2 font-semibold text-sm sm:text-base text-center whitespace-nowrap text-gray-400">Tag</th>
               </tr>
             </thead>
             <tbody>{tableRows}</tbody>
@@ -354,10 +368,10 @@ const Topup: React.FC = () => {
 
         {/* Payment Form */}
         <div className="flex flex-col items-center gap-4 w-full">
-          
+
           <select
             required
-            className="block bg-[#23243c] text-white rounded-lg px-3 py-2 sm:px-4 sm:py-3 w-full appearance-none border border-[#23243c] focus:outline-none focus:ring-2 focus:ring-[#FFD682] font-medium text-sm sm:text-base"
+            className="block bg-[#111624] text-white rounded-xl px-3 py-3 sm:px-4 w-full appearance-none border border-white/10 focus:outline-none focus:ring-1 focus:ring-[#6c63ff] focus:border-[#6c63ff] font-medium text-sm sm:text-base transition-colors"
             value={selectedPackId}
             onChange={(e) => setSelectedPackId(e.target.value)}
           >
@@ -375,70 +389,78 @@ const Topup: React.FC = () => {
             <div className="w-full">
               <input
                 type="text"
-                placeholder="Your wallet address (0x...) — the one you'll send USDT from"
+                placeholder="Your wallet address (0x...) — the one you'll send from"
                 value={fromAddress}
                 onChange={(e) => setFromAddress(e.target.value.trim())}
-                className="block bg-[#23243c] text-white rounded-lg px-3 py-2 sm:px-4 sm:py-3 w-full border border-[#23243c] focus:outline-none focus:ring-2 focus:ring-[#FFD682] font-medium text-sm sm:text-base placeholder:text-gray-500"
+                className="block bg-[#111624] text-white rounded-xl px-3 py-3 sm:px-4 w-full border border-white/10 focus:outline-none focus:ring-1 focus:ring-[#6c63ff] focus:border-[#6c63ff] font-medium text-sm sm:text-base placeholder:text-gray-600 transition-colors"
               />
-              <p className="text-xs text-gray-500 mt-1.5 px-1">
-                We use this to confirm your payment came from your own wallet — it must match the address you send USDT from.
+              <p className="text-xs text-gray-500 mt-2 px-1 flex items-start gap-1.5">
+                <ShieldCheck className="w-3.5 h-3.5 text-[#22c55e] shrink-0 mt-0.5" />
+                We match this against your on-chain payment to keep your purchase safe — it must be the wallet you actually send from.
               </p>
             </div>
           )}
 
           {!web3Payment ? (
-
-        
             <button
-              className={`w-full h-10 sm:h-12 rounded-lg font-bold text-base sm:text-lg ${loading
-                ? "bg-[#FFD682]/60 text-[#b6b7c7] cursor-not-allowed"
-                : "bg-[#FFD682] text-[#15182a] hover:bg-[#ffe7ac] active:bg-[#ffd682]"
-                } shadow transition-all`}
+              className={`w-full h-12 rounded-xl font-bold text-base sm:text-lg transition-all ${
+                loading
+                  ? "bg-gradient-to-r from-[#6c63ff]/50 to-[#9b59f5]/50 text-white/60 cursor-not-allowed"
+                  : "bg-gradient-to-r from-[#6c63ff] to-[#9b59f5] text-white shadow-[0_14px_30px_-10px_rgba(108,99,255,0.55)] hover:shadow-[0_16px_34px_-8px_rgba(108,99,255,0.65)] hover:-translate-y-0.5 active:translate-y-0"
+              }`}
               onClick={pay}
               disabled={loading}
             >
               {loading ? "Processing..." : "Create Payment"}
             </button>
           ) : (
-            <div className="w-full bg-[#23243c] rounded-lg p-6 border border-[#323544]">
+            <div className="w-full bg-[#111624] rounded-2xl p-6 border border-white/[0.06] shadow-[0_20px_50px_-25px_rgba(0,0,0,0.6)]">
               {/* 30-Minute Payment Window Notice */}
-              <div className="w-full bg-gradient-to-r from-yellow-900/30 to-orange-900/30 rounded-lg p-4 border border-yellow-800/50 mb-6">
+              <div className="w-full bg-gradient-to-r from-amber-500/10 to-orange-500/10 rounded-xl p-4 border border-amber-500/25 mb-6">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center">
-                    <span className="text-yellow-900 text-lg font-bold">⚡</span>
+                  <div className="w-9 h-9 bg-gradient-to-br from-amber-400 to-orange-400 rounded-full flex items-center justify-center shrink-0">
+                    <span className="text-[#1A1C2C] text-lg font-bold">⚡</span>
                   </div>
                   <div>
-                    <h3 className="text-yellow-400 font-bold text-lg">30-Minute Payment Window</h3>
-                    <p className="text-yellow-200 text-sm">Once it closes, it&apos;s gone for good.</p>
-                    <p className="text-yellow-100 text-sm font-medium">Complete your payment before time runs out.</p>
+                    <h3 className="text-amber-300 font-bold text-base">30-Minute Payment Window</h3>
+                    <p className="text-amber-200/70 text-xs mt-0.5">Once it closes, it&apos;s gone for good.</p>
+                    <p className="text-amber-100/90 text-xs font-medium">Complete your payment before time runs out.</p>
                   </div>
                 </div>
               </div>
 
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                  <div className="w-2 h-2 bg-[#22c55e] rounded-full shadow-[0_0_6px_#22c55e]"></div>
                   <h3 className="text-white font-bold text-lg">Web3 Payment</h3>
                 </div>
                 {timeLeft > 0 && (
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-red-400 rounded-full animate-pulse"></div>
-                    <span className="text-red-400 font-mono text-sm">
+                  <div className="flex items-center gap-2 bg-red-500/10 border border-red-500/25 rounded-full px-3 py-1">
+                    <div className="w-1.5 h-1.5 bg-red-400 rounded-full animate-pulse"></div>
+                    <span className="text-red-300 font-mono text-sm">
                       {formatTime(timeLeft)}
                     </span>
                   </div>
                 )}
               </div>
 
+              {/* Reassurance banner */}
+              <div className="flex items-start gap-2.5 bg-[#6c63ff]/[0.08] border border-[#6c63ff]/20 rounded-xl px-3.5 py-3 mb-4">
+                <ShieldCheck className="w-4 h-4 text-[#9b59f5] shrink-0 mt-0.5" />
+                <p className="text-xs text-[#c9c4ff] leading-relaxed">
+                  Your payment is protected — we verify every transaction directly on-chain before Gold is credited to your account.
+                </p>
+              </div>
+
               {/* Payment Summary */}
-              <div className="bg-[#1a1c2f] rounded-lg p-4 mb-4">
+              <div className="bg-[#0d1120] rounded-xl p-4 mb-4 border border-white/[0.05]">
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
-                    <span className="text-gray-400">Amount:</span>
-                    <div className="text-white font-semibold text-lg">{web3Payment.amount} USDT</div>
+                    <span className="text-gray-500 text-xs">Amount</span>
+                    <div className="text-white font-semibold text-lg">{web3Payment.amount}</div>
                   </div>
                   <div>
-                    <span className="text-gray-400">Network:</span>
+                    <span className="text-gray-500 text-xs">Network</span>
                     <div className="text-white font-semibold">{web3Payment.network}</div>
                   </div>
                 </div>
@@ -446,16 +468,16 @@ const Topup: React.FC = () => {
 
               {/* Order ID Section */}
               <div className="mb-3">
-                <label className="block text-xs font-medium text-gray-400 mb-1">
-                  Order ID:
+                <label className="block text-xs font-medium text-gray-500 mb-1.5 ml-0.5">
+                  Order ID
                 </label>
-                <div className="flex items-center gap-2 p-2 bg-[#1a1c2f] rounded-lg border border-[#323544]">
+                <div className="flex items-center gap-2 p-2.5 bg-[#0d1120] rounded-xl border border-white/[0.05]">
                   <div className="flex-1 font-mono text-xs text-white break-all">
                     {web3Payment.orderId}
                   </div>
                   <button
                     onClick={copyOrderId}
-                    className="flex items-center gap-1 px-2 py-1 bg-[#FFD682] text-[#15182a] rounded-md text-xs font-medium hover:bg-[#ffe7ac] transition-all"
+                    className="flex items-center gap-1 px-2.5 py-1.5 bg-gradient-to-r from-[#6c63ff] to-[#9b59f5] text-white rounded-lg text-xs font-medium hover:opacity-90 transition-all shrink-0"
                   >
                     {copiedOrderId ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
                     {copiedOrderId ? "Copied!" : "Copy"}
@@ -465,27 +487,30 @@ const Topup: React.FC = () => {
 
               {/* Wallet Address Section */}
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Send USDT to this address:
+                <label className="block text-sm font-medium text-gray-300 mb-2 ml-0.5">
+                  Send USDT or USDC to this address
                 </label>
-                <div className="flex items-center gap-2 p-3 bg-[#1a1c2f] rounded-lg border border-[#323544]">
+                <div className="flex items-center gap-2 p-3 bg-[#0d1120] rounded-xl border border-white/[0.05]">
                   <div className="flex-1 font-mono text-xs text-white break-all">
                     {web3Payment.walletAddress}
                   </div>
                   <button
                     onClick={copyWalletAddress}
-                    className="flex items-center gap-1 px-3 py-2 bg-[#FFD682] text-[#15182a] rounded-md text-xs font-medium hover:bg-[#ffe7ac] transition-all"
+                    className="flex items-center gap-1 px-3 py-2 bg-gradient-to-r from-[#6c63ff] to-[#9b59f5] text-white rounded-lg text-xs font-medium hover:opacity-90 transition-all shrink-0"
                   >
                     {copiedWallet ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
                     {copiedWallet ? "Copied!" : "Copy"}
                   </button>
                 </div>
+                <p className="text-[11px] text-amber-300/80 mt-1.5 ml-0.5">
+                  ⚠ BEP20 network only — sending on another network may result in permanent loss of funds.
+                </p>
               </div>
 
               {/* Transaction Hash Input Section */}
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Paste your transaction hash here:
+                <label className="block text-sm font-medium text-gray-300 mb-2 ml-0.5">
+                  Paste your transaction hash
                 </label>
                 <div className="flex items-center gap-2">
                   <input
@@ -493,16 +518,16 @@ const Topup: React.FC = () => {
                     value={txHash}
                     onChange={(e) => setTxHash(e.target.value)}
                     placeholder="0x..."
-                    className="flex-1 p-3 bg-[#1a1c2f] text-white rounded-lg border border-[#323544] focus:outline-none focus:ring-2 focus:ring-[#FFD682] font-mono text-xs"
+                    className="flex-1 p-3 bg-[#0d1120] text-white rounded-xl border border-white/[0.05] focus:outline-none focus:ring-1 focus:ring-[#6c63ff] focus:border-[#6c63ff] font-mono text-xs transition-colors"
                   />
                   <button
                     onClick={verifyTransaction}
                     disabled={verifyingTx || !txHash.trim() || timeLeft === 0}
-                    className="px-4 py-3 bg-[#FFD682] text-[#15182a] rounded-lg font-medium hover:bg-[#ffe7ac] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                    className="px-4 py-3 bg-gradient-to-r from-[#6c63ff] to-[#9b59f5] text-white rounded-xl font-medium hover:opacity-90 transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2 shrink-0"
                   >
                     {verifyingTx ? (
                       <>
-                        <div className="w-4 h-4 border-2 border-[#15182a] border-t-transparent rounded-full animate-spin"></div>
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                         Verifying...
                       </>
                     ) : (
@@ -516,25 +541,37 @@ const Topup: React.FC = () => {
               </div>
 
               {/* Instructions */}
-              <div className="mb-4">
-                <div className="text-xs text-gray-400 leading-relaxed">
+              <div className="mb-5">
+                <div className="text-xs text-gray-500 leading-relaxed">
                   {web3Payment.instructions}
                 </div>
-                <div className="text-xs text-yellow-400 mt-3 p-3 bg-yellow-900/20 rounded-lg border border-yellow-800/30">
-                  💡 <strong>How to get your transaction hash:</strong> After sending USDT, copy the transaction hash from your wallet or blockchain explorer and paste it above.
+                <div className="text-xs text-amber-200/90 mt-3 p-3 bg-amber-500/[0.07] rounded-xl border border-amber-500/20">
+                  💡 <strong className="text-amber-300">How to get your transaction hash:</strong> After sending, copy the transaction hash from your wallet or blockchain explorer and paste it above.
                 </div>
               </div>
 
               {/* Action Buttons */}
               <div className="flex gap-3">
                 <button
-                  className="flex-1 py-3 px-4 bg-gray-600 text-white rounded-lg font-medium hover:bg-gray-700 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="flex-1 py-3 px-4 bg-white/[0.04] border border-white/10 text-gray-300 rounded-xl font-medium hover:bg-white/[0.08] hover:text-white transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                  onClick={checkPaymentStatus}
+                  disabled={checkingStatus}
+                >
+                  {checkingStatus ? (
+                    <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
+                  ) : (
+                    <RefreshCw className="w-4 h-4" />
+                  )}
+                  {checkingStatus ? "Checking..." : "Refresh Status"}
+                </button>
+                <button
+                  className="flex-1 py-3 px-4 bg-red-500/10 border border-red-500/25 text-red-300 rounded-xl font-medium hover:bg-red-500/20 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
                   onClick={cancelTransaction}
                   disabled={loading}
                 >
                   {loading ? (
                     <>
-                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      <div className="w-4 h-4 border-2 border-red-300 border-t-transparent rounded-full animate-spin"></div>
                       Cancelling...
                     </>
                   ) : (
@@ -542,6 +579,10 @@ const Topup: React.FC = () => {
                   )}
                 </button>
               </div>
+
+              <p className="text-center text-[11px] text-gray-600 mt-4">
+                🔒 Your funds are never at risk of double-charging — each transaction can only be used once.
+              </p>
             </div>
           )}
         </div>
