@@ -61,29 +61,16 @@ const CreatorCard: React.FC<CreatorCardProps> = ({
 
   return (
     <div
-      className="relative bg-[#111624] rounded-lg w-48 flex-shrink-0 cursor-pointer hover:bg-gray-750 transition-colors overflow-hidden flex flex-col"
+      className="relative overflow-hidden rounded-xl cursor-pointer group border border-white/[0.06] w-48 flex-shrink-0 snap-start transition-transform duration-200 active:scale-[0.98] hover:-translate-y-0.5"
       onClick={handleCardClick}
     >
-      {/* Close button */}
-      {/* <button
-        className="absolute top-2 right-2 text-white/80 hover:text-white z-20 bg-black/20 rounded-full p-1 backdrop-blur-sm"
-        onClick={(e) => {
-          e.stopPropagation();
-          // TODO: Implement dismiss functionality
-        }}
-      >
-        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-          <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-        </svg>
-      </button> */}
-
-      {/* Profile Image - Large Portrait Style */}
+      {/* Profile Image */}
       <div className="relative w-full h-64 bg-gray-700">
         {photolink && photolink !== "/images/default-placeholder.png" ? (
           <img
             src={getImageSource(photolink, 'profile').src}
             alt={name}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
             onError={(e) => {
               const target = e.currentTarget as HTMLImageElement;
               target.style.display = 'none';
@@ -98,32 +85,38 @@ const CreatorCard: React.FC<CreatorCardProps> = ({
           {firstName.charAt(0).toUpperCase()}
         </div>
 
-        {/* VIP Badge */}
-        {isVip && (
-          <div className="absolute top-2 left-12 z-10">
-            <VIPBadge size="xl" isVip={isVip} vipEndDate={vipEndDate} />
+        {/* Bottom gradient scrim for legibility */}
+        <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/85 via-black/20 to-transparent pointer-events-none" />
+
+        {/* Online indicator */}
+        {isOnline && (
+          <div className="absolute top-2 left-2 flex items-center gap-1.5 px-2 py-1 bg-black/50 backdrop-blur-sm rounded-full">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#22c55e] shadow-[0_0_6px_#22c55e]" />
+            <span className="text-[10px] font-medium text-white">Online</span>
           </div>
         )}
 
-        {/* Online Status */}
-        {isOnline && (
-          <div className="absolute bottom-2 right-2 w-4 h-4 bg-green-500 rounded-full border-2 border-gray-800"></div>
+        {/* VIP Badge — resized down and pinned to the corner instead of overlapping the online pill */}
+        {isVip && (
+          <div className="absolute top-1 right-1">
+            <VIPBadge size="lg" isVip={isVip} vipEndDate={vipEndDate} />
+          </div>
         )}
+
+        {/* Bottom Info */}
+        <div className="absolute bottom-0 left-0 right-0 p-2.5">
+          <h4 className="text-sm font-semibold text-white truncate drop-shadow-sm">
+            {firstName}
+          </h4>
+          {hosttype && (
+            <div className="flex items-center gap-1.5 mt-1">
+              <span className="px-2 py-0.5 text-[10px] font-medium text-[#c9c4ff] bg-[#6c63ff]/15 border border-[#6c63ff]/25 rounded-full whitespace-nowrap">
+                {hosttype}
+              </span>
+            </div>
+          )}
+        </div>
       </div>
-
-      {/* Creator Info */}
-      {/*<div className="p-3 text-center flex flex-col gap-3">
-        <h3 className="font-semibold text-white flex text-center gap-3 items-center justify-center text-lg tracking-wide">{firstName}<span> <BadgeCheck size={17} fill="white" className="text-black" /> </span></h3>
-
-
-        View Profile Button
-        <button
-          onClick={handleCardClick}
-          className="w-full py-2 px-3 rounded-lg text-sm font-bold transition-all duration-200 bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:scale-105 shadow-md"
-        >
-          Request
-        </button>
-      </div>*/}
     </div>
   );
 };
@@ -326,19 +319,13 @@ const CreatorCards: React.FC = () => {
       <div>
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-white font-medium">Creators for you</h3>
-          <button className="text-blue-500 text-sm hover:underline">See all</button>
+          <button className="text-[#9b59f5] text-sm font-medium hover:text-[#b48cf7] hover:underline underline-offset-2">See all</button>
         </div>
-        <div className="flex gap-3 overflow-x-auto">
+        <div className="flex gap-3 overflow-x-auto no-scrollbar pb-2">
           {Array.from({ length: 3 }).map((_, index) => (
             <div key={index} className="flex-shrink-0 w-48">
-              <SkeletonTheme baseColor="#374151" highlightColor="#4B5563">
-                <div className="bg-gray-700 rounded-lg p-3">
-                  <Skeleton circle width={64} height={64} className="mx-auto mb-3" />
-                  <Skeleton width="80%" height={16} className="mx-auto mb-2" />
-                  <Skeleton width="60%" height={12} className="mx-auto mb-2" />
-                  <Skeleton width="40%" height={12} className="mx-auto mb-3" />
-                  <Skeleton width="100%" height={32} />
-                </div>
+              <SkeletonTheme baseColor="#1a1f2e" highlightColor="#252b3d">
+                <Skeleton height={256} borderRadius={12} />
               </SkeletonTheme>
             </div>
           ))}
@@ -354,14 +341,14 @@ const CreatorCards: React.FC = () => {
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-white font-medium">Creators for you</h3>
         <button
-          className="text-blue-500 text-sm hover:underline"
+          className="text-[#9b59f5] text-sm font-medium hover:text-[#b48cf7] hover:underline underline-offset-2"
           onClick={() => router.push('/creators')}
         >
           See all
         </button>
       </div>
 
-      <div className="flex gap-3 overflow-x-auto pb-2">
+      <div className="flex gap-3 overflow-x-auto no-scrollbar pb-2 snap-x snap-mandatory">
         {creators.map((creator, index) => (
           <CreatorCard key={`${creator.creator_portfolio_id}-${index}`} {...creator} />
         ))}

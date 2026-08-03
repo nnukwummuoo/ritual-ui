@@ -4,6 +4,7 @@ export interface Web3PaymentRequest {
   amount: number;
   userId: string;
   order_description?: string;
+  fromAddress: string;
 }
 
 export interface Web3PaymentResponse {

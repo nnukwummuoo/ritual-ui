@@ -33,6 +33,7 @@ const Topup: React.FC = () => {
   const [copiedWallet, setCopiedWallet] = useState<boolean>(false);
   const [copiedOrderId, setCopiedOrderId] = useState<boolean>(false);
   const [txHash, setTxHash] = useState<string>("");
+  const [fromAddress, setFromAddress] = useState<string>("");
   const [verifyingTx, setVerifyingTx] = useState<boolean>(false);
   const [timeLeft, setTimeLeft] = useState<number>(0);
 
@@ -116,6 +117,10 @@ const Topup: React.FC = () => {
       toast.error("Please select a gold pack", { autoClose: 2000 });
       return;
     }
+    if (!fromAddress.trim() || !/^0x[a-fA-F0-9]{40}$/.test(fromAddress.trim())) {
+      toast.error("Enter the wallet address you'll be sending USDT from (starts with 0x).", { autoClose: 3000 });
+      return;
+    }
     if (web3Payment) {
       toast.error("You already have an active payment. Please complete or cancel it first.", { autoClose: 3000 });
       return;
@@ -137,7 +142,8 @@ const Topup: React.FC = () => {
       const res = await createWeb3Payment({
         amount,
         userId,
-        order_description: `Gold Pack Purchase: ${selectedGold?.value} Gold`
+        order_description: `Gold Pack Purchase: ${selectedGold?.value} Gold`,
+        fromAddress: fromAddress.trim()
       });
 
       setWeb3Payment(res);
@@ -364,8 +370,41 @@ const Topup: React.FC = () => {
               </option>
             ))}
           </select>
+          
+          <select
+            required
+            className="block bg-[#23243c] text-white rounded-lg px-3 py-2 sm:px-4 sm:py-3 w-full appearance-none border border-[#23243c] focus:outline-none focus:ring-2 focus:ring-[#FFD682] font-medium text-sm sm:text-base"
+            value={selectedPackId}
+            onChange={(e) => setSelectedPackId(e.target.value)}
+          >
+            <option value="" disabled>
+              Choose Gold Pack
+            </option>
+            {golds.map((value) => (
+              <option key={value.id} value={value.id}>
+                {value.value} Gold / ${value.amount.replace(/[^0-9.]/g, "")}
+              </option>
+            ))}
+          </select>
+
+          {!web3Payment && (
+            <div className="w-full">
+              <input
+                type="text"
+                placeholder="Your wallet address (0x...) — the one you'll send USDT from"
+                value={fromAddress}
+                onChange={(e) => setFromAddress(e.target.value.trim())}
+                className="block bg-[#23243c] text-white rounded-lg px-3 py-2 sm:px-4 sm:py-3 w-full border border-[#23243c] focus:outline-none focus:ring-2 focus:ring-[#FFD682] font-medium text-sm sm:text-base placeholder:text-gray-500"
+              />
+              <p className="text-xs text-gray-500 mt-1.5 px-1">
+                We use this to confirm your payment came from your own wallet — it must match the address you send USDT from.
+              </p>
+            </div>
+          )}
 
           {!web3Payment ? (
+
+        
             <button
               className={`w-full h-10 sm:h-12 rounded-lg font-bold text-base sm:text-lg ${loading
                 ? "bg-[#FFD682]/60 text-[#b6b7c7] cursor-not-allowed"
