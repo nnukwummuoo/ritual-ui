@@ -389,10 +389,10 @@ const Topup: React.FC = () => {
             <div className="w-full">
               <input
                 type="text"
-                placeholder="Your wallet address (0x...) — the one you'll send from"
+                placeholder="Your wallet address (0x...)"
                 value={fromAddress}
                 onChange={(e) => setFromAddress(e.target.value.trim())}
-                className="block bg-[#111624] text-white rounded-xl px-3 py-3 sm:px-4 w-full border border-white/10 focus:outline-none focus:ring-1 focus:ring-[#6c63ff] focus:border-[#6c63ff] font-medium text-sm sm:text-base placeholder:text-gray-600 transition-colors"
+                className="block bg-[#111624] text-white rounded-xl px-3 py-3 sm:px-4 w-full border border-white/10 focus:outline-none focus:ring-1 focus:ring-[#6c63ff] focus:border-[#6c63ff] font-medium text-xs sm:text-sm placeholder:text-gray-600 placeholder:text-xs transition-colors"
               />
               <p className="text-xs text-gray-500 mt-2 px-1 flex items-start gap-1.5">
                 <ShieldCheck className="w-3.5 h-3.5 text-[#22c55e] shrink-0 mt-0.5" />
