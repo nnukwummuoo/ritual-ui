@@ -65,47 +65,8 @@ const TransactionsPage = () => {
     fetchTransactions();
   }, [fetchTransactions]);
 
-  // Filter and sort transactions
-  const filteredTransactions = transactions
-    .filter(transaction => {
-      const matchesSearch = transaction.orderId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        transaction.userId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (transaction.username?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
-        transaction.description.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesStatus = statusFilter === "all" || transaction.status === statusFilter;
-      return matchesSearch && matchesStatus;
-    })
-    .sort((a, b) => {
-      let aValue, bValue;
-
-      switch (sortBy) {
-        case "amount":
-          aValue = a.amount;
-          bValue = b.amount;
-          break;
-        case "status":
-          aValue = a.status;
-          bValue = b.status;
-          break;
-        case "createdAt":
-        default:
-          aValue = new Date(a.createdAt).getTime();
-          bValue = new Date(b.createdAt).getTime();
-          break;
-      }
-
-      if (sortOrder === "asc") {
-        return aValue > bValue ? 1 : -1;
-      } else {
-        return aValue < bValue ? 1 : -1;
-      }
-    });
-
-  // Pagination
-  const itemsPerPage = 10;
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const paginatedTransactions = filteredTransactions.slice(startIndex, endIndex);
+  // Backend already filters, sorts, and paginates — just render what it returns.
+  const paginatedTransactions = transactions;
 
   // Status badge component
   const StatusBadge = ({ status }: { status: string }) => {
@@ -167,7 +128,7 @@ const TransactionsPage = () => {
       console.log(`✅ [ADMIN] Verification result:`, result);
 
       if (result.status === 'confirmed') {
-        toast.success(`Transaction verified successfully! Order: ${result.orderId}, Amount: ${result.amount} USDT`);
+        toast.success(`Transaction verified successfully! Order: ${result.orderId}, Amount: ${result.amount} ${result.tokenSymbol || "USDT"}`);
         // Clear inputs and close modal
         setVerifyOrderId("");
         setVerifyTxHash("");
@@ -280,6 +241,9 @@ const TransactionsPage = () => {
                         Description
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                        Wallet
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                         Created
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
@@ -307,6 +271,12 @@ const TransactionsPage = () => {
                         </td>
                         <td className="px-6 py-4 text-sm text-white max-w-xs truncate">
                           {transaction.description}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-400">
+                          {(() => {
+                            const addr = (transaction.txData?.fromAddress || transaction.txData?.expectedFromAddress) as string | undefined;
+                            return addr ? `${addr.slice(0, 6)}...${addr.slice(-4)}` : "—";
+                          })()}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400">
                           {formatDate(transaction.createdAt)}
@@ -359,9 +329,8 @@ const TransactionsPage = () => {
                   <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
                     <div>
                       <p className="text-sm text-gray-400">
-                        Showing <span className="font-medium text-white">{startIndex + 1}</span> to{" "}
-                        <span className="font-medium text-white">{Math.min(endIndex, filteredTransactions.length)}</span> of{" "}
-                        <span className="font-medium text-white">{filteredTransactions.length}</span> results
+                        Showing <span className="font-medium text-white">{transactions.length}</span> results on this page
+                        {totalPages > 1 && <> — page <span className="font-medium text-white">{currentPage}</span> of <span className="font-medium text-white">{totalPages}</span></>}
                       </p>
                     </div>
                     <div>
@@ -440,6 +409,17 @@ const TransactionsPage = () => {
                     <label className="block text-sm font-medium text-gray-300 mb-1">Description</label>
                     <p className="text-sm text-white break-words whitespace-pre-wrap">{selectedTransaction.description}</p>
                   </div>
+                  
+                  {Boolean(selectedTransaction.txData?.fromAddress || selectedTransaction.txData?.expectedFromAddress) && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-1">
+                        {selectedTransaction.txData?.fromAddress ? "Sender Wallet (Verified On-Chain)" : "Registered Wallet (Not Yet Verified)"}
+                      </label>
+                      <p className="text-sm text-white font-mono break-words bg-[#080b14] px-3 py-2 rounded border border-gray-700">
+                        {String(selectedTransaction.txData?.fromAddress || selectedTransaction.txData?.expectedFromAddress || "")}
+                      </p>
+                    </div>
+                  )}
 
                   {selectedTransaction.txData && (
                     <div>

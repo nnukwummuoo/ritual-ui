@@ -136,6 +136,7 @@ export const verifyTransactionHash = async (orderId: string, txHash: string): Pr
   amount: number;
   txHash: string;
   fromAddress: string;
+  tokenSymbol?: string;
 }> => {
   const response = await fetch(`${API_URL}/web3/verify-tx`, {
     method: 'POST',
