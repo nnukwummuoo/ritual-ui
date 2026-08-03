@@ -6,6 +6,7 @@ import axios from 'axios';
 import { URL as API_URL } from '@/api/config';
 import { useSelector } from 'react-redux';
 import type { RootState } from '@/store/store';
+import ContentPolicyModal from "@/components/ContentPolicyModal";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 interface PanelData {
@@ -1028,46 +1029,19 @@ zIndex: 50,
         </div>
 
       </div>
-      {showBanWarning && (
-  <div className="fixed inset-0 flex items-center justify-center bg-black/60" style={{ zIndex: 1001 }}>
-    <div className="w-full max-w-lg mx-4 bg-[#0b0f1f] border border-gray-700 rounded-2xl shadow-2xl">
-      <div className="flex items-center justify-between p-4 border-b border-gray-700 bg-red-800 rounded-t-2xl">
-        <span className="text-white font-semibold">Warning: Permanent Ban Policy</span>
-      </div>
-      <div className="p-4 space-y-4 text-white">
-        <p>Uploading explicit, sexual, or pornographic content is strictly forbidden. 1st violation → permanent ban. No second chances.</p>
-        <label className="flex items-center gap-2 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={agreedToPolicy}
-            onChange={(e) => setAgreedToPolicy(e.target.checked)}
-            className="rounded border-gray-600 bg-[#111624] text-green-400 focus:ring-2 focus:ring-green-500"
-          />
-          <span>I understand and agree.</span>
-        </label>
-      </div>
-      <div className="flex items-center justify-end gap-3 p-4 border-t border-gray-700">
-        <button
-          onClick={() => setShowBanWarning(false)}
-          className="px-4 py-2 text-gray-300 hover:text-white transition"
-        >
-          Cancel
-        </button>
-        <button
-          onClick={() => {
-            if (!agreedToPolicy) return;
-            setShowBanWarning(false);
-            handlePublish();
-          }}
-          disabled={!agreedToPolicy}
-          className="px-4 py-2 font-semibold text-white bg-orange-600 rounded-lg hover:bg-orange-500 disabled:opacity-60"
-        >
-          Continue
-        </button>
-      </div>
-    </div>
-  </div>
-)}
+     
+     <ContentPolicyModal
+        open={showBanWarning}
+        agreed={agreedToPolicy}
+        onAgreedChange={setAgreedToPolicy}
+        onCancel={() => setShowBanWarning(false)}
+        onContinue={() => {
+          if (!agreedToPolicy) return;
+          setShowBanWarning(false);
+          handlePublish();
+        }}
+      />
+      
     </div>
   );
 }
