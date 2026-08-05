@@ -220,7 +220,8 @@ export const MessageView = () => {
         {/* Privacy assurance banner */}
         <div className="mt-3 flex items-center gap-2 bg-[#6c63ff]/[0.08] border border-[#6c63ff]/20 rounded-xl px-3.5 py-2.5">
           <svg className="w-4 h-4 text-[#9b59f5] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12.75L11.25 15 15 9.75M21 12c0 4.556-3.032 8.395-7.183 9.632-.55.164-1.084-.279-1.084-.854V3.222c0-.575.534-1.018 1.084-.854C17.968 3.605 21 7.444 21 12z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.6} d="M12 3L18 5.5V11C18 15.5 15.5 19 12 21C8.5 19 6 15.5 6 11V5.5L12 3Z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.6} d="M9 12l2 2 4-4" />
           </svg>
           <p className="text-xs text-[#c9c4ff] leading-relaxed">
             Chat and media auto-delete after 60 days for privacy
