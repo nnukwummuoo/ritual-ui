@@ -181,39 +181,52 @@ export const MessageView = () => {
 
 
   return (
-    <div className="w-full h-full flex flex-col">
+    <div className="w-full h-full flex flex-col bg-[#080b14]">
       {/* Header */}
-      <div className="border-b p-4">
+      <div className="border-b border-white/[0.06] px-4 pt-4 pb-3 bg-[#080b14]">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             <button
               onClick={() => window.history.back()}
-              className="p-2 hover:bg-blue-700/50 rounded-full transition-colors"
+              className="p-2 -ml-2 hover:bg-white/10 rounded-full transition-colors"
             >
               <FaAngleLeft className="w-6 h-6 text-white" />
             </button>
-            <h1 className="text-2xl font-bold text-white">Messages</h1>
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">
+              Messages
+            </h1>
           </div>
           <button
             onClick={() => window.location.href = '/message/supportchat'}
-            className="relative p-2 hover:bg-blue-700/50 rounded-full transition-colors"
+            className="relative p-2 hover:bg-white/10 rounded-full transition-colors"
           >
             <Image
               src="/support.png"
               alt="Support"
               width={24}
               height={24}
-              className="w-10 h-10"
+              className="w-9 h-9"
             />
             {/* Unread indicator dot */}
             {supportUnreadCount > 0 && (
-              <span className="absolute top-1 animate-pulse right-1 bg-red-500 rounded-full h-4 w-4"></span>
+              <span className="absolute top-1 right-1 flex h-3.5 w-3.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-red-500"></span>
+              </span>
             )}
           </button>
         </div>
+
+        {/* Privacy assurance banner */}
+        <div className="mt-3 flex items-center gap-2 bg-[#6c63ff]/[0.08] border border-[#6c63ff]/20 rounded-xl px-3.5 py-2.5">
+          <svg className="w-4 h-4 text-[#9b59f5] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12.75L11.25 15 15 9.75M21 12c0 4.556-3.032 8.395-7.183 9.632-.55.164-1.084-.279-1.084-.854V3.222c0-.575.534-1.018 1.084-.854C17.968 3.605 21 7.444 21 12z" />
+          </svg>
+          <p className="text-xs text-[#c9c4ff] leading-relaxed">
+            Chat and media auto-delete after 60 days for privacy
+          </p>
+        </div>
       </div>
-
-
 
       {/* Messages List */}
       <div className="flex-1 min-h-0 relative overflow-hidden">
@@ -224,7 +237,7 @@ export const MessageView = () => {
       <div className="fixed bottom-28 right-6 z-50">
         <button
           onClick={() => window.location.href = '/message/following'}
-          className="w-14 h-14 bg-gray-600 hover:bg-gray-700 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center"
+          className="w-14 h-14 bg-gradient-to-br from-[#6c63ff] to-[#9b59f5] text-white rounded-full shadow-[0_14px_30px_-10px_rgba(108,99,255,0.55)] hover:shadow-[0_16px_34px_-8px_rgba(108,99,255,0.65)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 flex items-center justify-center"
         >
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
