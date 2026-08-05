@@ -34,14 +34,14 @@ const Community = () => {
             </section>
 
             <section className="mb-6">
-                <h2 className="text-xl font-semibold text-gray-300">🚫 1. No Explicit Content</h2>
-                <ul className="mt-2 text-gray-400 list-disc list-inside space-y-2">
-                <li>Nudity, pornography, and sexually explicit content are strictly prohibited on the homepage, ritual page and portfolio page.</li>
-                <li>Simulated sexual acts, sex toys in sexual context, or visible genitals are not allowed.</li>
-                <li>Content must be suggestive at most — never explicit.</li>
-                <li>Explicit uploads result in a permanent ban with no second chances.</li>
-                </ul>
-            </section>
+  <h2 className="text-xl font-semibold text-gray-300">🚫 1. No Explicit Content</h2>
+  <ul className="mt-2 text-gray-400 list-disc list-inside space-y-2">
+    <li>No visible nipples or genitals are allowed on the homepage, ritual page, or portfolio page.</li>
+    <li>Simulated sexual acts or sex toys in a sexual context are not permitted.</li>
+    <li>Cleavage, bikinis, and non‑sexual skin exposure are welcome — content may be suggestive, but never explicit.</li>
+    <li>Explicit uploads result in a permanent ban with no second chances.</li>
+  </ul>
+</section>
 
             <section className="mb-6">
                 <h2 className="text-xl font-semibold text-gray-300">🤝 2. Meet & Greet Rules</h2>
@@ -151,9 +151,9 @@ const Community = () => {
                 <li>3rd offense: Permanent ban</li>
                 </ul>
                 <p className="mt-2 text-gray-400">
-                Severe violations — including explicit content, underage content, threats, prostitution offers,
-                or illegal activity — result in an instant permanent ban with no appeal.
-                </p>
+  Severe violations — including visible nipples or genitals, underage content, threats, prostitution offers,
+  or illegal activity — result in an instant permanent ban with no appeal.
+</p>
             </section>
 
             <section className="mb-28">

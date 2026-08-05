@@ -22,17 +22,20 @@ const TermsAndConditions = () => {
         </p>
 
         <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">2. Account & Conduct</h3>
-        <p className="mb-6">
-          You are responsible for maintaining the confidentiality of your account credentials.
-          You agree not to: Upload or share explicit, pornographic, or violent content on the homepage, ritual page and portfolio page. Use the platform
-          for illegal activities or to facilitate prostitution. Misrepresent your identity or services offered.
-        </p>
+<p className="mb-6">
+  You are responsible for maintaining the confidentiality of your account credentials.
+  You agree not to: Upload or share violent content, or explicit exposure such as visible nipples or genitals on the homepage, ritual page, and portfolio page. 
+  Use the platform for illegal activities or to facilitate prostitution. Misrepresent your identity or services offered.
+</p>
 
-        <p className="mb-6">Explicit Content is strictly prohibited on the homepage, ritual page and portfolio page.</p>
+<p className="mb-6">
+  Visible nipples or genitals are strictly prohibited on the homepage, ritual page, and portfolio page. 
+  Cleavage, bikinis, and non‑sexual skin exposure are welcome.
+</p>
 
-        <p className="mb-6">
-          Any Creator or Fan who posts, shares, or requests explicit content will be banned immediately — no second chances.
-        </p>
+<p className="mb-6">
+  Any Creator or Fan who posts, shares, or requests visible nipples or genitals will be banned immediately — no second chances.
+</p>
 
         <p className="mb-6">
           Harassment, hate speech, or illegal activity also results in permanent removal.
@@ -216,7 +219,7 @@ const TermsAndConditions = () => {
 
         <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">14. Safety & Conduct</h3>
         <p className="mb-6">Creators must keep interactions respectful, safe, and legal.</p>
-        <p className="mb-6">Explicit content, harassment, or illegal activity is strictly prohibited.</p>
+        <p className="mb-6">Harassment, illegal activity, or explicit exposure such as visible nipples or genitals is strictly prohibited. Cleavage, bikinis, and non‑sexual skin exposure are welcome.</p>
         <p className="mb-6">Creators should not share personal contact info outside the platform.</p>
         <p className="mb-6">The platform is not responsible for off-platform activities once a meet or date occurs.</p>
 

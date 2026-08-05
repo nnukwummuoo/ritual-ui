@@ -96,10 +96,10 @@ const FAQ_DATA: Record<CategoryKey, FAQSection[]> = {
       icon: "🚫",
       title: "Safety & Rules",
       items: [
-        {
-          question: "Can I post explicit content?",
-          answer: "No ❌. One offense = permanent ban. No warnings, no second chances.",
-        },
+       {
+  question: "Can I post explicit content?",
+  answer: "No ❌. Visible nipples or genitals are strictly prohibited. One offense = permanent ban. No warnings, no second chances.",
+},
         {
           question: "What if a fan/creator breaks the rules?",
           answer: "Use the Report button. Our team will review immediately and take action.",
