@@ -3,10 +3,10 @@
 import { useRouter } from 'next/navigation';
 
 /**
- * Empty state shown on /anya when there are no active rituals.
+ * Empty state shown on /ritual when there are no active rituals.
  * Matches the client's mmeko-rituals-empty-1.html design exactly.
  */
-export default function AnyaEmptyState() {
+export default function RitualEmptyState() {
   const router = useRouter();
 
   return (

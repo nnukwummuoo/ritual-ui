@@ -10,9 +10,7 @@ import { useStory } from '@/contexts/StoryContext';
 import { useSelector } from 'react-redux';
 import type { RootState } from '@/store/store';
 import CommentModal from '@/components/CommentModal';
-import { useAnyaPageTracking } from '@/hooks/useAnyaPageTracking';
-import { useAnyaSessionTracking } from '@/hooks/useAnyaSessionTracking';
-import AnyaEmptyState from './AnyaEmptyState';
+import RitualEmptyState from './RitualEmptyState';
 
 interface Panel {
   panel_number: number;
@@ -35,7 +33,7 @@ interface Story {
   isCreatorRitual?: boolean;
 }
 
-export default function AnyaPage() {
+export default function RitualPage() {
   const router       = useRouter();
   const searchParams = useSearchParams();
 
@@ -47,8 +45,7 @@ export default function AnyaPage() {
 
   const { likedStories, commentCounts, likeCounts, toggleLike, refreshStoryData } = useStory();
 
-  useAnyaPageTracking('main');
-  useAnyaSessionTracking('main');
+
 
   const reduxUserId = useSelector((state: RootState) => state.register.userID);
   const [userId, setUserId]     = useState<string>('');
@@ -96,7 +93,7 @@ useEffect(() => {
     redirected = true;
     const story = stories[Math.floor(Math.random() * Math.min(stories.length, 5))];
     const type = story.isCreatorRitual ? 'creator' : 'ai';
-    router.replace(`/anya/${story._id}?type=${type}`);
+    router.replace(`/ritual/${story._id}?type=${type}`);
   };
 
   axios.get('/api/proxy/api/creator-rituals/feed').then(res => {
@@ -137,7 +134,7 @@ useEffect(() => {
 
   const handleStoryClick = (story: Story) => {
     const type = story.isCreatorRitual ? 'creator' : 'ai';
-    router.push(`/anya/${story._id}?type=${type}`);
+    router.push(`/ritual/${story._id}?type=${type}`);
   };
 
   const handleLike = async (e: React.MouseEvent, storyId: string) => {
@@ -160,7 +157,7 @@ useEffect(() => {
 
     // ── Empty ─────────────────────────────────────────────────────────────────
   if (stories.length === 0) {
-    return <AnyaEmptyState />;
+  return <RitualEmptyState />;
   }
 
   // ── Grid view ─────────────────────────────────────────────────────────────
@@ -182,7 +179,7 @@ useEffect(() => {
               onClick={() => {
                 const story = stories[Math.floor(Math.random() * stories.length)];
                 const type = story.isCreatorRitual ? 'creator' : 'ai';
-                router.push(`/anya/${story._id}?type=${type}`);
+                router.push(`/ritual/${story._id}?type=${type}`);
               }}
               className="flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 text-white text-sm font-semibold hover:opacity-90 transition-all"
             >

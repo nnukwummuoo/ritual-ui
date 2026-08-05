@@ -22,7 +22,7 @@ const WhatsNewPage: React.FC = () => {
           type: "feature",
           hasButton: true,
           buttonText: "Step into today's Ritual",
-          buttonLink: "/anya"
+          buttonLink: "/ritual"
         },
         {
           icon: <FaComments className="w-5 h-5 text-blue-400" />,

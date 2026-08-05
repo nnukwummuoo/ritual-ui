@@ -50,7 +50,7 @@ const RitualsCard: React.FC = () => {
   };
 
   const handleClick = (ritual: Ritual) => {
-    router.push(`/anya/${ritual._id}?type=creator`);
+    router.push(`/ritual/${ritual._id}?type=creator`);
   };
 
   // ── Loading skeleton ──────────────────────────────────────────────────────
@@ -62,7 +62,7 @@ const RitualsCard: React.FC = () => {
             <h3 className="text-white font-medium">Rituals</h3>
             <p className="text-gray-400 text-xs mt-1">Swipe through today's Ritual</p>
           </div>
-          <button className="text-purple-400 text-sm hover:underline" onClick={() => router.push('/anya')}>
+          <button className="text-purple-400 text-sm hover:underline" onClick={() => router.push('/ritual')}>
             See all
           </button>
         </div>
@@ -103,7 +103,7 @@ const RitualsCard: React.FC = () => {
           {/* Header */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
             <div style={{ fontSize: 16, fontWeight: 800, color: '#f1f5f9', letterSpacing: '-.02em' }}>Rituals</div>
-            <button onClick={() => router.push('/anya')}
+            <button onClick={() => router.push('/ritual')}
               style={{ fontSize: 13, fontWeight: 600, color: '#6c63ff', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
               See all
             </button>
@@ -174,7 +174,7 @@ const RitualsCard: React.FC = () => {
           <h3 className="text-white font-medium">Rituals</h3>
           <p className="text-gray-400 text-xs mt-1">Swipe through today's Ritual</p>
         </div>
-        <button className="text-purple-400 text-sm hover:underline" onClick={() => router.push('/anya')}>
+        <button className="text-purple-400 text-sm hover:underline" onClick={() => router.push('/ritual')}>
           See all
         </button>
       </div>
@@ -239,7 +239,7 @@ export const RitualsPromoCard: React.FC = () => {
   const router = useRouter();
   return (
     <div
-      onClick={() => router.push('/anya')}
+      onClick={() => router.push('/ritual')}
       className="relative bg-gradient-to-br from-purple-900/30 via-gray-800/50 to-blue-900/30 rounded-xl p-6 cursor-pointer hover:from-purple-900/40 hover:via-gray-800/60 hover:to-blue-900/40 transition-all duration-300 border border-purple-500/20 hover:border-purple-500/40 group overflow-hidden"
     >
       <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 via-blue-500/10 to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl" />
@@ -264,7 +264,7 @@ export const RitualsPromoCard: React.FC = () => {
           <span className="text-xs px-3 py-1 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30">⏱️ 24h only</span>
           <span className="text-xs px-3 py-1 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30">🔄 Daily fresh</span>
         </div>
-        <button onClick={() => router.push('/anya')} className="w-full py-3 px-4 rounded-lg text-sm font-medium bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:from-purple-700 hover:to-blue-700 transition-all">
+        <button onClick={() => router.push('/ritual')} className="w-full py-3 px-4 rounded-lg text-sm font-medium bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:from-purple-700 hover:to-blue-700 transition-all">
           View Today's Rituals →
         </button>
       </div>

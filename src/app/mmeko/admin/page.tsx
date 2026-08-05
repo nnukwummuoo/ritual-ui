@@ -43,7 +43,6 @@ import BackupManagement from "./backup/page";
 import TransactionsPage from "./transactions/page";
 import RevenuePage from "./revenue/page";
 import ReferralAnalysisPage from "./referral-analysis/page";
-import AnyaAnalyticsPage from "./anya-analytics/page";
 import SeriesConfigPage from "./series-config/page";
 import AdminUpdatesPage from "./updates/page";
 import PPVRequestsPage from "./ppv-requests/page";
@@ -195,11 +194,6 @@ useEffect(() => {
       name: "Referral Analysis",
       icon: <IoGiftOutline size={22} />,
       component: <ReferralAnalysisPage />,
-    },
-    {
-      name: "Anya Analytics",
-      icon: <IoSparkles size={22} />,
-      component: <AnyaAnalyticsPage />,
     },
     {
       name: "Ritual Series Config",

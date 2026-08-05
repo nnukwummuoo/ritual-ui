@@ -2,7 +2,7 @@
 
 import { StoryProvider } from '@/contexts/StoryContext';
 
-export default function AnyaLayout({
+export default function RitualLayout({
     children,
 }: {
     children: React.ReactNode;

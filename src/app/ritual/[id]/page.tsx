@@ -4,14 +4,12 @@ import { useState, useEffect, useRef } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import axios from 'axios';
 import { motion } from 'framer-motion';
-import { IoHeartOutline, IoHeart, IoShareSocialOutline, IoChatbubbleOutline, IoHome } from 'react-icons/io5';
+import { IoHeartOutline, IoHeart, IoShareSocialOutline, IoChatbubbleOutline, IoHome, IoVolumeHighOutline, IoVolumeMuteOutline } from 'react-icons/io5';
 import { FaThLarge } from 'react-icons/fa';
 import { getImageSource } from '@/lib/imageUtils';
 import { useStory } from '@/contexts/StoryContext';
 import { useSelector } from 'react-redux';
 import type { RootState } from '@/store/store';
-import { useAnyaPageTracking } from '@/hooks/useAnyaPageTracking';
-import { useAnyaSessionTracking } from '@/hooks/useAnyaSessionTracking';
 import CommentModal from '@/components/CommentModal';
 
 interface Panel { panel_number: number; text: string; imageUrl: string | null; }
@@ -23,6 +21,7 @@ interface Story {
   comments?: Array<{ userId: string; username: string; text: string; createdAt: string; }>;
   createdAt: string;
   isCreatorRitual?: boolean;
+  song?: string | null;
 }
 
 // ── Per-ritual state (panel index + like count) ───────────────────────────────
@@ -56,8 +55,37 @@ function RitualRow({
   const [moreMenuStory, setMoreMenuStory] = useState<Story | null>(null);
   const [localLiked, setLocalLiked] = useState(() => likedStories.has(story._id));
 
-  const [creatorPhoto, setCreatorPhoto] = useState<string | null>(null);
-const [creatorName, setCreatorName] = useState<string | null>(null);
+const [creatorPhoto, setCreatorPhoto] = useState<string | null>(null);
+  const [creatorName, setCreatorName] = useState<string | null>(null);
+
+  // ── Ritual music playback ────────────────────────────────────────────
+  const musicRef = useRef<HTMLAudioElement | null>(null);
+  const [muted, setMuted] = useState(false);
+
+  useEffect(() => {
+    const el = musicRef.current;
+    if (!el || !story.song) return;
+
+    if (isActive) {
+      el.currentTime = 0;
+      el.volume = 0.7;
+      el.play().catch(() => {
+        // Autoplay was blocked (e.g. no user gesture yet) — safe to ignore,
+        // the user can still unmute/tap to trigger playback via the button.
+      });
+    } else {
+      el.pause();
+    }
+
+    return () => {
+      el.pause();
+    };
+  }, [isActive, story.song, story._id]);
+
+  useEffect(() => {
+    if (musicRef.current) musicRef.current.muted = muted;
+  }, [muted]);
+
 
 
   const liked = likedStories.has(story._id);
@@ -167,7 +195,7 @@ const handleLike = async (e: React.MouseEvent) => {
 
   const handleShare = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    const url = `${window.location.origin}/anya/${story._id}?type=${story.isCreatorRitual ? 'creator' : 'ai'}`;
+    const url = `${window.location.origin}/ritual/${story._id}?type=${story.isCreatorRitual ? 'creator' : 'ai'}`;
     if (navigator.share) {
       try { await navigator.share({ title: story.title, url }); } catch {}
     } else {
@@ -205,6 +233,10 @@ const handleLike = async (e: React.MouseEvent) => {
           div::-webkit-scrollbar{display:none}
           @keyframes ritualEnter{from{opacity:.4;transform:scale(.98)}to{opacity:1;transform:scale(1)}}
         `}</style>
+
+        {story.song && (
+          <audio ref={musicRef} src={story.song} loop preload="auto" />
+        )}
 
         {story.panels.map((panel, index) => (
           <div
@@ -403,6 +435,22 @@ const handleLike = async (e: React.MouseEvent) => {
   </div>
 </motion.button>
 
+{story.song && (
+          <motion.button
+            whileTap={{ scale: 0.9 }}
+            onClick={(e) => { e.stopPropagation(); setMuted(m => !m); }}
+            className="flex flex-col items-center gap-1"
+          >
+            <div className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center">
+              {muted ? (
+                <IoVolumeMuteOutline className="w-6 h-6 text-white" />
+              ) : (
+                <IoVolumeHighOutline className="w-6 h-6 text-white" />
+              )}
+            </div>
+          </motion.button>
+        )}
+
         <motion.button whileTap={{ scale: 0.9 }} onClick={handleShare} className="flex flex-col items-center gap-1">
           <div className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center">
             <IoShareSocialOutline className="w-6 h-6 text-white" />
@@ -434,8 +482,7 @@ export default function StoryViewPage() {
   const verticalRef = useRef<HTMLDivElement>(null);
 
   const { likedStories, commentCounts, toggleLike, refreshStoryData } = useStory();
-  useAnyaPageTracking('story', storyId);
-  useAnyaSessionTracking('story', storyId);
+  
 
   const reduxUserId = useSelector((state: RootState) => state.register.userID);
   const [userId, setUserId]     = useState('');
@@ -477,6 +524,7 @@ let creatorRituals: Story[] = creatorRes[0].status === 'fulfilled'
         imageUrl: p.imageUrl || null,
       })),
       coverImage: r.coverImage || null,
+       song: r.song || null,
       views: r.views || 0,
       likes: r.likes || 0,
       likedBy: r.likedBy || [],
@@ -506,6 +554,7 @@ if (!foundInFeed) {
           imageUrl: p.imageUrl || null,
         })),
         coverImage: r.coverImage || null,
+         song: r.song || null,
         views: r.views || 0,
         likes: r.likes || 0,
         likedBy: r.likedBy || [],
@@ -635,7 +684,7 @@ setStories(all);
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="text-center text-white">
           <h2 className="text-2xl font-bold mb-4">This Ritual has passed</h2>
-          <button onClick={() => router.push('/anya?view=grid')}
+          <button onClick={() => router.push('/ritual?view=grid')}
             className="px-6 py-3 bg-purple-600 rounded-full hover:bg-purple-700 transition-colors">
             Back to Rituals
           </button>
@@ -650,7 +699,7 @@ setStories(all);
       {/* FIXED HEADER */}
       <div className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-b from-black/80 to-transparent backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-<button onClick={() => router.push('/anya?view=grid')} aria-label="Grid view">
+<button onClick={() => router.push('/ritual?view=grid')} aria-label="Grid view">
             <FaThLarge className="w-8 h-8 text-gray-400" />
           </button>
           <div className="flex-1 mx-4 text-center">

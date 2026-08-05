@@ -304,7 +304,7 @@ const handlePreview = (song: typeof SONGS[0]) => {
       }
 
       setPublished(true);
-      setTimeout(() => router.push('/anya'), 2000);
+      setTimeout(() => router.push('/ritual'), 2000);
     } catch (err: any) {
       console.error('Publish error:', err);
       const msg = err?.response?.data?.message || err?.message || 'Failed to publish. Please try again.';
@@ -1041,7 +1041,7 @@ zIndex: 50,
           handlePublish();
         }}
       />
-      
+
     </div>
   );
 }

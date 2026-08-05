@@ -22,7 +22,7 @@ export function StoryProvider({ children }: { children: React.ReactNode }) {
 
     // Load liked stories and comment counts from localStorage on mount
     useEffect(() => {
-        const savedLikes = localStorage.getItem('anya_liked_stories');
+        const savedLikes = localStorage.getItem('ritual_liked_stories');
         if (savedLikes) {
             try {
                 const likesArray = JSON.parse(savedLikes);
@@ -35,7 +35,7 @@ export function StoryProvider({ children }: { children: React.ReactNode }) {
 
     // Save liked stories to localStorage whenever it changes
     useEffect(() => {
-        localStorage.setItem('anya_liked_stories', JSON.stringify(Array.from(likedStories)));
+        localStorage.setItem('ritual_liked_stories', JSON.stringify(Array.from(likedStories)));
     }, [likedStories]);
 
 const toggleLike = async (storyId: string, userId: string, isCreatorRitual = false) => {

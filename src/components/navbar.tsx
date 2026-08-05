@@ -5,7 +5,6 @@ import React, { useState, useEffect } from "react";
 import { FaTimes, FaSignInAlt } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import anyaLogo from '@/icons/icon-192.png';
 
 export default function Navbar({ isAuthenticated }: { isAuthenticated: boolean }) {
   const { isOpen, toggle } = useAuth();

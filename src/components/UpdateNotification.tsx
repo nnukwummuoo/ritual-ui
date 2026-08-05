@@ -82,7 +82,7 @@ const UpdateNotification = () => {
                 /^visitor_session_id/,
                 /^push_notifications_/,
                 /^media-chrome-pref-/,
-                /^anya_/,
+                 /^ritual_/,
             ];
 
             const preservedData: Record<string, string> = {};
