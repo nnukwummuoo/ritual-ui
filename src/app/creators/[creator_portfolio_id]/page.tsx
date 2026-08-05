@@ -21,7 +21,7 @@ import { getViews } from "@/store/creatorSlice";
 import { getAllCreatorRatings } from "@/store/profile";
 import { CreatorReview } from "./_components/Creator_review";
 import { IoArrowBack, IoCheckmarkCircleOutline } from "react-icons/io5";
-import { BadgeCheck, ArrowLeftSquare, Coins } from "lucide-react";
+import { BadgeCheck, ArrowLeftSquare, Coins, ShieldCheck } from "lucide-react";
 
 import { useSelector, useDispatch } from "react-redux";
 import {
@@ -567,6 +567,11 @@ const [urlCopied, setUrlCopied] = useState(false);
         .mcp-price-amount{font-size:32px;font-weight:800;letter-spacing:-.03em;color:var(--mcp-text);margin-bottom:4px;display:flex;align-items:center;gap:8px;}
         .mcp-price-amount-suffix{font-size:15px;font-weight:600;color:var(--mcp-text2);}
         .mcp-price-sub{font-size:12px;color:var(--mcp-text3);margin-bottom:18px;}
+        .mcp-trust-badge{display:flex;align-items:center;gap:7px;background:linear-gradient(135deg,rgba(45,212,191,.14),rgba(108,99,255,.1));border:1px solid rgba(45,212,191,.35);border-radius:10px;padding:8px 12px;margin-bottom:18px;position:relative;overflow:hidden;}
+        .mcp-trust-badge::after{content:'';position:absolute;top:0;left:-60%;width:40%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.12),transparent);animation:mcpShine 2.8s ease-in-out infinite;}
+        @keyframes mcpShine{0%{left:-60%}60%{left:130%}100%{left:130%}}
+        .mcp-trust-badge-icon{color:var(--mcp-success);flex-shrink:0;filter:drop-shadow(0 0 4px rgba(45,212,191,.5));}
+        .mcp-trust-badge-text{font-size:12.5px;font-weight:700;color:#e8fffb;letter-spacing:.01em;}
         .mcp-price-perks{display:flex;flex-direction:column;gap:8px;}
         .mcp-perk{display:flex;align-items:center;gap:9px;font-size:12.5px;color:var(--mcp-text2);}
         .mcp-perk-dot{width:18px;height:18px;border-radius:50%;background:rgba(108,99,255,.12);border:1px solid rgba(108,99,255,.2);display:flex;align-items:center;justify-content:center;font-size:8px;color:#a89cff;flex-shrink:0;}
@@ -770,18 +775,23 @@ const [urlCopied, setUrlCopied] = useState(false);
             {creatorPriceValue}
             <span className="mcp-price-amount-suffix">{creatorRateSuffix}</span>
           </div>
-          <div className="mcp-price-sub">
-  {checkuser()
-    ? `Fan pays ${isFanCallCreator ? "per minute" : "upfront"} — you keep 100%`
-    : "Your payment is protected"}
-</div>
+          {checkuser() ? (
+            <div className="mcp-price-sub">
+              {`Fan pays ${isFanCallCreator ? "per minute" : "upfront"} — you keep 100%`}
+            </div>
+          ) : (
+            <div className="mcp-trust-badge">
+              <ShieldCheck size={16} className="mcp-trust-badge-icon" />
+              <span className="mcp-trust-badge-text">Your payment is protected</span>
+            </div>
+          )}
           <div className="mcp-price-perks">
             <div className="mcp-perk">
   <div className="mcp-perk-dot">✓</div>
 {isFanCallCreator
   ? checkuser()
     ? "No surprise calls — you choose who to accept"
-    : `Call ${creator.name?.split(" ")[0] || "them"} with confidence`
+    : `Book ${creator.name?.split(" ")[0] || "them"} with confidence`
   : checkuser()
     ? `Payment secured before the ${creatorServiceNoun}`
     : `Book ${creator.name?.split(" ")[0] || "them"} with confidence`}
