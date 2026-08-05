@@ -771,7 +771,17 @@ const [urlCopied, setUrlCopied] = useState(false);
             {checkOnline() === "online" && <div className="mcp-price-badge-online">🟢 Online Now</div>}
           </div>
           <div className="mcp-price-amount">
-            <Coins style={{ width: 32, height: 32, color: "#f59e0b" }} />
+            <span
+              className="rounded-full flex items-center justify-center shrink-0"
+              style={{
+                background: "linear-gradient(135deg, #f5c451, #e8a93a)",
+                width: 32,
+                height: 32,
+                boxShadow: "0 4px 12px -4px rgba(245,196,81,0.5)",
+              }}
+            >
+              <span className="text-[#1A1C2C] text-lg font-bold">$</span>
+            </span>
             {creatorPriceValue}
             <span className="mcp-price-amount-suffix">{creatorRateSuffix}</span>
           </div>
