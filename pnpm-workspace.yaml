@@ -1,5 +1,12 @@
 allowBuilds:
-  aws-sdk: set this to true or false
-  bcrypt: set this to true or false
-  sharp: set this to true or false
-  unrs-resolver: set this to true or false
+  aws-sdk: false
+  bcrypt: true
+  bufferutil: true
+  keccak: true
+  sharp: true
+  unrs-resolver: true
+  utf-8-validate: true
+minimumReleaseAgeExclude:
+  - viem@2.55.11
+overrides:
+  viem: 2.55.11
