@@ -7,6 +7,9 @@ import { URL } from "../../../api/config";
 import CountrySelect from "../../../components/CountrySelect/CountrySelect";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/context/auth-context";
+import { useAccount, useSignMessage, useDisconnect } from "wagmi";
+import { useConnectModal } from "@rainbow-me/rainbowkit";
+import Web3Providers from "@/components/Web3Providers";
 
 interface PaymentAccount {
   _id: string;
@@ -31,6 +34,16 @@ interface FormData {
 }
 
 export default function PaymentAccountPage() {
+  return (
+    <Web3Providers>
+      <PaymentAccountPageInner />
+    </Web3Providers>
+  );
+}
+
+function PaymentAccountPageInner() {
+  // ...everything that was previously inside `export default function PaymentAccountPage()` goes here, unchanged
+
   const router = useRouter();
   const [formData, setFormData] = useState<FormData>({});
   const [agree, setAgree] = useState<boolean>(false);
@@ -39,10 +52,59 @@ export default function PaymentAccountPage() {
   const [isFetchingAccount, setIsFetchingAccount] = useState<boolean>(true);
   const [returnToWithdrawal, setReturnToWithdrawal] = useState<boolean>(false);
   const [walletError, setWalletError] = useState<string>("");
-  
+
+  const [walletVerifying, setWalletVerifying] = useState<boolean>(false);
+  const [walletVerified, setWalletVerified] = useState<boolean>(false);
+
+  const { address, isConnected } = useAccount();
+  const { signMessageAsync } = useSignMessage();
+  const { disconnect } = useDisconnect();
+  const { openConnectModal } = useConnectModal();
+
   // Get user data from Redux and session from useAuth (same as history page)
   const userData = useSelector((state: RootState) => state.profile);
   const { session } = useAuth();
+
+  const verifyConnectedWallet = useCallback(async () => {
+    if (!address) return;
+    setWalletError("");
+    setWalletVerifying(true);
+    try {
+      const message = `Confirm this wallet as your mmeko payout address.\n\nUser: ${session?._id || ""}\nTimestamp: ${Date.now()}`;
+      const signature = await signMessageAsync({ message });
+
+      const res = await fetch(`${URL}/addpayment/verify-wallet`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session?.token}`,
+        },
+        body: JSON.stringify({ address, message, signature }),
+      });
+      const data = await res.json();
+
+      if (res.ok && data.ok) {
+        setFormData((prev) => ({ ...prev, walletAddress: address }));
+        setWalletVerified(true);
+      } else {
+        setWalletError(data.message || "Could not verify this wallet. Please try again.");
+      }
+    } catch (err: any) {
+      if (err?.name === "UserRejectedRequestError" || err?.code === 4001) {
+        setWalletError("Signature request was rejected.");
+      } else {
+        setWalletError(err?.message || "Something went wrong verifying your wallet.");
+      }
+    } finally {
+      setWalletVerifying(false);
+    }
+  }, [address, session, URL]);
+
+  const disconnectWallet = () => {
+    disconnect();
+    setFormData((prev) => ({ ...prev, walletAddress: "" }));
+    setWalletVerified(false);
+  };
 
   // Wallet address validation function
   const validateWalletAddress = (address: string): boolean => {
@@ -182,9 +244,9 @@ export default function PaymentAccountPage() {
       return;
     }
 
-    // Validate wallet address if it's provided
-    if (formData.walletAddress && !validateWalletAddress(formData.walletAddress)) {
-      return; // Error message is already set by validateWalletAddress
+    if (!formData.walletAddress || !walletVerified) {
+      setWalletError("Please connect and verify your wallet before saving.");
+      return;
     }
 
     const payload = {
@@ -394,33 +456,64 @@ export default function PaymentAccountPage() {
   </div>
 </div>
 
-{/* Wallet Address */}
-               
+{/* Wallet Address — connected + signature-verified, not hand-typed */}
                 <div className="flex flex-col gap-1">
-                  <label className="text-left text-sm text-gray-300">Wallet Address</label>
-                  <input
-                    type="text"
-                    name="walletAddress"
-                    required
-                    placeholder="Wallet Address USDT (BNB Smart Chain)"
-                    value={formData.walletAddress || ''}
-                    className={`border rounded-md text-white bg-gray-700 px-3 py-2 text-sm focus:outline-none focus:ring-2 ${
-                      walletError 
-                        ? 'border-red-500 focus:ring-red-500' 
-                        : 'border-gray-600 focus:ring-purple-500'
-                    }`}
-                    onChange={(e) => {
-                      setFormData({ ...formData, walletAddress: e.target.value });
-                      // Clear error when user starts typing
-                      if (walletError) {
-                        setWalletError("");
-                      }
-                    }}
-                  />
+                  <label className="text-left text-sm text-gray-300">Payout Wallet</label>
+
+                  {walletVerified && formData.walletAddress ? (
+                    <div className="border border-green-500/30 bg-green-900/20 rounded-lg px-4 py-3 flex items-center justify-between">
+                      <div>
+                        <div className="flex items-center gap-1.5 mb-1">
+                          <svg className="w-3.5 h-3.5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                          <span className="text-green-400 text-xs font-medium">Verified — you signed to confirm you control this wallet</span>
+                        </div>
+                        <p className="text-white text-sm font-mono">
+                          {formData.walletAddress.slice(0, 6)}...{formData.walletAddress.slice(-4)}
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={disconnectWallet}
+                        className="text-xs text-gray-400 hover:text-white underline shrink-0 ml-3"
+                      >
+                        Use different wallet
+                      </button>
+                    </div>
+                  ) : isConnected && address ? (
+                    <button
+                      type="button"
+                      onClick={verifyConnectedWallet}
+                      disabled={walletVerifying}
+                      className="border border-purple-500 bg-purple-500/10 hover:bg-purple-500/20 rounded-lg px-4 py-3 text-sm font-semibold text-purple-300 transition-colors disabled:opacity-60"
+                    >
+                      {walletVerifying
+                        ? "Waiting for signature..."
+                        : `Sign to verify ${address.slice(0, 6)}...${address.slice(-4)}`}
+                    </button>
+                  ) : (
+                    <>
+                      <button
+                        type="button"
+                        onClick={openConnectModal}
+                        className="border border-purple-500 bg-purple-500/10 hover:bg-purple-500/20 rounded-lg px-4 py-3 text-sm font-semibold text-purple-300 transition-colors"
+                      >
+                        Connect Wallet
+                      </button>
+                      <p className="text-gray-500 text-xs mt-1.5">
+                        We don't accept typed-in addresses anymore — connect your wallet and sign a message to prove it's really yours. Works with MetaMask, Trust Wallet, and dozens of others via QR code, on desktop or mobile.
+                      </p>
+                    </>
+                  )}
+
                   {walletError && (
                     <p className="text-red-400 text-xs mt-1">{walletError}</p>
                   )}
                 </div>
+
+                  
+
 
                 <label className="flex items-start gap-2 text-sm text-gray-400">
                   <input

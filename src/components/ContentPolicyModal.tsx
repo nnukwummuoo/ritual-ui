@@ -39,7 +39,7 @@ const ContentPolicyModal: React.FC<ContentPolicyModalProps> = ({
         {/* Body */}
         <div className="px-6 py-5 space-y-4">
           <p className="text-sm text-gray-300 leading-relaxed">
-            Mmeko is a space built on genuine connection, not explicit exposure. To protect that — for you and for everyone here — no visible nipples or genitals are allowed. Cleavage, bikinis, and non‑sexual skin exposure are welcome.
+            Mmeko is a space built on genuine connection, not explicit exposure. To protect that — for you and for everyone here — no visible nipples or genitals are allowed. Cleavage, and bikinis are welcome.
           </p>
 
           <div className="bg-red-500/[0.06] border border-red-500/20 rounded-xl px-4 py-3">
