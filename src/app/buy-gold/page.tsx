@@ -9,7 +9,11 @@ import { toast } from "react-toastify";
 import { golds } from "@/data/intresttypes";
 import { createWeb3Payment, checkWeb3PaymentStatus, cancelWeb3Payment, verifyTransactionHash } from "@/api/web3payment";
 import { RootState } from "@/store/store"
-import { Copy, Check, ShieldCheck, Lock, RefreshCw } from "lucide-react";
+import { Copy, Check, ShieldCheck, Lock, RefreshCw, Trash2 } from "lucide-react";
+import { useAccount, useSignMessage, useDisconnect } from "wagmi";
+import { useConnectModal } from "@rainbow-me/rainbowkit";
+import Web3Providers from "@/components/Web3Providers";
+import { URL as API_URL } from "@/api/config";
 
 // Icons for tags
 const tagIcons: Record<string, React.ReactNode> = {
@@ -25,6 +29,14 @@ const tagIcons: Record<string, React.ReactNode> = {
 };
 
 const Topup: React.FC = () => {
+  return (
+    <Web3Providers>
+      <TopupInner />
+    </Web3Providers>
+  );
+};
+
+const TopupInner: React.FC = () => {
   const [selectedPackId, setSelectedPackId] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
   const [paymentMethod] = useState<'web3'>('web3');
@@ -36,9 +48,92 @@ const Topup: React.FC = () => {
   const [verifyingTx, setVerifyingTx] = useState<boolean>(false);
   const [timeLeft, setTimeLeft] = useState<number>(0);
   const [fromAddress, setFromAddress] = useState<string>("");
+  const [buyerWalletVerifying, setBuyerWalletVerifying] = useState<boolean>(false);
+  const [buyerWalletLoaded, setBuyerWalletLoaded] = useState<boolean>(false);
 
-  const userId = useSelector((state: RootState) => state.profile.userId);
+  const { address, isConnected } = useAccount();
+  const { signMessageAsync } = useSignMessage();
+  const { disconnect } = useDisconnect();
+  const { openConnectModal } = useConnectModal();
+
+   const userId = useSelector((state: RootState) => state.profile.userId);
   const login = useSelector((state: RootState) => state.register.logedin);
+
+  // Load any previously verified sender wallet on mount
+  useEffect(() => {
+    if (!userId) return;
+    (async () => {
+      try {
+        const stored = localStorage.getItem("login");
+        const token = stored ? JSON.parse(stored)?.accesstoken : null;
+        if (!token) return;
+
+        const res = await fetch(`${API_URL}/addpayment/buyer-wallet`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await res.json();
+        if (data.ok && data.walletAddress) {
+          setFromAddress(data.walletAddress);
+        }
+      } catch (err) {
+        console.error("Failed to load verified buyer wallet:", err);
+      } finally {
+        setBuyerWalletLoaded(true);
+      }
+    })();
+  }, [userId]);
+
+  const verifyAndSaveBuyerWallet = async () => {
+    if (!address) return;
+    setBuyerWalletVerifying(true);
+    try {
+      const message = `Confirm this wallet as your mmeko Gold purchase sender address.\n\nUser: ${userId}\nTimestamp: ${Date.now()}`;
+      const signature = await signMessageAsync({ message });
+
+      const stored = localStorage.getItem("login");
+      const token = stored ? JSON.parse(stored)?.accesstoken : null;
+
+      const res = await fetch(`${API_URL}/addpayment/verify-buyer-wallet`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ address, message, signature }),
+      });
+      const data = await res.json();
+
+      if (data.ok) {
+        setFromAddress(data.walletAddress);
+        toast.success("Wallet verified and saved!", { autoClose: 2500 });
+        disconnect(); // We only needed the signature — no reason to stay connected
+      } else {
+        toast.error(data.message || "Could not verify this wallet.", { autoClose: 3000 });
+      }
+    } catch (err: any) {
+      if (err?.name === "UserRejectedRequestError" || err?.code === 4001) {
+        toast.error("Signature request was rejected.", { autoClose: 2500 });
+      } else {
+        toast.error(err?.message || "Something went wrong verifying your wallet.", { autoClose: 3000 });
+      }
+    } finally {
+      setBuyerWalletVerifying(false);
+    }
+  };
+
+  const deleteBuyerWallet = async () => {
+    try {
+      const stored = localStorage.getItem("login");
+      const token = stored ? JSON.parse(stored)?.accesstoken : null;
+      await fetch(`${API_URL}/addpayment/buyer-wallet`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setFromAddress("");
+      toast.info("Wallet removed. Connect a new one whenever you're ready.", { autoClose: 2500 });
+    } catch {
+      toast.error("Failed to remove wallet.", { autoClose: 2500 });
+    }
+  };
+
+ 
 
   // Load existing payment from localStorage on page load
   useEffect(() => {
@@ -387,17 +482,52 @@ const Topup: React.FC = () => {
 
           {!web3Payment && (
             <div className="w-full">
-              <input
-                type="text"
-                placeholder="Your wallet address (0x...)"
-                value={fromAddress}
-                onChange={(e) => setFromAddress(e.target.value.trim())}
-                className="block bg-[#111624] text-white rounded-xl px-3 py-3 sm:px-4 w-full border border-white/10 focus:outline-none focus:ring-1 focus:ring-[#6c63ff] focus:border-[#6c63ff] font-medium text-xs sm:text-sm placeholder:text-gray-600 placeholder:text-xs transition-colors"
-              />
-              <p className="text-xs text-gray-500 mt-2 px-1 flex items-start gap-1.5">
-                <ShieldCheck className="w-3.5 h-3.5 text-[#22c55e] shrink-0 mt-0.5" />
-                We match this against your on-chain payment to keep your purchase safe — it must be the wallet you actually send from.
-              </p>
+              {fromAddress ? (
+                <div className="border border-green-500/30 bg-gradient-to-br from-green-500/[0.08] to-green-500/[0.02] rounded-xl px-3.5 py-3 flex items-center justify-between">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-1.5 mb-0.5">
+                      <ShieldCheck className="w-3.5 h-3.5 text-green-400 shrink-0" />
+                      <span className="text-green-400 text-[11px] font-semibold">Verified sender wallet</span>
+                    </div>
+                    <p className="text-white text-sm font-mono truncate">
+                      {fromAddress.slice(0, 6)}...{fromAddress.slice(-4)}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={deleteBuyerWallet}
+                    className="p-2 text-gray-500 hover:text-red-400 transition-colors shrink-0 ml-2"
+                    title="Remove wallet"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              ) : isConnected && address ? (
+                <button
+                  type="button"
+                  onClick={verifyAndSaveBuyerWallet}
+                  disabled={buyerWalletVerifying}
+                  className="w-full border border-[#6c63ff] bg-[#6c63ff]/10 hover:bg-[#6c63ff]/15 rounded-xl px-4 py-3 text-sm font-semibold text-[#c9c4ff] transition-colors disabled:opacity-60"
+                >
+                  {buyerWalletVerifying
+                    ? "Waiting for signature..."
+                    : `Sign to verify ${address.slice(0, 6)}...${address.slice(-4)}`}
+                </button>
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    onClick={openConnectModal}
+                    className="w-full bg-gradient-to-r from-[#6c63ff] to-[#9b59f5] rounded-xl px-4 py-3 text-sm font-semibold text-white shadow-[0_10px_24px_-8px_rgba(108,99,255,0.5)] hover:-translate-y-0.5 transition-all"
+                  >
+                    Connect Wallet
+                  </button>
+                  <p className="text-xs text-gray-500 mt-2 px-1 flex items-start gap-1.5">
+                    <ShieldCheck className="w-3.5 h-3.5 text-[#22c55e] shrink-0 mt-0.5" />
+                    We verify this once with a signature, then remember it — no more retyping it on every purchase.
+                  </p>
+                </>
+              )}
             </div>
           )}
 
