@@ -480,7 +480,7 @@ const TopupInner: React.FC = () => {
             ))}
           </select>
 
-          {!web3Payment && (
+          {!web3Payment && buyerWalletLoaded && (
             <div className="w-full">
               {fromAddress ? (
                 <div className="border border-green-500/30 bg-gradient-to-br from-green-500/[0.08] to-green-500/[0.02] rounded-xl px-3.5 py-3 flex items-center justify-between">
