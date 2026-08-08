@@ -5669,487 +5669,288 @@ const isFanVerified = isViewingOwnProfile
 
 
   return (
-
     <div
-
       className="w-screen mx-auto sm:w-11/12 md:w-10/12 lg:w-9/12 xl:w-8/12"
-
       style={{ overflowY: "scroll" }}
-
     >
-
       {/* VIP Celebration Animation */}
-
       {showVipCelebration && (
-
         <div className="fixed inset-0 z-40 flex items-center justify-center bg-black bg-opacity-50 pointer-events-none">
-
           <div className="relative w-64 h-64 md:w-96 md:h-96">
-
-            <Image
-
-              src="/lion.gif"
-
-              alt="VIP Celebration"
-
-              fill
-
-              className="object-contain"
-
-              priority
-
-            />
-
+            <Image src="/lion.gif" alt="VIP Celebration" fill className="object-contain" priority />
           </div>
-
         </div>
-
       )}
 
-
-
       {/* Post Modal */}
-
       {showPostModal && <PostModal />}
-
       {/* Exclusive Post Modal */}
-
       {showExclusivePostModal && <ExclusivePostModal />}
-
       {/* Profile Picture Modal */}
-
       {showProfilePictureModal && <ProfilePictureModal />}
 
-      <div
-
-        className="w-full mx-auto mt-4 text-white md:mr-auto md:ml-0"
-
-      >
-
+      <div className="w-full mx-auto mt-4 text-white md:mr-auto md:ml-0">
         <div className="pb-6">
 
           {(status === "loading" || status === "idle") && (
-
-            <SkeletonTheme baseColor="#202020" highlightColor="#444">
-
-              <div className="flex flex-col gap-6">
-
+            <SkeletonTheme baseColor="#111624" highlightColor="#1c2338">
+              <div className="flex flex-col gap-6 px-2">
                 {/* Profile header skeleton */}
-
-                <div className="relative w-full flex items-center justify-between px-2">
-
+                <div className="relative w-full flex items-center justify-between">
                   <div className="flex items-center justify-center w-1/3">
-
                     <div className="w-24 h-24 rounded-full p-1">
-
                       <Skeleton circle width={96} height={96} />
-
                     </div>
-
                   </div>
-
                   <div className="flex flex-col items-start pl-7 gap-2 w-2/3">
-
                     <Skeleton width={120} height={24} className="rounded-md" />
-
                     <div className="flex justify-start gap-4 w-full">
-
                       <Skeleton width={60} height={20} />
-
                       <Skeleton width={60} height={20} />
-
                       <Skeleton width={60} height={20} />
-
                     </div>
-
                   </div>
-
                 </div>
-
                 {/* Bio and username skeleton */}
-
                 <div className="mt-3 ml-6">
-
                   <Skeleton width={80} height={18} />
-
                   <Skeleton width={180} height={16} />
-
                 </div>
-
                 {/* Follow grid skeleton */}
-
                 <div className="grid grid-cols-2 gap-1 md:gap-2">
-
                   <Skeleton width={180} height={18} />
-
                   <Skeleton width={180} height={18} />
-
                 </div>
-
               </div>
-
             </SkeletonTheme>
-
           )}
 
           {status === "failed" && (
-
-            <div className="w-full px-4 py-6 text-center">
-
-              <div className="mb-3 text-sm text-red-400">
-
+            <div className="w-full px-4 py-10 text-center">
+              <div className="mb-4 text-sm text-red-400">
                 {error || "Failed to load profile."}
-
               </div>
-
               <button
-
                 onClick={() => viewingUserId && dispatch(getprofile({ userid: viewingUserId, token } as any))}
-
-                className="px-3 py-1 text-sm rounded bg-orange-500 text-white hover:bg-orange-600"
-
+                className="px-5 py-2 text-sm font-semibold rounded-xl bg-gradient-to-r from-[#6c63ff] to-[#9b59f5] text-white shadow-[0_10px_24px_-8px_rgba(108,99,255,0.5)] hover:-translate-y-0.5 transition-all"
               >
-
                 Retry
-
               </button>
-
             </div>
-
           )}
 
           {(status === "succeeded" || (!isViewingOwnProfile && (viewingProfile?.userId || (viewingProfile as any)?.firstname))) && (
-
             <div className="flex flex-col">
-
-              <div className="relative w-full ">
-
-
-
-                <div className=" w-max absolute -top-5 right-0 px-4">
-
+              <div className="relative w-full">
+                <div className="w-max absolute -top-5 right-0 px-4">
                   <div className="flex items-center justify-between">
-
-
-
                     <DropdownMenu userId={profileSlugForUrl} isOwnProfile={viewingUserId === loggedInUserId} />
-
                   </div>
-
                 </div>
 
-                <div className="w-full px-2 ">
-
-                  <div className="flex items-center  justify-between">
-
+                <div className="w-full px-2">
+                  <div className="flex items-center justify-between">
                     <div className="flex items-center justify-center w-1/3">
-
                       <div className="relative">
-
                         <div
-
                           onClick={() => setShowProfilePictureModal(true)}
+                          className="w-24 h-24 rounded-full p-[3px] cursor-pointer hover:scale-105 transition-transform"
+                          style={{ background: "linear-gradient(135deg, #6c63ff, #9b59f5)", boxShadow: "0 12px 30px -10px rgba(108,99,255,0.5)" }}
+                        >
+                          <div className="w-full h-full rounded-full overflow-hidden bg-[#080b14] p-[2px]">
+                            {(() => {
+                              const profileImage = photolink || avatarSrc;
+                              const userName = `${firstname || ""} ${lastname || ""}`.trim();
+                              const initials = userName.split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2) || "?";
 
-                          className="w-24 h-24 rounded-full p-1 bg-gradient-to-r from-blue-500 to-purple-600 cursor-pointer hover:scale-105 transition-transform">
-
-                          {(() => {
-
-                            const profileImage = photolink || avatarSrc;
-
-                            const userName = `${firstname || ""} ${lastname || ""}`.trim();
-
-                            const initials = userName.split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2) || "?";
-
-
-
-                            if (profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined") {
-
-                              const imageSource = getImageSource(profileImage, 'profile');
+                              if (profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined") {
+                                const imageSource = getImageSource(profileImage, 'profile');
+                                return (
+                                  <Image
+                                    alt="profile picture"
+                                    src={imageSource.src}
+                                    width={128}
+                                    height={128}
+                                    className="object-cover w-full h-full rounded-full"
+                                  />
+                                );
+                              }
 
                               return (
-
-                                <Image
-
-                                  alt="profile picture"
-
-                                  src={imageSource.src}
-
-                                  width={128}
-
-                                  height={128}
-
-                                  className="object-cover w-full h-full rounded-full"
-
-                                />
-
+                                <div className="w-full h-full rounded-full bg-gradient-to-br from-[#1a1f35] to-[#111624] flex items-center justify-center text-white text-2xl font-bold">
+                                  {initials}
+                                </div>
                               );
-
-                            }
-
-
-
-                            return (
-
-                              <div className="w-full h-full rounded-full bg-gray-600 flex items-center justify-center text-white text-2xl font-bold">
-
-                                {initials}
-
-                              </div>
-
-                            );
-
-                          })()}
-
+                            })()}
+                          </div>
                         </div>
 
-
-
                         {/* VIP Lion Badge */}
-
                         {(() => {
-
                           return profileOwnerVipStatus && <VIPBadge size="xxl" className="absolute -top-8 -right-8 pointer-events-none" isVip={profileOwnerVipStatus} vipEndDate={vipStatus?.vipEndDate} />;
-
                         })()}
-
                       </div>
-
                     </div>
 
                     <div className="flex flex-col items-start pl-7 gap-2 w-2/3">
+                      <p className="pt-2 text-base sm:text-xl font-bold text-white flex items-center gap-1">
+                        {firstname} {lastname}
+                        {/* Fan Verified Badge */}
+                        {isFanVerified && (
+                          <>
+                            <span
+                              title="Fan Verified"
+                              className="inline-flex items-center justify-center ml-1 cursor-pointer"
+                              style={{ flexShrink: 0 }}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setShowFanVerifiedModal(true);
+                              }}
+                            >
+                              <svg viewBox="0 0 24 24" width="28" height="28" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <defs>
+                                  <linearGradient id="fanBadgeGrad" x1="4" y1="2" x2="20" y2="21" gradientUnits="userSpaceOnUse">
+                                    <stop offset="0%" stopColor="#7C3AED" />
+                                    <stop offset="100%" stopColor="#4F46E5" />
+                                  </linearGradient>
+                                </defs>
+                                <path d="M12 1L3 5V11C3 15.836 6.978 20.489 12 22C17.022 20.489 21 15.836 21 11V5L12 1Z" fill="white" />
+                                <path d="M12 2.8L4.5 6V11C4.5 15.2 7.9 19.4 12 20.6C16.1 19.4 19.5 15.2 19.5 11V6L12 2.8Z" fill="url(#fanBadgeGrad)" />
+                                <path d="M12 7l1.2 2.4 2.6.4-1.9 1.85.45 2.6L12 13.1l-2.35 1.15.45-2.6L8.2 9.8l2.6-.4L12 7z" fill="white" />
+                              </svg>
+                            </span>
 
-                      <p className="pt-2 text-base sm:text-xl font-bold text-slate-200 flex items-center gap-1">
-  {firstname} {lastname}
-  {/* Fan Verified Badge */}
-{isFanVerified && (
-  <>
-    <span
-      title="Fan Verified"
-      className="inline-flex items-center justify-center ml-1 cursor-pointer"
-      style={{ flexShrink: 0 }}
-      onClick={(e) => {
-        e.stopPropagation();
-        setShowFanVerifiedModal(true);
-      }}
-    >
-      <svg
-        viewBox="0 0 24 24"
-        width="28"
-        height="28"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <defs>
-          <linearGradient id="fanBadgeGrad" x1="4" y1="2" x2="20" y2="21" gradientUnits="userSpaceOnUse">
-            <stop offset="0%" stopColor="#7C3AED" />
-            <stop offset="100%" stopColor="#4F46E5" />
-          </linearGradient>
-        </defs>
-        <path
-          d="M12 1L3 5V11C3 15.836 6.978 20.489 12 22C17.022 20.489 21 15.836 21 11V5L12 1Z"
-          fill="white"
-        />
-        <path
-          d="M12 2.8L4.5 6V11C4.5 15.2 7.9 19.4 12 20.6C16.1 19.4 19.5 15.2 19.5 11V6L12 2.8Z"
-          fill="url(#fanBadgeGrad)"
-        />
-        <path
-          d="M12 7l1.2 2.4 2.6.4-1.9 1.85.45 2.6L12 13.1l-2.35 1.15.45-2.6L8.2 9.8l2.6-.4L12 7z"
-          fill="white"
-        />
-      </svg>
-    </span>
+                            {/* Fan Verified Modal */}
+                            {showFanVerifiedModal && (
+                              <div
+                                className="fixed inset-0 z-[9999] flex items-center justify-center bg-black bg-opacity-75 p-4"
+                                onClick={() => setShowFanVerifiedModal(false)}
+                              >
+                                <div
+                                  className="relative max-w-sm w-full rounded-2xl overflow-hidden"
+                                  style={{ background: "#111624", border: "1px solid rgba(255,255,255,0.07)", fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  {/* Top gradient bar */}
+                                  <div style={{ height: 3, background: "linear-gradient(90deg,#6c63ff,#9b59f5,#2dd4bf)" }} />
 
-    {/* Fan Verified Modal */}
-    {showFanVerifiedModal && (
-      <div
-        className="fixed inset-0 z-[9999] flex items-center justify-center bg-black bg-opacity-75 p-4"
-        onClick={() => setShowFanVerifiedModal(false)}
-      >
-        <div
-          className="relative max-w-sm w-full rounded-2xl overflow-hidden"
-          style={{ background: "#111624", border: "1px solid rgba(255,255,255,0.07)", fontFamily: "'Plus Jakarta Sans', sans-serif" }}
-          onClick={(e) => e.stopPropagation()}
-        >
-          {/* Top gradient bar */}
-          <div style={{ height: 3, background: "linear-gradient(90deg,#6c63ff,#9b59f5,#2dd4bf)" }} />
+                                  <div className="p-6 flex flex-col items-center text-center">
+                                    {/* Big shield badge */}
+                                    <div className="mb-4">
+                                      <svg viewBox="0 0 24 24" width="72" height="72" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <defs>
+                                          <linearGradient id="fanModalGrad" x1="4" y1="2" x2="20" y2="21" gradientUnits="userSpaceOnUse">
+                                            <stop offset="0%" stopColor="#7C3AED" />
+                                            <stop offset="100%" stopColor="#4F46E5" />
+                                          </linearGradient>
+                                        </defs>
+                                        <path d="M12 1L3 5V11C3 15.836 6.978 20.489 12 22C17.022 20.489 21 15.836 21 11V5L12 1Z" fill="white" />
+                                        <path d="M12 2.8L4.5 6V11C4.5 15.2 7.9 19.4 12 20.6C16.1 19.4 19.5 15.2 19.5 11V6L12 2.8Z" fill="url(#fanModalGrad)" />
+                                        <path d="M12 7l1.2 2.4 2.6.4-1.9 1.85.45 2.6L12 13.1l-2.35 1.15.45-2.6L8.2 9.8l2.6-.4L12 7z" fill="white" />
+                                      </svg>
+                                    </div>
 
-          <div className="p-6 flex flex-col items-center text-center">
-            {/* Big shield badge */}
-            <div className="mb-4">
-              <svg viewBox="0 0 24 24" width="72" height="72" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <defs>
-                  <linearGradient id="fanModalGrad" x1="4" y1="2" x2="20" y2="21" gradientUnits="userSpaceOnUse">
-                    <stop offset="0%" stopColor="#7C3AED" />
-                    <stop offset="100%" stopColor="#4F46E5" />
-                  </linearGradient>
-                </defs>
-                <path d="M12 1L3 5V11C3 15.836 6.978 20.489 12 22C17.022 20.489 21 15.836 21 11V5L12 1Z" fill="white" />
-                <path d="M12 2.8L4.5 6V11C4.5 15.2 7.9 19.4 12 20.6C16.1 19.4 19.5 15.2 19.5 11V6L12 2.8Z" fill="url(#fanModalGrad)" />
-                <path d="M12 7l1.2 2.4 2.6.4-1.9 1.85.45 2.6L12 13.1l-2.35 1.15.45-2.6L8.2 9.8l2.6-.4L12 7z" fill="white" />
-              </svg>
-            </div>
+                                    <h2 style={{ fontSize: 20, fontWeight: 800, color: "#f1f5f9", marginBottom: 6, letterSpacing: "-0.02em" }}>
+                                      Verified Fan
+                                    </h2>
 
-            {/* Title */}
-            <h2 style={{ fontSize: 20, fontWeight: 800, color: "#f1f5f9", marginBottom: 6, letterSpacing: "-0.02em" }}>
-              Verified Fan
-            </h2>
+                                    <p style={{ fontSize: 13, color: "#94a3b8", marginBottom: 16 }}>
+                                      {isViewingOwnProfile ? username : profileData?.username || ""}
+                                    </p>
 
-            {/* Username */}
-            <p style={{ fontSize: 13, color: "#94a3b8", marginBottom: 16 }}>
-              {isViewingOwnProfile ? username : profileData?.username || ""}
-            </p>
+                                    <div style={{ width: "100%", height: 1, background: "rgba(255,255,255,0.07)", marginBottom: 16 }} />
 
-            {/* Divider */}
-            <div style={{ width: "100%", height: 1, background: "rgba(255,255,255,0.07)", marginBottom: 16 }} />
+                                    <div className="w-full space-y-3 mb-6">
+                                      {[
+                                        { icon: "⚡", text: "Priority access to creator requests" },
+                                        { icon: "📈", text: "2× more likely to be accepted" },
+                                        { icon: "✅", text: "Trusted & verified identity" },
+                                        { icon: "🔓", text: "Access to exclusive creators" },
+                                      ].map((b) => (
+                                        <div key={b.text} className="flex items-center gap-3 text-left">
+                                          <div style={{ width: 30, height: 30, borderRadius: 8, background: "rgba(108,99,255,0.12)", border: "1px solid rgba(108,99,255,0.2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, flexShrink: 0 }}>
+                                            {b.icon}
+                                          </div>
+                                          <span style={{ fontSize: 13, color: "#cbd5e1" }}>{b.text}</span>
+                                        </div>
+                                      ))}
+                                    </div>
 
-            {/* Benefits list */}
-            <div className="w-full space-y-3 mb-6">
-              {[
-                { icon: "⚡", text: "Priority access to creator requests" },
-                { icon: "📈", text: "2× more likely to be accepted" },
-                { icon: "✅", text: "Trusted & verified identity" },
-                { icon: "🔓", text: "Access to exclusive creators" },
-              ].map((b) => (
-                <div key={b.text} className="flex items-center gap-3 text-left">
-                  <div style={{ width: 30, height: 30, borderRadius: 8, background: "rgba(108,99,255,0.12)", border: "1px solid rgba(108,99,255,0.2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, flexShrink: 0 }}>
-                    {b.icon}
-                  </div>
-                  <span style={{ fontSize: 13, color: "#cbd5e1" }}>{b.text}</span>
-                </div>
-              ))}
-            </div>
+                                    <div style={{ background: "rgba(108,99,255,0.08)", border: "1px solid rgba(108,99,255,0.18)", borderRadius: 10, padding: "10px 14px", fontSize: 12, color: "#94a3b8", lineHeight: 1.55, marginBottom: 20, width: "100%" }}>
+                                      🛡 This user has verified their identity with a government-issued ID. Their identity is confirmed by mmeko.
+                                    </div>
 
-            {/* Footer note */}
-            <div style={{ background: "rgba(108,99,255,0.08)", border: "1px solid rgba(108,99,255,0.18)", borderRadius: 10, padding: "10px 14px", fontSize: 12, color: "#94a3b8", lineHeight: 1.55, marginBottom: 20, width: "100%" }}>
-              🛡 This user has verified their identity with a government-issued ID. Their identity is confirmed by mmeko.
-            </div>
+                                    <button
+                                      onClick={() => setShowFanVerifiedModal(false)}
+                                      style={{ width: "100%", padding: "12px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#6c63ff,#9b59f5)", color: "white", fontSize: 14, fontWeight: 700, fontFamily: "inherit", cursor: "pointer" }}
+                                    >
+                                      Got it
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+                          </>
+                        )}
+                      </p>
 
-            {/* Close button */}
-            <button
-              onClick={() => setShowFanVerifiedModal(false)}
-              style={{ width: "100%", padding: "12px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#6c63ff,#9b59f5)", color: "white", fontSize: 14, fontWeight: 700, fontFamily: "inherit", cursor: "pointer" }}
-            >
-              Got it
-            </button>
-          </div>
-        </div>
-      </div>
-    )}
-  </>
-)}
-</p>
-
-                      <div className="flex justify-start gap-4 w-full">
-
-                        <p className="font-bold text-lg text-slate-400 flex flex-col items-center">
-
-                          {formatter.format(profileStats.totalLikes)}{" "}
-
-                          <span className="font-semibold tracking-wider text-[15px]">Likes</span>
-
-                        </p>
-
-                        <p className="font-bold text-lg text-slate-400 flex flex-col items-center">
-
-                          {profileStats.followersCount} <span className="font-semibold tracking-wider text-[15px]">Fans</span>
-
-                        </p>
-
-                        <p className="font-bold text-lg text-slate-400 flex flex-col items-center">
-
-                          {profileStats.followingCount} <span className="font-semibold tracking-wider text-[15px]">Following</span>
-
-                        </p>
-
+                      <div className="flex justify-start gap-5 w-full mt-1">
+                        <div className="flex flex-col items-center">
+                          <span className="font-bold text-lg text-white">{formatter.format(profileStats.totalLikes)}</span>
+                          <span className="text-[11px] font-medium tracking-wide text-gray-500 uppercase">Likes</span>
+                        </div>
+                        <div className="flex flex-col items-center">
+                          <span className="font-bold text-lg text-white">{profileStats.followersCount}</span>
+                          <span className="text-[11px] font-medium tracking-wide text-gray-500 uppercase">Fans</span>
+                        </div>
+                        <div className="flex flex-col items-center">
+                          <span className="font-bold text-lg text-white">{profileStats.followingCount}</span>
+                          <span className="text-[11px] font-medium tracking-wide text-gray-500 uppercase">Following</span>
+                        </div>
                       </div>
-
                     </div>
-
                   </div>
-
                 </div>
-
               </div>
 
               <div>
-
-                <div className="mt-3 ml-6 ">
-
-
-                  <p className="text-blue-500 flex items-center gap-1">
+                <div className="mt-4 ml-6">
+                  <p className="flex items-center gap-1.5 text-[#9b59f5] font-medium">
                     {username}
-                    {creator_verified && <BadgeCheck className="w-5 h-5 text-black" fill="white" />}
+                    {creator_verified && <BadgeCheck className="w-5 h-5 text-white" fill="#6c63ff" />}
                   </p>
 
-
-
                   {(profile as any).creator_portfolio && (
-
-                    <button
-
-                      className="bg-[#7e3500] text-[#eedfcb] rounded-lg p-1 px-2 mt-3"
-
-                    >
-
+                    <button className="mt-3 px-4 py-1.5 rounded-full text-xs font-semibold text-[#f5c451] bg-[#f5c451]/10 border border-[#f5c451]/30">
                       Request {(profile as any).creatortDype}
-
                     </button>
-
                   )}
 
                   {/* Bio */}
-
-                  <div className="w-full overflow-x-hidden   mt-2">
-
-                    <p className="text-slate-400 break-words">{bio || "No bio yet"}</p>
-
+                  <div className="w-full overflow-x-hidden mt-2.5">
+                    <p className="text-gray-400 break-words leading-relaxed text-sm">{bio || "No bio yet"}</p>
                   </div>
 
                   <div className="w-full -ml-2 flex items-center justify-center">
-
                     {viewingUserId !== loggedInUserId ? (
-
                       <div className="flex flex-row-reverse w-full gap-2 mt-4">
-
                         {/* Message Button */}
-
                         <button
-
-                          className={`flex-1 bg-[#111624] cursor-pointer py-1.5 px-3 rounded-lg hover:bg-gray-700 transition-colors text-center`}
-
+                          className="flex-1 bg-white/[0.04] border border-white/10 cursor-pointer py-2 px-3 rounded-xl hover:bg-white/[0.08] transition-colors text-center text-sm font-medium"
                           onClick={() => {
-
                             if (!token) {
                               toast.error("Please login to message");
                               return;
                             }
-
-                            // Pass only the target user ID (the user being viewed) as creator_portfolio_id
-
-                            // The Chat component will use this to fetch the target user's profile details
-
                             const targetUserId = viewingUserId;
-
                             router.push(`/message/${targetUserId}`);
-
                           }}
-
                         >
-
                           Message
-
                         </button>
 
-
-
                         {/* Fan Meet Button - Only show if user has a creator portfolio */}
-
                         {(() => {
-
-                          // Check for creator portfolio - must have creator_portfolio === true AND non-empty creator_portfolio_id
-                          // When portfolio is deleted, creator_portfolio is set to false and creator_portfolio_id is set to ""
-                          // Also check 'creator' field as fallback (legacy field from getprofile.js)
                           const creatorPortfolioFlag = (profileData as any)?.creator_portfolio === true ||
                             (profileData as any)?.creator === true;
                           const creatorPortfolioId = (profileData as any)?.creator_portfolio_id;
@@ -6158,138 +5959,96 @@ const isFanVerified = isViewingOwnProfile
                             creatorPortfolioId &&
                             String(creatorPortfolioId).trim() !== "";
 
-                          // Don't show button if user doesn't have a portfolio
                           if (!hasCreatorPortfolio) {
                             return null;
                           }
 
-                          // Get host type from profile data or default to "Fan meet"
                           const hostType = (profileData as any)?.hosttype || "Fan meet";
 
-                          // Get the actual creator ID from profile data
                           const creator_portfolio_id = (profileData as any)?.creator_portfolio_id ||
                             (profileData as any)?.creator_id ||
-                            (profileData as any)?._id || // Fallback to profile ID
-                            viewingUserId; // Last resort fallback
+                            (profileData as any)?._id ||
+                            viewingUserId;
 
                           return (
                             <button
-                              className="flex-1 bg-[#111624] cursor-pointer py-1.5 px-3 rounded-lg hover:from-orange-600 hover:to-red-700 transition-all duration-200 hover:scale-105 text-center"
+                              className="flex-1 bg-white/[0.04] border border-white/10 cursor-pointer py-2 px-3 rounded-xl hover:bg-white/[0.08] transition-all duration-200 text-center text-sm font-medium"
                               onClick={() => {
-                                // Navigate to creator profile using the actual creator ID
                                 router.push(`/creators/${creator_portfolio_id}`);
                               }}
                             >
                               {hostType}
                             </button>
                           );
-
                         })()}
 
-
-
                         {/* Follow Button */}
-                        {/* Only show follow button if not viewing own profile */}
                         {!isViewingOwnProfile && (
                           <button
                             onClick={onFollowClick}
-                            disabled={isProcessing || !token} // Disable if not logged in
-                            className={`flex-1 flex justify-center gap-x-1 items-center py-1.5 px-3 rounded-lg cursor-pointer transition-all duration-200 ${isFollowing
-                              ? "bg-gradient-to-r !from-blue-700 !to-purple-800"
-                              : "bg-gradient-to-r !from-blue-500 !to-purple-600"
-                              } ${isProcessing || !token ? "opacity-70 cursor-not-allowed" : "hover:scale-105"}`}
+                            disabled={isProcessing || !token}
+                            className={`flex-1 flex justify-center gap-x-1.5 items-center py-2 px-3 rounded-xl cursor-pointer transition-all duration-200 text-sm font-semibold ${
+                              isFollowing
+                                ? "bg-white/[0.06] border border-white/10 text-white"
+                                : "bg-gradient-to-r from-[#6c63ff] to-[#9b59f5] text-white shadow-[0_10px_24px_-8px_rgba(108,99,255,0.5)]"
+                            } ${isProcessing || !token ? "opacity-70 cursor-not-allowed" : "hover:-translate-y-0.5"}`}
                           >
                             <Image
                               src={isFollowing ? StarIcon2 : StarIcon}
-                              width={20}
-                              height={20}
-                              className="size-5"
+                              width={18}
+                              height={18}
+                              className="size-[18px]"
                               alt="rating"
                             />
-
-                            <span className="font-medium">
-                              {isProcessing
-                                ? "..."
-                                : isFollowing === true
-                                  ? "Following"
-                                  : "Follow"
-                              }
+                            <span>
+                              {isProcessing ? "..." : isFollowing === true ? "Following" : "Follow"}
                             </span>
                           </button>
                         )}
-
                       </div>
-
                     ) : (
+                      <div className="flex items-center gap-2.5 mt-4">
+                        {!isFanVerified && !creator_verified && (
+                          <button
+                            className="py-2 px-3.5 flex items-center justify-center gap-x-1.5 bg-gradient-to-r from-[#6c63ff] to-[#9b59f5] text-white text-center text-sm font-medium rounded-xl shadow-[0_10px_24px_-8px_rgba(108,99,255,0.5)] hover:-translate-y-0.5 transition-all"
+                            onClick={() => router.push(`/${profileSlugForUrl}/fan-verification`)}
+                          >
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                              <defs>
+                                <linearGradient id="fanBtnGrad2" x1="4" y1="2" x2="20" y2="21" gradientUnits="userSpaceOnUse">
+                                  <stop offset="0%" stopColor="#c4b5fd" />
+                                  <stop offset="100%" stopColor="#a5b4fc" />
+                                </linearGradient>
+                              </defs>
+                              <path d="M12 1L3 5V11C3 15.836 6.978 20.489 12 22C17.022 20.489 21 15.836 21 11V5L12 1Z" fill="white" opacity="0.3" />
+                              <path d="M12 2.8L4.5 6V11C4.5 15.2 7.9 19.4 12 20.6C16.1 19.4 19.5 15.2 19.5 11V6L12 2.8Z" fill="url(#fanBtnGrad)" />
+                              <path d="M12 7l1.2 2.4 2.6.4-1.9 1.85.45 2.6L12 13.1l-2.35 1.15.45-2.6L8.2 9.8l2.6-.4L12 7z" fill="white" />
+                            </svg>
+                            Fan Verification
+                          </button>
+                        )}
 
-                     <div className="flex items-center gap-2">
-
-{!isFanVerified && !creator_verified && (
-    <button
-  className="p-2 flex items-center justify-center gap-x-1 bg-gradient-to-r !from-blue-500 !to-purple-600 text-center text-sm rounded-lg mt-4"
-  onClick={() => router.push(`/${profileSlugForUrl}/fan-verification`)}
->
-  <svg
-    viewBox="0 0 24 24"
-    width="16"
-    height="16"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <defs>
-      <linearGradient id="fanBtnGrad2" x1="4" y1="2" x2="20" y2="21" gradientUnits="userSpaceOnUse">
-  <stop offset="0%" stopColor="#c4b5fd" />  {/* very light purple */}
-  <stop offset="100%" stopColor="#a5b4fc" />  {/* very light indigo */}
-</linearGradient>
-    </defs>
-    <path
-      d="M12 1L3 5V11C3 15.836 6.978 20.489 12 22C17.022 20.489 21 15.836 21 11V5L12 1Z"
-      fill="white"
-      opacity="0.3"
-    />
-    <path
-      d="M12 2.8L4.5 6V11C4.5 15.2 7.9 19.4 12 20.6C16.1 19.4 19.5 15.2 19.5 11V6L12 2.8Z"
-      fill="url(#fanBtnGrad)"
-    />
-    <path
-      d="M12 7l1.2 2.4 2.6.4-1.9 1.85.45 2.6L12 13.1l-2.35 1.15.45-2.6L8.2 9.8l2.6-.4L12 7z"
-      fill="white"
-    />
-  </svg>
-  Fan Verification
-</button>
-  )}
-  
-  <button
-    className="p-2 flex items-center justify-center gap-x-1 bg-gradient-to-r !from-blue-500 !to-purple-600 text-center text-sm rounded-lg mt-4"
-    onClick={() => router.push(`/${profileSlugForUrl}/editprofile`)}
-  >
-    <BiPencil />
-    Edit Profile
-  </button>
-
- 
-</div>
-
+                        <button
+                          className="py-2 px-3.5 flex items-center justify-center gap-x-1.5 bg-white/[0.04] border border-white/10 text-white text-center text-sm font-medium rounded-xl hover:bg-white/[0.08] transition-colors"
+                          onClick={() => router.push(`/${profileSlugForUrl}/editprofile`)}
+                        >
+                          <BiPencil />
+                          Edit Profile
+                        </button>
+                      </div>
                     )}
-
                   </div>
-
                 </div>
-
               </div>
-
             </div>
-
           )}
-
         </div>
-
       </div>
 
       <div className="mx-4 sm:max-w-xl">
-
         <Tabs
+
+
 
           tabs={[
 
