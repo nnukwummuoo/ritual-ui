@@ -727,7 +727,7 @@ export default function CreatorLandingContent({ prefetchedCreators }: Props) {
                 </thead>
                 <tbody>
                   <tr><td className="td-feature">Structured Meet &amp; Greets</td><td className="td-mmeko"><span className="ck">✓ Core feature</span></td><td className="td-other"><span className="cx">✗ Not offered</span></td></tr>
-                  <tr><td className="td-feature">30-Min Meet Cap (Creator Safety)</td><td className="td-mmeko"><span className="ck">✓ Enforced</span></td><td className="td-other"><span className="cx">✗ Not applicable</span></td></tr>
+                  <tr><td className="td-feature"> 30‑Min Meets · 1‑Hour Dates (Creator Safety)</td><td className="td-mmeko"><span className="ck">✓ Enforced</span></td><td className="td-other"><span className="cx">✗ Not applicable</span></td></tr>
                   <tr><td className="td-feature">Public Venue Requirement</td><td className="td-mmeko"><span className="ck">✓ Always</span></td><td className="td-other"><span className="cx">✗ Not applicable</span></td></tr>
                   <tr><td className="td-feature">All Chats On-Platform</td><td className="td-mmeko"><span className="ck">✓ Required</span></td><td className="td-other"><span className="cx">✗ Not enforced</span></td></tr>
                   <tr><td className="td-feature">Platform Commission</td><td className="td-mmeko"><span className="ck">0%</span></td><td className="td-other"><span className="cx">20%</span></td></tr>
