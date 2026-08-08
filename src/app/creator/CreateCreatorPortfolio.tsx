@@ -200,8 +200,12 @@ const removeTour = (index: number) => {
   setTours((prev) => prev.filter((_, i) => i !== index));
 };
 
-  // ── CHANGED: step 5, min 30, max 30 ──
-  const durationValue = 30;
+
+  const durationValue = hosttype === "Fan date" ? 60 : 30;
+
+  useEffect(() => {
+    setduration(String(durationValue));
+  }, [durationValue]);
 
   const hourValues = pm === "AM" ? AM_HOURS : PM_HOURS;
 
@@ -371,8 +375,8 @@ const removeTour = (index: number) => {
     );
   }
 
-  // Duration progress bar fill %
-  const durFillPct = ((durationValue - 5) / (30 - 5)) * 100;
+  // Duration is always shown as its category's fixed maximum, so the bar is always full
+  const durFillPct = 100;
 
   return (
     <div
@@ -929,26 +933,23 @@ setStateQuery("");
         <Divider />
 
         {/* ── DURATION (hidden for Fan Call) ── */}
-       {hosttype !== "Fan call" && (
+ {hosttype !== "Fan call" && (
   <section className="mb-8">
     <SectionLabel>Duration</SectionLabel>
 
-    <p style={{ fontSize: 12, color: "rgba(148,163,184,.85)", marginTop: 6, marginBottom: 4, lineHeight: 1.4 }}>
-      <span style={{ color: "#6c63ff" }} className="font-bold text-xs uppercase tracking-wider flex items-center gap-1">
-        ✨ Session Extension Available
-      </span>
-    </p>
-    <p className="text-gray-600 leading-relaxed text-xs sm:text-sm" style={{ marginTop: -4, marginBottom: 12 }}>
-      Fans can seamlessly extend their experience by sending an additional structured booking request at the end of each session if both parties wish to continue.
+    <p className="text-gray-600 leading-relaxed text-xs sm:text-sm" style={{ marginTop: 6, marginBottom: 12 }}>
+      {hosttype === "Fan date"
+        ? "Fan Date is fixed at 1 hour for every booking — this keeps things fair and consistent for both you and your fans."
+        : "Fan Meet is fixed at 30 minutes for every booking — this keeps things fair and consistent for both you and your fans."}
     </p>
 
     <div className="dur-wrap">
-      <button type="button" className="dur-btn" onClick={() => {}}>−</button>
-      <div className="dur-display">{durationValue} min</div>
-      <button type="button" className="dur-btn" onClick={() => {}}>+</button>
+      <div className="dur-display">{hosttype === "Fan date" ? "1 hour" : `${durationValue} min`}</div>
     </div>
     <div className="dur-bar"><div className="dur-fill" style={{ width: `${durFillPct}%` }} /></div>
-    <div className="dur-note">Maximum 30 minutes per session</div>
+    <div className="dur-note">
+      Fixed at {hosttype === "Fan date" ? "1 hour" : `${durationValue} minutes`} per {hosttype === "Fan date" ? "date" : "meet"} — no extensions
+    </div>
     <Divider />
   </section>
 )}
