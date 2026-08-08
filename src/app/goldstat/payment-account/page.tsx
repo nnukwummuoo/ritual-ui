@@ -225,6 +225,11 @@ function PaymentAccountPageInner() {
       return;
     }
 
+    if (!formData.currency) {
+      alert("Please select a stable coin (USDT or USDC).");
+      return;
+    }
+
     if (!formData.walletAddress || !walletVerified) {
       setWalletError("Please connect and verify your wallet before saving.");
       return;
@@ -375,7 +380,7 @@ function PaymentAccountPageInner() {
 
                 {/* Choose Stablecoin */}
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-left text-sm font-medium text-gray-300">Choose Stablecoin</label>
+                <label className="text-left text-sm font-medium text-gray-300">Choose Stablecoin <span className="text-red-400">*</span></label>
                   <div className="flex gap-3">
                     {["USDT (BEP-20)", "USDC (BEP-20)"].map((coin) => (
                       <div
