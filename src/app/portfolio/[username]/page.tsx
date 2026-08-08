@@ -370,7 +370,7 @@ useEffect(() => {
   const creatorDetailsTitle = isFanCallCreator ? "Call Details" : isFanDateCreator ? "Date Details" : "Meet Details";
   const creatorPriceValue = formatCreatorPrices(creator?.price || "") || "0";
   const creatorRateSuffix = isFanCallCreator ? "/min" : isFanDateCreator ? "/date" : "/meet";
-  const creatorDurationText = isFanCallCreator ? "Billed per minute" : `${formatCreatorPrices(String(creator?.duration || "")) || "30"} minutes`;
+  const creatorDurationText = isFanCallCreator ? "Billed per minute" : isFanDateCreator ? "1 hour" : "30 minutes";
   const availabilityDays = String(creator?.daysava || "").split(/[\s,]+/).map((d) => d.trim()).filter(Boolean);
   const availabilityHours = String(creator?.timeava || "").split(/[\s,]+/).map((t) => t.trim().replace(/(AM|PM)$/i, " $1").toUpperCase()).filter(Boolean);
 
@@ -828,7 +828,7 @@ useEffect(() => {
     ? `Payment secured before the ${creatorServiceNoun}`
     : `Book ${creator.name?.split(" ")[0] || "them"} with confidence`}
 </div>
- <div className="mcp-perk"><div className="mcp-perk-dot">✓</div>{creatorDurationText}{!isFanCallCreator && ", session extension available"}</div>
+ <div className="mcp-perk"><div className="mcp-perk-dot">✓</div>{creatorDurationText}{!isFanCallCreator && ", public venue only"}</div>
             <div className="mcp-perk"><div className="mcp-perk-dot">✓</div>All communication on-platform</div>
           </div>
         </div>
@@ -914,9 +914,9 @@ useEffect(() => {
           <div className="mcp-safety-card">
             <div className="mcp-safety-top">⚠️ Safety Rules — Important</div>
             <div className="mcp-safety-body">
-              <div className="mcp-srule"><div className="mcp-sbullet">1</div>All {creatorServiceTitle.toLowerCase()} sessions are limited to <strong style={{ color: "var(--mcp-text)" }}>30 minutes.</strong></div>
+              <div className="mcp-srule"><div className="mcp-sbullet">1</div>All {creatorServiceTitle.toLowerCase()} sessions are limited to <strong style={{ color: "var(--mcp-text)" }}>{isFanDateCreator ? "1 hour." : "30 minutes."}</strong></div>
               <div className="mcp-srule"><div className="mcp-sbullet">2</div>{creatorServiceTitle} must happen in a <strong style={{ color: "var(--mcp-text)" }}>public place only</strong> — cafés, restaurants, or similar venues.</div>
-              <div className="mcp-srule"><div className="mcp-sbullet">3</div>What happens after 30 minutes is <strong style={{ color: "var(--mcp-text)" }}>outside the platform&apos;s responsibility.</strong></div>
+              <div className="mcp-srule"><div className="mcp-sbullet">3</div>What happens after {isFanDateCreator ? "1 hour" : "30 minutes"} is <strong style={{ color: "var(--mcp-text)" }}>outside the platform&apos;s responsibility.</strong></div>
               <div className="mcp-sagree">{checkuser() ? "By creating this portfolio you agree to follow these rules." : "By sending a request, you agree to follow these rules."}</div>
             </div>
           </div>
