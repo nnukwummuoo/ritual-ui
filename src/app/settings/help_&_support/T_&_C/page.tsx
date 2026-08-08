@@ -45,9 +45,15 @@ const TermsAndConditions = () => {
         <p className="mb-6">1. Fan Call</p>
         <p className="mb-6">Creator is paid per call requested.</p>
         <p className="mb-6">2. Fan Meet</p>
-        <p className="mb-6">Creator sets availability; fans cover rate.</p>
+        <p className="mb-6">
+          🤝 A short, casual meeting where a fan can greet the creator, chat, and even take a selfie — a quick personal
+          connection, capped at a maximum of 30 minutes. Creator sets availability; fans cover the rate.
+        </p>
         <p className="mb-6">3. Fan Date</p>
-        <p className="mb-6">Creator sets availability; fans cover rate.</p>
+        <p className="mb-6">
+          🍽 A more relaxed session spent together in a safe public place — like grabbing coffee, eating, or walking —
+          capped at a maximum of 1 hour. Creator sets availability; fans cover the rate.
+        </p>
         <p className="mb-6">Creators always have the right to accept or decline any request.</p>
 
         <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">4. Client Verification & Booking Transparency</h3>
@@ -174,32 +180,26 @@ const TermsAndConditions = () => {
         <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">12. Fan Meet & Fan Date Policy</h3>
         <p className="mb-6">1. Duration of Meetings</p>
         <p className="mb-6">
-          All Fan Meets and Fan Dates requested through the platform are limited to a maximum of 30 minutes.
+          Fan Meet sessions requested through the platform are limited to a maximum of 30 minutes, and Fan Date
+          sessions are limited to a maximum of 1 hour. These time limits are fixed and cannot be extended.
           This rule is in place to promote safety, fairness, and a casual, non-exploitative fan experience.
         </p>
 
-        <p className="mb-6">2. Session Extensions</p>
-        <p className="mb-6">
-          If both parties wish to continue after the initial session, fans may send a new structured booking
-          request at the end of each date. Each extension is a separate booking with its own upfront payment
-          and must be agreed upon by both parties. Neither party is under any obligation to continue.
-        </p>
-
-        <p className="mb-6">3. Location of Meetings</p>
+        <p className="mb-6">2. Location of Meetings</p>
         <p className="mb-6">
           All meetings must take place in public locations (cafes, malls, restaurants, etc.).
           Private residences, hotel rooms, or other non-public spaces are strictly prohibited
           for meetings arranged through the platform.
         </p>
 
-        <p className="mb-6">4. Independent Activity Disclaimer</p>
+        <p className="mb-6">3. Independent Activity Disclaimer</p>
         <p className="mb-6">
           The platform is not responsible for any activity or interaction that occurs outside the scope
-          of the requested session. Users who extend meetings beyond 30 minutes or move to private locations
+          of the requested session. Users who exceed their session's time limit or move to private locations
           do so at their own discretion and responsibility.
         </p>
 
-        <p className="mb-6">5. Enforcement</p>
+        <p className="mb-6">4. Enforcement</p>
         <p className="mb-6">
           Violation of these rules may result in suspension or permanent removal from the platform.
           Repeated violations may also lead to further legal action if necessary to protect the platform and its users.

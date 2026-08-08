@@ -27,7 +27,7 @@ const inter = Inter({
 });
 
 export const viewport: Viewport = {
-  themeColor: "#00A86B",
+  themeColor: "#080b14",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
@@ -58,10 +58,7 @@ export default async function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <meta name="color-scheme" content="light only" />
-        <meta name="supported-color-schemes" content="light" />
         <link rel="manifest" href="/manifest.json" />
-        <meta name="theme-color" content="#1f2937" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />

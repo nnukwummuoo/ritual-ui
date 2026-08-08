@@ -393,11 +393,11 @@ export const RequestDetailsForm: React.FC<RequestDetailsFormProps> = ({
           {/* SAFETY */}
           <div className="rdf-safety">
             <div className="rdf-sm-title">⚠️ Before you send</div>
-            {!isFanCall && (
+           {!isFanCall && (
               <>
-                <div className="rdf-sm-rule"><div className="rdf-sm-dot">1</div>All meets are limited to <strong style={{ color:"#f1f5f9" }}>30 minutes</strong> — no exceptions</div>
+                <div className="rdf-sm-rule"><div className="rdf-sm-dot">1</div>All {creatorType.toLowerCase() === "fan date" ? "dates" : "meets"} are limited to <strong style={{ color:"#f1f5f9" }}>{creatorType.toLowerCase() === "fan date" ? "1 hour" : "30 minutes"}</strong> — no exceptions</div>
                 <div className="rdf-sm-rule"><div className="rdf-sm-dot">2</div>Must take place in a <strong style={{ color:"#f1f5f9" }}>public venue only</strong></div>
-                <div className="rdf-sm-rule"><div className="rdf-sm-dot">3</div>Your gold is held securely — <strong style={{ color:"#f1f5f9" }}>released only after the meet</strong></div>
+                <div className="rdf-sm-rule"><div className="rdf-sm-dot">3</div>Your gold is held securely — <strong style={{ color:"#f1f5f9" }}>released only after the {creatorType.toLowerCase() === "fan date" ? "date" : "meet"}</strong></div>
               </>
             )}
             {isFanCall && (

@@ -1824,31 +1824,15 @@ const formatTimer = (seconds: number) => {
           </div>
         )}
 
-      {/* Duration */}
+    {/* Duration */}
 {hosttype?.toLowerCase() !== "fan call" && (
   <div className="flex items-start gap-3 mb-4">
     <span className="text-xl mt-1">⏱️</span>
     <div className="w-full">
       <h3 className="font-semibold text-gray-800">Duration</h3>
-      <p className="text-gray-600">{details.duration || "Maximum 30 minutes per session"}</p>
-      
-      {/* Premium Extension Box */}
-      {["request", "accepted"].includes(currentStatus || "") && (
-        <div 
-          className="mt-3 p-3 rounded-lg border text-sm"
-          style={{
-            background: "linear-gradient(135deg, rgba(108, 99, 255, 0.06), rgba(155, 89, 245, 0.04))",
-            borderColor: "rgba(108, 99, 255, 0.2)",
-          }}
-        >
-          <p style={{ color: "#6c63ff" }} className="font-bold text-xs uppercase tracking-wider mb-1 flex items-center gap-1">
-            ✨ Session Extension Available
-          </p>
-          <p className="text-gray-600 leading-relaxed text-xs sm:text-sm">
-            Fans can seamlessly extend their experience by sending an additional structured booking request at the end of each session if both parties wish to continue.
-          </p>
-        </div>
-      )}
+      <p className="text-gray-600">
+        {details.duration || (hosttype?.toLowerCase() === "fan date" ? "1 hour per session" : "30 minutes per session")}
+      </p>
     </div>
   </div>
 )}
@@ -2048,11 +2032,15 @@ const formatTimer = (seconds: number) => {
             ) : (
               <>
                 <ul className="text-gray-600 text-sm mt-1 space-y-1">
-                  <li>• All meets are limited to 30 minutes.</li>
-                  <li>• Meets must happen in a public place only.</li>
+                  {hosttype?.toLowerCase() === "fan date" ? (
+                    <li>• All fan date sessions are limited to 1 hour.</li>
+                  ) : (
+                    <li>• All fan meet sessions are limited to 30 minutes.</li>
+                  )}
+                  <li>• {hosttype?.toLowerCase() === "fan date" ? "Dates" : "Meets"} must happen in a public place only.</li>
                 </ul>
                 <p className="text-gray-500 text-xs mt-2">
-                  What happens after 30 minutes is outside the platform&apos;s responsibility.
+                  What happens after {hosttype?.toLowerCase() === "fan date" ? "1 hour" : "30 minutes"} is outside the platform&apos;s responsibility.
                 </p>
               </>
             )}

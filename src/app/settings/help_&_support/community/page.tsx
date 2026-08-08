@@ -45,11 +45,12 @@ const Community = () => {
   </ul>
 </section>
 
-            <section className="mb-6">
+<section className="mb-6">
                 <h2 className="text-xl font-semibold text-gray-300">🤝 2. Meet & Greet Rules</h2>
                 <ul className="mt-2 text-gray-400 list-disc list-inside space-y-2">
-                <li>All in-person meetups are structured and limited to 30 minutes per booking.</li>
-                <li>If both parties wish to continue, the fan may send a new structured booking request at the end of each session. Continuation is always optional and must be agreed upon by both parties.</li>
+                <li>Fan Meet is structured and limited to a maximum of 30 minutes per booking.</li>
+                <li>Fan Date is structured and limited to a maximum of 1 hour per booking.</li>
+                <li>These time limits are fixed and cannot be extended.</li>
                 <li>All meetups must take place in public venues — cafes, restaurants, malls, or other safe public locations.</li>
                 <li>Private residences, hotel rooms, or non-public spaces are strictly prohibited for platform-arranged meetings.</li>
                 <li>These rules exist to protect both creators and fans and ensure a professional, safe experience.</li>
