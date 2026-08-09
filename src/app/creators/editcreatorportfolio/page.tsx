@@ -997,7 +997,7 @@ if (matched?.isoCode && creator.state) {
 
               <div className="dur-bar"><div className="dur-fill" style={{ width: "100%" }} /></div>
              <div className="dur-note">
-  Fixed at {hosttype === "Fan date" ? "1 hour" : `${durationValue} minutes`} per {hosttype === "Fan date" ? "date" : "meet"} — no extensions
+  Fixed at {hosttype === "Fan date" ? "1 hour" : `${durationValue} minutes`} per {hosttype === "Fan date" ? "date" : "meet"}
 </div>
             </div>
 

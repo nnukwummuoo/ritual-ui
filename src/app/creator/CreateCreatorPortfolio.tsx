@@ -961,7 +961,7 @@ setStateQuery("");
     </div>
     <div className="dur-bar"><div className="dur-fill" style={{ width: `${durFillPct}%` }} /></div>
     <div className="dur-note">
-      Fixed at {hosttype === "Fan date" ? "1 hour" : `${durationValue} minutes`} per {hosttype === "Fan date" ? "date" : "meet"} — no extensions
+      Fixed at {hosttype === "Fan date" ? "1 hour" : `${durationValue} minutes`} per {hosttype === "Fan date" ? "date" : "meet"}
     </div>
     <Divider />
   </section>
