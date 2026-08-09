@@ -17,6 +17,7 @@ import { getprofile } from "@/store/profile";
 import { countryList } from "@/components/CountrySelect/countryList";
 import { Country, State, City } from "country-state-city";
 import { formatTourDateRange } from "@/utils/tourFormat";
+import { X } from "lucide-react";
 
 const DAY_OPTIONS = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"];
 
@@ -879,12 +880,12 @@ setStateQuery("");
               <p className="mt-1.5 text-[12px] leading-relaxed text-slate-500">{rateSubtitle}</p>
             </div>
 
-            {/* ── CHANGED: inline popover (not modal) ── */}
-            <div className="relative" onClick={(e) => e.stopPropagation()}>
+         {/* ── Gold conversion info button ── */}
+            <div onClick={(e) => e.stopPropagation()}>
               <button
                 type="button"
-                onClick={() => setShowRatesPopover((v) => !v)}
-                title="Suggested rates"
+                onClick={() => setShowRatesPopover(true)}
+                title="Gold conversion info"
                 style={{
                   width: 36, height: 36, borderRadius: "50%", flexShrink: 0,
                   background: "rgba(108,99,255,.12)", border: "1px solid rgba(108,99,255,.2)",
@@ -894,41 +895,53 @@ setStateQuery("");
               >
                 ?
               </button>
-
-              {showRatesPopover && (
-                <div
-                  style={{
-                    position: "absolute", right: 0, top: 44, zIndex: 50,
-                    width: 260, background: "#141928",
-                    border: "1px solid rgba(108,99,255,.25)", borderRadius: 14,
-                    padding: 18, boxShadow: "0 20px 60px rgba(0,0,0,.6)",
-                  }}
-                >
-                  <div style={{ fontSize: 12, fontWeight: 700, color: "#a89cff", letterSpacing: ".06em", textTransform: "uppercase", marginBottom: 14 }}>
-                    Suggested Rates
-                  </div>
-
-                  {[
-                    { icon: "📱", bg: "rgba(45,212,191,.1)", name: "Fan Call (online)", val: "100 gold / min", usd: "≈ $4 / min" },
-                    { icon: "🤝", bg: "rgba(108,99,255,.12)", name: "Fan Meet (in person)", val: "10,000 gold", usd: "≈ $400" },
-                    { icon: "❤️", bg: "rgba(244,114,182,.1)", name: "Fan Date (in person)", val: "15,000 gold", usd: "≈ $600" },
-                  ].map((r) => (
-                    <div key={r.name} style={{ display: "flex", alignItems: "flex-start", gap: 10, marginBottom: 12 }}>
-                      <div style={{ width: 34, height: 34, borderRadius: 9, background: r.bg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, flexShrink: 0 }}>
-                        {r.icon}
-                      </div>
-                      <div>
-                        <div style={{ fontSize: 12, fontWeight: 700, color: "#f1f5f9", marginBottom: 2 }}>{r.name}</div>
-                        <div style={{ fontSize: 13, fontWeight: 800, color: "#f59e0b" }}>{r.val}</div>
-                        <div style={{ fontSize: 11, color: "#475569", marginTop: 1 }}>{r.usd}</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
             </div>
           </div>
         </div>
+
+        {/* Gold Conversion Modal */}
+        {showRatesPopover && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75 p-4">
+            <div className="bg-[#111624] rounded-2xl max-w-md w-full border border-white/[0.06] shadow-[0_30px_70px_-25px_rgba(0,0,0,0.7)]">
+              <div className="flex items-center justify-between p-6 border-b border-white/[0.06]">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#f5c451] to-[#e8a93a] flex items-center justify-center shrink-0">
+                    <span className="text-[#1A1C2C] text-base font-bold">$</span>
+                  </div>
+                  <h3 className="text-lg font-bold text-white">Gold Conversion</h3>
+                </div>
+                <button
+                  onClick={() => setShowRatesPopover(false)}
+                  className="text-gray-500 hover:text-white transition-colors"
+                  aria-label="Close"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="p-6">
+                <p className="text-sm text-gray-300 leading-relaxed">
+                  Prices on mmeko are set in <span className="text-[#f5c451] font-semibold">Gold</span>, the platform's currency.
+                </p>
+                <div className="mt-4 bg-[#f5c451]/[0.06] border border-[#f5c451]/25 rounded-xl px-4 py-3 flex items-center justify-center gap-2">
+                  <span className="text-[#f5c451] text-lg">🪙</span>
+                  <span className="text-white font-bold text-base">1 Gold = $0.04</span>
+                </div>
+                <p className="text-xs text-gray-600 mt-3 leading-relaxed">
+                  Enter your price as a number of Gold — for example, entering 50 means fans pay 50 Gold (≈ $2.00) to unlock this content.
+                </p>
+              </div>
+              <div className="p-6 pt-0">
+                <button
+                  onClick={() => setShowRatesPopover(false)}
+                  className="w-full px-4 py-3 bg-gradient-to-r from-[#6c63ff] to-[#9b59f5] text-white rounded-xl font-semibold shadow-[0_10px_24px_-8px_rgba(108,99,255,0.5)] hover:-translate-y-0.5 transition-all"
+                >
+                  Got it
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+          
 
         <Divider />
 
