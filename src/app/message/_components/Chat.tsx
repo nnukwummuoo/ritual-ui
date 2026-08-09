@@ -1992,7 +1992,7 @@ const [sizeWarningType, setSizeWarningType] = useState<"image" | "video" | null>
                 ) : (
                   <p className="text-white text-lg flex items-center gap-1">
                     {chatfirstname ? `${chatfirstname}`.trim() : chatusername}
-                    {chatVerified && <BadgeCheck size={17} fill="white" className="text-black" />}
+                    {chatVerified && <BadgeCheck size={17} fill="#6c63ff" className="text-white" />}
                   </p>
                 )}
                 <div className="flex items-center gap-2">

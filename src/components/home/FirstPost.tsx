@@ -465,9 +465,9 @@ const initials = userName.trim().charAt(0).toUpperCase() || "?";
               }}>
                 {post?.user?.firstname}
                 {(() => {
-                  const isVerified = post?.user?.creator_verified;
+                 const isVerified = post?.user?.creator_verified;
                   return isVerified && (
-                    <BadgeCheck size={15} fill="white" className="text-black" />
+                    <BadgeCheck size={15} fill="#6c63ff" className="text-white" />
                   );
                 })()}
               </p>
@@ -1116,7 +1116,7 @@ className={`text-white px-2 bg-gradient-to-r from-[#6c63ff] to-[#9b59f5] cursor-
                                 {(() => {
                                   const isVerified = c?.isVerified;
                                   return isVerified && (
-                                    <span> <BadgeCheck size={14} fill="white" className="text-black inline" /> </span>
+                                    <span> <BadgeCheck size={14} fill="#6c63ff" className="text-white inline" /> </span>
                                   );
                                 })()}
 

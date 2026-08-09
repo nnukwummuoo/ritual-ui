@@ -559,7 +559,7 @@ export const MessageList = () => {
                       <h3 className="font-semibold text-white truncate flex items-center gap-1">
                         {message.firstname && message.lastname ? `${message.firstname} ${message.lastname}`.trim() : message.name}
                         {message.isVerified && (
-                          <BadgeCheck size={17} className="text-black inline flex-shrink-0" fill="white" />
+                          <BadgeCheck size={17} className="text-white inline flex-shrink-0" fill="#6c63ff" />
                         )}
                       </h3>
                       <div className="flex items-center gap-1 text-xs text-gray-400">

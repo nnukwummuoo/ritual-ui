@@ -7,7 +7,7 @@ import { useSelector } from "react-redux";
 import { useRouter, useParams, useSearchParams } from "next/navigation";
 import axios from "axios";
 import { URL as API_URL } from "@/api/config";
-import { X, Upload, HelpCircle } from "lucide-react";
+import { X, Upload, HelpCircle, Lock } from "lucide-react";
 import { toast } from "material-react-toastify";
 import HeaderBackNav from "@/navs/HeaderBackNav";
 import { Gennavigation } from "@/components/navs/Gennav";
@@ -26,7 +26,7 @@ const VideoPreview = React.memo(function VideoPreview({ src }: { src: string }) 
   });
 
   return (
-    <div className="relative w-full aspect-[4/5] rounded-lg overflow-hidden bg-black">
+    <div className="relative w-full aspect-[4/5] rounded-xl overflow-hidden bg-black">
       <video
         ref={videoRef}
         src={src}
@@ -320,25 +320,31 @@ const triggerFileInput = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#080b14] dark:bg-[#111624]">
+    <div className="min-h-screen bg-[#080b14]">
       {/* <HeaderBackNav />
       <Gennavigation /> */}
 
       <div className="max-w-2xl mx-auto px-4 py-8">
-        <div className="bg-[#080b14] dark:bg-[#111624] rounded-lg border border-gray-700">
+        <div className="bg-[#111624] rounded-2xl border border-white/[0.06] shadow-[0_20px_50px_-25px_rgba(0,0,0,0.6)] overflow-hidden">
           {/* Header */}
-          <div className="border-b border-gray-700 px-6 py-4 flex items-center justify-between">
-            <h2 className="text-xl font-semibold text-white">
-              {isEditMode ? "Edit Exclusive Content" : "Upload Exclusive Content"}
-            </h2>
-
+          <div className="border-b border-white/[0.06] px-6 py-5 flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#6c63ff] to-[#9b59f5] flex items-center justify-center shrink-0">
+              <Lock className="w-4 h-4 text-white" />
+            </div>
+            <div>
+              <h2 className="text-lg font-bold text-white">
+                {isEditMode ? "Edit Exclusive Content" : "Upload Exclusive Content"}
+              </h2>
+              <p className="text-xs text-gray-500 mt-0.5">Locked content fans unlock by paying Gold</p>
+            </div>
           </div>
 
           {/* Content */}
           <div className="p-6 space-y-6">
             {isLoadingPost ? (
-              <div className="text-center py-8">
-                <p className="text-gray-400">Loading post data...</p>
+              <div className="text-center py-12">
+                <div className="w-8 h-8 border-2 border-[#6c63ff] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+                <p className="text-gray-500 text-sm">Loading post data...</p>
               </div>
             ) : (
               <>
@@ -347,14 +353,14 @@ const triggerFileInput = () => {
                   <label className="block text-sm font-medium text-gray-300 mb-2">
                     Content (Image or Video) {isEditMode && <span className="text-gray-500 text-xs">(Optional - only upload if changing)</span>}
                   </label>
-                  <div className="border-2 border-dashed border-gray-600 dark:border-gray-500 rounded-lg p-8 text-center cursor-pointer hover:border-orange-500 dark:hover:border-orange-500 transition-colors">
+                  <div className="border-2 border-dashed border-white/10 rounded-xl p-8 text-center cursor-pointer hover:border-[#6c63ff]/60 hover:bg-[#6c63ff]/[0.03] transition-colors">
                     {exclusiveContentPreview ? (
                       <div className="space-y-4">
                         {exclusiveContentFile?.type.startsWith('image/') ? (
                           <img
                             src={exclusiveContentPreview}
                             alt="Preview"
-                            className="w-full aspect-[4/5] object-cover mx-auto rounded-lg"
+                            className="w-full aspect-[4/5] object-cover mx-auto rounded-xl"
                           />
                         ) : exclusiveContentFile?.type.startsWith('video/') ? (
                           <VideoPreview src={exclusiveContentPreview} />
@@ -367,7 +373,7 @@ const triggerFileInput = () => {
                             setExclusiveContentFile(null);
                             setExclusiveContentPreview(null);
                           }}
-                          className="text-sm text-orange-500 hover:text-orange-600"
+                          className="text-sm text-[#c9c4ff] hover:text-white transition-colors"
                         >
                           Remove
                         </button>
@@ -378,7 +384,7 @@ const triggerFileInput = () => {
                           <img
                             src={existingMediaUrl}
                             alt="Current content"
-                            className="w-full aspect-[4/5] object-cover mx-auto rounded-lg"
+                            className="w-full aspect-[4/5] object-cover mx-auto rounded-xl"
                           />
                         ) : existingMediaType === "video" ? (
                           <VideoPreview src={existingMediaUrl} />
@@ -392,7 +398,7 @@ const triggerFileInput = () => {
                             onChange={handleFileSelect}
                             className="hidden"
                           />
-                          <span className="text-sm text-orange-500 hover:text-orange-600">
+                          <span className="text-sm text-[#c9c4ff] hover:text-white transition-colors">
                             Replace with new file
                           </span>
                         </label>
@@ -406,9 +412,11 @@ const triggerFileInput = () => {
                           className="hidden"
                         />
                         <div>
-                          <Upload className="w-12 h-12 mx-auto mb-4 text-gray-400" />
-                          <p className="text-gray-400 mb-2">Click to upload or drag and drop</p>
-                          <p className="text-sm text-gray-500">Image or Video</p>
+                          <div className="w-14 h-14 rounded-2xl bg-white/[0.03] border border-white/[0.06] flex items-center justify-center mx-auto mb-4">
+                            <Upload className="w-6 h-6 text-gray-500" />
+                          </div>
+                          <p className="text-gray-300 font-medium mb-1">Click to upload or drag and drop</p>
+                          <p className="text-sm text-gray-600">Image or Video</p>
                         </div>
                       </label>
                     )}
@@ -425,7 +433,7 @@ const triggerFileInput = () => {
                     onChange={(e) => setExclusiveContentDescription(e.target.value)}
                     placeholder="Add a description for your exclusive content..."
                     rows={3}
-                    className="w-full px-4 py-2 bg-[#111624] dark:bg-gray-700 border border-gray-600 dark:border-gray-500 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 resize-none"
+                    className="w-full px-4 py-3 bg-white/[0.02] border border-white/10 rounded-xl text-white placeholder-gray-600 focus:outline-none focus:border-[#6c63ff] focus:ring-1 focus:ring-[#6c63ff]/40 transition-colors resize-none"
                   />
                 </div>
 
@@ -433,7 +441,8 @@ const triggerFileInput = () => {
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-2 flex items-center gap-2">
                     Price
-                    <span className="text-yellow-400 text-lg">🪙</span>
+                    <span className="text-[#f5c451] text-base">🪙</span>
+                    <span className="text-xs font-normal text-gray-600">(in Gold)</span>
                   </label>
                   <div className="relative">
                     <input
@@ -443,32 +452,32 @@ const triggerFileInput = () => {
                       value={exclusiveContentPrice}
                       onChange={(e) => setExclusiveContentPrice(e.target.value)}
                       placeholder="0.00"
-                      className="w-full px-4 py-2 pr-10 bg-[#111624] dark:bg-gray-700 border border-gray-600 dark:border-gray-500 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                      className="w-full px-4 py-3 pr-11 bg-white/[0.02] border border-white/10 rounded-xl text-white placeholder-gray-600 focus:outline-none focus:border-[#6c63ff] focus:ring-1 focus:ring-[#6c63ff]/40 transition-colors"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPriceTooltip(true)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-orange-500 transition-colors focus:outline-none"
-                      aria-label="Price recommendation info"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-[#9b59f5] transition-colors focus:outline-none"
+                      aria-label="Gold to dollar conversion info"
                     >
                       <HelpCircle className="w-5 h-5" />
                     </button>
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">Set the price for this exclusive content in gold </p>
+                  <p className="text-xs text-gray-600 mt-1.5">Enter the price for this exclusive content in Gold</p>
                 </div>
 
                 {/* Submit Button */}
-                <div className="flex gap-3">
+                <div className="flex gap-3 pt-2">
                   <button
                     onClick={handleCancel}
-                    className="flex-1 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors"
+                    className="flex-1 px-4 py-3 bg-white/[0.04] border border-white/10 text-gray-300 hover:bg-white/[0.08] hover:text-white rounded-xl transition-colors font-medium"
                   >
                     Cancel
                   </button>
                   <button
                     onClick={handleUpload}
                     disabled={isUploadingExclusive}
-                    className="flex-1 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex-1 px-4 py-3 bg-gradient-to-r from-[#6c63ff] to-[#9b59f5] text-white rounded-xl font-semibold shadow-[0_10px_24px_-8px_rgba(108,99,255,0.5)] hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
                   >
                     {isUploadingExclusive
                       ? (isEditMode ? "Updating..." : "Uploading...")
@@ -481,29 +490,41 @@ const triggerFileInput = () => {
         </div>
       </div>
 
-      {/* Price Recommendation Modal */}
+      {/* Gold Conversion Modal */}
       {showPriceTooltip && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75 p-4">
-          <div className="bg-[#080b14] dark:bg-[#111624] rounded-lg max-w-md w-full border border-gray-700 shadow-xl">
-            <div className="flex items-center justify-between p-6 border-b border-gray-700">
-              <h3 className="text-xl font-semibold text-white">Price Recommendation</h3>
+          <div className="bg-[#111624] rounded-2xl max-w-md w-full border border-white/[0.06] shadow-[0_30px_70px_-25px_rgba(0,0,0,0.7)]">
+            <div className="flex items-center justify-between p-6 border-b border-white/[0.06]">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#f5c451] to-[#e8a93a] flex items-center justify-center shrink-0">
+                  <span className="text-[#1A1C2C] text-base font-bold">$</span>
+                </div>
+                <h3 className="text-lg font-bold text-white">Gold Conversion</h3>
+              </div>
               <button
                 onClick={() => setShowPriceTooltip(false)}
-                className="text-gray-400 hover:text-white transition-colors"
+                className="text-gray-500 hover:text-white transition-colors"
                 aria-label="Close"
               >
-                <X className="w-6 h-6" />
+                <X className="w-5 h-5" />
               </button>
             </div>
             <div className="p-6">
               <p className="text-sm text-gray-300 leading-relaxed">
-                Recommended content price will be <span className="text-yellow-400 font-semibold">50 gold</span> and the equivalent in dollar is <span className="text-green-400 font-semibold">$6.99</span>
+                Prices on mmeko are set in <span className="text-[#f5c451] font-semibold">Gold</span>, the platform's currency.
+              </p>
+              <div className="mt-4 bg-[#f5c451]/[0.06] border border-[#f5c451]/25 rounded-xl px-4 py-3 flex items-center justify-center gap-2">
+                <span className="text-[#f5c451] text-lg">🪙</span>
+                <span className="text-white font-bold text-base">1 Gold = $0.04</span>
+              </div>
+              <p className="text-xs text-gray-600 mt-3 leading-relaxed">
+                Enter your price as a number of Gold — for example, entering 50 means fans pay 50 Gold (≈ $2.00) to unlock this content.
               </p>
             </div>
             <div className="p-6 pt-0">
               <button
                 onClick={() => setShowPriceTooltip(false)}
-                className="w-full px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition-colors"
+                className="w-full px-4 py-3 bg-gradient-to-r from-[#6c63ff] to-[#9b59f5] text-white rounded-xl font-semibold shadow-[0_10px_24px_-8px_rgba(108,99,255,0.5)] hover:-translate-y-0.5 transition-all"
               >
                 Got it
               </button>
@@ -524,4 +545,3 @@ const triggerFileInput = () => {
     </div>
   );
 }
-
