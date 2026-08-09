@@ -6453,433 +6453,219 @@ const isFanVerified = isViewingOwnProfile
             },
             // Show reviews tab for all users (both creator and fan ratings)
 
-            {
-
+           {
               id: "reviews",
-
               icon: ({ className }: { className?: string }) => (
-
                 <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-
                 </svg>
-
               ),
-
               count: totalRatings + totalFanRatings,
-
               content: (
-
                 <div className="space-y-4 py-4">
-
                   {/* Combined Rating Summary */}
-
                   {(totalRatings > 0 || totalFanRatings > 0) && (
-
-                    <div className="bg-[#080b14] rounded-lg p-4 mb-6">
-
+                    <div className="bg-[#111624] border border-white/[0.06] rounded-2xl p-5 mb-6">
                       <div className="flex items-center justify-between mb-4">
-
-                        <div className="flex items-center gap-3">
-
-                          <div className="text-3xl font-bold text-white">
-
+                        <div className="flex items-center gap-4">
+                          <div className="text-4xl font-bold bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">
                             {((totalRatings * averageRating + totalFanRatings * averageFanRating) / (totalRatings + totalFanRatings)).toFixed(1)}
-
                           </div>
-
                           <div>
-
                             <div className="flex items-center gap-1">
-
                               {[...Array(5)].map((_, i) => {
-
                                 const combinedAverage = (totalRatings * averageRating + totalFanRatings * averageFanRating) / (totalRatings + totalFanRatings);
-
                                 return (
-
                                   <svg
-
                                     key={i}
-
-                                    className={`w-5 h-5 ${i < Math.floor(combinedAverage) ? "text-yellow-400" : "text-gray-600"}`}
-
+                                    className={`w-5 h-5 ${i < Math.floor(combinedAverage) ? "text-[#f5c451]" : "text-gray-700"}`}
                                     fill="currentColor"
-
                                     viewBox="0 0 20 20"
-
                                   >
-
                                     <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-
                                   </svg>
-
                                 );
-
                               })}
-
                             </div>
-
-                            <p className="text-gray-400 text-sm">Based on {totalRatings + totalFanRatings} review{(totalRatings + totalFanRatings) !== 1 ? 's' : ''}</p>
-
+                            <p className="text-gray-500 text-sm mt-1">Based on {totalRatings + totalFanRatings} review{(totalRatings + totalFanRatings) !== 1 ? 's' : ''}</p>
                           </div>
-
                         </div>
-
                       </div>
-
                     </div>
-
                   )}
-
-
 
                   {/* All Reviews List - Combined */}
-
                   {(ratings_stats === "loading" || fanRatings_stats === "loading") ? (
-
                     <div className="space-y-4">
-
                       {Array.from({ length: 3 }).map((_, index) => (
-
-                        <div key={index} className="bg-[#080b14] rounded-lg p-4 animate-pulse">
-
+                        <div key={index} className="bg-[#111624] border border-white/[0.06] rounded-2xl p-4 animate-pulse">
                           <div className="flex items-center mb-3">
-
-                            <div className="w-10 h-10 bg-gray-700 rounded-full mr-3" />
-
+                            <div className="w-10 h-10 bg-white/[0.06] rounded-full mr-3" />
                             <div className="flex-1">
-
-                              <div className="h-4 bg-gray-700 rounded w-24 mb-2" />
-
-                              <div className="h-3 bg-gray-700 rounded w-16" />
-
+                              <div className="h-4 bg-white/[0.06] rounded w-24 mb-2" />
+                              <div className="h-3 bg-white/[0.06] rounded w-16" />
                             </div>
-
                           </div>
-
-                          <div className="h-4 bg-gray-700 rounded w-full mb-2" />
-
-                          <div className="h-4 bg-gray-700 rounded w-3/4" />
-
+                          <div className="h-4 bg-white/[0.06] rounded w-full mb-2" />
+                          <div className="h-4 bg-white/[0.06] rounded w-3/4" />
                         </div>
-
                       ))}
-
                     </div>
-
                   ) : (ratings.length === 0 && fanRatings.length === 0) ? (
-
-                    <div className="text-center py-12 text-gray-500">
-
-                      <svg className="w-12 h-12 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-
-                      </svg>
-
-                      <p>No reviews yet</p>
-
-                      <p className="text-sm">Reviews will appear here when users rate their experiences</p>
-
+                    <div className="text-center py-16 px-4">
+                      <div className="w-16 h-16 rounded-2xl bg-white/[0.03] border border-white/[0.06] flex items-center justify-center mx-auto mb-4">
+                        <svg className="w-7 h-7 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                        </svg>
+                      </div>
+                      <p className="text-gray-400 font-medium">No reviews yet</p>
+                      <p className="text-sm text-gray-600 mt-1">Reviews will appear here when users rate their experiences</p>
                     </div>
-
                   ) : (
-
                     <div className="space-y-4">
-
-
-
-
-
                       {/* Fan-to-Creator Ratings */}
-
                       {ratings.map((review) => (
-
-                        <div key={`fan-to-creator-${review._id || review.requestId}`} className="bg-[#080b14] rounded-lg p-4 flex flex-col relative">
-
+                        <div key={`fan-to-creator-${review._id || review.requestId}`} className="bg-[#111624] border border-white/[0.06] rounded-2xl p-4 flex flex-col relative">
                           {/* VIP Badge for fan reviewer - on main container */}
-
                           {review.fanIsVip && (
-
                             <VIPBadge
-
                               size="lg"
-
                               className="absolute top-3 left-9 z-[1]"
-
                               isVip={review.fanIsVip}
-
                               vipEndDate={review.fanVipEndDate}
-
                             />
-
                           )}
-
                           <div className="flex items-center mb-3">
-
-                            <div className="relative w-10 h-10 rounded-full overflow-hidden mr-3 bg-gradient-to-r from-blue-500 to-purple-600 p-0.5 ">
-
-                              <div className="w-full h-full rounded-full overflow-hidden bg-black">
-
+                            <div className="relative w-10 h-10 rounded-full overflow-hidden mr-3 p-[2px]" style={{ background: "linear-gradient(135deg, #6c63ff, #9b59f5)" }}>
+                              <div className="w-full h-full rounded-full overflow-hidden bg-[#080b14]">
                                 {(() => {
-
                                   const profileImage = review.fanPhoto;
-
                                   const userName = review.fanName;
-
                                   const initials = userName.split(/\s+/).map((n: string) => n[0]).join('').toUpperCase().slice(0, 2) || "?";
 
-
-
                                   if (profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined") {
-
                                     return (
-
                                       <Image
-
                                         src={profileImage}
-
                                         alt={review.fanName}
-
                                         width={40}
-
                                         height={40}
-
                                         className="w-full h-full object-cover"
-
                                       />
-
                                     );
-
                                   }
 
-
-
                                   return (
-
-                                    <div className="w-full h-full bg-gray-600 flex items-center justify-center text-white text-sm font-semibold">
-
+                                    <div className="w-full h-full bg-gradient-to-br from-[#1a1f35] to-[#111624] flex items-center justify-center text-white text-sm font-semibold">
                                       {initials}
-
                                     </div>
-
                                   );
-
                                 })()}
-
                               </div>
-
                             </div>
-
                             <div className="flex-1">
-
                               <div className="flex items-center gap-2">
-
                                 {review.fanUsername && (
-
-                                  <p className="text-gray-400 text-sm">{review.fanUsername}</p>
-
+                                  <p className="text-gray-300 text-sm font-medium">{review.fanUsername}</p>
                                 )}
-
-                                <span className="text-xs bg-blue-600 text-white px-2 py-1 rounded">Fan</span>
-
+                                <span className="text-[10px] font-semibold uppercase tracking-wide bg-[#6c63ff]/15 text-[#c9c4ff] border border-[#6c63ff]/25 px-2 py-0.5 rounded-full">Fan</span>
                               </div>
-
                               <div className="flex items-center gap-1 mt-1">
-
                                 {[...Array(5)].map((_, i) => (
-
                                   <svg
-
                                     key={i}
-
-                                    className={`w-4 h-4 ${i < review.rating ? "text-yellow-400" : "text-gray-600"}`}
-
+                                    className={`w-4 h-4 ${i < review.rating ? "text-[#f5c451]" : "text-gray-700"}`}
                                     fill="currentColor"
-
                                     viewBox="0 0 20 20"
-
                                   >
-
                                     <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-
                                   </svg>
-
                                 ))}
-
-                                <span className="text-gray-400 text-xs flex items-center gap-1 ml-2">
-
+                                <span className="text-gray-500 text-xs flex items-center gap-1 ml-2">
                                   {review.hostType} • {new Date(review.createdAt).toLocaleDateString()}
-
                                 </span>
-
                               </div>
-
                             </div>
-
                           </div>
-
-                          <p className="text-gray-300">{review.feedback}</p>
-
+                          <p className="text-gray-300 leading-relaxed text-sm">{review.feedback}</p>
                         </div>
-
                       ))}
-
-
 
                       {/* Creator-to-Fan Ratings */}
-
                       {fanRatings.map((rating) => (
-
-                        <div key={`creator-to-fan-${rating._id || rating.requestId}`} className="bg-[#080b14] rounded-lg p-4 flex flex-col relative">
-
+                        <div key={`creator-to-fan-${rating._id || rating.requestId}`} className="bg-[#111624] border border-white/[0.06] rounded-2xl p-4 flex flex-col relative">
                           {/* VIP Badge for creator reviewer - on main container */}
-
                           {rating.creatorIsVip && (
-
                             <VIPBadge
-
                               size="lg"
-
                               className="absolute top-2 left-9 z-[1]"
-
                               isVip={rating.creatorIsVip}
-
                               vipEndDate={rating.creatorVipEndDate}
-
                             />
-
                           )}
-
                           <div className="flex items-center mb-3">
-
-                            <div className="relative w-10 h-10 rounded-full overflow-hidden mr-3 bg-gradient-to-r from-green-500 to-teal-600 p-0.5 ">
-
-                              <div className="w-full h-full rounded-full overflow-hidden bg-black">
-
+                            <div className="relative w-10 h-10 rounded-full overflow-hidden mr-3 p-[2px]" style={{ background: "linear-gradient(135deg, #2dd4bf, #14b8a6)" }}>
+                              <div className="w-full h-full rounded-full overflow-hidden bg-[#080b14]">
                                 {(() => {
-
                                   const profileImage = rating.creatorPhoto;
-
                                   const userName = rating.creatorName;
-
                                   const initials = userName.split(/\s+/).map((n: string) => n[0]).join('').toUpperCase().slice(0, 2) || "?";
 
-
-
                                   if (profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined") {
-
                                     return (
-
                                       <Image
-
                                         src={profileImage}
-
                                         alt={rating.creatorName}
-
                                         width={40}
-
                                         height={40}
-
                                         className="w-full h-full object-cover"
-
                                       />
-
                                     );
-
                                   }
 
-
-
                                   return (
-
-                                    <div className="w-full h-full bg-gray-600 flex items-center justify-center text-white text-sm font-semibold">
-
+                                    <div className="w-full h-full bg-gradient-to-br from-[#1a1f35] to-[#111624] flex items-center justify-center text-white text-sm font-semibold">
                                       {initials}
-
                                     </div>
-
                                   );
-
                                 })()}
-
                               </div>
-
                             </div>
-
                             <div className="flex-1">
-
                               <div className="flex items-center gap-2">
-
                                 {rating.creatorUsername && (
-
-                                  <p className="text-gray-400 text-sm">{rating.creatorUsername}</p>
-
+                                  <p className="text-gray-300 text-sm font-medium">{rating.creatorUsername}</p>
                                 )}
-
-                                <span className="text-xs bg-green-600 text-white px-2 py-1 rounded">Creator</span>
-
+                                <span className="text-[10px] font-semibold uppercase tracking-wide bg-[#2dd4bf]/15 text-[#5eead4] border border-[#2dd4bf]/25 px-2 py-0.5 rounded-full">Creator</span>
                               </div>
-
                               <div className="flex items-center gap-1 mt-1">
-
                                 {[...Array(5)].map((_, i) => (
-
                                   <svg
-
                                     key={i}
-
-                                    className={`w-4 h-4 ${i < rating.rating ? "text-yellow-400" : "text-gray-600"}`}
-
+                                    className={`w-4 h-4 ${i < rating.rating ? "text-[#f5c451]" : "text-gray-700"}`}
                                     fill="currentColor"
-
                                     viewBox="0 0 20 20"
-
                                   >
-
                                     <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-
                                   </svg>
-
                                 ))}
-
-                                <span className="text-gray-400 text-xs flex items-center gap-1 ml-2">
-
+                                <span className="text-gray-500 text-xs flex items-center gap-1 ml-2">
                                   {rating.hostType} • {new Date(rating.createdAt).toLocaleDateString()}
-
                                 </span>
-
                               </div>
-
                             </div>
-
                           </div>
-
-                          <p className="text-gray-300">{rating.feedback}</p>
-
+                          <p className="text-gray-300 leading-relaxed text-sm">{rating.feedback}</p>
                         </div>
-
                       ))}
-
                     </div>
-
                   )}
-
                 </div>
-
               ),
-
             }
-
           ]}
-
         />
-
       </div>
-
-
 
       {/* Purchase Confirmation Modal */}
 
