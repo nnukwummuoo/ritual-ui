@@ -6050,334 +6050,175 @@ const isFanVerified = isViewingOwnProfile
 
 
 
-          tabs={[
-
+         tabs={[
             {
-
               id: "posts",
-
               icon: ({ className }) => (
-
                 <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-
                 </svg>
-
               ),
-
               count: userPosts.length,
-
               content: (
-
                 <div>
-
                   {/* 🔒 SAFETY: Only show posts belonging to the specific user being viewed */}
-
                   {isLoadingPosts ? (
-
-                    <div className="grid grid-cols-3 gap-1 md:gap-2">
-
+                    <div className="grid grid-cols-3 gap-1.5 md:gap-2">
                       {Array.from({ length: 9 }).map((_, index) => (
-
-                        <div key={index} className="aspect-square bg-[#111624] rounded-sm animate-pulse">
-
-                          <SkeletonTheme baseColor="#202020" highlightColor="#444">
-
-                            <Skeleton height="100%" className="rounded-sm" />
-
+                        <div key={index} className="aspect-square bg-[#111624] rounded-lg animate-pulse">
+                          <SkeletonTheme baseColor="#111624" highlightColor="#1c2338">
+                            <Skeleton height="100%" className="rounded-lg" />
                           </SkeletonTheme>
-
                         </div>
-
                       ))}
-
                     </div>
-
                   ) : userPosts.length === 0 ? (
-
-                    <div className="col-span-3 text-center py-12 text-gray-500 dark:text-gray-400">
-
-                      <svg className="w-12 h-12 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-
-                      </svg>
-
-                      <p>No posts yet</p>
-
+                    <div className="col-span-3 text-center py-16 px-4">
+                      <div className="w-16 h-16 rounded-2xl bg-white/[0.03] border border-white/[0.06] flex items-center justify-center mx-auto mb-4">
+                        <svg className="w-7 h-7 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                      </div>
+                      <p className="text-gray-400 font-medium">No posts yet</p>
                       {viewingUserId === loggedInUserId ? (
-
-                        <div>
-
-                          <p className="text-sm mb-2">Share your first post with your fans</p>
-
+                        <div className="mt-2">
+                          <p className="text-sm text-gray-600 mb-4">Share your first post with your fans</p>
                           <button
-
                             onClick={() => router.push('/upload')}
-
-                            className="px-4 py-2 bg-orange-500 text-white rounded-md text-sm"
-
+                            className="px-5 py-2 bg-gradient-to-r from-[#6c63ff] to-[#9b59f5] text-white rounded-xl text-sm font-semibold shadow-[0_10px_24px_-8px_rgba(108,99,255,0.5)] hover:-translate-y-0.5 transition-all"
                           >
-
                             Create Post
-
                           </button>
-
                         </div>
-
                       ) : (
-
-                        <p className="text-sm">Posts will appear here when created</p>
-
+                        <p className="text-sm text-gray-600 mt-2">Posts will appear here when created</p>
                       )}
-
                     </div>
-
                   ) : (
-
-                    <div className="grid grid-cols-3 gap-1 md:gap-2">
-
+                    <div className="grid grid-cols-3 gap-1.5 md:gap-2">
                       {userPosts.map((post) => {
-
                         const { src, postType, pathUrlPrimary, queryUrlFallback, pathUrlFallback, posterSource } = getMediaSource(post);
-
                         const mediaItemsArr = Array.isArray(post?.mediaItems) ? post.mediaItems.filter((m: any) => m && m.url) : [];
                         const firstMediaItem = mediaItemsArr[0];
                         const thumbSrc = firstMediaItem ? firstMediaItem.url : src;
                         const thumbType = firstMediaItem ? firstMediaItem.type : postType;
 
-
-
                         return (
-
                           <div
-
                             key={post._id}
-
-                            className="relative aspect-square group cursor-pointer rounded-sm overflow-hidden bg-black"
-
+                            className="relative aspect-square group cursor-pointer rounded-lg overflow-hidden bg-[#111624] border border-white/[0.05]"
                             onClick={() => {
-
                               const postId = post._id || post.postid || post.id;
-
                               setClickedPostId(postId);
-
                               setShowPostModal(true);
-
                             }}
-
                           >
-
                             {/* Image Post */}
-                          {thumbType === "image" && thumbSrc && (
-                                  <img
-                            src={thumbSrc}
-
+                            {thumbType === "image" && thumbSrc && (
+                              <img
+                                src={thumbSrc}
                                 alt={post?.content || "post image"}
-
-                                className="absolute inset-0 w-full h-full object-cover"
-
+                                className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                                 onError={(e) => {
-
                                   const img = e.currentTarget as HTMLImageElement & { dataset: any };
-
-                                  // First fallback: switch to path URL on same base
-
                                   if (!img.dataset.fallback1 && pathUrlPrimary) {
-
                                     img.dataset.fallback1 = "1";
-
                                     img.src = pathUrlPrimary;
-
                                     return;
-
                                   }
-
-                                  // Second fallback: try query on PROD base
-
                                   if (!img.dataset.fallback2 && queryUrlFallback) {
-
                                     img.dataset.fallback2 = "1";
-
                                     img.src = queryUrlFallback;
-
                                     return;
-
                                   }
-
-                                  // Final fallback: try path on PROD base
-
                                   if (!img.dataset.fallback3 && pathUrlFallback) {
-
                                     img.dataset.fallback3 = "1";
-
                                     img.src = pathUrlFallback;
-
                                   }
-
                                 }}
-
                               />
-
                             )}
 
-
-
                             {/* Video Post */}
-                   {thumbType === "video" && thumbSrc && (
-                 <div className="absolute inset-0 w-full h-full flex items-center justify-center bg-[#080b14]">
-                                  <video
+                            {thumbType === "video" && thumbSrc && (
+                              <div className="absolute inset-0 w-full h-full flex items-center justify-center bg-[#080b14]">
+                                <video
                                   src={thumbSrc}
-
                                   poster={posterSource}
-
                                   preload="auto"
-
-                                  className="absolute inset-0 w-full h-full object-cover"
-
+                                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                                   muted
-
                                   onError={(e) => {
-
                                     const video = e.currentTarget as HTMLVideoElement & { dataset: any };
-
-                                    // First fallback: switch to path URL on same base
-
                                     if (!video.dataset.fallback1 && pathUrlPrimary) {
-
                                       video.dataset.fallback1 = "1";
-
                                       video.src = pathUrlPrimary;
-
                                       video.load();
-
                                       return;
-
                                     }
-
-                                    // Second fallback: try query on PROD base
-
                                     if (!video.dataset.fallback2 && queryUrlFallback) {
-
                                       video.dataset.fallback2 = "1";
-
                                       video.src = queryUrlFallback;
-
                                       video.load();
-
                                       return;
-
                                     }
-
-                                    // Final fallback: try path on PROD base
-
                                     if (!video.dataset.fallback3 && pathUrlFallback) {
-
                                       video.dataset.fallback3 = "1";
-
                                       video.src = pathUrlFallback;
-
                                       video.load();
-
                                     }
-
                                   }}
-
                                 />
-
-                                <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30">
-
-                                  <svg className="w-12 h-12 text-white opacity-80" fill="currentColor" viewBox="0 0 24 24">
-
-                                    <path d="M8 5v14l11-7z" />
-
-                                  </svg>
-
+                                <div className="absolute inset-0 flex items-center justify-center bg-black/25">
+                                  <div className="w-10 h-10 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center">
+                                    <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                      <path d="M8 5v14l11-7z" />
+                                    </svg>
+                                  </div>
                                 </div>
-
                               </div>
-
                             )}
 
                             {mediaItemsArr.length > 1 && (
-  <div className="absolute top-1.5 right-1.5 bg-black/60 rounded-full p-1">
-    <svg width="12" height="12" viewBox="0 0 24 24" fill="white"><rect x="3" y="3" width="14" height="14" rx="2" /><path d="M7 7h14v14H7z" fillOpacity="0.5" /></svg>
-  </div>
-)}
-
-
-
-                            {/* Text Post or No Media */}
-
-                            {(!src || postType === "text") && (
-
-                              <div className="absolute inset-0 flex items-center justify-center p-2">
-
-                                <span className="text-center text-white text-base font-semibold line-clamp-2">{post.content}</span>
-
+                              <div className="absolute top-1.5 right-1.5 bg-black/60 backdrop-blur-sm rounded-full p-1">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="white"><rect x="3" y="3" width="14" height="14" rx="2" /><path d="M7 7h14v14H7z" fillOpacity="0.5" /></svg>
                               </div>
-
                             )}
 
-
+                            {/* Text Post or No Media */}
+                            {(!src || postType === "text") && (
+                              <div className="absolute inset-0 flex items-center justify-center p-3 bg-gradient-to-br from-[#1a1f35] to-[#0d1120]">
+                                <span className="text-center text-white text-sm font-medium line-clamp-3">{post.content}</span>
+                              </div>
+                            )}
 
                             {/* Hover overlay */}
-
-                            <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-20 transition-opacity" />
-
-
+                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors" />
 
                             {/* Content overlay */}
-
                             <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-
                               <div className="text-white text-center p-2">
-
                                 <div className="flex items-center justify-center gap-4 mb-2">
-
                                   <div className="flex items-center gap-1">
-
-                                    <Heart className="w-4 h-4" />
-
-                                    <span className="text-sm">{formatNumber(post.totalLikes || post.likeCount || post.likes?.length || 0)}</span>
-
+                                    <Heart className="w-4 h-4" fill="white" />
+                                    <span className="text-sm font-semibold">{formatNumber(post.totalLikes || post.likeCount || post.likes?.length || 0)}</span>
                                   </div>
-
                                   <div className="flex items-center gap-1">
-
-                                    <MessageCircle className="w-4 h-4" />
-
-                                    <span className="text-sm">{formatNumber(post.commentCount || post.comments?.length || 0)}</span>
-
+                                    <MessageCircle className="w-4 h-4" fill="white" />
+                                    <span className="text-sm font-semibold">{formatNumber(post.commentCount || post.comments?.length || 0)}</span>
                                   </div>
-
                                 </div>
-
-                                <p className="text-xs line-clamp-2">{post.content}</p>
-
                               </div>
-
                             </div>
-
                           </div>
-
                         );
-
                       })}
-
                     </div>
-
                   )}
-
                 </div>
-
               ),
-
             },
-
             {
-
               id: "exclusive",
 
               icon: ({ className }) => (
