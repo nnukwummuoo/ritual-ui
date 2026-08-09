@@ -58,7 +58,7 @@ setLikeCounts(counts);
   };
 
   const handleClick = (ritual: Ritual) => {
-    router.push(`/ritual/${ritual._id}?type=creator`);
+    router.push(`/anya/${ritual._id}?type=creator`);
   };
 
   const handleLike = async (e: React.MouseEvent, ritualId: string) => {
@@ -107,11 +107,11 @@ setLikeCounts(counts);
   // ── Loading ──────────────────────────────────────────────────────────────
   if (loading) {
     return (
-      <div className="grid grid-cols-3 gap-1 md:gap-2">
+      <div className="grid grid-cols-3 gap-1.5 md:gap-2">
         {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} className="aspect-square bg-[#111624] rounded-sm animate-pulse">
-            <SkeletonTheme baseColor="#202020" highlightColor="#444">
-              <Skeleton height="100%" className="rounded-sm" />
+          <div key={i} className="aspect-square bg-[#111624] rounded-lg animate-pulse">
+            <SkeletonTheme baseColor="#111624" highlightColor="#1c2338">
+              <Skeleton height="100%" className="rounded-lg" />
             </SkeletonTheme>
           </div>
         ))}
@@ -122,12 +122,12 @@ setLikeCounts(counts);
   // ── Empty ────────────────────────────────────────────────────────────────
   if (rituals.length === 0) {
     return (
-      <div className="col-span-3 text-center py-12 text-gray-500">
-        <div style={{ fontSize: 40, marginBottom: 12, opacity: .5 }}>
-          <svg width="48" height="48" viewBox="0 0 512 512" fill="none" style={{ margin: '0 auto' }}>
-            <rect x="60" y="310" width="392" height="60" rx="30" fill="#6c63ff" opacity=".5"/>
-            <rect x="60" y="390" width="392" height="60" rx="30" fill="#6c63ff" opacity=".7"/>
-            <path d="M256 50C256 50 196 130 196 200C196 234 224 262 256 262C288 262 316 234 316 200C316 130 256 50 256 50Z" fill="#6c63ff"/>
+      <div className="col-span-3 text-center py-16 px-4">
+        <div className="w-16 h-16 rounded-2xl bg-white/[0.03] border border-white/[0.06] flex items-center justify-center mx-auto mb-4">
+          <svg width="26" height="26" viewBox="0 0 512 512" fill="none">
+            <rect x="60" y="310" width="392" height="60" rx="30" fill="#9b59f5" opacity=".5"/>
+            <rect x="60" y="390" width="392" height="60" rx="30" fill="#9b59f5" opacity=".8"/>
+            <path d="M256 50C256 50 196 130 196 200C196 234 224 262 256 262C288 262 316 234 316 200C316 130 256 50 256 50Z" fill="#9b59f5"/>
           </svg>
         </div>
         <p className="text-gray-400 font-medium">No Rituals yet</p>
@@ -138,7 +138,7 @@ setLikeCounts(counts);
 
   // ── Grid ─────────────────────────────────────────────────────────────────
   return (
-    <div className="grid grid-cols-3 gap-1 md:gap-2">
+    <div className="grid grid-cols-3 gap-1.5 md:gap-2">
       {rituals.map((ritual) => {
         const cover = ritual.coverImage
           || ritual.panels?.[0]?.imageUrl
@@ -149,7 +149,7 @@ setLikeCounts(counts);
         return (
           <div
             key={ritual._id}
-            className="relative aspect-square group cursor-pointer rounded-sm overflow-hidden bg-[#111624]"
+            className="relative aspect-square group cursor-pointer rounded-lg overflow-hidden bg-[#111624] border border-white/[0.05]"
             onClick={() => handleClick(ritual)}
           >
             {/* Cover image */}
@@ -163,7 +163,7 @@ setLikeCounts(counts);
                 }}
               />
             ) : (
-              <div className="absolute inset-0 bg-gradient-to-br from-purple-900/40 to-pink-900/40" />
+              <div className="absolute inset-0 bg-gradient-to-br from-[#1a1f35] to-[#0d1120]" />
             )}
 
             {/* Gradient overlay */}
@@ -171,14 +171,14 @@ setLikeCounts(counts);
 
             {/* Expired badge */}
             {isExpired && (
-              <div className="absolute top-1.5 right-1.5 z-10 px-1.5 py-0.5 rounded text-[8px] font-bold bg-black/60 text-white/50 border border-white/10">
+              <div className="absolute top-1.5 right-1.5 z-10 px-1.5 py-0.5 rounded-full text-[8px] font-bold bg-black/60 backdrop-blur-sm text-white/50 border border-white/10">
                 Archived
               </div>
             )}
 
             {/* Live badge */}
             {!isExpired && (
-              <div className="absolute top-1.5 left-1.5 z-10 flex items-center gap-1 px-1.5 py-0.5 rounded text-[8px] font-bold bg-black/50 text-teal-400">
+              <div className="absolute top-1.5 left-1.5 z-10 flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[8px] font-bold bg-black/50 backdrop-blur-sm text-teal-400">
                 <div className="w-1 h-1 rounded-full bg-teal-400" style={{ animation: 'pulse 1.5s infinite' }} />
                 Live
               </div>
@@ -205,7 +205,7 @@ setLikeCounts(counts);
 </div>
 
             {/* Hover tint */}
-            <div className="absolute inset-0 bg-purple-600/0 group-hover:bg-purple-600/10 transition-colors duration-300" />
+            <div className="absolute inset-0 bg-[#6c63ff]/0 group-hover:bg-[#6c63ff]/10 transition-colors duration-300" />
           </div>
         );
       })}
