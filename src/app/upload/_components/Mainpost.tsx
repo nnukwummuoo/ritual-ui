@@ -265,6 +265,7 @@ export const Mainpost = () => {
           setShowBanWarning(false);
           submitPost();
         }}
+        context="homepage"
       />
 
       <FileLimitPopup

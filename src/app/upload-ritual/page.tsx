@@ -1040,6 +1040,7 @@ zIndex: 50,
           setShowBanWarning(false);
           handlePublish();
         }}
+      context="ritual"
       />
 
     </div>
