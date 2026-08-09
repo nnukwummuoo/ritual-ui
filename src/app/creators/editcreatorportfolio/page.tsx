@@ -16,6 +16,7 @@ import { countryList } from "@/components/CountrySelect/countryList";
 import { Country, State, City } from "country-state-city";
 import { formatTourDateRange } from "@/utils/tourFormat";
 import { URL as API_BASE_URL } from "@/api/config";
+import { X } from "lucide-react";
 
 const DAY_OPTIONS = [
   { value: "MON", label: "MON" },
@@ -924,7 +925,7 @@ if (matched?.isoCode && creator.state) {
           <label className="fl">
             {hosttype === "Fan call" ? "Enter your call rate" : "Enter your rate"} <span className="req">*</span>
           </label>
-          <div className="price-row">
+       <div className="price-row">
             <div className="price-input-wrap">
               <input
                 type="number"
@@ -939,43 +940,57 @@ if (matched?.isoCode && creator.state) {
             <button
               type="button"
               className="btn-hint"
-              title="Suggested rates"
+              title="Gold conversion info"
               onClick={(e) => {
                 e.stopPropagation();
-                setShowPriceGuide((v) => !v);
+                setShowPriceGuide(true);
               }}
             >
               ?
             </button>
           </div>
 
-          <div className={`rates-pop${showPriceGuide ? " open" : ""}`}>
-            <div className="rates-pop-title">Suggested Rates</div>
-            <div className="rate-item">
-              <div className="rate-icon ri-call">📱</div>
-              <div>
-                <div className="rate-name">Fan Call (online)</div>
-                <div className="rate-val">100 gold / min</div>
-                <div className="rate-usd">≈ $4 / min</div>
+          {showPriceGuide && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75 p-4">
+              <div className="bg-[#111624] rounded-2xl max-w-md w-full border border-white/[0.06] shadow-[0_30px_70px_-25px_rgba(0,0,0,0.7)]">
+                <div className="flex items-center justify-between p-6 border-b border-white/[0.06]">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#f5c451] to-[#e8a93a] flex items-center justify-center shrink-0">
+                      <span className="text-[#1A1C2C] text-base font-bold">$</span>
+                    </div>
+                    <h3 className="text-lg font-bold text-white">Gold Conversion</h3>
+                  </div>
+                  <button
+                    onClick={() => setShowPriceGuide(false)}
+                    className="text-gray-500 hover:text-white transition-colors"
+                    aria-label="Close"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+                <div className="p-6">
+                  <p className="text-sm text-gray-300 leading-relaxed">
+                    Prices on mmeko are set in <span className="text-[#f5c451] font-semibold">Gold</span>, the platform's currency.
+                  </p>
+                  <div className="mt-4 bg-[#f5c451]/[0.06] border border-[#f5c451]/25 rounded-xl px-4 py-3 flex items-center justify-center gap-2">
+                    <span className="text-[#f5c451] text-lg">🪙</span>
+                    <span className="text-white font-bold text-base">1 Gold = $0.04</span>
+                  </div>
+                  <p className="text-xs text-gray-600 mt-3 leading-relaxed">
+                    Enter your price as a number of Gold — for example, entering 50 means fans pay 50 Gold (≈ $2.00) to unlock this content.
+                  </p>
+                </div>
+                <div className="p-6 pt-0">
+                  <button
+                    onClick={() => setShowPriceGuide(false)}
+                    className="w-full px-4 py-3 bg-gradient-to-r from-[#6c63ff] to-[#9b59f5] text-white rounded-xl font-semibold shadow-[0_10px_24px_-8px_rgba(108,99,255,0.5)] hover:-translate-y-0.5 transition-all"
+                  >
+                    Got it
+                  </button>
+                </div>
               </div>
             </div>
-            <div className="rate-item">
-              <div className="rate-icon ri-meet">🤝</div>
-              <div>
-                <div className="rate-name">Fan Meet (in person)</div>
-                <div className="rate-val">10,000 gold</div>
-                <div className="rate-usd">≈ $400</div>
-              </div>
-            </div>
-            <div className="rate-item">
-              <div className="rate-icon ri-date">❤️</div>
-              <div>
-                <div className="rate-name">Fan Date (in person)</div>
-                <div className="rate-val">15,000 gold</div>
-                <div className="rate-usd">≈ $600</div>
-              </div>
-            </div>
-          </div>
+          )}
         </div>
 
         <hr style={{ border: "none", borderTop: "1px solid rgba(255,255,255,0.07)", margin: "28px 0", height: 0, background: "none" }} />

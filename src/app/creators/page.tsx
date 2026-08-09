@@ -954,21 +954,6 @@ export default function CreatorPage() {
     });
   }, [myCreators]);
 
-  // Step 2: Apply DEFAULT sorting (Online -> Views)
-  const defaultSortedList = useMemo(() => {
-    const sorted = [...list];
-    return sorted.sort((a, b) => {
-      // Priority 1: Online creators first
-      if (a.isOnline && !b.isOnline) return -1;
-      if (!a.isOnline && b.isOnline) return 1;
-
-      // Priority 2: Most views (highest first)
-      const viewsA = a.views || 0;
-      const viewsB = b.views || 0;
-      return viewsB - viewsA;
-    });
-  }, [list]);
-
 
 
   // Step 3: Filter creators based on user selections (uses defaultSortedList to preserve backend order)
@@ -1013,7 +998,7 @@ export default function CreatorPage() {
       ]
     };
 
-    return defaultSortedList.filter((creator) => {
+    return list.filter((creator) => {
       // Filter by category (host type)
       let matchesCategory = true;
       if (categoryButton !== "All") {
@@ -1081,7 +1066,7 @@ export default function CreatorPage() {
 
       return matchesCategory && matchesRegion && matchesGender && matchesAge && matchesSearch;
     });
-  }, [defaultSortedList, categoryButton, filterState, regionFilter, genderSearchQuery, nameSearchQuery]);
+  }, [list, categoryButton, filterState, regionFilter, genderSearchQuery, nameSearchQuery]);
 
   // Step 4: Sort creators based on USER'S selected sort option (final sorting)
   const sortedList = useMemo(() => {
