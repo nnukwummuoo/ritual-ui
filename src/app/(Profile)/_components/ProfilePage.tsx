@@ -6218,414 +6218,225 @@ const isFanVerified = isViewingOwnProfile
                 </div>
               ),
             },
-            {
+          {
               id: "exclusive",
-
               icon: ({ className }) => (
-
                 <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-
                 </svg>
-
               ),
-
               count: exclusivePosts.length,
-
               content: (
-
                 <div>
-
                   {isLoadingExclusivePosts ? (
-
-                    <div className="grid grid-cols-3 gap-1 md:gap-2">
-
+                    <div className="grid grid-cols-3 gap-1.5 md:gap-2">
                       {Array.from({ length: 9 }).map((_, index) => (
-
-                        <div key={index} className="aspect-square bg-[#111624] rounded-sm animate-pulse">
-
-                          <SkeletonTheme baseColor="#202020" highlightColor="#444">
-
-                            <Skeleton height="100%" className="rounded-sm" />
-
+                        <div key={index} className="aspect-square bg-[#111624] rounded-lg animate-pulse">
+                          <SkeletonTheme baseColor="#111624" highlightColor="#1c2338">
+                            <Skeleton height="100%" className="rounded-lg" />
                           </SkeletonTheme>
-
                         </div>
-
                       ))}
-
                     </div>
-
                   ) : (
-
-                    <div className="grid grid-cols-3 gap-1 md:gap-2">
-
+                    <div className="grid grid-cols-3 gap-1.5 md:gap-2">
                       {/* Plus button for verified creators viewing their own profile */}
-
                       {isViewingOwnProfile && (profileData as any)?.creator_verified === true && (
-
                         <div
-
-                          className="relative aspect-square group cursor-pointer rounded-sm overflow-hidden bg-[#111624] dark:bg-gray-700 border-2 border-dashed border-gray-600 dark:border-gray-500 hover:border-orange-500 dark:hover:border-orange-500 transition-colors flex items-center justify-center"
-
+                          className="relative aspect-square group cursor-pointer rounded-lg overflow-hidden bg-white/[0.02] border-2 border-dashed border-white/10 hover:border-[#6c63ff] hover:bg-[#6c63ff]/5 transition-colors flex items-center justify-center"
                           onClick={() => router.push(`/${profileSlugForUrl}/upload-exclusive`)}
-
                         >
-
                           <div className="text-center">
-
-                            <Plus className="w-12 h-12 mx-auto mb-2 text-gray-400 dark:text-gray-500 group-hover:text-orange-500 transition-colors" />
-
-                            <p className="text-xs text-gray-400 dark:text-gray-500 group-hover:text-orange-500 transition-colors">Upload</p>
-
+                            <Plus className="w-10 h-10 mx-auto mb-2 text-gray-500 group-hover:text-[#9b59f5] transition-colors" />
+                            <p className="text-xs text-gray-500 group-hover:text-[#9b59f5] transition-colors font-medium">Upload</p>
                           </div>
-
                         </div>
-
                       )}
 
-
-
                       {/* Exclusive Posts */}
-
                       {exclusivePosts.map((post) => {
-
                         const postId = post._id || post.postid || post.id;
                         const { src, postType, pathUrlPrimary, queryUrlFallback, pathUrlFallback, posterSource } = getMediaSource(post);
-
                         const postUserId = post.userid || post.user?.userid || post.user?._id;
-
                         const isPostOwner = String(postUserId) === String(loggedInUserId || localUserid);
-
                         const isPurchased = purchasedPostIds.has(String(postId));
                         const canView = isPostOwner || isPurchased;
 
-
                         return (
-
                           <div
-
                             key={`exclusive-post-${post._id || post.postid || post.id}`}
-                            className="relative aspect-square group cursor-pointer rounded-sm overflow-hidden bg-black"
-
+                            className="relative aspect-square group cursor-pointer rounded-lg overflow-hidden bg-[#111624] border border-white/[0.05]"
                             onClick={(e) => {
                               e.stopPropagation();
                               const postId = post._id || post.postid || post.id;
-
                               setClickedExclusivePostId(postId);
-
                               setShowExclusivePostModal(true);
-
                             }}
-
                           >
-
                             {/* Image Post */}
-
                             {postType === "image" && src && (
-
                               <>
-
                                 <img
-
                                   key={`exclusive-img-${postId}`}
                                   src={src}
-
                                   alt={post?.content || "exclusive post image"}
-
-                                  className={`absolute inset-0 w-full h-full object-cover transition-all duration-200 ${!canView ? 'blur-xl brightness-50' : ''}`}
+                                  className={`absolute inset-0 w-full h-full object-cover transition-all duration-200 ${!canView ? 'blur-xl brightness-50' : 'group-hover:scale-105'}`}
                                   loading="lazy"
                                   onError={(e) => {
-
                                     const img = e.currentTarget as HTMLImageElement & { dataset: any };
-
                                     if (!img.dataset.fallback1 && pathUrlPrimary) {
-
                                       img.dataset.fallback1 = "1";
-
                                       img.src = pathUrlPrimary;
-
                                       return;
-
                                     }
-
                                     if (!img.dataset.fallback2 && queryUrlFallback) {
-
                                       img.dataset.fallback2 = "1";
-
                                       img.src = queryUrlFallback;
-
                                       return;
-
                                     }
-
                                     if (!img.dataset.fallback3 && pathUrlFallback) {
-
                                       img.dataset.fallback3 = "1";
-
                                       img.src = pathUrlFallback;
-
                                     }
-
                                   }}
-
                                 />
-
                                 {/* Lock overlay for visitors - only show if not purchased */}
                                 {!canView && (
-                                  <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center pointer-events-none z-10">
-                                    <Lock className="w-6 h-6 text-white" />
-
+                                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center pointer-events-none z-10">
+                                    <div className="w-9 h-9 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center">
+                                      <Lock className="w-4 h-4 text-white" />
+                                    </div>
                                   </div>
-
                                 )}
-
                               </>
-
                             )}
-
-
 
                             {/* Video Post */}
-
                             {postType === "video" && src && (
-
                               <div className="absolute inset-0 w-full h-full flex items-center justify-center bg-[#080b14]">
-
                                 <video
-
                                   key={`exclusive-video-${postId}`}
                                   src={src}
-
                                   poster={posterSource}
-
                                   preload="auto"
-
-                                  className={`absolute inset-0 w-full h-full object-cover transition-all duration-200 ${!canView ? 'blur-xl brightness-50' : ''}`}
+                                  className={`absolute inset-0 w-full h-full object-cover transition-all duration-200 ${!canView ? 'blur-xl brightness-50' : 'group-hover:scale-105'}`}
                                   muted
                                   onError={(e) => {
-
                                     const video = e.currentTarget as HTMLVideoElement & { dataset: any };
-
                                     if (!video.dataset.fallback1 && pathUrlPrimary) {
-
                                       video.dataset.fallback1 = "1";
-
                                       video.src = pathUrlPrimary;
-
                                       video.load();
-
                                       return;
-
                                     }
-
                                     if (!video.dataset.fallback2 && queryUrlFallback) {
-
                                       video.dataset.fallback2 = "1";
-
                                       video.src = queryUrlFallback;
-
                                       video.load();
-
                                       return;
-
                                     }
-
                                     if (!video.dataset.fallback3 && pathUrlFallback) {
-
                                       video.dataset.fallback3 = "1";
-
                                       video.src = pathUrlFallback;
-
                                       video.load();
-
                                     }
-
                                   }}
-
                                 />
-
                                 {/* Lock overlay for visitors - only show if not purchased */}
                                 {!canView ? (
-                                  <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center pointer-events-none z-10">
-                                    <Lock className="w-6 h-6 text-white" />
-
+                                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center pointer-events-none z-10">
+                                    <div className="w-9 h-9 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center">
+                                      <Lock className="w-4 h-4 text-white" />
+                                    </div>
                                   </div>
-
                                 ) : (
-
-                                  <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 pointer-events-none">
-                                    <svg className="w-12 h-12 text-white opacity-80" fill="currentColor" viewBox="0 0 24 24">
-
-                                      <path d="M8 5v14l11-7z" />
-
-                                    </svg>
-
+                                  <div className="absolute inset-0 flex items-center justify-center bg-black/25 pointer-events-none">
+                                    <div className="w-10 h-10 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center">
+                                      <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M8 5v14l11-7z" />
+                                      </svg>
+                                    </div>
                                   </div>
-
                                 )}
-
                               </div>
-
                             )}
-
-
 
                             {/* Text Post or No Media */}
-
                             {(!src || postType === "text") && (
-
-                              <div className="absolute inset-0 flex items-center justify-center p-2">
-
-                                <span className="text-center text-white text-base font-semibold line-clamp-2">{post.content}</span>
-
+                              <div className="absolute inset-0 flex items-center justify-center p-3 bg-gradient-to-br from-[#1a1f35] to-[#0d1120]">
+                                <span className="text-center text-white text-sm font-medium line-clamp-3">{post.content}</span>
                               </div>
-
                             )}
-
-
 
                             {/* Price Badge - Always visible */}
-
                             {post.price && (
-
-                              <div className="absolute top-2 right-2 bg-white text-gray-900 px-2 py-1 rounded text-xs font-semibold flex items-center gap-1 shadow-lg z-10">
-
+                              <div className="absolute top-2 right-2 bg-gradient-to-r from-[#f5c451] to-[#e8a93a] text-[#1A1C2C] px-2 py-1 rounded-full text-xs font-bold flex items-center gap-1 shadow-lg z-10">
                                 <span>🪙</span>
-
                                 {parseFloat(post.price).toFixed(2)}
-
                               </div>
-
                             )}
-
-
 
                             {/* Hover overlay - for owners and purchasers */}
                             {canView && (
                               <>
-
-                                <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-20 transition-opacity" />
-
-
+                                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors" />
 
                                 {/* Content overlay */}
-
                                 <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-
                                   <div className="text-white text-center p-2">
-
                                     <div className="flex items-center justify-center gap-4 mb-2">
-
                                       <div className="flex items-center gap-1">
-
-                                        <Heart className="w-4 h-4" />
-
-                                        <span className="text-sm">{formatNumber(post.totalLikes || post.likeCount || post.likes?.length || 0)}</span>
-
+                                        <Heart className="w-4 h-4" fill="white" />
+                                        <span className="text-sm font-semibold">{formatNumber(post.totalLikes || post.likeCount || post.likes?.length || 0)}</span>
                                       </div>
-
                                       <div className="flex items-center gap-1">
-
-                                        <MessageCircle className="w-4 h-4" />
-
-                                        <span className="text-sm">{formatNumber(post.commentCount || post.comments?.length || 0)}</span>
-
+                                        <MessageCircle className="w-4 h-4" fill="white" />
+                                        <span className="text-sm font-semibold">{formatNumber(post.commentCount || post.comments?.length || 0)}</span>
                                       </div>
-
                                     </div>
-
-                                    <p className="text-xs line-clamp-2">{post.content}</p>
-
-                                    {post.price && (
-
-                                      <p className="text-xs mt-1 font-semibold flex items-center justify-center gap-1 text-yellow-400">
-
-                                        <span>🪙</span>
-
-                                        {parseFloat(post.price).toFixed(2)}
-
-                                      </p>
-
-                                    )}
-
                                   </div>
-
                                 </div>
-
                               </>
-
                             )}
-
-
 
                             {/* Lock icon overlay for visitors on hover - only show if not purchased */}
                             {!canView && (
-                              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black bg-opacity-30">
-
+                              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40">
                                 <div className="text-white text-center p-2">
-
-                                  <Lock className="w-6 h-6 mx-auto mb-2" />
-
+                                  <div className="w-9 h-9 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center mx-auto mb-2">
+                                    <Lock className="w-4 h-4" />
+                                  </div>
                                   <p className="text-xs font-semibold">Unlock to view</p>
-
                                   {post.price && (
-
-                                    <p className="text-xs mt-1 font-semibold flex items-center justify-center gap-1 text-yellow-400">
-
+                                    <p className="text-xs mt-1 font-semibold flex items-center justify-center gap-1 text-[#f5c451]">
                                       <span>🪙</span>
-
                                       {parseFloat(post.price).toFixed(2)}
-
                                     </p>
-
                                   )}
-
                                 </div>
-
                               </div>
-
                             )}
-
                           </div>
-
                         );
-
                       })}
 
-
-
                       {/* Empty state - only show if no posts and user is not verified or not viewing own profile */}
-
                       {exclusivePosts.length === 0 && !(isViewingOwnProfile && (profileData as any)?.creator_verified === true) && (
-
-                        <div className="col-span-3 text-center py-12 text-gray-500 dark:text-gray-400">
-
-                          <svg className="w-12 h-12 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-
-                          </svg>
-
-                          <p>No exclusive content yet</p>
-
-                          <p className="text-sm">Exclusive content will appear here</p>
-
+                        <div className="col-span-3 text-center py-16 px-4">
+                          <div className="w-16 h-16 rounded-2xl bg-white/[0.03] border border-white/[0.06] flex items-center justify-center mx-auto mb-4">
+                            <svg className="w-7 h-7 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                            </svg>
+                          </div>
+                          <p className="text-gray-400 font-medium">No exclusive content yet</p>
+                          <p className="text-sm text-gray-600 mt-1">Exclusive content will appear here</p>
                         </div>
-
                       )}
-
                     </div>
-
                   )}
-
                 </div>
-
               ),
-
             },
-
             {
               id: "rituals",
               icon: ({ className }: { className?: string }) => (
