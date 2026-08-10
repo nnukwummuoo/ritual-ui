@@ -36,18 +36,6 @@ interface UserWithFans {
   vipEndDate?: string | null;
 }
 
-interface CreatorWithViews {
-  creatorId: string;
-  userId: string;
-  name: string;
-  hosttype: string;
-  displayImage: string;
-  viewsCount: number;
-  price: number;
-  location: string;
-  isVip?: boolean;
-  vipEndDate?: string | null;
-}
 
 interface PostWithHashtag {
   postId: string;
@@ -107,7 +95,6 @@ function DiscoverPageContent() {
 
   const [searchQuery, setSearchQuery] = useState("");
   const [topFans, setTopFans] = useState<UserWithFans[]>([]);
-  const [topViews, setTopViews] = useState<CreatorWithViews[]>([]);
   const [hashtagPosts, setHashtagPosts] = useState<PostWithHashtag[]>([]);
   const [searchUsers, setSearchUsers] = useState<UserWithFans[]>([]);
   const [loading, setLoading] = useState(true);
@@ -138,26 +125,12 @@ function DiscoverPageContent() {
     }
   }, [hashtagParam]);
 
-  const fetchDiscoverData = async () => {
+ const fetchDiscoverData = async () => {
     try {
-      setLoading(true);
-      const [fansRes, viewsRes] = await Promise.all([
-        fetch(`${API_BASE}/api/discover/top-fans?limit=10`),
-        fetch(`${API_BASE}/api/discover/top-views?limit=20`)
-      ]);
-
-      if (fansRes.ok) {
-        const fansData = await fansRes.json();
-        setTopFans(fansData.users || []);
-      }
-
-      if (viewsRes.ok) {
-        const viewsData = await viewsRes.json();
-        setTopViews(viewsData.creators || []);
-      }
+      setLoading(false);
     } catch (error) {
       console.error("Error fetching discover data:", error);
-    } finally {
+    } finally { 
       setLoading(false);
     }
   };
@@ -319,17 +292,20 @@ function DiscoverPageContent() {
     }
   }, [searchParams]);
 
-  return (
+return (
     <div className="min-h-screen bg-[#080b14] text-white p-4">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold mb-4">Discover</h1>
+        <div className="mb-8 pt-2">
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">
+            Discover
+          </h1>
+          <p className="text-gray-500 text-sm mt-1">Find creators, fans, and posts by hashtag</p>
 
           {/* Search Bar */}
-          <form onSubmit={handleSearch} className="relative">
-            <div className="flex items-center bg-[#111624] rounded-lg border border-gray-700 px-4 py-3">
-              <FaSearch className="text-gray-400 mr-3" />
+          <form onSubmit={handleSearch} className="relative mt-5">
+            <div className="flex items-center bg-[#111624] rounded-xl border border-white/10 px-4 py-3.5 focus-within:border-[#6c63ff] focus-within:ring-1 focus-within:ring-[#6c63ff]/40 transition-colors">
+              <FaSearch className="text-gray-500 mr-3 shrink-0" />
               <input
                 type="text"
                 placeholder="Search users or #hashtags"
@@ -345,7 +321,7 @@ function DiscoverPageContent() {
                     router.push('/discover');
                   }
                 }}
-                className="flex-1 bg-transparent text-white placeholder-gray-400 focus:outline-none"
+                className="flex-1 bg-transparent text-white placeholder-gray-600 focus:outline-none text-sm"
               />
               <div className="flex items-center gap-2 ml-2">
                 {searchType !== null ? (
@@ -358,7 +334,7 @@ function DiscoverPageContent() {
                       setSearchUsers([]);
                       router.push('/discover');
                     }}
-                    className="text-red-500 hover:text-red-400 transition-colors p-1"
+                    className="text-gray-500 hover:text-red-400 transition-colors p-1"
                     aria-label="Clear search"
                   >
                     <FaTimes className="text-lg" />
@@ -367,7 +343,7 @@ function DiscoverPageContent() {
                   <button
                     type="submit"
                     disabled={!searchQuery.trim()}
-                    className="text-gray-400 hover:text-white transition-colors p-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="text-[#9b59f5] hover:text-white transition-colors p-1 disabled:opacity-40 disabled:cursor-not-allowed"
                     aria-label="Search"
                   >
                     <FaSearch className="text-lg" />
@@ -375,19 +351,19 @@ function DiscoverPageContent() {
                 )}
               </div>
             </div>
-            <p className="text-xs text-gray-400 mt-2">
+            <p className="text-xs text-gray-600 mt-2 ml-1">
               Tip: Type # to search hashtags, or search by username/full name
             </p>
           </form>
         </div>
 
-        {/* User and Creator Search Results */}
+       {/* User and Creator Search Results */}
         {searchType === 'user' && searchUsers.length > 0 && (
           <div className="mb-8">
-            <h2 className="text-xl font-semibold mb-4">
-              Users & Creators matching &quot;{searchQuery}&quot;
+            <h2 className="text-sm font-semibold text-gray-400 mb-4">
+              Users & Creators matching <span className="text-white">&quot;{searchQuery}&quot;</span>
             </h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
               {searchUsers.map((user, index) => {
                 const isCreatorEntry = user.resultType === 'creator';
                 const uniqueKey = `${user.userId}-${user.resultType || 'user'}-${index}`;
@@ -399,43 +375,47 @@ function DiscoverPageContent() {
                   <Link
                     key={uniqueKey}
                     href={href}
-                    className={`flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-colors cursor-pointer ${isCreatorEntry
-                        ? 'bg-gradient-to-br from-purple-900/30 to-blue-900/30 border-purple-600 hover:border-purple-500'
-                        : 'bg-[#111624] border-gray-700 hover:border-gray-600'
+                    className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${isCreatorEntry
+                        ? 'bg-gradient-to-br from-[#6c63ff]/[0.08] to-[#9b59f5]/[0.04] border-[#6c63ff]/25 hover:border-[#6c63ff]/50'
+                        : 'bg-[#111624] border-white/[0.06] hover:border-white/15'
                       }`}
                   >
                     <div className="relative">
-                      <div className={`relative w-20 h-20 rounded-full overflow-hidden border-2 ${isCreatorEntry ? 'border-purple-500' : 'border-gray-700'
-                        }`}>
-                        {(() => {
-                          const profileImage = user.photoLink || "";
-                          const initials = user.name.split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2) || "?";
+                      <div
+                        className="w-20 h-20 rounded-full overflow-hidden p-[2px]"
+                        style={{ background: isCreatorEntry ? "linear-gradient(135deg, #6c63ff, #9b59f5)" : "rgba(255,255,255,0.08)" }}
+                      >
+                        <div className="w-full h-full rounded-full overflow-hidden bg-[#080b14]">
+                          {(() => {
+                            const profileImage = user.photoLink || "";
+                            const initials = user.name.split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2) || "?";
 
-                          if (profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined") {
-                            const imageSource = getImageSource(profileImage, isCreatorEntry ? 'creator' : 'profile');
+                            if (profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined") {
+                              const imageSource = getImageSource(profileImage, isCreatorEntry ? 'creator' : 'profile');
+                              return (
+                                <img
+                                  alt="Profile picture"
+                                  src={imageSource.src}
+                                  className="object-cover w-full h-full"
+                                  onError={(e) => {
+                                    const target = e.currentTarget as HTMLImageElement;
+                                    target.style.display = 'none';
+                                    const nextElement = target.nextElementSibling as HTMLElement;
+                                    if (nextElement) {
+                                      nextElement.style.setProperty('display', 'flex');
+                                    }
+                                  }}
+                                />
+                              );
+                            }
+
                             return (
-                              <img
-                                alt="Profile picture"
-                                src={imageSource.src}
-                                className="object-cover w-full h-full"
-                                onError={(e) => {
-                                  const target = e.currentTarget as HTMLImageElement;
-                                  target.style.display = 'none';
-                                  const nextElement = target.nextElementSibling as HTMLElement;
-                                  if (nextElement) {
-                                    nextElement.style.setProperty('display', 'flex');
-                                  }
-                                }}
-                              />
+                              <div className="w-full h-full flex items-center justify-center text-white text-xl font-semibold bg-gradient-to-br from-[#1a1f35] to-[#111624]">
+                                {initials}
+                              </div>
                             );
-                          }
-
-                          return (
-                            <div className="w-full h-full flex items-center justify-center text-white text-xl font-semibold bg-gray-700">
-                              {initials}
-                            </div>
-                          );
-                        })()}
+                          })()}
+                        </div>
                       </div>
                       {/* VIP Badge */}
                       {(() => {
@@ -446,18 +426,18 @@ function DiscoverPageContent() {
                       })()}
                       {/* Creator Badge */}
                       {isCreatorEntry && (
-                        <div className="absolute -bottom-1 -left-1 bg-purple-600 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                        <div className="absolute -bottom-1 -left-1 bg-gradient-to-r from-[#6c63ff] to-[#9b59f5] text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
                           Creator
                         </div>
                       )}
                     </div>
-                    <p className="text-sm text-center font-semibold truncate w-full">{user.name}</p>
-                    <p className="text-xs text-gray-400 truncate w-full">{user.username}</p>
+                    <p className="text-sm text-center font-semibold truncate w-full mt-1">{user.name}</p>
+                    <p className="text-xs text-gray-500 truncate w-full">{user.username}</p>
                     {isCreatorEntry && user.hosttype && (
-                      <p className="text-xs text-purple-400 truncate w-full">{user.hosttype}</p>
+                      <p className="text-xs text-[#c9c4ff] truncate w-full">{user.hosttype}</p>
                     )}
                     {!isCreatorEntry && (
-                      <p className="text-xs text-gray-500 truncate w-full">User</p>
+                      <p className="text-xs text-gray-600 truncate w-full">User</p>
                     )}
                   </Link>
                 );
@@ -468,26 +448,32 @@ function DiscoverPageContent() {
 
         {/* User Search - No Results */}
         {searchType === 'user' && !searchLoading && searchUsers.length === 0 && searchQuery && (
-          <div className="mb-8">
-            <h2 className="text-xl font-semibold mb-4">
-              Users & Creators matching &quot;{searchQuery}&quot;
-            </h2>
-            <p className="text-gray-400">No users or creators found</p>
+          <div className="text-center py-16 px-4">
+            <div className="w-16 h-16 rounded-2xl bg-white/[0.03] border border-white/[0.06] flex items-center justify-center mx-auto mb-4">
+              <FaSearch className="w-6 h-6 text-gray-600" />
+            </div>
+            <p className="text-gray-400 font-medium">No matches for &quot;{searchQuery}&quot;</p>
+            <p className="text-sm text-gray-600 mt-1">Try a different name or username</p>
           </div>
         )}
 
         {/* Hashtag Search Results */}
         {(hashtagParam || searchType === 'hashtag') && (
           <div className="mb-8">
-            <h2 className="text-xl font-semibold mb-4">
-              Posts with #{hashtagParam || searchQuery.replace(/^#/, '')}
+            <h2 className="text-sm font-semibold text-gray-400 mb-4">
+              Posts with <span className="text-[#c9c4ff]">#{hashtagParam || searchQuery.replace(/^#/, '')}</span>
             </h2>
             {searchLoading ? (
               <div className="flex items-center justify-center py-12">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                <div className="animate-spin rounded-full h-8 w-8 border-2 border-[#6c63ff] border-t-transparent"></div>
               </div>
             ) : hashtagPosts.length === 0 ? (
-              <p className="text-gray-400">No posts found with this hashtag</p>
+              <div className="text-center py-16 px-4">
+                <div className="w-16 h-16 rounded-2xl bg-white/[0.03] border border-white/[0.06] flex items-center justify-center mx-auto mb-4">
+                  <span className="text-2xl text-gray-600">#</span>
+                </div>
+                <p className="text-gray-400 font-medium">No posts found with this hashtag</p>
+              </div>
             ) : (
               <div className="space-y-4 max-w-[30rem] mx-auto">
                 {hashtagPosts.map((p: PostWithHashtag, idx: number) => {
@@ -1321,199 +1307,16 @@ function DiscoverPageContent() {
           </div>
         )}
 
-        {loading ? (
-          <div className="flex items-center justify-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        {!hashtagParam && !searchType && !searchLoading && (
+          <div className="text-center py-24 px-4">
+            <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-[#6c63ff]/15 to-[#9b59f5]/10 border border-[#6c63ff]/20 flex items-center justify-center mx-auto mb-5">
+              <FaSearch className="w-8 h-8 text-[#9b59f5]" />
+            </div>
+            <p className="text-gray-300 font-medium">Search for someone or something</p>
+            <p className="text-sm text-gray-600 mt-1.5 max-w-xs mx-auto">
+              Start typing a name, username, or #hashtag above to find them
+            </p>
           </div>
-        ) : !hashtagParam && !searchType && (
-          <>
-            {/* Top Fans Section - Horizontal Scrollable */}
-            <div className="mb-8">
-              <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
-                {topFans.length === 0 ? (
-                  <p className="text-gray-400">No users found</p>
-                ) : (
-                  topFans.map((user) => (
-                    <Link
-                      key={user.userId}
-                      href={user.isCreator && user.creatorPortfolioId
-                        ? `/${user.username || user.userId}`
-                        : `/${user.username || user.userId}`}
-                      className="flex-shrink-0 flex flex-col items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity"
-                    >
-                      <div className="relative">
-                        <div className="relative w-20 h-20 rounded-full overflow-hidden border-2 border-gray-700">
-                          {(() => {
-                            const profileImage = user.photoLink || "";
-                            const initials = user.name.split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2) || "?";
-
-                            if (profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined") {
-                              const imageSource = getImageSource(profileImage, user.isCreator ? 'creator' : 'profile');
-                              return (
-                                <img
-                                  alt="Profile picture"
-                                  src={imageSource.src}
-                                  className="object-cover w-full h-full"
-                                  onError={(e) => {
-                                    const target = e.currentTarget as HTMLImageElement;
-                                    target.style.display = 'none';
-                                    const nextElement = target.nextElementSibling as HTMLElement;
-                                    if (nextElement) {
-                                      nextElement.style.setProperty('display', 'flex');
-                                    }
-                                  }}
-                                />
-                              );
-                            }
-
-                            return (
-                              <div className="w-full h-full flex items-center justify-center text-white text-xl font-semibold bg-gray-700">
-                                {initials}
-                              </div>
-                            );
-                          })()}
-                        </div>
-                        {/* VIP Badge */}
-                        {(() => {
-                          const isVipActive = user.isVip && user.vipEndDate && new Date(user.vipEndDate) > new Date();
-                          return isVipActive && (
-                            <VIPBadge size="xl" className="absolute -top-1 -right-4" isVip={user.isVip} vipEndDate={user.vipEndDate} />
-                          );
-                        })()}
-                      </div>
-                      <p className="text-sm text-center max-w-[80px] truncate">{user.name}</p>
-                    </Link>
-                  ))
-                )}
-              </div>
-            </div>
-
-            {/* Creators with Most Views - Grid Layout */}
-            <div>
-
-              {topViews.length === 0 ? (
-                <p className="text-gray-400">No creators found</p>
-              ) : (
-                <div className="grid grid-cols-2 gap-4">
-                  {topViews.map((creator) => (
-                    <Link
-                      key={creator.creatorId}
-                      href={`/creators/${creator.creatorId}`}
-                      className="relative group cursor-pointer"
-                    >
-                      <div className="relative aspect-[4/5] rounded-lg overflow-hidden border border-gray-700">
-                        {(() => {
-                          const displayImage = creator.displayImage || "";
-
-                          if (displayImage && displayImage.trim() && displayImage !== "null" && displayImage !== "undefined") {
-                            const imageSource = getImageSource(displayImage, 'creator');
-
-                            // Prepare fallback URLs (same as creator card)
-                            const fallbackKey = imageSource.isStorj && imageSource.key
-                              ? imageSource.key
-                              : (displayImage || "");
-
-                            // Start with the proxy URL from getImageSource (query format with bucket)
-                            const initialSrc = imageSource.src;
-
-                            // Fallback URLs in order of preference
-                            const pathUrlPrimary = fallbackKey ? `${API_BASE}/api/image/view/${encodeURIComponent(fallbackKey)}` : "";
-                            const queryUrlFallback = imageSource.isStorj && imageSource.key && imageSource.bucket
-                              ? `${PROD_BASE}/api/image/view?publicId=${encodeURIComponent(imageSource.key)}&bucket=${imageSource.bucket}`
-                              : (fallbackKey ? `${PROD_BASE}/api/image/view?publicId=${encodeURIComponent(fallbackKey)}` : "");
-                            const pathUrlFallback = fallbackKey ? `${PROD_BASE}/api/image/view/${encodeURIComponent(fallbackKey)}` : "";
-                            const renderQueryUrl = imageSource.isStorj && imageSource.key && imageSource.bucket
-                              ? `${RENDER_BASE}/api/image/view?publicId=${encodeURIComponent(imageSource.key)}&bucket=${imageSource.bucket}`
-                              : (fallbackKey ? `${RENDER_BASE}/api/image/view?publicId=${encodeURIComponent(fallbackKey)}` : "");
-                            const renderPathUrl = fallbackKey ? `${RENDER_BASE}/api/image/view/${encodeURIComponent(fallbackKey)}` : "";
-
-                            return (
-                              <>
-                                <img
-                                  alt={creator.name}
-                                  src={initialSrc}
-                                  className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
-                                  onError={(e) => {
-                                    const target = e.currentTarget as HTMLImageElement & { dataset: Record<string, string> };
-
-                                    // Try fallback URLs in sequence (same as creator card)
-                                    if (!target.dataset.fallback1 && pathUrlPrimary && target.src !== pathUrlPrimary) {
-                                      target.dataset.fallback1 = "1";
-                                      target.src = pathUrlPrimary;
-                                      return;
-                                    }
-
-                                    if (!target.dataset.fallback2 && queryUrlFallback && target.src !== queryUrlFallback) {
-                                      target.dataset.fallback2 = "1";
-                                      target.src = queryUrlFallback;
-                                      return;
-                                    }
-
-                                    if (!target.dataset.fallback3 && pathUrlFallback && target.src !== pathUrlFallback) {
-                                      target.dataset.fallback3 = "1";
-                                      target.src = pathUrlFallback;
-                                      return;
-                                    }
-
-                                    if (!target.dataset.fallback4 && renderQueryUrl && target.src !== renderQueryUrl) {
-                                      target.dataset.fallback4 = "1";
-                                      target.src = renderQueryUrl;
-                                      return;
-                                    }
-
-                                    if (!target.dataset.fallback5 && renderPathUrl && target.src !== renderPathUrl) {
-                                      target.dataset.fallback5 = "1";
-                                      target.src = renderPathUrl;
-                                      return;
-                                    }
-
-                                    // Try original Storj URL as last resort
-                                    if (imageSource.isStorj && imageSource.originalUrl && target.src !== imageSource.originalUrl) {
-                                      target.dataset.fallback6 = "1";
-                                      target.src = imageSource.originalUrl;
-                                      return;
-                                    }
-
-                                    // All fallbacks exhausted - show placeholder
-                                    target.style.display = 'none';
-                                    const nextElement = target.nextElementSibling as HTMLElement;
-                                    if (nextElement) {
-                                      nextElement.style.setProperty('display', 'flex');
-                                    }
-                                  }}
-                                />
-                                <div className="absolute inset-0 bg-[#111624] flex items-center justify-center" style={{ display: 'none' }}>
-                                  <FaCompass className="text-4xl text-gray-600" />
-                                </div>
-                              </>
-                            );
-                          }
-
-                          return (
-                            <div className="w-full h-full bg-[#111624] flex items-center justify-center">
-                              <FaCompass className="text-4xl text-gray-600" />
-                            </div>
-                          );
-                        })()}
-                        {/* VIP Badge */}
-                        {(() => {
-                          const isVipActive = creator.isVip && creator.vipEndDate && new Date(creator.vipEndDate) > new Date();
-                          return isVipActive && (
-                            <VIPBadge size="xxl" className="absolute -top-2 -left-2 z-10" isVip={creator.isVip} vipEndDate={creator.vipEndDate} />
-                          );
-                        })()}
-                        {/* Overlay with name and hosttype */}
-                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-3">
-                          <p className="text-white font-semibold text-sm">{creator.name}</p>
-                          <p className="text-gray-300 text-xs">{creator.hosttype}</p>
-                        </div>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              )}
-            </div>
-          </>
         )}
       </div>
     </div>
