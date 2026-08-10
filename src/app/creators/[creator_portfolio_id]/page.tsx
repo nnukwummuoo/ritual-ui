@@ -741,20 +741,19 @@ const [urlCopied, setUrlCopied] = useState(false);
         <div className="mcp-action-btns">
   <button
     className="mcp-btn-msg"
-    disabled={!Cantchat()}
     onClick={() => {
-      if (!Cantchat()) return;
+      if (!Cantchat()) { toast.info("This action is meant for fans", { autoClose: 2000 }); return; }
       if (!userid) { toast.info("login to access this operation", { autoClose: 2000 }); return; }
       navigate(`/message/${creator.userid}`);
     }}
   >
     💬 Message
   </button>
-  <button
+ <button
     className={`mcp-btn-crush${removeCrush ? " active" : ""}`}
-    disabled={dcb || !Cantchat()}
+    disabled={dcb}
     onClick={() => {
-      if (!Cantchat()) return;
+      if (!Cantchat()) { toast.info("This action is meant for fans", { autoClose: 2000 }); return; }
       if (!userid) { toast.info("login to access this operation", { autoClose: 2000 }); return; }
       addTocrush();
       if (!removeCrush) setTimeout(() => navigate("/collections"), 1000);
@@ -819,11 +818,10 @@ const [urlCopied, setUrlCopied] = useState(false);
 
         {/* ── REQUEST BUTTON ── */}
        <div className="mcp-btn-rq-wrap">
-  <button
+ <button
     className="mcp-btn-rq"
-    disabled={!Cantchat()}
     onClick={() => {
-      if (!Cantchat()) return;
+      if (!Cantchat()) { toast.info("This action is meant for fans", { autoClose: 2000 }); return; }
       if (!userid) { toast.info("login to access this operation", { autoClose: 2000 }); return; }
       setShowRequestDetails(true);
     }}

@@ -78,10 +78,15 @@ const FollowStrip: React.FC<FollowStripProps> = ({
     }
   }, [followingList, userid, creatorUserId]);
 
-  const handleFollowClick = async () => {
-    if (!userid || !creatorUserId || isProcessing || checkuser) {
+ const handleFollowClick = async () => {
+    if (checkuser) {
+      toast.info("This action is meant for fans");
       return;
     }
+    if (!userid || !creatorUserId || isProcessing) {
+      return;
+    }
+    
 
     let authToken = token;
     if (!authToken) {
@@ -231,13 +236,14 @@ const FollowStrip: React.FC<FollowStripProps> = ({
     </div>
     <button
       onClick={handleFollowClick}
-      disabled={isProcessing || checkuser}
+      disabled={isProcessing}
       className={`flex-shrink-0 px-3  py-2 rounded-lg font-semibold text-[12px] lg:text-sm whitespace-nowrap transition-all duration-200 ${
         isFollowing
           ? "bg-purple-400/20 border border-purple-400/40 text-purple-200 hover:bg-purple-400/30"
           : "bg-gradient-to-r from-purple-600 to-purple-500 text-white hover:from-purple-700 hover:to-purple-600"
-      } ${isProcessing || checkuser ? "opacity-70 cursor-not-allowed" : ""}`}
+      } ${isProcessing ? "opacity-70 cursor-not-allowed" : ""}`}
     >
+    
       {isProcessing ? "..." : isFollowing ? "Following ✓" : "Follow"}
     </button>
   </div>
