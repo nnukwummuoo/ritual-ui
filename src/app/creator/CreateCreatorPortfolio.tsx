@@ -387,26 +387,6 @@ const removeTour = (index: number) => {
     >
       <ToastContainer position="top-center" theme="dark" />
 
-      {/* ── NAV ── */}
-      <nav
-        className="sticky top-0 z-40 flex h-14 items-center justify-between border-b border-white/10 px-5"
-        style={{ background: "rgba(8,11,20,.97)", backdropFilter: "blur(20px)" }}
-      >
-        <button
-          type="button"
-          onClick={() => router.back()}
-          className="flex items-center gap-1 text-sm font-semibold text-slate-400 transition hover:text-white"
-        >
-          ← Back
-        </button>
-        <a href="#" className="flex items-center gap-2 no-underline">
-          <div className="flex h-7 w-7 items-center justify-center rounded-[7px] bg-gradient-to-br from-[#6c63ff] to-[#9b59f5] text-xs font-black text-white">
-            M
-          </div>
-          <span className="text-[15px] font-bold text-white">mmeko</span>
-        </a>
-        <div style={{ width: 60 }} />
-      </nav>
 
       <div className="mx-auto max-w-[520px] px-5 pb-20 pt-7">
 
