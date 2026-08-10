@@ -165,8 +165,9 @@ export default function ConditionalLayout({ children, isAuthenticated }: Conditi
   }, [showNavbar]);
   */
 
-  // If it's a QuickChat [userid] route, admin route, or ritual route, render without main layout
-  if (isQuickChatRoute || isAdminRoute || isRitualRoute) {
+ // If it's a QuickChat [userid] route, admin route, ritual route, or a page with
+  // its own top nav (creator portfolio pages), render without main layout
+  if (isQuickChatRoute || isAdminRoute || isRitualRoute || hasOwnTopbar) {
     return <>{children}</>;
   }
 
