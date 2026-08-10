@@ -811,9 +811,10 @@ useEffect(() => {
             {creatorPriceValue}
             <span className="mcp-price-amount-suffix">{creatorRateSuffix}</span>
           </div>
-          {checkuser() ? (
-            <div className="mcp-price-sub">
-              {`Fan pays ${isFanCallCreator ? "per minute" : "upfront"} — you keep 100%`}
+         {checkuser() ? (
+            <div className="mcp-trust-badge">
+              <ShieldCheck size={16} className="mcp-trust-badge-icon" />
+              <span className="mcp-trust-badge-text">{`Fan pays ${isFanCallCreator ? "per minute" : "upfront"} — you keep 100%`}</span>
             </div>
           ) : (
             <div className="mcp-trust-badge">
