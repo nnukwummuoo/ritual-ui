@@ -433,12 +433,12 @@ const TopupInner: React.FC = () => {
         {/* Accepted tokens line */}
         <div className="flex items-center mt-5 gap-2">
          <span className="rounded-full flex items-center justify-center shrink-0" style={{ width: 24, height: 24 }}>
-            <svg viewBox="0 0 24 24" width="20" height="20" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="12" cy="12" r="10" fill="#F5C451" />
-              <circle cx="12" cy="12" r="10" fill="none" stroke="#B8860B" strokeWidth="1.2" />
-              <circle cx="12" cy="12" r="7" fill="none" stroke="#B8860B" strokeWidth="0.8" opacity="0.45" />
-              <path d="M12 7.3l1.1 2.6 2.7.3-2 1.8.5 2.7-2.3-1.4-2.3 1.4.5-2.7-2-1.8 2.7-.3L12 7.3z" fill="#B8860B" opacity="0.55" />
-            </svg>
+           <svg viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="12" cy="12" r="10" fill="#F5C451" />
+            <circle cx="12" cy="12" r="10" fill="none" stroke="#B8860B" strokeWidth="1.2" />
+            <circle cx="12" cy="12" r="7" fill="none" stroke="#B8860B" strokeWidth="0.8" opacity="0.45" />
+            <path d="M12 7.3l1.1 2.6 2.7.3-2 1.8.5 2.7-2.3-1.4-2.3 1.4.5-2.7-2-1.8 2.7-.3L12 7.3z" fill="#B8860B" opacity="0.55" />
+          </svg>
           </span>
           <span className="text-[#b6b7c7] text-sm sm:text-base font-medium">
             Buy Gold with USDT or USDC <span className="text-[#636583] font-normal">(BEP20)</span>

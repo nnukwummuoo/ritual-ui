@@ -955,14 +955,12 @@ if (matched?.isoCode && creator.state) {
               <div className="bg-[#111624] rounded-2xl max-w-md w-full border border-white/[0.06] shadow-[0_30px_70px_-25px_rgba(0,0,0,0.7)]">
                 <div className="flex items-center justify-between p-6 border-b border-white/[0.06]">
                   <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#f5c451] to-[#e8a93a] flex items-center justify-center shrink-0">
-                    <svg viewBox="0 0 24 24" width="20" height="20" xmlns="http://www.w3.org/2000/svg">
-                      <circle cx="12" cy="12" r="10" fill="#FFE9A8" />
-                      <circle cx="12" cy="12" r="10" fill="none" stroke="#8B6508" strokeWidth="1.2" />
-                      <circle cx="12" cy="12" r="7" fill="none" stroke="#8B6508" strokeWidth="0.8" opacity="0.5" />
-                      <path d="M12 7.3l1.1 2.6 2.7.3-2 1.8.5 2.7-2.3-1.4-2.3 1.4.5-2.7-2-1.8 2.7-.3L12 7.3z" fill="#8B6508" opacity="0.6" />
-                    </svg>
-                  </div>
+                  <svg viewBox="0 0 24 24" width="36" height="36" xmlns="http://www.w3.org/2000/svg" className="shrink-0">
+                    <circle cx="12" cy="12" r="10" fill="#F5C451" />
+                    <circle cx="12" cy="12" r="10" fill="none" stroke="#B8860B" strokeWidth="1.2" />
+                    <circle cx="12" cy="12" r="7" fill="none" stroke="#B8860B" strokeWidth="0.8" opacity="0.45" />
+                    <path d="M12 7.3l1.1 2.6 2.7.3-2 1.8.5 2.7-2.3-1.4-2.3 1.4.5-2.7-2-1.8 2.7-.3L12 7.3z" fill="#B8860B" opacity="0.55" />
+                  </svg>
                     <h3 className="text-lg font-bold text-white">Gold Conversion</h3>
                   </div>
                   <button
