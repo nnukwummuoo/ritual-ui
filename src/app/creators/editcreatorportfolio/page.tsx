@@ -493,6 +493,16 @@ if (matched?.isoCode && creator.state) {
     <div className="mcp-edit-portfolio">
       <ToastContainer position="top-center" theme="dark" />
 
+      {/* NAV */}
+      <nav className="nav">
+        <button className="nav-back" type="button" onClick={() => router.back()}>← Back</button>
+        <a href="#" className="nav-logo" onClick={(e) => e.preventDefault()}>
+          <div className="nav-logo-icon">M</div>
+          <span className="nav-logo-name">mmeko</span>
+        </a>
+        <div style={{ width: 60 }} />
+      </nav>
+
       <div className="page">
         {/* HEADER */}
         <div className="page-tag">✦ Edit Portfolio</div>
