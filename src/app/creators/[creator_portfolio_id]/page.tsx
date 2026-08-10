@@ -518,7 +518,7 @@ const [urlCopied, setUrlCopied] = useState(false);
         .mcp-nav{position:sticky;top:0;z-index:50;overflow:visible;background:rgba(8,11,20,.92);backdrop-filter:blur(20px);border-bottom:1px solid var(--mcp-border);padding:0 16px;height:54px;display:flex;align-items:center;justify-content:space-between;gap:8px;}
 .mcp-nav-logo{display:flex;align-items:center;gap:6px;text-decoration:none;flex-shrink:0;}
 .mcp-nav-actions{display:flex;align-items:center;gap:8px;flex-shrink:0;margin-left:auto;}
-@media(max-width:767px){.mcp-nav-actions{margin-right:-10px;}}
+@media(max-width:767px){.mcp-nav-actions{margin-right:-20px;}}
         
         .mcp-nav-logo-icon{width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,#6c63ff,#9b59f5);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:white;}
         .mcp-nav-logo-name{font-size:15px;font-weight:700;color:var(--mcp-text);}
@@ -1015,7 +1015,7 @@ const [urlCopied, setUrlCopied] = useState(false);
 
         <div style={{ fontSize: 19, fontWeight: 800, letterSpacing: "-.02em", marginBottom: 8 }}>Your portfolio is live!</div>
         <div style={{ fontSize: 13.5, color: "#94a3b8", lineHeight: 1.7, marginBottom: 22 }}>
-          Share your profile link with fans so they can discover you and send booking requests. The more you share, <strong style={{ color: "#f1f5f9", fontWeight: 600 }}>the more requests you get.</strong>
+          Share your portfolio link with fans so they can discover you and send booking requests. The more you share, <strong style={{ color: "#f1f5f9", fontWeight: 600 }}>the more requests you get.</strong>
         </div>
 
         {/* URL box */}
@@ -1041,7 +1041,7 @@ const [urlCopied, setUrlCopied] = useState(false);
         <div style={{ display: "flex", alignItems: "flex-start", gap: 10, background: "rgba(108,99,255,.06)", border: "1px solid rgba(108,99,255,.12)", borderRadius: 10, padding: "12px 14px", marginBottom: 22 }}>
           <span style={{ fontSize: 14, flexShrink: 0, marginTop: 1 }}>💡</span>
           <div style={{ fontSize: 12, color: "#94a3b8", lineHeight: 1.6 }}>
-            <strong style={{ color: "#a89cff", fontWeight: 600 }}>Pro tip:</strong> Post your link in your Instagram bio, TikTok profile, OnlyFans page or tryst profile to reach your existing fans instantly.
+            <strong style={{ color: "#a89cff", fontWeight: 600 }}>Pro tip:</strong> Post your link in your Instagram bio, TikTok profile, OnlyFans page or Tryst profile to reach your existing fans instantly.
           </div>
         </div>
 
