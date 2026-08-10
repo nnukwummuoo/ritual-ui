@@ -43,9 +43,21 @@ export default function ConditionalLayout({ children, isAuthenticated }: Conditi
   // Check if it's the message list route
   const isMessageRoute = pathname === '/message';
 
-  // Check if it's the notifications route
+ // Check if it's the notifications route
   const isNotificationsRoute = pathname.startsWith('/notifications');
 
+  // Check if it's a creator portfolio route (view/create/edit) — these pages
+  // ship their own top nav, so the global topbar should not also render
+  const isCreatorPortfolioIdRoute =
+    pathname.startsWith('/creators/') && pathname !== '/creators/editcreatorportfolio' && pathname.split('/').length === 3;
+  const isEditCreatorPortfolioRoute = pathname === '/creators/editcreatorportfolio';
+
+  const isCreateCreatorPortfolioRoute = pathname === '/creator/create';
+  const isPortfolioUsernameRoute =
+    pathname.startsWith('/portfolio/') && pathname.split('/').length === 3;
+  const hasOwnTopbar =
+    isCreatorPortfolioIdRoute || isEditCreatorPortfolioRoute || isCreateCreatorPortfolioRoute || isPortfolioUsernameRoute;
+    
   // Set mounted to true after component mounts (client-side only)
   useEffect(() => {
     setMounted(true);
@@ -188,10 +200,12 @@ if (!isAuthenticated && isHomeRoute) {
         </>
       )}
 
-      {/* Navbar - Hidden on md devices and up */}
-      <div className="md:hidden">
-        <Navbar isAuthenticated={isAuthenticated} />
-      </div>
+      {/* Navbar - Hidden on md devices and up, and on pages with their own top nav */}
+      {!hasOwnTopbar && (
+        <div className="md:hidden">
+          <Navbar isAuthenticated={isAuthenticated} />
+        </div>
+      )}
 
       {/* Login Button - Only shown on md devices and up, when not authenticated */}
       {!isAuthenticated && (
