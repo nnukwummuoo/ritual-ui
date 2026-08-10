@@ -538,6 +538,7 @@ useEffect(() => {
         .mcp-nav{position:sticky;top:0;z-index:50;overflow:visible;background:rgba(8,11,20,.92);backdrop-filter:blur(20px);border-bottom:1px solid var(--mcp-border);padding:0 16px;height:54px;display:flex;align-items:center;justify-content:space-between;gap:8px;}
 .mcp-nav-logo{display:flex;align-items:center;gap:6px;text-decoration:none;flex-shrink:0;}
 .mcp-nav-actions{display:flex;align-items:center;gap:8px;flex-shrink:0;margin-left:auto;}
+@media(max-width:767px){.mcp-nav-actions{margin-right:-10px;}}
         
         .mcp-nav-logo-icon{width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,#6c63ff,#9b59f5);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:white;}
         .mcp-nav-logo-name{font-size:15px;font-weight:700;color:var(--mcp-text);}
