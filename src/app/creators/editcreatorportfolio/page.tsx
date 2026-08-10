@@ -956,8 +956,13 @@ if (matched?.isoCode && creator.state) {
                 <div className="flex items-center justify-between p-6 border-b border-white/[0.06]">
                   <div className="flex items-center gap-3">
                     <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#f5c451] to-[#e8a93a] flex items-center justify-center shrink-0">
-                      <span className="text-[#1A1C2C] text-base font-bold">$</span>
-                    </div>
+                    <svg viewBox="0 0 24 24" width="20" height="20" xmlns="http://www.w3.org/2000/svg">
+                      <circle cx="12" cy="12" r="10" fill="#FFE9A8" />
+                      <circle cx="12" cy="12" r="10" fill="none" stroke="#8B6508" strokeWidth="1.2" />
+                      <circle cx="12" cy="12" r="7" fill="none" stroke="#8B6508" strokeWidth="0.8" opacity="0.5" />
+                      <path d="M12 7.3l1.1 2.6 2.7.3-2 1.8.5 2.7-2.3-1.4-2.3 1.4.5-2.7-2-1.8 2.7-.3L12 7.3z" fill="#8B6508" opacity="0.6" />
+                    </svg>
+                  </div>
                     <h3 className="text-lg font-bold text-white">Gold Conversion</h3>
                   </div>
                   <button

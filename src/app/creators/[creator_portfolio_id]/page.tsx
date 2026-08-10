@@ -774,13 +774,17 @@ const [urlCopied, setUrlCopied] = useState(false);
             <span
               className="rounded-full flex items-center justify-center shrink-0"
               style={{
-                background: "linear-gradient(135deg, #f5c451, #e8a93a)",
                 width: 32,
                 height: 32,
                 boxShadow: "0 4px 12px -4px rgba(245,196,81,0.5)",
               }}
             >
-              <span className="text-[#1A1C2C] text-lg font-bold">$</span>
+              <svg viewBox="0 0 24 24" width="22" height="22" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="12" cy="12" r="10" fill="#F5C451" />
+                <circle cx="12" cy="12" r="10" fill="none" stroke="#B8860B" strokeWidth="1.2" />
+                <circle cx="12" cy="12" r="7" fill="none" stroke="#B8860B" strokeWidth="0.8" opacity="0.45" />
+                <path d="M12 7.3l1.1 2.6 2.7.3-2 1.8.5 2.7-2.3-1.4-2.3 1.4.5-2.7-2-1.8 2.7-.3L12 7.3z" fill="#B8860B" opacity="0.55" />
+              </svg>
             </span>
             {creatorPriceValue}
             <span className="mcp-price-amount-suffix">{creatorRateSuffix}</span>
