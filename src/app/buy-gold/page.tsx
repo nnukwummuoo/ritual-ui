@@ -10,10 +10,31 @@ import { golds } from "@/data/intresttypes";
 import { createWeb3Payment, checkWeb3PaymentStatus, cancelWeb3Payment, verifyTransactionHash } from "@/api/web3payment";
 import { RootState } from "@/store/store"
 import { Copy, Check, ShieldCheck, Lock, RefreshCw, Trash2 } from "lucide-react";
-import { useAccount, useSignMessage, useDisconnect } from "wagmi";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
 import Web3Providers from "@/components/Web3Providers";
 import { URL as API_URL } from "@/api/config";
+import { useAccount, useSignMessage, useDisconnect, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
+import { parseUnits } from "viem";
+
+// Minimal ERC-20 ABI — only the transfer function we need
+const ERC20_TRANSFER_ABI = [
+  {
+    name: "transfer",
+    type: "function",
+    stateMutability: "nonpayable",
+    inputs: [
+      { name: "to", type: "address" },
+      { name: "amount", type: "uint256" },
+    ],
+    outputs: [{ name: "", type: "bool" }],
+  },
+] as const;
+
+// Same BEP20 contracts the backend accepts (see ACCEPTED_TOKENS in web3payment.js)
+const TOKEN_CONTRACTS: Record<"USDT" | "USDC", `0x${string}`> = {
+  USDT: "0x55d398326f99059fF775485246999027B3197955",
+  USDC: "0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580",
+};
 
 // Icons for tags
 const tagIcons: Record<string, React.ReactNode> = {
@@ -118,6 +139,43 @@ const TopupInner: React.FC = () => {
     }
   };
 
+  const { writeContractAsync, isPending: isSendingTx } = useWriteContract();
+  const [onchainHash, setOnchainHash] = useState<`0x${string}` | undefined>(undefined);
+  const { isLoading: isConfirmingTx, isSuccess: isTxConfirmed } = useWaitForTransactionReceipt({
+    hash: onchainHash,
+  });
+
+ const [payToken, setPayToken] = useState<"USDT" | "USDC">("USDT");
+
+  // Pay directly from the connected wallet — skips the copy address / switch app / paste hash dance
+  const payWithConnectedWallet = async () => {
+    if (!web3Payment?.walletAddress || !web3Payment?.amount) return;
+    if (!isConnected || !address) {
+      openConnectModal?.();
+      return;
+    }
+    try {
+      const hash = await writeContractAsync({
+        address: TOKEN_CONTRACTS[payToken],
+        abi: ERC20_TRANSFER_ABI,
+        functionName: "transfer",
+        args: [
+          web3Payment.walletAddress as `0x${string}`,
+          parseUnits(web3Payment.amount.toString(), 18),
+        ],
+      });
+      setOnchainHash(hash);
+      setTxHash(hash);
+      toast.success("Transaction sent! Waiting for confirmation on-chain...", { autoClose: 4000 });
+    } catch (err: any) {
+      if (err?.name === "UserRejectedRequestError" || err?.code === 4001) {
+        toast.error("Transaction was rejected.", { autoClose: 2500 });
+      } else {
+        toast.error(err?.shortMessage || err?.message || "Failed to send payment from wallet.", { autoClose: 4000 });
+      }
+    }
+  };
+
   const deleteBuyerWallet = async () => {
     try {
       const stored = localStorage.getItem("login");
@@ -175,6 +233,14 @@ const TopupInner: React.FC = () => {
       localStorage.removeItem('web3_payment');
     }
   }, [web3Payment]);
+
+  // Once the wallet-initiated transaction confirms on-chain, auto-submit it for verification
+  useEffect(() => {
+    if (isTxConfirmed && onchainHash && web3Payment?.orderId) {
+      verifyTransaction();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isTxConfirmed, onchainHash]);
 
   // Countdown timer effect
   useEffect(() => {
@@ -611,6 +677,57 @@ const TopupInner: React.FC = () => {
                     {copiedOrderId ? "Copied!" : "Copy"}
                   </button>
                 </div>
+              </div>
+
+            {/* Pay directly from connected wallet */}
+              <div className="mb-4">
+                <div className="flex gap-2 mb-2">
+                  {(["USDT", "USDC"] as const).map((token) => (
+                    <button
+                      key={token}
+                      type="button"
+                      onClick={() => setPayToken(token)}
+                      className={`flex-1 py-2 rounded-lg text-xs font-semibold border transition-colors ${
+                        payToken === token
+                          ? "bg-[#6c63ff]/20 border-[#6c63ff] text-white"
+                          : "bg-white/[0.03] border-white/10 text-gray-400 hover:text-white"
+                      }`}
+                    >
+                      Pay in {token}
+                    </button>
+                  ))}
+                </div>
+                <button
+                  type="button"
+                  onClick={payWithConnectedWallet}
+                  disabled={isSendingTx || isConfirmingTx || timeLeft === 0}
+                  className="w-full py-3.5 px-4 bg-gradient-to-r from-[#6c63ff] to-[#9b59f5] text-white rounded-xl font-bold text-sm shadow-[0_10px_24px_-8px_rgba(108,99,255,0.5)] hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:translate-y-0 flex items-center justify-center gap-2"
+                >
+                  {isSendingTx ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      Confirm in your wallet...
+                    </>
+                  ) : isConfirmingTx ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      Confirming on-chain...
+                    </>
+                  ) : isConnected ? (
+                    "Pay with connected wallet"
+                  ) : (
+                    "Connect wallet to pay directly"
+                  )}
+                </button>
+                <p className="text-[11px] text-gray-500 mt-1.5 ml-0.5 text-center">
+                  One tap — your wallet opens to confirm, we detect it automatically.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-3 mb-4">
+                <div className="flex-1 h-px bg-white/[0.08]"></div>
+                <span className="text-[11px] text-gray-500 uppercase tracking-wide">or pay manually</span>
+                <div className="flex-1 h-px bg-white/[0.08]"></div>
               </div>
 
               {/* Wallet Address Section */}
