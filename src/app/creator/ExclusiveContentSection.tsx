@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import axios from "axios";
 import { toast } from "react-toastify";
-import { Plus, Trash2, Play } from "lucide-react";
+import { Plus, Trash2, Lock } from "lucide-react";
 import { URL as API_URL } from "@/api/config";
 import { getImageSource } from "@/lib/imageUtils";
 
@@ -126,32 +126,36 @@ export default function ExclusiveContentSection({
         </div>
       ) : (
         <div className="grid grid-cols-3 gap-2">
-          {posts.map((post) => {
+            {posts.map((post) => {
             const src = getImageSource(post.postfilelink, "post").src || post.postfilelink;
             return (
-              <div key={post._id} className="relative aspect-square rounded-xl overflow-hidden bg-black group">
+              <div key={post._id} className="relative aspect-square rounded-lg overflow-hidden bg-black border border-white/10 group">
                 {post.posttype === "video" ? (
-                  <>
-                    <video src={src} className="w-full h-full object-cover" muted />
-                    <div className="absolute inset-0 flex items-center justify-center bg-black/20 pointer-events-none">
-                      <Play className="w-6 h-6 text-white" fill="white" />
-                    </div>
-                  </>
+                  <video src={src} className="w-full h-full object-cover blur-md scale-110 opacity-60" muted />
                 ) : (
-                  <img src={src} alt="Exclusive content" className="w-full h-full object-cover" />
+                  <img src={src} alt="" className="w-full h-full object-cover blur-md scale-110 opacity-60" />
                 )}
+                <div className="absolute inset-0 bg-black/40" />
 
-                  {/* Gold price tag */}
-                <div className="absolute bottom-1.5 left-1.5 right-1.5 flex items-center justify-center gap-1 bg-black/60 backdrop-blur-sm rounded-lg py-1">
-                  <span className="text-[#f5c451] text-[12px]">🪙</span>
-                  <span className="text-[#f5c451] text-[12px] font-semibold">{parseFloat(String(post.price)).toFixed(2)}</span>
+                {/* Gold price pill */}
+                <div className="absolute top-2 left-2 flex items-center gap-1 bg-[#f5c451] rounded-full px-2.5 py-1">
+                  <span className="text-[12px]">🪙</span>
+                  <span className="text-black text-[12px] font-bold">{parseFloat(String(post.price)).toFixed(2)}</span>
                 </div>
 
+                {/* Lock badge */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-9 h-9 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center">
+                    <Lock className="w-4 h-4 text-white" />
+                  </div>
+                </div>
+
+                {/* Delete button */}
                 <button
                   type="button"
                   onClick={() => handleDelete(post._id)}
                   disabled={deletingId === post._id}
-                  className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-black/70 backdrop-blur-sm flex items-center justify-center text-white hover:bg-red-500/80 transition-colors disabled:opacity-50"
+                  className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-black/70 backdrop-blur-sm flex items-center justify-center text-white hover:bg-red-500/80 transition-colors disabled:opacity-50 z-10"
                   aria-label="Delete exclusive content"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
@@ -159,7 +163,6 @@ export default function ExclusiveContentSection({
               </div>
             );
           })}
-
           <button
             type="button"
             onClick={handleAdd}

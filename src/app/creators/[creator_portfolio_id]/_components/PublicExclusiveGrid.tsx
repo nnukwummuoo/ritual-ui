@@ -116,55 +116,66 @@ export default function PublicExclusiveGrid({
     <div className="mcp-section">
       <div className="mcp-sec-title">Exclusive Content</div>
 
-      <div className="grid grid-cols-3 gap-2">
-        {posts.map((post) => {
-          const src = getImageSource(post.postfilelink, "post").src || post.postfilelink;
-          const unlocked = isOwner || purchasedIds.has(post._id);
-          return (
-            <button
-              key={post._id}
-              type="button"
-              onClick={() => openTile(post)}
-              className="relative aspect-square rounded-xl overflow-hidden bg-black"
-            >
-              {post.posttype === "video" ? (
-                <video src={src} className="w-full h-full object-cover" muted />
-              ) : (
-                <img src={src} alt="Exclusive content" className="w-full h-full object-cover" />
-              )}
+     <div className="grid grid-cols-3 gap-2">
+  {posts.map((post) => {
+    const src = getImageSource(post.postfilelink, "post").src || post.postfilelink;
+    const unlocked = isOwner || purchasedIds.has(post._id);
+    return (
+      <button
+        key={post._id}
+        type="button"
+        onClick={() => openTile(post)}
+        className="relative aspect-square rounded-lg overflow-hidden bg-black border border-white/10"
+      >
+        {post.posttype === "video" ? (
+          <video
+            src={src}
+            className={`w-full h-full object-cover ${!unlocked ? "blur-md scale-110 opacity-60" : ""}`}
+            muted
+          />
+        ) : (
+          <img
+            src={src}
+            alt=""
+            className={`w-full h-full object-cover ${!unlocked ? "blur-md scale-110 opacity-60" : ""}`}
+          />
+        )}
 
-                {!unlocked && (
-                <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px] flex items-center justify-center">
-                  <div className="text-white text-center px-2">
-                    <div className="w-9 h-9 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center mx-auto mb-1.5">
-                      <Lock className="w-4 h-4" />
-                    </div>
-                    <p className="text-[11px] font-semibold">Unlock to view</p>
-                    <p className="text-[12px] mt-0.5 font-semibold flex items-center justify-center gap-1 text-[#f5c451]">
-                      <span>🪙</span>
-                      {parseFloat(String(post.price)).toFixed(2)}
-                    </p>
-                  </div>
-                </div>
-              )}
+        {!unlocked && (
+          <>
+            <div className="absolute inset-0 bg-black/40" />
 
-              {unlocked && post.posttype === "video" && (
-                <div className="absolute inset-0 flex items-center justify-center bg-black/10 pointer-events-none">
-                  <Play className="w-6 h-6 text-white" fill="white" />
-                </div>
-              )}
+            {/* Gold price pill */}
+            <div className="absolute top-2 left-2 flex items-center gap-1 bg-[#f5c451] rounded-full px-2.5 py-1">
+              <span className="text-[12px]">🪙</span>
+              <span className="text-black text-[12px] font-bold">{parseFloat(String(post.price)).toFixed(2)}</span>
+            </div>
 
-              {unlocked && (
-                <div className="absolute bottom-1.5 left-1.5 right-1.5 flex items-center justify-center gap-1 bg-black/60 backdrop-blur-sm rounded-lg py-1">
-                  <span className="text-[#f5c451] text-[12px]">🪙</span>
-                  <span className="text-[#f5c451] text-[12px] font-semibold">{parseFloat(String(post.price)).toFixed(2)}</span>
-                </div>
-              )}
-            </button>
-          );
-        })}
-      </div>
+            {/* Lock badge */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-9 h-9 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center">
+                <Lock className="w-4 h-4 text-white" />
+              </div>
+            </div>
+          </>
+        )}
 
+        {unlocked && post.posttype === "video" && (
+          <div className="absolute inset-0 flex items-center justify-center bg-black/10 pointer-events-none">
+            <Play className="w-6 h-6 text-white" fill="white" />
+          </div>
+        )}
+
+        {unlocked && (
+          <div className="absolute top-2 left-2 flex items-center gap-1 bg-[#f5c451] rounded-full px-2.5 py-1">
+            <span className="text-[12px]">🪙</span>
+            <span className="text-black text-[12px] font-bold">{parseFloat(String(post.price)).toFixed(2)}</span>
+          </div>
+        )}
+      </button>
+    );
+  })}
+</div>
       {buyTarget && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
           <Notifybuy price={buyTarget.price} buy={handleBuy} cancel={() => setBuyTarget(null)} />
