@@ -5251,12 +5251,8 @@ const isFanVerified = isViewingOwnProfile
                       postType === "image" && src && (
 
                         <div className="w-full aspect-[4/5] relative rounded-xl overflow-hidden bg-black">
-                        {isImageLoading && !imageError && (
-  <div className="absolute inset-0 bg-gray-700 animate-pulse z-10">
-    <SkeletonTheme baseColor="#374151" highlightColor="#4b5563">
-      <Skeleton height="100%" width="100%" containerClassName="w-full h-full block" className="rounded-xl" />
-    </SkeletonTheme>
-  </div>
+                     {isImageLoading && !imageError && (
+  <div className="absolute inset-0 bg-gray-700 animate-pulse z-10 rounded-xl" />
 )}
                           <img
                             key={`modal-exclusive-img-${postId}`}
