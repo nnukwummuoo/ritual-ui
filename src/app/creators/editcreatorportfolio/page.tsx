@@ -17,7 +17,7 @@ import { Country, State, City } from "country-state-city";
 import { formatTourDateRange } from "@/utils/tourFormat";
 import { URL as API_BASE_URL } from "@/api/config";
 import { X } from "lucide-react";
-import ExclusiveContentSection from "@/app/creator/_components/ExclusiveContentSection";
+import ExclusiveContentSection from "@/app/creator/ExclusiveContentSection";
 
 const DAY_OPTIONS = [
   { value: "MON", label: "MON" },

@@ -18,7 +18,7 @@ import { countryList } from "@/components/CountrySelect/countryList";
 import { Country, State, City } from "country-state-city";
 import { formatTourDateRange } from "@/utils/tourFormat";
 import { X } from "lucide-react";
-import ExclusiveContentSection from "./_components/ExclusiveContentSection";
+import ExclusiveContentSection from "@/app/creator/ExclusiveContentSection";
 
 const DAY_OPTIONS = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"];
 
