@@ -5073,11 +5073,11 @@ const isFanVerified = isViewingOwnProfile
 
                                     src={imageSource.src}
 
-                                    alt="Profile"
+                                   alt="Profile"
 
-                                    width={40}
+                                    width={32}
 
-                                    height={40}
+                                    height={32}
 
                                     className="object-cover w-full h-full"
 
