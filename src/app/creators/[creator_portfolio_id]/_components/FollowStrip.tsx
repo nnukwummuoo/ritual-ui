@@ -222,17 +222,11 @@ const FollowStrip: React.FC<FollowStripProps> = ({
 
   return (
   <div className="mb-6 px-4 py-3 rounded-lg border border-purple-400 flex items-center justify-between gap-3">
-    <div className="flex-1">
-      {checkuser ? (
-        <p className="text-xs sm:text-sm text-gray-300 leading-relaxed">
-          Fans can follow you to be notified when you&apos;re available.
-        </p>
-      ) : (
-        <p className="text-xs sm:text-sm text-gray-300 leading-relaxed">
-          <strong className="text-gray-100 text-xs lg:text-sm">Like what you see?</strong> Follow{" "}
-          {creatorName.split(" ")[0]} to get notified when she&apos;s available.
-        </p>
-      )}
+     <div className="flex-1">
+      <p className="text-xs sm:text-sm text-gray-300 leading-relaxed">
+        <strong className="text-gray-100 text-xs lg:text-sm">Like what you see?</strong> Follow{" "}
+        {creatorName.split(" ")[0]} to get notified when she&apos;s available.
+      </p>
     </div>
     <button
       onClick={handleFollowClick}

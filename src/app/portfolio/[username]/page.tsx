@@ -814,27 +814,14 @@ useEffect(() => {
             {creatorPriceValue}
             <span className="mcp-price-amount-suffix">{creatorRateSuffix}</span>
           </div>
-         {checkuser() ? (
-            <div className="mcp-trust-badge">
-              <ShieldCheck size={16} className="mcp-trust-badge-icon" />
-              <span className="mcp-trust-badge-text">{`Fan pays ${isFanCallCreator ? "per minute" : "upfront"} — you keep 100%`}</span>
-            </div>
-          ) : (
-            <div className="mcp-trust-badge">
-              <ShieldCheck size={16} className="mcp-trust-badge-icon" />
-              <span className="mcp-trust-badge-text">Your payment is protected</span>
-            </div>
-          )}
+         <div className="mcp-trust-badge">
+            <ShieldCheck size={16} className="mcp-trust-badge-icon" />
+            <span className="mcp-trust-badge-text">Your payment is protected</span>
+          </div>
           <div className="mcp-price-perks">
             <div className="mcp-perk">
   <div className="mcp-perk-dot">✓</div>
-{isFanCallCreator
-  ? checkuser()
-    ? "No surprise calls — you choose who to accept"
-    : `Book ${creator.name?.split(" ")[0] || "them"} with confidence`
-  : checkuser()
-    ? `Payment secured before the ${creatorServiceNoun}`
-    : `Book ${creator.name?.split(" ")[0] || "them"} with confidence`}
+{`Book ${creator.name?.split(" ")[0] || "them"} with confidence`}
 </div>
  <div className="mcp-perk"><div className="mcp-perk-dot">✓</div>{creatorDurationText}{!isFanCallCreator && ", public venue only"}</div>
             <div className="mcp-perk"><div className="mcp-perk-dot">✓</div>All communication on-platform</div>
