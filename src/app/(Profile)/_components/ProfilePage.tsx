@@ -5250,7 +5250,7 @@ const isFanVerified = isViewingOwnProfile
                     {
                       postType === "image" && src && (
 
-                        <div className="w-full aspect-[4/5] relative rounded overflow-hidden bg-[#111624]">
+                        <div className="w-full aspect-[4/5] relative rounded-xl overflow-hidden bg-black">
                           {isImageLoading && !imageError && (
                             <div className="absolute inset-0 bg-[#111624] animate-pulse z-10">
                               <SkeletonTheme baseColor="#202020" highlightColor="#444">
@@ -5417,7 +5417,7 @@ const isFanVerified = isViewingOwnProfile
                     {
                       postType === "video" && src && (
 
-                        <div className="relative aspect-[4/5] overflow-hidden rounded bg-black">
+                        <div className="relative aspect-[4/5] overflow-hidden rounded-xl bg-black">
 
                           {/* VideoComponent has its own built-in skeleton loader */}
                           <div
@@ -5464,7 +5464,7 @@ const isFanVerified = isViewingOwnProfile
 
                             <div
 
-                              className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center rounded cursor-pointer hover:bg-opacity-50 transition-opacity z-10"
+                              className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center rounded-xl cursor-pointer hover:bg-opacity-50 transition-opacity z-10"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 handlePurchasePost(post, e);
