@@ -2,7 +2,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { Plus, Trash2, Play } from "lucide-react";
@@ -29,7 +29,8 @@ export default function ExclusiveContentSection({
   enabled: boolean;
   onToggleEnabled: (next: boolean) => void;
 }) {
-  const router = useRouter();
+    const router = useRouter();
+  const pathname = usePathname();
   const [posts, setPosts] = useState<ExclusivePost[]>([]);
   const [loading, setLoading] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -61,7 +62,7 @@ export default function ExclusiveContentSection({
       toast.error("Please finish setting up your profile first");
       return;
     }
-    router.push(`/${username}/upload-exclusive`);
+      router.push(`/${username}/upload-exclusive?returnTo=${encodeURIComponent(pathname)}`);
   };
 
   const handleDelete = async (id: string) => {
@@ -89,9 +90,10 @@ export default function ExclusiveContentSection({
   return (
     <div className="mb-8">
       <div className="flex items-center justify-between mb-1">
-        <div className="flex items-center gap-2">
-          <h3 className="text-[14.5px] font-semibold text-white">Exclusive content</h3>
-          <span className="text-[10.5px] font-medium text-gray-500 bg-white/[0.04] border border-white/10 rounded-full px-2 py-0.5">
+         <div className="flex items-center gap-2">
+          <span style={{ display: "block", width: 16, height: 2, background: "#6c63ff", borderRadius: 2, flexShrink: 0 }} />
+          <h3 className="text-[11px] font-bold uppercase tracking-[0.1em] text-slate-500">Exclusive content</h3>
+          <span className="text-[10.5px] font-medium text-gray-500 bg-white/[0.04] border border-white/10 rounded-full px-2 py-0.5 normal-case tracking-normal">
             Optional
           </span>
         </div>
@@ -139,9 +141,10 @@ export default function ExclusiveContentSection({
                   <img src={src} alt="Exclusive content" className="w-full h-full object-cover" />
                 )}
 
-                <div className="absolute bottom-1.5 left-1.5 flex items-center gap-1 bg-black/70 backdrop-blur-sm rounded-full px-2 py-0.5">
-                  <span className="text-[#f5c451] text-[11px]">🪙</span>
-                  <span className="text-white text-[11px] font-semibold">{post.price}</span>
+                  {/* Gold price tag */}
+                <div className="absolute bottom-1.5 left-1.5 right-1.5 flex items-center justify-center gap-1 bg-black/60 backdrop-blur-sm rounded-lg py-1">
+                  <span className="text-[#f5c451] text-[12px]">🪙</span>
+                  <span className="text-[#f5c451] text-[12px] font-semibold">{parseFloat(String(post.price)).toFixed(2)}</span>
                 </div>
 
                 <button

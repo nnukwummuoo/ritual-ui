@@ -114,7 +114,10 @@ export default function PublicExclusiveGrid({
 
   return (
     <div className="mcp-section">
-      <div className="mcp-sec-title">Exclusive Content</div>
+      <div className="inline-flex items-center gap-1.5 bg-gradient-to-r from-[#6c63ff]/15 to-[#9b59f5]/15 border border-[#6c63ff]/30 rounded-full pl-2.5 pr-3 py-1.5 mb-3">
+        <Lock className="w-3 h-3 text-[#c9c4ff]" />
+        <span className="text-[12px] font-bold text-[#c9c4ff] tracking-wide">Exclusive Content</span>
+      </div>
 
       <div className="grid grid-cols-3 gap-2">
         {posts.map((post) => {
@@ -133,9 +136,18 @@ export default function PublicExclusiveGrid({
                 <img src={src} alt="Exclusive content" className="w-full h-full object-cover" />
               )}
 
-              {!unlocked && (
-                <div className="absolute inset-0 bg-black/55 backdrop-blur-[2px] flex items-center justify-center">
-                  <Lock className="w-6 h-6 text-white" />
+                {!unlocked && (
+                <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px] flex items-center justify-center">
+                  <div className="text-white text-center px-2">
+                    <div className="w-9 h-9 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center mx-auto mb-1.5">
+                      <Lock className="w-4 h-4" />
+                    </div>
+                    <p className="text-[11px] font-semibold">Unlock to view</p>
+                    <p className="text-[12px] mt-0.5 font-semibold flex items-center justify-center gap-1 text-[#f5c451]">
+                      <span>🪙</span>
+                      {parseFloat(String(post.price)).toFixed(2)}
+                    </p>
+                  </div>
                 </div>
               )}
 
@@ -145,10 +157,12 @@ export default function PublicExclusiveGrid({
                 </div>
               )}
 
-              <div className="absolute bottom-1.5 left-1.5 flex items-center gap-1 bg-black/70 backdrop-blur-sm rounded-full px-2 py-0.5">
-                <span className="text-[#f5c451] text-[11px]">🪙</span>
-                <span className="text-white text-[11px] font-semibold">{post.price}</span>
-              </div>
+              {unlocked && (
+                <div className="absolute bottom-1.5 left-1.5 right-1.5 flex items-center justify-center gap-1 bg-black/60 backdrop-blur-sm rounded-lg py-1">
+                  <span className="text-[#f5c451] text-[12px]">🪙</span>
+                  <span className="text-[#f5c451] text-[12px] font-semibold">{parseFloat(String(post.price)).toFixed(2)}</span>
+                </div>
+              )}
             </button>
           );
         })}

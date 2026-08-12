@@ -56,7 +56,15 @@ export default function UploadExclusivePage() {
   const rawRouteSlug = (params?.slug ?? params?.userid) as string;
   const routeSlug = (() => { try { return rawRouteSlug ? decodeURIComponent(rawRouteSlug) : ""; } catch { return rawRouteSlug || ""; } })();
   const isSlugObjectId = routeSlug && /^[a-f0-9]{24}$/i.test(String(routeSlug));
-  const postId = searchParams?.get("postId");
+    const postId = searchParams?.get("postId");
+  const returnTo: string | null = searchParams?.get("returnTo") ?? null;
+ const goBack = () => {
+    if (returnTo && typeof returnTo === "string") {
+      router.push(decodeURIComponent(returnTo));
+    } else {
+      router.push(`/${routeSlug}`);
+    }
+  };
 
   // Get authentication data from Redux
   const loggedInUserId = useSelector((state: RootState) => state.register.userID);
@@ -151,13 +159,13 @@ const triggerFileInput = () => {
             }
           } else {
             toast.error("Post not found");
-            router.push(`/${routeSlug}`);
+            goBack();
           }
         }
       } catch (error: any) {
         console.error("Error fetching post:", error);
         toast.error("Failed to load post data");
-        router.push(`/${routeSlug}`);
+        goBack();
       } finally {
         setIsLoadingPost(false);
       }
@@ -273,7 +281,7 @@ const triggerFileInput = () => {
 
         if (response.data.ok) {
           toast.success("Exclusive post updated successfully!");
-          router.push(`/${routeSlug}`);
+          goBack();
         } else {
           toast.error(response.data.message || "Update failed");
         }
@@ -296,7 +304,7 @@ const triggerFileInput = () => {
 
         if (response.data.ok) {
           toast.success("Exclusive content uploaded successfully!");
-          router.push(`/${routeSlug}`);
+          goBack();
         } else {
           toast.error(response.data.message || "Upload failed");
         }
@@ -316,7 +324,7 @@ const triggerFileInput = () => {
     setExclusiveContentPreview(null);
     setExclusiveContentPrice("");
     setExclusiveContentDescription("");
-    router.push(`/${routeSlug}`);
+    goBack();
   };
 
   return (
