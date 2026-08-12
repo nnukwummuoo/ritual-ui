@@ -5037,19 +5037,19 @@ const isFanVerified = isViewingOwnProfile
 
                     data-post-id={post._id || post.postid || post.id}
 
-                    className="mx-auto max-w-[30rem] w-full bg-[#111624] rounded-md p-3"
+                   className="mx-auto max-w-[30rem] w-full bg-[#111624] rounded-2xl p-3.5"
 
                   >
 
                     {/* Post Header with Edit Button */}
 
-                    <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center justify-between mb-2">
 
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-2.5">
 
                         <div className="relative">
 
-                          <div className="size-10 rounded-full overflow-hidden bg-gray-700">
+                          <div className="size-8 rounded-full overflow-hidden bg-gray-700">
 
                             {(() => {
 
@@ -5105,21 +5105,23 @@ const isFanVerified = isViewingOwnProfile
 
                         </div>
 
-                        <div className="flex-1">
+                        <div className="flex-1 cursor-pointer">
 
-                          <p className="font-medium text-white">
+                          <div className="flex items-center gap-1.5 flex-wrap">
 
-                            {isViewingOwnProfile ? `${firstname} ${lastname}`.trim() :
+                            <p className="font-semibold text-white flex items-center gap-1 text-[14.5px] leading-tight">
 
-                              `${profileData?.firstname || ""} ${profileData?.lastname || ""}`.trim()}
+                              {isViewingOwnProfile ? firstname : (profileData?.firstname || "")}
 
-                          </p>
+                            </p>
 
-                          <span className="text-gray-400 text-sm">
+                            <span className="text-gray-500 text-[13px]">
 
-                            {isViewingOwnProfile ? username : profileData?.username || ""}
+                              @{isViewingOwnProfile ? username : profileData?.username || ""}
 
-                          </span>
+                            </span>
+
+                          </div>
 
                         </div>
 

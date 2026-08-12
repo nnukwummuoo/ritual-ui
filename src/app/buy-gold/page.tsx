@@ -75,6 +75,27 @@ const TopupInner: React.FC = () => {
   const { address, isConnected } = useAccount();
   const { signMessageAsync } = useSignMessage();
   const { disconnect } = useDisconnect();
+
+  const WALLET_CONNECTED_AT_KEY = "mmeko_wallet_connected_at";
+  const WALLET_MAX_SESSION_MS = 14 * 24 * 60 * 60 * 1000; // 14 days
+
+  // Stamp/clear the connection time, and auto-disconnect once a session is stale
+  useEffect(() => {
+    if (isConnected) {
+      const existing = localStorage.getItem(WALLET_CONNECTED_AT_KEY);
+      if (!existing) {
+        localStorage.setItem(WALLET_CONNECTED_AT_KEY, Date.now().toString());
+      } else if (Date.now() - parseInt(existing, 10) > WALLET_MAX_SESSION_MS) {
+        disconnect();
+        localStorage.removeItem(WALLET_CONNECTED_AT_KEY);
+        toast.info("Your wallet session expired after 14 days — please reconnect.", { autoClose: 4000 });
+      }
+    } else {
+      localStorage.removeItem(WALLET_CONNECTED_AT_KEY);
+    }
+  }, [isConnected]);
+
+
   const { openConnectModal } = useConnectModal();
 
    const userId = useSelector((state: RootState) => state.profile.userId);
@@ -124,7 +145,7 @@ const TopupInner: React.FC = () => {
       if (data.ok) {
         setFromAddress(data.walletAddress);
         toast.success("Wallet verified and saved!", { autoClose: 2500 });
-        disconnect(); // We only needed the signature — no reason to stay connected
+        // Stay connected — the same wallet is used to pay directly in the next step
       } else {
         toast.error(data.message || "Could not verify this wallet.", { autoClose: 3000 });
       }
@@ -722,6 +743,24 @@ const TopupInner: React.FC = () => {
                 <p className="text-[11px] text-gray-500 mt-1.5 ml-0.5 text-center">
                   One tap — your wallet opens to confirm, we detect it automatically.
                 </p>
+                {isConnected && address && (
+                  <div className="flex items-center justify-center gap-1.5 mt-2">
+                    <span className="text-[11px] text-gray-500 font-mono">
+                      {address.slice(0, 6)}...{address.slice(-4)}
+                    </span>
+                    <span className="text-[11px] text-gray-600">·</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        disconnect();
+                        localStorage.removeItem(WALLET_CONNECTED_AT_KEY);
+                      }}
+                      className="text-[11px] text-gray-500 hover:text-red-400 underline underline-offset-2 transition-colors"
+                    >
+                      Disconnect wallet
+                    </button>
+                  </div>
+                )}
               </div>
 
               <div className="flex items-center gap-3 mb-4">
