@@ -114,10 +114,7 @@ export default function PublicExclusiveGrid({
 
   return (
     <div className="mcp-section">
-      <div className="inline-flex items-center gap-1.5 bg-gradient-to-r from-[#6c63ff]/15 to-[#9b59f5]/15 border border-[#6c63ff]/30 rounded-full pl-2.5 pr-3 py-1.5 mb-3">
-        <Lock className="w-3 h-3 text-[#c9c4ff]" />
-        <span className="text-[12px] font-bold text-[#c9c4ff] tracking-wide">Exclusive Content</span>
-      </div>
+      <div className="mcp-sec-title">Exclusive Content</div>
 
       <div className="grid grid-cols-3 gap-2">
         {posts.map((post) => {
