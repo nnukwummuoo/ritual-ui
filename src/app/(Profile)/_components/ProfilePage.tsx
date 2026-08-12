@@ -5117,7 +5117,7 @@ const isFanVerified = isViewingOwnProfile
 
                             <span className="text-gray-500 text-[13px]">
 
-                              @{isViewingOwnProfile ? username : profileData?.username || ""}
+                              {isViewingOwnProfile ? username : profileData?.username || ""}
 
                             </span>
 
