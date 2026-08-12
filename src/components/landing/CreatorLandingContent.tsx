@@ -695,7 +695,6 @@ export default function CreatorLandingContent({ prefetchedCreators }: Props) {
                   <div className="safety-pills">
                     <div className="safety-pill"><div className="pill-check">✓</div> 30 min Fan Meet · 1 hr Fan Date</div>
                     <div className="safety-pill"><div className="pill-check">✓</div> Public venues only</div>
-                    <div className="safety-pill"><div className="pill-check">✓</div> Public venues only</div>
                     <div className="safety-pill"><div className="pill-check">✓</div> All chats on-platform</div>
                     <div className="safety-pill"><div className="pill-check">✓</div> Fan verification</div>
                   </div>
