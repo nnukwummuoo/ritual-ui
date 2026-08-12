@@ -17,6 +17,7 @@ import { Country, State, City } from "country-state-city";
 import { formatTourDateRange } from "@/utils/tourFormat";
 import { URL as API_BASE_URL } from "@/api/config";
 import { X } from "lucide-react";
+import ExclusiveContentSection from "@/app/creator/_components/ExclusiveContentSection";
 
 const DAY_OPTIONS = [
   { value: "MON", label: "MON" },
@@ -80,6 +81,7 @@ export default function Editcreator() {
   const [days, setdays] = useState("");
   const [price, setprice] = useState("");
   const [description, setdescription] = useState("");
+  const [exclusiveEnabled, setExclusiveEnabled] = useState(true);
   const [disablebut, setdisablebut] = useState(false);
   const [hosttype, sethosttype] = useState("Fan meet");
   const [showPriceGuide, setShowPriceGuide] = useState(false);
@@ -276,7 +278,10 @@ const tourAvailableCities = useMemo(() => {
     setlocation(creator.location || "");
     setCountryQuery(creator.location || "");
     setgender(creator.gender || "");
-    setdescription(creator.description || "");
+      setdescription(creator.description || "");
+    if (creator.exclusiveContentEnabled !== undefined && creator.exclusiveContentEnabled !== null) {
+      setExclusiveEnabled(Boolean(creator.exclusiveContentEnabled));
+    }
 
     if (creator.hosttype && !hosttypeInitialized.current) {
       sethosttype(creator.hosttype);
@@ -418,8 +423,9 @@ if (matched?.isoCode && creator.state) {
         gender,
         timeava: times.length > 0 ? times : creator?.timeava || [],
         daysava: hours.length > 0 ? hours : creator?.daysava || [],
-        hosttype,
+          hosttype,
         hostid: userid,
+        exclusiveContentEnabled: String(exclusiveEnabled),
         existingImages: preservedExistingImages,
         imagesToDelete,
       };
@@ -1023,6 +1029,16 @@ if (matched?.isoCode && creator.state) {
           </>
         )}
 
+
+         <ExclusiveContentSection
+          userid={String(userid || "")}
+          username={profile?.username || ""}
+          token={String(token || "")}
+          enabled={exclusiveEnabled}
+          onToggleEnabled={setExclusiveEnabled}
+        />
+
+        <hr style={{ border: "none", borderTop: "1px solid rgba(255,255,255,0.07)", margin: "28px 0", height: 0, background: "none" }} />
 
         {/* ABOUT ME */}
         <div className="sec-label">About Me</div>

@@ -50,6 +50,7 @@ import {
 import { checkVipStatus } from "@/store/vip";
 import { URL } from "@/api/config";
 import { formatTourDateRange } from "@/utils/tourFormat";
+import PublicExclusiveGrid from "./_components/PublicExclusiveGrid";
 
 // Types
 interface RootState {
@@ -63,6 +64,7 @@ interface RootState {
     add: boolean; followingUser: boolean; message: string;
     creatorbyidstatus: string; getreviewstats: string;
     creatordeletestatus: string;
+      exclusiveContentEnabled?: boolean;
     reviewList: Array<{ content: string; name: string; photolink: string; posttime: string; id: string; userid: string }>;
     addcrush_stats: string; remove_crush_stats: string;
     creatorbyid: {
@@ -75,6 +77,7 @@ interface RootState {
       userPhotolink?: string | null;
        state?: string;
        city?: string;
+          exclusiveContentEnabled?: boolean;
   tours?: { city?: string; stateCode?: string; state: string; countryCode: string; startDate: string; endDate: string }[];
     };
   };
@@ -886,6 +889,16 @@ const [urlCopied, setUrlCopied] = useState(false);
     </div>
   </div>
 )}
+
+        {/* ── EXCLUSIVE CONTENT ── */}
+        {creator.exclusiveContentEnabled !== false && (
+          <PublicExclusiveGrid
+            creatorUserId={creator.userid || ""}
+            viewerId={userid}
+            token={token}
+            isOwner={checkuser()}
+          />
+        )}
 
         {/* ── ABOUT ── */}
         <div className="mcp-section">

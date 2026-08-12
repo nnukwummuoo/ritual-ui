@@ -18,6 +18,7 @@ import { countryList } from "@/components/CountrySelect/countryList";
 import { Country, State, City } from "country-state-city";
 import { formatTourDateRange } from "@/utils/tourFormat";
 import { X } from "lucide-react";
+import ExclusiveContentSection from "./_components/ExclusiveContentSection";
 
 const DAY_OPTIONS = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"];
 
@@ -83,7 +84,8 @@ export default function CreateCreatorPortfolio() {
   const [duration, setduration] = useState("30");
   const [price, setprice] = useState("");
   const [priceValue, setPriceValue] = useState<number | null>(null);
-  const [discription, setdiscription] = useState("");
+   const [discription, setdiscription] = useState("");
+  const [exclusiveEnabled, setExclusiveEnabled] = useState(true);
   const [disablebut, setdisablebut] = useState(false);
   const [hosttype, sethosttype] = useState("Fan meet");
   const [imglist, setimglist] = useState<string[]>([]);
@@ -328,7 +330,8 @@ const removeTour = (index: number) => {
         gender,
         timeava: selectedTimes,
         daysava: selectedDays,
-        hosttype: hosttypeNormalized,
+           hosttype: hosttypeNormalized,
+        exclusiveContentEnabled: String(exclusiveEnabled),
       };
 
       // ── CHANGED: capture response to get hostid for redirect ────────────
@@ -970,6 +973,16 @@ setStateQuery("");
   </section>
 )}
 
+
+        <ExclusiveContentSection
+          userid={String(userid || "")}
+          username={profile?.username || ""}
+          token={String(token || "")}
+          enabled={exclusiveEnabled}
+          onToggleEnabled={setExclusiveEnabled}
+        />
+
+        <Divider />
 
         {/* ── ABOUT ME ── */}
         <SectionLabel>About Me</SectionLabel>
