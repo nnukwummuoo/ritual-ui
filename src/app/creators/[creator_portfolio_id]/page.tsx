@@ -823,7 +823,7 @@ const [urlCopied, setUrlCopied] = useState(false);
 {`Book ${creator.name?.split(" ")[0] || "them"} with confidence`}
 </div>
  <div className="mcp-perk"><div className="mcp-perk-dot">✓</div>{creatorDurationText}{!isFanCallCreator && ", public venue only"}</div>
-            <div className="mcp-perk"><div className="mcp-perk-dot">✓</div>All communication on-platform</div>
+            <div className="mcp-perk"><div className="mcp-perk-dot">✓</div>All communication on-platfor</div>
           </div>
         </div>
 
