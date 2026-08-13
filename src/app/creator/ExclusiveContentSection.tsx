@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import axios from "axios";
 import { toast } from "react-toastify";
-import { Plus, Trash2, Lock } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 import { URL as API_URL } from "@/api/config";
 import { getImageSource } from "@/lib/imageUtils";
 
@@ -129,25 +129,17 @@ export default function ExclusiveContentSection({
             {posts.map((post) => {
             const src = getImageSource(post.postfilelink, "post").src || post.postfilelink;
             return (
-              <div key={post._id} className="relative aspect-square rounded-lg overflow-hidden bg-black border border-white/10 group">
+                <div key={post._id} className="relative aspect-square rounded-lg overflow-hidden bg-black border border-white/10 group">
                 {post.posttype === "video" ? (
-                  <video src={src} className="w-full h-full object-cover blur-md scale-110 opacity-60" muted />
+                  <video src={src} className="w-full h-full object-cover" muted />
                 ) : (
-                  <img src={src} alt="" className="w-full h-full object-cover blur-md scale-110 opacity-60" />
+                  <img src={src} alt="" className="w-full h-full object-cover" />
                 )}
-                <div className="absolute inset-0 bg-black/40" />
 
                 {/* Gold price pill */}
                 <div className="absolute top-2 left-2 flex items-center gap-1 bg-[#f5c451] rounded-full px-2.5 py-1">
                   <span className="text-[12px]">🪙</span>
                   <span className="text-black text-[12px] font-bold">{parseFloat(String(post.price)).toFixed(2)}</span>
-                </div>
-
-                {/* Lock badge */}
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-9 h-9 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center">
-                    <Lock className="w-4 h-4 text-white" />
-                  </div>
                 </div>
 
                 {/* Delete button */}

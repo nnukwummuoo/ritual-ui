@@ -83,8 +83,7 @@ export default async function RootLayout({
                   "/settings",
                   "/profile"
                 ]}
-                scrollOnSearchChange={false}
-                scrollOnPopState={true}
+                   scrollOnSearchChange={false}
                 debug={process.env.NODE_ENV === "development"}
               />
               <GlobalVisitorTracker />
