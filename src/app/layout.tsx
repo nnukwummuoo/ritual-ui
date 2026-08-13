@@ -83,17 +83,8 @@ export default async function RootLayout({
                   "/settings",
                   "/profile"
                 ]}
-                />
-                
-              <ScrollToTopAdvanced
-                smooth={true}
-                delay={100}
-                preserveScrollRoutes={[
-                  "/message",
-                  "/settings",
-                  "/profile"
-                ]}
                 scrollOnSearchChange={false}
+                scrollOnPopState={true}
                 debug={process.env.NODE_ENV === "development"}
               />
               <GlobalVisitorTracker />
