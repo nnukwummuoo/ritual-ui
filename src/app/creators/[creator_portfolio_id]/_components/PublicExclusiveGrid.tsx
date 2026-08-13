@@ -182,35 +182,39 @@ export default function PublicExclusiveGrid({
         </div>
       )}
 
-      {viewTarget && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4">
-          <div className="relative max-w-md w-full">
-            <button
-              type="button"
-              onClick={() => setViewTarget(null)}
-              className="absolute -top-10 right-0 text-white"
-              aria-label="Close"
-            >
-              <X className="w-7 h-7" />
-            </button>
-            <div className="w-full aspect-[4/5] rounded-xl overflow-hidden bg-black">
-              {viewTarget.posttype === "video" ? (
-                <video
-                  src={getImageSource(viewTarget.postfilelink, "post").src || viewTarget.postfilelink}
-                  className="w-full h-full object-cover"
-                  controls
-                  autoPlay
-                  playsInline
-                />
-              ) : (
-                <img
-                  src={getImageSource(viewTarget.postfilelink, "post").src || viewTarget.postfilelink}
-                  alt="Exclusive content"
-                  className="w-full h-full object-cover"
-                />
-              )}
-            </div>
-            {viewTarget.content && <p className="text-gray-300 text-sm mt-3">{viewTarget.content}</p>}
+  {viewTarget && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50 p-4"
+          onClick={() => setViewTarget(null)}
+        >
+          <button
+            type="button"
+            onClick={() => setViewTarget(null)}
+            className="absolute top-16 right-1/3 bg-black hover:bg-opacity-30 text-white text-2xl font-bold w-10 h-10 rounded-full flex items-center justify-center hover:scale-110 transition-all duration-200 z-10"
+            aria-label="Close"
+          >
+            ✕
+          </button>
+
+          <div className="relative max-w-full max-h-full lg:max-w-[33.333%] lg:max-h-[80vh]" onClick={(e) => e.stopPropagation()}>
+            {viewTarget.posttype === "video" ? (
+              <video
+                src={getImageSource(viewTarget.postfilelink, "post").src || viewTarget.postfilelink}
+                className="max-w-full max-h-full object-contain rounded-lg"
+                controls
+                autoPlay
+                playsInline
+              />
+            ) : (
+              <img
+                src={getImageSource(viewTarget.postfilelink, "post").src || viewTarget.postfilelink}
+                alt="Exclusive content"
+                className="max-w-full max-h-full object-contain rounded-lg"
+              />
+            )}
+            {viewTarget.content && (
+              <p className="text-gray-300 text-sm mt-3 text-center">{viewTarget.content}</p>
+            )}
           </div>
         </div>
       )}
