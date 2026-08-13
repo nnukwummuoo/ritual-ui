@@ -51,6 +51,8 @@ import { checkVipStatus } from "@/store/vip";
 import { URL } from "@/api/config";
 import { formatTourDateRange } from "@/utils/tourFormat";
 import PublicExclusiveGrid from "./_components/PublicExclusiveGrid";
+import { URL as API_URL } from "@/api/config";
+import axios from "axios";
 
 // Types
 interface RootState {
@@ -65,7 +67,6 @@ interface RootState {
     creatorbyidstatus: string; getreviewstats: string;
     creatordeletestatus: string;
       exclusiveContentEnabled?: boolean;
-      followersCount?: number;
     reviewList: Array<{ content: string; name: string; photolink: string; posttime: string; id: string; userid: string }>;
     addcrush_stats: string; remove_crush_stats: string;
     creatorbyid: {
@@ -79,7 +80,6 @@ interface RootState {
        state?: string;
        city?: string;
           exclusiveContentEnabled?: boolean;
-          followersCount?: number;
   tours?: { city?: string; stateCode?: string; state: string; countryCode: string; startDate: string; endDate: string }[];
     };
   };
@@ -95,6 +95,7 @@ export default function Creatorbyid() {
   const { session } = useAuth();
   const reduxUserid = useSelector((state: RootState) => state.register.userID);
   const [userid, setUserid] = useState<string>("");
+  const [fanCount, setFanCount] = useState<number>(0);
   const [showSharePopup, setShowSharePopup] = useState(false);
 const [urlCopied, setUrlCopied] = useState(false);
   const [userResolved, setUserResolved] = useState(false);
@@ -249,6 +250,7 @@ const [urlCopied, setUrlCopied] = useState(false);
     };
     checkCelebration();
   }, [vipStatus, vipStatusFromCreator, creatorbyidstatus, creator?.userid, userid, celebrationChecked, checkVipCelebrationStatus, markVipCelebrationAsViewed]);
+  
 
   useEffect(() => {
     setVipCelebrationShown(false);
@@ -334,6 +336,18 @@ const [urlCopied, setUrlCopied] = useState(false);
     if (creatordeletestatus === "succeeded") { dispatch(changecreatorstatus("idle")); setLoading(false); navigate("/"); }
     if (creatordeletestatus === "failed") { toast.error(`${message}`, { autoClose: 2000 }); dispatch(changecreatorstatus("idle")); setLoading(false); }
   }, [creatordeletestatus]);
+
+  useEffect(() => {
+    if (!creator?.userid) return;
+    axios
+      .post(`${API_URL}/getfollowers`, { userid: creator.userid })
+      .then((res) => {
+        if (res.data?.ok) {
+          setFanCount(res.data.data?.followers?.length || 0);
+        }
+      })
+      .catch((err) => console.error("Failed to fetch fan count", err));
+  }, [creator?.userid]);
 
   const checkuser = () => {
     const currentUserId = getCurrentUserId();
@@ -745,18 +759,18 @@ const [urlCopied, setUrlCopied] = useState(false);
 )}
              <div className="mcp-profile-tagline">{getStatus(String(creator?.hosttype))} {creator.name?.split(" ")[0] || "creator"}</div>
 
-          {(creator.followersCount ?? 0) > 0 && (
+         {fanCount > 0 && (
             <div className="mcp-fan-badge">
               <span className="mcp-fan-badge-icon">🔥</span>
               <span className="mcp-fan-badge-count">
                 {(() => {
-                  const n = creator.followersCount ?? 0;
+                  const n = fanCount;
                   if (n >= 1000000) return `${(n / 1000000).toFixed(n % 1000000 === 0 ? 0 : 1)}M`;
                   if (n >= 1000) return `${(n / 1000).toFixed(n % 1000 === 0 ? 0 : 1)}K`;
                   return String(n);
                 })()}
               </span>
-              <span className="mcp-fan-badge-label">{(creator.followersCount ?? 0) === 1 ? "Fan" : "Fans"}</span>
+              <span className="mcp-fan-badge-label">{fanCount === 1 ? "Fan" : "Fans"}</span>
             </div>
           )}
         </div>

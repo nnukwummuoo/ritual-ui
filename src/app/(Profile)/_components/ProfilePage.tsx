@@ -6287,9 +6287,8 @@ const isFanVerified = isViewingOwnProfile
                         </div>
                       )}
 
-                     {/* Exclusive Posts — compact grid, opens a fullscreen lightbox on tap */}
-                      <div className="grid grid-cols-3 gap-2">
-                        {exclusivePosts.map((post) => {
+                      {/* Exclusive Posts — direct children of the outer 3-col grid (alongside the Upload tile), opens a fullscreen lightbox on tap */}
+                      {exclusivePosts.map((post) => {
                           const postId = post._id || post.postid || post.id;
                           const postUserId = post.userid || post.user?.userid || post.user?._id;
                           const isPostOwner = String(postUserId) === String(loggedInUserId || localUserid);
@@ -6346,9 +6345,8 @@ const isFanVerified = isViewingOwnProfile
                                 </div>
                               )}
                             </button>
-                          );
+                        );
                         })}
-                      </div>
 
 
                       {/* Empty state - only show if no posts and user is not verified or not viewing own profile */}
