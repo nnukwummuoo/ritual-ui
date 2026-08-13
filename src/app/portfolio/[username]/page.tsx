@@ -66,6 +66,7 @@ interface RootState {
     creatorbyidstatus: string; getreviewstats: string;
     creatordeletestatus: string;
       exclusiveContentEnabled?: boolean;
+      followersCount?: number;
     reviewList: Array<{ content: string; name: string; photolink: string; posttime: string; id: string; userid: string }>;
     addcrush_stats: string; remove_crush_stats: string;
     creatorbyid: {
@@ -79,6 +80,7 @@ interface RootState {
        state?: string;
        city?: string;
           exclusiveContentEnabled?: boolean;
+          followersCount?: number;
   tours?: { city?: string; stateCode?: string; state: string; countryCode: string; startDate: string; endDate: string }[]; 
     };
   };
@@ -575,6 +577,10 @@ useEffect(() => {
         .mcp-badge-e{display:inline-flex;align-items:center;gap:4px;background:rgba(244,114,182,.1);border:1px solid rgba(244,114,182,.25);border-radius:6px;padding:2px 8px;font-size:10px;font-weight:700;color:var(--mcp-rose);}
         .mcp-profile-handle{font-size:13px;color:var(--mcp-text3);margin-bottom:7px;font-weight:500;}
         .mcp-profile-tagline{font-size:13.5px;color:var(--mcp-text2);font-weight:600;}
+        .mcp-fan-badge{display:inline-flex;align-items:center;gap:5px;margin-top:10px;padding:6px 12px 6px 10px;border-radius:999px;background:linear-gradient(135deg,rgba(245,158,11,0.18),rgba(236,72,153,0.14));border:1px solid rgba(245,158,11,0.35);box-shadow:0 0 16px -4px rgba(245,158,11,0.35);}
+        .mcp-fan-badge-icon{font-size:13px;filter:drop-shadow(0 0 4px rgba(245,158,11,0.6));}
+        .mcp-fan-badge-count{font-size:14px;font-weight:800;color:#fde68a;letter-spacing:.01em;}
+        .mcp-fan-badge-label{font-size:11px;font-weight:700;color:#fbbf24;text-transform:uppercase;letter-spacing:.06em;}
         .mcp-action-btns{display:flex;gap:10px;padding:0 18px 14px;}
         .mcp-btn-msg{flex:1;padding:12px;border-radius:11px;background:var(--mcp-card);border:1px solid var(--mcp-border);color:var(--mcp-text);font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:7px;}
         .mcp-btn-msg:hover{border-color:rgba(108,99,255,.3);background:var(--mcp-card2);}
@@ -759,8 +765,22 @@ useEffect(() => {
   </div>
 )}
 
+   <div className="mcp-profile-tagline">{getStatus(String(creator?.hosttype))} {creator.name?.split(" ")[0] || "creator"}</div>
 
-          <div className="mcp-profile-tagline">{getStatus(String(creator?.hosttype))} {creator.name?.split(" ")[0] || "creator"}</div>
+          {(creator.followersCount ?? 0) > 0 && (
+            <div className="mcp-fan-badge">
+              <span className="mcp-fan-badge-icon">🔥</span>
+              <span className="mcp-fan-badge-count">
+                {(() => {
+                  const n = creator.followersCount ?? 0;
+                  if (n >= 1000000) return `${(n / 1000000).toFixed(n % 1000000 === 0 ? 0 : 1)}M`;
+                  if (n >= 1000) return `${(n / 1000).toFixed(n % 1000 === 0 ? 0 : 1)}K`;
+                  return String(n);
+                })()}
+              </span>
+              <span className="mcp-fan-badge-label">{(creator.followersCount ?? 0) === 1 ? "Fan" : "Fans"}</span>
+            </div>
+          )}
         </div>
 
         {/* ── ACTION BUTTONS ── */}

@@ -455,6 +455,7 @@ const clampAspectRatio = (ratio: number) => {
   const [showPurchaseModal, setShowPurchaseModal] = useState(false);
 
   const [purchasePost, setPurchasePost] = useState<any>(null);
+  const [exclusiveLightboxPost, setExclusiveLightboxPost] = useState<any>(null);
 
   const [userBalance, setUserBalance] = useState<number>(0);
 
@@ -5684,6 +5685,41 @@ const isFanVerified = isViewingOwnProfile
       {showPostModal && <PostModal />}
       {/* Exclusive Post Modal */}
       {showExclusivePostModal && <ExclusivePostModal />}
+
+      {/* Fullscreen lightbox for exclusive content grid — matches FirstPost's media viewer */}
+      {exclusiveLightboxPost && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50 p-4"
+          onClick={() => setExclusiveLightboxPost(null)}
+        >
+          <button
+            type="button"
+            onClick={() => setExclusiveLightboxPost(null)}
+            className="absolute top-16 right-1/3 bg-black hover:bg-opacity-30 text-white text-2xl font-bold w-10 h-10 rounded-full flex items-center justify-center hover:scale-110 transition-all duration-200 z-10"
+            aria-label="Close"
+          >
+            ✕
+          </button>
+
+          <div className="relative max-w-full max-h-full lg:max-w-[33.333%] lg:max-h-[80vh]" onClick={(e) => e.stopPropagation()}>
+            {exclusiveLightboxPost.posttype === "video" ? (
+              <video
+                src={exclusiveLightboxPost.postfilelink}
+                className="max-w-full max-h-full object-contain rounded-lg"
+                controls
+                autoPlay
+                playsInline
+              />
+            ) : (
+              <img
+                src={exclusiveLightboxPost.postfilelink}
+                alt="Exclusive content"
+                className="max-w-full max-h-full object-contain rounded-lg"
+              />
+            )}
+          </div>
+        </div>
+      )}
       {/* Profile Picture Modal */}
       {showProfilePictureModal && <ProfilePictureModal />}
 
@@ -6251,172 +6287,69 @@ const isFanVerified = isViewingOwnProfile
                         </div>
                       )}
 
-                      {/* Exclusive Posts */}
-                      {exclusivePosts.map((post) => {
-                        const postId = post._id || post.postid || post.id;
-                        const { src, postType, pathUrlPrimary, queryUrlFallback, pathUrlFallback, posterSource } = getMediaSource(post);
-                        const postUserId = post.userid || post.user?.userid || post.user?._id;
-                        const isPostOwner = String(postUserId) === String(loggedInUserId || localUserid);
-                        const isPurchased = purchasedPostIds.has(String(postId));
-                        const canView = isPostOwner || isPurchased;
+                     {/* Exclusive Posts — compact grid, opens a fullscreen lightbox on tap */}
+                      <div className="grid grid-cols-3 gap-2">
+                        {exclusivePosts.map((post) => {
+                          const postId = post._id || post.postid || post.id;
+                          const postUserId = post.userid || post.user?.userid || post.user?._id;
+                          const isPostOwner = String(postUserId) === String(loggedInUserId || localUserid);
+                          const isPurchased = purchasedPostIds.has(String(postId));
+                          const canView = isPostOwner || isPurchased;
+                          const src = post.postfilelink;
 
-                        return (
-                          <div
-                            key={`exclusive-post-${post._id || post.postid || post.id}`}
-                            className="relative aspect-square group cursor-pointer rounded-lg overflow-hidden bg-[#111624] border border-white/[0.05]"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              const postId = post._id || post.postid || post.id;
-                              setClickedExclusivePostId(postId);
-                              setShowExclusivePostModal(true);
-                            }}
-                          >
-                            {/* Image Post */}
-                            {postType === "image" && src && (
-                              <>
-                                <img
-                                  key={`exclusive-img-${postId}`}
-                                  src={src}
-                                  alt={post?.content || "exclusive post image"}
-                                  className={`absolute inset-0 w-full h-full object-cover transition-all duration-200 ${!canView ? 'blur-xl brightness-50' : 'group-hover:scale-105'}`}
-                                  loading="lazy"
-                                  onError={(e) => {
-                                    const img = e.currentTarget as HTMLImageElement & { dataset: any };
-                                    if (!img.dataset.fallback1 && pathUrlPrimary) {
-                                      img.dataset.fallback1 = "1";
-                                      img.src = pathUrlPrimary;
-                                      return;
-                                    }
-                                    if (!img.dataset.fallback2 && queryUrlFallback) {
-                                      img.dataset.fallback2 = "1";
-                                      img.src = queryUrlFallback;
-                                      return;
-                                    }
-                                    if (!img.dataset.fallback3 && pathUrlFallback) {
-                                      img.dataset.fallback3 = "1";
-                                      img.src = pathUrlFallback;
-                                    }
-                                  }}
-                                />
-                                {/* Lock overlay for visitors - only show if not purchased */}
-                                {!canView && (
-                                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center pointer-events-none z-10">
-                                    <div className="w-9 h-9 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center">
-                                      <Lock className="w-4 h-4 text-white" />
-                                    </div>
-                                  </div>
-                                )}
-                              </>
-                            )}
-
-                            {/* Video Post */}
-                            {postType === "video" && src && (
-                              <div className="absolute inset-0 w-full h-full flex items-center justify-center bg-[#080b14]">
+                          return (
+                            <button
+                              key={`exclusive-post-${postId}`}
+                              type="button"
+                              onClick={(e) => {
+                                if (canView) {
+                                  setExclusiveLightboxPost(post);
+                                } else {
+                                  handlePurchasePost(post, e);
+                                }
+                              }}
+                              className="relative aspect-square rounded-lg overflow-hidden bg-black border border-white/10"
+                            >
+                              {post.posttype === "video" ? (
                                 <video
-                                  key={`exclusive-video-${postId}`}
                                   src={src}
-                                  poster={posterSource}
-                                  preload="auto"
-                                  className={`absolute inset-0 w-full h-full object-cover transition-all duration-200 ${!canView ? 'blur-xl brightness-50' : 'group-hover:scale-105'}`}
+                                  className={`w-full h-full object-cover ${!canView ? "blur-md scale-110 opacity-60" : ""}`}
                                   muted
-                                  onError={(e) => {
-                                    const video = e.currentTarget as HTMLVideoElement & { dataset: any };
-                                    if (!video.dataset.fallback1 && pathUrlPrimary) {
-                                      video.dataset.fallback1 = "1";
-                                      video.src = pathUrlPrimary;
-                                      video.load();
-                                      return;
-                                    }
-                                    if (!video.dataset.fallback2 && queryUrlFallback) {
-                                      video.dataset.fallback2 = "1";
-                                      video.src = queryUrlFallback;
-                                      video.load();
-                                      return;
-                                    }
-                                    if (!video.dataset.fallback3 && pathUrlFallback) {
-                                      video.dataset.fallback3 = "1";
-                                      video.src = pathUrlFallback;
-                                      video.load();
-                                    }
-                                  }}
                                 />
-                                {/* Lock overlay for visitors - only show if not purchased */}
-                                {!canView ? (
-                                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center pointer-events-none z-10">
-                                    <div className="w-9 h-9 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center">
+                              ) : (
+                                <img
+                                  src={src}
+                                  alt=""
+                                  className={`w-full h-full object-cover ${!canView ? "blur-md scale-110 opacity-60" : ""}`}
+                                />
+                              )}
+
+                              {!canView && (
+                                <>
+                                  <div className="absolute inset-0 bg-black/40" />
+                                  <div className="absolute top-2 left-2 flex items-center gap-1 bg-[#f5c451] rounded-full px-2.5 py-1">
+                                    <span className="text-[12px]">🪙</span>
+                                    <span className="text-black text-[12px] font-bold">{parseFloat(post.price || 0).toFixed(2)}</span>
+                                  </div>
+                                  <div className="absolute inset-0 flex items-center justify-center">
+                                    <div className="w-9 h-9 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center">
                                       <Lock className="w-4 h-4 text-white" />
                                     </div>
                                   </div>
-                                ) : (
-                                  <div className="absolute inset-0 flex items-center justify-center bg-black/25 pointer-events-none">
-                                    <div className="w-10 h-10 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center">
-                                      <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
-                                        <path d="M8 5v14l11-7z" />
-                                      </svg>
-                                    </div>
-                                  </div>
-                                )}
-                              </div>
-                            )}
+                                </>
+                              )}
 
-                            {/* Text Post or No Media */}
-                            {(!src || postType === "text") && (
-                              <div className="absolute inset-0 flex items-center justify-center p-3 bg-gradient-to-br from-[#1a1f35] to-[#0d1120]">
-                                <span className="text-center text-white text-sm font-medium line-clamp-3">{post.content}</span>
-                              </div>
-                            )}
-
-                            {/* Price Badge - Always visible */}
-                            {post.price && (
-                              <div className="absolute top-2 right-2 bg-gradient-to-r from-[#f5c451] to-[#e8a93a] text-[#1A1C2C] px-2 py-1 rounded-full text-xs font-bold flex items-center gap-1 shadow-lg z-10">
-                                <span>🪙</span>
-                                {parseFloat(post.price).toFixed(2)}
-                              </div>
-                            )}
-
-                            {/* Hover overlay - for owners and purchasers */}
-                            {canView && (
-                              <>
-                                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors" />
-
-                                {/* Content overlay */}
-                                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                  <div className="text-white text-center p-2">
-                                    <div className="flex items-center justify-center gap-4 mb-2">
-                                      <div className="flex items-center gap-1">
-                                        <Heart className="w-4 h-4" fill="white" />
-                                        <span className="text-sm font-semibold">{formatNumber(post.totalLikes || post.likeCount || post.likes?.length || 0)}</span>
-                                      </div>
-                                      <div className="flex items-center gap-1">
-                                        <MessageCircle className="w-4 h-4" fill="white" />
-                                        <span className="text-sm font-semibold">{formatNumber(post.commentCount || post.comments?.length || 0)}</span>
-                                      </div>
-                                    </div>
-                                  </div>
+                              {canView && (
+                                <div className="absolute top-2 left-2 flex items-center gap-1 bg-[#f5c451] rounded-full px-2.5 py-1">
+                                  <span className="text-[12px]">🪙</span>
+                                  <span className="text-black text-[12px] font-bold">{parseFloat(post.price || 0).toFixed(2)}</span>
                                 </div>
-                              </>
-                            )}
+                              )}
+                            </button>
+                          );
+                        })}
+                      </div>
 
-                            {/* Lock icon overlay for visitors on hover - only show if not purchased */}
-                            {!canView && (
-                              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40">
-                                <div className="text-white text-center p-2">
-                                  <div className="w-9 h-9 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center mx-auto mb-2">
-                                    <Lock className="w-4 h-4" />
-                                  </div>
-                                  <p className="text-xs font-semibold">Unlock to view</p>
-                                  {post.price && (
-                                    <p className="text-xs mt-1 font-semibold flex items-center justify-center gap-1 text-[#f5c451]">
-                                      <span>🪙</span>
-                                      {parseFloat(post.price).toFixed(2)}
-                                    </p>
-                                  )}
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        );
-                      })}
 
                       {/* Empty state - only show if no posts and user is not verified or not viewing own profile */}
                       {exclusivePosts.length === 0 && !(isViewingOwnProfile && (profileData as any)?.creator_verified === true) && (
