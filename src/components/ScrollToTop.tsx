@@ -34,7 +34,12 @@ const ScrollToTopAdvanced = ({
     if (debug) console.log(_message, ..._args);
   };
 
-  // Stamp an incrementing index onto history.state so we can tell back from forward.
+  useEffect(() => {
+    if ("scrollRestoration" in window.history) {
+      window.history.scrollRestoration = "manual";
+    }
+  }, []);
+
   useEffect(() => {
     const existing = (window.history.state as any)?.[NAV_IDX_KEY];
     if (typeof existing === "number") {
@@ -121,8 +126,15 @@ const ScrollToTopAdvanced = ({
           saved = sessionStorage.getItem(SCROLL_KEY_PREFIX + pathname);
         } catch {}
         if (saved !== null) {
-          log(`Restoring scroll position for ${pathname}:`, saved);
-          window.scrollTo({ top: parseInt(saved, 10), left: 0, behavior: "instant" as ScrollBehavior });
+          const top = parseInt(saved, 10);
+          log(`Restoring scroll position for ${pathname}:`, top);
+          const apply = () => window.scrollTo({ top, left: 0, behavior: "instant" as ScrollBehavior });
+          apply();
+          requestAnimationFrame(() => {
+            apply();
+            requestAnimationFrame(apply);
+          });
+          setTimeout(apply, 350);
           return;
         }
       }
