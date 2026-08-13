@@ -34,7 +34,12 @@ const ScrollToTopAdvanced = ({
     if (debug) console.log(_message, ..._args);
   };
 
-  // Stamp an incrementing index onto history.state so we can tell back from forward.
+  useEffect(() => {
+    if ("scrollRestoration" in window.history) {
+      window.history.scrollRestoration = "manual";
+    }
+  }, []);
+
   useEffect(() => {
     const existing = (window.history.state as any)?.[NAV_IDX_KEY];
     if (typeof existing === "number") {
@@ -114,18 +119,52 @@ const ScrollToTopAdvanced = ({
       timeoutRef.current = null;
     }
 
-    const performScroll = () => {
+const performScroll = () => {
+      // Only restore saved scroll on an actual browser BACK navigation.
       if (wasPop && direction === "back") {
         let saved: string | null = null;
         try {
           saved = sessionStorage.getItem(SCROLL_KEY_PREFIX + pathname);
         } catch {}
         if (saved !== null) {
-          log(`Restoring scroll position for ${pathname}:`, saved);
-          window.scrollTo({ top: parseInt(saved, 10), left: 0, behavior: "instant" as ScrollBehavior });
+          const top = parseInt(saved, 10);
+          log(`Restoring scroll position for ${pathname}:`, top);
+
+          // On real networks (e.g. production), the destination page's content —
+          // especially images — can take well over a second to fully load and
+          // reach its final height. If we call scrollTo before the page is tall
+          // enough, the browser just clamps back near 0 and it looks like
+          // restoration silently failed. So instead of guessing with fixed
+          // delays, poll until the page is actually tall enough (or time out).
+          const maxWaitMs = 4000;
+          const startedAt = Date.now();
+          let settled = false;
+
+          const isTallEnough = () =>
+            document.documentElement.scrollHeight - window.innerHeight >= top - 4;
+
+          const tryApply = () => {
+            window.scrollTo({ top, left: 0, behavior: "instant" as ScrollBehavior });
+          };
+
+          const poll = () => {
+            tryApply();
+            if (settled) return;
+            if (isTallEnough() || Date.now() - startedAt > maxWaitMs) {
+              settled = true;
+              // One final reassert a beat later in case something (e.g. an image
+              // finishing decode) nudges layout right after we stop polling.
+              setTimeout(tryApply, 150);
+              return;
+            }
+            requestAnimationFrame(poll);
+          };
+
+          requestAnimationFrame(poll);
           return;
         }
       }
+      // Forward navigation (link click, router.push, or browser forward button) always starts at top.
       log(`Scrolling to top for ${pathname}`);
       window.scrollTo({ top: 0, left: 0, behavior: smooth ? "smooth" : "instant" });
     };

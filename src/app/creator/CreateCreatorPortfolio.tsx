@@ -71,39 +71,50 @@ export default function CreateCreatorPortfolio() {
   const reduxUserId = useSelector((state: RootState) => state.register.userID);
   const isCreatorVerified = useSelector((state: RootState) => state.profile.creator_verified);
 
+  // ── Draft persistence: survives navigating away (e.g. to upload exclusive content) and back ──
+  const DRAFT_KEY = "mmeko_create_portfolio_draft";
+  const readDraft = (): any => {
+    if (typeof window === "undefined") return {};
+    try {
+      return JSON.parse(sessionStorage.getItem(DRAFT_KEY) || "{}");
+    } catch {
+      return {};
+    }
+  };
+
   const [loading, setLoading] = useState(false);
   const [showFileSizeModal, setShowFileSizeModal] = useState(false);
-  const [name, setname] = useState("");
-  const [age, setage] = useState("18");
-  const [location, setlocation] = useState("");
-  const [countryQuery, setCountryQuery] = useState("");
+  const [name, setname] = useState(() => readDraft().name ?? "");
+  const [age, setage] = useState(() => readDraft().age ?? "18");
+  const [location, setlocation] = useState(() => readDraft().location ?? "");
+  const [countryQuery, setCountryQuery] = useState(() => readDraft().countryQuery ?? "");
   const [showCountryDropdown, setShowCountryDropdown] = useState(false);
-  const [gender, setgender] = useState("");
+  const [gender, setgender] = useState(() => readDraft().gender ?? "");
   const [pm, setpm] = useState<"AM" | "PM">("PM");
   // ── CHANGED: default duration 30, step 5, min 5 ──
-  const [duration, setduration] = useState("30");
-  const [price, setprice] = useState("");
-  const [priceValue, setPriceValue] = useState<number | null>(null);
-   const [discription, setdiscription] = useState("");
-  const [exclusiveEnabled, setExclusiveEnabled] = useState(true);
+  const [duration, setduration] = useState(() => readDraft().duration ?? "30");
+  const [price, setprice] = useState(() => readDraft().price ?? "");
+  const [priceValue, setPriceValue] = useState<number | null>(() => readDraft().priceValue ?? null);
+  const [discription, setdiscription] = useState(() => readDraft().discription ?? "");
+  const [exclusiveEnabled, setExclusiveEnabled] = useState(() => readDraft().exclusiveEnabled ?? true);
   const [disablebut, setdisablebut] = useState(false);
-  const [hosttype, sethosttype] = useState("Fan meet");
+  const [hosttype, sethosttype] = useState(() => readDraft().hosttype ?? "Fan meet");
   const [imglist, setimglist] = useState<string[]>([]);
   const [photolink, setphotolink] = useState<File[]>([]);
   // ── CHANGED: popover instead of modal ──
   const [showRatesPopover, setShowRatesPopover] = useState(false);
-  const [selectedTimes, setSelectedTimes] = useState<string[]>([]);
-  const [selectedDays, setSelectedDays] = useState<string[]>([]);
+  const [selectedTimes, setSelectedTimes] = useState<string[]>(() => readDraft().selectedTimes ?? []);
+  const [selectedDays, setSelectedDays] = useState<string[]>(() => readDraft().selectedDays ?? []);
 
   // State/Province + country
-  const [selectedCountryCode, setSelectedCountryCode] = useState("");
-const [stateQuery, setStateQuery] = useState("");
+  const [selectedCountryCode, setSelectedCountryCode] = useState(() => readDraft().selectedCountryCode ?? "");
+const [stateQuery, setStateQuery] = useState(() => readDraft().stateQuery ?? "");
 const [showStateDropdown, setShowStateDropdown] = useState(false);
-const [selectedState, setSelectedState] = useState("");
-const [selectedStateCode, setSelectedStateCode] = useState("");
-const [cityQuery, setCityQuery] = useState("");
+const [selectedState, setSelectedState] = useState(() => readDraft().selectedState ?? "");
+const [selectedStateCode, setSelectedStateCode] = useState(() => readDraft().selectedStateCode ?? "");
+const [cityQuery, setCityQuery] = useState(() => readDraft().cityQuery ?? "");
 const [showCityDropdown, setShowCityDropdown] = useState(false);
-const [selectedCity, setSelectedCity] = useState("");
+const [selectedCity, setSelectedCity] = useState(() => readDraft().selectedCity ?? "");
 
 
  const allCountries = useMemo(() => Country.getAllCountries(), []);
@@ -141,7 +152,45 @@ const filteredCities = useMemo(() => {
 
 // Tour scheduling (optional, multiple allowed)
 type Tour = { city: string; stateCode: string; state: string; countryCode: string; startDate: string; endDate: string };
-const [tours, setTours] = useState<Tour[]>([]);
+const [tours, setTours] = useState<Tour[]>(() => readDraft().tours ?? []);
+
+// Persist the form as a draft so it survives navigating away (e.g. to upload
+// exclusive content) and back. Note: uploaded photo Files are intentionally
+// NOT persisted here — browser File objects can't survive a route change.
+useEffect(() => {
+  try {
+    sessionStorage.setItem(
+      DRAFT_KEY,
+      JSON.stringify({
+        name,
+        age,
+        location,
+        countryQuery,
+        gender,
+        duration,
+        price,
+        priceValue,
+        discription,
+        exclusiveEnabled,
+        hosttype,
+        selectedTimes,
+        selectedDays,
+        selectedCountryCode,
+        stateQuery,
+        selectedState,
+        selectedStateCode,
+        cityQuery,
+        selectedCity,
+        tours,
+      })
+    );
+  } catch {}
+}, [
+  name, age, location, countryQuery, gender, duration, price, priceValue,
+  discription, exclusiveEnabled, hosttype, selectedTimes, selectedDays,
+  selectedCountryCode, stateQuery, selectedState, selectedStateCode,
+  cityQuery, selectedCity, tours,
+]);
 const [tourCountryCode, setTourCountryCode] = useState("");
 const [tourStateQuery, setTourStateQuery] = useState("");
 const [showTourStateDropdown, setShowTourStateDropdown] = useState(false);
@@ -339,8 +388,8 @@ const removeTour = (index: number) => {
       const hostid = response?.hostid || response?.data?.hostid || response?._id || response?.id || response?.data?._id;
 
       toast.success("Portfolio created successfully", { autoClose: 3000 });
+      try { sessionStorage.removeItem(DRAFT_KEY); } catch {}
       router.push(`/creators/${hostid}`);
-
     // window.location.href = "/creators";
 
     } catch (err: any) {
