@@ -58,6 +58,8 @@ import { useVideoAutoPlay } from "@/hooks/useVideoAutoPlayNew";
 
 import { toast } from "react-toastify";
 
+import Notifybuy from "./Notifybuy";
+
 import { postlike } from "@/store/like";
 
 import { getpostcomment, postcomment } from "@/store/comment";
@@ -6596,168 +6598,27 @@ const isFanVerified = isViewingOwnProfile
         />
       </div>
 
-      {/* Purchase Confirmation Modal */}
-
+   {/* Purchase Confirmation Modal */}
       {showPurchaseModal && purchasePost && (
-
-        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black bg-opacity-75 p-4">
-
-          <div className="bg-[#080b14] rounded-lg max-w-md w-full p-6">
-
-            <div className="flex items-center justify-between mb-4">
-
-              <h2 className="text-xl font-semibold text-white">Purchase Exclusive Content</h2>
-
-              <button
-
-                onClick={() => {
-
-                  setShowPurchaseModal(false);
-
-                  setPurchasePost(null);
-
-                }}
-
-                className="text-gray-400 hover:text-white transition-colors"
-
-              >
-
-                <X className="w-6 h-6" />
-
-              </button>
-
-            </div>
-
-
-
-            <div className="space-y-4">
-
-              <div className="text-center">
-
-                <p className="text-gray-300 mb-2">Are you sure you want to purchase this exclusive content?</p>
-
-                <div className="flex items-center justify-center gap-2 text-yellow-400 text-2xl font-bold">
-
-                  <span>🪙</span>
-
-                  <span>{parseFloat(purchasePost.price || 0).toFixed(2)}</span>
-
-                </div>
-
-              </div>
-
-
-
-              {userBalance < parseFloat(purchasePost.price || 0) ? (
-
-                <div className="space-y-3">
-
-                  <div className="bg-red-900/30 border border-red-500 rounded-lg p-4">
-
-                    <p className="text-red-300 text-sm font-semibold mb-2">Insufficient Balance</p>
-
-                    <p className="text-gray-300 text-sm">
-
-                      You need <span className="text-yellow-400 font-semibold">🪙 {parseFloat(purchasePost.price || 0).toFixed(2)}</span> but you only have <span className="text-yellow-400 font-semibold">🪙 {userBalance.toFixed(2)}</span>
-
-                    </p>
-
-                  </div>
-
-                  <div className="flex gap-3">
-
-                    <button
-
-                      onClick={() => {
-
-                        setShowPurchaseModal(false);
-
-                        setPurchasePost(null);
-
-                      }}
-
-                      className="flex-1 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors"
-
-                    >
-
-                      Cancel
-
-                    </button>
-
-                    <button
-
-                      onClick={() => {
-
-                        setShowPurchaseModal(false);
-
-                        setPurchasePost(null);
-
-                        router.push('/buy-gold');
-
-                      }}
-
-                      className="flex-1 px-4 py-2 bg-gradient-to-r from-yellow-400 to-yellow-600 hover:from-yellow-500 hover:to-yellow-700 text-gray-900 rounded-lg transition-colors font-semibold"
-
-                    >
-
-                      Buy Gold
-
-                    </button>
-
-                  </div>
-
-                </div>
-
-              ) : (
-
-                <div className="flex gap-3">
-
-                  <button
-
-                    onClick={() => {
-
-                      setShowPurchaseModal(false);
-
-                      setPurchasePost(null);
-
-                    }}
-
-                    disabled={isPurchasing}
-
-                    className="flex-1 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-
-                  >
-
-                    Cancel
-
-                  </button>
-
-                  <button
-
-                    onClick={confirmPurchase}
-
-                    disabled={isPurchasing}
-
-                    className="flex-1 px-4 py-2 bg-gradient-to-r from-yellow-400 to-yellow-600 hover:from-yellow-500 hover:to-yellow-700 text-gray-900 rounded-lg transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
-
-                  >
-
-                    {isPurchasing ? "Processing..." : `Confirm Purchase`}
-
-                  </button>
-
-                </div>
-
-              )}
-
-            </div>
-
-          </div>
-
+        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/75 backdrop-blur-sm p-4">
+          <Notifybuy
+            price={parseFloat(purchasePost.price || 0)}
+            buy={confirmPurchase}
+            cancel={() => {
+              setShowPurchaseModal(false);
+              setPurchasePost(null);
+            }}
+            isProcessing={isPurchasing}
+            insufficientBalance={userBalance < parseFloat(purchasePost.price || 0)}
+            currentBalance={userBalance}
+            onBuyGold={() => {
+              setShowPurchaseModal(false);
+              setPurchasePost(null);
+              router.push('/buy-gold');
+            }}
+          />
         </div>
-
       )}
-
 
 
       {/* Edit Exclusive Post Modal */}
