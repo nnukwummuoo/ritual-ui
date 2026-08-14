@@ -2,6 +2,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { Lock, X, Play } from "lucide-react";
@@ -28,12 +29,37 @@ export default function PublicExclusiveGrid({
   token: string;
   isOwner: boolean;
 }) {
+
+  const router = useRouter();
   const [posts, setPosts] = useState<ExclusivePost[]>([]);
   const [purchasedIds, setPurchasedIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(false);
   const [buyTarget, setBuyTarget] = useState<ExclusivePost | null>(null);
   const [viewTarget, setViewTarget] = useState<ExclusivePost | null>(null);
-  const [balance, setBalance] = useState<number | null>(null);
+  const [balance, setBalance] = useState<number>(0);
+  const [isPurchasing, setIsPurchasing] = useState(false);
+
+  const fetchBalance = useCallback(async () => {
+    if (!viewerId || !token) return;
+    try {
+      const res = await axios.post(
+        `${API_URL}/getprofilebyID`,
+        { userid: viewerId },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (res.data?.ok) {
+        const bal =
+          res.data?.user?.balance ??
+          res.data?.profile?.balance ??
+          res.data?.user?.coinBalance ??
+          res.data?.profile?.coinBalance ??
+          0;
+        setBalance(parseFloat(String(bal)) || 0);
+      }
+    } catch (err) {
+      console.error("Failed to fetch balance", err);
+    }
+  }, [viewerId, token]);
 
   const fetchPosts = useCallback(async () => {
     if (!creatorUserId) return;
@@ -74,7 +100,7 @@ export default function PublicExclusiveGrid({
     }
   }, [posts, isOwner, fetchPurchaseStatus]);
 
-  const openTile = (post: ExclusivePost) => {
+ const openTile = (post: ExclusivePost) => {
     if (isOwner || purchasedIds.has(post._id)) {
       setViewTarget(post);
     } else {
@@ -82,6 +108,7 @@ export default function PublicExclusiveGrid({
         toast.info("login to access this operation", { autoClose: 2000 });
         return;
       }
+      fetchBalance();
       setBuyTarget(post);
     }
   };
@@ -96,7 +123,7 @@ export default function PublicExclusiveGrid({
       );
       if (res.data?.ok) {
         setPurchasedIds((prev) => new Set([...prev, buyTarget._id]));
-        setBalance(res.data.newBalance ?? null);
+        setBalance(res.data.newBalance ?? balance);
         toast.success("Unlocked!", { autoClose: 1800 });
         setViewTarget(buyTarget);
         setBuyTarget(null);
@@ -177,8 +204,19 @@ export default function PublicExclusiveGrid({
   })}
 </div>
       {buyTarget && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
-          <Notifybuy price={buyTarget.price} buy={handleBuy} cancel={() => setBuyTarget(null)} />
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4">
+          <Notifybuy
+            price={buyTarget.price}
+            buy={handleBuy}
+            cancel={() => setBuyTarget(null)}
+            isProcessing={isPurchasing}
+            insufficientBalance={balance < parseFloat(String(buyTarget.price))}
+            currentBalance={balance}
+            onBuyGold={() => {
+              setBuyTarget(null);
+              router.push("/buy-gold");
+            }}
+          />
         </div>
       )}
 

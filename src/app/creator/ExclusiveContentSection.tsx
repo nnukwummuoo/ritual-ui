@@ -5,7 +5,8 @@ import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import axios from "axios";
 import { toast } from "react-toastify";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, MoreHorizontal } from "lucide-react";
+import { BiPencil } from "react-icons/bi";
 import { URL as API_URL } from "@/api/config";
 import { getImageSource } from "@/lib/imageUtils";
 
@@ -34,6 +35,7 @@ export default function ExclusiveContentSection({
   const [posts, setPosts] = useState<ExclusivePost[]>([]);
   const [loading, setLoading] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
 
   const fetchPosts = async () => {
     if (!userid) return;
@@ -65,8 +67,14 @@ export default function ExclusiveContentSection({
       router.push(`/${username}/upload-exclusive?returnTo=${encodeURIComponent(pathname)}`);
   };
 
+   const handleEdit = (id: string) => {
+    setOpenMenuId(null);
+    router.push(`/${username}/upload-exclusive?postId=${id}&returnTo=${encodeURIComponent(pathname)}`);
+  };
+
   const handleDelete = async (id: string) => {
     if (!confirm("Delete this exclusive content? This can't be undone.")) return;
+    setOpenMenuId(null);
     setDeletingId(id);
     try {
       const res = await axios.patch(
@@ -142,16 +150,51 @@ export default function ExclusiveContentSection({
                   <span className="text-black text-[12px] font-bold">{parseFloat(String(post.price)).toFixed(2)}</span>
                 </div>
 
-                {/* Delete button */}
-                <button
-                  type="button"
-                  onClick={() => handleDelete(post._id)}
-                  disabled={deletingId === post._id}
-                  className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-black/70 backdrop-blur-sm flex items-center justify-center text-white hover:bg-red-500/80 transition-colors disabled:opacity-50 z-10"
-                  aria-label="Delete exclusive content"
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                </button>
+                 {/* Owner 3-dot menu — Edit / Delete */}
+                <div className="absolute top-1.5 right-1.5 z-10">
+                  <button
+                    type="button"
+                    onClick={() => setOpenMenuId((prev) => (prev === post._id ? null : post._id))}
+                    className="w-6 h-6 rounded-full bg-black/70 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/90 transition-colors"
+                    aria-label="More options"
+                  >
+                    <MoreHorizontal className="w-3.5 h-3.5" />
+                  </button>
+
+                  {openMenuId === post._id && (
+                    <div
+                      className="absolute right-0 top-full mt-1 w-32 rounded-lg shadow-lg bg-[#111624] ring-1 ring-white/10 z-50 overflow-hidden"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <button
+                        type="button"
+                        onClick={() => handleEdit(post._id)}
+                        className="text-white w-full text-left px-3 py-2 text-[12.5px] hover:bg-white/10 transition-colors flex items-center gap-2"
+                      >
+                        <BiPencil className="w-3.5 h-3.5" />
+                        Edit
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDelete(post._id)}
+                        disabled={deletingId === post._id}
+                        className="text-red-400 w-full text-left px-3 py-2 text-[12.5px] hover:bg-white/10 transition-colors disabled:opacity-50 flex items-center gap-2"
+                      >
+                        {deletingId === post._id ? (
+                          <>
+                            <div className="w-3 h-3 border border-red-400 border-t-transparent rounded-full animate-spin" />
+                            Deleting...
+                          </>
+                        ) : (
+                          <>
+                            <Trash2 className="w-3.5 h-3.5" />
+                            Delete
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
             );
           })}
