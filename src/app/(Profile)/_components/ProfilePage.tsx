@@ -1743,6 +1743,83 @@ const isFanVerified = isViewingOwnProfile
 
   }, [token, loggedInUserId]);
 
+  // Handle edit for an exclusive post from the grid's own 3-dot menu
+  const handleEditExclusiveGridPost = React.useCallback((post: any) => {
+    const postId = post._id || post.postid || post.id;
+    setOpenGridMenuPostId(null);
+    router.push(`/${profileSlugForUrl}/upload-exclusive?postId=${postId}`);
+  }, [router, profileSlugForUrl]);
+
+  // Handle delete for an exclusive post from the grid's own 3-dot menu
+  const handleDeleteExclusiveGridPost = React.useCallback(async (post: any) => {
+    const postId = post._id || post.postid || post.id;
+
+    if (!postId || !token) {
+      toast.error("Unable to delete post. Please log in and try again.");
+      return;
+    }
+
+    const confirmed = await new Promise<boolean>((resolve) => {
+      toast.info(
+        <div className="flex flex-col gap-3 bg-red-900 p-4 rounded-lg">
+          <div className="text-white">
+            Are you sure you want to delete this exclusive content? This action cannot be undone.
+          </div>
+          <div className="flex gap-2 justify-end">
+            <button
+              className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-sm"
+              onClick={() => { toast.dismiss(); resolve(true); }}
+            >
+              Delete
+            </button>
+            <button
+              className="px-3 py-1 bg-gray-600 text-white rounded hover:bg-gray-700 text-sm"
+              onClick={() => { toast.dismiss(); resolve(false); }}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>,
+        { position: "top-center", autoClose: false, closeOnClick: false, draggable: false, className: "toast-confirmation" }
+      );
+    });
+
+    if (!confirmed) return;
+
+    setOpenGridMenuPostId(null);
+    setDeletingGridPostId(String(postId));
+
+    try {
+      const response = await axios.patch(`${API_URL}/exclusive`, { id: postId }, {
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` }
+      });
+
+      if (response.data?.ok) {
+        toast.success("Exclusive post deleted successfully!");
+        setExclusivePosts((prev: any[]) => prev.filter((p) => {
+          const pId = p._id || p.postid || p.id;
+          return String(pId) !== String(postId);
+        }));
+        if (targetUserId) {
+          setTimeout(() => { fetchExclusivePosts(String(targetUserId)); }, 500);
+        }
+      } else {
+        toast.error(response.data?.message || "Failed to delete post");
+      }
+    } catch (error: any) {
+      console.error("Error deleting exclusive post:", error);
+      if (error.response) {
+        toast.error(error.response.data?.message || error.response.statusText || "Failed to delete post");
+      } else if (error.request) {
+        toast.error("Network error. Please check your connection and try again.");
+      } else {
+        toast.error("Failed to delete post. Please try again.");
+      }
+    } finally {
+      setDeletingGridPostId(null);
+    }
+  }, [token, targetUserId, fetchExclusivePosts]);
+
 
   // Confirm purchase
 
@@ -6292,7 +6369,7 @@ const isFanVerified = isViewingOwnProfile
                         </div>
                       )}
 
-                      {/* Exclusive Posts — direct children of the outer 3-col grid (alongside the Upload tile), opens a fullscreen lightbox on tap */}
+                    {/* Exclusive Posts — direct children of the outer 3-col grid (alongside the Upload tile), opens a fullscreen lightbox on tap */}
                       {exclusivePosts.map((post) => {
                           const postId = post._id || post.postid || post.id;
                           const postUserId = post.userid || post.user?.userid || post.user?._id;
@@ -6302,9 +6379,10 @@ const isFanVerified = isViewingOwnProfile
                           const src = post.postfilelink;
 
                           return (
-                            <button
+                            <div
                               key={`exclusive-post-${postId}`}
-                              type="button"
+                              role="button"
+                              tabIndex={0}
                               onClick={(e) => {
                                 if (canView) {
                                   setExclusiveLightboxPost(post);
@@ -6312,7 +6390,7 @@ const isFanVerified = isViewingOwnProfile
                                   handlePurchasePost(post, e);
                                 }
                               }}
-                              className="relative aspect-square rounded-lg overflow-hidden bg-black border border-white/10"
+                              className="relative aspect-square rounded-lg overflow-hidden bg-black border border-white/10 cursor-pointer"
                             >
                               {post.posttype === "video" ? (
                                 <video
@@ -6349,10 +6427,60 @@ const isFanVerified = isViewingOwnProfile
                                   <span className="text-black text-[12px] font-bold">{parseFloat(post.price || 0).toFixed(2)}</span>
                                 </div>
                               )}
-                            </button>
-                        );
-                        })}
 
+                              {/* Owner-only 3-dot menu — Edit / Delete */}
+                              {isPostOwner && (
+                                <div className="absolute top-1.5 right-1.5 z-10">
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setOpenGridMenuPostId((prev) => (prev === String(postId) ? null : String(postId)));
+                                    }}
+                                    className="w-6 h-6 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/80 transition-colors"
+                                    aria-label="More options"
+                                  >
+                                    <MoreHorizontal className="w-3.5 h-3.5" />
+                                  </button>
+
+                                  {openGridMenuPostId === String(postId) && (
+                                    <div
+                                      className="absolute right-0 top-full mt-1 w-32 rounded-lg shadow-lg bg-[#111624] ring-1 ring-white/10 z-50 overflow-hidden"
+                                      onClick={(e) => e.stopPropagation()}
+                                    >
+                                      <button
+                                        type="button"
+                                        onClick={() => handleEditExclusiveGridPost(post)}
+                                        className="text-white w-full text-left px-3 py-2 text-[12.5px] hover:bg-white/10 transition-colors flex items-center gap-2"
+                                      >
+                                        <BiPencil className="w-3.5 h-3.5" />
+                                        Edit
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={() => handleDeleteExclusiveGridPost(post)}
+                                        disabled={deletingGridPostId === String(postId)}
+                                        className="text-red-400 w-full text-left px-3 py-2 text-[12.5px] hover:bg-white/10 transition-colors disabled:opacity-50 flex items-center gap-2"
+                                      >
+                                        {deletingGridPostId === String(postId) ? (
+                                          <>
+                                            <div className="w-3 h-3 border border-red-400 border-t-transparent rounded-full animate-spin" />
+                                            Deleting...
+                                          </>
+                                        ) : (
+                                          <>
+                                            <Trash2 className="w-3.5 h-3.5" />
+                                            Delete
+                                          </>
+                                        )}
+                                      </button>
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
 
                       {/* Empty state - only show if no posts and user is not verified or not viewing own profile */}
                       {exclusivePosts.length === 0 && !(isViewingOwnProfile && (profileData as any)?.creator_verified === true) && (
