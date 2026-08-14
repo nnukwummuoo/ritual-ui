@@ -2,28 +2,44 @@ import { withNextVideo } from "next-video/process";
 import type { NextConfig } from "next";
 import withPWA from "next-pwa";
 
-// 🚀 Changed from 'any' to 'NextConfig' for proper TypeScript support
-const nextConfig: NextConfig = {
-  output: "standalone", // 👈 REQUIRED: Enables tiny Docker image sizes
+const nextConfig: any = {
 
   typescript: {
     ignoreBuildErrors: true,
   },
   experimental: {
     staleTimes: {
-      dynamic: 0, 
-      static: 180, 
+      dynamic: 0, // No cache for dynamic routes
+      static: 180, // 3 minutes for static pages
     },
   },
   images: {
     unoptimized: true,
     remotePatterns: [
-      { protocol: "https", hostname: "cloud.appwrite.io" },
-      { protocol: "https", hostname: "gateway.storjshare.io" },
-      { protocol: "https", hostname: "flagcdn.com" },
-      { protocol: "https", hostname: "upload.wikimedia.org" },
-      { protocol: "https", hostname: "images.unsplash.com" },
-      { protocol: "https", hostname: "api.krea.ai" },
+      {
+        protocol: "https",
+        hostname: "cloud.appwrite.io",
+      },
+      {
+        protocol: "https",
+        hostname: "gateway.storjshare.io",
+      },
+      {
+        protocol: "https",
+        hostname: "flagcdn.com",
+      },
+      {
+        protocol: "https",
+        hostname: "upload.wikimedia.org",
+      },
+      {
+        protocol: "https",
+        hostname: "images.unsplash.com",
+      },
+      {
+        protocol: "https",
+        hostname: "api.krea.ai",
+      },
     ],
   },
   webpack: (config) => {
@@ -45,7 +61,7 @@ const nextConfig: NextConfig = {
     };
     return config;
   },
-   // Note: avoid setting a strict CSP here, it breaks Next.js dev overlay and inline styles/scripts.
+  // Note: avoid setting a strict CSP here, it breaks Next.js dev overlay and inline styles/scripts.
   // If you need CSP, add it at your reverse proxy and allow Next dev requirements.
   async rewrites() {
     return [
@@ -71,14 +87,14 @@ const pwaConfig = withPWA({
   fallbacks: {
     document: '/offline',
     image: '/offline',
-    audio: '/offline', 
+    audio: '/offline', // FIX APPLIED HERE
     video: '/offline',
     font: '/offline',
   },
   publicExcludes: ['!robots.txt', '!sitemap.xml'],
-  swSrc: 'public/worker.js', 
-  sw: 'sw.js', 
+  swSrc: 'public/worker.js', // Use custom unified service worker source (includes push notifications)
+  sw: 'sw.js', // Output file name for the generated service worker
+  // Note: runtimeCaching is not supported with swSrc - it's handled manually in worker.js
 });
 
-// @ts-ignore - next-pwa wrapper functions sometimes have loose type signatures
 export default withNextVideo(pwaConfig(nextConfig));
