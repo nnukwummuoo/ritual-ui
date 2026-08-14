@@ -5753,7 +5753,8 @@ const isFanVerified = isViewingOwnProfile
 
   return (
     <>
-     <ProfileTopNav
+      <div style={{ position: "fixed", inset: 0, background: "#080b14", zIndex: -1 }} />
+      <ProfileTopNav
         name={`${firstname || ""} ${lastname || ""}`.trim() || username || "Profile"}
         handle={username || ""}
         isOwnProfile={Boolean(isViewingOwnProfile)}
@@ -5763,7 +5764,7 @@ const isFanVerified = isViewingOwnProfile
       />
     <div
       className="w-screen mx-auto sm:w-11/12 md:w-10/12 lg:w-9/12 xl:w-8/12"
-      style={{ overflowY: "scroll" }}
+      style={{ overflowY: "scroll", background: "#080b14", minHeight: "100vh" }}
     >
       {/* VIP Celebration Animation */}
       {showVipCelebration && (

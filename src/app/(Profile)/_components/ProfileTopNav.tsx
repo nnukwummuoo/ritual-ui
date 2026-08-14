@@ -106,10 +106,12 @@ const ProfileTopNav = ({
 
   return (
     <>
-      <style jsx>{`
-        .ptn-nav {
-          position: sticky;
+      <style jsx>.ptn-nav {`
+          position: fixed;
           top: 0;
+          left: 0;
+          right: 0;
+          width: 100%;
           z-index: 50;
           overflow: visible;
           background: rgba(8, 11, 20, 0.92);
@@ -122,6 +124,11 @@ const ProfileTopNav = ({
           justify-content: space-between;
           gap: 8px;
         }
+        .ptn-spacer {
+          height: 54px;
+          width: 100%;
+        }
+        
         .ptn-back {
           background: none;
           border: none;
@@ -310,6 +317,7 @@ const ProfileTopNav = ({
           </div>
         </div>
       </nav>
+      <div className="ptn-spacer" />
     </>
   );
 };
