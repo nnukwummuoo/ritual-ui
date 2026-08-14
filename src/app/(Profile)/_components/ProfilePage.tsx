@@ -5826,7 +5826,7 @@ const isFanVerified = isViewingOwnProfile
       {/* Profile Picture Modal */}
       {showProfilePictureModal && <ProfilePictureModal />}
 
-      <div className="w-full mx-auto mt-4 text-white md:mr-auto md:ml-0">
+      <div className="w-full mx-auto text-white md:mr-auto md:ml-0">
         <div className="pb-6">
 
           {(status === "loading" || status === "idle") && (
@@ -5879,11 +5879,7 @@ const isFanVerified = isViewingOwnProfile
           {(status === "succeeded" || (!isViewingOwnProfile && (viewingProfile?.userId || (viewingProfile as any)?.firstname))) && (
             <div className="flex flex-col">
               <div className="relative w-full">
-                <div className="w-max absolute -top-5 right-0 px-4">
-                  <div className="flex items-center justify-between">
-        
-                  </div>
-                </div>
+                
 
                 <div className="w-full px-2">
                   <div className="flex items-center justify-between">
