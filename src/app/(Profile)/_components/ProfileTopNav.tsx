@@ -106,13 +106,23 @@ const ProfileTopNav = ({
 
   return (
     <>
+     <style jsx global>{`
+        @media (min-width: 768px) {
+          html, body {
+            overflow: auto !important;
+            height: auto !important;
+          }
+        }
+      `}</style>
+
       <style jsx>{`
-      .ptn-nav{
+        .ptn-nav {
           position: fixed;
           top: 0;
           left: 0;
           right: 0;
           width: 100%;
+          margin: 0 auto;
           z-index: 50;
           overflow: visible;
           background: rgba(8, 11, 20, 0.92);
@@ -124,6 +134,20 @@ const ProfileTopNav = ({
           align-items: center;
           justify-content: space-between;
           gap: 8px;
+        }
+        /* Match the same responsive width steps as the profile content
+           column below it (w-screen sm:w-11/12 md:w-10/12 lg:w-9/12 xl:w-8/12) */
+        @media (min-width: 640px) {
+          .ptn-nav { max-width: 91.6667%; }
+        }
+        @media (min-width: 768px) {
+          .ptn-nav { max-width: 83.3333%; }
+        }
+        @media (min-width: 1024px) {
+          .ptn-nav { max-width: 75%; }
+        }
+        @media (min-width: 1280px) {
+          .ptn-nav { max-width: 66.6667%; }
         }
         .ptn-spacer {
           height: 54px;
