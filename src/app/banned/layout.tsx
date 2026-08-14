@@ -1,12 +1,4 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
-import "../globals.css";
-
-const inter = Inter({
-  weight: ["100", "300", "400", "500", "700"],
-  subsets: ["latin"],
-  display: "swap",
-});
 
 export const metadata: Metadata = {
   title: "Account Banned - Mmeko",
@@ -24,11 +16,7 @@ export default function BannedLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  return (
-    <div className={`${inter.className} antialiased bg-background`}>
-      {children}
-    </div>
-  );
+  return <div className="antialiased bg-background">{children}</div>;
 }
 
 
