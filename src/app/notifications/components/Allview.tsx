@@ -8,7 +8,7 @@ import { getNotifications, markNotificationsSeen } from "@/store/profile";
 import { RootState, AppDispatch } from "@/store/store";
 import { useAuth } from "@/lib/context/auth-context";
 import PacmanLoader from "react-spinners/RingLoader";
-import { CheckCircle, XCircle, Clock, Star, Phone, Heart, Handshake, MessageCircle, Shield, ShoppingCart, Wallet, Tv } from "lucide-react";
+import { CheckCircle, XCircle, Clock, Star, Phone, Heart, Handshake, MessageCircle, Shield, ShoppingCart, Wallet, Tv, UserPlus } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { useNotificationIndicator } from "@/hooks/useNotificationIndicator";
@@ -329,7 +329,7 @@ const userId = reduxProfileUserId || reduxRegisterUserId || localUserId;
                 )}
                 {(title === "Follow Notification" || title === "Unfollow Notification") && (
                   <div className="bg-blue-500/10 p-1 rounded-full">
-                    <Image src="/icons/following.png" alt="Users" width={28} height={28} />
+                    <UserPlus className="text-blue-500 w-5 h-5" strokeWidth={2.25} />
                   </div>
                 )}
                 {title !== "Admin Notification" && title !== "Rating Notification" && title !== "Missed Fan Call" && title !== "Fan Date Request" && title !== "Fan Meet Request" && title !== "Fan Call Request" && title !== "Like Notification" && title !== "Message Notification" && title !== "Follow Notification" && title !== "Unfollow Notification" && title !== "Purchase Notification" && title !== "Withdrawal Notification" && title !== "PPV Approved" && title !== "PPV Declined" && status === "approved" && (
