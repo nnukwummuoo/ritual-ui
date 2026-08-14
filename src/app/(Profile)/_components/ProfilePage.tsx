@@ -5860,7 +5860,7 @@ const isFanVerified = isViewingOwnProfile
               <div className="relative w-full">
                 <div className="w-max absolute -top-5 right-0 px-4">
                   <div className="flex items-center justify-between">
-                    <DropdownMenu userId={profileSlugForUrl} isOwnProfile={viewingUserId === loggedInUserId} />
+        
                   </div>
                 </div>
 
