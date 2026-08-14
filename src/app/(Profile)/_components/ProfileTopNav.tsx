@@ -125,7 +125,6 @@ const ProfileTopNav = ({
           overflow: visible;
           background: rgba(8, 11, 20, 0.92);
           backdrop-filter: blur(20px);
-          border-bottom: 1px solid rgba(255, 255, 255, 0.07);
           padding: 0 16px;
           height: 54px;
           display: flex;
@@ -133,6 +132,7 @@ const ProfileTopNav = ({
           justify-content: space-between;
           gap: 8px;
         }
+        
         /* Match the creator_portfolio_id page's fixed content width */
         @media (min-width: 768px) {
           .ptn-nav { max-width: 520px; }
