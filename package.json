@@ -1,6 +1,11 @@
 {
   "name": "mmekowebsite",
   "packageManager": "pnpm@9.15.0",
+  "pnpm": {
+    "overrides": {
+      "viem": "2.55.11"
+    }
+  },
   "version": "0.1.0",
   "private": true,
   "scripts": {
