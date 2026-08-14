@@ -55,8 +55,28 @@ export default function ConditionalLayout({ children, isAuthenticated }: Conditi
   const isCreateCreatorPortfolioRoute = pathname === '/creator/create';
   const isPortfolioUsernameRoute =
     pathname.startsWith('/portfolio/') && pathname.split('/').length === 3;
+ // Check if it's a user profile route (e.g. /username) — this page ships its
+  // own dedicated top nav (ProfileTopNav) and gets the same full-takeover
+  // treatment as the creator portfolio pages: no sidebar, no bottom nav.
+  // Profile pages live at the root (e.g. /johnsmith), so we detect them as any
+  // single-segment path that isn't one of the other known top-level routes.
+  const STATIC_TOP_LEVEL_ROUTES = new Set([
+    'T_&_C', 'about', 'auth', 'banned', 'be-a-creator', 'blog', 'buy-gold', 'change-log',
+    'collections', 'createcreator', 'creator', 'creators', 'discover', 'explorer', 'fans',
+    'feed', 'feedback', 'following', 'gold', 'goldstat', 'guidelines', 'learn-more', 'login',
+    'message', 'mmeko', 'notifications', 'offline', 'portfolio', 'post', 'quickchat',
+    'refer-and-earn', 'ritual', 'search', 'settings', 'support', 'test-middleware', 'upload',
+    'upload-ritual', 'verify-creators', 'vip', 'whats-new',
+  ]);
+  const pathSegments = pathname.split('/').filter(Boolean);
+  const isProfileSlugRoute = pathSegments.length === 1 && !STATIC_TOP_LEVEL_ROUTES.has(pathSegments[0]);
+
   const hasOwnTopbar =
-    isCreatorPortfolioIdRoute || isEditCreatorPortfolioRoute || isCreateCreatorPortfolioRoute || isPortfolioUsernameRoute;
+    isCreatorPortfolioIdRoute ||
+    isEditCreatorPortfolioRoute ||
+    isCreateCreatorPortfolioRoute ||
+    isPortfolioUsernameRoute ||
+    isProfileSlugRoute;
     
   // Set mounted to true after component mounts (client-side only)
   useEffect(() => {
@@ -201,9 +221,9 @@ if (!isAuthenticated && isHomeRoute) {
         </>
       )}
 
-      {/* Navbar - Hidden on md devices and up, and on pages with their own top nav */}
+      {/* Navbar - Hidden on pages with their own top nav */}
       {!hasOwnTopbar && (
-        <div className="md:hidden">
+        <div className="hidden">
           <Navbar isAuthenticated={isAuthenticated} />
         </div>
       )}

@@ -16,6 +16,8 @@ import Tabs from "./Tabs";
 
 import DropdownMenu from "./DropDonMenu";
 
+import ProfileTopNav from "./ProfileTopNav";
+
 import { useParams, useRouter, usePathname } from "next/navigation";
 
 import { useDispatch, useSelector } from "react-redux";
@@ -5750,6 +5752,15 @@ const isFanVerified = isViewingOwnProfile
 
 
   return (
+    <>
+     <ProfileTopNav
+        name={`${firstname || ""} ${lastname || ""}`.trim() || username || "Profile"}
+        handle={username || ""}
+        isOwnProfile={Boolean(isViewingOwnProfile)}
+        profileSlugForUrl={profileSlugForUrl}
+        viewingUserId={viewingUserId}
+        loggedInUserId={loggedInUserId}
+      />
     <div
       className="w-screen mx-auto sm:w-11/12 md:w-10/12 lg:w-9/12 xl:w-8/12"
       style={{ overflowY: "scroll" }}
@@ -7233,6 +7244,7 @@ const isFanVerified = isViewingOwnProfile
       )}
 
     </div>
+    </>
 
   );
 
