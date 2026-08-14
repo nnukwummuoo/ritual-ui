@@ -5769,10 +5769,11 @@ const isFanVerified = isViewingOwnProfile
         viewingUserId={viewingUserId}
         loggedInUserId={loggedInUserId}
       />
-    <div
-      className="w-screen mx-auto sm:w-11/12 md:w-10/12 lg:w-9/12 xl:w-8/12"
+   <div
+      className="w-screen mx-auto md:max-w-[520px]"
       style={{ overflowY: "scroll", background: "var(--background)", minHeight: "100vh" }}
     >
+    
       {/* VIP Celebration Animation */}
       {showVipCelebration && (
         <div className="fixed inset-0 z-40 flex items-center justify-center bg-black bg-opacity-50 pointer-events-none">

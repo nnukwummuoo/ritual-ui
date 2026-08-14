@@ -135,20 +135,11 @@ const ProfileTopNav = ({
           justify-content: space-between;
           gap: 8px;
         }
-        /* Match the same responsive width steps as the profile content
-           column below it (w-screen sm:w-11/12 md:w-10/12 lg:w-9/12 xl:w-8/12) */
-        @media (min-width: 640px) {
-          .ptn-nav { max-width: 91.6667%; }
-        }
+       /* Match the creator_portfolio_id page's fixed content width */
         @media (min-width: 768px) {
-          .ptn-nav { max-width: 83.3333%; }
+          .ptn-nav { max-width: 520px; }
         }
-        @media (min-width: 1024px) {
-          .ptn-nav { max-width: 75%; }
-        }
-        @media (min-width: 1280px) {
-          .ptn-nav { max-width: 66.6667%; }
-        }
+        
         .ptn-spacer {
           height: 54px;
           width: 100%;
