@@ -1149,6 +1149,16 @@ if (matched?.isoCode && creator.state) {
         </div>
       )}
 
+      <style jsx global>{`
+        @media (min-width: 768px) {
+          html, body {
+            overflow: auto !important;
+            height: auto !important;
+            background: #080b14 !important;
+          }
+        }
+      `}</style>
+
       <style jsx>{`
         *,*::before,*::after{box-sizing:border-box;}
         .mcp-edit-portfolio{
@@ -1161,7 +1171,7 @@ if (matched?.isoCode && creator.state) {
           --text:#f1f5f9;--text2:#94a3b8;--text3:#475569;
           background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;min-height:100vh;
         }
-        .nav{position:sticky;top:0;z-index:200;background:rgba(8,11,20,.97);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:0 20px;height:56px;display:flex;align-items:center;justify-content:space-between;}
+        .nav{position:sticky;top:0;z-index:200;background:rgba(8,11,20,.97);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:0 20px;height:56px;display:flex;align-items:center;justify-content:space-between;max-width:520px;margin:0 auto;}
         .nav-logo{display:flex;align-items:center;gap:8px;text-decoration:none;}
         .nav-logo-icon{width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,#6c63ff,#9b59f5);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:white;}
         .nav-logo-name{font-size:15px;font-weight:700;color:var(--text);}

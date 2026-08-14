@@ -441,9 +441,10 @@ const removeTour = (index: number) => {
 
       {/* ── NAV ── */}
       <nav
-        className="sticky top-0 z-40 flex h-14 items-center justify-between border-b border-white/10 px-5"
+        className="sticky top-0 z-40 mx-auto flex h-14 max-w-[520px] items-center justify-between border-b border-white/10 px-5"
         style={{ background: "rgba(8,11,20,.97)", backdropFilter: "blur(20px)" }}
       >
+      
         <button
           type="button"
           onClick={() => router.back()}
@@ -1159,6 +1160,16 @@ setStateQuery("");
           </div>
         </div>
       )}
+
+<style jsx global>{`
+        @media (min-width: 768px) {
+          html, body {
+            overflow: auto !important;
+            height: auto !important;
+            background: #080b14 !important;
+          }
+        }
+      `}</style>
 
       <style jsx>{`
   .dur-wrap{display:flex;align-items:center;gap:12px;}
