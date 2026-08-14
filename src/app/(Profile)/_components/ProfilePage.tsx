@@ -42,7 +42,7 @@ import StarIcon from "@/icons/transparentstar.svg";
 
 import StarIcon2 from "@/icons/star.svg";
 
-import { MoreVertical, MoreHorizontal, BadgeCheck } from "lucide-react";
+import { MoreVertical, MoreHorizontal, BadgeCheck, Trash2 } from "lucide-react";
 
 import axios from "axios";
 
@@ -458,6 +458,9 @@ const clampAspectRatio = (ratio: number) => {
 
   const [purchasePost, setPurchasePost] = useState<any>(null);
   const [exclusiveLightboxPost, setExclusiveLightboxPost] = useState<any>(null);
+
+  const [openGridMenuPostId, setOpenGridMenuPostId] = useState<string | null>(null);
+const [deletingGridPostId, setDeletingGridPostId] = useState<string | null>(null);
 
   const [userBalance, setUserBalance] = useState<number>(0);
 
