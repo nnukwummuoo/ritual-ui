@@ -5878,10 +5878,13 @@ const isFanVerified = isViewingOwnProfile
 
           {(status === "succeeded" || (!isViewingOwnProfile && (viewingProfile?.userId || (viewingProfile as any)?.firstname))) && (
             <div className="flex flex-col">
-              <div className="relative w-full">
+          
                 
 
+                <div className="relative w-full">
                 <div className="w-full px-2">
+
+                  
                   <div className="flex items-center justify-between">
                     <div className="flex items-center justify-center w-1/3">
                       <div className="relative">
