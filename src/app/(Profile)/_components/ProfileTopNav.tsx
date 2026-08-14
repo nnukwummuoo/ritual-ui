@@ -106,7 +106,8 @@ const ProfileTopNav = ({
 
   return (
     <>
-      <style jsx>.ptn-nav {`
+      <style jsx>{`
+      .ptn-nav{
           position: fixed;
           top: 0;
           left: 0;
