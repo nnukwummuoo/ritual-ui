@@ -116,11 +116,9 @@ const ProfileTopNav = ({
       `}</style>
 
       <style jsx>{`
-        .ptn-nav {
-          position: fixed;
+    .ptn-nav {
+          position: sticky;
           top: 0;
-          left: 0;
-          right: 0;
           width: 100%;
           margin: 0 auto;
           z-index: 50;
@@ -135,14 +133,9 @@ const ProfileTopNav = ({
           justify-content: space-between;
           gap: 8px;
         }
-       /* Match the creator_portfolio_id page's fixed content width */
+        /* Match the creator_portfolio_id page's fixed content width */
         @media (min-width: 768px) {
           .ptn-nav { max-width: 520px; }
-        }
-        
-        .ptn-spacer {
-          height: 54px;
-          width: 100%;
         }
         
         .ptn-back {
@@ -309,7 +302,6 @@ const ProfileTopNav = ({
           </div>
         </div>
       </nav>
-      <div className="ptn-spacer" />
     </>
   );
 };
