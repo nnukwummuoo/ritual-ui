@@ -5771,8 +5771,9 @@ const isFanVerified = isViewingOwnProfile
       />
    <div
       className="w-screen mx-auto md:max-w-[520px]"
-      style={{ overflowY: "scroll", background: "var(--background)", minHeight: "100vh" }}
+      style={{ background: "var(--background)", minHeight: "100vh" }}
     >
+    
     
       {/* VIP Celebration Animation */}
       {showVipCelebration && (
