@@ -268,7 +268,7 @@ li{
     display:flex ;
     justify-content: center;
     align-items: center;
-    background: url('../asset/register.png');
+    background: url('../register.png');
     background-position: center;
     background-size: cover;
 }
