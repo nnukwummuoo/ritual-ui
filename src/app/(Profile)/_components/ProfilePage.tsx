@@ -1753,7 +1753,7 @@ const isFanVerified = isViewingOwnProfile
   }, [router, profileSlugForUrl]);
 
   // Handle delete for an exclusive post from the grid's own 3-dot menu
-  const handleDeleteExclusiveGridPost = React.useCallback(async (post: any) => {
+ const handleDeleteExclusiveGridPost = React.useCallback(async (post: any) => {
     const postId = post._id || post.postid || post.id;
 
     if (!postId || !token) {
@@ -1761,30 +1761,37 @@ const isFanVerified = isViewingOwnProfile
       return;
     }
 
-    const confirmed = await new Promise<boolean>((resolve) => {
-      toast.info(
-        <div className="flex flex-col gap-3 bg-red-900 p-4 rounded-lg">
-          <div className="text-white">
-            Are you sure you want to delete this exclusive content? This action cannot be undone.
-          </div>
-          <div className="flex gap-2 justify-end">
-            <button
-              className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-sm"
-              onClick={() => { toast.dismiss(); resolve(true); }}
-            >
-              Delete
-            </button>
-            <button
-              className="px-3 py-1 bg-gray-600 text-white rounded hover:bg-gray-700 text-sm"
-              onClick={() => { toast.dismiss(); resolve(false); }}
-            >
-              Cancel
-            </button>
-          </div>
-        </div>,
-        { position: "top-center", autoClose: false, closeOnClick: false, draggable: false, className: "toast-confirmation" }
-      );
-    });
+    let confirmed = false;
+    try {
+      confirmed = await new Promise<boolean>((resolve) => {
+        toast.info(
+          <div className="flex flex-col gap-3 bg-red-900 p-4 rounded-lg">
+            <div className="text-white">
+              Are you sure you want to delete this exclusive content? This action cannot be undone.
+            </div>
+            <div className="flex gap-2 justify-end">
+              <button
+                className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-sm"
+                onClick={() => { toast.dismiss(); resolve(true); }}
+              >
+                Delete
+              </button>
+              <button
+                className="px-3 py-1 bg-gray-600 text-white rounded hover:bg-gray-700 text-sm"
+                onClick={() => { toast.dismiss(); resolve(false); }}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>,
+          { position: "top-center", autoClose: false, closeOnClick: false, draggable: false, className: "toast-confirmation" }
+        );
+      });
+    } catch (confirmError) {
+      console.error("Error showing delete confirmation:", confirmError);
+      toast.error("Something went wrong opening the confirmation dialog.");
+      return;
+    }
 
     if (!confirmed) return;
 
