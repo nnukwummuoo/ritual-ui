@@ -248,69 +248,45 @@ const ProfileTopNav = ({
                     minWidth: 160,
                   }}
                 >
-                  {isOwnProfile ? (
+                  <button
+                    onClick={() => {
+                      navigate(`/${profileSlugForUrl}/about`);
+                      setcloseOption(false);
+                    }}
+                    style={{
+                      width: "100%",
+                      padding: "12px 16px",
+                      textAlign: "left",
+                      color: "#f1f5f9",
+                      background: "none",
+                      border: "none",
+                      cursor: "pointer",
+                      fontSize: 13,
+                    }}
+                  >
+                 Profile Info
+                  </button>
+                  {!isOwnProfile && (
                     <button
+                      disabled={blocking}
                       onClick={() => {
-                        navigate(`/${profileSlugForUrl}/editprofile`);
                         setcloseOption(false);
+                        handleBlockUser();
                       }}
                       style={{
                         width: "100%",
                         padding: "12px 16px",
                         textAlign: "left",
-                        color: "#f1f5f9",
+                        color: "#f472b6",
                         background: "none",
                         border: "none",
-                        cursor: "pointer",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 8,
+                        cursor: blocking ? "not-allowed" : "pointer",
+                        opacity: blocking ? 0.6 : 1,
                         fontSize: 13,
                       }}
                     >
-                      <Image src={editIcon} alt="edit" className="w-4 h-4" /> Edit Profile
+                      {blocking ? "Blocking..." : "Block User"}
                     </button>
-                  ) : (
-                    <>
-                      <button
-                        onClick={() => {
-                          navigate(`/${profileSlugForUrl}/about`);
-                          setcloseOption(false);
-                        }}
-                        style={{
-                          width: "100%",
-                          padding: "12px 16px",
-                          textAlign: "left",
-                          color: "#f1f5f9",
-                          background: "none",
-                          border: "none",
-                          cursor: "pointer",
-                          fontSize: 13,
-                        }}
-                      >
-                        About this Page
-                      </button>
-                      <button
-                        disabled={blocking}
-                        onClick={() => {
-                          setcloseOption(false);
-                          handleBlockUser();
-                        }}
-                        style={{
-                          width: "100%",
-                          padding: "12px 16px",
-                          textAlign: "left",
-                          color: "#f472b6",
-                          background: "none",
-                          border: "none",
-                          cursor: blocking ? "not-allowed" : "pointer",
-                          opacity: blocking ? 0.6 : 1,
-                          fontSize: 13,
-                        }}
-                      >
-                        {blocking ? "Blocking..." : "Block User"}
-                      </button>
-                    </>
                   )}
                 </div>
               </>
