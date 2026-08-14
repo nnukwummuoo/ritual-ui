@@ -221,9 +221,9 @@ if (!isAuthenticated && isHomeRoute) {
         </>
       )}
 
-      {/* Navbar - Hidden on pages with their own top nav */}
+      {/* Navbar - Hidden on md devices and up, and on pages with their own top nav */}
       {!hasOwnTopbar && (
-        <div className="hidden">
+        <div className="md:hidden">
           <Navbar isAuthenticated={isAuthenticated} />
         </div>
       )}
