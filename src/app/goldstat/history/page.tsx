@@ -12,6 +12,7 @@ import { RootState } from "@/store/store";
 import { useAuth } from "@/lib/context/auth-context";
 import PacmanLoader from "react-spinners/PacmanLoader";
 import Image from "next/image";
+import { Coins, HelpCircle } from "lucide-react";
 import { URL } from "@/api/config";
 
 interface Transaction {
@@ -560,12 +561,11 @@ const HistoryPage = () => {
           >
             Gold &gt;
           </button>
-          <Image
-            src="/icons/help.svg"
-            alt="help"
-            width={16}
-            height={16}
-            className="cursor-pointer"
+         <HelpCircle
+            className="cursor-pointer text-blue-400"
+            width={18}
+            height={18}
+            strokeWidth={2.25}
             onClick={() => setShowPopup(true)}
           />
         </div>
@@ -575,12 +575,11 @@ const HistoryPage = () => {
             onClick={() => router.push("/goldstat/earnings")}
             className="focus:outline-none hover:scale-105 transition-transform"
           >
-            <Image
-              src="/icons/icons8.png"
-              alt="gold"
+           <Coins
+              className="mr-1 text-yellow-400"
               width={32}
               height={32}
-              className="mr-1"
+              strokeWidth={2}
             />
           </button>
           <p className="text-lg font-bold">{totalCurrentBalance}</p>
@@ -895,7 +894,7 @@ const HistoryPage = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-[#111624] p-8 rounded-lg shadow-lg text-center w-96">
             <div className="flex justify-center mb-6">
-              <Image src="/icons/icons8.png" alt="gold" width={64} height={64} />
+              <Coins className="text-yellow-400" width={64} height={64} strokeWidth={1.75} />
             </div>
             <h2 className="text-2xl font-bold mb-4 text-white">Instruction</h2>
             <p className="text-white mb-6 text-lg">1 gold = $0.04 </p>
