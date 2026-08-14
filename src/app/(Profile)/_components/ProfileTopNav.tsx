@@ -177,7 +177,7 @@ const ProfileTopNav = ({
         }
         @media (max-width: 768px) {
           .ptn-actions {
-            transform: translateX(20px);
+            transform: translateX(15px);
           }
         }
         .ptn-share {
