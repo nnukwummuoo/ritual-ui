@@ -310,18 +310,3 @@ body, html {
   background-position: center;
 }
 
-@keyframes slideShow {
-  0%     { background-image: url('../../public/asset/pict/1.png'); }
-  8.33%  { background-image: url('../../public/asset/pict/2.png'); }
-  16.66% { background-image: url('../../public/asset/pict/3.png'); }
-  25%    { background-image: url('../../public/asset/pict/4.png'); }
-  33.33% { background-image: url('../../public/asset/pict/5.png'); }
-  41.66% { background-image: url('../../public/asset/pict/6.png'); }
-  50%    { background-image: url('../../public/asset/pict/7.png'); }
-  58.33% { background-image: url('../../public/asset/pict/8.png'); }
-  66.66% { background-image: url('../../public/asset/pict/9.png'); }
-  75%    { background-image: url('../../public/asset/pict/10.png'); }
-  83.33% { background-image: url('../../public/asset/pict/11.png'); }
-  91.66% { background-image: url('../../public/asset/pict/12.png'); }
-  100%   { background-image: url('../../public/asset/pict/1.png'); }
-}
