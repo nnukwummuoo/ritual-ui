@@ -22,6 +22,7 @@ export default function RitualEmptyState() {
         borderBottom: '1px solid rgba(255,255,255,.06)',
         padding: '0 24px', height: 54,
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        maxWidth: 520, margin: '0 auto',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none', cursor: 'pointer' }} onClick={() => router.push('/')}>
           <div style={{ width: 27, height: 27, borderRadius: 7, background: 'linear-gradient(135deg,#6c63ff,#9b59f5)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 800, color: 'white' }}>M</div>
@@ -173,6 +174,12 @@ export default function RitualEmptyState() {
       </div>
 
       <style>{`
+        @media (min-width: 768px) {
+          html, body {
+            overflow: auto !important;
+            height: auto !important;
+          }
+        }
         @keyframes orbPulse { 0%,100%{transform:translate(-50%,-50%) scale(1);opacity:.6} 50%{transform:translate(-50%,-50%) scale(1.1);opacity:1} }
         @keyframes epFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
         @keyframes ip { 0%,100%{transform:scale(1)} 50%{transform:scale(1.07)} }
