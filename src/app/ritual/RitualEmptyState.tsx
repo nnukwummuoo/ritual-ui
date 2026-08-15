@@ -24,9 +24,21 @@ export default function RitualEmptyState() {
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         maxWidth: 520, margin: '0 auto',
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none', cursor: 'pointer' }} onClick={() => router.push('/')}>
-          <div style={{ width: 27, height: 27, borderRadius: 7, background: 'linear-gradient(135deg,#6c63ff,#9b59f5)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 800, color: 'white' }}>M</div>
-          <span style={{ fontSize: 15, fontWeight: 700, color: '#f0f0f8', fontFamily: 'Syne, sans-serif' }}>mmeko</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <button
+            onClick={() => router.back()}
+            style={{
+              background: 'none', border: 'none', color: '#94a3b8',
+              fontSize: 22, cursor: 'pointer', padding: '4px 8px',
+              borderRadius: 8, lineHeight: 1, fontFamily: 'inherit',
+            }}
+          >
+            ←
+          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none', cursor: 'pointer' }} onClick={() => router.push('/')}>
+            <div style={{ width: 27, height: 27, borderRadius: 7, background: 'linear-gradient(135deg,#6c63ff,#9b59f5)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 800, color: 'white' }}>M</div>
+            <span style={{ fontSize: 15, fontWeight: 700, color: '#f0f0f8', fontFamily: 'Syne, sans-serif' }}>mmeko</span>
+          </div>
         </div>
         <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', fontSize: 13, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 7, fontFamily: 'Syne, sans-serif', letterSpacing: '.04em' }}>
           <svg width="14" height="14" viewBox="0 0 512 512" fill="none">
