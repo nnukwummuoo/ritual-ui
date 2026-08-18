@@ -40,10 +40,6 @@ import { getSocket } from "@/lib/socket";
 
 import { BiPencil } from "react-icons/bi";
 
-import StarIcon from "@/icons/transparentstar.svg";
-
-import StarIcon2 from "@/icons/star.svg";
-
 import { MoreVertical, MoreHorizontal, BadgeCheck, Trash2 } from "lucide-react";
 
 import axios from "axios";
@@ -71,6 +67,24 @@ import VIPBadge from "@/components/VIPBadge";
 import { checkVipCelebration, markVipCelebrationViewed } from "@/api/vipCelebration";
 
 import PostMediaCollage from "@/components/home/PostMediaCollage";
+
+function FollowStatusIcon({ following }: { following?: boolean }) {
+  return following ? (
+    // Following state — person + green checkmark
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+      <circle cx="9" cy="7" r="4" stroke="#22c55e" strokeWidth="1.8" />
+      <path d="M1 21v-2a7 7 0 0114 0v2" stroke="#22c55e" strokeWidth="1.8" strokeLinecap="round" />
+      <path d="M16 11l2.5 2.5L23 9" stroke="#22c55e" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  ) : (
+    // Not following — person + plus
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+      <circle cx="9" cy="7" r="4" stroke="currentColor" strokeWidth="1.8" />
+      <path d="M1 21v-2a7 7 0 0114 0v2" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+      <path d="M19 8v6M16 11h6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
+  );
+}
 
 
 
@@ -6129,13 +6143,7 @@ const isFanVerified = isViewingOwnProfile
                                 : "bg-gradient-to-r from-[#6c63ff] to-[#9b59f5] text-white shadow-[0_10px_24px_-8px_rgba(108,99,255,0.5)]"
                             } ${isProcessing || !token ? "opacity-70 cursor-not-allowed" : "hover:-translate-y-0.5"}`}
                           >
-                            <Image
-                              src={isFollowing ? StarIcon2 : StarIcon}
-                              width={18}
-                              height={18}
-                              className="size-[18px]"
-                              alt="rating"
-                            />
+                            <FollowStatusIcon following={isFollowing} />
                             <span>
                               {isProcessing ? "..." : isFollowing === true ? "Following" : "Follow"}
                             </span>

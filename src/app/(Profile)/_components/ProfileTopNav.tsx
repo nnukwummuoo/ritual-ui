@@ -7,7 +7,7 @@ import { toast } from "react-toastify";
 import axios from "axios";
 
 import { URL as API_URL } from "@/api/config";
-import optionicon from "@/icons/editcommenticon.svg";
+import { MoreVertical } from "lucide-react";
 import editIcon from "@/icons/edit.svg";
 
 type Props = {
@@ -234,7 +234,7 @@ const ProfileTopNav = ({
                 cursor: "pointer",
               }}
             >
-              <Image className="w-5 h-5" alt="options" src={optionicon} />
+              <MoreVertical className="w-5 h-5" color="#c2d0e1" />
             </button>
 
             {closeOption && (

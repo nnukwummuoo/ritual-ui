@@ -7,8 +7,6 @@ import PacmanLoader from "react-spinners/RingLoader";
 import { useRouter, useParams } from "next/navigation";
 import axios from "axios";
 import { URL as API_URL } from "@/api/config";
-
-import profileIcon from "@/icons/icons8-profile_Icon.png";
 // Import used for the profile image upload button in JSX
 import uploadIcon from "@/icons/uploadIcon.svg"; // eslint-disable-line
 import { getImageSource } from "@/lib/imageUtils";
@@ -24,6 +22,8 @@ import { RootState } from "@/store/store";
 import { countryList } from "@/components/CountrySelect/countryList";
 import HeaderBackNav from "@/navs/HeaderBackNav";
 import { Gennavigation } from "@/components/navs/Gennav";
+
+const DEFAULT_PROFILE_IMAGE = "";
 
 // Track API request status to prevent duplicate calls
 const apiRequestTracker = {
@@ -42,6 +42,7 @@ const EditProfile: React.FC = () => {
   const loggedInUserId = useSelector((state: RootState) => state.register.userID);
   const token = useSelector((state: RootState) => state.register.accesstoken);
   const currentUserProfile = useSelector((state: RootState) => state.profile);
+
 
   // Get profile data from Redux store
   const data = useSelector((state: RootState) => state.comprofile.editData);
@@ -80,7 +81,7 @@ const EditProfile: React.FC = () => {
   const [usernamepl, setUsernamepl] = useState("username");
 
   // Form input values
-  const [profileimg, setProfileimg] = useState<string>(profileIcon.src);
+  const [profileimg, setProfileimg] = useState<string>(DEFAULT_PROFILE_IMAGE);
   const [firstname, setFirstname] = useState("");
   const [lastname, setLastname] = useState("");
   const [country, setCountry] = useState("");
@@ -571,7 +572,7 @@ const EditProfile: React.FC = () => {
         // Set profile image if available - only update if we have a photolink to prevent overwriting with empty values
         if (profileData.photolink && profileData.photolink.trim() && profileData.photolink !== "null" && profileData.photolink !== "undefined") {
           // Only set if we don't already have a profile image, or if the new one is different
-          if (!profileimg || profileimg === profileIcon.src || profileimg !== profileData.photolink) {
+          if (!profileimg || profileimg === DEFAULT_PROFILE_IMAGE || profileimg !== profileData.photolink) {
             setProfileimg(profileData.photolink);
             setDeletePhotolink(profileData.photolink);
             setDeletePhotoID(profileData.photoID);
@@ -837,6 +838,8 @@ const EditProfile: React.FC = () => {
       refreshtoken: changedProfileData.refreshtoken
     };
 
+    
+
     // Send update request
     dispatch(updateEdit(finalProfileData) as unknown as AnyAction);
 
@@ -916,7 +919,7 @@ const EditProfile: React.FC = () => {
                         const initials = userName.split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2) || "?";
 
                         // Show image if we have a valid URL and it hasn't failed to load
-                        if (profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined" && profileImage !== profileIcon.src && !imageLoadFailed) {
+                        if (profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined" && profileImage !== DEFAULT_PROFILE_IMAGE && !imageLoadFailed) {
                           // Use getImageSource to handle Storj URLs properly (same as ProfilePage.tsx)
                           const imageSource = getImageSource(profileImage, 'profile');
                           const imageSrc = imageSource.src;
@@ -986,7 +989,7 @@ const EditProfile: React.FC = () => {
                 </div>
 
                 {/* Delete Profile Picture Button */}
-                {profileimg && profileimg !== profileIcon.src && (
+                {profileimg && profileimg !== DEFAULT_PROFILE_IMAGE && (
                   <button
                     onClick={async () => {
                       try {
@@ -998,7 +1001,7 @@ const EditProfile: React.FC = () => {
                         const effectiveUserId = loggedInUserId || localData.userID;
 
                         // Immediately update UI
-                        setProfileimg(profileIcon.src);
+                        setProfileimg(DEFAULT_PROFILE_IMAGE);
                         setUpdatePhoto(undefined);
                         setDeletePhotolink(profileimg);
 

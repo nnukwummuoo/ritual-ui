@@ -3,8 +3,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import Image, { StaticImageData } from "next/image";
-import personIcon from "@/icons/person.svg";
+import Image from "next/image";
 import deleteIcon from "@/icons/deleteicon.svg";
 import { useSelector, useDispatch } from "react-redux";
 import RingLoader from "react-spinners/RingLoader";
@@ -14,9 +13,11 @@ import type { RootState, AppDispatch } from "@/store/store";
 import PacmanLoader from "react-spinners/RingLoader";
 import { getImageSource } from "@/lib/imageUtils";
 
+const DEFAULT_REVIEWER_IMAGE = "";
+
 interface CreatorReviewProps {
   name: string;
-  photolink: string | StaticImageData;
+  photolink: string;
   content: string;
   id: string;
   userid: string;
@@ -50,8 +51,10 @@ export const CreatorReview: React.FC<CreatorReviewProps> = ({
   const date1 = new Date(parseInt(posttime));
   const date = format(date1, "MM/dd/yyyy 'at' h:mm a");
 
-  const [image, setImage] = useState<string | StaticImageData>(personIcon);
+  const [image, setImage] = useState<string>(DEFAULT_REVIEWER_IMAGE);
   const [imageError, setImageError] = useState(false);
+
+
   
   // Determine the reviewer's name and photo based on rating type
   const getReviewerInfo = () => {
@@ -139,9 +142,9 @@ export const CreatorReview: React.FC<CreatorReviewProps> = ({
         {/* Avatar */}
         <div className="relative w-5 h-5 rounded-full overflow-hidden mt-3 bg-gray-600 flex items-center justify-center">
           {(() => {
-            const profileImage = typeof image === "string" ? image : personIcon;
+            const profileImage = image;
             const hasValidImage = profileImage && 
-              profileImage !== personIcon && 
+              profileImage !== DEFAULT_REVIEWER_IMAGE &&
               profileImage.trim() !== "" && 
               profileImage !== "null" && 
               profileImage !== "undefined" && 

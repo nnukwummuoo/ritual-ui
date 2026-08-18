@@ -6,7 +6,7 @@ import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import { URL as API_BASE } from "@/api/config";
 import { useRouter, useParams } from "next/navigation";
-import optionicon from "@/icons/editcommenticon.svg";
+import { MoreVertical } from "lucide-react";
 import editIcon from "@/icons/edit.svg";
 import deleteicon from "@/icons/deleteicon.svg";
 import goldIcon from "@/icons/goldIcon.svg";
@@ -670,7 +670,7 @@ const [urlCopied, setUrlCopied] = useState(false);
           onClick={(e) => { e.stopPropagation(); setcloseOption(prev => !prev); }}
           style={{ padding: "8px", background: "var(--mcp-card2)", borderRadius: "50%", border: "none", cursor: "pointer" }}
         >
-          <Image className="w-5 h-5" alt="options" src={optionicon} />
+          <MoreVertical className="w-5 h-5" color="#c2d0e1" />
         </button>
         {closeOption && (
           <>
