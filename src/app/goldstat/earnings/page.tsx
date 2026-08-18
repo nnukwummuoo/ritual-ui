@@ -6,6 +6,7 @@ import { useDispatch, useSelector } from "react-redux";
 
 import Image from "next/image";
 import { HelpCircle } from "lucide-react";
+import goldIcon from "@/icons/goldIcon.svg";
 
 import { get_transaction_history } from '@/store/goldstatSlice';
 import { RootState } from '@/store/store';
@@ -60,7 +61,7 @@ const Earnings: React.FC = () => {
          <HelpCircle className="text-blue-400 cursor-pointer" width={18} height={18} strokeWidth={2.25} />
         </div>
         <div className="flex items-center mt-2">
-          <span className="mr-1 text-[28px] leading-none">🪙</span>
+          <Image src={goldIcon} alt="gold" className="mr-1 w-8 h-8 object-contain" />
           <p className="text-lg font-bold">{earnings || 0}</p>
         </div>
         <p className="text-sm">= ${((parseFloat(earnings) || 0) * 0.04).toFixed(2)}</p>
