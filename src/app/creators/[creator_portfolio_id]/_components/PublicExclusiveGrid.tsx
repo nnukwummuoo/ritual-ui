@@ -148,11 +148,11 @@ export default function PublicExclusiveGrid({
     const src = getImageSource(post.postfilelink, "post").src || post.postfilelink;
     const unlocked = isOwner || purchasedIds.has(post._id);
     return (
+     <div key={post._id} className="flex flex-col gap-1 min-w-0">
       <button
-        key={post._id}
         type="button"
         onClick={() => openTile(post)}
-        className="relative aspect-square rounded-lg overflow-hidden bg-black border border-white/10"
+        className="relative aspect-square rounded-lg overflow-hidden bg-black border border-white/10 w-full"
       >
         {post.posttype === "video" ? (
           <video
@@ -200,6 +200,12 @@ export default function PublicExclusiveGrid({
           </div>
         )}
       </button>
+      {!!post.content && (
+        <p className="text-[12px] leading-snug text-gray-300 truncate w-full px-0.5">
+          {post.content}
+        </p>
+      )}
+      </div>
     );
   })}
 </div>

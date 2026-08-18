@@ -216,21 +216,26 @@ const triggerFileInput = () => {
   };
 
   // Handle upload/update
-  const handleUpload = async () => {
-    // In edit mode, file is optional (only update if new file is selected)
+ const handleUpload = async () => {
+    // File is mandatory in both modes — in edit mode it can be satisfied
+    // either by keeping the existing media or picking a new file.
     if (!isEditMode && !exclusiveContentFile) {
       toast.error("Please select a file to upload");
       return;
     }
 
-    if (!exclusiveContentPrice || parseFloat(exclusiveContentPrice) <= 0) {
-      toast.error("Please enter a valid price");
+    if (isEditMode && !exclusiveContentFile && !existingMediaUrl) {
+      toast.error("Please select a file or keep existing media");
       return;
     }
 
-    // In edit mode, must have either existing media or new file
-    if (isEditMode && !exclusiveContentFile && !existingMediaUrl) {
-      toast.error("Please select a file or keep existing media");
+    if (!exclusiveContentDescription || !exclusiveContentDescription.trim()) {
+      toast.error("Please enter a description");
+      return;
+    }
+
+    if (!exclusiveContentPrice || parseFloat(exclusiveContentPrice) <= 0) {
+      toast.error("Please enter a valid price");
       return;
     }
 

@@ -9,7 +9,8 @@ import { toast } from "react-toastify";
 import { golds } from "@/data/intresttypes";
 import { createWeb3Payment, checkWeb3PaymentStatus, cancelWeb3Payment, verifyTransactionHash } from "@/api/web3payment";
 import { RootState } from "@/store/store"
-import { Copy, Check, ShieldCheck, Lock, RefreshCw, Trash2 } from "lucide-react";
+import { Copy, Check, ShieldCheck, Lock, RefreshCw, Trash2, HelpCircle } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
 import Web3Providers from "@/components/Web3Providers";
 import { URL as API_URL } from "@/api/config";
@@ -490,6 +491,8 @@ const TopupInner: React.FC = () => {
     </tr>
   ));
 
+  const router = useRouter();
+
   return (
     <div className="min-h-screen w-full flex items-start justify-center px-4 sm:px-6 pt-4 sm:pt-6 pb-16">
       <div className="flex flex-col items-center w-full max-w-md mx-auto">
@@ -531,6 +534,26 @@ const TopupInner: React.FC = () => {
             Buy Gold with USDT or USDC <span className="text-[#636583] font-normal">(BEP20)</span>
           </span>
         </div>
+
+        {/* New to crypto? */}
+        <button
+          type="button"
+          onClick={() => router.push("/message/supportchat")}
+          className="w-full flex items-center justify-between gap-3 mt-4 px-4 py-3 rounded-xl bg-[#6c63ff]/[0.07] border border-[#6c63ff]/20 hover:bg-[#6c63ff]/[0.12] transition-colors text-left"
+        >
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-full bg-[#6c63ff]/15 flex items-center justify-center flex-shrink-0">
+              <HelpCircle className="w-4 h-4 text-[#9b8dff]" />
+            </div>
+            <div>
+              <p className="text-white text-sm font-semibold leading-tight">New to crypto?</p>
+              <p className="text-[#8b8fa3] text-xs mt-0.5">We'll walk you through it, step by step</p>
+            </div>
+          </div>
+          <span className="text-[#c9c4ff] text-xs font-semibold whitespace-nowrap flex-shrink-0">
+            Get Help →
+          </span>
+        </button>
 
         {/* Table Card */}
         <div className="w-full bg-[#111624] rounded-2xl shadow-[0_20px_50px_-25px_rgba(0,0,0,0.6)] p-0 mb-6 mt-4 sm:mt-6 overflow-x-auto border border-white/[0.06]">

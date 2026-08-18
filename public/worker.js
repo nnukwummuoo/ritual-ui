@@ -424,11 +424,16 @@ if (typeof workbox !== 'undefined' && workbox.routing && workbox.strategies && w
     })
   );
 
-  // JavaScript Assets - StaleWhileRevalidate
+// JavaScript Assets - NetworkFirst
+  // (StaleWhileRevalidate was serving outdated chunk files after a deploy,
+  // since Next.js content-hashes JS filenames and they change on every
+  // release — NetworkFirst always prefers a fresh copy and only falls back
+  // to cache if the network request actually fails, e.g. while offline)
   registerRoute(
     /\.(?:js)$/i,
-    new StaleWhileRevalidate({
+    new NetworkFirst({
       cacheName: 'static-js-assets',
+      networkTimeoutSeconds: 5,
       plugins: [
         new ExpirationPlugin({
           maxEntries: 32,
@@ -438,11 +443,12 @@ if (typeof workbox !== 'undefined' && workbox.routing && workbox.strategies && w
     })
   );
 
-  // CSS Assets - StaleWhileRevalidate
+  // CSS Assets - NetworkFirst
   registerRoute(
     /\.(?:css|less)$/i,
-    new StaleWhileRevalidate({
+    new NetworkFirst({
       cacheName: 'static-style-assets',
+      networkTimeoutSeconds: 5,
       plugins: [
         new ExpirationPlugin({
           maxEntries: 32,

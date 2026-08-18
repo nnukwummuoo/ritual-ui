@@ -6398,9 +6398,9 @@ const isFanVerified = isViewingOwnProfile
                           const canView = isPostOwner || isPurchased;
                           const src = post.postfilelink;
 
-                          return (
+                         return (
+                            <div key={`exclusive-post-${postId}`} className="flex flex-col gap-1 min-w-0">
                             <div
-                              key={`exclusive-post-${postId}`}
                               role="button"
                               tabIndex={0}
                               onClick={(e) => {
@@ -6412,6 +6412,7 @@ const isFanVerified = isViewingOwnProfile
                               }}
                               className="relative aspect-square rounded-lg overflow-hidden bg-black border border-white/10 cursor-pointer"
                             >
+                            
                               {post.posttype === "video" ? (
                                 <video
                                   src={src}
@@ -6487,7 +6488,7 @@ const isFanVerified = isViewingOwnProfile
                                             <div className="w-3 h-3 border border-red-400 border-t-transparent rounded-full animate-spin" />
                                             Deleting...
                                           </>
-                                        ) : (
+                                    ) : (
                                           <>
                                             <Trash2 className="w-3.5 h-3.5" />
                                             Delete
@@ -6498,6 +6499,12 @@ const isFanVerified = isViewingOwnProfile
                                   )}
                                 </div>
                               )}
+                            </div>
+                            {!!post.content && (
+                              <p className="text-[12px] leading-snug text-gray-300 truncate w-full px-0.5">
+                                {post.content}
+                              </p>
+                            )}
                             </div>
                           );
                         })}

@@ -15,6 +15,7 @@ type ExclusivePost = {
   postfilelink: string;
   posttype: "image" | "video";
   price: number;
+  content?: string;
 };
 
 export default function ExclusiveContentSection({
@@ -133,11 +134,12 @@ export default function ExclusiveContentSection({
           </span>
         </div>
       ) : (
-        <div className="grid grid-cols-3 gap-2">
+       <div className="grid grid-cols-3 gap-2 items-start">
             {posts.map((post) => {
             const src = getImageSource(post.postfilelink, "post").src || post.postfilelink;
             return (
-                <div key={post._id} className="relative aspect-square rounded-lg overflow-hidden bg-black border border-white/10 group">
+                <div key={post._id} className="flex flex-col gap-1 min-w-0">
+                <div className="relative aspect-square rounded-lg overflow-hidden bg-black border border-white/10 group">
                 {post.posttype === "video" ? (
                   <video src={src} className="w-full h-full object-cover" muted />
                 ) : (
@@ -193,8 +195,14 @@ export default function ExclusiveContentSection({
                         )}
                       </button>
                     </div>
-                  )}
+                 )}
                 </div>
+              </div>
+              {!!post.content && (
+                <p className="text-[12px] leading-snug text-gray-300 truncate w-full px-0.5">
+                  {post.content}
+                </p>
+              )}
               </div>
             );
           })}
