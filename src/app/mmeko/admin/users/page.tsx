@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, useRef, JSX } from "react";
-import searchIcon from "@/icons/searchicon.svg";
+import { Search } from "lucide-react";
 import axios from "axios";
 import sendIcon from "@/icons/emailsendIcon.svg";
 import PacmanLoader from "react-spinners/RingLoader";
@@ -2723,10 +2723,8 @@ export default function Users(): JSX.Element {
                 onChange={handleSearch}
                 className="w-full bg-gray-700 text-white pl-10 pr-4 py-2 rounded-lg"
               />
-              <img
-                src={searchIcon.src}
-                alt="Search"
-                className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4"
+              <Search
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400"
               />
             </div>
           </div>
@@ -3463,7 +3461,7 @@ export default function Users(): JSX.Element {
                   setCurrentPage(1);
                 }}
               >
-                <img alt="searchIcon" src={searchIcon.src} />
+                <Search className="w-4 h-4" />
               </button>
             </div>
 
@@ -3829,7 +3827,7 @@ export default function Users(): JSX.Element {
                     {/* Search Bar */}
                     <div className="p-3 border-b border-gray-600">
                       <div className="flex items-center gap-2">
-                        <img alt="searchIcon" src={searchIcon.src} className="w-4 h-4" />
+                        <Search className="w-4 h-4" />
                         <input
                           type="text"
                           value={userSearchText}

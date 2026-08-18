@@ -4,7 +4,7 @@
 
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
-import deleteIcon from "@/icons/deleteicon.svg";
+import { Trash2 } from "lucide-react";
 import { useSelector, useDispatch } from "react-redux";
 import RingLoader from "react-spinners/RingLoader";
 import { deletereview, changecreatorstatus } from "@/store/creatorSlice";
@@ -205,7 +205,7 @@ export const CreatorReview: React.FC<CreatorReviewProps> = ({
         {/* Delete button */}
         {showDelete() && (
           <button onClick={deleteMyReview}>
-            <Image alt="deleteIcon" src={deleteIcon} width={20} height={20} />
+            <Trash2 width={20} height={20} className="text-red-400" />
           </button>
         )}
 

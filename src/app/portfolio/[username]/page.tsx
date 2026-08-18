@@ -6,9 +6,7 @@ import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import { URL as API_BASE } from "@/api/config";
 import { useRouter, useParams } from "next/navigation";
-import { MoreVertical } from "lucide-react";
-import editIcon from "@/icons/edit.svg";
-import deleteicon from "@/icons/deleteicon.svg";
+import { MoreVertical, Pencil, Trash2, X } from "lucide-react";
 import goldIcon from "@/icons/goldIcon.svg";
 import PacmanLoader1 from "react-spinners/ClockLoader";
 import { toast, ToastContainer } from "material-react-toastify";
@@ -16,7 +14,6 @@ import { Requestinfo } from "@/components/requestFrag/Requestinfo";
 import { Requestsuccess } from "@/components/requestFrag/Requestsuccess";
 import { Requestform } from "@/components/requestFrag/Requestform";
 import { RequestDetailsForm } from "@/components/requestFrag/RequestDetailsForm";
-import closeIcon from "@/icons/closeIcon.svg";
 import { getViews } from "@/store/creatorSlice";
 import { getAllCreatorRatings } from "@/store/profile";
 import { CreatorReview } from "../_components/Creator_review";
@@ -696,10 +693,10 @@ useEffect(() => {
             <div style={{ position: "fixed", inset: 0, zIndex: 9998 }} onClick={() => setcloseOption(false)} />
             <div style={{ position: "fixed", right: 16, top: 60, background: "var(--mcp-card2)", borderRadius: 8, boxShadow: "0 8px 24px rgba(0,0,0,.4)", border: "1px solid rgba(255,255,255,0.15)", zIndex: 99999, minWidth: 140 }}>
               <button onClick={() => { navigate("/creators/editcreatorportfolio"); setcloseOption(false); }} style={{ width: "100%", padding: "12px 16px", textAlign: "left", color: "var(--mcp-text)", background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 8, fontSize: 13 }}>
-                <Image src={editIcon} alt="edit" className="w-4 h-4" /> Edit
+                <Pencil className="w-4 h-4" /> Edit
               </button>
               <button onClick={() => { confirmDelete(); setcloseOption(false); }} style={{ width: "100%", padding: "12px 16px", textAlign: "left", color: "var(--mcp-rose)", background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 8, fontSize: 13 }}>
-                <Image src={deleteicon} alt="delete" className="w-4 h-4" /> Delete
+                <Trash2 className="w-4 h-4" /> Delete
               </button>
             </div>
           </>
@@ -1010,7 +1007,7 @@ useEffect(() => {
               <div className="flex justify-between items-center p-6 border-b border-gray-700">
                 <h2 className="text-2xl font-bold text-white">Reviews</h2>
                 <button onClick={() => setreview_click(false)} className="p-2 bg-gray-700 hover:bg-gray-600 rounded-full transition-colors">
-                  <Image alt="closeIcon" src={closeIcon} className="w-5 h-5" />
+                  <X className="w-5 h-5 text-white" />
                 </button>
               </div>
               <div className="p-6">
