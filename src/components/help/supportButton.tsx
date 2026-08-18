@@ -2,24 +2,17 @@
 
 import React from "react";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
-import cusmericon from "../../icons/icons8-message.png"; // Ensure it's in /public or set up for static import
+import { MessageCircle } from "lucide-react";
 
 const SupportButton = () => {
   const router = useRouter();
 
   return (
     <button
-      className="w-12 h-12 rounded-full shadow fixed bottom-20 z-40 right-4 md:right-[36rem]"
+      className="w-12 h-12 rounded-full shadow fixed bottom-20 z-40 right-4 md:right-[36rem] bg-gradient-to-r from-[#6c63ff] to-[#9b59f5] flex items-center justify-center"
       onClick={() => router.push("/speaker")}
     >
-      <Image
-        alt="customer-support"
-        src={cusmericon}
-        className="object-cover rounded-full"
-        width={48}
-        height={48}
-      />
+      <MessageCircle className="w-6 h-6 text-white" fill="white" fillOpacity={0.15} />
     </button>
   );
 };
