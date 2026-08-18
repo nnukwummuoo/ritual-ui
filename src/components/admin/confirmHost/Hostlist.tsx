@@ -5,9 +5,11 @@ import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "@/store/store";
 import { verifycreator, rejectcreator } from "@/store/creatorSlice";
 import { MdOutlineClose } from "react-icons/md";
-import proimage1 from "../../../icons/icons8-profile_Icon.png";
 import PacmanLoader from "react-spinners/ClockLoader";
 import Image, { StaticImageData } from "next/image";
+
+const DEFAULT_AVATAR =
+  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23475569'%3E%3Ccircle cx='12' cy='8' r='4'/%3E%3Cpath d='M4 20c0-4.4 3.6-8 8-8s8 3.6 8 8'/%3E%3C/svg%3E";
 
 // Helper to get src string from string | StaticImageData
 function getImageSrc(image: string | StaticImageData): string {
@@ -55,14 +57,14 @@ const Hostlist: React.FC<HostProps> = ({ prob }) => {
   const [disableButton, setDisableButton] = useState(false);
   const [showImage, setShowImage] = useState(false);
   const [imageType, setImageType] = useState("");
-  const [imageSrc, setImageSrc] = useState<string>(getImageSrc(proimage1));
+  const [imageSrc, setImageSrc] = useState<string>(getImageSrc(DEFAULT_AVATAR));
   const dispatch = useDispatch<AppDispatch>();
   const token = useSelector((s: RootState) => s.register.accesstoken);
 
   // Normalize images to string src
-  const userImage = getImageSrc(image || proimage1);
-  const holdingImage = getImageSrc(holdingIdPhoto || proimage1);
-  const idImage = getImageSrc(idPhoto || proimage1);
+  const userImage = getImageSrc(image || DEFAULT_AVATAR);
+  const holdingImage = getImageSrc(holdingIdPhoto || DEFAULT_AVATAR);
+  const idImage = getImageSrc(idPhoto || DEFAULT_AVATAR);
 
   const verify = async () => {
     try {

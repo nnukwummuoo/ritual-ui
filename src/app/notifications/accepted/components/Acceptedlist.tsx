@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import dodo from "../../../../icons/person.svg";
+import { User } from "lucide-react";
 import deleteicon from "../../../../icons/deleteicon.svg";
 // import reviewicon from "@/icons/icons8-review.png";
 import PacmanLoader from "react-spinners/RotateLoader";
@@ -52,7 +52,7 @@ export const Acceptedlist = ({
 }: AcceptedProps) => {
   const [loading, setloading] = useState(false);
   let [color, setColor] = useState("#d49115");
-  let [image, setimage] = useState(dodo);
+  let [image, setimage] = useState("");
   // let [revcontent, setrevcontent] = useState("");
   // const userid = useSelector((state) => state.register.userID);
   // const cancelstats = useSelector((state) => state.request.cancelstats);
@@ -217,11 +217,9 @@ export const Acceptedlist = ({
         </div>
       )}
       <div className="flex">
-        <img
-          alt="creatorimg"
-          src={"/icons/person.svg"}
-          className="w-7 h-7 rounded-full object-cover"
-        />
+        <div className="w-7 h-7 rounded-full bg-gray-700 flex items-center justify-center flex-shrink-0">
+          <User className="w-4 h-4 text-gray-400" />
+        </div>
         <div className="flex flex-col ml-1 p-1">
           <p className="text-xs bg-[#111624] text-white">
             {`${name}`} {`${status}`} your {`${type}`} request on {`${date}`}{" "}

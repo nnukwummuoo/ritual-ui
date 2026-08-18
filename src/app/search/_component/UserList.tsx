@@ -1,10 +1,13 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import Image, { StaticImageData } from 'next/image';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import Person from '@/icons/icons8-profile_Icon.png'; // Adjust path as needed
 import { getImageSource } from '@/lib/imageUtils';
+
+const DEFAULT_AVATAR =
+  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23475569'%3E%3Ccircle cx='12' cy='8' r='4'/%3E%3Cpath d='M4 20c0-4.4 3.6-8 8-8s8 3.6 8 8'/%3E%3C/svg%3E";
+
 
 interface UserListProps {
   photolink: string;
@@ -25,7 +28,7 @@ export const UserList: React.FC<UserListProps> = ({
   userid,
   username,
 }) => {
-  const [userPic, setUserPic] = useState<string | StaticImageData>(Person);
+  const [userPic, setUserPic] = useState<string>(DEFAULT_AVATAR);
   const router = useRouter();
 
   useEffect(() => {
@@ -44,13 +47,13 @@ export const UserList: React.FC<UserListProps> = ({
         {/* Fallback logic for broken URLs */}
         <Image
           alt="profile"
-          src={getImageSource(userPic || Person, 'profile').src}
+          src={getImageSource(userPic || DEFAULT_AVATAR, 'profile').src}
           width={40}
           height={40}
           className="rounded-full object-cover w-10 h-10"
           onError={(e) => {
             const target = e.target as HTMLImageElement;
-            target.src = (Person as unknown as string);
+            target.src = DEFAULT_AVATAR;
           }}
         />
       </div>

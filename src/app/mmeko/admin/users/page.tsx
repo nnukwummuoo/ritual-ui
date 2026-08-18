@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback, useRef, JSX } from "react";
 import { Search } from "lucide-react";
 import axios from "axios";
-import sendIcon from "@/icons/emailsendIcon.svg";
+import { Send } from "lucide-react";
 import PacmanLoader from "react-spinners/RingLoader";
 import { ToastContainer, toast } from "react-toastify";
 import { useDispatch, useSelector } from "react-redux";
@@ -3303,7 +3303,7 @@ export default function Users(): JSX.Element {
             className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 flex items-center gap-2"
             onClick={() => setShowNotificationModal(true)}
           >
-            <img alt="sendicon" src={sendIcon.src} />
+            <Send className="w-4 h-4" />
             <span>Send New Notification</span>
           </button>
         </div>
@@ -3551,7 +3551,7 @@ export default function Users(): JSX.Element {
                 <label className="text-white text-sm font-bold mr-2">
                   Send Notification to Users
                 </label>
-                <img alt="sendicon" src={sendIcon.src} />
+                <Send className="w-4 h-4" />
               </button>
 
 

@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react'
 import type { StaticImageData } from 'next/image';
 import Image from 'next/image';
 import ClipLoader from "react-spinners/ClipLoader";
-import person from "../../../icons/icons8-profile_Icon.png"
 import onlineIcon from "../../../icons/onlineIcon.svg"
 import offlineIcon from "../../../icons/offlineIcon.svg"
 import { getCountryData } from '../../../api/getCountries';
@@ -11,6 +10,8 @@ import type { AppDispatch, RootState } from '../../../store/store';
 import { URL as API_URL } from '@/api/config';
 import axios from 'axios';
 import { toast } from 'material-react-toastify';
+
+const DEFAULT_PROFILE_IMAGE = "";
 
 type ListOfBlockUsersProps = {
   id: string;
@@ -55,7 +56,7 @@ export const Listofblockusers: React.FC<ListOfBlockUsersProps> = ({ id, photolin
   const loggedInUserId = userid || profileUserId || localUserid;
   const [loading, setloading] = useState(false);
   // Store image as a string URL for use in <img src="..."/>
-  const [image, setimage] = useState<string>(typeof person === 'string' ? person : (person as StaticImageData).src);
+  const [image, setimage] = useState<string>(DEFAULT_PROFILE_IMAGE);
   let [color, setColor] = useState("#d49115");
   let [disable, setdisable] = useState(false);
   let [buttonpressed, set_buttonpressed] = useState(false)
@@ -183,7 +184,7 @@ export const Listofblockusers: React.FC<ListOfBlockUsersProps> = ({ id, photolin
         <div className="flex items-center space-x-3">
           {/* Profile Picture */}
           <div className="relative">
-            {image && image !== (typeof person === 'string' ? person : (person as StaticImageData).src) ? (
+            {image && image !== DEFAULT_PROFILE_IMAGE ? (
               <Image
                 alt="Profile"
                 src={image}
