@@ -5,6 +5,7 @@ import PacmanLoader from "react-spinners/RingLoader";
 import { useDispatch, useSelector } from "react-redux";
 
 import Image from "next/image";
+import { HelpCircle } from "lucide-react";
 
 import { get_transaction_history } from '@/store/goldstatSlice';
 import { RootState } from '@/store/store';
@@ -56,22 +57,10 @@ const Earnings: React.FC = () => {
           >
             ← Back
           </button>
-          <Image
-            src="/icons/help.svg"
-            alt="help"
-            width={16}
-            height={16}
-            className="cursor-pointer"
-          />
+         <HelpCircle className="text-blue-400 cursor-pointer" width={18} height={18} strokeWidth={2.25} />
         </div>
         <div className="flex items-center mt-2">
-          <Image
-            src="/icons/icons8.png"
-            alt="gold"
-            width={32}
-            height={32}
-            className="mr-1"
-          />
+          <span className="mr-1 text-[28px] leading-none">🪙</span>
           <p className="text-lg font-bold">{earnings || 0}</p>
         </div>
         <p className="text-sm">= ${((parseFloat(earnings) || 0) * 0.04).toFixed(2)}</p>

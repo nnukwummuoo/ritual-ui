@@ -368,7 +368,31 @@ function PaymentAccountPageInner() {
             {/* Account Form */}
             <div className="bg-[#111624] border border-white/[0.06] rounded-2xl p-6">
               <h2 className="text-lg font-semibold mb-1">Cryptocurrency Account Information</h2>
-              <p className="text-xs text-gray-500 mb-5">This is where your earnings will be sent when you withdraw.</p>
+              <p className="text-xs text-gray-500 mb-4">This is where your earnings will be sent when you withdraw.</p>
+
+              <button
+                type="button"
+                onClick={() => router.push("/message/supportchat")}
+                className="w-full flex items-center justify-between gap-3 mb-5 px-3 py-2.5 rounded-xl bg-[#6c63ff]/[0.07] border border-[#6c63ff]/20 hover:bg-[#6c63ff]/[0.12] transition-colors text-left"
+              >
+                <div className="flex items-center gap-2.5">
+                  <div className="w-7 h-7 rounded-full bg-[#6c63ff]/15 flex items-center justify-center flex-shrink-0">
+                    <svg className="w-3.5 h-3.5 text-[#9b8dff]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <circle cx="12" cy="12" r="10" strokeWidth={2} />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.09 9a3 3 0 015.83 1c0 2-3 2-3 4" />
+                      <circle cx="12" cy="17" r="0.5" fill="currentColor" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-white text-[13px] font-semibold leading-tight">New to crypto?</p>
+                    <p className="text-[#8b8fa3] text-[11px] mt-0.5">We'll help you pick the right stablecoin and network</p>
+                  </div>
+                </div>
+                <span className="text-[#c9c4ff] text-[11px] font-semibold whitespace-nowrap flex-shrink-0">
+                  Get Help →
+                </span>
+              </button>
+
               <form onSubmit={handleSubmit} className="space-y-5">
                 {renderInput("fullName", "Full Name")}
                 {renderInput("email", "Email Address", "email")}

@@ -12,7 +12,7 @@ import { RootState } from "@/store/store";
 import { useAuth } from "@/lib/context/auth-context";
 import PacmanLoader from "react-spinners/PacmanLoader";
 import Image from "next/image";
-import { Coins, HelpCircle } from "lucide-react";
+import { HelpCircle } from "lucide-react";
 import { URL } from "@/api/config";
 
 interface Transaction {
@@ -575,12 +575,7 @@ const HistoryPage = () => {
             onClick={() => router.push("/goldstat/earnings")}
             className="focus:outline-none hover:scale-105 transition-transform"
           >
-           <Coins
-              className="mr-1 text-yellow-400"
-              width={32}
-              height={32}
-              strokeWidth={2}
-            />
+           <span className="mr-1 text-[28px] leading-none">🪙</span>
           </button>
           <p className="text-lg font-bold">{totalCurrentBalance}</p>
         </div>
@@ -894,7 +889,7 @@ const HistoryPage = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-[#111624] p-8 rounded-lg shadow-lg text-center w-96">
             <div className="flex justify-center mb-6">
-              <Coins className="text-yellow-400" width={64} height={64} strokeWidth={1.75} />
+              <span className="text-[56px] leading-none">🪙</span>
             </div>
             <h2 className="text-2xl font-bold mb-4 text-white">Instruction</h2>
             <p className="text-white mb-6 text-lg">1 gold = $0.04 </p>
