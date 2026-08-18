@@ -13,7 +13,6 @@ import { useAuth } from "@/lib/context/auth-context";
 import PacmanLoader from "react-spinners/PacmanLoader";
 import Image from "next/image";
 import { HelpCircle } from "lucide-react";
-import goldIcon from "@/icons/goldIcon.svg";
 import { URL } from "@/api/config";
 
 interface Transaction {
@@ -576,7 +575,17 @@ const HistoryPage = () => {
             onClick={() => router.push("/goldstat/earnings")}
             className="focus:outline-none hover:scale-105 transition-transform"
           >
-           <Image src={goldIcon} alt="gold" className="mr-1 w-8 h-8 object-contain" />
+          <span
+              className="rounded-full flex items-center justify-center shrink-0 mr-1"
+              style={{ width: 32, height: 32, boxShadow: "0 4px 12px -4px rgba(245,196,81,0.5)" }}
+            >
+              <svg viewBox="0 0 24 24" width="32" height="32" xmlns="http://www.w3.org/2000/svg" style={{ filter: "drop-shadow(0 4px 8px rgba(245,196,81,0.4))" }}>
+                <circle cx="12" cy="12" r="10" fill="#F5C451" />
+                <circle cx="12" cy="12" r="10" fill="none" stroke="#B8860B" strokeWidth="1.2" />
+                <circle cx="12" cy="12" r="7" fill="none" stroke="#B8860B" strokeWidth="0.8" opacity="0.45" />
+                <path d="M12 7.3l1.1 2.6 2.7.3-2 1.8.5 2.7-2.3-1.4-2.3 1.4.5-2.7-2-1.8 2.7-.3L12 7.3z" fill="#B8860B" opacity="0.55" />
+              </svg>
+            </span>
           </button>
           <p className="text-lg font-bold">{totalCurrentBalance}</p>
         </div>
@@ -890,7 +899,17 @@ const HistoryPage = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-[#111624] p-8 rounded-lg shadow-lg text-center w-96">
             <div className="flex justify-center mb-6">
-              <Image src={goldIcon} alt="gold" className="w-16 h-16 object-contain" />
+              <span
+                className="rounded-full flex items-center justify-center shrink-0"
+                style={{ width: 64, height: 64, boxShadow: "0 4px 12px -4px rgba(245,196,81,0.5)" }}
+              >
+                <svg viewBox="0 0 24 24" width="64" height="64" xmlns="http://www.w3.org/2000/svg" style={{ filter: "drop-shadow(0 4px 8px rgba(245,196,81,0.4))" }}>
+                  <circle cx="12" cy="12" r="10" fill="#F5C451" />
+                  <circle cx="12" cy="12" r="10" fill="none" stroke="#B8860B" strokeWidth="1.2" />
+                  <circle cx="12" cy="12" r="7" fill="none" stroke="#B8860B" strokeWidth="0.8" opacity="0.45" />
+                  <path d="M12 7.3l1.1 2.6 2.7.3-2 1.8.5 2.7-2.3-1.4-2.3 1.4.5-2.7-2-1.8 2.7-.3L12 7.3z" fill="#B8860B" opacity="0.55" />
+                </svg>
+              </span>
             </div>
             <h2 className="text-2xl font-bold mb-4 text-white">Instruction</h2>
             <p className="text-white mb-6 text-lg">1 gold = $0.04 </p>

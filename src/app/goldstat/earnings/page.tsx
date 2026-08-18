@@ -6,7 +6,6 @@ import { useDispatch, useSelector } from "react-redux";
 
 import Image from "next/image";
 import { HelpCircle } from "lucide-react";
-import goldIcon from "@/icons/goldIcon.svg";
 
 import { get_transaction_history } from '@/store/goldstatSlice';
 import { RootState } from '@/store/store';
@@ -61,7 +60,17 @@ const Earnings: React.FC = () => {
          <HelpCircle className="text-blue-400 cursor-pointer" width={18} height={18} strokeWidth={2.25} />
         </div>
         <div className="flex items-center mt-2">
-          <Image src={goldIcon} alt="gold" className="mr-1 w-8 h-8 object-contain" />
+          <span
+            className="rounded-full flex items-center justify-center shrink-0 mr-1"
+            style={{ width: 32, height: 32, boxShadow: "0 4px 12px -4px rgba(245,196,81,0.5)" }}
+          >
+            <svg viewBox="0 0 24 24" width="32" height="32" xmlns="http://www.w3.org/2000/svg" style={{ filter: "drop-shadow(0 4px 8px rgba(245,196,81,0.4))" }}>
+              <circle cx="12" cy="12" r="10" fill="#F5C451" />
+              <circle cx="12" cy="12" r="10" fill="none" stroke="#B8860B" strokeWidth="1.2" />
+              <circle cx="12" cy="12" r="7" fill="none" stroke="#B8860B" strokeWidth="0.8" opacity="0.45" />
+              <path d="M12 7.3l1.1 2.6 2.7.3-2 1.8.5 2.7-2.3-1.4-2.3 1.4.5-2.7-2-1.8 2.7-.3L12 7.3z" fill="#B8860B" opacity="0.55" />
+            </svg>
+          </span>
           <p className="text-lg font-bold">{earnings || 0}</p>
         </div>
         <p className="text-sm">= ${((parseFloat(earnings) || 0) * 0.04).toFixed(2)}</p>
