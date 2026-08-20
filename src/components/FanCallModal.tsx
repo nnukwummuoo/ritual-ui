@@ -151,6 +151,12 @@ export default function FanCallModal({
   const [callTimeout, setCallTimeout] = useState(false);
   const [callStartTime, setCallStartTime] = useState<number | null>(null);
   const [insufficientFunds, setInsufficientFunds] = useState(false);
+  const [postCallNotice, setPostCallNotice] = useState<{
+    title: string;
+    message: string;
+    tone: 'charged' | 'notCredited';
+  } | null>(null);
+  const sharedCallDurationRef = useRef(0);
 
   // Always resolve the other participant's user ID directly, rather than
   // routing signaling through callId (which starts as a temporary value
@@ -737,6 +743,11 @@ export default function FanCallModal({
     });
 
     handleCleanup();
+    onClose();
+  };
+
+  const handleDismissPostCallNotice = () => {
+    setPostCallNotice(null);
     onClose();
   };
 
@@ -1455,8 +1466,32 @@ export default function FanCallModal({
         return;
       }
 
-      console.log('📞 [VideoCall] Call ended event received, closing immediately');
-      handleCleanup();
+      console.log('📞 [VideoCall] Call ended event received');
+      handleCleanup(); // stop media/peer connection immediately regardless of notice
+
+      const iAmFan = callData?.callerId === currentUserId;
+      const endedByFan = data?.endedBy === callData?.callerId;
+      const hasPartialMinute = sharedCallDurationRef.current % 60 !== 0;
+      const isInsufficientFunds = data?.reason === 'insufficient_funds';
+
+      if (iAmFan && endedByFan && hasPartialMinute && !isInsufficientFunds) {
+        setPostCallNotice({
+          title: 'Charged for the last minute',
+          message: "You were charged for the last minute because you ended the call.",
+          tone: 'charged'
+        });
+        return; // wait for "Got it" before closing
+      }
+
+      if (!iAmFan && isCreator && !endedByFan && hasPartialMinute) {
+        setPostCallNotice({
+          title: 'Not credited for the last minute',
+          message: "You are not credited for that last minute because you ended before the minute ran out.",
+          tone: 'notCredited'
+        });
+        return; // wait for "Got it" before closing
+      }
+
       onClose();
     };
 
@@ -1560,6 +1595,29 @@ export default function FanCallModal({
           </div>
         )}
 
+        {/* Post-call billing notice */}
+        {postCallNotice && (
+          <div className="absolute inset-0 z-[10001] bg-black bg-opacity-80 flex items-center justify-center">
+            <div className={`px-8 py-6 rounded-lg shadow-2xl text-center max-w-md mx-4 ${
+              postCallNotice.tone === 'charged' ? 'bg-yellow-600' : 'bg-gray-700'
+            } bg-opacity-95 text-white`}>
+              <div className="flex flex-col items-center gap-4">
+                <div className="text-5xl">{postCallNotice.tone === 'charged' ? '💰' : 'ℹ️'}</div>
+                <div>
+                  <h3 className="text-xl font-bold mb-2">{postCallNotice.title}</h3>
+                  <p className="text-sm opacity-90">{postCallNotice.message}</p>
+                </div>
+                <button
+                  onClick={handleDismissPostCallNotice}
+                  className="mt-2 px-6 py-2 bg-white text-black font-semibold rounded-lg hover:bg-gray-200 transition-colors"
+                >
+                  Got it
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Insufficient Funds Notification */}
         {insufficientFunds && (
           <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-[10000] bg-red-600 bg-opacity-95 text-white px-8 py-6 rounded-lg shadow-2xl text-center max-w-md">
@@ -1580,6 +1638,7 @@ export default function FanCallModal({
           <VideoCallBilling
             callId={callData?.callId}
             callerId={callData?.callerId}
+            externalDurationRef={sharedCallDurationRef}
             currentUserId={currentUserId}
             isCreator={isCreator}
             userBalance={userBalance}

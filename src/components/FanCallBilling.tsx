@@ -20,7 +20,9 @@ interface VideoCallBillingProps {
     isIncoming: boolean;
     answererId?: string;
   } | null;
+  externalDurationRef?: React.MutableRefObject<number>; // lets the parent read live duration without its own timer
 }
+
 
 export default function VideoCallBilling({
   callId,
@@ -32,7 +34,8 @@ export default function VideoCallBilling({
   callRate,
   isConnected,
   onInsufficientFunds,
-  callData
+  callData,
+  externalDurationRef
 }: VideoCallBillingProps) {
   const [callDuration, setCallDuration] = useState(0);
   const [currentBalance, setCurrentBalance] = useState(userBalance);
@@ -73,7 +76,10 @@ export default function VideoCallBilling({
   
   useEffect(() => {
     callDurationRef.current = callDuration;
-  }, [callDuration]);
+    if (externalDurationRef) {
+      externalDurationRef.current = callDuration;
+    }
+  }, [callDuration, externalDurationRef]);
   
   useEffect(() => {
     lastBilledMinuteRef.current = lastBilledMinute;
@@ -304,6 +310,41 @@ export default function VideoCallBilling({
     }
   }, [onInsufficientFunds, shouldBeBilled]);
 
+  // When the call ends: if the FAN ended it mid-minute, bill that partial
+  // minute in full (the creator still gets paid for the time actually used).
+  // If the CREATOR ended it mid-minute, that partial minute is free — do
+  // not bill it. Never applies to insufficient-funds auto-endings, since
+  // the fan has already run out of money to pay for anything more.
+  const handleCallEndedForBilling = useCallback((data: any) => {
+    if (!shouldBeBilled) return; // only the caller's own client ever emits billing events
+    if (data?.reason === 'insufficient_funds') return;
+    if (isBillingInProgressRef.current) return; // a regular per-minute charge is already in flight
+
+    const endedByFan = data?.endedBy === callData?.callerId;
+    if (!endedByFan) return; // creator ended it — no charge for the incomplete minute
+
+    const currentSeconds = callDurationRef.current;
+    const currentMinute = Math.floor(currentSeconds / 60);
+    const secondsIntoCurrentMinute = currentSeconds % 60;
+
+    // Only bill if there's actually unbilled time into a new minute
+    if (secondsIntoCurrentMinute > 0 && currentMinute >= lastBilledMinuteRef.current) {
+      const minuteToBill = currentMinute + 1;
+      console.log(`💰 [Billing] Fan ended call mid-minute ${minuteToBill} — billing the partial minute`);
+
+      if (socket && callId && callerId) {
+        socket.emit('fan_call_billing', {
+          callId: callId,
+          callerId: callerId,
+          currentUserId,
+          amount: callRateRef.current,
+          minute: minuteToBill,
+          isPartialMinute: true
+        });
+      }
+    }
+  }, [shouldBeBilled, socket, callId, callerId, currentUserId, callData]);
+
   // Start timer and billing when connected
   useEffect(() => {
     if (isConnected) {
@@ -321,12 +362,14 @@ export default function VideoCallBilling({
 
     socket.on('balance_updated', handleBalanceUpdate);
     socket.on('insufficient_funds', handleInsufficientFunds);
+    socket.on('fan_call_ended', handleCallEndedForBilling);
 
     return () => {
       socket.off('balance_updated', handleBalanceUpdate);
       socket.off('insufficient_funds', handleInsufficientFunds);
+      socket.off('fan_call_ended', handleCallEndedForBilling);
     };
-  }, [socket, handleBalanceUpdate, handleInsufficientFunds]);
+  }, [socket, handleBalanceUpdate, handleInsufficientFunds, handleCallEndedForBilling]);
 
   // Cleanup on unmount
   useEffect(() => {
