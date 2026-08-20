@@ -488,9 +488,14 @@ export const VideoCallProvider: React.FC<VideoCallProviderProps> = ({ children }
       closeVideoCall();
     };
 
-    const handleCallEnded = (data?: { callId?: string; endedBy?: string }) => {
+   const handleCallEnded = (data?: { callId?: string; endedBy?: string }) => {
       console.log('📞 [FanCall] Call ended event received in context:', data);
-      // Mark as ended before closing to prevent reopening
+      // Mark as ended to prevent reopening — but do NOT close the modal here.
+      // FanCallModal has its own 'fan_call_ended' listener that may need to
+      // show a post-call billing notice ("Got it") before it's ready to
+      // close. It calls closeVideoCall() itself via its onClose prop once
+      // it's actually done. Closing it here too would unmount the modal
+      // (and destroy that notice's state) before the user ever sees it.
       if (data?.callId) {
         setHasCallEnded(true);
         setEndedCallId(data.callId);
@@ -498,7 +503,6 @@ export const VideoCallProvider: React.FC<VideoCallProviderProps> = ({ children }
         setHasCallEnded(true);
         setEndedCallId(videoCallData.callId);
       }
-      closeVideoCall();
     };
 
     const handleCallError = (data: { message: string }) => {
