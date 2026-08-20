@@ -320,7 +320,18 @@ export default function VideoCallBilling({
     if (data?.reason === 'insufficient_funds') return;
     if (isBillingInProgressRef.current) return; // a regular per-minute charge is already in flight
 
-    const endedByFan = data?.endedBy === callData?.callerId;
+   const endedByFan = data?.endedBy === callData?.callerId;
+
+    console.log('💰 [PartialMinuteBilling] Checking:', {
+      shouldBeBilled,
+      endedBy: data?.endedBy,
+      callerId: callData?.callerId,
+      endedByFan,
+      currentDuration: callDurationRef.current,
+      lastBilledMinute: lastBilledMinuteRef.current,
+      reason: data?.reason
+    });
+
     if (!endedByFan) return; // creator ended it — no charge for the incomplete minute
 
     const currentSeconds = callDurationRef.current;

@@ -1469,10 +1469,23 @@ export default function FanCallModal({
       console.log('📞 [VideoCall] Call ended event received');
       handleCleanup(); // stop media/peer connection immediately regardless of notice
 
-     const iAmFan = callData?.callerId === currentUserId;
+    const iAmFan = callData?.callerId === currentUserId;
       const endedByFan = data?.endedBy === callData?.callerId;
       const hasPartialMinute = sharedCallDurationRef.current % 60 !== 0;
       const isInsufficientFunds = data?.reason === 'insufficient_funds';
+
+      console.log('📞 [PostCallNotice] Deciding notice:', {
+        iAmFan,
+        isCreator,
+        currentUserId,
+        callerId: callData?.callerId,
+        endedBy: data?.endedBy,
+        endedByFan,
+        durationSeconds: sharedCallDurationRef.current,
+        hasPartialMinute,
+        reason: data?.reason,
+        isInsufficientFunds
+      });
 
       if (hasPartialMinute && !isInsufficientFunds) {
         if (iAmFan) {
