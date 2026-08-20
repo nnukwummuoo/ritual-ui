@@ -1469,27 +1469,45 @@ export default function FanCallModal({
       console.log('📞 [VideoCall] Call ended event received');
       handleCleanup(); // stop media/peer connection immediately regardless of notice
 
-      const iAmFan = callData?.callerId === currentUserId;
+     const iAmFan = callData?.callerId === currentUserId;
       const endedByFan = data?.endedBy === callData?.callerId;
       const hasPartialMinute = sharedCallDurationRef.current % 60 !== 0;
       const isInsufficientFunds = data?.reason === 'insufficient_funds';
 
-      if (iAmFan && endedByFan && hasPartialMinute && !isInsufficientFunds) {
-        setPostCallNotice({
-          title: 'Charged for the last minute',
-          message: "You were charged for the last minute because you ended the call.",
-          tone: 'charged'
-        });
-        return; // wait for "Got it" before closing
-      }
+      if (hasPartialMinute && !isInsufficientFunds) {
+        if (iAmFan) {
+          setPostCallNotice(
+            endedByFan
+              ? {
+                  title: 'Charged for the last minute',
+                  message: "You were charged for the last minute because you ended the call.",
+                  tone: 'charged'
+                }
+              : {
+                  title: 'Not charged for the last minute',
+                  message: "The creator ended the call before the last minute was up, so you weren't charged for that last minute.",
+                  tone: 'notCredited'
+                }
+          );
+          return; // wait for "Got it" before closing
+        }
 
-      if (!iAmFan && isCreator && !endedByFan && hasPartialMinute) {
-        setPostCallNotice({
-          title: 'Not credited for the last minute',
-          message: "You are not credited for that last minute because you ended before the minute ran out.",
-          tone: 'notCredited'
-        });
-        return; // wait for "Got it" before closing
+        if (isCreator) {
+          setPostCallNotice(
+            endedByFan
+              ? {
+                  title: 'Credited for the last minute',
+                  message: "The fan ended the call before the last minute was up, but you were still credited for that last minute.",
+                  tone: 'charged'
+                }
+              : {
+                  title: 'Not credited for the last minute',
+                  message: "You are not credited for that last minute because you ended before the minute ran out.",
+                  tone: 'notCredited'
+                }
+          );
+          return; // wait for "Got it" before closing
+        }
       }
 
       onClose();
