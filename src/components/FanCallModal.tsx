@@ -751,12 +751,15 @@ export default function FanCallModal({
     onClose();
   };
 
-  const handleEndCall = () => {
+ const handleEndCall = () => {
     if (!socket) return;
 
-    handleCleanup();
-    onClose();
-
+    // Don't clean up / close here directly — emit and let the server's
+    // echoed 'fan_call_ended' event (handled by handleCallEnded below)
+    // drive cleanup and closing for BOTH participants uniformly. This is
+    // what already lets the notice/billing logic work correctly for the
+    // other participant; closing immediately here meant the person who
+    // clicked End Call never ran through that same logic for themselves.
     socket.emit('fan_call_end', {
       callId: callData?.callId,
       callerId: callData?.callerId,
@@ -1042,9 +1045,8 @@ export default function FanCallModal({
             reason: 'insufficient_funds'
           });
         }
-
-        handleCleanup();
-        onClose();
+        // Cleanup/close now happens via the echoed 'fan_call_ended' event,
+        // same as handleEndCall — see handleCallEnded.
       }, 2000);
     }
   }, [callData, currentUserId, socket, handleCleanup, onClose]);
