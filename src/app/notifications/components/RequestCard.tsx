@@ -758,7 +758,7 @@ useEffect(() => {
           ? img // Use img if it's not a proxy URL and not default
           : undefined;
 
-      startVideoCall(creator_portfolio_id, username || name, price || 1, isVip, vipEndDate, firstName, lastName, photoUrl);
+      startVideoCall(targetUserId || creator_portfolio_id, username || name, price || 1, isVip, vipEndDate, firstName, lastName, photoUrl);
     }
     return;
   }
