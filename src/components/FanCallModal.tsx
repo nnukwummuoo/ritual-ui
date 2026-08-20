@@ -152,6 +152,15 @@ export default function FanCallModal({
   const [callStartTime, setCallStartTime] = useState<number | null>(null);
   const [insufficientFunds, setInsufficientFunds] = useState(false);
 
+  // Always resolve the other participant's user ID directly, rather than
+  // routing signaling through callId (which starts as a temporary value
+  // until the server confirms the real one). This removes the need for
+  // the backend to ever fall back to broadcasting to every connected user.
+  const getOtherUserId = useCallback(() => {
+    if (!callData) return undefined;
+    return callData.callerId === currentUserId ? callData.answererId : callData.callerId;
+  }, [callData, currentUserId]);
+
   const mainVideoRef = useRef<HTMLVideoElement>(null);
   const thumbnailVideoRef = useRef<HTMLVideoElement>(null);
   const pendingIceCandidatesRef = useRef<any[]>([]);
@@ -527,9 +536,11 @@ export default function FanCallModal({
         if (socket && callData?.callId) {
           socket.emit('fan_call_ice_candidate', {
             callId: callData.callId,
-            candidate: event.candidate
+            candidate: event.candidate,
+            targetUserId: getOtherUserId()
           });
         }
+        
       } else {
         console.log('📹 [WebRTC] ICE gathering complete');
       }
@@ -568,10 +579,12 @@ export default function FanCallModal({
                   if (socket && callData?.callId) {
                     socket.emit('fan_call_offer', {
                       callId: callData.callId,
-                      offer: pc.localDescription
+                      offer: pc.localDescription,
+                      targetUserId: getOtherUserId()
                     });
                     console.log('📹 [WebRTC] Sent recovery offer');
                   }
+                  
                 })
                 .catch(err => console.error('❌ [WebRTC] Recovery failed:', err));
             }
@@ -601,10 +614,12 @@ export default function FanCallModal({
                   if (socket && callData?.callId) {
                     socket.emit('fan_call_offer', {
                       callId: callData.callId,
-                      offer: pc.localDescription
+                      offer: pc.localDescription,
+                      targetUserId: getOtherUserId()
                     });
                     console.log('📹 [WebRTC] Sent ICE restart offer');
                   }
+                  
                 })
                 .catch(err => console.error('❌ [WebRTC] ICE restart failed:', err));
             }, 1000);
@@ -1267,7 +1282,8 @@ export default function FanCallModal({
 
           socket.emit('fan_call_offer', {
             callId: callData?.callId,
-            offer: pc.localDescription
+            offer: pc.localDescription,
+            targetUserId: getOtherUserId()
           });
           console.log('📹 [WebRTC] Sent offer to peer');
         } catch (error) {
@@ -1338,7 +1354,8 @@ export default function FanCallModal({
 
           socket.emit('fan_call_answer', {
             callId: callData?.callId || data.callId,
-            answer: answer
+            answer: answer,
+            targetUserId: getOtherUserId()
           });
           console.log('📹 [WebRTC] Sent answer to peer');
 

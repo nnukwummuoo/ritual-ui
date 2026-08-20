@@ -295,16 +295,6 @@ export const VideoCallProvider: React.FC<VideoCallProviderProps> = ({ children }
 
       setVideoCallData(callData);
       setIsVideoCallOpen(true);
-
-      // Emit start call event
-      socket.emit('fan_call_start', {
-        callerId: session._id,
-        callerName: callerName,
-        callerPhoto: data.profile?.photolink || (session as { photolink?: string })?.photolink || '',
-        answererId: answererId,
-        answererName: answererName,
-        answererPhoto: answererPhoto
-      });
     } catch (error) {
       console.error('Error checking user balance:', error);
       alert('Error checking your balance. Please try again.');
