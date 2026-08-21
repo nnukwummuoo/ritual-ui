@@ -272,35 +272,28 @@ export default function VideoCallBilling({
       const currentMinute = Math.floor(currentSeconds / 60);
       const nextMinute = currentMinute + 1;
       
-      // If they can't afford the next minute, schedule call end at the end of current minute
+     // If they can't afford the next minute, end the call right now.
+      // This check runs immediately after a minute's billing is confirmed
+      // — i.e. right at the START of the next minute, before any of it has
+      // played out. There is nothing to "wait for the end of the current
+      // minute" here (that delay pattern belongs to the separate proactive
+      // check in startBilling, which runs near the END of an already-paid
+      // minute) — waiting here was giving the fan an entire extra free
+      // minute before cutting off.
       if (newBalance < callRateRef.current) {
-        const secondsIntoCurrentMinute = currentSeconds % 60;
-        // Only schedule if we haven't already scheduled it for this minute
         if (lastCheckedMinuteRef.current !== currentMinute) {
-          console.log(`⚠️ [Billing] After deduction: Balance ${newBalance} < ${callRateRef.current} required for minute ${nextMinute}`);
-          
-          // Clear any existing end call timeout
+          console.log(`🔚 [Billing] Balance ${newBalance} < ${callRateRef.current} required for minute ${nextMinute} — ending call now`);
+          lastCheckedMinuteRef.current = currentMinute;
+
           if (endCallTimeoutRef.current) {
             clearTimeout(endCallTimeoutRef.current);
+            endCallTimeoutRef.current = null;
           }
-          
-          // Calculate time until current minute ends
-          const msUntilMinuteEnd = Math.max(0, (60 - secondsIntoCurrentMinute) * 1000);
-          
-          if (msUntilMinuteEnd > 0) {
-            endCallTimeoutRef.current = setTimeout(() => {
-              console.log(`🔚 [Billing] Call ending after minute ${currentMinute} - insufficient funds for minute ${nextMinute}`);
-              onInsufficientFunds();
-              endCallTimeoutRef.current = null;
-            }, msUntilMinuteEnd);
-            lastCheckedMinuteRef.current = currentMinute;
-          } else {
-            // Already past the minute mark, end immediately
-            console.log(`🔚 [Billing] Ending call immediately - insufficient funds`);
-            onInsufficientFunds();
-          }
+
+          onInsufficientFunds();
         }
       }
+      
     } else if (data.type === 'earn') {
       setCurrentEarnings(data.earnings);
       // Add to call-specific earnings
