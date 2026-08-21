@@ -256,6 +256,7 @@ export const VideoCallProvider: React.FC<VideoCallProviderProps> = ({ children }
 
       // Starting call
       
+      console.log('[TRACE] Fan sending fan_call_start with callerId:', session._id, 'answererId:', answererId);
       socket.emit('fan_call_start', {
         callerId: session._id,
         callerName: callerName,
@@ -332,6 +333,7 @@ export const VideoCallProvider: React.FC<VideoCallProviderProps> = ({ children }
       answererIsVip?: boolean;
       answererVipEndDate?: string | null;
     }) => {
+      console.log('[TRACE] Creator received fan_call_incoming with data.callerId:', data.callerId);
       // Don't open modal if this call has already ended
       if (hasCallEnded && endedCallId === data.callId) {
         console.log('🚫 [FanCall] Ignoring incoming call event - call already ended:', data.callId);
