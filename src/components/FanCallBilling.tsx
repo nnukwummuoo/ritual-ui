@@ -124,7 +124,7 @@ export default function VideoCallBilling({
   }, []);
 
   // Start billing system (ONLY for the caller, not the answerer)
-  const startBilling = useCallback(() => {
+ const startBilling = useCallback(() => {
     // Only start billing for the caller (whoever initiated the call)
     if (!shouldBeBilled) {
       return;
@@ -138,8 +138,19 @@ export default function VideoCallBilling({
     
     setLastBilledMinute(0);
     lastBilledMinuteRef.current = 0;
+
+    // Neither the regular per-minute billing check nor the proactive
+    // "can they afford the next minute" check below ever runs during the
+    // first minute (both require currentMinute > 0) — so without this,
+    // a fan who can't even afford one minute gets that entire first
+    // minute for free before anything catches it. Check up front instead.
+    if (currentBalanceRef.current < callRateRef.current) {
+      console.log(`❌ [Billing] Insufficient funds for even the first minute: ${currentBalanceRef.current} < ${callRateRef.current} — ending before minute 1 starts`);
+      onInsufficientFunds();
+      return;
+    }
     
-    const interval = setInterval(() => {
+    const interval = setInterval(() => { 
       const currentSeconds = callDurationRef.current;
       const currentMinute = Math.floor(currentSeconds / 60);
       const secondsIntoCurrentMinute = currentSeconds % 60;
