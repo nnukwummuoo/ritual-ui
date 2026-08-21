@@ -754,12 +754,31 @@ export default function FanCallModal({
  const handleEndCall = () => {
     if (!socket) return;
 
-    // Don't clean up / close here directly — emit and let the server's
-    // echoed 'fan_call_ended' event (handled by handleCallEnded below)
-    // drive cleanup and closing for BOTH participants uniformly. This is
-    // what already lets the notice/billing logic work correctly for the
-    // other participant; closing immediately here meant the person who
-    // clicked End Call never ran through that same logic for themselves.
+    // If the fan is the one ending the call, bill the in-progress partial
+    // minute FIRST, before emitting fan_call_end. fan_call_end deletes the
+    // call record on the backend — billing after that point will always
+    // fail with "Call not found", since the record it needs is already
+    // gone by the time the billing request arrives.
+    const iAmFan = callData?.callerId === currentUserId;
+    const hasPartialMinute = sharedCallDurationRef.current % 60 !== 0;
+
+    if (iAmFan && hasPartialMinute && callData?.callId && callData?.callerId) {
+      const currentMinute = Math.floor(sharedCallDurationRef.current / 60);
+      const minuteToBill = currentMinute + 1;
+      console.log(`💰 [Billing] Fan ending call mid-minute ${minuteToBill} — billing before call ends`);
+      socket.emit('fan_call_billing', {
+        callId: callData.callId,
+        callerId: callData.callerId,
+        currentUserId,
+        amount: callRate,
+        minute: minuteToBill,
+        isPartialMinute: true
+      });
+    }
+
+    // Don't clean up / close here directly — the server's echoed
+    // 'fan_call_ended' event (handled by handleCallEnded below) drives
+    // cleanup and closing/notice display for both participants.
     socket.emit('fan_call_end', {
       callId: callData?.callId,
       callerId: callData?.callerId,
@@ -1475,19 +1494,6 @@ export default function FanCallModal({
       const endedByFan = data?.endedBy === callData?.callerId;
       const hasPartialMinute = sharedCallDurationRef.current % 60 !== 0;
       const isInsufficientFunds = data?.reason === 'insufficient_funds';
-
-      console.log('📞 [PostCallNotice] Deciding notice:', {
-        iAmFan,
-        isCreator,
-        currentUserId,
-        callerId: callData?.callerId,
-        endedBy: data?.endedBy,
-        endedByFan,
-        durationSeconds: sharedCallDurationRef.current,
-        hasPartialMinute,
-        reason: data?.reason,
-        isInsufficientFunds
-      });
 
       if (hasPartialMinute && !isInsufficientFunds) {
         if (iAmFan) {

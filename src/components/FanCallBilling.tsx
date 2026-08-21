@@ -310,51 +310,13 @@ export default function VideoCallBilling({
     }
   }, [onInsufficientFunds, shouldBeBilled]);
 
-  // When the call ends: if the FAN ended it mid-minute, bill that partial
-  // minute in full (the creator still gets paid for the time actually used).
-  // If the CREATOR ended it mid-minute, that partial minute is free — do
-  // not bill it. Never applies to insufficient-funds auto-endings, since
-  // the fan has already run out of money to pay for anything more.
-  const handleCallEndedForBilling = useCallback((data: any) => {
-    if (!shouldBeBilled) return; // only the caller's own client ever emits billing events
-    if (data?.reason === 'insufficient_funds') return;
-    if (isBillingInProgressRef.current) return; // a regular per-minute charge is already in flight
-
-   const endedByFan = data?.endedBy === callData?.callerId;
-
-    console.log('💰 [PartialMinuteBilling] Checking:', {
-      shouldBeBilled,
-      endedBy: data?.endedBy,
-      callerId: callData?.callerId,
-      endedByFan,
-      currentDuration: callDurationRef.current,
-      lastBilledMinute: lastBilledMinuteRef.current,
-      reason: data?.reason
-    });
-
-    if (!endedByFan) return; // creator ended it — no charge for the incomplete minute
-
-    const currentSeconds = callDurationRef.current;
-    const currentMinute = Math.floor(currentSeconds / 60);
-    const secondsIntoCurrentMinute = currentSeconds % 60;
-
-    // Only bill if there's actually unbilled time into a new minute
-    if (secondsIntoCurrentMinute > 0 && currentMinute >= lastBilledMinuteRef.current) {
-      const minuteToBill = currentMinute + 1;
-      console.log(`💰 [Billing] Fan ended call mid-minute ${minuteToBill} — billing the partial minute`);
-
-      if (socket && callId && callerId) {
-        socket.emit('fan_call_billing', {
-          callId: callId,
-          callerId: callerId,
-          currentUserId,
-          amount: callRateRef.current,
-          minute: minuteToBill,
-          isPartialMinute: true
-        });
-      }
-    }
-  }, [shouldBeBilled, socket, callId, callerId, currentUserId, callData]);
+  // Partial-minute billing when the fan ends the call now happens
+  // synchronously in FanCallModal's handleEndCall, BEFORE fan_call_end is
+  // emitted — see the comment there for why. This used to be handled
+  // reactively here (listening for the echoed fan_call_ended event), but
+  // by that point the backend has already deleted the call record as part
+  // of processing fan_call_end, so any billing attempt at this point would
+  // always fail with "Call not found."
 
   // Start timer and billing when connected
   useEffect(() => {
@@ -373,14 +335,12 @@ export default function VideoCallBilling({
 
     socket.on('balance_updated', handleBalanceUpdate);
     socket.on('insufficient_funds', handleInsufficientFunds);
-    socket.on('fan_call_ended', handleCallEndedForBilling);
 
     return () => {
       socket.off('balance_updated', handleBalanceUpdate);
       socket.off('insufficient_funds', handleInsufficientFunds);
-      socket.off('fan_call_ended', handleCallEndedForBilling);
     };
-  }, [socket, handleBalanceUpdate, handleInsufficientFunds, handleCallEndedForBilling]);
+  }, [socket, handleBalanceUpdate, handleInsufficientFunds]);
 
   // Cleanup on unmount
   useEffect(() => {
