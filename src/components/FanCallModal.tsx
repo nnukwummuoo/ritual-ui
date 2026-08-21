@@ -754,11 +754,24 @@ export default function FanCallModal({
  const handleEndCall = () => {
     if (!socket) return;
 
+    const emitEndCall = () => {
+      // Don't clean up / close here directly — the server's echoed
+      // 'fan_call_ended' event (handled by handleCallEnded below) drives
+      // cleanup and closing/notice display for both participants.
+      socket.emit('fan_call_end', {
+        callId: callData?.callId,
+        callerId: callData?.callerId,
+        answererId: callData?.answererId,
+        userId: currentUserId
+      });
+    };
+
     // If the fan is the one ending the call, bill the in-progress partial
-    // minute FIRST, before emitting fan_call_end. fan_call_end deletes the
-    // call record on the backend — billing after that point will always
-    // fail with "Call not found", since the record it needs is already
-    // gone by the time the billing request arrives.
+    // minute FIRST, and WAIT for the server to confirm it fully completed
+    // (including crediting the creator) before emitting fan_call_end.
+    // fan_call_end deletes the call record on the backend — if we don't
+    // wait for billing's acknowledgment, the two operations can run
+    // concurrently and race, silently dropping the creator's payment.
     const iAmFan = callData?.callerId === currentUserId;
     const hasPartialMinute = sharedCallDurationRef.current % 60 !== 0;
 
@@ -766,6 +779,19 @@ export default function FanCallModal({
       const currentMinute = Math.floor(sharedCallDurationRef.current / 60);
       const minuteToBill = currentMinute + 1;
       console.log(`💰 [Billing] Fan ending call mid-minute ${minuteToBill} — billing before call ends`);
+
+      let settled = false;
+      const proceed = (result?: any) => {
+        if (settled) return;
+        settled = true;
+        console.log('💰 [Billing] Final-minute billing result:', result);
+        emitEndCall();
+      };
+
+      // Safety fallback: don't let the call get stuck forever if the ack
+      // never arrives (e.g. dropped connection) — end it anyway after 3s.
+      const fallbackTimer = setTimeout(() => proceed({ ok: false, error: 'ack_timeout' }), 3000);
+
       socket.emit('fan_call_billing', {
         callId: callData.callId,
         callerId: callData.callerId,
@@ -773,19 +799,18 @@ export default function FanCallModal({
         amount: callRate,
         minute: minuteToBill,
         isPartialMinute: true
+      }, (result: any) => {
+        clearTimeout(fallbackTimer);
+        proceed(result);
       });
+      return; // wait for proceed() to call emitEndCall()
     }
 
-    // Don't clean up / close here directly — the server's echoed
-    // 'fan_call_ended' event (handled by handleCallEnded below) drives
-    // cleanup and closing/notice display for both participants.
-    socket.emit('fan_call_end', {
-      callId: callData?.callId,
-      callerId: callData?.callerId,
-      answererId: callData?.answererId,
-      userId: currentUserId
-    });
+    emitEndCall();
   };
+
+   
+  
 
   const handleCallAgain = () => {
     if (!callData) return;
