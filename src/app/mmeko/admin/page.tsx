@@ -295,7 +295,7 @@ useEffect(() => {
     // Full-height page with flexbox for 20%/80% split
     <div className="flex min-h-screen h-screen bg-[#111827] text-gray-200 font-sans">
       {/* Sidebar: responsive width */}
-      <aside className="w-28 2xl:w-[30%] bg-[#1F2937] flex flex-col">
+      <aside className="w-28 md:w-56 2xl:w-[30%] bg-[#1F2937] flex flex-col">
         <div className="p-2 2xl:p-4 overflow-y-auto flex-1">
           {/* Header */}
           <div className="flex items-center gap-3 mb-8 p-2 justify-center 2xl:justify-start">
