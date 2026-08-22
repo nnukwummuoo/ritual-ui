@@ -257,7 +257,7 @@ if (!isAuthenticated && isHomeRoute) {
             </div>
             {/* Show CreatorCards only on home route when authenticated */}
             {isHomeRoute && isAuthenticated && (
-              <div className="w-full h-full hidden 2xl:block">
+              <div className="w-full h-full hidden md:block">
                 <div className="sticky top-28 self-start -mr-16 space-y-4">
                   <div className="w-[25rem] mx-auto max-[600px]:w-[90%] rounded-2xl px-4 pt-4 pb-2 bg-[#080b14]">
                     <CreatorCards />

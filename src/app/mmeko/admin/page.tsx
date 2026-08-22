@@ -302,20 +302,20 @@ useEffect(() => {
             <div className="w-9 h-9 bg-indigo-600 rounded-md grid place-items-center">
               <IoGridOutline color="white" />
             </div>
-            <h1 className="text-xl font-bold text-white hidden 2xl:inline">Dashboard</h1>
+            <h1 className="text-xl font-bold text-white hidden md:inline">Dashboard</h1>
           </div>
 
           {/* Push Notifications Toggle */}
           <div className="mb-6 p-3 bg-[#111624] rounded-lg">
             <div className="flex items-center justify-center 2xl:justify-start gap-2 mb-2">
               <IoChatbubbleOutline color="white" size={20} />
-              <span className="font-medium text-white hidden 2xl:inline">Push Notifications</span>
+              <span className="font-medium text-white hidden md:inline">Push Notifications</span>
             </div>
             <div className="flex justify-center md:justify-start">
-              <div className="hidden 2xl:block">
+              <div className="hidden md:block">
   <PushNotificationToggle size="sm" showLabel={true} />
 </div>
-<div className="2xl:hidden">
+<div className="md:hidden">
   <PushNotificationToggle size="sm" showLabel={false} />
 </div>
             </div>
@@ -325,13 +325,13 @@ useEffect(() => {
           <div className="mb-6 p-3 bg-[#111624] rounded-lg">
             <div className="flex items-center justify-center 2xl:justify-start gap-2 mb-2">
               <IoConstructOutline color="white" size={20} />
-              <span className="font-medium text-white hidden 2xl:inline">Maintenance</span>
+              <span className="font-medium text-white hidden md:inline">Maintenance</span>
             </div>
             <div className="flex justify-center md:justify-start">
               <div className="hidden 2xl:block">
   <MaintenanceToggle showLabel={true} />
 </div>
-<div className="2xl:hidden">
+<div className="md:hidden">
   <MaintenanceToggle showLabel={false} />
 </div>
             </div>
@@ -339,15 +339,15 @@ useEffect(() => {
 
           {/* Sort Creator Toggle */}
           <div className="mb-6 p-3 bg-[#111624] rounded-lg">
-            <div className="flex items-center justify-center 2xl:justify-start gap-2 mb-2">
+            <div className="flex items-center justify-center md:justify-start gap-2 mb-2">
               <IoTimerOutline color="white" size={20} />
-              <span className="font-medium text-white hidden 2xl:inline">Creator Sorting</span>
+              <span className="font-medium text-white hidden md:inline">Creator Sorting</span>
             </div>
             <div className="flex justify-center md:justify-start">
               <div className="hidden 2xl:block">
   <SortToggle showLabel={true} />
 </div>
-<div className="2xl:hidden">
+<div className="md:hidden">
   <SortToggle showLabel={false} />
 </div>
             </div>
@@ -366,7 +366,7 @@ useEffect(() => {
                   }`}
               >
                 {item.icon}
-                <span className="font-medium hidden 2xl:inline ml-0 2xl:ml-2">{item.name}</span>
+                <span className="font-medium hidden md:inline ml-0 2xl:ml-2">{item.name}</span>
                 {item.name === "Creator Verification" && docCount > 0 && (
                   <span className="ml-2 bg-red-500 text-white px-1.5 py-1 rounded-full text-xs">
                     {docCount}

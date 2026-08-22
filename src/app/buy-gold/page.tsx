@@ -72,6 +72,7 @@ const TopupInner: React.FC = () => {
   const [fromAddress, setFromAddress] = useState<string>("");
   const [buyerWalletVerifying, setBuyerWalletVerifying] = useState<boolean>(false);
   const [buyerWalletLoaded, setBuyerWalletLoaded] = useState<boolean>(false);
+  const [successInfo, setSuccessInfo] = useState<{ amount: number; orderId: string; token: string } | null>(null);
 
   const { address, isConnected } = useAccount();
   const { signMessageAsync } = useSignMessage();
@@ -337,6 +338,8 @@ const TopupInner: React.FC = () => {
       const remaining = Math.max(0, Math.floor((expiryTime - now) / 1000));
       setTimeLeft(remaining);
 
+      setOnchainHash(undefined);
+      setSuccessInfo(null);
       toast.success("Payment created! Send USDT or USDC and paste your transaction hash.", { autoClose: 5000 });
     } catch (error) {
       console.error("Payment error details:", error);
@@ -386,6 +389,7 @@ const TopupInner: React.FC = () => {
     try {
       setLoading(true);
       await cancelWeb3Payment(web3Payment.orderId);
+      setOnchainHash(undefined);
       toast.success("Transaction cancelled successfully", { autoClose: 3000 });
       setWeb3Payment(null);
       setSelectedPackId("");
@@ -449,10 +453,12 @@ const TopupInner: React.FC = () => {
 
       if (result.status === 'confirmed') {
         toast.success("Payment confirmed! Your gold has been added to your account.", { autoClose: 5000 });
+        setSuccessInfo({ amount: web3Payment.amount, orderId: web3Payment.orderId, token: payToken });
         setWeb3Payment(null);
         setTxHash("");
         setSelectedPackId("");
         setTimeLeft(0);
+        setOnchainHash(undefined);
         localStorage.removeItem('web3_payment');
       } else {
         toast.info(`Payment status: ${result.status}`, { autoClose: 3000 });
@@ -587,6 +593,29 @@ const TopupInner: React.FC = () => {
               </option>
             ))}
           </select>
+
+          {successInfo && (
+            <div className="w-full border border-green-500/30 bg-gradient-to-br from-green-500/[0.1] to-green-500/[0.02] rounded-xl px-4 py-3.5 flex items-start justify-between gap-3">
+              <div className="flex items-start gap-2.5">
+                <Check className="w-4 h-4 text-green-400 shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-green-300 text-sm font-semibold">Payment confirmed!</p>
+                  <p className="text-green-100/70 text-xs mt-0.5">
+                    {successInfo.amount} {successInfo.token} received — your Gold has been added to your account.
+                  </p>
+                  <p className="text-green-100/40 text-[11px] font-mono mt-1">Order: {successInfo.orderId}</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSuccessInfo(null)}
+                className="text-green-300/60 hover:text-green-200 text-xs shrink-0"
+                aria-label="Dismiss"
+              >
+                ✕
+              </button>
+            </div>
+          )}
 
           {!web3Payment && buyerWalletLoaded && (
             <div className="w-full">
@@ -744,7 +773,7 @@ const TopupInner: React.FC = () => {
                 <button
                   type="button"
                   onClick={payWithConnectedWallet}
-                  disabled={isSendingTx || isConfirmingTx || timeLeft === 0}
+                  disabled={isSendingTx || isConfirmingTx || (!!onchainHash && verifyingTx) || timeLeft === 0}
                   className="w-full py-3.5 px-4 bg-gradient-to-r from-[#6c63ff] to-[#9b59f5] text-white rounded-xl font-bold text-sm shadow-[0_10px_24px_-8px_rgba(108,99,255,0.5)] hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:translate-y-0 flex items-center justify-center gap-2"
                 >
                   {isSendingTx ? (
@@ -757,6 +786,11 @@ const TopupInner: React.FC = () => {
                       <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                       Confirming on-chain...
                     </>
+                  ) : onchainHash && verifyingTx ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      Verifying your payment...
+                    </>
                   ) : isConnected ? (
                     "Pay with connected wallet"
                   ) : (
@@ -764,7 +798,9 @@ const TopupInner: React.FC = () => {
                   )}
                 </button>
                 <p className="text-[11px] text-gray-500 mt-1.5 ml-0.5 text-center">
-                  One tap — your wallet opens to confirm, we detect it automatically.
+                  {onchainHash && verifyingTx
+                    ? "Almost done — confirming your payment with our server. Please don't close this page."
+                    : "One tap — your wallet opens to confirm, we detect it automatically."}
                 </p>
                 {isConnected && address && (
                   <div className="flex items-center justify-center gap-1.5 mt-2">
