@@ -295,10 +295,10 @@ useEffect(() => {
     // Full-height page with flexbox for 20%/80% split
     <div className="flex min-h-screen h-screen bg-[#111827] text-gray-200 font-sans">
       {/* Sidebar: responsive width */}
-      <aside className="w-28 md:w-56 2xl:w-[30%] bg-[#1F2937] flex flex-col">
-        <div className="p-2 2xl:p-4 overflow-y-auto flex-1">
+      <aside className="w-28 md:w-56 md:w-[30%] bg-[#1F2937] flex flex-col">
+        <div className="p-2 md:p-4 overflow-y-auto flex-1">
           {/* Header */}
-          <div className="flex items-center gap-3 mb-8 p-2 justify-center 2xl:justify-start">
+          <div className="flex items-center gap-3 mb-8 p-2 justify-center md:justify-start">
             <div className="w-9 h-9 bg-indigo-600 rounded-md grid place-items-center">
               <IoGridOutline color="white" />
             </div>
@@ -307,7 +307,7 @@ useEffect(() => {
 
           {/* Push Notifications Toggle */}
           <div className="mb-6 p-3 bg-[#111624] rounded-lg">
-            <div className="flex items-center justify-center 2xl:justify-start gap-2 mb-2">
+            <div className="flex items-center justify-center md:justify-start gap-2 mb-2">
               <IoChatbubbleOutline color="white" size={20} />
               <span className="font-medium text-white hidden md:inline">Push Notifications</span>
             </div>
@@ -323,12 +323,12 @@ useEffect(() => {
 
           {/* Maintenance Toggle */}
           <div className="mb-6 p-3 bg-[#111624] rounded-lg">
-            <div className="flex items-center justify-center 2xl:justify-start gap-2 mb-2">
+            <div className="flex items-center justify-center md:justify-start gap-2 mb-2">
               <IoConstructOutline color="white" size={20} />
               <span className="font-medium text-white hidden md:inline">Maintenance</span>
             </div>
             <div className="flex justify-center md:justify-start">
-              <div className="hidden 2xl:block">
+              <div className="hidden md:block">
   <MaintenanceToggle showLabel={true} />
 </div>
 <div className="md:hidden">
@@ -344,7 +344,7 @@ useEffect(() => {
               <span className="font-medium text-white hidden md:inline">Creator Sorting</span>
             </div>
             <div className="flex justify-center md:justify-start">
-              <div className="hidden 2xl:block">
+              <div className="hidden md:block">
   <SortToggle showLabel={true} />
 </div>
 <div className="md:hidden">
@@ -359,14 +359,14 @@ useEffect(() => {
               <li
                 key={item.name}
                 onClick={() => setActiveView(item.name)}
-                className={`flex items-center justify-center 2xl:justify-start gap-0 2xl:gap-4 px-0 2xl:px-4 py-3 rounded-lg cursor-pointer transition-all duration-200
+                className={`flex items-center justify-center md:justify-start gap-0 md:gap-4 px-0 md:px-4 py-3 rounded-lg cursor-pointer transition-all duration-200
                   ${activeView === item.name
                     ? "bg-indigo-600 text-white"
                     : "hover:bg-gray-700 text-gray-400 hover:text-white"
                   }`}
               >
                 {item.icon}
-                <span className="font-medium hidden md:inline ml-0 2xl:ml-2">{item.name}</span>
+                <span className="font-medium hidden md:inline ml-0 md:ml-2">{item.name}</span>
                 {item.name === "Creator Verification" && docCount > 0 && (
                   <span className="ml-2 bg-red-500 text-white px-1.5 py-1 rounded-full text-xs">
                     {docCount}
