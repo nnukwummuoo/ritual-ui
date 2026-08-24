@@ -44,7 +44,7 @@ import { MoreVertical, MoreHorizontal, BadgeCheck, Trash2 } from "lucide-react";
 
 import axios from "axios";
 
-import { Heart, MessageCircle, X, Plus, Upload, Lock } from "lucide-react";
+import { Heart, MessageCircle, X, Plus, Upload, Lock, Sparkles, Film, ArrowUpRight } from "lucide-react";
 
 import Image from "next/image";
 
@@ -6179,6 +6179,53 @@ const isFanVerified = isViewingOwnProfile
                           <BiPencil />
                           Edit Profile
                         </button>
+
+                        {(() => {
+                          const myPortfolioId = (profileData as any)?.creator_portfolio_id;
+
+                          // State 1: already has a portfolio → "My Portfolio"
+                          if (myPortfolioId) {
+                            return (
+                              <button
+                                className="py-2 px-3.5 flex items-center justify-center gap-x-1.5 bg-gradient-to-r from-[#6c63ff]/15 to-[#9b59f5]/15 border border-[#9b59f5]/30 text-[#c4b5fd] text-center text-sm font-semibold rounded-xl hover:from-[#6c63ff]/25 hover:to-[#9b59f5]/25 hover:border-[#9b59f5]/50 transition-all duration-200"
+                                onClick={() => router.push(`/creators/${myPortfolioId}`)}
+                              >
+                                <Film className="w-4 h-4" />
+                                My Portfolio
+                              </button>
+                            );
+                          }
+
+                          // State 2: creator-verified but hasn't set up a portfolio yet → "Create Portfolio"
+                          if (creator_verified) {
+                            return (
+                              <button
+                                className="py-2 px-3.5 flex items-center justify-center gap-x-1.5 bg-gradient-to-r from-[#6c63ff] to-[#9b59f5] text-white text-center text-sm font-semibold rounded-xl shadow-[0_10px_24px_-8px_rgba(108,99,255,0.5)] hover:-translate-y-0.5 transition-all duration-200"
+                                onClick={() => router.push("/creator/create")}
+                              >
+                                <Plus className="w-4 h-4" />
+                                Create Portfolio
+                              </button>
+                            );
+                          }
+
+                          // State 3: hasn't applied yet → "Become a Creator"
+                          if (!isFanVerified) {
+                            return (
+                              <button
+                                className="group py-2 px-3.5 flex items-center justify-center gap-x-1.5 bg-gradient-to-r from-amber-500/10 to-yellow-500/10 border border-amber-400/30 text-amber-300 text-center text-sm font-semibold rounded-xl hover:from-amber-500/20 hover:to-yellow-500/20 hover:border-amber-400/50 hover:-translate-y-0.5 transition-all duration-200"
+                                onClick={() => router.push("/be-a-creator/apply")}
+                              >
+                                <Sparkles className="w-4 h-4" />
+                                Become a Creator
+                                <ArrowUpRight className="w-3.5 h-3.5 opacity-0 -ml-1 group-hover:opacity-100 group-hover:ml-0 transition-all duration-200" />
+                              </button>
+                            );
+                          }
+
+                          // State 4: fan-verified, not yet creator-verified, no portfolio → nothing to show
+                          return null;
+                        })()}
                       </div>
                     )}
                   </div>

@@ -34,7 +34,7 @@ const ERC20_TRANSFER_ABI = [
 // Same BEP20 contracts the backend accepts (see ACCEPTED_TOKENS in web3payment.js)
 const TOKEN_CONTRACTS: Record<"USDT" | "USDC", `0x${string}`> = {
   USDT: "0x55d398326f99059fF775485246999027B3197955",
-  USDC: "0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580",
+  USDC: "0x8aC76A51Cc950D9822d68b83FE1AD97b32Cd580",
 };
 
 // Icons for tags
@@ -77,6 +77,8 @@ const TopupInner: React.FC = () => {
   const { address, isConnected } = useAccount();
   const { signMessageAsync } = useSignMessage();
   const { disconnect } = useDisconnect();
+  const [autoVerifyError, setAutoVerifyError] = useState<string | null>(null);
+  const [sendError, setSendError] = useState<string | null>(null);
 
   const WALLET_CONNECTED_AT_KEY = "mmeko_wallet_connected_at";
   const WALLET_MAX_SESSION_MS = 14 * 24 * 60 * 60 * 1000; // 14 days
@@ -177,6 +179,7 @@ const TopupInner: React.FC = () => {
       openConnectModal?.();
       return;
     }
+    setSendError(null);
     try {
       const hash = await writeContractAsync({
         address: TOKEN_CONTRACTS[payToken],
@@ -191,13 +194,24 @@ const TopupInner: React.FC = () => {
       setTxHash(hash);
       toast.success("Transaction sent! Waiting for confirmation on-chain...", { autoClose: 4000 });
     } catch (err: any) {
+      const raw = `${err?.shortMessage || ""} ${err?.message || ""}`.toLowerCase();
+      let message: string;
+
       if (err?.name === "UserRejectedRequestError" || err?.code === 4001) {
-        toast.error("Transaction was rejected.", { autoClose: 2500 });
+        message = "You cancelled the transaction in your wallet. No funds were sent.";
+      } else if (raw.includes("insufficient")) {
+        message = `Your wallet doesn't have enough ${payToken} (or BNB for gas) to complete this payment. No funds were sent.`;
+      } else if (raw.includes("network") || raw.includes("timeout") || raw.includes("fetch")) {
+        message = "Network error while sending the transaction. Check your connection and try again. No funds were sent.";
       } else {
-        toast.error(err?.shortMessage || err?.message || "Failed to send payment from wallet.", { autoClose: 4000 });
+        message = err?.shortMessage || err?.message || "Failed to send the transaction. No funds were sent.";
       }
+
+      setSendError(message);
+      toast.error(message, { autoClose: 4000 });
     }
   };
+
 
   const deleteBuyerWallet = async () => {
     try {
@@ -340,6 +354,8 @@ const TopupInner: React.FC = () => {
 
       setOnchainHash(undefined);
       setSuccessInfo(null);
+      setAutoVerifyError(null);
+      setSendError(null);
       toast.success("Payment created! Send USDT or USDC and paste your transaction hash.", { autoClose: 5000 });
     } catch (error) {
       console.error("Payment error details:", error);
@@ -437,7 +453,8 @@ const TopupInner: React.FC = () => {
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
   };
 
-  const verifyTransaction = async () => {
+  
+   const verifyTransaction = async () => {
     if (!web3Payment?.orderId || !txHash.trim()) {
       toast.error("Please enter your transaction hash", { autoClose: 2000 });
       return;
@@ -445,6 +462,7 @@ const TopupInner: React.FC = () => {
 
     try {
       setVerifyingTx(true);
+      setAutoVerifyError(null);
       console.log(`🔍 [FRONTEND] Verifying transaction hash: ${txHash}`);
 
       const result = await verifyTransactionHash(web3Payment.orderId, txHash.trim());
@@ -467,6 +485,9 @@ const TopupInner: React.FC = () => {
       console.error("❌ [FRONTEND] Transaction verification error:", error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       toast.error(`Transaction verification failed: ${errorMessage}`, { autoClose: 5000 });
+      if (onchainHash) {
+        setAutoVerifyError(errorMessage);
+      }
     } finally {
       setVerifyingTx(false);
     }
@@ -610,6 +631,26 @@ const TopupInner: React.FC = () => {
                 type="button"
                 onClick={() => setSuccessInfo(null)}
                 className="text-green-300/60 hover:text-green-200 text-xs shrink-0"
+                aria-label="Dismiss"
+              >
+                ✕
+              </button>
+            </div>
+          )}
+
+          {sendError && (
+            <div className="w-full border border-red-500/30 bg-gradient-to-br from-red-500/[0.1] to-red-500/[0.02] rounded-xl px-4 py-3.5 flex items-start justify-between gap-3">
+              <div className="flex items-start gap-2.5">
+                <div className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-red-300 text-sm font-semibold">Payment not sent</p>
+                  <p className="text-red-100/70 text-xs mt-0.5">{sendError}</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSendError(null)}
+                className="text-red-300/60 hover:text-red-200 text-xs shrink-0"
                 aria-label="Dismiss"
               >
                 ✕
@@ -821,6 +862,8 @@ const TopupInner: React.FC = () => {
                   </div>
                 )}
               </div>
+
+
 
               <div className="flex items-center gap-3 mb-4">
                 <div className="flex-1 h-px bg-white/[0.08]"></div>
