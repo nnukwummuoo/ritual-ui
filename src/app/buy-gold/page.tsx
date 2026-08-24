@@ -34,7 +34,7 @@ const ERC20_TRANSFER_ABI = [
 // Same BEP20 contracts the backend accepts (see ACCEPTED_TOKENS in web3payment.js)
 const TOKEN_CONTRACTS: Record<"USDT" | "USDC", `0x${string}`> = {
   USDT: "0x55d398326f99059fF775485246999027B3197955",
-  USDC: "0x8aC76A51Cc950D9822d68b83FE1AD97b32Cd580",
+  USDC: "0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d",
 };
 
 // Icons for tags
