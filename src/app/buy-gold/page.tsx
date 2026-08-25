@@ -9,7 +9,7 @@ import { toast } from "react-toastify";
 import { golds } from "@/data/intresttypes";
 import { createWeb3Payment, checkWeb3PaymentStatus, cancelWeb3Payment, verifyTransactionHash } from "@/api/web3payment";
 import { RootState } from "@/store/store"
-import { Copy, Check, ShieldCheck, Lock, RefreshCw, Trash2, HelpCircle } from "lucide-react";
+import { Copy, Check, X, ShieldCheck, Lock, RefreshCw, Trash2, HelpCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
 import Web3Providers from "@/components/Web3Providers";
@@ -68,6 +68,7 @@ const TopupInner: React.FC = () => {
   const [copiedOrderId, setCopiedOrderId] = useState<boolean>(false);
   const [txHash, setTxHash] = useState<string>("");
   const [verifyingTx, setVerifyingTx] = useState<boolean>(false);
+  const [verifyingAuto, setVerifyingAuto] = useState<boolean>(false);
   const [timeLeft, setTimeLeft] = useState<number>(0);
   const [fromAddress, setFromAddress] = useState<string>("");
   const [buyerWalletVerifying, setBuyerWalletVerifying] = useState<boolean>(false);
@@ -166,7 +167,7 @@ const TopupInner: React.FC = () => {
 
   const { writeContractAsync, isPending: isSendingTx } = useWriteContract();
   const [onchainHash, setOnchainHash] = useState<`0x${string}` | undefined>(undefined);
-  const { isLoading: isConfirmingTx, isSuccess: isTxConfirmed } = useWaitForTransactionReceipt({
+  const { data: txReceipt, isLoading: isConfirmingTx, isSuccess: isTxConfirmed } = useWaitForTransactionReceipt({
     hash: onchainHash,
   });
 
@@ -271,13 +272,22 @@ const TopupInner: React.FC = () => {
     }
   }, [web3Payment]);
 
-  // Once the wallet-initiated transaction confirms on-chain, auto-submit it for verification
+  // Once the wallet-initiated transaction is mined, check whether it actually
+  // succeeded (not just that a receipt exists) before treating it as "sent".
   useEffect(() => {
-    if (isTxConfirmed && onchainHash && web3Payment?.orderId) {
-      verifyTransaction();
+    if (!isTxConfirmed || !onchainHash || !web3Payment?.orderId) return;
+
+    if (txReceipt?.status === "reverted") {
+      // Gas was spent, but the transfer itself failed on-chain — no funds moved.
+      setSendError(
+        "Your transaction was mined but reverted on-chain — no funds were transferred. This usually means insufficient token balance or gas. You can safely try paying again."
+      );
+      return;
     }
+
+    runVerification(onchainHash, true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isTxConfirmed, onchainHash]);
+  }, [isTxConfirmed, onchainHash, txReceipt?.status]);
 
   // Countdown timer effect
   useEffect(() => {
@@ -295,9 +305,13 @@ const TopupInner: React.FC = () => {
           // Payment expired
           setWeb3Payment(null);
           setTxHash("");
+          setOnchainHash(undefined);
+          setAutoVerifyError(null);
+          setSendError(null);
           localStorage.removeItem('web3_payment');
           toast.error("Payment expired. Please create a new payment.", { autoClose: 5000 });
         }
+        
       }, 1000);
     }
 
@@ -382,10 +396,14 @@ const TopupInner: React.FC = () => {
 
       if (status.status === 'confirmed') {
         toast.success("Payment confirmed! Your gold has been added to your account.", { autoClose: 5000 });
+        setSuccessInfo({ amount: web3Payment.amount, orderId: web3Payment.orderId, token: payToken });
         setWeb3Payment(null);
         setSelectedPackId("");
         setTxHash("");
         setTimeLeft(0);
+        setOnchainHash(undefined);
+        setAutoVerifyError(null);
+        setSendError(null);
         localStorage.removeItem('web3_payment');
       } else {
         console.log(`ℹ️ [FRONTEND] Payment status: ${status.status} - showing info to user`);
@@ -406,6 +424,8 @@ const TopupInner: React.FC = () => {
       setLoading(true);
       await cancelWeb3Payment(web3Payment.orderId);
       setOnchainHash(undefined);
+      setAutoVerifyError(null);
+      setSendError(null);
       toast.success("Transaction cancelled successfully", { autoClose: 3000 });
       setWeb3Payment(null);
       setSelectedPackId("");
@@ -454,24 +474,22 @@ const TopupInner: React.FC = () => {
   };
 
   
-   const verifyTransaction = async () => {
-    if (!web3Payment?.orderId || !txHash.trim()) {
-      toast.error("Please enter your transaction hash", { autoClose: 2000 });
-      return;
-    }
-
+   // Shared verification logic. isAuto=true ONLY when we ourselves captured a
+  // genuinely successful (non-reverted) on-chain hash — never from user-edited input.
+  const runVerification = async (hashToVerify: string, isAuto: boolean) => {
     try {
       setVerifyingTx(true);
+      setVerifyingAuto(isAuto);
       setAutoVerifyError(null);
-      console.log(`🔍 [FRONTEND] Verifying transaction hash: ${txHash}`);
+      console.log(`🔍 [FRONTEND] Verifying transaction hash: ${hashToVerify} (auto=${isAuto})`);
 
-      const result = await verifyTransactionHash(web3Payment.orderId, txHash.trim());
+      const result = await verifyTransactionHash(web3Payment.orderId, hashToVerify);
 
       console.log(`✅ [FRONTEND] Transaction verified:`, result);
 
       if (result.status === 'confirmed') {
         toast.success("Payment confirmed! Your gold has been added to your account.", { autoClose: 5000 });
-        setSuccessInfo({ amount: web3Payment.amount, orderId: web3Payment.orderId, token: payToken });
+        setSuccessInfo({ amount: web3Payment.amount, orderId: web3Payment.orderId, token: result.tokenSymbol || payToken });
         setWeb3Payment(null);
         setTxHash("");
         setSelectedPackId("");
@@ -485,13 +503,25 @@ const TopupInner: React.FC = () => {
       console.error("❌ [FRONTEND] Transaction verification error:", error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       toast.error(`Transaction verification failed: ${errorMessage}`, { autoClose: 5000 });
-      if (onchainHash) {
+      if (isAuto) {
         setAutoVerifyError(errorMessage);
       }
-    } finally {
+   } finally {
       setVerifyingTx(false);
+      setVerifyingAuto(false);
     }
   };
+
+  // Manual "paste hash and click Verify"— always treated as non-auto, so a
+  // mistyped or unrelated hash can never trigger the "your tx was sent" banner.
+  const verifyTransaction = async () => {
+    if (!web3Payment?.orderId || !txHash.trim()) {
+      toast.error("Please enter your transaction hash", { autoClose: 2000 });
+      return;
+    }
+    await runVerification(txHash.trim(), false);
+  };
+   
 
   // Table data from golds array
   const tableRows = golds.map((gold) => (
@@ -638,10 +668,35 @@ const TopupInner: React.FC = () => {
             </div>
           )}
 
+          {autoVerifyError && (
+            <div className="w-full border border-red-500/30 bg-gradient-to-br from-red-500/[0.1] to-red-500/[0.02] rounded-xl px-4 py-3.5 flex items-start justify-between gap-3">
+              <div className="flex items-start gap-2.5">
+                <X className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-red-300 text-sm font-semibold">Automatic verification failed</p>
+                  <p className="text-red-100/70 text-xs mt-0.5">
+                    Your transaction was sent and confirmed on-chain, but we couldn't verify it automatically: {autoVerifyError}
+                  </p>
+                  <p className="text-red-100/40 text-[11px] mt-1">
+                    Don't send payment again — just retry verification below.
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => onchainHash && runVerification(onchainHash, true)}
+                disabled={verifyingTx}
+                className="text-red-200 border border-red-400/40 rounded-lg px-2.5 py-1 text-xs shrink-0 hover:bg-red-500/10 disabled:opacity-50"
+              >
+                Retry
+              </button>
+            </div>
+          )}
+
           {sendError && (
             <div className="w-full border border-red-500/30 bg-gradient-to-br from-red-500/[0.1] to-red-500/[0.02] rounded-xl px-4 py-3.5 flex items-start justify-between gap-3">
               <div className="flex items-start gap-2.5">
-                <div className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
+                <X className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
                 <div>
                   <p className="text-red-300 text-sm font-semibold">Payment not sent</p>
                   <p className="text-red-100/70 text-xs mt-0.5">{sendError}</p>
@@ -814,7 +869,7 @@ const TopupInner: React.FC = () => {
                 <button
                   type="button"
                   onClick={payWithConnectedWallet}
-                  disabled={isSendingTx || isConfirmingTx || (!!onchainHash && verifyingTx) || timeLeft === 0}
+                  disabled={isSendingTx || isConfirmingTx || verifyingAuto || !!autoVerifyError || timeLeft === 0}
                   className="w-full py-3.5 px-4 bg-gradient-to-r from-[#6c63ff] to-[#9b59f5] text-white rounded-xl font-bold text-sm shadow-[0_10px_24px_-8px_rgba(108,99,255,0.5)] hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:translate-y-0 flex items-center justify-center gap-2"
                 >
                   {isSendingTx ? (
@@ -827,7 +882,7 @@ const TopupInner: React.FC = () => {
                       <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                       Confirming on-chain...
                     </>
-                  ) : onchainHash && verifyingTx ? (
+                  ) : verifyingAuto ? (
                     <>
                       <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                       Verifying your payment...
@@ -839,7 +894,7 @@ const TopupInner: React.FC = () => {
                   )}
                 </button>
                 <p className="text-[11px] text-gray-500 mt-1.5 ml-0.5 text-center">
-                  {onchainHash && verifyingTx
+                 {verifyingAuto
                     ? "Almost done — confirming your payment with our server. Please don't close this page."
                     : "One tap — your wallet opens to confirm, we detect it automatically."}
                 </p>
