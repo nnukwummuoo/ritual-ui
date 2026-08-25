@@ -470,12 +470,14 @@ const [urlCopied, setUrlCopied] = useState(false);
 
   const checkOnline = () => creator.active ? "online" : "offline";
 
-  if (!loading && creator?.userid && !creator?.hosttype && !creator?.price) {
+ if (!loading && creator?.userid && !creator?.hosttype && !creator?.price) {
     const tst = toast.loading("Curating your creator, please wait!");
+    if (Creator[0]) sessionStorage.setItem("mmeko_edit_portfolio_id", Creator[0]);
     navigate("/creators/editcreatorportfolio");
     setLoading(true);
     setTimeout(() => toast.dismiss(tst), 5000);
   }
+  
 
   const renderShowmodeSkeleton = () => (
     <SkeletonTheme baseColor="#202020" highlightColor="#444">
@@ -673,7 +675,7 @@ const [urlCopied, setUrlCopied] = useState(false);
           <>
             <div style={{ position: "fixed", inset: 0, zIndex: 9998 }} onClick={() => setcloseOption(false)} />
             <div style={{ position: "fixed", right: 16, top: 60, background: "var(--mcp-card2)", borderRadius: 8, boxShadow: "0 8px 24px rgba(0,0,0,.4)", border: "1px solid rgba(255,255,255,0.15)", zIndex: 99999, minWidth: 140 }}>
-              <button onClick={() => { navigate("/creators/editcreatorportfolio"); setcloseOption(false); }} style={{ width: "100%", padding: "12px 16px", textAlign: "left", color: "var(--mcp-text)", background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 8, fontSize: 13 }}>
+             <button onClick={() => { if (Creator[0]) sessionStorage.setItem("mmeko_edit_portfolio_id", Creator[0]); navigate("/creators/editcreatorportfolio"); setcloseOption(false); }} style={{ width: "100%", padding: "12px 16px", textAlign: "left", color: "var(--mcp-text)", background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 8, fontSize: 13 }}>
                 <Pencil className="w-4 h-4" /> Edit
               </button>
               <button onClick={() => { confirmDelete(); setcloseOption(false); }} style={{ width: "100%", padding: "12px 16px", textAlign: "left", color: "var(--mcp-rose)", background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 8, fontSize: 13 }}>

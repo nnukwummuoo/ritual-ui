@@ -12,6 +12,7 @@ import { useAuthToken } from "@/lib/hooks/useAuthToken";
 import { editCreatorMultipart } from "@/api/creator";
 import { useUserId } from "@/lib/hooks/useUserId";
 import { getprofile } from "@/store/profile";
+import { getmycreatorbyid } from "@/store/creatorSlice";
 import { countryList } from "@/components/CountrySelect/countryList";
 import { Country, State, City } from "country-state-city";
 import { formatTourDateRange } from "@/utils/tourFormat";
@@ -60,10 +61,13 @@ type Tour = { city: string; stateCode: string; state: string; countryCode: strin
 export default function Editcreator() {
   const userid = useUserId();
   const creator = useSelector((state: any) => state.creator.creatorbyid);
+  const creatorbyidstatus = useSelector((state: any) => state.creator.creatorbyidstatus);
   const creator_portfolio_id = (creator &&
     (creator.hostid || creator.id || creator._id)) as string | undefined;
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
+  const EDIT_PORTFOLIO_ID_KEY = "mmeko_edit_portfolio_id";
+  const rehydrationAttempted = useRef(false);
 
   const profile = useSelector((state: any) => state.profile);
   const reduxUserId = useSelector((state: any) => state.register.userID);
@@ -247,13 +251,35 @@ const tourAvailableCities = useMemo(() => {
         ? "Suggested: 15,000 gold per date"
         : "Suggested: 10,000 gold per meet";
 
+  // If Redux is empty (e.g. hard refresh wiped it), try re-fetching using the
+  // portfolio id we stashed in sessionStorage right before navigating here.
+  useEffect(() => {
+    if (creator && creator_portfolio_id) return; // already have it
+    if (rehydrationAttempted.current) return;
+
+    const storedId = typeof window !== "undefined" ? sessionStorage.getItem(EDIT_PORTFOLIO_ID_KEY) : null;
+    if (!storedId) return; // nothing to try — the guard effect below will redirect
+
+    const currentUserId = reduxUserId || userid;
+    if (!currentUserId || !token) return; // wait for auth to resolve, then retry
+
+    rehydrationAttempted.current = true;
+    dispatch(getmycreatorbyid({ hostid: storedId, token, userid: currentUserId }));
+  }, [creator, creator_portfolio_id, reduxUserId, userid, token, dispatch]);
+
   // Prefill fields from store creator and guard when missing
   useEffect(() => {
     if (!creator || !creator_portfolio_id) {
+      // Give the rehydration attempt above a chance to finish before bailing out.
+      const storedId = typeof window !== "undefined" ? sessionStorage.getItem(EDIT_PORTFOLIO_ID_KEY) : null;
+      const stillTrying = storedId && (creatorbyidstatus === "loading" || !rehydrationAttempted.current);
+      if (stillTrying) return;
+
       toast.info("Open a creator page before editing", { autoClose: 2000 });
       router.push("/creators");
       return;
     }
+    
 
     const currentUserId = reduxUserId || userid;
     if (currentUserId && (!profile.firstname || profile.status === "idle")) {
