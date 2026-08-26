@@ -131,7 +131,15 @@ export default function VerifiedUserForm() {
 
   /* check existing application */
   useEffect(() => {
-    if (!userId || !token) { toast.error("Please log in again."); router.push("/"); return; }
+    if (!userId || !token) {
+      // Redux/token hooks may not have hydrated yet on a fresh load — check
+      // localStorage directly before concluding the person is actually logged out.
+      const hasStoredLogin = typeof window !== "undefined" && !!localStorage.getItem("login");
+      if (hasStoredLogin) return; // still hydrating — this effect reruns once userId/token populate
+      toast.error("Please log in again.");
+      router.push("/");
+      return;
+    }
     dispatch(checkApplicationStatus({ userid:userId, token })).unwrap()
       .then(r => {
         setAppStatus(r.status);
@@ -148,6 +156,31 @@ export default function VerifiedUserForm() {
     setForm(p => ({ ...p, [name]: type==="file" ? files[0] : value }));
   };
 
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
+  const submitApplication = async () => {
+    setLoading(true);
+    setSubmitError(null);
+    try {
+      await dispatch(post_exclusive_docs(form)).unwrap();
+      // Deliberately NOT setting appStatus here — that would immediately swap
+      // to the pending screen's early-return branch, which doesn't render this
+      // modal at all, making it impossible to ever see. Wait for the user to
+      // acknowledge the modal first (see its OK button below).
+      toast.success("Application submitted!"); setShowModal(true);
+    } catch(err:any) {
+      const message = (typeof err === "string" ? err : err?.message) || "Failed to submit. Please try again.";
+      toast.error(message);
+      setSubmitError(message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (appStatus === "pending") window.scrollTo({ top: 0, behavior: "auto" });
+  }, [appStatus]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (loading) return;
@@ -158,12 +191,7 @@ export default function VerifiedUserForm() {
     const today = new Date(), dob = new Date(form.dob), exp = new Date(form.idexpire);
     if (dob > new Date(today.getFullYear()-18, today.getMonth(), today.getDate())) return toast.error("You must be at least 18 years old.");
     if (exp < today) return toast.error("ID expiration date must be in the future.");
-    setLoading(true);
-    try {
-      await dispatch(post_exclusive_docs(form)).unwrap();
-      toast.success("Application submitted!"); setAppStatus("pending"); setShowModal(true);
-    } catch(err:any) { toast.error(err || "Failed to submit. Please try again."); }
-    finally { setLoading(false); }
+    await submitApplication();
   };
   
 
@@ -625,10 +653,36 @@ style={{ width: "100%", height: 380, borderRadius: 12, objectFit: "cover", margi
               <div style={{ width:56, height:56, borderRadius:"50%", background:"rgba(34,197,94,.15)", border:"1px solid rgba(34,197,94,.3)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:26, margin:"0 auto 20px" }}>✓</div>
               <h2 style={{ fontSize:20, fontWeight:800, marginBottom:8 }}>Application Submitted</h2>
               <p style={{ color:S.text2, fontSize:13.5, lineHeight:1.65, marginBottom:24 }}>Your application is now under review. You will hear from us within a few hours.</p>
-              <button onClick={() => { setShowModal(false); router.push("/"); }}
+              <button onClick={() => { setShowModal(false); setAppStatus("pending"); }}
                 style={{ padding:"12px 28px", borderRadius:10, background:`linear-gradient(135deg,${S.accent},${S.accent2})`, border:"none", color:"white", fontWeight:700, fontSize:14, fontFamily:"inherit", cursor:"pointer" }}>
                 OK
               </button>
+            </div>
+          </div>
+        )}
+
+        {/* FAILURE MODAL */}
+        {submitError && (
+          <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.6)", backdropFilter:"blur(6px)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:50 }}>
+            <div style={{ background:S.card, border:"1px solid rgba(239,68,68,.3)", borderRadius:20, padding:"40px 32px", textAlign:"center", maxWidth:360, width:"90%" }}>
+              <div style={{ width:56, height:56, borderRadius:"50%", background:"rgba(239,68,68,.15)", border:"1px solid rgba(239,68,68,.3)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:26, margin:"0 auto 20px" }}>✕</div>
+              <h2 style={{ fontSize:20, fontWeight:800, marginBottom:8 }}>Submission Failed</h2>
+              <p style={{ color:S.text2, fontSize:13.5, lineHeight:1.65, marginBottom:24 }}>{submitError}</p>
+              <div style={{ display:"flex", gap:10 }}>
+                <button
+                  onClick={() => setSubmitError(null)}
+                  style={{ flex:1, padding:"12px 20px", borderRadius:10, background:"transparent", border:`1px solid ${S.border}`, color:S.text2, fontWeight:600, fontSize:14, fontFamily:"inherit", cursor:"pointer" }}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={submitApplication}
+                  disabled={loading}
+                  style={{ flex:1, padding:"12px 20px", borderRadius:10, background:`linear-gradient(135deg,${S.accent},${S.accent2})`, border:"none", color:"white", fontWeight:700, fontSize:14, fontFamily:"inherit", cursor: loading ? "not-allowed" : "pointer", opacity: loading ? .6 : 1, display:"flex", alignItems:"center", justifyContent:"center", gap:8 }}
+                >
+                  {loading ? <><ClockLoader color="#fff" size={14}/> Retrying…</> : "Retry"}
+                </button>
+              </div>
             </div>
           </div>
         )}
