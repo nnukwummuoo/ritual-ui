@@ -61,13 +61,19 @@ type Tour = { city: string; stateCode: string; state: string; countryCode: strin
 export default function Editcreator() {
   const userid = useUserId();
   const creator = useSelector((state: any) => state.creator.creatorbyid);
-  const creatorbyidstatus = useSelector((state: any) => state.creator.creatorbyidstatus);
   const creator_portfolio_id = (creator &&
     (creator.hostid || creator.id || creator._id)) as string | undefined;
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
   const EDIT_PORTFOLIO_ID_KEY = "mmeko_edit_portfolio_id";
   const rehydrationAttempted = useRef(false);
+  // Lazily true only if we have a stashed id AND don't already have the creator —
+  // this is what actually gates the redirect, and it's a real re-render trigger.
+  const [rehydrating, setRehydrating] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    if (creator && creator_portfolio_id) return false;
+    return !!sessionStorage.getItem(EDIT_PORTFOLIO_ID_KEY);
+  });
 
   const profile = useSelector((state: any) => state.profile);
   const reduxUserId = useSelector((state: any) => state.register.userID);
@@ -254,31 +260,40 @@ const tourAvailableCities = useMemo(() => {
   // If Redux is empty (e.g. hard refresh wiped it), try re-fetching using the
   // portfolio id we stashed in sessionStorage right before navigating here.
   useEffect(() => {
-    if (creator && creator_portfolio_id) return; // already have it
-    if (rehydrationAttempted.current) return;
+    if (creator && creator_portfolio_id) {
+      if (rehydrating) setRehydrating(false);
+      return; // already have it
+    }
+    if (!rehydrating) return; // nothing was stashed at mount — don't bother
+    if (rehydrationAttempted.current) return; // already tried once this mount
 
     const storedId = typeof window !== "undefined" ? sessionStorage.getItem(EDIT_PORTFOLIO_ID_KEY) : null;
-    if (!storedId) return; // nothing to try — the guard effect below will redirect
+    if (!storedId) {
+      setRehydrating(false);
+      return;
+    }
 
     const currentUserId = reduxUserId || userid;
-    if (!currentUserId || !token) return; // wait for auth to resolve, then retry
+    if (!currentUserId || !token) return; // wait for auth to resolve, effect retries when it does
 
     rehydrationAttempted.current = true;
-    dispatch(getmycreatorbyid({ hostid: storedId, token, userid: currentUserId }));
-  }, [creator, creator_portfolio_id, reduxUserId, userid, token, dispatch]);
+    dispatch(getmycreatorbyid({ hostid: storedId, token, userid: currentUserId }))
+      .unwrap()
+      .catch(() => {
+        // Swallow here — the guard effect below handles the "still no creator" case.
+      })
+      .finally(() => setRehydrating(false));
+  }, [creator, creator_portfolio_id, reduxUserId, userid, token, dispatch, rehydrating]);
 
   // Prefill fields from store creator and guard when missing
   useEffect(() => {
     if (!creator || !creator_portfolio_id) {
-      // Give the rehydration attempt above a chance to finish before bailing out.
-      const storedId = typeof window !== "undefined" ? sessionStorage.getItem(EDIT_PORTFOLIO_ID_KEY) : null;
-      const stillTrying = storedId && (creatorbyidstatus === "loading" || !rehydrationAttempted.current);
-      if (stillTrying) return;
-
+      if (rehydrating) return; // rehydration attempt above is still in flight — wait for it
       toast.info("Open a creator page before editing", { autoClose: 2000 });
       router.push("/creators");
       return;
     }
+    
     
 
     const currentUserId = reduxUserId || userid;
@@ -374,6 +389,7 @@ if (matched?.isoCode && creator.state) {
     reduxUserId,
     userid,
     allCountries,
+    rehydrating,
   ]);
 
   // Autofill full name from user profile
