@@ -117,15 +117,92 @@ useEffect(() => {
   };
 
   if (appStatus === "approved") return (
-  <div style={{ minHeight:"100vh", background:S.bg, display:"flex", alignItems:"center", justifyContent:"center", color:S.text, fontFamily:"'Plus Jakarta Sans',sans-serif" }}>
+  <>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <style>{`
+      .fva-nav { position: sticky; top: 0; z-index: 40; background: rgba(8,11,20,.97); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.07); padding: 0 24px; height: 56px; display: flex; align-items: center; justify-content: space-between; }
+      .fva-nav-logo { display: flex; align-items: center; gap: 8px; text-decoration: none; }
+      .fva-nav-logo-icon { width: 28px; height: 28px; border-radius: 7px; background: linear-gradient(135deg,#6c63ff,#9b59f5); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; color: white; }
+      .fva-nav-logo-name { font-size: 15px; font-weight: 700; color: #f1f5f9; }
+      .fva-page { max-width: 480px; margin: 0 auto; padding: 48px 20px 80px; display: flex; flex-direction: column; align-items: center; text-align: center; }
+      .fva-status-visual { position: relative; width: 120px; height: 120px; display: flex; align-items: center; justify-content: center; margin-bottom: 32px; }
+      .fva-ring-1 { position: absolute; inset: 0; border-radius: 50%; border: 1.5px solid rgba(34,197,94,.25); animation: fvaPulse 2.6s ease-in-out infinite; }
+      .fva-ring-2 { position: absolute; inset: 12px; border-radius: 50%; border: 1px solid rgba(34,197,94,.18); animation: fvaPulse 2.6s ease-in-out infinite .4s; }
+      @keyframes fvaPulse { 0%,100%{opacity:.35;transform:scale(.96);} 50%{opacity:1;transform:scale(1.04);} }
+      .fva-status-center { width: 70px; height: 70px; border-radius: 50%; background: linear-gradient(135deg,rgba(34,197,94,.22),rgba(34,197,94,.08)); border: 1px solid rgba(34,197,94,.4); display: flex; align-items: center; justify-content: center; position: relative; z-index: 1; box-shadow: 0 0 28px rgba(34,197,94,.25); animation: fvaPop .5s cubic-bezier(.34,1.56,.64,1); }
+      @keyframes fvaPop { 0%{transform:scale(.6);opacity:0;} 100%{transform:scale(1);opacity:1;} }
+      .fva-status-center svg { filter: drop-shadow(0 0 8px rgba(34,197,94,.5)); }
+      .fva-status-tag { display: inline-flex; align-items: center; gap: 7px; background: rgba(34,197,94,.1); border: 1px solid rgba(34,197,94,.25); border-radius: 100px; padding: 5px 14px; margin-bottom: 18px; font-size: 11px; font-weight: 700; color: #22c55e; letter-spacing: .08em; text-transform: uppercase; }
+      .fva-status-title { font-size: 24px; font-weight: 800; letter-spacing: -.02em; line-height: 1.2; margin-bottom: 12px; color: #f1f5f9; }
+      .fva-status-sub { font-size: 14px; color: #94a3b8; line-height: 1.75; max-width: 340px; margin-bottom: 32px; }
+      .fva-timeline { width: 100%; margin-bottom: 32px; }
+      .fva-timeline-step { display: flex; align-items: flex-start; gap: 14px; text-align: left; padding: 14px 0; position: relative; }
+      .fva-timeline-step:not(:last-child)::after { content: ''; position: absolute; left: 15px; top: 46px; width: 2px; height: calc(100% - 14px); background: rgba(34,197,94,.2); }
+      .fva-step-dot { width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 13px; position: relative; z-index: 1; border: 1px solid rgba(34,197,94,.3); background: rgba(34,197,94,.1); color: #22c55e; }
+      .fva-step-title { font-size: 13.5px; font-weight: 700; margin-bottom: 3px; color: #f1f5f9; }
+      .fva-step-sub { font-size: 12px; color: #94a3b8; line-height: 1.5; }
+      .fva-step-time { font-size: 11px; color: #475569; margin-top: 4px; font-weight: 500; }
+      .fva-next-card { width: 100%; background: #111624; border: 1px solid rgba(255,255,255,0.07); border-radius: 16px; padding: 20px; margin-bottom: 28px; text-align: left; }
+      .fva-next-card-title { font-size: 13px; font-weight: 700; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; color: #f1f5f9; }
+      .fva-next-item { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 12px; }
+      .fva-next-item:last-child { margin-bottom: 0; }
+      .fva-next-item-icon { width: 28px; height: 28px; border-radius: 7px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 13px; }
+      .fva-ni-green { background: rgba(34,197,94,.1); } .fva-ni-teal { background: rgba(45,212,191,.1); } .fva-ni-gold { background: rgba(212,168,83,.1); }
+      .fva-next-item-text { font-size: 12.5px; color: #94a3b8; line-height: 1.55; padding-top: 4px; }
+      .fva-next-item-text strong { color: #f1f5f9; font-weight: 600; }
+      .fva-btn-explore { width: 100%; padding: 15px; border-radius: 12px; background: linear-gradient(135deg,#22c55e,#16a34a); border: none; color: white; font-size: 14px; font-weight: 700; font-family: inherit; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 20px rgba(34,197,94,.35); transition: all .25s; margin-bottom: 12px; }
+      .fva-btn-explore:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(34,197,94,.5); }
+      .fva-btn-home { width: 100%; padding: 13px; border-radius: 12px; background: transparent; border: 1px solid rgba(255,255,255,0.07); color: #94a3b8; font-size: 14px; font-weight: 600; font-family: inherit; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all .2s; }
+      .fva-btn-home:hover { background: rgba(255,255,255,.04); color: #f1f5f9; }
+    `}</style>
     <ToastContainer position="top-center" theme="dark"/>
-    <div style={{ background:S.card, border:`1px solid rgba(34,197,94,.2)`, borderRadius:20, padding:"40px 32px", textAlign:"center", maxWidth:360 }}>
-      <div style={{ width:56, height:56, borderRadius:"50%", background:"rgba(34,197,94,.15)", border:"1px solid rgba(34,197,94,.3)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:24, margin:"0 auto 20px" }}>✅</div>
-      <h2 style={{ fontSize:20, fontWeight:800, marginBottom:8 }}>You&apos;re Verified!</h2>
-      <p style={{ color:S.text2, fontSize:13.5, lineHeight:1.65, marginBottom:24 }}>Your identity has been confirmed. You now have full verified fan status.</p>
-      <button onClick={() => router.back()} style={{ padding:"12px 28px", borderRadius:10, background:`linear-gradient(135deg,${S.accent},${S.accent2})`, border:"none", color:"white", fontWeight:700, fontSize:14, fontFamily:"inherit", cursor:"pointer" }}>Go Back</button>
+    <div style={{ background: "#080b14", minHeight: "100vh", fontFamily: "'Plus Jakarta Sans', sans-serif", color: "#f1f5f9" }}>
+      <nav className="fva-nav">
+        <a href="/" className="fva-nav-logo">
+          <div className="fva-nav-logo-icon">M</div>
+          <span className="fva-nav-logo-name">mmeko</span>
+        </a>
+        <div style={{ width: 60 }} />
+      </nav>
+      <div className="fva-page">
+        <div className="fva-status-visual">
+          <div className="fva-ring-1" />
+          <div className="fva-ring-2" />
+          <div className="fva-status-center">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" fill="rgba(34,197,94,.15)" stroke="#22c55e" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M9 12l2 2 4-4" stroke="#22c55e" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </div>
+        </div>
+        <div className="fva-status-tag">✓ Verified</div>
+        <div className="fva-status-title">You&apos;re a verified<br/>fan</div>
+        <p className="fva-status-sub">Your identity has been confirmed. Your verified badge is now live, and your requests get top priority with creators.</p>
+        <div className="fva-timeline">
+          <div className="fva-timeline-step">
+            <div className="fva-step-dot">✓</div>
+            <div><div className="fva-step-title">Documents submitted</div><div className="fva-step-sub">Your ID and selfie were received successfully.</div></div>
+          </div>
+          <div className="fva-timeline-step">
+            <div className="fva-step-dot">✓</div>
+            <div><div className="fva-step-title">Review complete</div><div className="fva-step-sub">Our team confirmed your documents.</div></div>
+          </div>
+          <div className="fva-timeline-step">
+            <div className="fva-step-dot">✓</div>
+            <div><div className="fva-step-title">Verified badge active</div><div className="fva-step-sub">Live on your profile right now.</div></div>
+          </div>
+        </div>
+        <div className="fva-next-card">
+          <div className="fva-next-card-title">✨ What&apos;s different now</div>
+          <div className="fva-next-item"><div className="fva-next-item-icon fva-ni-green">⚡</div><div className="fva-next-item-text"><strong>Faster acceptances</strong> — creators prioritise verified fans, so your requests move to the top of their queue.</div></div>
+          <div className="fva-next-item"><div className="fva-next-item-icon fva-ni-teal">🛡️</div><div className="fva-next-item-text"><strong>Verified badge</strong> — visible on your profile, showing creators and the community you&apos;re genuine.</div></div>
+          <div className="fva-next-item"><div className="fva-next-item-icon fva-ni-gold">🔓</div><div className="fva-next-item-text"><strong>More creators unlocked</strong> — some creators only accept requests from verified fans. They&apos;re open to you now.</div></div>
+        </div>
+        <button className="fva-btn-explore" onClick={() => router.push("/")}>Explore Creators</button>
+        <button className="fva-btn-home" onClick={() => router.back()}>Go Back</button>
+      </div>
     </div>
-  </div>
+  </>
 );
 
   /* ─── pending state screen ─── */

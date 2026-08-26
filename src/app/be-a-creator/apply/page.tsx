@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useRouter } from "next/navigation";
 import { post_exclusive_docs } from "@/store/creatorSlice";
-import { checkApplicationStatus } from "@/store/profile";
+import { checkApplicationStatus, getprofile } from "@/store/profile";
 import { useAuth } from "@/lib/context/auth-context";
 import { useAuthToken } from "@/lib/hooks/useAuthToken";
 import { toast, ToastContainer } from "react-toastify";
@@ -120,7 +120,8 @@ export default function VerifiedUserForm() {
   const [loading, setLoading]   = useState(false);
   const [termsAgreed, setTerms] = useState(false);
   const [showModal, setShowModal] = useState(false);
-  const [appStatus, setAppStatus] = useState<"pending"|"rejected"|"none">("none");
+  const [appStatus, setAppStatus] = useState<"pending"|"rejected"|"none"|"approved">("none");
+  const myPortfolioId = useSelector((s: RootState) => (s as any).profile?.creator_portfolio_id as string | undefined);
 
   const [form, setForm] = useState<formVerificationConstants>({
     firstName:"", lastName:"", email:"", dob:"", country:"",
@@ -132,7 +133,13 @@ export default function VerifiedUserForm() {
   useEffect(() => {
     if (!userId || !token) { toast.error("Please log in again."); router.push("/"); return; }
     dispatch(checkApplicationStatus({ userid:userId, token })).unwrap()
-      .then(r => { setAppStatus(r.status); if(r.status==="pending") setShowModal(true); })
+      .then(r => {
+        setAppStatus(r.status);
+        if (r.status==="pending") setShowModal(true);
+        // Make sure we know whether they already have a portfolio before
+        // deciding what the approved screen's CTA should say/do.
+        if (r.status==="approved") dispatch(getprofile({ userid: userId, token }));
+      })
       .catch(e => { toast.error(e.message||"Failed to check application status"); setAppStatus("none"); });
   }, [userId, token, dispatch, router]);
 
@@ -293,7 +300,102 @@ export default function VerifiedUserForm() {
 }}>
   Complete My Profile
 </button>
-        <button className="btn-home" onClick={() => router.push("/")}>Go to Home</button>
+       <button className="btn-home" onClick={() => router.push("/")}>Go to Home</button>
+      </div>
+    </div>
+  </>
+);
+
+  /* ─── approved screen ─── */
+  if (appStatus === "approved") return (
+  <>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <style>{`
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+      .apr-nav { position: sticky; top: 0; z-index: 40; background: rgba(8,11,20,.97); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.07); padding: 0 24px; height: 56px; display: flex; align-items: center; justify-content: center; }
+      .apr-nav-logo { display: flex; align-items: center; gap: 8px; text-decoration: none; }
+      .apr-nav-logo-icon { width: 28px; height: 28px; border-radius: 7px; background: linear-gradient(135deg,#6c63ff,#9b59f5); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; color: white; }
+      .apr-nav-logo-name { font-size: 15px; font-weight: 700; color: #f1f5f9; }
+      .apr-page { max-width: 480px; margin: 0 auto; padding: 48px 20px 80px; display: flex; flex-direction: column; align-items: center; text-align: center; }
+      .apr-status-visual { position: relative; width: 130px; height: 130px; display: flex; align-items: center; justify-content: center; margin-bottom: 32px; }
+      .apr-ring-1 { position: absolute; inset: 0; border-radius: 50%; border: 1.5px solid rgba(34,197,94,.25); animation: aprPulse 2.6s ease-in-out infinite; }
+      .apr-ring-2 { position: absolute; inset: 16px; border-radius: 50%; border: 1px solid rgba(34,197,94,.18); animation: aprPulse 2.6s ease-in-out infinite .4s; }
+      @keyframes aprPulse { 0%,100%{opacity:.35;transform:scale(.96);} 50%{opacity:1;transform:scale(1.04);} }
+      .apr-status-center { width: 88px; height: 88px; border-radius: 50%; background: linear-gradient(135deg,rgba(34,197,94,.22),rgba(34,197,94,.08)); border: 1px solid rgba(34,197,94,.4); display: flex; align-items: center; justify-content: center; position: relative; z-index: 1; box-shadow: 0 0 32px rgba(34,197,94,.25); animation: aprPop .5s cubic-bezier(.34,1.56,.64,1); }
+      @keyframes aprPop { 0%{transform:scale(.6);opacity:0;} 100%{transform:scale(1);opacity:1;} }
+      .apr-status-center svg { filter: drop-shadow(0 0 8px rgba(34,197,94,.5)); }
+      .apr-status-tag { display: inline-flex; align-items: center; gap: 7px; background: rgba(34,197,94,.1); border: 1px solid rgba(34,197,94,.25); border-radius: 100px; padding: 5px 14px; margin-bottom: 18px; font-size: 11px; font-weight: 700; color: #22c55e; letter-spacing: .08em; text-transform: uppercase; }
+      .apr-status-title { font-size: 26px; font-weight: 800; letter-spacing: -.02em; line-height: 1.2; margin-bottom: 12px; }
+      .apr-status-title em { font-style: normal; background: linear-gradient(135deg,#22c55e,#2dd4bf); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+      .apr-status-sub { font-size: 14px; color: #94a3b8; line-height: 1.75; max-width: 340px; margin-bottom: 32px; }
+      .apr-badge-row { display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 100px; padding: 8px 16px; margin-bottom: 32px; font-size: 12.5px; font-weight: 600; color: #f1f5f9; }
+      .apr-next-card { width: 100%; background: #111624; border: 1px solid rgba(255,255,255,0.07); border-radius: 16px; padding: 20px; margin-bottom: 24px; text-align: left; }
+      .apr-next-title { font-size: 13px; font-weight: 700; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+      .apr-next-item { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 12px; }
+      .apr-next-item:last-child { margin-bottom: 0; }
+      .apr-next-icon { width: 30px; height: 30px; border-radius: 8px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+      .ani-purple { background: rgba(108,99,255,.12); } .ani-teal { background: rgba(45,212,191,.1); } .ani-green { background: rgba(34,197,94,.1); } .ani-gold { background: rgba(212,168,83,.1); }
+      .apr-next-text { font-size: 12.5px; color: #94a3b8; line-height: 1.6; padding-top: 4px; }
+      .apr-next-text strong { color: #f1f5f9; font-weight: 600; }
+      .apr-cta-card { width: 100%; background: linear-gradient(135deg,rgba(34,197,94,.09),rgba(45,212,191,.05)); border: 1px solid rgba(34,197,94,.2); border-radius: 16px; padding: 20px; margin-bottom: 28px; text-align: left; position: relative; overflow: hidden; }
+      .apr-cta-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg,#22c55e,#2dd4bf,#6c63ff); }
+      .apr-cta-title { font-size: 13px; font-weight: 700; margin-bottom: 6px; display: flex; align-items: center; gap: 7px; }
+      .apr-cta-text { font-size: 12.5px; color: #94a3b8; line-height: 1.65; }
+      .apr-btn-primary { width: 100%; padding: 15px; border-radius: 12px; background: linear-gradient(135deg,#22c55e,#16a34a); border: none; color: white; font-size: 14px; font-weight: 700; font-family: inherit; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 20px rgba(34,197,94,.35); transition: all .25s; margin-bottom: 12px; }
+      .apr-btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(34,197,94,.5); }
+      .apr-btn-home { width: 100%; padding: 13px; border-radius: 12px; background: transparent; border: 1px solid rgba(255,255,255,0.07); color: #94a3b8; font-size: 14px; font-weight: 600; font-family: inherit; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all .2s; }
+      .apr-btn-home:hover { background: rgba(255,255,255,.04); color: #f1f5f9; }
+    `}</style>
+    <ToastContainer position="top-center" theme="dark"/>
+    <div style={{ background:"#080b14", minHeight:"100vh", fontFamily:"'Plus Jakarta Sans', sans-serif", color:"#f1f5f9" }}>
+      <nav className="apr-nav">
+        <a href="/" className="apr-nav-logo">
+          <div className="apr-nav-logo-icon">M</div>
+          <span className="apr-nav-logo-name">mmeko</span>
+        </a>
+      </nav>
+      <div className="apr-page">
+        <div className="apr-status-visual">
+          <div className="apr-ring-1" />
+          <div className="apr-ring-2" />
+          <div className="apr-status-center">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none">
+              <path d="M12 2L3 7v5c0 5.25 3.75 10.15 9 11.35C17.25 22.15 21 17.25 21 12V7L12 2z" fill="rgba(34,197,94,.15)" stroke="#22c55e" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M9 12l2 2 4-4" stroke="#22c55e" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </div>
+        </div>
+        <div className="apr-status-tag">✓ Application Approved</div>
+        <div className="apr-status-title">You&apos;re officially<br/><em>a mmeko creator</em></div>
+        <p className="apr-status-sub">Your identity has been verified and your creator application is approved. You&apos;re ready to build your portfolio and start earning.</p>
+        <div className="apr-badge-row">
+          <span style={{ fontSize:15 }}>🛡️</span>
+          Verified creator badge is now active on your profile
+        </div>
+        <div className="apr-next-card">
+          <div className="apr-next-title">🚀 Get set up in minutes</div>
+          <div className="apr-next-item"><div className="apr-next-icon ani-purple">🖼️</div><div className="apr-next-text"><strong>Build your portfolio</strong> — add photos, a bio and pricing so fans know what to expect.</div></div>
+          <div className="apr-next-item"><div className="apr-next-icon ani-teal">🗓️</div><div className="apr-next-text"><strong>Set your availability</strong> — choose the days and times you&apos;re open for meets, dates and calls.</div></div>
+          <div className="apr-next-item"><div className="apr-next-icon ani-green">💸</div><div className="apr-next-text"><strong>Start earning</strong> — every request is paid upfront, and you can cash out instantly whenever you like.</div></div>
+        </div>
+        {myPortfolioId ? (
+          <div className="apr-cta-card">
+            <div className="apr-cta-title">✓ You&apos;re all set up</div>
+            <div className="apr-cta-text">Your portfolio is live — fans can already find and book you.</div>
+          </div>
+        ) : (
+          <div className="apr-cta-card">
+            <div className="apr-cta-title">💡 One last step</div>
+            <div className="apr-cta-text">Your creator profile isn&apos;t live to fans yet — set up your portfolio next to start accepting requests.</div>
+          </div>
+        )}
+        <button
+          className="apr-btn-primary"
+          onClick={() => router.push(myPortfolioId ? `/creators/${myPortfolioId}` : "/creator/create")}
+        >
+          <span style={{ fontSize:15 }}>✨</span> {myPortfolioId ? "My Portfolio" : "Set Up My Portfolio"}
+        </button>
+        <button className="apr-btn-home" onClick={() => router.push("/")}>Go to Home</button>
       </div>
     </div>
   </>

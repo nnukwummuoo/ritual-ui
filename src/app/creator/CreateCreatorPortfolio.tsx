@@ -982,8 +982,13 @@ setStateQuery("");
                   <span className="text-[#f5c451] text-lg">🪙</span>
                   <span className="text-white font-bold text-base">1 Gold = $0.04</span>
                 </div>
-                <p className="text-xs text-gray-600 mt-3 leading-relaxed">
-                  Enter your price as a number of Gold — for example, entering 50 means fans pay 50 Gold (≈ $2.00) to unlock this content.
+               <p className="text-xs text-gray-600 mt-3 leading-relaxed">
+                  Enter your price as a number of Gold — for example, entering 50 means fans pay 50 Gold (≈ $2.00){" "}
+                  {hosttype === "Fan call"
+                    ? "per minute during the call."
+                    : hosttype === "Fan date"
+                      ? "to book a date with you."
+                      : "to book a meet with you."}
                 </p>
               </div>
               <div className="p-6 pt-0">

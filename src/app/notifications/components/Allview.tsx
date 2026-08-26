@@ -4,7 +4,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { getNotifications, markNotificationsSeen } from "@/store/profile";
+import { getNotifications, markNotificationsSeen, getprofile } from "@/store/profile";
 import { RootState, AppDispatch } from "@/store/store";
 import { useAuth } from "@/lib/context/auth-context";
 import PacmanLoader from "react-spinners/RingLoader";
@@ -134,6 +134,7 @@ export const Allview = () => {
 const { notifications, notifications_stats } = useSelector(
   (state: RootState) => state.profile
 );
+const myPortfolioId = useSelector((state: RootState) => (state.profile as any)?.creator_portfolio_id as string | undefined);
 const reduxProfileUserId = useSelector((state: RootState) => state.profile.userId);
 const reduxRegisterUserId = useSelector((state: RootState) => state.register.userID);
 const [localUserId, setLocalUserId] = useState<string>('');
@@ -155,9 +156,12 @@ const userId = reduxProfileUserId || reduxRegisterUserId || localUserId;
 
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+ useEffect(() => {
     if (userId && token) {
       dispatch(getNotifications({ userid: userId, token }));
+      // Needed so an approved creator's "Create Portfolio" notification button
+      // can correctly become "My Portfolio" if they already have one.
+      dispatch(getprofile({ userid: userId, token }));
     }
   }, [dispatch, userId, token]);
 
@@ -377,14 +381,14 @@ const userId = reduxProfileUserId || reduxRegisterUserId || localUserId;
                 {note.message}
               </p>
 
-              {/* Buttons */}
+             {/* Buttons */}
               {status === "approved" && title === "Application Status" && (
                 <div className="pt-2">
-                  <Link href="/creator/create">
+                  <Link href={myPortfolioId ? `/creators/${myPortfolioId}` : "/creator/create"}>
                     <button
                       className="px-4 py-2 border border-slate-700 hover:border-slate-500 
                                 rounded-lg text-sm text-slate-200 transition">
-                      Create Portfolio
+                      {myPortfolioId ? "My Portfolio" : "Create Portfolio"}
                     </button>
                   </Link>
                 </div>

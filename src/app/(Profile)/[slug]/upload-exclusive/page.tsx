@@ -8,7 +8,7 @@ import { useRouter, useParams, useSearchParams } from "next/navigation";
 import axios from "axios";
 import { URL as API_URL } from "@/api/config";
 import { X, Upload, HelpCircle, Lock } from "lucide-react";
-import { toast } from "material-react-toastify";
+import { toast } from "react-toastify";
 import HeaderBackNav from "@/navs/HeaderBackNav";
 import { Gennavigation } from "@/components/navs/Gennav";
 import type { RootState } from "@/store/store";
