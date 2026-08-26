@@ -384,6 +384,11 @@ const userId = reduxProfileUserId || reduxRegisterUserId || localUserId;
              {/* Buttons */}
               {status === "approved" && title === "Application Status" && (
                 <div className="pt-2">
+                  {!myPortfolioId && (
+                    <p className="text-slate-500 text-xs mb-2">
+                      Your creator profile isn&apos;t live to fans yet — set up your portfolio next to start accepting requests.
+                    </p>
+                  )}
                   <Link href={myPortfolioId ? `/creators/${myPortfolioId}` : "/creator/create"}>
                     <button
                       className="px-4 py-2 border border-slate-700 hover:border-slate-500 
