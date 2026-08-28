@@ -183,14 +183,9 @@ const FAQ_DATA: Record<CategoryKey, FAQSection[]> = {
             "✅ Yes, if you cancel before the creator accepts your request → full refund.\n⚠ No, you can't cancel after the creator accepts your request → payment is non-refundable.",
         },
         {
-          question: "Can a fan cancel a request I already accepted?",
-          answer:
-            "❌ No. Once a creator accepts a request, it is final. If a fan does not show up, fails to respond to messages within 24 hours, or asks to cancel, contact Support immediately and we will review and release your payment immediately. If Support is not contacted within 18 days from the booking request date, the payment will be automatically refunded to the fan.",
-        },
-        {
           question: "Is this safe?",
           answer:
-            "🛡 Yes. All Fan Meet and Fan Date sessions are limited to 30 minutes maximum, and must take place in a public location.",
+            "🛡 Yes. Fan Meet is capped at 30 minutes and Fan Date at 1 hour, and must take place in a public location.",
         },
       ],
     },
@@ -199,19 +194,9 @@ const FAQ_DATA: Record<CategoryKey, FAQSection[]> = {
       title: "Fan Meet / Fan Date Expiration",
       items: [
         {
-          question: "What happens if the meet or date doesn't happen within 20 days?",
+          question: "What happens if the meet or date doesn't happen within 18 days?",
           answer:
-            "🕒 If 20 days pass and the fan didn't mark it as complete, the system automatically refunds the fan's payment.",
-        },
-        {
-          question: "What if the creator didn't show up?",
-          answer:
-            "🚫 If a creator does not attend the scheduled appointment, the fan will automatically receive a full refund. Refunds are released to the fan automatically on the 20th day from the booking request date.",
-        },
-        {
-          question: "What if the fan didn't show up?",
-          answer:
-            "❌ Just contact mmeko Support directly through the platform. Our team reviews the situation using your on-platform chat history and releases your payment immediately. If Support is not contacted within 18 days from the booking request date, the payment will be automatically refunded to the fan.",
+            "🕒 If 18 days pass and the fan didn't mark it as complete, the system automatically refunds the fan's payment on day 20.",
         },
       ],
     },
@@ -248,10 +233,10 @@ const FAQ_DATA: Record<CategoryKey, FAQSection[]> = {
       icon: "❓",
       title: "Attendance & No-Show Policy",
       items: [
-        {
-          question:
-            "What if a fan refuses to mark a meet/date as complete, fails to respond within 24 hours, doesn't show up, or requests cancellation after the meet/date has already been accepted?",
-          answer: "🚫 Simply contact mmeko support and we will release your payment immediately.",
+         {
+          question: "What if I didn't show up?",
+          answer:
+            "❌  Cancellations are not allowed after acceptance. If you don't show up, fail to respond to messages within 24 hours, or request a cancellation, your payment is forfeited to the creator.",
         },
         {
           question: "What if a creator doesn't show up for a Fan Meet or Fan Date?",
@@ -313,6 +298,11 @@ const FAQ_DATA: Record<CategoryKey, FAQSection[]> = {
           answer:
             "You have up to 20 days to reschedule. The fan's payment stays secured during this time, so you don't lose the booking or feel pressured to rush back before you're ready.",
         },
+        {
+          question: "Can a fan cancel a request I already accepted?",
+          answer:
+            "❌ No. Once a creator accepts a request, it is final. If a fan does not show up, fails to respond to messages within 24 hours, or asks to cancel, contact Support immediately and we will review and release your payment immediately. If Support is not contacted within 18 days from the booking request date, the payment will be automatically refunded to the fan.",
+        },
          {
           question: "What If a fan refuses to mark a meet/date as complete, fails to respond to messages within 24 hours, doesn't show up or requests cancellation after the meet/date has already been accepted?",
           answer: "Simply contact mmeko support and we will release your payment immediately. We always have your back.",
@@ -327,13 +317,18 @@ const FAQ_DATA: Record<CategoryKey, FAQSection[]> = {
           answer:
             'Yes. You don\'t have to manually request IDs from fans. Fans verify their Mmeko account first, and the moment they click "Request" on your booking page, Mmeko automatically deducts full payment and sends you their verified ID and selfie confirmation — all before you accept or confirm anything. This ensures a smoother, more professional experience for both sides right from the start.',
         },
+        {
+          question: "Why do fans trust Mmeko?",
+          answer: "Hesitant fans prefer Mmeko because their payment is protected until the booking is complete. Instead of handing money to a stranger, Mmeko holds it securely, giving them confidence to pay upfront.",
+        },
          {
           question: "How do both sides stay protected?",
           answer: "🛡 The platform tracks confirmations, time logs, booking history and chat history.\nWe recommend both sides keep all communication and arrangements within the Mmeko platform. This ensures a clear paper trail, protects creators and fans, and makes dispute resolution simple and transparent.",
         },
-         {
-          question: "Why do fans trust Mmeko?",
-          answer: "Hesitant fans prefer Mmeko because their payment is protected until the booking is complete. Instead of handing money to a stranger, Mmeko holds it securely, giving them confidence to pay upfront.",
+        {
+          question: "Is this safe?",
+          answer:
+            "🛡 Yes. Fan Meet is capped at 30 minutes and Fan Date at 1 hour, and must take place in a public location.",
         },
       ],
     },
