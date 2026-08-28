@@ -143,6 +143,7 @@ const Sidemenu = () => {
   }
 
   const isFanVerifiedCheck = (profile as any).fan_verified === true;
+  const isFanPendingCheck = (profile as any).fan_application_status === "pending";
 
  const getCreatorButton = () => {
   if (profile.creator_portfolio_id) {
@@ -163,7 +164,7 @@ const Sidemenu = () => {
       </div>
     );
   }
-  if (!isFanVerifiedCheck) {
+  if (!isFanVerifiedCheck && !isFanPendingCheck) {
     return (
       <div className="sb-item" onClick={() => { router.push("/be-a-creator/apply"); handleMenubar(); }}>
         <div className="si-icon ic-p">✦</div>

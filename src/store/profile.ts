@@ -88,6 +88,8 @@ const initialState = {
   deposit_message: "",
   creator_verified: false,
   fan_verified: false,
+  Creator_Application_status: "none" as string,
+  fan_application_status: "none" as string,
   follow_stats: "idle",
   unfollow_stats: "idle",
   getfollow_data: {} as FollowData,
@@ -922,7 +924,10 @@ const profile = createSlice({
         state.status = "succeeded";
 
         const p = action.payload?.profile ?? {};
-state.fan_verified = (p as any).fan_verified ?? false;        state.userId = p.userId ?? p._id ?? "";
+state.fan_verified = (p as any).fan_verified ?? false;
+        (state as any).Creator_Application_status = (p as any).Creator_Application_status ?? "none";
+        (state as any).fan_application_status = (p as any).fan_application_status ?? "none";
+        state.userId = p.userId ?? p._id ?? "";
         state.firstname = p.firstname ?? "";
         state.lastname = p.lastname ?? "";
         state.username = p.username ?? "";

@@ -501,10 +501,16 @@ const [deletingGridPostId, setDeletingGridPostId] = useState<string | null>(null
   const isViewingOwnProfile = isViewingOwnProfileBySlug || (viewingProfile?.userId && viewingProfile.userId === currentUserProfile.userId);
   const profileSlugForUrl = (isViewingOwnProfile ? currentUserProfile.username : viewingProfile?.username) || viewingUserId || slug;
 
-  const profileData = isViewingOwnProfile ? currentUserProfile : viewingProfile;
+ const profileData = isViewingOwnProfile ? currentUserProfile : viewingProfile;
 const isFanVerified = isViewingOwnProfile
   ? !!(currentUserProfile as any)?.fan_verified
   : !!(viewingProfile as any)?.fan_verified;
+const isCreatorPending = isViewingOwnProfile
+  ? (currentUserProfile as any)?.Creator_Application_status === "pending"
+  : (viewingProfile as any)?.Creator_Application_status === "pending";
+const isFanPending = isViewingOwnProfile
+  ? (currentUserProfile as any)?.fan_application_status === "pending"
+  : (viewingProfile as any)?.fan_application_status === "pending";
 
   const {
 
@@ -6152,7 +6158,7 @@ const isFanVerified = isViewingOwnProfile
                       </div>
                     ) : (
                       <div className="flex items-center gap-2.5 mt-4">
-                        {!isFanVerified && !creator_verified && (
+                        {!isFanVerified && !creator_verified && !isCreatorPending && (
                           <button
                             className="py-2 px-3.5 flex items-center justify-center gap-x-1.5 bg-gradient-to-r from-[#6c63ff] to-[#9b59f5] text-white text-center text-sm font-medium rounded-xl shadow-[0_10px_24px_-8px_rgba(108,99,255,0.5)] hover:-translate-y-0.5 transition-all"
                             onClick={() => router.push(`/${profileSlugForUrl}/fan-verification`)}
@@ -6209,8 +6215,8 @@ const isFanVerified = isViewingOwnProfile
                             );
                           }
 
-                          // State 3: hasn't applied yet → "Become a Creator"
-                          if (!isFanVerified) {
+                   // State 3: hasn't applied yet, and no conflicting fan application → "Become a Creator"
+                          if (!isFanVerified && !isFanPending) {
                             return (
                               <button
                                 className="group py-2 px-3.5 flex items-center justify-center gap-x-1.5 bg-gradient-to-r from-amber-500/10 to-yellow-500/10 border border-amber-400/30 text-amber-300 text-center text-sm font-semibold rounded-xl hover:from-amber-500/20 hover:to-yellow-500/20 hover:border-amber-400/50 hover:-translate-y-0.5 transition-all duration-200"
@@ -6223,7 +6229,7 @@ const isFanVerified = isViewingOwnProfile
                             );
                           }
 
-                          // State 4: fan-verified, not yet creator-verified, no portfolio → nothing to show
+                          // State 4: fan-verified (or fan-pending), not yet creator-verified, no portfolio → nothing to show
                           return null;
                         })()}
                       </div>

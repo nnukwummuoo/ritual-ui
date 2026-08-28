@@ -21,6 +21,8 @@ interface ViewingProfileState {
   hosttype: string;
   creator_verified: boolean;
   fan_verified: boolean;
+  Creator_Application_status: string;
+  fan_application_status: string;
   createdAt: string;
   balance: string;
   admin: boolean;
@@ -66,6 +68,8 @@ const initialState: ViewingProfileState = {
   creator_verified: false,
   fan_verified: false,
   createdAt: "",
+  Creator_Application_status: "none",
+  fan_application_status: "none",
   balance: "",
   admin: false,
   
@@ -189,6 +193,8 @@ const viewingProfileSlice = createSlice({
         state.admin = p.admin ?? false;
         state.creator_verified = (p as any).exclusive ?? (p as any).creator_verified ?? false;
         state.fan_verified = (p as any).fan_verified ?? false;
+        state.Creator_Application_status = (p as any).Creator_Application_status ?? "none";
+        state.fan_application_status = (p as any).fan_application_status ?? "none";
         state.createdAt = (p as any).createdAt ?? "";
       })
       .addCase(getViewingProfile.rejected, (state, action) => {

@@ -11,6 +11,7 @@ const PromotionalBanner: React.FC = () => {
   const router = useRouter();
   const { session } = useAuth();
   const isFanVerified = useSelector((s: RootState) => (s.profile as any).fan_verified === true);
+  const isCreatorPending = useSelector((s: RootState) => (s.profile as any).Creator_Application_status === "pending");
   const [visible, setVisible] = useState(false);
   const [applied, setApplied] = useState(false);
 
@@ -21,6 +22,7 @@ const PromotionalBanner: React.FC = () => {
 
   if (session?.creator_verified) return null;
   if (isFanVerified) return null;
+  if (isCreatorPending) return null;
   if (!visible) return null;
 
   const handleDismiss = () => {
