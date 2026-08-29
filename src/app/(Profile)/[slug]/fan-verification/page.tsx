@@ -4,7 +4,7 @@ import React, { useRef, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/store/store";
-import { post_fan_verification, checkFanApplicationStatus } from "@/store/profile";
+import { post_fan_verification, checkFanApplicationStatus, getprofile } from "@/store/profile";
 import { useAuth } from "@/lib/context/auth-context";
 import { useAuthToken } from "@/lib/hooks/useAuthToken";
 import { toast, ToastContainer } from "react-toastify";
@@ -88,7 +88,11 @@ export default function FanVerificationPage() {
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (appStatus === "pending") window.scrollTo({ top: 0, behavior: "auto" });
+    if (appStatus === "pending") {
+      window.scrollTo({ top: 0, behavior: "auto" });
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+    }
   }, [appStatus]);
 
 
@@ -113,6 +117,7 @@ useEffect(() => {
     setSubmitError(null);
     try {
       await dispatch(post_fan_verification({ userid: userId, token, idPhotofile: idFile, holdingIdPhotofile: selfieFile })).unwrap();
+      dispatch(getprofile({ userid: userId, token }));
       toast.success("Verification submitted!");
       setSubmitted(true);
       // Deliberately not setting appStatus here — that would immediately swap

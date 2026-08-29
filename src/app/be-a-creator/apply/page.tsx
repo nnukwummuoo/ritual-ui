@@ -163,6 +163,13 @@ export default function VerifiedUserForm() {
     setSubmitError(null);
     try {
       await dispatch(post_exclusive_docs(form)).unwrap();
+      // Refresh Redux's copy of Creator_Application_status immediately, so
+      // every other mounted page (profile page's Fan Verification button,
+      // the homepage banner) reflects "pending" right away — otherwise they
+      // stay stuck on stale state until some unrelated full refetch happens.
+      if (userId && token) {
+        dispatch(getprofile({ userid: userId, token }));
+      }
       // Deliberately NOT setting appStatus here — that would immediately swap
       // to the pending screen's early-return branch, which doesn't render this
       // modal at all, making it impossible to ever see. Wait for the user to
@@ -178,7 +185,11 @@ export default function VerifiedUserForm() {
   };
 
   useEffect(() => {
-    if (appStatus === "pending") window.scrollTo({ top: 0, behavior: "auto" });
+    if (appStatus === "pending") {
+      window.scrollTo({ top: 0, behavior: "auto" });
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+    }
   }, [appStatus]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -652,7 +663,7 @@ style={{ width: "100%", height: 380, borderRadius: 12, objectFit: "cover", margi
             <div style={{ background:S.card, border:`1px solid ${S.border}`, borderRadius:20, padding:"40px 32px", textAlign:"center", maxWidth:360, width:"90%" }}>
               <div style={{ width:56, height:56, borderRadius:"50%", background:"rgba(34,197,94,.15)", border:"1px solid rgba(34,197,94,.3)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:26, margin:"0 auto 20px" }}>✓</div>
               <h2 style={{ fontSize:20, fontWeight:800, marginBottom:8 }}>Application Submitted</h2>
-              <p style={{ color:S.text2, fontSize:13.5, lineHeight:1.65, marginBottom:24 }}>Your application is now under review. You will hear from us within a few hours.</p>
+              <p style={{ color:S.text2, fontSize:13.5, lineHeight:1.65, marginBottom:24 }}>Your application is under review. Hang tight — you’re almost ready to start receiving fan requests!</p>
               <button onClick={() => { setShowModal(false); setAppStatus("pending"); }}
                 style={{ padding:"12px 28px", borderRadius:10, background:`linear-gradient(135deg,${S.accent},${S.accent2})`, border:"none", color:"white", fontWeight:700, fontSize:14, fontFamily:"inherit", cursor:"pointer" }}>
                 OK
