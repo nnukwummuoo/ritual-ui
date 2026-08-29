@@ -27,6 +27,7 @@ interface CreatorCardProps {
   views: number;
   isOnline: boolean;
   isFollowing: boolean;
+  isNew?: boolean;
 }
 
 const CreatorCard: React.FC<CreatorCardProps> = ({
@@ -43,7 +44,8 @@ const CreatorCard: React.FC<CreatorCardProps> = ({
   vipEndDate,
   isOnline,
   isFollowing,
-  views
+  views,
+  isNew = false
 }) => {
   const router = useRouter();
 
@@ -96,10 +98,19 @@ const CreatorCard: React.FC<CreatorCardProps> = ({
           </div>
         )}
 
-        {/* VIP Badge — resized down and pinned to the corner instead of overlapping the online pill */}
+      {/* VIP Badge — resized down and pinned to the corner instead of overlapping the online pill */}
         {isVip && (
           <div className="absolute top-1 right-1">
             <VIPBadge size="lg" isVip={isVip} vipEndDate={vipEndDate} />
+          </div>
+        )}
+
+        {/* "New" badge — server-computed, permanent, same source as the /creators page */}
+        {isNew && (
+          <div className={`absolute top-1 ${isVip ? "right-14" : "right-1"}`}>
+            <span className="px-2 py-0.5 text-[10px] font-bold text-white bg-gradient-to-r from-[#6c63ff] to-[#9b59f5] rounded-full shadow-[0_2px_8px_-2px_rgba(108,99,255,0.6)]">
+              New
+            </span>
           </div>
         )}
 
@@ -269,6 +280,7 @@ const CreatorCards: React.FC = () => {
             views: m.views || m.viewCount || m.view_count || m.totalViews || m.total_views || m.portfolioViews || m.portfolio_views || 0,
             isOnline: m.isOnline || m.online || m.is_online || m.onlineStatus || m.online_status || m.status === 'online' || false,
             isFollowing: m.isFollowing || m.following || m.followingUser || m.is_following || m.following_status || m.followedBy || m.followed_by || false,
+            isNew: m.isNew || false,
           };
 
           // Debug logging for creator_portfolio_id issue

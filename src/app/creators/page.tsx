@@ -934,8 +934,10 @@ export default function CreatorPage() {
       // View count and online status for sorting - now provided by backend
       views: m.views || m.viewCount || m.view_count || m.totalViews || m.total_views || m.portfolioViews || m.portfolio_views || 0,
       isOnline: m.isOnline || m.online || m.is_online || m.onlineStatus || m.online_status || m.status === 'online' || false,
-      // Following status for ranking - now provided by backend
+    // Following status for ranking - now provided by backend
       isFollowing: m.isFollowing || m.following || m.followingUser || m.is_following || m.following_status || m.followedBy || m.followed_by || false,
+      // "New" badge — permanent, server-computed, tied to first-ever portfolio
+      isNew: m.isNew || false,
     };
 
     return cardData;

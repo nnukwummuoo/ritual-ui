@@ -31,6 +31,7 @@ export interface CreatorCardProps {
   views?: number;
   isOnline?: boolean;
   isFollowing?: boolean;
+  isNew?: boolean;
 }
 
 interface CountryData {
@@ -50,13 +51,14 @@ export const CreatorCard = ({
   amount,
   creator_portfolio_id,
   userid,
-  createdAt,
+ createdAt,
   hostid,
   isVip = false,
   vipEndDate,
   views = 0,
   isOnline = false,
   isFollowing = false,
+  isNew = false,
 }: CreatorCardProps) => {
   const router = useRouter();
   const [countryData, setCountryData] = useState<CountryData>({
@@ -64,24 +66,9 @@ export const CreatorCard = ({
     abbreviation: "",
     fifa: "",
   });
-  const [isNew, setIsNew] = useState(false);
-
-  // Check if creator was created within 7 days
-  useEffect(() => {
-    if (createdAt && createdAt !== '') {
-      const creationDate = new Date(createdAt);
-      const currentDate = new Date();
-
-      if (isNaN(creationDate.getTime())) {
-        return;
-      }
-
-      const diffInMs = currentDate.getTime() - creationDate.getTime();
-      const diffInDays = diffInMs / (1000 * 60 * 60 * 24);
-
-      setIsNew(diffInDays <= 7);
-    }
-  }, [createdAt]);
+  // "New" is now computed and locked server-side (tied permanently to the
+  // account's first-ever portfolio) — this component just renders whatever
+  // the backend says. No client-side date math, nothing localStorage can affect.
 
   useEffect(() => {
     const fetchData = async () => {
