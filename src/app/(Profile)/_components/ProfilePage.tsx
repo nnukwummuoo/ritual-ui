@@ -2894,7 +2894,7 @@ const isFanPending = isViewingOwnProfile
 
     return (
 
-      <div className={`relative w-full rounded overflow-hidden ${className || 'h-[400px]'}`}>
+      <div className={`relative w-full rounded overflow-hidden bg-black ${className || 'h-[400px]'}`}>
 
         {/* Video skeleton - show only when no poster (same as FirstPost) */}
 
@@ -2984,7 +2984,7 @@ const isFanPending = isViewingOwnProfile
 
             poster={posterSource}
 
-            className="w-full h-full object-cover rounded cursor-pointer"
+  className="w-full h-full object-contain rounded cursor-pointer"
 
             onLoadedData={(e) => {
               const video = e.currentTarget as HTMLVideoElement;

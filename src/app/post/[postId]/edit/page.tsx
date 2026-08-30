@@ -485,10 +485,9 @@ function PostSingle() {
                                 }
                             }
                             
-                            const res = await updatepost(cleanPostId, updatedPost);
-                            setThePost(res);
+                            await updatepost(cleanPostId, updatedPost);
                             toast.success("Post updated");
-                            router.push(`/post/${cleanPostId}`)
+                            router.push(`/`)
                         } catch (err) {
                             toast.error("Error updating post");
                             console.error(err)

@@ -249,7 +249,7 @@ const RemainingPosts: React.FC<RemainingPostsProps> = ({
             muted
             loop
             playsInline
-            className={`w-full h-full object-cover cursor-pointer transition-all ${isFullscreen ? 'h-screen' : ''}`}
+            className={`w-full h-full object-contain cursor-pointer transition-all ${isFullscreen ? 'h-screen' : ''}`}
             onLoadedData={() => {
               setIsVideoLoaded(true);
             }}
@@ -603,7 +603,7 @@ const clampAspectRatio = (ratio: number) => {
                     className="size-8 rounded-full overflow-hidden bg-gray-700 cursor-pointer hover:opacity-80 transition-opacity flex-shrink-0"
                     onClick={(e) => {
                       e.stopPropagation();
-                      router.push(`/${post?.user?.username || postAuthorId}`);
+                      router.push(`/${p?.user?.username || postAuthorId}`);
                     }}
                   >
                     {(() => {

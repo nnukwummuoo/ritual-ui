@@ -102,7 +102,7 @@ const VideoComponent = ({ post, src, pathUrlPrimary, queryUrlFallback, pathUrlFa
           playsInline
           preload={priority ? "auto" : "metadata"}
           poster={posterSource}
-          className={`w-full h-full object-cover cursor-pointer transition-all ${isFullscreen ? 'h-screen' : ''}`}
+          className={`w-full h-full object-contain cursor-pointer transition-all ${isFullscreen ? 'h-screen' : ''}`}
           onLoadedData={() => {
             setIsVideoLoaded(true);
           }}

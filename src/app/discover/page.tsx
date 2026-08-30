@@ -21,6 +21,7 @@ import ExpandableText from "@/components/ExpandableText";
 import { generateInitials } from "@/utils/generateInitials";
 import VIPBadge from "@/components/VIPBadge";
 import { useAuthToken } from "@/lib/hooks/useAuthToken";
+import { BadgeCheck } from "lucide-react";
 
 interface UserWithFans {
   userId: string;
@@ -60,8 +61,12 @@ interface PostWithHashtag {
     username: string;
     photoLink: string;
     photolink?: string;
+    profileImage?: string;
+    avatar?: string;
+    image?: string;
     isVip?: boolean;
     vipEndDate?: string;
+    creator_verified?: boolean;
   };
   likeCount?: number;
   likedBy?: string[];
@@ -87,7 +92,7 @@ function DiscoverPageContent() {
   const searchParams = useSearchParams();
   const hashtagParam = searchParams?.get('hashtag');
   const token = useAuthToken();
-  const { firstname, lastname, username, photolink } = useSelector((s: RootState) => s.profile);
+  const { firstname, lastname, username, photolink, creator_verified } = useSelector((s: RootState) => s.profile);
   const loggedInUserId = useSelector((s: RootState) => s.register.userID);
   const selfId = useSelector((s: RootState) => s.profile?.userId || s.profile?.creator_portfolio_id);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -110,6 +115,7 @@ function DiscoverPageContent() {
     sending?: boolean;
     commentCount?: number;
     isFollowing?: boolean;
+    mediaAspectRatio?: number;
   }>>({});
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState("");
@@ -155,7 +161,7 @@ function DiscoverPageContent() {
               const likeCount = Number(post?.likeCount || 0);
               const likedByArr = Array.isArray(post?.likedBy) ? post.likedBy : [];
               const selfIdStr = String(loggedInUserId || selfId || "");
-              const hasLiked = selfIdStr && likedByArr.includes(selfIdStr);
+              const hasLiked = !!(selfIdStr && likedByArr.includes(selfIdStr));
 
               // Only initialize if not already set (preserve user interactions)
               if (!newState[postId]) {
@@ -221,6 +227,12 @@ function DiscoverPageContent() {
       closeModal();
     }
   };
+
+  const clampAspectRatio = (ratio: number) => {
+  const MIN_RATIO = 4 / 5;   // tallest allowed (portrait)
+  const MAX_RATIO = 1.91;    // widest allowed (landscape)
+  return Math.min(MAX_RATIO, Math.max(MIN_RATIO, ratio));
+};
 
   // Utility function to format relative time
   const formatRelativeTime = (timestamp: string | number | Date): string => {
@@ -568,14 +580,17 @@ return (
                       };
                     }, []);
 
+                    const [mediaAspectRatio, setMediaAspectRatio] = React.useState<number | null>(null);
+
                     return (
-                      <div className="relative w-full h-[400px] rounded overflow-hidden">
+                      <div
+                        className="relative w-full rounded-xl overflow-hidden bg-black"
+                        style={{ aspectRatio: mediaAspectRatio ? clampAspectRatio(mediaAspectRatio) : 4 / 5 }}
+                      >
                         {!isVideoLoaded && (
-                          <div className="relative w-full h-[400px] rounded overflow-hidden bg-gray-700 animate-pulse">
-                            <div className="w-full h-full flex items-center justify-center">
-                              <div className="w-16 h-16 bg-gray-600 rounded-full flex items-center justify-center">
-                                <div className="w-0 h-0 border-l-[12px] border-l-white border-y-[8px] border-y-transparent ml-1"></div>
-                              </div>
+                          <div className="absolute inset-0 w-full h-full bg-gray-700 animate-pulse flex items-center justify-center">
+                            <div className="w-16 h-16 bg-gray-600 rounded-full flex items-center justify-center">
+                              <div className="w-0 h-0 border-l-[12px] border-l-white border-y-[8px] border-y-transparent ml-1"></div>
                             </div>
                           </div>
                         )}
@@ -598,9 +613,16 @@ return (
                             muted
                             loop
                             playsInline
-                            className="w-full h-[400px] object-cover rounded cursor-pointer"
+                            preload="metadata"
+                            className="w-full h-full object-contain cursor-pointer"
                             onLoadedData={() => {
                               setIsVideoLoaded(true);
+                            }}
+                            onLoadedMetadata={(e) => {
+                              const video = e.currentTarget;
+                              if (video.videoWidth && video.videoHeight) {
+                                setMediaAspectRatio(video.videoWidth / video.videoHeight);
+                              }
                             }}
                             onClick={(e) => {
                               e.stopPropagation();
@@ -701,27 +723,27 @@ return (
                   };
 
                   return (
-                    <div key={pid} className="mx-auto max-w-[30rem] w-full bg-[#111624] rounded-md p-3">
-                      <div className="flex items-center justify-between mb-3">
-                        <div className="flex items-center gap-3">
+                    <div key={pid} className="mx-auto max-w-[30rem] w-full bg-[#111624] rounded-2xl p-3.5">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2.5 w-full">
                           <div className="relative">
-                            <div
-                              className="size-10 rounded-full overflow-hidden bg-gray-700 cursor-pointer hover:opacity-80 transition-opacity"
+                          <div
+                              className="size-8 rounded-full overflow-hidden bg-gray-700 cursor-pointer hover:opacity-80 transition-opacity flex-shrink-0"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                router.push(`/${post?.user?.username || postAuthorId}`);
+                                router.push(`/${p?.user?.username || postAuthorId}`);
                               }}
                             >
                               {(() => {
                                 const profileImage = isSelf ? photolink :
-                                  p?.user?.photoLink ||
                                   p?.user?.photolink ||
-                                  "";
+                                  p?.user?.photoLink ||
+                                  p?.user?.profileImage ||
+                                  p?.user?.avatar ||
+                                  p?.user?.image;
 
-                                const userName = isSelf ? `${firstname} ${lastname}`.trim() :
-                                  `${p?.user?.firstname || ""} ${p?.user?.lastname || ""}`.trim();
-
-                                const initials = userName.split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2) || "?";
+                                const userName = isSelf ? firstname : (p?.user?.firstname || "");
+                                const initials = userName.trim().charAt(0).toUpperCase() || "?";
 
                                 if (profileImage && profileImage.trim() && profileImage !== "null" && profileImage !== "undefined") {
                                   const imageSource = getImageSource(profileImage, 'profile');
@@ -752,8 +774,6 @@ return (
 
                             {/* VIP Lion Badge - show if the post author is VIP */}
                             {(() => {
-                              // Use post user VIP status (backend always includes it)
-                              // For self posts, prefer Redux vipStatus if available, otherwise use post data
                               const userVipStatus = isSelf
                                 ? (vipStatus?.isVip ?? p?.user?.isVip ?? false)
                                 : (p?.user?.isVip ?? false);
@@ -761,37 +781,43 @@ return (
                                 ? (vipStatus?.vipEndDate ?? p?.user?.vipEndDate ?? null)
                                 : (p?.user?.vipEndDate ?? null);
 
-                              // Check if post author is VIP
                               if (userVipStatus) {
-                                return <VIPBadge size="xl" className="absolute -top-5 -right-5" isVip={userVipStatus} vipEndDate={userVipEndDate} />;
+                                return <VIPBadge size="md" className="absolute -top-1.5 -right-1.5" isVip={userVipStatus} vipEndDate={userVipEndDate} />;
                               }
 
                               return null;
                             })()}
                           </div>
-                          <div
-                            className="flex-1 cursor-pointer"
-                          >
-                            <p className="font-medium text-white" onClick={(e) => {
-                              e.stopPropagation();
-                              router.push(`/${post?.user?.username || postAuthorId}`);
-                            }}>{displayName}</p>
-                            <span className="text-gray-400 text-sm">{handleStr ? `${handleStr}` : ""}</span>
+                          <div className="flex-1 cursor-pointer">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <p className="font-semibold text-white flex items-center gap-1 text-[14.5px] leading-tight" onClick={(e) => {
+                                e.stopPropagation();
+                                router.push(`/${p?.user?.username || postAuthorId}`);
+                              }}>
+                                {displayName}
+                                {(() => {
+                                  const isVerified = isSelf ? creator_verified : p?.user?.creator_verified;
+                                  return isVerified && (
+                                    <BadgeCheck size={15} fill="#6c63ff" className="text-white" />
+                                  );
+                                })()}
+                              </p>
+                              {handleStr && <span className="text-gray-500 text-[13px]">{handleStr}</span>}
+                              {p?.createdAt && (
+                                <>
+                                  <span className="text-gray-600 text-[13px]">·</span>
+                                  <span className="text-gray-500 text-[13px]">
+                                    {(() => {
+                                      const formatted = formatRelativeTime(p.createdAt);
+                                      return formatted === 'Invalid time' || formatted === 'Unknown time' ? 'recently' : formatted;
+                                    })()}
+                                  </span>
+                                </>
+                              )}
+                            </div>
                           </div>
                         </div>
                       </div>
-
-                      {p?.createdAt && (
-                        <p className="my-3 text-gray-400 text-sm cursor-pointer">
-                          {(() => {
-                            const formatted = formatRelativeTime(p.createdAt);
-                            if (formatted === 'Invalid time' || formatted === 'Unknown time') {
-                              return 'recently';
-                            }
-                            return formatted;
-                          })()}
-                        </p>
-                      )}
 
                       {p?.content && (
                         <ExpandableText
@@ -802,13 +828,22 @@ return (
                       )}
 
                       {postType == "image" && src && (
-                        <div className="w-full max-h-[400px] relative rounded overflow-hidden">
+                        <div
+                          className="w-full relative rounded-xl overflow-hidden bg-black"
+                          style={{ aspectRatio: (ui[pid]?.mediaAspectRatio) ? clampAspectRatio(ui[pid].mediaAspectRatio) : 4 / 5 }}
+                        >
                           <Image
                             src={src}
                             alt={p?.content || "post image"}
                             width={800}
                             height={400}
-                            className="w-full h-[400px] object-cover cursor-pointer hover:opacity-90 transition-opacity duration-200"
+                            className="w-full h-full object-cover cursor-pointer hover:opacity-95 transition-opacity duration-200"
+                            onLoad={(e) => {
+                              const img = e.currentTarget as HTMLImageElement;
+                              if (img.naturalWidth && img.naturalHeight) {
+                                setUi((prev) => ({ ...prev, [pid]: { ...(prev[pid] || {}), mediaAspectRatio: img.naturalWidth / img.naturalHeight } }));
+                              }
+                            }}
                             onClick={() => openModal(src)}
                             onError={(e) => {
                               const img = e.currentTarget as HTMLImageElement & { dataset: Record<string, string> };

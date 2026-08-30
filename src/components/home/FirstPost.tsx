@@ -587,7 +587,7 @@ className={`text-white px-2 bg-gradient-to-r from-[#6c63ff] to-[#9b59f5] cursor-
               playsInline
               preload="metadata"
               poster={posterSource}
-              className={`w-full h-full object-cover cursor-pointer transition-all ${isFullscreen ? 'h-screen' : ''}`}
+              className={`w-full h-full object-contain cursor-pointer transition-all ${isFullscreen ? 'h-screen' : ''}`}
               onLoadedData={() => {
                 setIsVideoLoaded(true);
               }}
