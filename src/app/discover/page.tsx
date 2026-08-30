@@ -794,9 +794,9 @@ return (
                                 e.stopPropagation();
                                 router.push(`/${p?.user?.username || postAuthorId}`);
                               }}>
-                                {displayName}
+                                {p?.user?.firstname}
                                 {(() => {
-                                  const isVerified = isSelf ? creator_verified : p?.user?.creator_verified;
+                                  const isVerified = p?.user?.creator_verified;
                                   return isVerified && (
                                     <BadgeCheck size={15} fill="#6c63ff" className="text-white" />
                                   );
@@ -882,7 +882,7 @@ return (
                       )}
 
                       <PostActions
-                        className="mt-3 border-t border-gray-700 pt-2"
+                        className="mt-2.5 pt-1"
                         starred={uiIsFollowing}
                         liked={uiLiked}
                         likeCount={uiLikeCount}

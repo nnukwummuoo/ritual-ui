@@ -58,7 +58,7 @@ setLikeCounts(counts);
   };
 
   const handleClick = (ritual: Ritual) => {
-    router.push(`/anya/${ritual._id}?type=creator`);
+    router.push(`/ritual/${ritual._id}?type=creator`);
   };
 
   const handleLike = async (e: React.MouseEvent, ritualId: string) => {
