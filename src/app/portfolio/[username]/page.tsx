@@ -321,20 +321,26 @@ useEffect(() => {
     if (stored) setUser(JSON.parse(stored));
   }, []);
 
-  useEffect(() => {
-   const fetchViews = async () => {
-  const currentUserId = getCurrentUserId();
-  if (!Creator[0] || !currentUserId) return;
-  const data = { creator_portfolio_id: Creator[0], userId: currentUserId };
-  const response = await dispatch(getViews(data));
-  try {
-    const payload = response?.payload;
-    setViews(payload?.views ?? 0);
-  } catch { setViews(0); }
-};
-    fetchViews();
-  }, [Creator[0], userid, dispatch]);
-  
+ useEffect(() => {
+  const fetchViews = async () => {
+    // Prefer the real creator ID once it's loaded — far more reliable than
+    // matching by username on the backend, which can silently fail on any
+    // casing/nickname mismatch and fall back to showing 0.
+    if (!creator.hostid && !Creator[0]) return;
+    const currentUserId = getCurrentUserId();
+    const data = creator.hostid
+      ? { creator_portfolio_id: creator.hostid, userId: currentUserId || "" }
+      : { creator_portfolio_id: null, userId: currentUserId || "", username: Creator[0] };
+    const response = await dispatch(getViews(data));
+    try {
+      const payload = response?.payload;
+      setViews(payload?.views ?? 0);
+      setNonUserViews(payload?.nonUserViews ?? 0);
+    } catch { setViews(0); setNonUserViews(0); }
+  };
+  fetchViews();
+}, [creator.hostid, Creator[0], userid, dispatch]);
+
   useEffect(() => {
     if (creatordeletestatus === "succeeded") { dispatch(changecreatorstatus("idle")); setLoading(false); navigate("/"); }
     if (creatordeletestatus === "failed") { dispatch(changecreatorstatus("idle")); setLoading(false); }
