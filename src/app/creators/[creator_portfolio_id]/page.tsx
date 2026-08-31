@@ -171,6 +171,8 @@ const [urlCopied, setUrlCopied] = useState(false);
   const [imglist, setimglist] = useState<string[]>([]);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [views, setViews] = useState(0);
+  const [nonUserViews, setNonUserViews] = useState(0);
+  const [showViewsModal, setShowViewsModal] = useState(false);
   const [showVipCelebration, setShowVipCelebration] = useState(false);
   const [vipCelebrationShown, setVipCelebrationShown] = useState(false);
   const [celebrationChecked, setCelebrationChecked] = useState(false);
@@ -302,14 +304,20 @@ const [urlCopied, setUrlCopied] = useState(false);
 
   useEffect(() => {
    const fetchViews = async () => {
+  if (!Creator[0]) return;
   const currentUserId = getCurrentUserId();
-  if (!Creator[0] || !currentUserId) return;
-  const data = { creator_portfolio_id: Creator[0], userId: currentUserId };
+  // Send userId only when actually logged in — omitting it (rather than
+  // sending an empty string) is what lets the backend correctly count this
+  // as a non-user view instead of silently doing nothing.
+  const data = currentUserId
+    ? { creator_portfolio_id: Creator[0], userId: currentUserId }
+    : { creator_portfolio_id: Creator[0] };
   const response = await dispatch(getViews(data));
   try {
     const payload = response?.payload;
     setViews(payload?.views ?? 0);
-  } catch { setViews(0); }
+    setNonUserViews(payload?.nonUserViews ?? 0);
+  } catch { setViews(0); setNonUserViews(0); }
 };
     fetchViews();
   }, [Creator[0], userid, dispatch]);
@@ -744,7 +752,10 @@ const [urlCopied, setUrlCopied] = useState(false);
   })()}
 </div>
             <div className="mcp-profile-stats">
-              <div className="mcp-pstat"><div className="mcp-pstat-n">{views}</div><div className="mcp-pstat-l">Views</div></div>
+              <div className="mcp-pstat" onClick={() => setShowViewsModal(true)} style={{ cursor: "pointer" }}>
+                <div className="mcp-pstat-n">{views}</div>
+                <div className="mcp-pstat-l">Views</div>
+              </div>
               <div className="mcp-pstat">
                 <div style={{ display: "flex", gap: 2 }}>{[...Array(5)].map((_, i) => <span key={i} style={{ fontSize: 12, color: "#f59e0b" }}>{i < Math.round(averageRating || 0) ? "★" : "☆"}</span>)}</div>
                 <div className="mcp-pstat-l">Rating</div>
@@ -972,7 +983,7 @@ const [urlCopied, setUrlCopied] = useState(false);
           </div>
         )}
 
-        {showDeleteModal && (
+      {showDeleteModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50" onClick={(e) => e.stopPropagation()}>
             <div className="bg-[#111624] p-6 rounded-lg text-white w-11/12 max-w-md">
               <h2 className="text-lg font-bold mb-4">⚠ Warning</h2>
@@ -981,6 +992,47 @@ const [urlCopied, setUrlCopied] = useState(false);
                 <button onClick={() => handleDeleteConfirm(false)} className="px-4 py-2 bg-gray-600 rounded hover:bg-gray-700">No</button>
                 <button onClick={() => handleDeleteConfirm(true)} className="px-4 py-2 bg-red-600 rounded hover:bg-red-700">Yes</button>
               </div>
+            </div>
+          </div>
+        )}
+
+        {showViewsModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 p-4" onClick={() => setShowViewsModal(false)}>
+            <div
+              style={{ background: "var(--mcp-card)", border: "1px solid var(--mcp-border)", borderRadius: 18, padding: 22, width: "100%", maxWidth: 360 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 18 }}>
+                <h2 style={{ fontSize: 17, fontWeight: 800, color: "var(--mcp-text)" }}>Views breakdown</h2>
+                <button onClick={() => setShowViewsModal(false)} style={{ background: "none", border: "none", color: "var(--mcp-text2)", fontSize: 22, cursor: "pointer", lineHeight: 1 }}>×</button>
+              </div>
+
+              <div style={{ background: "var(--mcp-bg3)", border: "1px solid var(--mcp-border)", borderRadius: 12, padding: "14px 16px", marginBottom: 14, textAlign: "center" }}>
+                <div style={{ fontSize: 26, fontWeight: 800, color: "var(--mcp-text)" }}>{views + nonUserViews}</div>
+                <div style={{ fontSize: 12, color: "var(--mcp-text2)", fontWeight: 600, marginTop: 2 }}>Total views</div>
+              </div>
+
+              <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 16 }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 14px", background: "var(--mcp-bg3)", border: "1px solid var(--mcp-border)", borderRadius: 12 }}>
+                  <div>
+                    <div style={{ fontSize: 13.5, fontWeight: 700, color: "var(--mcp-text)" }}>User views</div>
+                    <div style={{ fontSize: 11.5, color: "var(--mcp-teal)", fontWeight: 600, marginTop: 2 }}>Counts toward your ranking</div>
+                  </div>
+                  <div style={{ fontSize: 20, fontWeight: 800, color: "var(--mcp-text)" }}>{views}</div>
+                </div>
+
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 14px", background: "var(--mcp-bg3)", border: "1px solid var(--mcp-border)", borderRadius: 12 }}>
+                  <div>
+                    <div style={{ fontSize: 13.5, fontWeight: 700, color: "var(--mcp-text)" }}>Non-user views</div>
+                    <div style={{ fontSize: 11.5, color: "var(--mcp-text3)", fontWeight: 600, marginTop: 2 }}>Not counted toward ranking</div>
+                  </div>
+                  <div style={{ fontSize: 20, fontWeight: 800, color: "var(--mcp-text)" }}>{nonUserViews}</div>
+                </div>
+              </div>
+
+              <p style={{ fontSize: 12, color: "var(--mcp-text3)", lineHeight: 1.6 }}>
+                Only visits from logged-in fans count toward your ranking. This keeps rankings fair — visits from people who aren't signed in still show up here, they just don't move your ranking.
+              </p>
             </div>
           </div>
         )}
