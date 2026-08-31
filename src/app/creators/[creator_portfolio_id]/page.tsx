@@ -1016,7 +1016,7 @@ const [urlCopied, setUrlCopied] = useState(false);
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 14px", background: "var(--mcp-bg3)", border: "1px solid var(--mcp-border)", borderRadius: 12 }}>
                   <div>
                     <div style={{ fontSize: 13.5, fontWeight: 700, color: "var(--mcp-text)" }}>User views</div>
-                    <div style={{ fontSize: 11.5, color: "var(--mcp-teal)", fontWeight: 600, marginTop: 2 }}>Counts toward your ranking</div>
+                    <div style={{ fontSize: 11.5, color: "var(--mcp-teal)", fontWeight: 600, marginTop: 2 }}>Counts toward ranking</div>
                   </div>
                   <div style={{ fontSize: 20, fontWeight: 800, color: "var(--mcp-text)" }}>{views}</div>
                 </div>
@@ -1031,7 +1031,7 @@ const [urlCopied, setUrlCopied] = useState(false);
               </div>
 
               <p style={{ fontSize: 12, color: "var(--mcp-text3)", lineHeight: 1.6 }}>
-                Only visits from logged-in fans count toward your ranking. This keeps rankings fair — visits from people who aren't signed in still show up here, they just don't move your ranking.
+                Only visits from logged-in fans count toward ranking. This keeps rankings fair — visits from people who aren't signed in still show up here, they just don't move ranking.
               </p>
             </div>
           </div>
