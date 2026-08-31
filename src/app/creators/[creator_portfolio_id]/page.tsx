@@ -753,7 +753,7 @@ const [urlCopied, setUrlCopied] = useState(false);
 </div>
             <div className="mcp-profile-stats">
               <div className="mcp-pstat" onClick={() => setShowViewsModal(true)} style={{ cursor: "pointer" }}>
-                <div className="mcp-pstat-n">{views}</div>
+                <div className="mcp-pstat-n">{views + nonUserViews}</div>
                 <div className="mcp-pstat-l">Views</div>
               </div>
               <div className="mcp-pstat">
