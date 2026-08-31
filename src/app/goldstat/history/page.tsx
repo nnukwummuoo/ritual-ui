@@ -270,6 +270,8 @@ const HistoryPage = () => {
   const totalCurrentBalanceUSD = totalCurrentBalance * 0.04;
 
   const [views, setViews] = useState(0);
+   const [nonUserViews, setNonUserViews] = useState(0);
+  const [showViewsModal, setShowViewsModal] = useState(false);
 
   // Get analytics from transactions based on selected month
   const analytics: Analytics = useMemo(() => {
@@ -507,20 +509,20 @@ const HistoryPage = () => {
       const response = await dispatch(getViews(data) as any);
 
       try {
-        const payload = response?.payload?.response;
+        const payload = response?.payload;
 
         if (!payload) {
           setViews(0);
+          setNonUserViews(0);
           return;
         }
 
-        // Ensure payload is a valid JSON string
-        const parsed = typeof payload === "string" ? JSON.parse(payload) : payload;
-
-        setViews(parsed?.views ?? 0);
+        setViews(payload?.views ?? 0);
+        setNonUserViews(payload?.nonUserViews ?? 0);
 
       } catch {
         setViews(0);
+        setNonUserViews(0);
       }
     };
 
@@ -648,13 +650,19 @@ const HistoryPage = () => {
             </div>
             <div className="bg-emerald-600 rounded-lg p-2 flex flex-col">
               <p>Portfolio views</p>
-              <p className="text-xl font-bold">{views}</p>
+              <p className="text-xl font-bold">{views + nonUserViews}</p>
             </div>
-            <div className="bg-pink-600 rounded-lg p-2 flex flex-col">
+       <div className="bg-pink-600 rounded-lg p-2 flex flex-col">
               <p>New Fans</p>
               <p className="text-xl font-bold">{analytics.followers}</p>
             </div>
           </div>
+          <button
+            onClick={() => setShowViewsModal(true)}
+            className="mt-2 w-full text-xs font-semibold text-slate-300 bg-white/[0.04] border border-white/10 rounded-lg py-2 hover:bg-white/[0.08] hover:text-white transition-colors"
+          >
+            Portfolio view breakdown
+          </button>
         </div>
       ) : (
         <div className="bg-[#111624] rounded-lg px-4 py-3 mb-3">
@@ -966,6 +974,47 @@ const HistoryPage = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
+          </div>
+        </div>
+      )}
+
+      {showViewsModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 p-4" onClick={() => setShowViewsModal(false)}>
+          <div
+            className="bg-[#111624] border border-white/10 rounded-2xl p-5 w-full max-w-[360px]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-white text-[17px] font-extrabold">Views breakdown</h2>
+              <button onClick={() => setShowViewsModal(false)} className="text-slate-400 hover:text-white text-2xl leading-none">×</button>
+            </div>
+
+            <div className="bg-[#0e1220] border border-white/10 rounded-xl px-4 py-3.5 mb-3.5 text-center">
+              <div className="text-white text-[26px] font-extrabold">{views + nonUserViews}</div>
+              <div className="text-slate-400 text-xs font-semibold mt-0.5">Total views</div>
+            </div>
+
+            <div className="flex flex-col gap-2.5 mb-4">
+              <div className="flex items-center justify-between bg-[#0e1220] border border-white/10 rounded-xl px-3.5 py-3">
+                <div>
+                  <div className="text-white text-[13.5px] font-bold">User views</div>
+                  <div className="text-teal-400 text-[11.5px] font-semibold mt-0.5">Counts toward your ranking</div>
+                </div>
+                <div className="text-white text-xl font-extrabold">{views}</div>
+              </div>
+
+              <div className="flex items-center justify-between bg-[#0e1220] border border-white/10 rounded-xl px-3.5 py-3">
+                <div>
+                  <div className="text-white text-[13.5px] font-bold">Non-user views</div>
+                  <div className="text-slate-500 text-[11.5px] font-semibold mt-0.5">Not counted toward ranking</div>
+                </div>
+                <div className="text-white text-xl font-extrabold">{nonUserViews}</div>
+              </div>
+            </div>
+
+            <p className="text-slate-500 text-xs leading-relaxed">
+              Only visits from logged-in fans count toward your ranking. This keeps rankings fair — visits from people who aren&apos;t signed in still show up here, they just don&apos;t move your ranking.
+            </p>
           </div>
         </div>
       )}

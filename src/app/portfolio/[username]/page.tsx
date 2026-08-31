@@ -772,7 +772,11 @@ useEffect(() => {
   })()}
 </div>
             <div className="mcp-profile-stats">
-              <div className="mcp-pstat" onClick={() => setShowViewsModal(true)} style={{ cursor: "pointer" }}>
+              <div
+                className="mcp-pstat"
+                onClick={() => { if (!userid) { toast.info("login to access this operation", { autoClose: 2000 }); return; } setShowViewsModal(true); }}
+                style={{ cursor: "pointer" }}
+              >
                 <div className="mcp-pstat-n">{views + nonUserViews}</div>
                 <div className="mcp-pstat-l">Views</div>
               </div>
@@ -780,7 +784,14 @@ useEffect(() => {
                 <div style={{ display: "flex", gap: 2 }}>{[...Array(5)].map((_, i) => <span key={i} style={{ fontSize: 12, color: "#f59e0b" }}>{i < Math.round(averageRating || 0) ? "★" : "☆"}</span>)}</div>
                 <div className="mcp-pstat-l">Rating</div>
               </div>
-              <div className="mcp-pstat"><div className="mcp-pstat-n">{totalRatings}</div><div className="mcp-pstat-l">Reviews</div></div>
+              <div
+                className="mcp-pstat"
+                onClick={() => { if (!userid) { toast.info("login to access this operation", { autoClose: 2000 }); return; } Check_review(); }}
+                style={{ cursor: "pointer" }}
+              >
+                <div className="mcp-pstat-n">{totalRatings}</div>
+                <div className="mcp-pstat-l">Reviews</div>
+              </div>
             </div>
           </div>
 
