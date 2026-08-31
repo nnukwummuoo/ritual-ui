@@ -323,24 +323,18 @@ useEffect(() => {
 
   useEffect(() => {
    const fetchViews = async () => {
-  if (!Creator[0]) return;
   const currentUserId = getCurrentUserId();
-  // Send userId only when actually logged in — omitting it (rather than
-  // sending an empty string) is what lets the backend correctly count this
-  // as a non-user view instead of silently doing nothing.
-  const data = currentUserId
-    ? { creator_portfolio_id: Creator[0], userId: currentUserId }
-    : { creator_portfolio_id: Creator[0] };
+  if (!Creator[0] || !currentUserId) return;
+  const data = { creator_portfolio_id: Creator[0], userId: currentUserId };
   const response = await dispatch(getViews(data));
   try {
     const payload = response?.payload;
     setViews(payload?.views ?? 0);
-    setNonUserViews(payload?.nonUserViews ?? 0);
-  } catch { setViews(0); setNonUserViews(0); }
+  } catch { setViews(0); }
 };
     fetchViews();
   }, [Creator[0], userid, dispatch]);
-
+  
   useEffect(() => {
     if (creatordeletestatus === "succeeded") { dispatch(changecreatorstatus("idle")); setLoading(false); navigate("/"); }
     if (creatordeletestatus === "failed") { dispatch(changecreatorstatus("idle")); setLoading(false); }
