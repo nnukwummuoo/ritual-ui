@@ -288,8 +288,15 @@ useEffect(() => {
   const currentUserId = getCurrentUserId();
   if (!Creator[0]) return;
   dispatch(getmycreatorbyid({ hostid: null, token: token || undefined, userid: currentUserId || undefined, username: Creator[0] }));
-  dispatch(getAllCreatorRatings({ creatorId: Creator[0], token: token || undefined }));
 }, [userid, Creator[0], token]);
+
+  useEffect(() => {
+  // Ratings are stored keyed by the creator's real ID, not their username —
+  // wait for creator.hostid to resolve (from getmycreatorbyid above) before
+  // fetching, otherwise this silently matches nothing and totalRatings stays 0.
+  if (!creator.hostid) return;
+  dispatch(getAllCreatorRatings({ creatorId: creator.hostid, token: token || undefined }));
+}, [creator.hostid, token, dispatch]);
 
   useEffect(() => {
     if (creatorbyidstatus === "succeeded") {
