@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import Image from "next/image";
 import { URL as API_BASE } from "@/api/config";
 import { useRouter, useParams } from "next/navigation";
@@ -302,9 +302,17 @@ const [urlCopied, setUrlCopied] = useState(false);
     if (stored) setUser(JSON.parse(stored));
   }, []);
 
+ const viewRecordedFor = useRef<string | null>(null);
+
   useEffect(() => {
    const fetchViews = async () => {
   if (!Creator[0]) return;
+  // Guard against a duplicate fire for the same creator in this session —
+  // e.g. React Strict Mode's dev-only double-effect-invocation, or any
+  // accidental re-render — so we only ever record one view per visit.
+  if (viewRecordedFor.current === Creator[0]) return;
+  viewRecordedFor.current = Creator[0];
+
   const currentUserId = getCurrentUserId();
   // Send userId only when actually logged in — omitting it (rather than
   // sending an empty string) is what lets the backend correctly count this
