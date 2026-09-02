@@ -332,22 +332,18 @@ const viewRecordedFor = useRef<string | null>(null);
 
   useEffect(() => {
   const fetchViews = async () => {
-    // Prefer the real creator ID once it's loaded — far more reliable than
-    // matching by username on the backend, which can silently fail on any
-    // casing/nickname mismatch and fall back to showing 0.
-    if (!creator.hostid && !Creator[0]) return;
-    // Guard against a duplicate fire for the same resolved identity —
-    // e.g. React Strict Mode's dev-only double-effect-invocation, this
-    // effect legitimately re-running once creator.hostid loads, or any
-    // accidental re-render — so we only ever record one view per visit.
-    const identity = creator.hostid || Creator[0];
-    if (viewRecordedFor.current === identity) return;
-    viewRecordedFor.current = identity;
+    // Wait for the real creator ID to resolve — skip the fragile
+    // username-based path for recording a view entirely, so this can
+    // only ever fire once, with the reliable ID, per page visit.
+    if (!creator.hostid) return;
+    // Guard against a duplicate fire for the same creator in this session —
+    // e.g. React Strict Mode's dev-only double-effect-invocation, or any
+    // accidental re-render.
+    if (viewRecordedFor.current === creator.hostid) return;
+    viewRecordedFor.current = creator.hostid;
 
     const currentUserId = getCurrentUserId();
-    const data = creator.hostid
-      ? { creator_portfolio_id: creator.hostid, userId: currentUserId || "" }
-      : { creator_portfolio_id: null, userId: currentUserId || "", username: Creator[0] };
+    const data = { creator_portfolio_id: creator.hostid, userId: currentUserId || "" };
     const response = await dispatch(getViews(data));
     try {
       const payload = response?.payload;
@@ -356,7 +352,7 @@ const viewRecordedFor = useRef<string | null>(null);
     } catch { setViews(0); setNonUserViews(0); }
   };
   fetchViews();
-}, [creator.hostid, Creator[0], userid, dispatch]);
+}, [creator.hostid, userid, dispatch]);
 
   useEffect(() => {
     if (creatordeletestatus === "succeeded") { dispatch(changecreatorstatus("idle")); setLoading(false); navigate("/"); }
