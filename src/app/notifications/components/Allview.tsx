@@ -8,7 +8,7 @@ import { getNotifications, markNotificationsSeen, getprofile } from "@/store/pro
 import { RootState, AppDispatch } from "@/store/store";
 import { useAuth } from "@/lib/context/auth-context";
 import PacmanLoader from "react-spinners/RingLoader";
-import { CheckCircle, XCircle, Clock, Star, Phone, Heart, Handshake, MessageCircle, Shield, ShoppingCart, Wallet, Tv, UserPlus } from "lucide-react";
+import { CheckCircle, XCircle, Clock, Star, Phone, Heart, Handshake, MessageCircle, Shield, ShoppingCart, Wallet, Tv, UserPlus, Eye } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { useNotificationIndicator } from "@/hooks/useNotificationIndicator";
@@ -266,6 +266,8 @@ const userId = reduxProfileUserId || reduxRegisterUserId || localUserId;
           title = "Fan Date Request";
         } else if (message.includes("fan call") || message.includes("Fan Call")) {
           title = "Fan Call Request";
+        } else if (message.includes("views") && (message.includes("discover") || message.includes("visibility") || message.includes("momentum"))) {
+          title = "Views Notification";
         } else if (message.includes("rating") || message.includes("star")) {
           title = "Rating Notification";
         } else if (message.includes("rating") || message.includes("withdrawal")) {
@@ -299,6 +301,11 @@ const userId = reduxProfileUserId || reduxRegisterUserId || localUserId;
                 {title === "Rating Notification" && (
                   <div className="bg-yellow-500/10 p-1 rounded-full">
                     <Star className="text-yellow-500 w-5 h-5 fill-current" />
+                  </div>
+                )}
+                {title === "Views Notification" && (
+                  <div className="bg-indigo-500/10 p-1 rounded-full">
+                    <Eye className="text-indigo-400 w-5 h-5" />
                   </div>
                 )}
                 {title === "Missed Fan Call" && (
@@ -336,17 +343,17 @@ const userId = reduxProfileUserId || reduxRegisterUserId || localUserId;
                     <UserPlus className="text-blue-500 w-5 h-5" strokeWidth={2.25} />
                   </div>
                 )}
-                {title !== "Admin Notification" && title !== "Rating Notification" && title !== "Missed Fan Call" && title !== "Fan Date Request" && title !== "Fan Meet Request" && title !== "Fan Call Request" && title !== "Like Notification" && title !== "Message Notification" && title !== "Follow Notification" && title !== "Unfollow Notification" && title !== "Purchase Notification" && title !== "Withdrawal Notification" && title !== "PPV Approved" && title !== "PPV Declined" && status === "approved" && (
+                {title !== "Admin Notification" && title !== "Rating Notification" && title !== "Views Notification" && title !== "Missed Fan Call" && title !== "Fan Date Request" && title !== "Fan Meet Request" && title !== "Fan Call Request" && title !== "Like Notification" && title !== "Message Notification" && title !== "Follow Notification" && title !== "Unfollow Notification" && title !== "Purchase Notification" && title !== "Withdrawal Notification" && title !== "PPV Approved" && title !== "PPV Declined" && status === "approved" && (
                   <div className="bg-green-500/10 p-1 rounded-full">
                     <CheckCircle className="text-green-500 w-5 h-5" />
                   </div>
                 )}
-                {title !== "Admin Notification" && title !== "Rating Notification" && title !== "Missed Fan Call" && title !== "Fan Date Request" && title !== "Fan Meet Request" && title !== "Fan Call Request" && title !== "Like Notification" && title !== "Message Notification" && title !== "Follow Notification" && title !== "Unfollow Notification" && title !== "Purchase Notification" && title !== "Withdrawal Notification" && title !== "PPV Approved" && title !== "PPV Declined" && status === "rejected" && (
+                {title !== "Admin Notification" && title !== "Rating Notification" && title !== "Views Notification" && title !== "Missed Fan Call" && title !== "Fan Date Request" && title !== "Fan Meet Request" && title !== "Fan Call Request" && title !== "Like Notification" && title !== "Message Notification" && title !== "Follow Notification" && title !== "Unfollow Notification" && title !== "Purchase Notification" && title !== "Withdrawal Notification" && title !== "PPV Approved" && title !== "PPV Declined" && status === "rejected" && (
                   <div className="bg-red-500/10 p-1 rounded-full">
                     <XCircle className="text-red-500 w-5 h-5" />
                   </div>
                 )}
-                {title !== "Admin Notification" && title !== "Rating Notification" && title !== "Missed Fan Call" && title !== "Fan Date Request" && title !== "Fan Meet Request" && title !== "Fan Call Request" && title !== "Like Notification" && title !== "Message Notification" && title !== "Follow Notification" && title !== "Unfollow Notification" && title !== "Purchase Notification" && title !== "Withdrawal Notification" && title !== "PPV Approved" && title !== "PPV Declined" && status === "pending" && (
+                {title !== "Admin Notification" && title !== "Rating Notification" && title !== "Views Notification" && title !== "Missed Fan Call" && title !== "Fan Date Request" && title !== "Fan Meet Request" && title !== "Fan Call Request" && title !== "Like Notification" && title !== "Message Notification" && title !== "Follow Notification" && title !== "Unfollow Notification" && title !== "Purchase Notification" && title !== "Withdrawal Notification" && title !== "PPV Approved" && title !== "PPV Declined" && status === "pending" && (
                   <div className="bg-yellow-500/10 p-1 rounded-full">
                     <Clock className="text-yellow-500 w-5 h-5" />
                   </div>

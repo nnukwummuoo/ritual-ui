@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import Image from "next/image";
 import { URL as API_BASE } from "@/api/config";
 import { useRouter, useParams } from "next/navigation";
@@ -328,12 +328,22 @@ useEffect(() => {
     if (stored) setUser(JSON.parse(stored));
   }, []);
 
- useEffect(() => {
+const viewRecordedFor = useRef<string | null>(null);
+
+  useEffect(() => {
   const fetchViews = async () => {
     // Prefer the real creator ID once it's loaded — far more reliable than
     // matching by username on the backend, which can silently fail on any
     // casing/nickname mismatch and fall back to showing 0.
     if (!creator.hostid && !Creator[0]) return;
+    // Guard against a duplicate fire for the same resolved identity —
+    // e.g. React Strict Mode's dev-only double-effect-invocation, this
+    // effect legitimately re-running once creator.hostid loads, or any
+    // accidental re-render — so we only ever record one view per visit.
+    const identity = creator.hostid || Creator[0];
+    if (viewRecordedFor.current === identity) return;
+    viewRecordedFor.current = identity;
+
     const currentUserId = getCurrentUserId();
     const data = creator.hostid
       ? { creator_portfolio_id: creator.hostid, userId: currentUserId || "" }
