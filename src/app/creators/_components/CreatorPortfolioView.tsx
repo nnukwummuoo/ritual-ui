@@ -50,6 +50,7 @@ import { formatTourDateRange } from "@/utils/tourFormat";
 import PublicExclusiveGrid from "./PublicExclusiveGrid";
 import { URL as API_URL } from "@/api/config";
 import axios from "axios";
+import LoginPromptBanner from "@/components/LoginPromptBanner";
 
 // Types
 interface RootState {
@@ -1185,8 +1186,10 @@ const [urlCopied, setUrlCopied] = useState(false);
         </div>
       </div>
     </div>
-  </div>
+ </div>
 )}
+
+      {!userid && <LoginPromptBanner />}
       </div>
     </>
   );
