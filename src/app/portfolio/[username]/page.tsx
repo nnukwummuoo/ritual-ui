@@ -8,6 +8,7 @@ import { getmycreatorbyid } from "@/store/creatorSlice";
 import { useAuthToken } from "@/lib/hooks/useAuthToken";
 import { useUserId } from "@/lib/hooks/useUserId";
 import CreatorPortfolioView from "@/app/creators/_components/CreatorPortfolioView";
+import LoaderVisual from "@/components/LoaderVisual";
 
 export default function PortfolioByUsernamePage() {
   const params = useParams<{ username: string }>();
@@ -26,13 +27,8 @@ export default function PortfolioByUsernamePage() {
     dispatch(getmycreatorbyid({ hostid: null, token: token || undefined, userid: userid || undefined, username }));
   }, [username, token, userid, dispatch]);
 
-  if (!resolvedId) {
-    return (
-      <div style={{ minHeight: "100vh", background: "#080b14", display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <div style={{ width: 32, height: 32, borderRadius: "50%", border: "3px solid rgba(108,99,255,.25)", borderTopColor: "#6c63ff", animation: "mcpSpin 0.8s linear infinite" }} />
-        <style>{`@keyframes mcpSpin{to{transform:rotate(360deg)}}`}</style>
-      </div>
-    );
+ if (!resolvedId) {
+    return <LoaderVisual />;
   }
 
   return <CreatorPortfolioView creatorPortfolioId={resolvedId} />;
