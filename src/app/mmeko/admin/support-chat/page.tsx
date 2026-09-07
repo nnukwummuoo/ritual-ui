@@ -69,14 +69,20 @@ interface ChatMessage {
   files?: string[];
 }
 
-const URL_REGEX = /(https?:\/\/[^\s]+|www\.[^\s]+)/gi;
-const IS_URL = /^(https?:\/\/|www\.)/i;
+// Matches http(s):// links, www.-prefixed links, and bare domains from a
+// curated common-TLD list (e.g. "instagram.com") — deliberately NOT any
+// generic word.word pattern, since that would also falsely catch things
+// like "photo.jpg" or "resume.pdf" mentioned in ordinary chat text.
+const COMMON_TLDS = "com|net|org|io|co|app|dev|me|info|biz|xyz|us|uk|ca|edu|gov|ai|tv|so|gg|shop|store|online|site|tech";
+const URL_PATTERN = `https?:\\/\\/[^\\s]+|www\\.[^\\s]+|\\b[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?)+\\.(?:${COMMON_TLDS})(?:\\/[^\\s]*)?\\b`;
+const URL_REGEX = new RegExp(`(${URL_PATTERN})`, "gi");
+const IS_URL = new RegExp(`^(?:${URL_PATTERN})$`, "i");
 
 function renderMessageWithLinks(text: string) {
   if (!text) return null;
   return text.split(URL_REGEX).map((part, i) => {
     if (IS_URL.test(part)) {
-      const href = part.startsWith("www.") ? `https://${part}` : part;
+      const href = /^https?:\/\//i.test(part) ? part : `https://${part}`;
       return (
         <a
           key={i}
