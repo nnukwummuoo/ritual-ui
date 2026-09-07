@@ -69,6 +69,31 @@ interface ChatMessage {
   files?: string[];
 }
 
+const URL_REGEX = /(https?:\/\/[^\s]+|www\.[^\s]+)/gi;
+const IS_URL = /^(https?:\/\/|www\.)/i;
+
+function renderMessageWithLinks(text: string) {
+  if (!text) return null;
+  return text.split(URL_REGEX).map((part, i) => {
+    if (IS_URL.test(part)) {
+      const href = part.startsWith("www.") ? `https://${part}` : part;
+      return (
+        <a
+          key={i}
+          href={href}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={(e) => e.stopPropagation()}
+          className="underline break-all text-blue-100 hover:text-white"
+        >
+          {part}
+        </a>
+      );
+    }
+    return part;
+  });
+}
+
 const AdminSupportChat = () => {
   const token = useAuthToken();
   const router = useRouter();
@@ -938,7 +963,7 @@ const AdminSupportChat = () => {
                           </div>
                         )}
 
-                        <p className="text-sm md:text-base break-words">{message.content}</p>
+                        <p className="text-sm md:text-base break-words whitespace-pre-wrap">{renderMessageWithLinks(message.content)}</p>
 
                         {/* Display files if any */}
                         {message.files && message.files.length > 0 && (
