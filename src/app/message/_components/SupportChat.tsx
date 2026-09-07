@@ -18,6 +18,31 @@ import { CategorySelection } from "@/components/support/CategorySelection";
 import { getImageSource } from "@/lib/imageUtils";
 import FileLimitPopup from "@/app/upload/_components/FileLimitPopup";
 
+const URL_REGEX = /(https?:\/\/[^\s]+|www\.[^\s]+)/gi;
+const IS_URL = /^(https?:\/\/|www\.)/i;
+
+function renderMessageWithLinks(text: string) {
+  if (!text) return null;
+  return text.split(URL_REGEX).map((part, i) => {
+    if (IS_URL.test(part)) {
+      const href = part.startsWith("www.") ? `https://${part}` : part;
+      return (
+        <a
+          key={i}
+          href={href}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={(e) => e.stopPropagation()}
+          className="underline break-all text-blue-100 hover:text-white"
+        >
+          {part}
+        </a>
+      );
+    }
+    return part;
+  });
+}
+
 export const SupportChat = () => {
   const msgListref = useRef<HTMLDivElement>(null);
   const dispatch = useDispatch();
@@ -681,7 +706,7 @@ export const SupportChat = () => {
                       ? 'bg-gradient-to-r from-green-500 to-teal-600 text-white rounded-bl-md'
                       : 'bg-[#111624]/50 text-white rounded-bl-md border border-gray-700/30'
                   }`}>
-                    <p className="text-sm">{message.content}</p>
+                   <p className="text-sm whitespace-pre-wrap">{renderMessageWithLinks(message.content)}</p>
                     
                     {/* Display files if any */}
                     {message.files && message.files.length > 0 && (
