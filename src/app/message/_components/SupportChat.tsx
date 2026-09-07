@@ -23,7 +23,7 @@ import FileLimitPopup from "@/app/upload/_components/FileLimitPopup";
 // generic word.word pattern, since that would also falsely catch things
 // like "photo.jpg" or "resume.pdf" mentioned in ordinary chat text.
 const COMMON_TLDS = "com|net|org|io|co|app|dev|me|info|biz|xyz|us|uk|ca|edu|gov|ai|tv|so|gg|shop|store|online|site|tech";
-const URL_PATTERN = `https?:\\/\\/[^\\s]+|www\\.[^\\s]+|\\b[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?)+\\.(?:${COMMON_TLDS})(?:\\/[^\\s]*)?\\b`;
+const URL_PATTERN = `https?:\\/\\/[^\\s]+|www\\.[^\\s]+|(?<!@)\\b(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\\.)+(?:${COMMON_TLDS})(?:\\/[^\\s]*)?\\b`;
 const URL_REGEX = new RegExp(`(${URL_PATTERN})`, "gi");
 const IS_URL = new RegExp(`^(?:${URL_PATTERN})$`, "i");
 
