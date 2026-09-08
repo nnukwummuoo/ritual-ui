@@ -65,7 +65,7 @@ const getCreatorContent = (hostType: string, hasRating: boolean = false) => {
     },
     cancelled: {
       head: `${typeText} Cancelled`,
-      body: "Your fan cancelled the request."
+      body: "Your ${serviceType} request was cancelled."
     },
     expired: {
       head: `${typeText} Expired`,
