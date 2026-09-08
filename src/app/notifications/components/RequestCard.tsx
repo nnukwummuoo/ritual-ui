@@ -1372,9 +1372,24 @@ useEffect(() => {
           // keep this row horizontal and make buttons equal width
           <div className="flex w-full items-stretch gap-3">
             <div className="flex-1 flex">
-              <div className="w-full border border-gray-600 text-gray-500 px-3 py-2 rounded-lg text-xs md:text-sm flex items-center justify-center">
-                {cardStates[currentStatus as keyof typeof cardStates]}
-              </div>
+              {type === "creator" && currentStatus === "accepted" ? (
+                <FanActionBtn
+                  label={
+                    hosttype?.toLowerCase() === "fan call"
+                      ? "Cancel call"
+                      : hosttype?.toLowerCase() === "fan date"
+                      ? "Cancel date"
+                      : "Cancel meet"
+                  }
+                  className={fanActionClass}
+                  onClick={handleCancel}
+                  disabled={loading}
+                />
+              ) : (
+                <div className="w-full border border-gray-600 text-gray-500 px-3 py-2 rounded-lg text-xs md:text-sm flex items-center justify-center">
+                  {cardStates[currentStatus as keyof typeof cardStates]}
+                </div>
+              )}
             </div>
 
             <div className="flex-1">
