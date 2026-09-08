@@ -117,7 +117,7 @@ const getFanContent = (price: number, hostType: string, hasRating: boolean = fal
     },
     cancelled: {
       head: `${typeText} Cancelled`,
-      body: "You have cancelled the request. You can renew this request anytime."
+      body: "Your ${serviceType} request was cancelled."
     },
     expired: {
       head: `${typeText} Expired`,
