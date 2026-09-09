@@ -65,7 +65,7 @@ const getCreatorContent = (hostType: string, hasRating: boolean = false) => {
     },
     cancelled: {
       head: `${typeText} Cancelled`,
-      body: "Your ${typeText} request was cancelled."
+      body: `Your ${typeText} request was cancelled.`
     },
     expired: {
       head: `${typeText} Expired`,
@@ -117,7 +117,7 @@ const getFanContent = (price: number, hostType: string, hasRating: boolean = fal
     },
     cancelled: {
       head: `${typeText} Cancelled`,
-      body: "Your ${typeText} request was cancelled."
+      body: `Your ${typeText} request was cancelled.`
     },
     expired: {
       head: `${typeText} Expired`,
