@@ -65,7 +65,7 @@ const getCreatorContent = (hostType: string, hasRating: boolean = false) => {
     },
     cancelled: {
       head: `${typeText} Cancelled`,
-      body: "Your ${serviceType} request was cancelled."
+      body: "Your ${typeText} request was cancelled."
     },
     expired: {
       head: `${typeText} Expired`,
@@ -117,7 +117,7 @@ const getFanContent = (price: number, hostType: string, hasRating: boolean = fal
     },
     cancelled: {
       head: `${typeText} Cancelled`,
-      body: "Your ${serviceType} request was cancelled."
+      body: "Your ${typeText} request was cancelled."
     },
     expired: {
       head: `${typeText} Expired`,
@@ -247,6 +247,7 @@ export default function RequestCard({ exp, img, originalPhotoLink, name, usernam
   const [currentStatus, setCurrentStatus] = useState(status);
   const [timeLeft, setTimeLeft] = useState<string>("");
   const [showVerifyPopup, setShowVerifyPopup] = useState(false);
+   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
 
 const [timerActive, setTimerActive] = useState(false);
@@ -1281,6 +1282,65 @@ useEffect(() => {
         preSelectedRating={selectedFanRating}
       />
 
+      {/* Cancel Confirmation Modal */}
+      {showCancelConfirm && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-[9999] p-4"
+          onClick={() => !loading && setShowCancelConfirm(false)}
+        >
+          <div
+            className="bg-[#111624] rounded-2xl p-6 max-w-sm w-full border border-white/10 relative overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Top accent line */}
+            <div
+              className="absolute top-0 left-0 right-0 h-[3px]"
+              style={{ background: "linear-gradient(90deg,#f43f5e,#fb923c)" }}
+            />
+
+            <div className="flex items-center justify-center mb-4 mt-1">
+              <div
+                className="w-14 h-14 rounded-full flex items-center justify-center"
+                style={{ background: "rgba(244,63,94,.12)", border: "1px solid rgba(244,63,94,.25)" }}
+              >
+                <IoWarningOutline className="text-rose-400" size={26} />
+              </div>
+            </div>
+
+            <h3 className="text-white font-bold text-base text-center mb-2">
+              Cancel this {(hosttype || "Fan Meet").toLowerCase() === "fan call" ? "call" : (hosttype || "Fan Meet").toLowerCase() === "fan date" ? "date" : "meet"}?
+            </h3>
+
+            <p className="text-gray-400 text-xs text-center mb-6 leading-relaxed">
+              {currentStatus === "accepted"
+                ? `This booking has already been accepted. Cancelling will notify ${type === "creator" ? "the fan" : "the creator"} right away, and any pending gold on this request will be refunded. This can't be undone.`
+                : "This will withdraw the request and notify the other party. This can't be undone."}
+            </p>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowCancelConfirm(false)}
+                disabled={loading}
+                className="flex-1 py-2.5 rounded-xl text-sm font-semibold border border-white/10 text-gray-300 hover:bg-white/5 transition-colors disabled:opacity-50"
+              >
+                Go back
+              </button>
+              <button
+                onClick={async () => {
+                  await handleCancel();
+                  setShowCancelConfirm(false);
+                }}
+                disabled={loading}
+                className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white transition-all disabled:opacity-60"
+                style={{ background: "linear-gradient(135deg,#f43f5e,#fb7185)" }}
+              >
+                {loading ? "Cancelling..." : "Yes, cancel"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Feedback Modal for Creators */}
       {showFeedbackModal && ratingData && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999] p-4">
@@ -1372,7 +1432,7 @@ useEffect(() => {
           // keep this row horizontal and make buttons equal width
           <div className="flex w-full items-stretch gap-3">
             <div className="flex-1 flex">
-              {type === "creator" && currentStatus === "accepted" ? (
+             {type === "creator" && currentStatus === "accepted" ? (
                 <FanActionBtn
                   label={
                     hosttype?.toLowerCase() === "fan call"
@@ -1382,7 +1442,7 @@ useEffect(() => {
                       : "Cancel meet"
                   }
                   className={fanActionClass}
-                  onClick={handleCancel}
+                  onClick={() => setShowCancelConfirm(true)}
                   disabled={loading}
                 />
               ) : (
@@ -1482,7 +1542,7 @@ useEffect(() => {
                 // Fan: Cancel request | View details side-by-side
                 <>
                   <div className='flex-1 min-w-0'>
-                    {type === "fan" && currentStatus === "request" && <FanActionBtn label='Cancel request' className={fanActionClass} onClick={handleCancel} disabled={loading} />}
+                    {type === "fan" && currentStatus === "request" && <FanActionBtn label='Cancel request' className={fanActionClass} onClick={() => setShowCancelConfirm(true)} disabled={loading} />}
                   </div>
                   <div className='flex-1 min-w-0'>
                     <button className={fanActionClass} onClick={handleShowDetails}>View details</button>
