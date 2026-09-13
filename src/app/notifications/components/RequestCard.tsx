@@ -227,6 +227,7 @@ interface CardProps {
   originalPhotoLink?: string; // Original photolink URL (before processing with getImageSource)
   status: "request" | "expired" | "completed" | "accepted" | "declined" | "cancelled";
   requestId?: string;
+  bookingRef?: string;
   price?: number;
   details?: FanMeetDetails;
   userid?: string;
@@ -242,7 +243,7 @@ interface CardProps {
   onStatusChange?: (requestId: string, newStatus: string) => void;
 }
 
-export default function RequestCard({ exp, img, originalPhotoLink, name, username, firstName, lastName, titles = ["fan"], status, type = "fan", requestId, price, details, userid, creator_portfolio_id, targetUserId, targetUsername, hosttype, isVip = false, vipEndDate = null, createdAt,  fanVerified = false, onStatusChange }: CardProps) {
+export default function RequestCard({ exp, img, originalPhotoLink, name, username, firstName, lastName, titles = ["fan"], status, type = "fan", requestId, bookingRef, price, details, userid, creator_portfolio_id, targetUserId, targetUsername, hosttype, isVip = false, vipEndDate = null, createdAt,  fanVerified = false, onStatusChange }: CardProps) {
   const [loading, setLoading] = useState(false);
   const [currentStatus, setCurrentStatus] = useState(status);
   const [timeLeft, setTimeLeft] = useState<string>("");
@@ -1566,7 +1567,8 @@ useEffect(() => {
     fanUserid={userid}
     fanVerified={fanVerified}
     creatorUserid={currentUserId}
-     requestId={requestId}
+    requestId={requestId}
+    bookingRef={bookingRef}
     timerActive={timerActive}
   setTimerActive={setTimerActive}
   timeRemaining={timeRemaining}
@@ -1620,6 +1622,7 @@ function DetailsModal({
   creatorUserid,
    timerActive,
   requestId,
+  bookingRef,
   setTimerActive,
   timeRemaining,
   setTimeRemaining,
@@ -1639,6 +1642,7 @@ function DetailsModal({
   fanVerified?: boolean;
   creatorUserid?: string;
   requestId?: string;
+  bookingRef?: string;
    timerActive: boolean;
   setTimerActive: (v: boolean) => void;
   timeRemaining: number;
@@ -1720,6 +1724,7 @@ const formatTimer = (seconds: number) => {
       <div className="fixed inset-0 z-[9999] overflow-y-auto">
         <div className="bg-white rounded-lg p-6 max-w-md w-full">
           <h2 className="text-xl font-bold text-gray-800 mb-4">{getDetailsTitle(hosttype || "Fan Meet")}</h2>
+          {bookingRef && <p className="text-xs font-mono text-gray-400 mb-3">Booking ID: {bookingRef}</p>}
           <p className="text-gray-600 mb-4">Details not available</p>
           <button
             onClick={onClose}
@@ -1761,6 +1766,7 @@ const formatTimer = (seconds: number) => {
     <div className="fixed inset-0 z-[9999] overflow-y-auto">
     <div className="bg-white w-full h-full min-h-screen p-6 overflow-y-auto">
         <h2 className="text-xl font-bold text-gray-800 mb-6">{getDetailsTitle(hosttype || "Fan Meet")}</h2>
+        {bookingRef && <p className="text-xs font-mono text-gray-400 mb-5">Booking ID: {bookingRef}</p>}
 
         {/* Expiration Countdown - Only show for accepted requests */}
         {currentStatus === "accepted" && (

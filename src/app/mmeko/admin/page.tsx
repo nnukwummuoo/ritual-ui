@@ -20,6 +20,7 @@ import {
   IoConstructOutline,
   IoTimerOutline,
   IoLockOpenOutline,
+  IoCalendarOutline,
 } from "react-icons/io5";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "@/store/store";
@@ -51,6 +52,7 @@ import MaintenanceToggle from "@/components/admin/MaintenanceToggle";
 import MaintenanceControl from "@/components/admin/MaintenanceControl";
 import SortToggle from "@/components/admin/SortToggle";
 import AdminFanVerificationPage from "./adminfan-verification/page";
+import BookingHistoryPage from "./booking-history/page";
 
 const AdminPage = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -257,6 +259,11 @@ useEffect(() => {
       name: "Transactions",
       icon: <IoCardOutline size={22} />,
       component: <TransactionsPage />,
+    },
+     {
+      name: "Booking History",
+      icon: <IoCalendarOutline size={22} />,
+      component: <BookingHistoryPage />,
     },
     {
       name: "Revenue",

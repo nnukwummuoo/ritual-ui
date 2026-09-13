@@ -16,6 +16,7 @@ import { getImageSource } from "@/lib/imageUtils";
 
 interface Request {
   requestId: string;
+  bookingRef?: string;
   type: 'fan' | 'creator';
   status: "request" | "expired" | "completed" | "accepted" | "declined" | "cancelled";
   otherUser?: {
@@ -304,6 +305,7 @@ export default function Activity() {
               titles={request.otherUser?.isCreator ? ["Creator"] : ["Fan"]}
               exp={request.timeRemaining || "Expiring soon"}
               requestId={request.requestId}
+              bookingRef={request.bookingRef}
               price={request.price}
               details={
                 request.date && request.time ? {
