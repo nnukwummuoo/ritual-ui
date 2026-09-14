@@ -240,20 +240,22 @@ const BookingHistoryPage = () => {
 
                       {b.status === "accepted" && (
                         <>
-                          <button
+                         <button
                             onClick={() => setCancelTarget(b)}
                             disabled={actioningId === b.id}
                             className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-red-500/10 border border-red-500/25 text-red-300 hover:bg-red-500/20 transition-colors disabled:opacity-50"
                           >
                             Cancel
                           </button>
-                          <button
-                            onClick={() => setReleaseTarget(b)}
-                            disabled={actioningId === b.id}
-                            className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-green-500/10 border border-green-500/25 text-green-300 hover:bg-green-500/20 transition-colors disabled:opacity-50"
-                          >
-                            Release payment
-                          </button>
+                          {b.hosttype?.toLowerCase() !== "fan call" && (
+                            <button
+                              onClick={() => setReleaseTarget(b)}
+                              disabled={actioningId === b.id}
+                              className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-green-500/10 border border-green-500/25 text-green-300 hover:bg-green-500/20 transition-colors disabled:opacity-50"
+                            >
+                              Release payment
+                            </button>
+                          )}
                           <button
                             onClick={() => openConversation(b)}
                             className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-white/5 border border-white/10 text-gray-300 hover:bg-white/10 transition-colors flex items-center gap-1.5"

@@ -158,6 +158,7 @@ export default function Activity() {
 
             return {
               requestId: req.requestId,
+              bookingRef: req.bookingRef,
               type: req.type, // Already determined by backend
               status: normalizeStatus(req.status),
               otherUser: req.otherUser,
