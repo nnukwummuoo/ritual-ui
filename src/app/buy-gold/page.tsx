@@ -603,8 +603,8 @@ const TopupInner: React.FC = () => {
               <HelpCircle className="w-4 h-4 text-[#9b8dff]" />
             </div>
             <div>
-              <p className="text-white text-sm font-semibold leading-tight">New to crypto?</p>
-              <p className="text-[#8b8fa3] text-xs mt-0.5">We'll walk you through it, step by step</p>
+              <p className="text-white text-sm font-semibold leading-tight">No crypto?</p>
+              <p className="text-[#8b8fa3] text-xs mt-0.5">Pay with card instead</p>
             </div>
           </div>
           <span className="text-[#c9c4ff] text-xs font-semibold whitespace-nowrap flex-shrink-0">
