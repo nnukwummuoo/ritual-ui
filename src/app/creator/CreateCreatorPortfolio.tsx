@@ -97,7 +97,7 @@ export default function CreateCreatorPortfolio() {
   const [discription, setdiscription] = useState(() => readDraft().discription ?? "");
   const [exclusiveEnabled, setExclusiveEnabled] = useState(() => readDraft().exclusiveEnabled ?? true);
   const [disablebut, setdisablebut] = useState(false);
-  const [hosttype, sethosttype] = useState(() => readDraft().hosttype ?? "Fan meet");
+  const [hosttype, sethosttype] = useState(() => readDraft().hosttype ?? "Fan date");
   const [imglist, setimglist] = useState<string[]>([]);
   const [photolink, setphotolink] = useState<File[]>([]);
   // ── CHANGED: popover instead of modal ──

@@ -92,7 +92,7 @@ export default function Editcreator() {
   const [description, setdescription] = useState("");
   const [exclusiveEnabled, setExclusiveEnabled] = useState(true);
   const [disablebut, setdisablebut] = useState(false);
-  const [hosttype, sethosttype] = useState("Fan meet");
+  const [hosttype, sethosttype] = useState("Fan date");
   const [showPriceGuide, setShowPriceGuide] = useState(false);
   const [newImages, setNewImages] = useState<any[]>([]);
   const [existingImages, setExistingImages] = useState<string[]>([]);
