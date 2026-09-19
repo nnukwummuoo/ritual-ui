@@ -381,7 +381,7 @@ const [urlCopied, setUrlCopied] = useState(false);
   const creatorServiceNoun = isFanCallCreator ? "call" : isFanDateCreator ? "date" : "meet";
   const creatorDetailsTitle = isFanCallCreator ? "Call Details" : isFanDateCreator ? "Date Details" : "Meet Details";
   const creatorPriceValue = formatCreatorPrices(creator?.price || "") || "0";
-  const creatorRateSuffix = isFanCallCreator ? "/ min" : isFanDateCreator ? "/ date" : "/ meet";
+  const creatorRateSuffix = isFanCallCreator ? "/min" : isFanDateCreator ? "/date" : "/meet";
   const creatorDurationText = isFanCallCreator ? "Billed per minute" : isFanDateCreator ? "1 hour" : "30 minutes";
   const availabilityDays = String(creator?.daysava || "").split(/[\s,]+/).map((d) => d.trim()).filter(Boolean);
   const availabilityHours = String(creator?.timeava || "").split(/[\s,]+/).map((t) => t.trim().replace(/(AM|PM)$/i, " $1").toUpperCase()).filter(Boolean);
@@ -861,7 +861,7 @@ const [urlCopied, setUrlCopied] = useState(false);
             </svg>
             </span>
            {creatorPriceValue} Gold
-            <span className="mcp-price-amount-suffix">{creatorRateSuffix}</span>
+            <span className="mcp-price-amount-suffix"> /&nbsp;{isFanCallCreator ? "min" : isFanDateCreator ? "date" : "meet"}</span>
           </div>
          <div className="mcp-trust-badge">
             <ShieldCheck size={16} className="mcp-trust-badge-icon" />
