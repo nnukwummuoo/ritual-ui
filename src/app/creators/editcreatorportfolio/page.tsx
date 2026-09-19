@@ -32,18 +32,18 @@ const DAY_OPTIONS = [
 
 const CATEGORY_OPTIONS = [
   {
-    value: "Fan meet",
-    title: "Fan Meet & Greet",
-    description: "In-person meet",
-    icon: "🤝",
-    iconClass: "ci-meet",
-  },
-  {
     value: "Fan date",
     title: "Fan Date",
     description: "An exclusive in-person date experience",
     icon: "❤️",
     iconClass: "ci-date",
+  },
+  {
+    value: "Fan meet",
+    title: "Fan Meet & Greet",
+    description: "In-person meet",
+    icon: "🤝",
+    iconClass: "ci-meet",
   },
   {
     value: "Fan call",
@@ -81,7 +81,6 @@ export default function Editcreator() {
   const [loading, setLoading] = useState(false);
   const [showFileSizeModal, setShowFileSizeModal] = useState(false);
   const [name, setname] = useState("");
-  const [age, setage] = useState("");
   const [location, setlocation] = useState("");
   const [countryQuery, setCountryQuery] = useState("");
   const [showCountryDropdown, setShowCountryDropdown] = useState(false);
@@ -315,7 +314,6 @@ const tourAvailableCities = useMemo(() => {
     }
 
   
-    setage(creator.age || "");
     setlocation(creator.location || "");
     setCountryQuery(creator.location || "");
     setgender(creator.gender || "");
@@ -429,7 +427,6 @@ if (matched?.isoCode && creator.state) {
   };
 
   const checkuserInput = async () => {
-    if (!age) return toast.error("Age Empty", { autoClose: 2000 });
     if (!hosttype) return toast.error("Select host type", { autoClose: 2000 });
     if (newImages.length === 0 && existingImages.length === 0) {
       return toast.error("Please upload at least one image", { autoClose: 2000 });
@@ -454,7 +451,6 @@ if (matched?.isoCode && creator.state) {
         userId: userid,
         creator_portfolio_id,
         name,
-        age,
         location,
         state: selectedState,
         city: selectedCity,
@@ -565,26 +561,15 @@ if (matched?.isoCode && creator.state) {
           <input type="text" className="fi" value={name} readOnly />
         </div>
 
-        <div className="frow">
-          <div className="fg">
-            <label className="fl">Age <span className="req">*</span></label>
-            <select className="fi" value={age} onChange={(e) => setage(e.currentTarget.value)}>
-              <option value="" disabled>Select age</option>
-              {Array.from({ length: 53 }, (_, index) => 18 + index).map((num) => (
-                <option key={num} value={num}>{num} years</option>
-              ))}
-            </select>
-          </div>
-          <div className="fg">
-            <label className="fl">Gender <span className="req">*</span></label>
-            <select className="fi" value={gender} onChange={(e) => setgender(e.currentTarget.value)}>
-              <option value="" disabled>Select gender</option>
-              <option value="Man">Man</option>
-              <option value="Woman">Woman</option>
-              <option value="Couple">Couples</option>
-              <option value="Trans">Trans</option>
-            </select>
-          </div>
+       <div className="fg">
+          <label className="fl">Gender <span className="req">*</span></label>
+          <select className="fi" value={gender} onChange={(e) => setgender(e.currentTarget.value)}>
+            <option value="" disabled>Select gender</option>
+            <option value="Man">Man</option>
+            <option value="Woman">Woman</option>
+            <option value="Couple">Couples</option>
+            <option value="Trans">Trans</option>
+          </select>
         </div>
 
         <div className="fg">

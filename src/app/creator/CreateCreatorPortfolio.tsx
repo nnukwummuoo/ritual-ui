@@ -23,19 +23,19 @@ import ExclusiveContentSection from "@/app/creator/ExclusiveContentSection";
 const DAY_OPTIONS = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"];
 
 const CATEGORY_OPTIONS = [
+   {
+    value: "Fan date",
+    title: "Fan Date",
+    description: "An exclusive in-person date experience",
+    icon: "❤️",
+    iconBg: "rgba(244,114,182,.1)",
+  },
   {
     value: "Fan meet",
     title: "Fan Meet & Greet",
     description: "In-person meet",
     icon: "🤝",
     iconBg: "rgba(108,99,255,.12)",
-  },
-  {
-    value: "Fan date",
-    title: "Fan Date",
-    description: "An exclusive in-person date experience",
-    icon: "❤️",
-    iconBg: "rgba(244,114,182,.1)",
   },
   {
     value: "Fan call",
@@ -85,7 +85,6 @@ export default function CreateCreatorPortfolio() {
   const [loading, setLoading] = useState(false);
   const [showFileSizeModal, setShowFileSizeModal] = useState(false);
   const [name, setname] = useState(() => readDraft().name ?? "");
-  const [age, setage] = useState(() => readDraft().age ?? "18");
   const [location, setlocation] = useState(() => readDraft().location ?? "");
   const [countryQuery, setCountryQuery] = useState(() => readDraft().countryQuery ?? "");
   const [showCountryDropdown, setShowCountryDropdown] = useState(false);
@@ -163,7 +162,6 @@ useEffect(() => {
       DRAFT_KEY,
       JSON.stringify({
         name,
-        age,
         location,
         countryQuery,
         gender,
@@ -186,7 +184,7 @@ useEffect(() => {
     );
   } catch {}
 }, [
-  name, age, location, countryQuery, gender, duration, price, priceValue,
+  name, location, countryQuery, gender, duration, price, priceValue,
   discription, exclusiveEnabled, hosttype, selectedTimes, selectedDays,
   selectedCountryCode, stateQuery, selectedState, selectedStateCode,
   cityQuery, selectedCity, tours,
@@ -349,7 +347,6 @@ const removeTour = (index: number) => {
   const checkuserInput = async () => {
     if (disablebut || loading) return;
     if (!name || name.trim() === "") return toast.error("Full name is required");
-    if (!age) return toast.error("Age is required");
     if (!hosttype) return toast.error("Select host type");
     if (photolink.length <= 0) return toast.error("Please upload at least one image");
     if (!location) return toast.error("Location is required");
@@ -367,7 +364,6 @@ const removeTour = (index: number) => {
       const data = {
         userid,
         name: name.trim(),
-        age: String(age),
         location: location.trim(),
          state: selectedState,
          city: selectedCity,
@@ -486,35 +482,20 @@ const removeTour = (index: number) => {
           />
         </div>
 
-        <div className="mb-[18px] grid grid-cols-2 gap-3">
-          <div>
-            <FieldLabel required>Age</FieldLabel>
-            <select
-              value={age}
-              onChange={(e) => setage(e.currentTarget.value)}
-              className="fi w-full appearance-none rounded-[10px] border border-white/7 bg-[#111624] px-[14px] py-[13px] text-[13.5px] text-slate-100 outline-none"
-            >
-              {Array.from({ length: 53 }, (_, i) => 18 + i).map((n) => (
-                <option key={n} value={String(n)}>{n} years</option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <FieldLabel required>Gender</FieldLabel>
-            {/* ── CHANGED: "Couples" option added, order matches HTML ── */}
-            <select
-              value={gender}
-              onChange={(e) => setgender(e.currentTarget.value)}
-              className="fi w-full appearance-none rounded-[10px] border border-white/7 bg-[#111624] px-[14px] py-[13px] text-[13.5px] text-slate-100 outline-none"
-            >
-              <option value="">Select gender</option>
-              <option value="Man">Man</option>
-              <option value="Woman">Woman</option>
-              <option value="Couples">Couples</option>
-              <option value="Trans">Trans</option>
-            </select>
-          </div>
+        <div className="mb-[18px]">
+          <FieldLabel required>Gender</FieldLabel>
+          {/* ── CHANGED: "Couples" option added, order matches HTML ── */}
+          <select
+            value={gender}
+            onChange={(e) => setgender(e.currentTarget.value)}
+            className="fi w-full appearance-none rounded-[10px] border border-white/7 bg-[#111624] px-[14px] py-[13px] text-[13.5px] text-slate-100 outline-none"
+          >
+            <option value="">Select gender</option>
+            <option value="Man">Man</option>
+            <option value="Woman">Woman</option>
+            <option value="Couples">Couples</option>
+            <option value="Trans">Trans</option>
+          </select>
         </div>
 
         <div className="relative mb-[18px]">
