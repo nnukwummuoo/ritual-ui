@@ -461,12 +461,6 @@ export const RequestDetailsForm: React.FC<RequestDetailsFormProps> = ({
         >
           🛡️ Verify My Account
         </button>
-        <button
-          onClick={() => { setShowVerifyPopup(false); handleSubmit(); }}
-          className="w-full py-2.5 rounded-xl text-sm font-semibold text-[#94a3b8] border border-white/10 hover:text-white transition-colors"
-        >
-          Continue without verification
-        </button>
       </div>
     </div>
   </div>

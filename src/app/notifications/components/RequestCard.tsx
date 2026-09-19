@@ -1032,71 +1032,21 @@ useEffect(() => {
             </div>
             <div className='flex gap-1'>{titles?.map((title, i) => i === titles.length - 1 ? <p key={title}>{title}</p> : <p key={title}>{title} &#x2022; </p>)}</div>
 
-             {type === "creator" && (
+           {type === "creator" && fanVerified && (
   <div className="mt-1">
-    {fanVerified ? (
-      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold"
-        style={{
-          background: "linear-gradient(135deg,rgba(108,99,255,.15),rgba(155,89,245,.1))",
-          border: "1px solid rgba(108,99,255,.3)",
-          color: "#a89cff"
-        }}
-      >
-        <svg viewBox="0 0 24 24" width="12" height="12" fill="none">
-          <path d="M12 2.8L4.5 6V11C4.5 15.2 7.9 19.4 12 20.6C16.1 19.4 19.5 15.2 19.5 11V6L12 2.8Z" fill="#a89cff"/>
-          <path d="M12 7l1.2 2.4 2.6.4-1.9 1.85.45 2.6L12 13.1l-2.35 1.15.45-2.6L8.2 9.8l2.6-.4L12 7z" fill="white"/>
-        </svg>
-        Verified Fan
-      </span>
-    ) : (
-      <>
-        <button
-          className="text-xs text-yellow-400 border border-yellow-400/30 px-2 py-0.5 rounded-md hover:bg-yellow-400/10 transition-colors"
-          onClick={() => setShowVerifyPopup(true)}
-        >
-          Ask fan to verify
-        </button>
-
-        {showVerifyPopup && (
-          <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-[9999] p-4" onClick={() => setShowVerifyPopup(false)}>
-            <div className="bg-[#111624] rounded-2xl p-6 max-w-sm w-full border border-white/10" onClick={e => e.stopPropagation()}>
-              <h3 className="text-white font-bold text-base mb-2">Ask fan to verify</h3>
-              <p className="text-gray-400 text-xs mb-4">Send this message to the fan:</p>
-              <div className="bg-[#0d1120] border border-white/10 rounded-xl p-4 text-sm text-gray-300 mb-5 leading-relaxed">
-                I only accept booking requests from verified accounts. Please head to your profile and tap <strong className="text-white">"Fan Verification"</strong> to verify your account with Mmeko. 🙂
-              </div>
-              <div className="flex gap-3">
-                <button
-                  onClick={() => {
-                    navigator.clipboard.writeText("I only accept booking requests from verified accounts. Please head to your profile and tap \"Fan Verification\" to verify your account with Mmeko. 🙂");
-                    toast.success("Message copied!");
-                  }}
-                  className="flex-1 py-2.5 rounded-xl text-sm font-semibold border border-white/10 text-gray-300 hover:bg-white/5 transition-colors"
-                >
-                  📋 Copy
-                </button>
-                <button
-                  onClick={() => {
-                    setShowVerifyPopup(false);
-                    router.push(`/message/${userid}`);
-                  }}
-                  className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white transition-all"
-                  style={{ background: "linear-gradient(135deg,#6c63ff,#9b59f5)" }}
-                >
-                  💬 Go to Chat
-                </button>
-              </div>
-              <button
-                onClick={() => setShowVerifyPopup(false)}
-                className="w-full mt-3 py-2 text-xs text-gray-500 hover:text-gray-400 transition-colors"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        )}
-      </>
-    )}
+    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold"
+      style={{
+        background: "linear-gradient(135deg,rgba(108,99,255,.15),rgba(155,89,245,.1))",
+        border: "1px solid rgba(108,99,255,.3)",
+        color: "#a89cff"
+      }}
+    >
+      <svg viewBox="0 0 24 24" width="12" height="12" fill="none">
+        <path d="M12 2.8L4.5 6V11C4.5 15.2 7.9 19.4 12 20.6C16.1 19.4 19.5 15.2 19.5 11V6L12 2.8Z" fill="#a89cff"/>
+        <path d="M12 7l1.2 2.4 2.6.4-1.9 1.85.45 2.6L12 13.1l-2.35 1.15.45-2.6L8.2 9.8l2.6-.4L12 7z" fill="white"/>
+      </svg>
+      Verified Fan
+    </span>
   </div>
 )}
 
