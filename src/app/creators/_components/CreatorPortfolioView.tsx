@@ -861,7 +861,7 @@ const [urlCopied, setUrlCopied] = useState(false);
             </svg>
             </span>
            {creatorPriceValue} Gold
-            <span className="mcp-price-amount-suffix"> /&nbsp;{isFanCallCreator ? "min" : isFanDateCreator ? "date" : "meet"}</span>
+            <span className="mcp-price-amount-suffix"> / {isFanCallCreator ? "min" : isFanDateCreator ? "date" : "meet"}</span>
           </div>
          <div className="mcp-trust-badge">
             <ShieldCheck size={16} className="mcp-trust-badge-icon" />
