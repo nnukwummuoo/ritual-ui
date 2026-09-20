@@ -171,7 +171,7 @@ export default function FileLimitPopup({
         .overlay {
           position: fixed;
           inset: 0;
-          z-index: 999999;
+          z-index: 9999;
           pointer-events: all;
 
           background: rgba(0,0,0,.72);
@@ -195,7 +195,7 @@ export default function FileLimitPopup({
           border-top: 1px solid rgba(255,255,255,.07);
 
           position: relative;
-          z-index: 999999;
+          z-index: 9999;
 
           margin-top: auto;
 
