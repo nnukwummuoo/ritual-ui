@@ -1013,7 +1013,9 @@ if (matched?.isoCode && creator.state) {
                     <span className="text-white font-bold text-base">1 Gold = $0.04</span>
                   </div>
                  <p className="text-xs text-gray-600 mt-3 leading-relaxed">
-                   Enter your price in Gold.  
+                   Enter your price in Gold.
+                   </p>
+                   <p className="text-xs text-gray-600 leading-relaxed">  
 Example: If you want to charge $2.00 USD, enter 50 Gold.
 </p>
 <p className="text-xs text-gray-600 mt-3 leading-relaxed">
