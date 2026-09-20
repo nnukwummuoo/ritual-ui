@@ -536,7 +536,12 @@ const triggerFileInput = () => {
                 <span className="text-white font-bold text-base">1 Gold = $0.04</span>
               </div>
               <p className="text-xs text-gray-600 mt-3 leading-relaxed">
-                Enter your price as a number of Gold — for example, entering 50 means fans pay 50 Gold (≈ $2.00) to unlock this content.
+               Enter your price in Gold.  
+Example: If you want to charge $2.00 USD, enter 50 Gold.
+</p>
+<p className="text-xs text-gray-600 mt-3 leading-relaxed">
+When a client pays 50 Gold, it will show as $2.00 USD in your earnings.  
+When you request a payout, you receive the full $2.00 USD.
               </p>
             </div>
             <div className="p-6 pt-0">

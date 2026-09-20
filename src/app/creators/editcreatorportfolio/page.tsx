@@ -7,7 +7,7 @@ import Image from "next/image";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch } from "@/store/store";
 import { useRouter } from "next/navigation";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 import { useAuthToken } from "@/lib/hooks/useAuthToken";
 import { editCreatorMultipart } from "@/api/creator";
 import { useUserId } from "@/lib/hooks/useUserId";
@@ -1013,12 +1013,12 @@ if (matched?.isoCode && creator.state) {
                     <span className="text-white font-bold text-base">1 Gold = $0.04</span>
                   </div>
                  <p className="text-xs text-gray-600 mt-3 leading-relaxed">
-                    Enter your price as a number of Gold — for example, entering 50 means fans pay 50 Gold (≈ $2.00){" "}
-                    {hosttype === "Fan call"
-                      ? "per minute during the call."
-                      : hosttype === "Fan date"
-                        ? "to book a date with you."
-                        : "to book a meet with you."}
+                   Enter your price in Gold.  
+Example: If you want to charge $2.00 USD, enter 50 Gold.
+</p>
+<p className="text-xs text-gray-600 mt-3 leading-relaxed">
+When a client pays 50 Gold, it will show as $2.00 USD in your earnings.  
+When you request a payout, you receive the full $2.00 USD.
                   </p>
                 </div>
                 <div className="p-6 pt-0">
