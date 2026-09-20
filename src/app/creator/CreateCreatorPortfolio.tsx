@@ -969,7 +969,7 @@ setStateQuery("");
 Example: If you want to charge $2.00 USD, enter 50 Gold.
 </p>
 <p className="text-xs text-gray-600 mt-3 leading-relaxed">
-When a client pays 50 Gold, it will show as $2.00 USD in your earnings.  
+When a fan pays 50 Gold, it will show as $2.00 USD in your earnings.  
 When you request a payout, you receive the full $2.00 USD.
                 </p>
               </div>
