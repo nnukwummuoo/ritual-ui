@@ -236,7 +236,7 @@ const FAQ_DATA: Record<CategoryKey, FAQSection[]> = {
          {
           question: "What if I didn't show up?",
           answer:
-            "❌  Cancellations are not allowed after acceptance. If you don't show up, fail to respond to messages within 24 hours, or request a cancellation, your payment is forfeited to the creator.",
+            "❌  Cancellations are not allowed after acceptance. If you don't show up, or request a cancellation, your payment is forfeited to the creator.",
         },
         {
           question: "What if a creator doesn't show up for a Fan Meet or Fan Date?",
@@ -301,14 +301,14 @@ const FAQ_DATA: Record<CategoryKey, FAQSection[]> = {
         {
           question: "Can a fan cancel a request I already accepted?",
           answer:
-            "❌ No. Once a creator accepts a request, it is final. If a fan does not show up, fails to respond to messages within 24 hours, or asks to cancel, contact Support immediately and we will review and release your payment immediately. If Support is not contacted within 18 days from the booking request date, the payment will be automatically refunded to the fan.",
+            "❌ No. Once a creator accepts a request, it is final. If a fan does not show up, or asks to cancel, contact Support immediately and we will review and release your payment immediately. If Support is not contacted within 18 days from the booking request date, the payment will be automatically refunded to the fan.",
         },
          {
-          question: "What If a fan refuses to mark a meet/date as complete, fails to respond to messages within 24 hours, doesn't show up or requests cancellation after the meet/date has already been accepted?",
+          question: "What If a fan refuses to mark a meet/date as complete, doesn't show up or requests cancellation after the meet/date has already been accepted?",
           answer: "Simply contact mmeko support and we will release your payment immediately. We always have your back.",
         },
         {
-          question: "How many days do I have to contact Mmeko Support if a fan refuses to mark a meet/date as complete, fails to respond to messages within 24 hours, doesn’t show up, or requests cancellation after the booking has already been accepted?",
+          question: "How many days do I have to contact Mmeko Support if a fan refuses to mark a meet/date as complete, doesn’t show up, or requests cancellation after the booking has already been accepted?",
           answer:
             "You have 18 days from the booking request date to contact Mmeko Support. If Support is not contacted within 18 days, the fan will automatically receive a refund on day 20.",
         },
