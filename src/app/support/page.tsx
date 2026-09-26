@@ -293,6 +293,11 @@ const FAQ_DATA: Record<CategoryKey, FAQSection[]> = {
           answer:
             "Mmeko does not judge the quality or content of the date; we only verify that the meet occurred. Here's exactly how you're protected:\n\n• The Paper Trail: Keep your communication on the Mmeko platform. Let the fan know when you're leaving home, when you arrive, and when you're at the meeting point.\n• No \"He Said, She Said\": If a fan attempts a dispute, Mmeko reviews the platform chat history — not the fan's version of events. Their word means nothing when the chat logs prove you arrived and were present.\n• Guaranteed Payouts: A fan cannot reduce or withhold your payment based on what happened during the date. Either the meet occurred, or it didn't.",
         },
+        { 
+          question: "What if the fan stops responding?", 
+          answer: 
+          "If a fan books you and then goes silent, you are still protected. Keep all communication inside the Mmeko chat. If they don’t reply within 24 hours, contact Support and we will release the payment to you.\n\nThe reason is simple: if a fan is not responding, there is no real arrangement. You shouldn’t have to keep waiting or travel when they have gone silent. Your protection is in the chat record." 
+        },
         {
           question: "What if I get sick or have an emergency and can't make a booking?",
           answer:

@@ -2033,6 +2033,16 @@ const formatTimer = (seconds: number) => {
               </ul>
 
               <p className="text-gray-800 text-sm font-semibold mt-3">
+                What if the fan stops responding?
+              </p>
+               <p className="text-gray-600 text-sm mt-1">
+                If a fan books you and then goes silent, you are still protected. Keep all communication inside the Mmeko chat. If they don’t reply within 24 hours, contact Support and we will release the payment to you.
+              </p>
+               <p className="text-gray-600 text-sm mt-1">
+                The reason is simple: if a fan is not responding, there is no real arrangement. You shouldn’t have to keep waiting or travel when they have gone silent. Your protection is in the chat record.
+              </p>
+
+              <p className="text-gray-800 text-sm font-semibold mt-3">
                 What if I get sick or have an emergency and can&apos;t make a booking?
               </p>
               <p className="text-gray-600 text-sm mt-1">
