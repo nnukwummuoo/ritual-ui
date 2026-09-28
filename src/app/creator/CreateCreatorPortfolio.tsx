@@ -58,10 +58,28 @@ const PM_HOURS = [
   "6:00PM","7:00PM","8:00PM","9:00PM","10:00PM","11:00PM",
 ];
 
-export default function CreateCreatorPortfolio() {
+type CreateCreatorPortfolioProps = {
+  adminMode?: boolean;
+  targetUserId?: string;
+  targetUserName?: string;
+  adminToken?: string;
+  onSuccess?: (portfolioId: string) => void;
+  onCancel?: () => void;
+};
+
+export default function CreateCreatorPortfolio({
+  adminMode = false,
+  targetUserId,
+  targetUserName,
+  adminToken,
+  onSuccess,
+  onCancel,
+}: CreateCreatorPortfolioProps) {
   const { session } = useAuth();
-  const userid = session?._id ?? useUserId();
-  const token = useAuthToken() || session?.token;
+  const sessionUserId = session?._id ?? useUserId();
+  const userid = adminMode && targetUserId ? targetUserId : sessionUserId;
+  const authToken = useAuthToken();
+  const token = adminToken || authToken || session?.token;
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
@@ -72,7 +90,9 @@ export default function CreateCreatorPortfolio() {
   const isCreatorVerified = useSelector((state: RootState) => state.profile.creator_verified);
 
   // ── Draft persistence: survives navigating away (e.g. to upload exclusive content) and back ──
-  const DRAFT_KEY = "mmeko_create_portfolio_draft";
+  const DRAFT_KEY = adminMode
+    ? `mmeko_admin_create_portfolio_draft_${targetUserId}`
+    : "mmeko_create_portfolio_draft";
   const readDraft = (): any => {
     if (typeof window === "undefined") return {};
     try {
@@ -279,6 +299,10 @@ const removeTour = (index: number) => {
 
   // ── Autofill full name from user profile ────────────────────────────────
   useEffect(() => {
+    if (adminMode) {
+      if (targetUserName && (!name || name.trim() === "")) setname(targetUserName);
+      return;
+    }
     const currentUserId = reduxUserId || userid;
     if (currentUserId && (!profile.firstname || profile.status === "idle")) {
       let currentToken: string | undefined;
@@ -308,12 +332,12 @@ const removeTour = (index: number) => {
         }
       } catch {}
     }
-  }, [profile, reduxUserId, userid, dispatch, name]);
+  }, [profile, reduxUserId, userid, dispatch, name, adminMode, targetUserName]);
 
   // ── Check if user already has a portfolio ────────────────────────────────
   useEffect(() => {
     const checkExistingPortfolio = async () => {
-      const currentUserId = reduxUserId || userid;
+      const currentUserId = adminMode ? userid : (reduxUserId || userid);
       if (!currentUserId || !token) return;
       try {
         const response = await checkUserPortfolio({ userid: currentUserId, token });
@@ -385,6 +409,11 @@ const removeTour = (index: number) => {
 
       toast.success("Portfolio created successfully", { autoClose: 3000 });
       try { sessionStorage.removeItem(DRAFT_KEY); } catch {}
+      if (adminMode) {
+        setLoading(false);
+        onSuccess?.(String(hostid || ""));
+        return;
+      }
       router.push(`/creators/${hostid}`);
     // window.location.href = "/creators";
 
@@ -416,7 +445,7 @@ const removeTour = (index: number) => {
     setphotolink((prev) => prev.filter((_, i) => i !== index));
   };
 
-  if (!isCreatorVerified) {
+  if (!adminMode && !isCreatorVerified) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#080b14]">
         <p className="text-xl text-white">You are not verified yet</p>
@@ -429,12 +458,13 @@ const removeTour = (index: number) => {
 
   return (
     <div
-      className="min-h-screen bg-[#080b14] text-slate-100"
+      className={`${adminMode ? "rounded-xl" : "min-h-screen"} bg-[#080b14] text-slate-100`}
       style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
       onClick={() => setShowRatesPopover(false)}
     > 
 
       {/* ── NAV ── */}
+       {!adminMode && (
       <nav
         className="sticky top-0 z-40 mx-auto flex h-14 max-w-[520px] items-center justify-between border-b border-white/10 px-5"
         style={{ background: "rgba(8,11,20,.97)", backdropFilter: "blur(20px)" }}
@@ -455,6 +485,7 @@ const removeTour = (index: number) => {
         </a>
         <div style={{ width: 60 }} />
       </nav>
+       )}
 
       <div className="mx-auto max-w-[520px] px-5 pb-20 pt-7">
 
@@ -463,7 +494,7 @@ const removeTour = (index: number) => {
           ✦ Creator Portfolio
         </div>
         <h1 className="mb-1.5 text-[22px] font-extrabold tracking-tight text-white">
-          Create Your Portfolio
+        {`adminMode ?Create Portfolio for ${targetUserName || "User"} : "Create Your Portfolio"`}
         </h1>
         <p className="mb-8 text-[13px] leading-relaxed text-slate-400">
           Set up your creator profile so fans can discover and book a meet &amp; greet with you.
@@ -1011,15 +1042,18 @@ When you request a payout, you receive the full $2.00 USD.
 )}
 
 
-        <ExclusiveContentSection
-          userid={String(userid || "")}
-          username={profile?.username || ""}
-          token={String(token || "")}
-          enabled={exclusiveEnabled}
-          onToggleEnabled={setExclusiveEnabled}
-        />
-
-        <Divider />
+       {!adminMode && (
+          <>
+            <ExclusiveContentSection
+              userid={String(userid || "")}
+              username={profile?.username || ""}
+              token={String(token || "")}
+              enabled={exclusiveEnabled}
+              onToggleEnabled={setExclusiveEnabled}
+            />
+            <Divider />
+          </>
+        )}
 
         {/* ── ABOUT ME ── */}
         <SectionLabel>About Me</SectionLabel>
@@ -1114,7 +1148,7 @@ When you request a payout, you receive the full $2.00 USD.
 
         <button
           type="button"
-          onClick={() => router.back()}
+          onClick={() => (adminMode && onCancel ? onCancel() : router.back())}
           style={{
             width: "100%", padding: 14, borderRadius: 12, background: "transparent",
             border: "1px solid rgba(255,255,255,.07)", color: "#94a3b8",

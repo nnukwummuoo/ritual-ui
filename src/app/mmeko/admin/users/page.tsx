@@ -18,6 +18,8 @@ import { useVideoAutoPlay } from "@/hooks/useVideoAutoPlayNew";
 import { URL as API_BASE } from "@/api/config";
 const PROD_BASE = process.env.NEXT_PUBLIC_API || "";
 import { verifyfan, rejectfan } from "@/store/creatorSlice";
+import CreateCreatorPortfolio from "@/app/creator/CreateCreatorPortfolio";
+import EditCreatorPortfolioForm from "@/app/creators/editcreatorportfolio/EditCreatorPortfolioForm";
 
 interface User {
   _id: string;
@@ -287,6 +289,13 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, isOpen, onClose
   const [editingPostContent, setEditingPostContent] = useState("");
   const [creatorPortfolio, setCreatorPortfolio] = useState<CreatorPortfolio | null>(null);
   const [loadingPortfolio, setLoadingPortfolio] = useState(false);
+  const [portfolioMode, setPortfolioMode] = useState<'view' | 'create' | 'edit'>('view');
+
+  // Reset when switching users, so the previous user's portfolio never shows
+  useEffect(() => {
+    setPortfolioMode('view');
+    setCreatorPortfolio(null);
+  }, [user?._id, isOpen]);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState("");
@@ -1918,7 +1927,7 @@ useEffect(() => {
                 >
                   Requests {userRequests.length > 0 ? `(${userRequests.length})` : ''}
                 </button>
-                {user.creator_portfolio_id && (
+                {(
                   <button
                     onClick={() => {
                       setActiveTab('portfolio');
@@ -1939,14 +1948,49 @@ useEffect(() => {
               {/* Content */}
               {activeTab === 'portfolio' ? (
                 <div className="max-h-[600px] overflow-y-auto">
-                  {loadingPortfolio ? (
+                  {portfolioMode === 'create' ? (
+                    <CreateCreatorPortfolio
+                      adminMode
+                      targetUserId={user._id}
+                      targetUserName={`${user.firstname || ""} ${user.lastname || ""}`.trim()}
+                      adminToken={token || ""}
+                      onSuccess={async (newPortfolioId) => {
+                        setPortfolioMode('view');
+                        await onUpdateUser(user._id, {
+                          creator_portfolio: true,
+                          creator_portfolio_id: newPortfolioId,
+                        });
+                      }}
+                      onCancel={() => setPortfolioMode('view')}
+                    />
+                  ) : portfolioMode === 'edit' && creatorPortfolio ? (
+                    <EditCreatorPortfolioForm
+                      key={creatorPortfolio.hostid}
+                      adminMode
+                      targetUserId={user._id}
+                      adminToken={token || ""}
+                      initialCreator={creatorPortfolio}
+                      portfolioId={creatorPortfolio.hostid}
+                      onSuccess={() => {
+                        setPortfolioMode('view');
+                        if (user.creator_portfolio_id) fetchCreatorPortfolio(user.creator_portfolio_id);
+                      }}
+                      onCancel={() => setPortfolioMode('view')}
+                    />
+                  ) : loadingPortfolio ? (
                     <div className="flex justify-center items-center py-8">
                       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-yellow-500"></div>
                       <span className="ml-2 text-white">Loading portfolio...</span>
                     </div>
                   ) : !creatorPortfolio ? (
                     <div className="text-center py-8">
-                      <p className="text-gray-400">No portfolio found</p>
+                      <p className="text-gray-400 mb-4">No portfolio found</p>
+                      <button
+                        onClick={() => setPortfolioMode('create')}
+                        className="bg-yellow-500 text-black px-4 py-2 rounded text-sm font-medium hover:bg-yellow-400"
+                      >
+                        Create Portfolio
+                      </button>
                     </div>
                   ) : (
                     <div className="space-y-4">
@@ -1968,12 +2012,20 @@ useEffect(() => {
                               </span>
                             </div>
                           </div>
-                          <button
-                            onClick={handleDeletePortfolio}
-                            className="bg-red-500 text-white px-4 py-2 rounded text-sm hover:bg-red-600"
-                          >
-                            Delete Portfolio
-                          </button>
+                         <div className="flex gap-2">
+                            <button
+                              onClick={() => setPortfolioMode('edit')}
+                              className="bg-yellow-500 text-black px-4 py-2 rounded text-sm font-medium hover:bg-yellow-400"
+                            >
+                              Edit Portfolio
+                            </button>
+                            <button
+                              onClick={handleDeletePortfolio}
+                              className="bg-red-500 text-white px-4 py-2 rounded text-sm hover:bg-red-600"
+                            >
+                              Delete Portfolio
+                            </button>
+                          </div>
                         </div>
                       </div>
 
