@@ -597,6 +597,47 @@ export const getFanDocuments = createAsyncThunk("creator/getFanDocuments", async
   }
 });
 
+// New thunk: updateApplicationDocument (PUT /getdocument/:docid)
+// fields: plain object of editable text fields
+// files: { idPhotofile?: File; holdingIdPhotofile?: File }
+export const updateApplicationDocument = createAsyncThunk<
+  any,
+  { docid: string; fields: Record<string, any>; files?: { idPhotofile?: File; holdingIdPhotofile?: File } }
+>("creator/updateApplicationDocument", async ({ docid, fields, files }) => {
+  try {
+    const formData = new FormData();
+    formData.append("data", JSON.stringify(fields));
+    if (files?.idPhotofile) formData.append("idPhotofile", files.idPhotofile);
+    if (files?.holdingIdPhotofile) formData.append("holdingIdPhotofile", files.holdingIdPhotofile);
+
+    const response = await axios.put(`${URL}/getdocument/${docid}`, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return response.data;
+  } catch (err: any) {
+    if (!err.response?.data?.message) {
+      throw "Check internet connection";
+    }
+    throw err.response.data.message;
+  }
+});
+
+// New thunk: deleteApplicationDocument (DELETE /getdocument/:docid)
+export const deleteApplicationDocument = createAsyncThunk<any, { docid: string }>(
+  "creator/deleteApplicationDocument",
+  async ({ docid }) => {
+    try {
+      const response = await axios.delete(`${URL}/getdocument/${docid}`);
+      return response.data;
+    } catch (err: any) {
+      if (!err.response?.data?.message) {
+        throw "Check internet connection";
+      }
+      throw err.response.data.message;
+    }
+  }
+);
+
 // New thunk: rejectdocument (POST /rejectdocument, body: { userid, docid })
 export const rejectdocument = createAsyncThunk<any, { userid: string; docid: string }>(
   "creator/rejectdocument",

@@ -17,7 +17,7 @@ import { checkUserBanStatus } from "@/utils/banCheck";
 import { useVideoAutoPlay } from "@/hooks/useVideoAutoPlayNew";
 import { URL as API_BASE } from "@/api/config";
 const PROD_BASE = process.env.NEXT_PUBLIC_API || "";
-import { verifyfan, rejectfan } from "@/store/creatorSlice";
+import { verifyfan, rejectfan, updateApplicationDocument, deleteApplicationDocument } from "@/store/creatorSlice";
 import CreateCreatorPortfolio from "@/app/creator/CreateCreatorPortfolio";
 import EditCreatorPortfolioForm from "@/app/creators/editcreatorportfolio/EditCreatorPortfolioForm";
 
@@ -273,6 +273,135 @@ const FanVerificationSection: React.FC<{
   );
 };
 
+const VerificationEditModal: React.FC<{
+  doc: any;
+  onClose: () => void;
+  onSave: (docid: string, fields: Record<string, any>, files: { idPhotofile?: File; holdingIdPhotofile?: File }) => void;
+  saving: boolean;
+}> = ({ doc, onClose, onSave, saving }) => {
+  const isFanDoc = !!doc.fan_submission;
+  const [form, setForm] = useState({
+    firstname: doc.firstname || "",
+    lastname: doc.lastname || "",
+    email: doc.email || "",
+    dob: doc.dob || "",
+    country: doc.country || "",
+    city: doc.city || "",
+    address: doc.address || "",
+    documentType: doc.documentType || "",
+    idexpire: doc.idexpire || "",
+  });
+  const [idPhotoFile, setIdPhotoFile] = useState<File | null>(null);
+  const [holdingIdPhotoFile, setHoldingIdPhotoFile] = useState<File | null>(null);
+  const [idPreview, setIdPreview] = useState<string | null>(doc.idPhotofile?.idPhotofilelink || null);
+  const [holdingPreview, setHoldingPreview] = useState<string | null>(doc.holdingIdPhotofile?.holdingIdPhotofilelink || null);
+
+  const handleChange = (key: string, value: string) => setForm((f) => ({ ...f, [key]: value }));
+  const handleIdPhotoPick = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIdPhotoFile(file);
+    setIdPreview(URL.createObjectURL(file));
+  };
+  const handleHoldingPhotoPick = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setHoldingIdPhotoFile(file);
+    setHoldingPreview(URL.createObjectURL(file));
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[200] p-4">
+      <div className="bg-[#111624] border border-gray-700 rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6">
+        <div className="flex items-center justify-between mb-5">
+          <h3 className="text-lg font-bold">Edit {isFanDoc ? "Fan" : "Creator"} Application</h3>
+          <button onClick={onClose} className="text-gray-400 hover:text-white text-xl">✕</button>
+        </div>
+
+        {/* Fan applications only carry photos, no personal fields — see postFanDocument.js */}
+        {!isFanDoc && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
+            {([
+              ["firstname", "First Name"], ["lastname", "Last Name"],
+              ["email", "Email"], ["dob", "Date of Birth"],
+              ["country", "Country"], ["city", "City"],
+              ["address", "Address"], ["documentType", "Document Type"],
+              ["idexpire", "ID Expiry"],
+            ] as [string, string][]).map(([key, label]) => (
+              <div key={key}>
+                <label className="block text-xs text-gray-400 mb-1">{label}</label>
+                <input
+                  value={(form as any)[key]}
+                  onChange={(e) => handleChange(key, e.target.value)}
+                  className="w-full bg-[#0e1220] border border-gray-700 rounded-lg px-3 py-2 text-sm text-white"
+                />
+              </div>
+            ))}
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+          <div>
+            <label className="block text-xs text-gray-400 mb-2">Government ID Photo</label>
+            {idPreview && <img src={idPreview} alt="ID" className="w-full h-40 object-cover rounded-lg mb-2" />}
+            <input type="file" accept="image/*" onChange={handleIdPhotoPick} className="text-xs text-gray-300" />
+          </div>
+          <div>
+            <label className="block text-xs text-gray-400 mb-2">Selfie with ID</label>
+            {holdingPreview && <img src={holdingPreview} alt="Selfie" className="w-full h-40 object-cover rounded-lg mb-2" />}
+            <input type="file" accept="image/*" onChange={handleHoldingPhotoPick} className="text-xs text-gray-300" />
+          </div>
+        </div>
+
+        <div className="flex justify-end gap-3">
+          <button onClick={onClose} className="px-4 py-2 rounded-lg text-sm text-gray-300 bg-white/5 hover:bg-white/10">
+            Cancel
+          </button>
+          <button
+            disabled={saving}
+            onClick={() => onSave(doc._id, isFanDoc ? {} : form, {
+              idPhotofile: idPhotoFile || undefined,
+              holdingIdPhotofile: holdingIdPhotoFile || undefined,
+            })}
+            className="px-4 py-2 rounded-lg text-sm font-semibold text-black bg-yellow-500 hover:bg-yellow-400 disabled:opacity-60"
+          >
+            {saving ? "Saving…" : "Save Changes"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const VerificationDeleteModal: React.FC<{
+  doc: any;
+  onCancel: () => void;
+  onConfirm: () => void;
+  deleting: boolean;
+}> = ({ doc, onCancel, onConfirm, deleting }) => (
+  <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[210] p-4">
+    <div className="bg-[#111624] border border-gray-700 rounded-xl w-full max-w-sm p-6 text-center">
+      <div className="text-3xl mb-3">⚠️</div>
+      <h3 className="text-base font-bold mb-2">Delete this application?</h3>
+      <p className="text-sm text-gray-400 mb-6">
+        Are you sure you want to permanently delete this verification application? This cannot be undone.
+      </p>
+      <div className="flex gap-3">
+        <button onClick={onCancel} className="flex-1 px-4 py-2.5 rounded-lg text-sm text-gray-300 bg-white/5 hover:bg-white/10">
+          Cancel
+        </button>
+        <button
+          disabled={deleting}
+          onClick={onConfirm}
+          className="flex-1 px-4 py-2.5 rounded-lg text-sm font-semibold text-white bg-red-600 hover:bg-red-700 disabled:opacity-60"
+        >
+          {deleting ? "Deleting…" : "Yes, Delete"}
+        </button>
+      </div>
+    </div>
+  </div>
+);
+
 const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, isOpen, onClose, onUpdateUser }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedUser, setEditedUser] = useState<Partial<User>>({});
@@ -319,9 +448,15 @@ useEffect(() => {
 }, [user?._id, user?.creator_verified]);
 
   const FanDocsViewer: React.FC<{ userId: string; token: string }> = ({ userId, token }) => {
+  const dispatch = useDispatch<AppDispatch>();
   const [doc, setDoc] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [lightbox, setLightbox] = useState<string>("");
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [editingDoc, setEditingDoc] = useState<any>(null);
+  const [savingEdit, setSavingEdit] = useState(false);
+  const [deletingDoc, setDeletingDoc] = useState<any>(null);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     if (!userId) return;
@@ -335,6 +470,35 @@ useEffect(() => {
       .catch(() => setDoc(null))
       .finally(() => setLoading(false));
   }, [userId]);
+
+  const handleSaveEdit = async (docid: string, fields: Record<string, any>, files: { idPhotofile?: File; holdingIdPhotofile?: File }) => {
+    setSavingEdit(true);
+    try {
+      const result = await dispatch(updateApplicationDocument({ docid, fields, files })).unwrap();
+      if (result?.document) setDoc((prev: any) => ({ ...prev, ...result.document }));
+      setEditingDoc(null);
+      toast.success("Application updated.");
+    } catch (err: any) {
+      toast.error(typeof err === "string" ? err : "Failed to update application");
+    } finally {
+      setSavingEdit(false);
+    }
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deletingDoc) return;
+    setDeleting(true);
+    try {
+      await dispatch(deleteApplicationDocument({ docid: deletingDoc._id })).unwrap();
+      setDoc(null);
+      setDeletingDoc(null);
+      toast.success("Application deleted.");
+    } catch (err: any) {
+      toast.error(typeof err === "string" ? err : "Failed to delete application");
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   if (loading) return <p className="text-gray-400 text-sm">Loading documents…</p>;
 
@@ -367,6 +531,41 @@ useEffect(() => {
           />
         </div>
       )}
+
+      {/* Edit / Delete modals */}
+      {editingDoc && (
+        <VerificationEditModal doc={editingDoc} onClose={() => setEditingDoc(null)} onSave={handleSaveEdit} saving={savingEdit} />
+      )}
+      {deletingDoc && (
+        <VerificationDeleteModal doc={deletingDoc} onCancel={() => setDeletingDoc(null)} onConfirm={handleConfirmDelete} deleting={deleting} />
+      )}
+
+      {/* 3-dot menu */}
+      <div className="flex justify-end relative mb-2">
+        <button
+          onClick={() => setMenuOpen((v) => !v)}
+          className="w-8 h-8 rounded-full flex items-center justify-center text-gray-300 hover:bg-white/10 text-lg"
+          aria-label="Application options"
+        >
+          ⋮
+        </button>
+        {menuOpen && (
+          <div className="absolute top-9 right-0 z-20 w-36 bg-[#1a2233] border border-gray-700 rounded-lg shadow-xl overflow-hidden">
+            <button
+              onClick={() => { setEditingDoc(doc); setMenuOpen(false); }}
+              className="w-full text-left px-4 py-2.5 text-sm text-gray-200 hover:bg-white/10"
+            >
+              ✏️ Edit
+            </button>
+            <button
+              onClick={() => { setDeletingDoc(doc); setMenuOpen(false); }}
+              className="w-full text-left px-4 py-2.5 text-sm text-red-400 hover:bg-red-500/10"
+            >
+              🗑 Delete
+            </button>
+          </div>
+        )}
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {[

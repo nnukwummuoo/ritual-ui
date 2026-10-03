@@ -3,9 +3,136 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "@/store/store";
-import { getdocument, verifycreator, rejectdocument } from "@/store/creatorSlice";
+import { getdocument, verifycreator, rejectdocument, updateApplicationDocument, deleteApplicationDocument } from "@/store/creatorSlice";
 import PacmanLoader from "react-spinners/RingLoader";
 import { getImageSource, createImageFallbacks } from "@/lib/imageUtils";
+
+/* ─── Edit Application Modal ─── */
+function EditApplicationModal({
+  doc, onClose, onSave, saving,
+}: {
+  doc: any; onClose: () => void; saving: boolean;
+  onSave: (docid: string, fields: Record<string, any>, files: { idPhotofile?: File; holdingIdPhotofile?: File }) => void;
+}) {
+  const [form, setForm] = useState({
+    firstname: doc.firstname || "",
+    lastname: doc.lastname || "",
+    email: doc.email || "",
+    dob: doc.dob || "",
+    country: doc.country || "",
+    city: doc.city || "",
+    address: doc.address || "",
+    documentType: doc.documentType || "",
+    idexpire: doc.idexpire || "",
+  });
+  const [idPhotoFile, setIdPhotoFile] = useState<File | null>(null);
+  const [holdingIdPhotoFile, setHoldingIdPhotoFile] = useState<File | null>(null);
+  const [idPreview, setIdPreview] = useState<string | null>(doc.idPhotofile?.idPhotofilelink || null);
+  const [holdingPreview, setHoldingPreview] = useState<string | null>(doc.holdingIdPhotofile?.holdingIdPhotofilelink || null);
+
+  const handleChange = (key: string, value: string) => setForm((f) => ({ ...f, [key]: value }));
+
+  const handleIdPhotoPick = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIdPhotoFile(file);
+    setIdPreview(URL.createObjectURL(file));
+  };
+  const handleHoldingPhotoPick = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setHoldingIdPhotoFile(file);
+    setHoldingPreview(URL.createObjectURL(file));
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[100] p-4">
+      <div className="bg-[#111624] border border-gray-700 rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6">
+        <div className="flex items-center justify-between mb-5">
+          <h3 className="text-lg font-bold">Edit Application</h3>
+          <button onClick={onClose} className="text-gray-400 hover:text-white text-xl">✕</button>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
+          {([
+            ["firstname", "First Name"], ["lastname", "Last Name"],
+            ["email", "Email"], ["dob", "Date of Birth"],
+            ["country", "Country"], ["city", "City"],
+            ["address", "Address"], ["documentType", "Document Type"],
+            ["idexpire", "ID Expiry"],
+          ] as [string, string][]).map(([key, label]) => (
+            <div key={key}>
+              <label className="block text-xs text-gray-400 mb-1">{label}</label>
+              <input
+                value={(form as any)[key]}
+                onChange={(e) => handleChange(key, e.target.value)}
+                className="w-full bg-[#0e1220] border border-gray-700 rounded-lg px-3 py-2 text-sm text-white"
+              />
+            </div>
+          ))}
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+          <div>
+            <label className="block text-xs text-gray-400 mb-2">Government ID Photo</label>
+            {idPreview && <img src={idPreview} alt="ID" className="w-full h-40 object-cover rounded-lg mb-2" />}
+            <input type="file" accept="image/*" onChange={handleIdPhotoPick} className="text-xs text-gray-300" />
+          </div>
+          <div>
+            <label className="block text-xs text-gray-400 mb-2">Selfie with ID</label>
+            {holdingPreview && <img src={holdingPreview} alt="Selfie" className="w-full h-40 object-cover rounded-lg mb-2" />}
+            <input type="file" accept="image/*" onChange={handleHoldingPhotoPick} className="text-xs text-gray-300" />
+          </div>
+        </div>
+
+        <div className="flex justify-end gap-3">
+          <button onClick={onClose} className="px-4 py-2 rounded-lg text-sm text-gray-300 bg-white/5 hover:bg-white/10">
+            Cancel
+          </button>
+          <button
+            disabled={saving}
+            onClick={() => onSave(doc._id, form, {
+              idPhotofile: idPhotoFile || undefined,
+              holdingIdPhotofile: holdingIdPhotoFile || undefined,
+            })}
+            className="px-4 py-2 rounded-lg text-sm font-semibold text-black bg-yellow-500 hover:bg-yellow-400 disabled:opacity-60"
+          >
+            {saving ? "Saving…" : "Save Changes"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Delete Confirm Modal ─── */
+function DeleteConfirmModal({ doc, onCancel, onConfirm, deleting }: {
+  doc: any; onCancel: () => void; onConfirm: () => void; deleting: boolean;
+}) {
+  return (
+    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[110] p-4">
+      <div className="bg-[#111624] border border-gray-700 rounded-xl w-full max-w-sm p-6 text-center">
+        <div className="text-3xl mb-3">⚠️</div>
+        <h3 className="text-base font-bold mb-2">Delete this application?</h3>
+        <p className="text-sm text-gray-400 mb-6">
+          Are you sure you want to delete this application for {doc.firstname} {doc.lastname}? This cannot be undone.
+        </p>
+        <div className="flex gap-3">
+          <button onClick={onCancel} className="flex-1 px-4 py-2.5 rounded-lg text-sm text-gray-300 bg-white/5 hover:bg-white/10">
+            Cancel
+          </button>
+          <button
+            disabled={deleting}
+            onClick={onConfirm}
+            className="flex-1 px-4 py-2.5 rounded-lg text-sm font-semibold text-white bg-red-600 hover:bg-red-700 disabled:opacity-60"
+          >
+            {deleting ? "Deleting…" : "Yes, Delete"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function AdminVerifyDocumentPage() {
   const dispatch = useDispatch<AppDispatch>();
@@ -18,6 +145,46 @@ export default function AdminVerifyDocumentPage() {
   const [pendingDocs, setPendingDocs] = useState<any[]>([]);
   const [approvedDocs, setApprovedDocs] = useState<any[]>([]);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
+
+  // 3-dot menu / edit / delete state
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const [editingDoc, setEditingDoc] = useState<any | null>(null);
+  const [savingEdit, setSavingEdit] = useState(false);
+  const [deletingDoc, setDeletingDoc] = useState<any | null>(null);
+  const [deleting, setDeleting] = useState(false);
+
+  const applyUpdatedDoc = (updated: any) => {
+    setPendingDocs((prev) => prev.map((d) => (d._id === updated._id ? { ...d, ...updated } : d)));
+    setApprovedDocs((prev) => prev.map((d) => (d._id === updated._id ? { ...d, ...updated } : d)));
+  };
+
+  const handleSaveEdit = async (docid: string, fields: Record<string, any>, files: { idPhotofile?: File; holdingIdPhotofile?: File }) => {
+    setSavingEdit(true);
+    try {
+      const result = await dispatch(updateApplicationDocument({ docid, fields, files })).unwrap();
+      if (result?.document) applyUpdatedDoc(result.document);
+      setEditingDoc(null);
+    } catch (err: any) {
+      alert(typeof err === "string" ? err : "Failed to update application");
+    } finally {
+      setSavingEdit(false);
+    }
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deletingDoc) return;
+    setDeleting(true);
+    try {
+      await dispatch(deleteApplicationDocument({ docid: deletingDoc._id })).unwrap();
+      setPendingDocs((prev) => prev.filter((d) => d._id !== deletingDoc._id));
+      setApprovedDocs((prev) => prev.filter((d) => d._id !== deletingDoc._id));
+      setDeletingDoc(null);
+    } catch (err: any) {
+      alert(typeof err === "string" ? err : "Failed to delete application");
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   // Fetch documents on mount
   useEffect(() => {
@@ -68,7 +235,30 @@ export default function AdminVerifyDocumentPage() {
       className="bg-[#111624] p-6 rounded-lg shadow-lg border border-gray-700"
     >
       {/* Header Section */}
-      <div className="flex flex-col items-start mb-4">
+      <div className="flex flex-col items-start mb-4 relative w-full">
+        <button
+          onClick={() => setOpenMenuId(openMenuId === doc._id ? null : doc._id)}
+          className="absolute top-0 right-0 w-8 h-8 rounded-full flex items-center justify-center text-gray-300 hover:bg-white/10 text-lg"
+          aria-label="Application options"
+        >
+          ⋮
+        </button>
+        {openMenuId === doc._id && (
+          <div className="absolute top-9 right-0 z-20 w-36 bg-[#1a2233] border border-gray-700 rounded-lg shadow-xl overflow-hidden">
+            <button
+              onClick={() => { setEditingDoc(doc); setOpenMenuId(null); }}
+              className="w-full text-left px-4 py-2.5 text-sm text-gray-200 hover:bg-white/10"
+            >
+              ✏️ Edit
+            </button>
+            <button
+              onClick={() => { setDeletingDoc(doc); setOpenMenuId(null); }}
+              className="w-full text-left px-4 py-2.5 text-sm text-red-400 hover:bg-red-500/10"
+            >
+              🗑 Delete
+            </button>
+          </div>
+        )}
         <div>
           <h2 className="text-xl font-semibold">
             {doc.firstname} {doc.lastname}
@@ -229,6 +419,26 @@ export default function AdminVerifyDocumentPage() {
       <h1 className="text-2xl mb-6 font-bold text-center">
         Admin: Verify User Documents
       </h1>
+
+      {/* Edit application modal */}
+      {editingDoc && (
+        <EditApplicationModal
+          doc={editingDoc}
+          onClose={() => setEditingDoc(null)}
+          onSave={handleSaveEdit}
+          saving={savingEdit}
+        />
+      )}
+
+      {/* Delete confirm modal */}
+      {deletingDoc && (
+        <DeleteConfirmModal
+          doc={deletingDoc}
+          onCancel={() => setDeletingDoc(null)}
+          onConfirm={handleConfirmDelete}
+          deleting={deleting}
+        />
+      )}
 
       {/* Image Preview Modal */}
       {previewImage && (

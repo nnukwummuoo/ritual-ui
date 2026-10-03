@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/store/store";
-import { getFanDocuments, verifyfan, rejectfan } from "@/store/creatorSlice";
+import { getFanDocuments, verifyfan, rejectfan, updateApplicationDocument, deleteApplicationDocument } from "@/store/creatorSlice";
 import { useAuth } from "@/lib/context/auth-context";
 import { useAuthToken } from "@/lib/hooks/useAuthToken";
 import { toast, ToastContainer } from "react-toastify";
@@ -127,11 +127,13 @@ function ConfirmModal({ type, onConfirm, onCancel, loading }: {
 
 /* ─── Application Card ─── */
 function AppCard({
-  doc, idx, onAction,
+  doc, idx, onAction, onEdit, onDelete,
 }: {
   doc: FanDoc; idx: number; onAction: (id: string, userid: string, type: "approved" | "declined") => void;
+  onEdit: (doc: FanDoc) => void; onDelete: (doc: FanDoc) => void;
 }) {
   const [lightbox, setLightbox] = useState<string>("");
+  const [menuOpen, setMenuOpen] = useState(false);
   const gradient = AVATAR_GRADIENTS[idx % AVATAR_GRADIENTS.length];
   const fullName = [doc.firstname, doc.lastname].filter(Boolean).join(" ") || "Unknown User";
 
@@ -173,7 +175,34 @@ function AppCard({
               <div className="text-xs text-[#475569]">@{doc.username || doc.userid?.slice(0,8)}</div>
             </div>
           </div>
-          <div className="text-[11.5px] text-[#475569]">Submitted {timeAgo(doc.createdAt)}</div>
+          <div className="flex items-center gap-2">
+            <div className="text-[11.5px] text-[#475569]">Submitted {timeAgo(doc.createdAt)}</div>
+            <div className="relative">
+              <button
+                onClick={() => setMenuOpen((v) => !v)}
+                className="w-8 h-8 rounded-full flex items-center justify-center text-[#94a3b8] hover:bg-white/10 text-lg"
+                aria-label="Application options"
+              >
+                ⋮
+              </button>
+              {menuOpen && (
+                <div className="absolute top-9 right-0 z-20 w-36 bg-[#1a2233] border border-white/10 rounded-lg shadow-xl overflow-hidden">
+                  <button
+                    onClick={() => { onEdit(doc); setMenuOpen(false); }}
+                    className="w-full text-left px-4 py-2.5 text-sm text-gray-200 hover:bg-white/10"
+                  >
+                    ✏️ Edit
+                  </button>
+                  <button
+                    onClick={() => { onDelete(doc); setMenuOpen(false); }}
+                    className="w-full text-left px-4 py-2.5 text-sm text-red-400 hover:bg-red-500/10"
+                  >
+                    🗑 Delete
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
 
         {/* Docs grid */}
@@ -231,6 +260,102 @@ function AppCard({
   );
 }
 
+/* ─── Edit Fan Application Modal (photos only — fan submissions carry no personal fields) ─── */
+function EditFanPhotosModal({
+  doc, onClose, onSave, saving,
+}: {
+  doc: FanDoc; onClose: () => void; saving: boolean;
+  onSave: (docid: string, files: { idPhotofile?: File; holdingIdPhotofile?: File }) => void;
+}) {
+  const [idPhotoFile, setIdPhotoFile] = useState<File | null>(null);
+  const [holdingIdPhotoFile, setHoldingIdPhotoFile] = useState<File | null>(null);
+  const [idPreview, setIdPreview] = useState<string | null>(doc.idPhotofile?.idPhotofilelink || null);
+  const [holdingPreview, setHoldingPreview] = useState<string | null>(doc.holdingIdPhotofile?.holdingIdPhotofilelink || null);
+
+  const handleIdPhotoPick = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIdPhotoFile(file);
+    setIdPreview(URL.createObjectURL(file));
+  };
+  const handleHoldingPhotoPick = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setHoldingIdPhotoFile(file);
+    setHoldingPreview(URL.createObjectURL(file));
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[100] p-4">
+      <div className="bg-[#111624] border border-white/10 rounded-xl w-full max-w-lg p-6">
+        <div className="flex items-center justify-between mb-5">
+          <h3 className="text-lg font-bold">Edit Fan Application</h3>
+          <button onClick={onClose} className="text-gray-400 hover:text-white text-xl">✕</button>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+          <div>
+            <label className="block text-xs text-gray-400 mb-2">Government ID Photo</label>
+            {idPreview && <img src={idPreview} alt="ID" className="w-full h-40 object-cover rounded-lg mb-2" />}
+            <input type="file" accept="image/*" onChange={handleIdPhotoPick} className="text-xs text-gray-300" />
+          </div>
+          <div>
+            <label className="block text-xs text-gray-400 mb-2">Selfie with ID</label>
+            {holdingPreview && <img src={holdingPreview} alt="Selfie" className="w-full h-40 object-cover rounded-lg mb-2" />}
+            <input type="file" accept="image/*" onChange={handleHoldingPhotoPick} className="text-xs text-gray-300" />
+          </div>
+        </div>
+
+        <div className="flex justify-end gap-3">
+          <button onClick={onClose} className="px-4 py-2 rounded-lg text-sm text-gray-300 bg-white/5 hover:bg-white/10">
+            Cancel
+          </button>
+          <button
+            disabled={saving}
+            onClick={() => onSave(doc._id, {
+              idPhotofile: idPhotoFile || undefined,
+              holdingIdPhotofile: holdingIdPhotoFile || undefined,
+            })}
+            className="px-4 py-2 rounded-lg text-sm font-semibold text-black bg-[#a89cff] hover:bg-[#9384ff] disabled:opacity-60"
+          >
+            {saving ? "Saving…" : "Save Changes"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Delete Confirm Modal ─── */
+function DeleteConfirmModal({ doc, onCancel, onConfirm, deleting }: {
+  doc: FanDoc; onCancel: () => void; onConfirm: () => void; deleting: boolean;
+}) {
+  const fullName = [doc.firstname, doc.lastname].filter(Boolean).join(" ") || "this user";
+  return (
+    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[110] p-4">
+      <div className="bg-[#111624] border border-white/10 rounded-xl w-full max-w-sm p-6 text-center">
+        <div className="text-3xl mb-3">⚠️</div>
+        <h3 className="text-base font-bold mb-2">Delete this application?</h3>
+        <p className="text-sm text-[#94a3b8] mb-6">
+          Are you sure you want to delete {fullName}'s fan verification application? This cannot be undone.
+        </p>
+        <div className="flex gap-3">
+          <button onClick={onCancel} className="flex-1 px-4 py-2.5 rounded-lg text-sm text-gray-300 bg-white/5 hover:bg-white/10">
+            Cancel
+          </button>
+          <button
+            disabled={deleting}
+            onClick={onConfirm}
+            className="flex-1 px-4 py-2.5 rounded-lg text-sm font-semibold text-white bg-red-600 hover:bg-red-700 disabled:opacity-60"
+          >
+            {deleting ? "Deleting…" : "Yes, Delete"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ─── Main Page ─── */
 export default function AdminFanVerificationPage() {
   const dispatch = useDispatch<AppDispatch>();
@@ -244,6 +369,42 @@ export default function AdminFanVerificationPage() {
   // Confirm modal state
   const [modal,     setModal]     = useState<{ docId: string; userid: string; type: "approved" | "declined" } | null>(null);
   const [actioning, setActioning] = useState(false);
+
+  // Edit / delete state
+  const [editingDoc, setEditingDoc] = useState<FanDoc | null>(null);
+  const [savingEdit, setSavingEdit] = useState(false);
+  const [deletingDoc, setDeletingDoc] = useState<FanDoc | null>(null);
+  const [deleting, setDeleting] = useState(false);
+
+  const handleSaveEdit = async (docid: string, files: { idPhotofile?: File; holdingIdPhotofile?: File }) => {
+    setSavingEdit(true);
+    try {
+      const result = await dispatch(updateApplicationDocument({ docid, fields: {}, files })).unwrap();
+      if (result?.document) {
+        setDocs((prev) => prev.map((d) => (d._id === docid ? { ...d, ...result.document } : d)));
+      }
+      setEditingDoc(null);
+    } catch (err: any) {
+      toast.error(typeof err === "string" ? err : "Failed to update application");
+    } finally {
+      setSavingEdit(false);
+    }
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deletingDoc) return;
+    setDeleting(true);
+    try {
+      await dispatch(deleteApplicationDocument({ docid: deletingDoc._id })).unwrap();
+      setDocs((prev) => prev.filter((d) => d._id !== deletingDoc._id));
+      setDeletingDoc(null);
+      toast.success("Application deleted.");
+    } catch (err: any) {
+      toast.error(typeof err === "string" ? err : "Failed to delete application");
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   /* ─── fetch all docs on mount ─── */
 useEffect(() => {
@@ -317,6 +478,26 @@ const confirmAction = async () => {
         loading={actioning}
       />
 
+      {/* Edit application modal */}
+      {editingDoc && (
+        <EditFanPhotosModal
+          doc={editingDoc}
+          onClose={() => setEditingDoc(null)}
+          onSave={handleSaveEdit}
+          saving={savingEdit}
+        />
+      )}
+
+      {/* Delete confirm modal */}
+      {deletingDoc && (
+        <DeleteConfirmModal
+          doc={deletingDoc}
+          onCancel={() => setDeletingDoc(null)}
+          onConfirm={handleConfirmDelete}
+          deleting={deleting}
+        />
+      )}
+
       <div className="max-w-[960px] mx-auto px-6 py-9 pb-20">
 
         {/* Page header */}
@@ -361,8 +542,8 @@ const confirmAction = async () => {
         )}
 
         {/* Cards */}
-        {!loadingDocs && filtered.length > 0 && filtered.map((doc, i) => (
-          <AppCard key={doc._id} doc={doc} idx={i} onAction={handleAction}/>
+      {!loadingDocs && filtered.length > 0 && filtered.map((doc, i) => (
+          <AppCard key={doc._id} doc={doc} idx={i} onAction={handleAction} onEdit={setEditingDoc} onDelete={setDeletingDoc}/>
         ))}
 
         {/* Empty state */}
