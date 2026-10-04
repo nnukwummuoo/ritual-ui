@@ -24,12 +24,12 @@ const TermsAndConditions = () => {
        <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">2. Account & Conduct</h3>
 <p className="mb-6">
   You are responsible for maintaining the confidentiality of your account credentials.
-  You agree not to: Upload or share violent content, or explicit exposure such as visible nipples or genitals on the homepage, ritual page, and portfolio page. 
+  You agree not to: Upload or share violent content, or explicit exposure such as visible nipples or genitals on the homepage, ritual page, and portfolio public photos. 
   Use the platform for illegal activities or to facilitate prostitution. Misrepresent your identity or services offered.
 </p>
 
 <p className="mb-6">
-  Visible nipples or genitals are strictly prohibited on the homepage, ritual page, and portfolio page. 
+  Visible nipples or genitals are strictly prohibited on the homepage, ritual page, and portfolio public photos. 
   Cleavage, bikinis, and non‑sexual skin exposure are welcome.
 </p>
 

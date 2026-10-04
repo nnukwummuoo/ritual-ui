@@ -38,7 +38,7 @@ const Community = () => {
             <section className="mb-6">
   <h2 className="text-xl font-semibold text-gray-300">🚫 1. No Explicit Content</h2>
   <ul className="mt-2 text-gray-400 list-disc list-inside space-y-2">
-    <li>No visible nipples or genitals are allowed on the homepage, ritual page, or portfolio page.</li>
+    <li>No visible nipples or genitals are allowed on the homepage, ritual page, or portfolio public photos.</li>
     <li>Simulated sexual acts or sex toys in a sexual context are not permitted.</li>
     <li>Cleavage, bikinis, and non‑sexual skin exposure are welcome — content may be suggestive, but never explicit.</li>
     <li>Explicit uploads result in a permanent ban with no second chances.</li>
@@ -51,7 +51,7 @@ const Community = () => {
                 <li>Fan Meet is structured and limited to a maximum of 30 minutes per booking.</li>
                 <li>Fan Date is structured and limited to a maximum of 1 hour per booking.</li>
                 <li>These time limits are fixed and cannot be extended.</li>
-                <li>All meetups must take place in public venues — cafes, restaurants, malls, or other safe public locations.</li>
+                <li>All meetups must take place in public venues — cafes, hotel lobbies, restaurants, malls, or other safe public locations.</li>
                 <li>Private residences, hotel rooms, or non-public spaces are strictly prohibited for platform-arranged meetings.</li>
                 <li>These rules exist to protect both creators and fans and ensure a professional, safe experience.</li>
                 </ul>
@@ -84,8 +84,6 @@ const Community = () => {
                 <ul className="mt-2 text-gray-400 list-disc list-inside space-y-2">
                 <li>Offering or requesting sexual services in exchange for money or gifts is strictly forbidden.</li>
                 <li>Fan Dates and Fan Meets must remain non-sexual in both agreement and intent.</li>
-                <li>Using euphemisms such as "spoiling," "hookup," or "overnight fun" to imply paid sexual services is a direct violation.</li>
-                <li>Violations result in immediate permanent ban and may be reported to law enforcement.</li>
                 </ul>
             </section>
 
@@ -101,7 +99,7 @@ const Community = () => {
             <section className="mb-6">
                 <h2 className="text-xl font-semibold text-gray-300">📷 7. Content Guidelines</h2>
                 <ul className="mt-2 text-gray-400 list-disc list-inside space-y-2">
-                <li>Do not post: pornographic material, gore or violence, hate speech or discriminatory content, or child exploitation of any kind — real or implied.</li>
+                <li>Do not post: pornographic material, or child exploitation of any kind — real or implied.</li>
                 <li>All uploaded content must be original or you must have full legal rights to share it.</li>
                 <li>Stolen, copyrighted, or impersonated content will result in immediate removal and account ban.</li>
                 </ul>
@@ -130,31 +128,26 @@ const Community = () => {
                 <li>Do not misrepresent your identity, age, or intentions.</li>
                 <li>Catfishing or using stolen content will result in immediate removal.</li>
                 <li>All creators must complete ID verification before creating a portfolio. Verified identity builds trust for everyone on the platform.</li>
+                <li>All fans must verify their mmeko account by uploading a government ID and a selfie holding that ID before they can book. Creators only receive booking requests from verified fans and can review the fan's ID and selfie before accepting. This ensures every meet starts with trust and safety.</li>
                 </ul>
             </section>
 
             <section className="mb-6">
                 <h2 className="text-xl font-semibold text-gray-300">💬 11. Use Messaging Responsibly</h2>
                 <ul className="mt-2 text-gray-400 list-disc list-inside space-y-2">
-                <li>No spamming or unsolicited promotion in DMs.</li>
-                <li>No harassment or sexually aggressive language.</li>
+                <li>No spamming, harassment or unsolicited promotion in DMs.</li>
+                <li>No harassment.</li>
                 <li>Keep all booking-related communication on the platform to protect yourself and ensure faster dispute resolution.</li>
-                <li>Violations can result in suspension from messaging features or platform-wide bans.</li>
                 </ul>
             </section>
 
             <section className="mb-6">
                 <h2 className="text-xl font-semibold text-gray-300">🛠️ Enforcement Policy</h2>
                 <p className="mt-2 text-gray-400">
-                We review all reported content seriously and act swiftly. Penalties for violations:
+                We review all reported content seriously and act swiftly.
                 </p>
-                <ul className="mt-2 text-gray-400 list-disc list-inside space-y-2">
-                <li>1st offense: Warning or temporary suspension</li>
-                <li>2nd offense: Account restriction or content removal</li>
-                <li>3rd offense: Permanent ban</li>
-                </ul>
                <p className="mt-2 text-gray-400">
-  Severe violations — including visible nipples or genitals, underage content, threats, prostitution offers,
+  Severe violations — including visible nipples or genitals on the homepage, ritual page, or portfolio public photos, underage content, threats, prostitution offers,
   or illegal activity — result in an instant permanent ban with no appeal.
 </p>
             </section>
