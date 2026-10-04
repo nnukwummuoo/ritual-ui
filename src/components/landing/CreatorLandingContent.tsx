@@ -566,7 +566,7 @@ export default function CreatorLandingContent({ prefetchedCreators }: Props) {
             {[["A","linear-gradient(135deg,#6c63ff,#9b59f5)"],["J","linear-gradient(135deg,#2dd4bf,#0891b2)"],["S","linear-gradient(135deg,#f472b6,#db2777)"],["R","linear-gradient(135deg,#fb923c,#ea580c)"],["+","linear-gradient(135deg,#a78bfa,#7c3aed)"]].map(([i,g]) => (
               <div key={i} className="av" style={{ background: g }}>{i}</div>
             ))}
-            <span className="av-txt">Trusted by <strong>1,000+</strong> verified creators</span>
+            <span className="av-txt">Trusted by <strong>100+</strong> verified creators</span>
           </div>
           <h1>Where Fans Meet Creators<br /><span className="grad">Safely. Instantly. Fully.</span></h1>
           <p className="hero-sub">The premium platform for <strong>meet &amp; greets, calls &amp; dates</strong> — plus PPV content, locked messages, and exclusive content sales. You keep 100%. Always.</p>
