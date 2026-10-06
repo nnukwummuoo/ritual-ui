@@ -3853,25 +3853,33 @@ export default function Users(): JSX.Element {
           <div className="bg-[#080b14] rounded-lg max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto">
             <h3 className="text-xl font-bold text-yellow-500 mb-4">Edit Notification</h3>
 
-            <div className="mb-4">
+    <div className="mb-4">
               <label className="text-white text-sm font-bold mb-2 block">Title *</label>
               <input
                 type="text"
                 value={editTitle}
-                onChange={(e) => setEditTitle(e.target.value)}
+                onChange={(e) => setEditTitle(e.target.value.slice(0, 25))}
+                maxLength={25}
                 className="w-full bg-gray-700 text-white p-3 rounded"
                 placeholder="Enter notification title..."
               />
+              <p className={`text-xs mt-1 text-right ${editTitle.length >= 25 ? "text-red-400" : "text-gray-400"}`}>
+                {editTitle.length}/25
+              </p>
             </div>
 
             <div className="mb-4">
               <label className="text-white text-sm font-bold mb-2 block">Message *</label>
               <textarea
                 value={editMessage}
-                onChange={(e) => setEditMessage(e.target.value)}
+                onChange={(e) => setEditMessage(e.target.value.slice(0, 400))}
+                maxLength={400}
                 className="w-full bg-gray-700 text-white p-3 rounded h-24 resize-none"
                 placeholder="Enter your notification message..."
               />
+              <p className={`text-xs mt-1 text-right ${editMessage.length >= 400 ? "text-red-400" : "text-gray-400"}`}>
+                {editMessage.length}/400
+              </p>
             </div>
 
             <div className="mb-4">
@@ -4159,25 +4167,33 @@ export default function Users(): JSX.Element {
               </div>
             )}
 
-            <div className="mb-4">
+  <div className="mb-4">
               <label className="text-white text-sm font-bold mb-2 block">Title *</label>
               <input
                 type="text"
                 value={notificationTitle}
-                onChange={(e) => setNotificationTitle(e.target.value)}
+                onChange={(e) => setNotificationTitle(e.target.value.slice(0, 25))}
+                maxLength={25}
                 className="w-full bg-gray-700 text-white p-3 rounded"
                 placeholder="Enter notification title..."
               />
+              <p className={`text-xs mt-1 text-right ${notificationTitle.length >= 25 ? "text-red-400" : "text-gray-400"}`}>
+                {notificationTitle.length}/25
+              </p>
             </div>
 
             <div className="mb-4">
               <label className="text-white text-sm font-bold mb-2 block">Message *</label>
               <textarea
                 value={notificationMessage}
-                onChange={(e) => setNotificationMessage(e.target.value)}
+                onChange={(e) => setNotificationMessage(e.target.value.slice(0, 400))}
+                maxLength={400}
                 className="w-full bg-gray-700 text-white p-3 rounded h-24 resize-none"
                 placeholder="Enter your notification message..."
               />
+              <p className={`text-xs mt-1 text-right ${notificationMessage.length >= 400 ? "text-red-400" : "text-gray-400"}`}>
+                {notificationMessage.length}/400
+              </p>
             </div>
 
             <div className="mb-4">
