@@ -103,6 +103,10 @@ interface Notification {
   message: string;
   seen: boolean;
   createdAt: string;
+  title?: string;
+  adminNotification?: boolean;
+  hasLearnMore?: boolean;
+  learnMoreUrl?: string | null;
 }
 
 interface NotificationsData {

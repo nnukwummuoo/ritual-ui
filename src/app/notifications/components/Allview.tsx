@@ -8,7 +8,7 @@ import { getNotifications, markNotificationsSeen, getprofile } from "@/store/pro
 import { RootState, AppDispatch } from "@/store/store";
 import { useAuth } from "@/lib/context/auth-context";
 import PacmanLoader from "react-spinners/RingLoader";
-import { CheckCircle, XCircle, Clock, Star, Phone, Heart, Handshake, MessageCircle, Shield, ShoppingCart, Wallet, Tv, UserPlus, Eye } from "lucide-react";
+import { CheckCircle, XCircle, Clock, Star, Phone, Heart, Handshake, MessageCircle, ShoppingCart, Wallet, Tv, UserPlus, Eye } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { useNotificationIndicator } from "@/hooks/useNotificationIndicator";
@@ -221,6 +221,7 @@ const userId = reduxProfileUserId || reduxRegisterUserId || localUserId;
 
       {notifications.map((note: any) => {
         const message = note.message.toLowerCase();
+        const isAdminNotification = !!note.adminNotification;
 
         // determine status from message
         let status: "approved" | "rejected" | "pending" = "pending";
@@ -230,9 +231,12 @@ const userId = reduxProfileUserId || reduxRegisterUserId || localUserId;
           status = "approved"; // These are informational notifications, not pending actions
         }
 
-        // determine title based on notification type
+        // Admin broadcasts already carry a real title from the dashboard —
+        // use it directly instead of guessing one from the message text.
         let title = "MMEKO"; // Default fallback
-        if (message.includes("application")) {
+        if (isAdminNotification) {
+          title = note.title || "Admin Notification";
+        } else if (message.includes("application")) {
           title = "Application Status";
         } else if (message.includes("follow")) {
           title = "Follow Notification";
@@ -293,9 +297,15 @@ const userId = reduxProfileUserId || reduxRegisterUserId || localUserId;
             <div className="flex flex-col items-start space-y-3">
               {/* Header + Icon */}
               <div className="flex items-center space-x-2">
-                {title === "Admin Notification" && (
-                  <div className="bg-purple-500/10 p-1 rounded-full">
-                    <Shield className="text-purple-500 w-5 h-5" />
+         {isAdminNotification && (
+                  <div className="bg-[#0B0F1A] p-0.5 rounded-full border border-slate-700 overflow-hidden w-7 h-7 flex items-center justify-center">
+                    <Image
+                      src="/icons/icon-192x192.png"
+                      alt="MMEKO"
+                      width={24}
+                      height={24}
+                      className="rounded-full object-cover"
+                    />
                   </div>
                 )}
                 {title === "Rating Notification" && (
@@ -343,17 +353,17 @@ const userId = reduxProfileUserId || reduxRegisterUserId || localUserId;
                     <UserPlus className="text-blue-500 w-5 h-5" strokeWidth={2.25} />
                   </div>
                 )}
-                {title !== "Admin Notification" && title !== "Rating Notification" && title !== "Views Notification" && title !== "Missed Fan Call" && title !== "Fan Date Request" && title !== "Fan Meet Request" && title !== "Fan Call Request" && title !== "Like Notification" && title !== "Message Notification" && title !== "Follow Notification" && title !== "Unfollow Notification" && title !== "Purchase Notification" && title !== "Withdrawal Notification" && title !== "PPV Approved" && title !== "PPV Declined" && status === "approved" && (
+                {!isAdminNotification && title !== "Rating Notification" && title !== "Views Notification" && title !== "Missed Fan Call" && title !== "Fan Date Request" && title !== "Fan Meet Request" && title !== "Fan Call Request" && title !== "Like Notification" && title !== "Message Notification" && title !== "Follow Notification" && title !== "Unfollow Notification" && title !== "Purchase Notification" && title !== "Withdrawal Notification" && title !== "PPV Approved" && title !== "PPV Declined" && status === "approved" && (
                   <div className="bg-green-500/10 p-1 rounded-full">
                     <CheckCircle className="text-green-500 w-5 h-5" />
                   </div>
                 )}
-                {title !== "Admin Notification" && title !== "Rating Notification" && title !== "Views Notification" && title !== "Missed Fan Call" && title !== "Fan Date Request" && title !== "Fan Meet Request" && title !== "Fan Call Request" && title !== "Like Notification" && title !== "Message Notification" && title !== "Follow Notification" && title !== "Unfollow Notification" && title !== "Purchase Notification" && title !== "Withdrawal Notification" && title !== "PPV Approved" && title !== "PPV Declined" && status === "rejected" && (
+                {!isAdminNotification && title !== "Rating Notification" && title !== "Views Notification" && title !== "Missed Fan Call" && title !== "Fan Date Request" && title !== "Fan Meet Request" && title !== "Fan Call Request" && title !== "Like Notification" && title !== "Message Notification" && title !== "Follow Notification" && title !== "Unfollow Notification" && title !== "Purchase Notification" && title !== "Withdrawal Notification" && title !== "PPV Approved" && title !== "PPV Declined" && status === "rejected" && (
                   <div className="bg-red-500/10 p-1 rounded-full">
                     <XCircle className="text-red-500 w-5 h-5" />
                   </div>
                 )}
-                {title !== "Admin Notification" && title !== "Rating Notification" && title !== "Views Notification" && title !== "Missed Fan Call" && title !== "Fan Date Request" && title !== "Fan Meet Request" && title !== "Fan Call Request" && title !== "Like Notification" && title !== "Message Notification" && title !== "Follow Notification" && title !== "Unfollow Notification" && title !== "Purchase Notification" && title !== "Withdrawal Notification" && title !== "PPV Approved" && title !== "PPV Declined" && status === "pending" && (
+                {!isAdminNotification && title !== "Rating Notification" && title !== "Views Notification" && title !== "Missed Fan Call" && title !== "Fan Date Request" && title !== "Fan Meet Request" && title !== "Fan Call Request" && title !== "Like Notification" && title !== "Message Notification" && title !== "Follow Notification" && title !== "Unfollow Notification" && title !== "Purchase Notification" && title !== "Withdrawal Notification" && title !== "PPV Approved" && title !== "PPV Declined" && status === "pending" && (
                   <div className="bg-yellow-500/10 p-1 rounded-full">
                     <Clock className="text-yellow-500 w-5 h-5" />
                   </div>
@@ -383,10 +393,26 @@ const userId = reduxProfileUserId || reduxRegisterUserId || localUserId;
                 </h2>
               </div>
 
-              {/* Message */}
-              <p className="text-slate-300 text-sm sm:text-base leading-relaxed">
+           {/* Message */}
+              <p
+                className={`text-slate-300 text-sm sm:text-base leading-relaxed ${
+                  note.hasLearnMore ? "line-clamp-3" : ""
+                }`}
+              >
                 {note.message}
               </p>
+
+              {/* Learn More — keeps long admin broadcasts from stretching the card */}
+              {note.hasLearnMore && (
+                <Link href={`/learn-more/${note._id}`}>
+                  <button
+                    className="px-4 py-2 border border-slate-700 hover:border-slate-500 
+                              rounded-lg text-sm text-slate-200 transition"
+                  >
+                    Learn More
+                  </button>
+                </Link>
+              )}
 
              {/* Buttons */}
               {status === "approved" && title === "Application Status" && (
