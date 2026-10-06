@@ -3872,13 +3872,13 @@ export default function Users(): JSX.Element {
               <label className="text-white text-sm font-bold mb-2 block">Message *</label>
               <textarea
                 value={editMessage}
-                onChange={(e) => setEditMessage(e.target.value.slice(0, 400))}
+                onChange={(e) => setEditMessage(e.target.value.slice(0, 193))}
                 maxLength={400}
                 className="w-full bg-gray-700 text-white p-3 rounded h-24 resize-none"
                 placeholder="Enter your notification message..."
               />
-              <p className={`text-xs mt-1 text-right ${editMessage.length >= 400 ? "text-red-400" : "text-gray-400"}`}>
-                {editMessage.length}/400
+              <p className={`text-xs mt-1 text-right ${editMessage.length >= 193 ? "text-red-400" : "text-gray-400"}`}>
+                {editMessage.length}/193
               </p>
             </div>
 
@@ -4186,13 +4186,13 @@ export default function Users(): JSX.Element {
               <label className="text-white text-sm font-bold mb-2 block">Message *</label>
               <textarea
                 value={notificationMessage}
-                onChange={(e) => setNotificationMessage(e.target.value.slice(0, 400))}
-                maxLength={400}
+                onChange={(e) => setNotificationMessage(e.target.value.slice(0, 193))}
+                maxLength={193}
                 className="w-full bg-gray-700 text-white p-3 rounded h-24 resize-none"
                 placeholder="Enter your notification message..."
               />
-              <p className={`text-xs mt-1 text-right ${notificationMessage.length >= 400 ? "text-red-400" : "text-gray-400"}`}>
-                {notificationMessage.length}/400
+              <p className={`text-xs mt-1 text-right ${notificationMessage.length >= 193 ? "text-red-400" : "text-gray-400"}`}>
+                {notificationMessage.length}/193
               </p>
             </div>
 
