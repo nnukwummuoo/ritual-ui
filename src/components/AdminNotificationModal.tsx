@@ -145,34 +145,92 @@ const AdminNotificationModal: React.FC = () => {
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-[#080b14] rounded-lg max-w-md w-full p-6 relative">
+    <div
+      className={`fixed inset-0 z-50 flex items-end sm:items-center justify-center
+                  bg-black/70 backdrop-blur-md
+                  transition-opacity duration-300 ease-out ${visible ? 'opacity-100' : 'opacity-0'}`}
+      onClick={handleDismiss}
+    >
+      <div
+        className={`relative w-full sm:max-w-md bg-[#0d1220] border border-white/10
+                    rounded-t-[28px] sm:rounded-2xl
+                    shadow-[0_-20px_60px_-15px_rgba(0,0,0,0.6)] sm:shadow-[0_24px_70px_-15px_rgba(0,0,0,0.75)]
+                    overflow-hidden transform transition-all duration-300 ease-out
+                    ${visible
+                      ? 'translate-y-0 scale-100 opacity-100'
+                      : 'translate-y-full sm:translate-y-0 sm:scale-95 opacity-0'}`}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Top accent bar */}
+        <div className="h-[3px] w-full bg-gradient-to-r from-[#a89cff] via-[#c9bfff] to-[#a89cff]" />
+
+        {/* Ambient brand glow */}
+        <div className="pointer-events-none absolute -top-24 -right-16 w-64 h-64 rounded-full bg-[#a89cff]/10 blur-[100px]" />
+        <div className="pointer-events-none absolute -bottom-20 -left-16 w-56 h-56 rounded-full bg-[#6c5ce7]/5 blur-[90px]" />
+
+        {/* Mobile drag handle */}
+        <div className="sm:hidden flex justify-center pt-3">
+          <div className="w-10 h-1 rounded-full bg-white/15" />
+        </div>
+
         <button
           onClick={handleDismiss}
-          className="absolute top-4 right-4 text-gray-400 hover:text-white text-2xl font-bold"
+          className="absolute top-5 right-4 sm:top-4 w-8 h-8 rounded-full flex items-center justify-center
+                     text-slate-400 hover:text-white hover:bg-white/5 transition-colors z-10"
           aria-label="Dismiss notification"
         >
-          ×
+          <X className="w-4 h-4" />
         </button>
-        
-        <div className="pr-8">
-          <h3 className="text-xl font-bold text-blue-500 mb-4">{notification.title}</h3>
-          <p className="text-white text-sm mb-6 leading-relaxed">{notification.message}</p>
-          
+
+        <div className="relative px-6 sm:px-7 pt-5 sm:pt-7 pb-[calc(1.75rem+env(safe-area-inset-bottom))] sm:pb-6">
+          {/* Icon + badge */}
+          <div className="flex items-center gap-3 mb-5">
+            <div className="relative w-11 h-11 shrink-0">
+              {/* Pulsing ring behind the icon */}
+              <span className="absolute inset-0 rounded-xl bg-[#a89cff]/20 animate-ping [animation-duration:2.5s]" />
+              <div className="relative w-11 h-11 rounded-xl bg-[#a89cff]/10 border border-[#a89cff]/20 flex items-center justify-center">
+                <Image
+                  src="/icons/icon-192x192.png"
+                  alt="MMEKO"
+                  width={24}
+                  height={24}
+                  className="rounded-md object-cover"
+                />
+              </div>
+            </div>
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-semibold
+                             uppercase tracking-wider text-[#a89cff] bg-[#a89cff]/10 border border-[#a89cff]/20">
+              <Megaphone className="w-3 h-3" />
+              Announcement
+            </span>
+          </div>
+
+          <h3 className="text-white text-xl sm:text-xl font-bold leading-snug mb-2 pr-6">
+            {notification.title}
+          </h3>
+          <p className="text-slate-300 text-sm leading-relaxed mb-7 line-clamp-4">
+            {notification.message}
+          </p>
+
           <div className="flex gap-3">
             {notification.hasLearnMore && (
               <button
                 onClick={handleLearnMore}
-                className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors font-semibold"
+                className="flex-1 inline-flex items-center justify-center gap-1.5 px-4 py-3 sm:py-2.5 rounded-xl
+                           text-sm font-semibold text-[#080b14] bg-[#a89cff] hover:bg-[#9384ff]
+                           active:scale-[0.98] transition-all"
               >
                 Learn More
+                <ArrowRight className="w-3.5 h-3.5" />
               </button>
             )}
             <button
               onClick={handleDismiss}
-              className="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-500 transition-colors"
+              className={`${notification.hasLearnMore ? '' : 'flex-1'} inline-flex items-center justify-center
+                         px-4 py-3 sm:py-2.5 rounded-xl text-sm font-medium text-slate-300
+                         border border-white/10 hover:bg-white/5 active:scale-[0.98] transition-all`}
             >
-              Close
+              {notification.hasLearnMore ? 'Dismiss' : 'Close'}
             </button>
           </div>
         </div>
