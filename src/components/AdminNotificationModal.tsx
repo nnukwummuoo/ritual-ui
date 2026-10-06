@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
+import { X, Megaphone, ArrowRight } from 'lucide-react';
 import { URL } from '@/api/config';
 import { useSelector } from 'react-redux';
 import type { RootState } from '@/store/store';
@@ -21,7 +23,8 @@ const AdminNotificationModal: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [isDismissed, setIsDismissed] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
-  const [hasInitialized, setHasInitialized] = useState(false);
+ const [hasInitialized, setHasInitialized] = useState(false);
+  const [visible, setVisible] = useState(false); // drives the entrance/exit transition
   
   const userid = useSelector((s: RootState) => s.register.userID);
   const token = useSelector((s: RootState) => s.register.accesstoken);
@@ -96,7 +99,7 @@ const AdminNotificationModal: React.FC = () => {
     fetchAdminNotification();
   }, [userid, token, userGender, isCreator, hasInitialized]);
 
-  const checkNotificationTarget = (notification: AdminNotification): boolean => {
+const checkNotificationTarget = (notification: AdminNotification): boolean => {
     switch (notification.targetGender) {
       case 'all':
         return true;
@@ -111,17 +114,29 @@ const AdminNotificationModal: React.FC = () => {
     }
   };
 
+  useEffect(() => {
+    if (isOpen) {
+      const t = setTimeout(() => setVisible(true), 10);
+      return () => clearTimeout(t);
+    }
+    setVisible(false);
+  }, [isOpen]);
+
   const handleDismiss = () => {
     if (notification) {
       localStorage.setItem('dismissedAdminNotification', notification._id);
-      setIsDismissed(true);
-      setIsOpen(false);
+      setVisible(false);
+      // Let the fade-out finish before actually unmounting
+      setTimeout(() => {
+        setIsDismissed(true);
+        setIsOpen(false);
+      }, 200);
     }
   };
 
   const handleLearnMore = () => {
     if (notification) {
-      // Navigate to the learn more page
+      setVisible(false);
       router.push(`/learn-more/${notification._id}`);
       setIsOpen(false);
     }
@@ -144,7 +159,7 @@ const AdminNotificationModal: React.FC = () => {
     return null;
   }
 
-  return (
+return (
     <div
       className={`fixed inset-0 z-50 flex items-end sm:items-center justify-center
                   bg-black/70 backdrop-blur-md
@@ -205,7 +220,7 @@ const AdminNotificationModal: React.FC = () => {
             </span>
           </div>
 
-          <h3 className="text-white text-xl sm:text-xl font-bold leading-snug mb-2 pr-6">
+          <h3 className="text-white text-xl font-bold leading-snug mb-2 pr-6">
             {notification.title}
           </h3>
           <p className="text-slate-300 text-sm leading-relaxed mb-7 line-clamp-4">
