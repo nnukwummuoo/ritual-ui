@@ -161,7 +161,7 @@ const checkNotificationTarget = (notification: AdminNotification): boolean => {
 
 return (
     <div
-      className={`fixed inset-0 z-70 flex items-end sm:items-center justify-center
+      className={`fixed inset-0 z-[70] flex items-end sm:items-center justify-center
                   bg-black/70 backdrop-blur-md
                   transition-opacity duration-300 ease-out ${visible ? 'opacity-100' : 'opacity-0'}`}
       onClick={handleDismiss}
