@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowLeft, Calendar, Megaphone, AlertTriangle, Bell } from 'lucide-react';
+import { ArrowLeft, Calendar, Megaphone, AlertTriangle, Bell, LifeBuoy } from 'lucide-react';
 import { URL } from '@/api/config';
 import { useSelector } from 'react-redux';
 import type { RootState } from '@/store/store';
@@ -228,8 +228,8 @@ const LearnMorePage = () => {
             )}
           </div>
 
-          {/* Footer */}
-          <div className="px-6 sm:px-10 pb-8 sm:pb-10 pt-2 flex flex-col sm:flex-row gap-3">
+        {/* Footer */}
+          <div className="px-6 sm:px-10 pb-8 sm:pb-10 pt-2 flex flex-col sm:flex-row flex-wrap gap-3">
             <Link
               href="/notifications"
               className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium
@@ -237,6 +237,14 @@ const LearnMorePage = () => {
             >
               <Bell className="w-4 h-4" />
               All notifications
+            </Link>
+            <Link
+              href="/message/supportchat"
+              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium
+                         text-slate-200 border border-[#a89cff]/30 bg-[#a89cff]/10 hover:bg-[#a89cff]/20 transition-colors"
+            >
+              <LifeBuoy className="w-4 h-4" />
+              Contact Support
             </Link>
             <button
               onClick={() => router.back()}
