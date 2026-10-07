@@ -436,7 +436,7 @@ export const RequestDetailsForm: React.FC<RequestDetailsFormProps> = ({
   <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[9999] p-4" onClick={() => setShowVerifyPopup(false)}>
     <div className="bg-[#111624] rounded-2xl p-6 max-w-sm w-full border border-white/10" onClick={e => e.stopPropagation()}>
       <div style={{ fontSize: 32, textAlign: "center", marginBottom: 16 }}>🛡️</div>
-      <h3 className="text-white font-bold text-base mb-3 text-center">Verify once. Use it everywhere on Mmeko</h3>
+      <h3 className="text-white font-bold text-base mb-3 text-center">Universal Passport</h3>
       <p className="text-[#94a3b8] text-sm leading-relaxed mb-6 text-center">
         Most creators only accept booking requests from verified fans. Complete your ID and selfie verification once, and it works across all creators on Mmeko. No more repeating the same screening process every time you want to book someone new.
       </p>

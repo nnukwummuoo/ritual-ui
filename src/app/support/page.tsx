@@ -382,6 +382,47 @@ const FAQ_DATA: Record<CategoryKey, FAQSection[]> = {
         },
       ],
     },
+   {
+      icon: "📈",
+      title: "Creator Ranking",
+      items: [
+        {
+          question: "How does creator ranking work on Mmeko?",
+          answer:
+            "Creator rankings on Mmeko are based entirely on merit. We do not offer paid placement, boosted rankings, or any form of paid promotion. Your position in the rankings is determined by real activity and engagement on the platform.",
+        },
+        {
+          question: "What factors affect a creator's ranking?",
+          answer:
+            "Two main factors influence ranking:\n1. Portfolio views from registered users — the more registered users who view your portfolio, the stronger your ranking signal becomes.\n2. Current online status — creators who are online are given priority in the rankings so that fans can find people who are active and available at that moment.",
+        },
+        {
+          question: "How important is being online?",
+          answer:
+            "Being online has a significant effect. A creator who is currently online will rank higher than a creator who has more portfolio views but is offline. The system is designed to surface active creators first.",
+        },
+        {
+          question: "Can I pay to improve my ranking?",
+          answer:
+            "No. Rankings cannot be bought or influenced by payment. Mmeko does not offer paid ranking boosts of any kind.",
+        },
+        {
+          question: "Why does a creator with fewer views sometimes appear above me?",
+          answer:
+            "If that creator is online and you are not, the system will place them higher. Online status is prioritized so fans are more likely to see creators who are available right now.",
+        },
+        {
+          question: "How can I improve my ranking?",
+          answer:
+            "• Go online when you are available\n• Share your booking page with fans so more registered users view your portfolio\n• Keep your portfolio complete, updated, and professional\n• Stay active on the platform over time",
+        },
+        {
+          question: "Does ranking affect my ability to receive bookings?",
+          answer:
+            "Higher ranking can increase your visibility to fans browsing the platform, which may lead to more portfolio views and booking requests. However, your success still depends on your own outreach, rates, and how you use your booking page.",
+        },
+      ],
+    },
     {
       icon: "💬",
       title: "Withdrawal Fees",
