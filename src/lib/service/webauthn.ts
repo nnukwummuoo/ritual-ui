@@ -33,17 +33,29 @@ export const registerBiometric = async (token: string, deviceLabel?: string): Pr
     throw new Error(optionsRes?.message || "Could not start passkey registration");
   }
 
-  let attestationResponse;
+let attestationResponse;
   try {
     attestationResponse = await startRegistration({ optionsJSON: optionsRes.options });
   } catch (err: any) {
+    // Log the real DOMException so this is diagnosable from devtools instead
+    // of only ever seeing a generic message.
+    console.error("WebAuthn registration failed:", err?.name, err?.message, err);
+
     if (err?.name === "InvalidStateError") {
       throw new Error("This device already has a passkey registered for this account.");
     }
     if (err?.name === "NotAllowedError") {
       throw new Error("Passkey setup was cancelled.");
     }
-    throw new Error("Your device couldn't complete biometric setup.");
+    if (err?.name === "SecurityError") {
+      throw new Error(
+        "This site's domain doesn't match its passkey configuration (RP ID/origin mismatch). This is a setup issue, not a device issue."
+      );
+    }
+    if (err?.name === "NotSupportedError") {
+      throw new Error("No compatible biometric method was found on this device.");
+    }
+    throw new Error(`Your device couldn't complete biometric setup (${err?.name || "unknown error"}).`);
   }
 
   const { data: verifyRes } = await api.post("/webauthn/register/verify", {
