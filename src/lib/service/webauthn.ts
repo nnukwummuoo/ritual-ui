@@ -35,7 +35,7 @@ export const registerBiometric = async (token: string, deviceLabel?: string): Pr
 
 let attestationResponse;
   try {
-    attestationResponse = await startRegistration({ optionsJSON: optionsRes.options });
+    attestationResponse = await startRegistration(optionsRes.options);
   } catch (err: any) {
     // Log the real DOMException so this is diagnosable from devtools instead
     // of only ever seeing a generic message.
@@ -97,7 +97,7 @@ export const loginWithBiometric = async (): Promise<BiometricLoginResult> => {
 
   let assertionResponse;
   try {
-    assertionResponse = await startAuthentication({ optionsJSON: optionsRes.options });
+    assertionResponse = await startAuthentication(optionsRes.options);
   } catch (err: any) {
     if (err?.name === "NotAllowedError") {
       return { ok: false, error: "Biometric login was cancelled." };
