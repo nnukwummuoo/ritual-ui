@@ -11,6 +11,8 @@ import { useRouter } from "next/navigation";
 import { useDispatch } from "react-redux";
 import { loginAuthUser } from "@/store/registerSlice";
 import type { AppDispatch } from "@/store/store";
+import { Fingerprint } from "lucide-react";
+import { isBiometricAvailable, loginWithBiometric } from "@/lib/service/webauthn";
 
 
 
@@ -68,8 +70,148 @@ export const Loginview = () => {
   const [showPassword, setShowPassword] = useState(false);
   const { setIsLoggedIn, setStatus, isLoggedIn, status } = useAuth();
   const [, setUser] = useState<User | undefined>();
+  const [bioAvailable, setBioAvailable] = useState(false);
+  const [bioLoading, setBioLoading] = useState(false);
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
+
+  React.useEffect(() => {
+    isBiometricAvailable().then(setBioAvailable);
+  }, []);
+
+  // Shared by both password login and biometric login — persists the user,
+  // updates Redux, creates the encrypted session cookie, and redirects home.
+  async function finishLogin(resUser: User, passwordUsed: string) {
+    const userData = {
+      ...resUser,
+      password: passwordUsed,
+      username: resUser.username,
+      _id: resUser._id,
+      accessToken: resUser.accessToken,
+      refreshtoken: resUser.refreshtoken
+    };
+
+    try {
+      const userDataToStore = {
+        username: resUser.username,
+        userID: resUser._id,
+        refreshtoken: resUser.refreshtoken,
+        accesstoken: resUser.accessToken,
+        firstname: resUser.firstname,
+        lastname: resUser.lastname,
+        bio: resUser.bio,
+        photolink: resUser.photolink,
+        photoID: resUser.photoID,
+        gender: resUser.gender,
+        age: resUser.age,
+        country: resUser.country,
+        dob: resUser.dob,
+        balance: resUser.balance,
+        withdrawbalance: resUser.withdrawbalance,
+        coinBalance: resUser.coinBalance,
+        earnings: resUser.earnings,
+        pending: resUser.pending,
+        creator_verified: resUser.creator_verified,
+        creator_portfolio: resUser.creator_portfolio,
+        creator_portfolio_id: resUser.creator_portfolio_id,
+        Creator_Application_status: resUser.Creator_Application_status,
+        followers: resUser.followers,
+        following: resUser.following,
+        isVip: resUser.isVip,
+        vipStartDate: resUser.vipStartDate,
+        vipEndDate: resUser.vipEndDate,
+        vipAutoRenewal: resUser.vipAutoRenewal,
+        vipCelebrationViewed: resUser.vipCelebrationViewed,
+        active: resUser.active,
+        admin: resUser.admin,
+        passcode: resUser.passcode,
+        createdAt: resUser.createdAt,
+        updatedAt: resUser.updatedAt
+      };
+
+      localStorage.setItem("login", JSON.stringify(userDataToStore));
+    } catch {
+      // Failed to save localStorage - continue anyway
+    }
+
+    setUser(userData);
+    setIsLoggedIn(true);
+    setStatus("resolved");
+
+    dispatch(loginAuthUser({
+      email: userData.username,
+      password: passwordUsed,
+      message: "login_success",
+      refreshtoken: userData.refreshtoken,
+      accesstoken: userData.accessToken,
+      userID: userData._id,
+      creator_portfolio_id: userData.creator_portfolio_id,
+      creator_portfolio: userData.creator_portfolio,
+    }));
+
+    try {
+      const sessionData = {
+        username: userData.username,
+        password: passwordUsed,
+        userId: userData._id,
+        admin: resUser?.admin || false,
+        _id: userData._id,
+        accessToken: userData.accessToken,
+        refreshtoken: userData.refreshtoken
+      };
+
+      const sessionResult = await fetch(`/api/session`, {
+        method: "POST",
+        body: JSON.stringify(sessionData),
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!sessionResult.ok) {
+        console.error("Session creation failed:", sessionResult.status, sessionResult.statusText);
+      }
+    } catch (sessionError) {
+      console.error("Session creation error:", sessionError);
+    }
+
+    toast.success("Login successful! Redirecting...", {
+      position: "top-center",
+      autoClose: 1000,
+    });
+
+    setTimeout(() => {
+      window.location.href = "/";
+    }, 1000);
+  }
+
+  async function handleBiometricLogin() {
+    setBioLoading(true);
+    setStatus("checking");
+    try {
+      const result = await loginWithBiometric();
+
+      if (!result.ok || !result.user) {
+        setStatus("idle");
+        toast.error(result.error || "Biometric login failed", {
+          position: "top-center",
+          autoClose: 4000,
+        });
+        return;
+      }
+
+      await finishLogin(result.user as User, "");
+    } catch {
+      setStatus("idle");
+      toast.error("Biometric login failed. Please try again or use your password.", {
+        position: "top-center",
+        autoClose: 4000,
+      });
+    } finally {
+      setBioLoading(false);
+    }
+  }
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
@@ -164,121 +306,7 @@ try {
         return;
       }
 
-      // Create user object with all necessary data
-      const userData = {
-        ...res.user,
-        password: password,
-        username: res.user.username,
-        _id: res.user._id,
-        accessToken: res.user.accessToken,
-        refreshtoken: res.user.refreshtoken
-      };
-
-      // Save all user information to localStorage
-      try {
-        const userDataToStore = {
-          // Authentication data
-          username: res.user.username,
-          userID: res.user._id,
-          refreshtoken: res.user.refreshtoken,
-          accesstoken: res.user.accessToken,
-          // Personal information
-          firstname: res.user.firstname,
-          lastname: res.user.lastname,
-          bio: res.user.bio,
-          photolink: res.user.photolink,
-          photoID: res.user.photoID,
-          gender: res.user.gender,
-          age: res.user.age,
-          country: res.user.country,
-          dob: res.user.dob,
-          // Financial information
-          balance: res.user.balance,
-          withdrawbalance: res.user.withdrawbalance,
-          coinBalance: res.user.coinBalance,
-          earnings: res.user.earnings,
-          pending: res.user.pending,
-          // Creator information
-          creator_verified: res.user.creator_verified,
-          creator_portfolio: res.user.creator_portfolio,
-          creator_portfolio_id: res.user.creator_portfolio_id,
-          Creator_Application_status: res.user.Creator_Application_status,
-          // Social information
-          followers: res.user.followers,
-          following: res.user.following,
-          // VIP information
-          isVip: res.user.isVip,
-          vipStartDate: res.user.vipStartDate,
-          vipEndDate: res.user.vipEndDate,
-          vipAutoRenewal: res.user.vipAutoRenewal,
-          vipCelebrationViewed: res.user.vipCelebrationViewed,
-          // Account information
-          active: res.user.active,
-          admin: res.user.admin,
-          passcode: res.user.passcode,
-          createdAt: res.user.createdAt,
-          updatedAt: res.user.updatedAt
-        };
-
-        localStorage.setItem("login", JSON.stringify(userDataToStore));
-      } catch {
-        // Failed to save localStorage - continue anyway
-      }
-
-      setUser(userData);
-      setIsLoggedIn(true);
-      setStatus("resolved");
-
-      // Update Redux state
-      dispatch(loginAuthUser({
-        email: userData.username,
-        password: password,
-        message: "login_success",
-        refreshtoken: userData.refreshtoken,
-        accesstoken: userData.accessToken,
-        userID: userData._id,
-        creator_portfolio_id: userData.creator_portfolio_id,
-        creator_portfolio: userData.creator_portfolio,
-      }));
-
-      // Create session
-      try {
-        const sessionData = {
-          username: userData.username,
-          password: password,
-          userId: userData._id,
-          admin: res.user?.admin || false,
-          _id: userData._id,
-          accessToken: userData.accessToken,
-          refreshtoken: userData.refreshtoken
-        };
-
-        const sessionResult = await fetch(`/api/session`, {
-          method: "POST",
-          body: JSON.stringify(sessionData),
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
-
-        if (!sessionResult.ok) {
-          console.error("Session creation failed:", sessionResult.status, sessionResult.statusText);
-        }
-      } catch (sessionError) {
-        console.error("Session creation error:", sessionError);
-      }
-
-      // Show success message
-      toast.success("Login successful! Redirecting...", {
-        position: "top-center",
-        autoClose: 1000,
-      });
-
-      // Redirect after successful login
-      setTimeout(() => {
-        window.location.href = "/";
-      }, 1000);
+      await finishLogin(res.user, password);
 
     } catch (error) {
       setUser({ username: "", password: "" });
@@ -428,12 +456,27 @@ try {
             </span>
           </label>
 
-          <button
-            type="submit"
-            className="w-full bg-gradient-to-r from-[#6c63ff] to-[#9b59f5] text-white py-3.5 rounded-xl font-semibold text-sm shadow-[0_14px_30px_-10px_rgba(108,99,255,0.55)] hover:shadow-[0_16px_34px_-8px_rgba(108,99,255,0.65)] hover:-translate-y-0.5 active:translate-y-0 transition-all"
-          >
-            Log In
-          </button>
+          <div className="flex gap-3">
+            <button
+              type="submit"
+              className="flex-1 bg-gradient-to-r from-[#6c63ff] to-[#9b59f5] text-white py-3.5 rounded-xl font-semibold text-sm shadow-[0_14px_30px_-10px_rgba(108,99,255,0.55)] hover:shadow-[0_16px_34px_-8px_rgba(108,99,255,0.65)] hover:-translate-y-0.5 active:translate-y-0 transition-all"
+            >
+              Log In
+            </button>
+
+            {bioAvailable && (
+              <button
+                type="button"
+                onClick={handleBiometricLogin}
+                disabled={bioLoading}
+                aria-label="Log in with biometrics"
+                title="Log in with biometrics"
+                className="shrink-0 w-[52px] flex items-center justify-center rounded-xl border border-[#9b59f5]/30 bg-[#9b59f5]/10 text-[#b48cf7] hover:bg-[#9b59f5]/20 active:scale-[0.96] transition-all disabled:opacity-60"
+              >
+                <Fingerprint className={`w-5 h-5 ${bioLoading ? "animate-pulse" : ""}`} />
+              </button>
+            )}
+          </div>
 
           <p className="text-sm text-center">
             <Link

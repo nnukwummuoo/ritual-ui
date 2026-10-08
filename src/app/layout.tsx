@@ -17,6 +17,7 @@ import { ContentFilterProvider } from "@/lib/context/content-filter-context";
 import MaintenanceBanner from "@/components/MaintenanceBanner";
 import ReferralTracker from "@/components/ReferralTracker";
 import UpdateNotification from "@/components/UpdateNotification";
+import BiometricSetupPrompt from "@/components/BiometricSetupPrompt";
 import GlobalLoader from "@/components/GlobalLoader";
 import ChunkErrorHandler from "@/components/ChunkErrorHandler";
 
@@ -99,6 +100,7 @@ export default async function RootLayout({
               <GlobalVisitorTracker />
               <ReferralTracker />
               <UpdateNotification />
+                <BiometricSetupPrompt />
               <MaintenanceBanner />
               <ConditionalLayoutWrapper ssrAuth={isAuthenticated}>
                 {children}

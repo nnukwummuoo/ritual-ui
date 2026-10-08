@@ -27,6 +27,7 @@
     "@tanstack/react-query": "^5.101.4",
     "@types/js-cookie": "^3.0.6",
     "axios": "^1.11.0",
+    "@simplewebauthn/browser": "^10.0.0",
     "axios-retry": "^4.5.0",
     "bcrypt": "^6.0.0",
     "country-state-city": "^3.2.1",

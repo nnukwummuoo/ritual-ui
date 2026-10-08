@@ -5,6 +5,7 @@ import { MdLockOutline } from "react-icons/md";
 import { RiDeleteBinLine } from "react-icons/ri";
 import { useRouter } from "next/navigation";
 import { FaKey } from "react-icons/fa";
+import { Fingerprint } from "lucide-react";
 // import setting from "../../icons/settings.png";
 // import { NavButton } from "../_components/navbutton";
 // import { Header } from "../_components/header";
@@ -26,6 +27,11 @@ const AccountPage = () => {
       name: "Recovery phrase",
       icon: <FaKey color="white" size={18} />,
       linktitle: "secret-phrase",
+    },
+     {
+      name: "Biometric login",
+      icon: <Fingerprint color="white" size={20} />,
+      linktitle: "biometric-login",
     },
     {
       name: "Delete my account",
