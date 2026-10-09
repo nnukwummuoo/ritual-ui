@@ -58,10 +58,19 @@ let attestationResponse;
     throw new Error(`Your device couldn't complete biometric setup (${err?.name || "unknown error"}).`);
   }
 
-  const { data: verifyRes } = await api.post("/webauthn/register/verify", {
-    attestationResponse,
-    deviceLabel: deviceLabel || guessDeviceLabel(),
-  });
+let verifyRes;
+  try {
+    const res = await api.post("/webauthn/register/verify", {
+      attestationResponse,
+      deviceLabel: deviceLabel || guessDeviceLabel(),
+    });
+    verifyRes = res.data;
+  } catch (err: any) {
+    // Without this, a 500 shows up to the user as axios's generic
+    // "Request failed with status code 500" instead of the real message.
+    console.error("register/verify request failed:", err?.response?.data || err);
+    throw new Error(err?.response?.data?.message || "Passkey registration failed on the server");
+  }
 
   if (!verifyRes?.ok) {
     throw new Error(verifyRes?.message || "Passkey registration failed");
