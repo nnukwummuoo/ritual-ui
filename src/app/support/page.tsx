@@ -446,7 +446,7 @@ const FAQ_DATA: Record<CategoryKey, FAQSection[]> = {
         {
           question: "Why does Mmeko use Gold?",
           answer:
-            "Gold standardizes payments across the platform and completely eliminates chargebacks.\nIt works similarly to token systems used on platforms like Chaturbate.",
+            "Gold standardizes payments across the platform and completely eliminates chargebacks.",
         },
       ],
     },
