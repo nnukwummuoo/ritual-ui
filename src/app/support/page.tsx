@@ -243,10 +243,21 @@ const FAQ_DATA: Record<CategoryKey, FAQSection[]> = {
           answer:
             "⚠ If a creator fails to appear or cancels last-minute, the fan will receive a full refund of the payment.\nRepeated no-shows by creators may result in account suspension or removal from the Fan Meet/Fan Date program.",
         },
-        {
+ {
           question: "How do both sides stay protected?",
           answer:
             "🛡 The platform tracks confirmations, time logs, booking history and chat history.\nWe recommend both sides keep all communication and arrangements within the Mmeko platform. This ensures a clear paper trail, protects creators and fans, and makes dispute resolution simple and transparent.",
+        },
+      ],
+    },
+    {
+      icon: "🛂",
+      title: "Universal Passport",
+      items: [
+        {
+          question: "What is the Universal Passport?",
+          answer:
+            "The Universal Passport is Mmeko's one-time verification system for fans.\n\nYou verify your account once by uploading a government ID and a selfie holding that ID. After that, you can book any creator on Mmeko without repeating the full verification process every time.\n\nThis means:\n• You only go through ID verification once\n• Your verified status works across all creators on the platform\n• Creators can trust who's booking them\n• You avoid having to resubmit screening details for every new booking\n\nIt's designed to make booking smoother for you while giving creators the security they need.",
         },
       ],
     },
@@ -416,10 +427,26 @@ const FAQ_DATA: Record<CategoryKey, FAQSection[]> = {
           answer:
             "• Go online when you are available\n• Share your booking page with fans so more registered users view your portfolio\n• Keep your portfolio complete, updated, and professional\n• Stay active on the platform over time",
         },
-        {
+     {
           question: "Does ranking affect my ability to receive bookings?",
           answer:
             "Higher ranking can increase your visibility to fans browsing the platform, which may lead to more portfolio views and booking requests. However, your success still depends on your own outreach, rates, and how you use your booking page.",
+        },
+      ],
+    },
+    {
+      icon: "🪙",
+      title: "Gold",
+      items: [
+        {
+          question: "What is Gold?",
+          answer:
+            "Gold is Mmeko's fixed internal currency used for bookings and purchases on the platform.\n\n1 Gold = $0.04 USD.\n\nIt does not go up or down in value. It is not a speculative cryptocurrency.\n\nWhen a fan pays with Gold, the amount is automatically converted to USD and shown on your earnings page. When you request a withdrawal, you are paid instantly in USDT. Creators always receive 100% of the booking amount.\n\nGold standardizes payments across the platform and completely eliminates chargebacks. It works similarly to token systems used on platforms like Chaturbate.",
+        },
+        {
+          question: "Why does Mmeko use Gold?",
+          answer:
+            "Gold standardizes payments across the platform and completely eliminates chargebacks.\nIt works similarly to token systems used on platforms like Chaturbate.",
         },
       ],
     },
