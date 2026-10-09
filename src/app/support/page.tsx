@@ -320,7 +320,7 @@ const FAQ_DATA: Record<CategoryKey, FAQSection[]> = {
         {
           question: "Does Mmeko truly automatically send you a fan\'s government ID and selfie confirmation?",
           answer:
-            'Yes. You don\'t have to manually request IDs from fans. Fans verify their Mmeko account first, and the moment they click "Request" on your booking page, Mmeko automatically deducts full payment and sends you their verified ID and selfie confirmation — all before you accept or confirm anything. This ensures a smoother, more professional experience for both sides right from the start.',
+            'Fans verify their Mmeko account first by uploading a government ID and a selfie holding that ID. The moment they click "Request" on your booking page, Mmeko automatically deducts full payment and sends you their verified ID and selfie confirmation - all before you accept or confirm anything. When you receive a booking request, you simply click "View details" and you will see the fan\'s ID and a selfie holding that ID. No chasing, No manual screening. This ensures a smoother, more professional experience for both sides right from the start.',
         },
         {
           question: "Why do fans trust Mmeko?",

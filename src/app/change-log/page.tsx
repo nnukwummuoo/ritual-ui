@@ -4,13 +4,13 @@ import React, { useState, useEffect } from "react";
 const changelog = [
   {
     version: "What's New on Mmeko?",
-    date: "July 2025",
+    date: "July 2026",
     intro: "Welcome to Mmeko, where real fans connect with real creators safely, privately, and globally. We're always improving to make your experience smoother, smarter, and more rewarding. Here's what's new and working right now:",
     updates: [
       { type: "current", text: "🔮 Rituals - Your daily 15-panel story. Share how a fan meet went, post reaction photos, go behind the scenes — in your own words, with your own photos. Lives for 30 days. Archives to your profile forever." },
       { type: "current", text: "Fan Call - Connect 1-on-1 via secure video call. Creators earn per minute, fans get real-time connection." },
       { type: "current", text: "Fan Meet - A short, casual meeting where you can greet your favorite creator, chat, and even take a selfie. It's about making a quick personal connection - limited to 30 minutes maximum for safety and fairness." },
-      { type: "current", text: "Fan Date -  Fan Date – A slightly more relaxed session where you spend time together in a safe public place — like grabbing coffee, eating, or walking — but still limited to 30 minutes maximum for safety and fairness." },
+      { type: "current", text: "Fan Date -  Fan Date – A slightly more relaxed session where you spend time together in a safe public place — like grabbing coffee, eating, or walking — limited to 1 hour maximum for safety and fairness." },
       { type: "current", text: "VIP Accounts - Premium fan features like a lion badge, priority support, and extra attention from creators." },
       { type: "current", text: "Messaging - Private in-app chat lets fans and creators talk freely — no charges." },
       { type: "current", text: "Gold Wallet - Use gold coins to pay for anything: calls, dates. Fans buy gold, creators earn it." },
@@ -23,7 +23,6 @@ const changelog = [
     updates: [
       { type: "coming", text: "Smart Discovery - We're adding AI-powered recommendations to help fans find their ideal creator instantly." },
       { type: "coming", text: "Creator Rankings - Top-performing and most-loved creators will appear on trending pages for even more visibility." },
-      { type: "coming", text: "Ad Revenue Sharing - Because Mmeko is built on creators, we believe in sharing value directly. In the future, all ad revenue will be split 50/50 with Creators. This ensures that as Mmeko grows, your earnings grow with it. Without creators, there is no Mmeko — and this model honors that truth.  " },
     ],
   },
 ];
