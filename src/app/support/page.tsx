@@ -441,7 +441,7 @@ const FAQ_DATA: Record<CategoryKey, FAQSection[]> = {
         {
           question: "What is Gold?",
           answer:
-            "Gold is Mmeko's fixed internal currency used for bookings and purchases on the platform.\n\n1 Gold = $0.04 USD.\n\nIt does not go up or down in value. It is not a speculative cryptocurrency.\n\nWhen a fan pays with Gold, the amount is automatically converted to USD and shown on your earnings page. When you request a withdrawal, you are paid instantly in USDT. Creators always receive 100% of the booking amount.\n\nGold standardizes payments across the platform and completely eliminates chargebacks. It works similarly to token systems used on platforms like Chaturbate.",
+            "Gold is Mmeko's fixed internal currency used for bookings and purchases on the platform.\n\n1 Gold = $0.04 USD.\n\nIt does not go up or down in value. It is not a speculative cryptocurrency.\n\nWhen a fan pays with Gold, the amount is automatically converted to USD and shown on your earnings page. When you request a withdrawal, you are paid instantly in USDT. Creators always receive 100% of the booking amount.",
         },
         {
           question: "Why does Mmeko use Gold?",
