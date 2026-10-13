@@ -493,9 +493,11 @@ const FanDocsViewer: React.FC<{
         onDocLoaded?.(result.document);
       }
       setEditingDoc(null);
-      toast.success(docid ? "Application updated." : "Verification record created.");
+ toast.success(docid ? "Application updated." : "Verification record created.");
     } catch (err: any) {
-      toast.error(typeof err === "string" ? err : "Failed to save verification record");
+      const message = typeof err === "string" ? err : err?.message || "Failed to save verification record";
+      console.error("Save verification record failed:", err);
+      toast.error(message);
     } finally {
       setSavingEdit(false);
     }
