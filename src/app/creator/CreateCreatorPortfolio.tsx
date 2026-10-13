@@ -493,9 +493,9 @@ const removeTour = (index: number) => {
         <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-[#6c63ff]/20 bg-[#6c63ff]/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.06em] text-[#a89cff]">
           ✦ Creator Portfolio
         </div>
-        <h1 className="mb-1.5 text-[22px] font-extrabold tracking-tight text-white">
-        {`adminMode ?Create Portfolio for ${targetUserName || "User"} : "Create Your Portfolio"`}
-        </h1>
+       <h1 className="mb-1.5 text-[22px] font-extrabold tracking-tight text-white">
+  {adminMode ? `Create Portfolio for ${targetUserName || "User"}` : "Create Your Portfolio"}
+</h1>
         <p className="mb-8 text-[13px] leading-relaxed text-slate-400">
           Set up your creator profile so fans can discover and book a meet &amp; greet with you.
         </p>
