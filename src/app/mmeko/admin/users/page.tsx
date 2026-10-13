@@ -17,7 +17,7 @@ import { checkUserBanStatus } from "@/utils/banCheck";
 import { useVideoAutoPlay } from "@/hooks/useVideoAutoPlayNew";
 import { URL as API_BASE } from "@/api/config";
 const PROD_BASE = process.env.NEXT_PUBLIC_API || "";
-import { verifyfan, rejectfan, updateApplicationDocument, deleteApplicationDocument } from "@/store/creatorSlice";
+import { verifyfan, rejectfan, updateApplicationDocument, deleteApplicationDocument, adminFillDocument } from "@/store/creatorSlice";
 import CreateCreatorPortfolio from "@/app/creator/CreateCreatorPortfolio";
 import EditCreatorPortfolioForm from "@/app/creators/editcreatorportfolio/EditCreatorPortfolioForm";
 
@@ -276,9 +276,10 @@ const FanVerificationSection: React.FC<{
 const VerificationEditModal: React.FC<{
   doc: any;
   onClose: () => void;
-  onSave: (docid: string, fields: Record<string, any>, files: { idPhotofile?: File; holdingIdPhotofile?: File }) => void;
+  onSave: (docid: string | null, fields: Record<string, any>, files: { idPhotofile?: File; holdingIdPhotofile?: File }) => void;
   saving: boolean;
 }> = ({ doc, onClose, onSave, saving }) => {
+  const isCreating = !doc._id;
   const isFanDoc = !!doc.fan_submission;
   const [form, setForm] = useState({
     firstname: doc.firstname || "",
@@ -313,10 +314,17 @@ const VerificationEditModal: React.FC<{
   return (
     <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[200] p-4">
       <div className="bg-[#111624] border border-gray-700 rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6">
-        <div className="flex items-center justify-between mb-5">
-          <h3 className="text-lg font-bold">Edit {isFanDoc ? "Fan" : "Creator"} Application</h3>
+       <div className="flex items-center justify-between mb-5">
+          <h3 className="text-lg font-bold">
+            {isCreating ? "Fill" : "Edit"} {isFanDoc ? "Fan" : "Creator"} Verification Record
+          </h3>
           <button onClick={onClose} className="text-gray-400 hover:text-white text-xl">✕</button>
         </div>
+        {isCreating && (
+          <p className="text-xs text-amber-400 bg-amber-500/10 border border-amber-500/20 rounded-lg px-3 py-2 mb-5">
+            This user was verified manually and has no verification record on file yet. Fill in what you can — both photos are required to create one.
+          </p>
+        )}
 
         {/* Fan applications only carry photos, no personal fields — see postFanDocument.js */}
         {!isFanDoc && (
@@ -340,14 +348,18 @@ const VerificationEditModal: React.FC<{
           </div>
         )}
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
           <div>
-            <label className="block text-xs text-gray-400 mb-2">Government ID Photo</label>
+            <label className="block text-xs text-gray-400 mb-2">
+              Government ID Photo {isCreating && <span className="text-amber-400">*required</span>}
+            </label>
             {idPreview && <img src={idPreview} alt="ID" className="w-full h-40 object-cover rounded-lg mb-2" />}
             <input type="file" accept="image/*" onChange={handleIdPhotoPick} className="text-xs text-gray-300" />
           </div>
           <div>
-            <label className="block text-xs text-gray-400 mb-2">Selfie with ID</label>
+            <label className="block text-xs text-gray-400 mb-2">
+              Selfie with ID {isCreating && <span className="text-amber-400">*required</span>}
+            </label>
             {holdingPreview && <img src={holdingPreview} alt="Selfie" className="w-full h-40 object-cover rounded-lg mb-2" />}
             <input type="file" accept="image/*" onChange={handleHoldingPhotoPick} className="text-xs text-gray-300" />
           </div>
@@ -357,15 +369,15 @@ const VerificationEditModal: React.FC<{
           <button onClick={onClose} className="px-4 py-2 rounded-lg text-sm text-gray-300 bg-white/5 hover:bg-white/10">
             Cancel
           </button>
-          <button
-            disabled={saving}
+       <button
+            disabled={saving || (isCreating && (!idPhotoFile || !holdingIdPhotoFile))}
             onClick={() => onSave(doc._id, isFanDoc ? {} : form, {
               idPhotofile: idPhotoFile || undefined,
               holdingIdPhotofile: holdingIdPhotoFile || undefined,
             })}
             className="px-4 py-2 rounded-lg text-sm font-semibold text-black bg-yellow-500 hover:bg-yellow-400 disabled:opacity-60"
           >
-            {saving ? "Saving…" : "Save Changes"}
+            {saving ? "Saving…" : isCreating ? "Create Record" : "Save Changes"}
           </button>
         </div>
       </div>
@@ -433,21 +445,19 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, isOpen, onClose
   const [isEditingReferral, setIsEditingReferral] = useState(false);
   const [editedRewardBalance, setEditedRewardBalance] = useState(0);
   const token = useSelector((s: RootState) => s.register.accesstoken);
+// Populated via FanDocsViewer's onDocLoaded callback below (correctly
+// filtered to this user's non-fan, verified document) — previously this had
+// its own separate, unfiltered fetch that could race with and overwrite
+// the correct result.
 const [creatorVerificationDoc, setCreatorVerificationDoc] = useState<any>(null);
 
-useEffect(() => {
-  if (!user?._id || !user?.creator_verified) return;
-  fetch(`${URL}/getdocument`)
-    .then(r => r.json())
-    .then(data => {
-      const docs: any[] = data.documents || [];
-      const match = docs.find((d: any) => d.userid === user._id);
-      setCreatorVerificationDoc(match || null);
-    })
-    .catch(() => setCreatorVerificationDoc(null));
-}, [user?._id, user?.creator_verified]);
-
-  const FanDocsViewer: React.FC<{ userId: string; token: string }> = ({ userId, token }) => {
+const FanDocsViewer: React.FC<{
+    userId: string;
+    token: string;
+    isFan?: boolean;
+    targetUserName?: string;
+    onDocLoaded?: (doc: any) => void;
+  }> = ({ userId, token, isFan = false, targetUserName, onDocLoaded }) => {
   const dispatch = useDispatch<AppDispatch>();
   const [doc, setDoc] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -464,25 +474,41 @@ useEffect(() => {
       .then(r => r.json())
       .then(data => {
         const docs: any[] = data.documents || [];
-        const match = docs.find((d: any) => d.userid === userId && d.verify === true);
+        const match = docs.find((d: any) => d.userid === userId && !!d.fan_submission === isFan && d.verify === true);
         setDoc(match || null);
+        onDocLoaded?.(match || null);
       })
-      .catch(() => setDoc(null))
+      .catch(() => { setDoc(null); onDocLoaded?.(null); })
       .finally(() => setLoading(false));
-  }, [userId]);
+  }, [userId, isFan]);
 
-  const handleSaveEdit = async (docid: string, fields: Record<string, any>, files: { idPhotofile?: File; holdingIdPhotofile?: File }) => {
+  const handleSaveEdit = async (docid: string | null, fields: Record<string, any>, files: { idPhotofile?: File; holdingIdPhotofile?: File }) => {
     setSavingEdit(true);
     try {
-      const result = await dispatch(updateApplicationDocument({ docid, fields, files })).unwrap();
-      if (result?.document) setDoc((prev: any) => ({ ...prev, ...result.document }));
+      const result = docid
+        ? await dispatch(updateApplicationDocument({ docid, fields, files })).unwrap()
+        : await dispatch(adminFillDocument({ userid: userId, fields: { ...fields, fan_submission: isFan }, files })).unwrap();
+      if (result?.document) {
+        setDoc(result.document);
+        onDocLoaded?.(result.document);
+      }
       setEditingDoc(null);
-      toast.success("Application updated.");
+      toast.success(docid ? "Application updated." : "Verification record created.");
     } catch (err: any) {
-      toast.error(typeof err === "string" ? err : "Failed to update application");
+      toast.error(typeof err === "string" ? err : "Failed to save verification record");
     } finally {
       setSavingEdit(false);
     }
+  };
+
+  const openFillModal = () => {
+    setEditingDoc({
+      _id: null,
+      userid: userId,
+      fan_submission: isFan,
+      firstname: targetUserName?.split(" ")[0] || "",
+      lastname: targetUserName?.split(" ").slice(1).join(" ") || "",
+    });
   };
 
   const handleConfirmDelete = async () => {
@@ -500,12 +526,25 @@ useEffect(() => {
     }
   };
 
-  if (loading) return <p className="text-gray-400 text-sm">Loading documents…</p>;
+if (loading) return <p className="text-gray-400 text-sm">Loading documents…</p>;
 
   if (!doc) return (
-    <div className="bg-gray-700 rounded-lg p-4 text-center">
-      <p className="text-gray-400 text-sm">No approved verification documents found.</p>
-    </div>
+    <>
+      {editingDoc && (
+        <VerificationEditModal doc={editingDoc} onClose={() => setEditingDoc(null)} onSave={handleSaveEdit} saving={savingEdit} />
+      )}
+      <div className="bg-gray-700 rounded-lg p-4 text-center">
+        <p className="text-gray-400 text-sm mb-3">
+          No verification record found. This user was verified manually, so there's nothing on file yet.
+        </p>
+        <button
+          onClick={openFillModal}
+          className="bg-yellow-500 text-black px-4 py-2 rounded text-sm font-medium hover:bg-yellow-400"
+        >
+          Fill Verification Details
+        </button>
+      </div>
+    </>
   );
 
   const idUrl      = doc.idPhotofile?.idPhotofilelink;
@@ -1676,7 +1715,12 @@ useEffect(() => {
       <span className="px-2 py-1 rounded text-xs bg-green-500 text-white">Approved</span>
     </div>
 
-    <FanDocsViewer userId={user._id} token={token} />
+<FanDocsViewer
+      userId={user._id}
+      token={token}
+      isFan
+      targetUserName={`${user.firstname || ""} ${user.lastname || ""}`.trim()}
+    />
   </div>
 )}
 
@@ -1749,7 +1793,13 @@ useEffect(() => {
   ))}
 </div>
 <div className="mt-8">
-<FanDocsViewer userId={user._id} token={token} />
+<FanDocsViewer
+  userId={user._id}
+  token={token}
+  isFan={false}
+  targetUserName={`${user.firstname || ""} ${user.lastname || ""}`.trim()}
+  onDocLoaded={setCreatorVerificationDoc}
+/>
 </div>
 
 

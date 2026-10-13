@@ -622,6 +622,32 @@ export const updateApplicationDocument = createAsyncThunk<
   }
 });
 
+// New thunk: adminFillDocument (PUT /getdocument/admin/:userid)
+// Creates or fills in a verification record for a user who was manually
+// marked creator_verified/fan_verified without ever submitting an
+// application, so admin can backfill the missing fields and photos.
+export const adminFillDocument = createAsyncThunk<
+  any,
+  { userid: string; fields: Record<string, any>; files?: { idPhotofile?: File; holdingIdPhotofile?: File } }
+>("creator/adminFillDocument", async ({ userid, fields, files }) => {
+  try {
+    const formData = new FormData();
+    formData.append("data", JSON.stringify(fields));
+    if (files?.idPhotofile) formData.append("idPhotofile", files.idPhotofile);
+    if (files?.holdingIdPhotofile) formData.append("holdingIdPhotofile", files.holdingIdPhotofile);
+
+    const response = await axios.put(`${URL}/getdocument/admin/${userid}`, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return response.data;
+  } catch (err: any) {
+    if (!err.response?.data?.message) {
+      throw "Check internet connection";
+    }
+    throw err.response.data.message;
+  }
+});
+
 // New thunk: deleteApplicationDocument (DELETE /getdocument/:docid)
 export const deleteApplicationDocument = createAsyncThunk<any, { docid: string }>(
   "creator/deleteApplicationDocument",
