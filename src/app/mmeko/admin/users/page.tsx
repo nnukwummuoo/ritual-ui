@@ -298,17 +298,20 @@ const VerificationEditModal: React.FC<{
   const [holdingPreview, setHoldingPreview] = useState<string | null>(doc.holdingIdPhotofile?.holdingIdPhotofilelink || null);
 
   const handleChange = (key: string, value: string) => setForm((f) => ({ ...f, [key]: value }));
-  const handleIdPhotoPick = (e: React.ChangeEvent<HTMLInputElement>) => {
+ const handleIdPhotoPick = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     setIdPhotoFile(file);
-    setIdPreview(URL.createObjectURL(file));
+    // window.URL, not the bare global — "URL" in this file is shadowed by
+    // `import { URL } from "@/api/config"` (a string constant), so the bare
+    // name would resolve to that instead of the browser's URL constructor.
+    setIdPreview(window.URL.createObjectURL(file));
   };
   const handleHoldingPhotoPick = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     setHoldingIdPhotoFile(file);
-    setHoldingPreview(URL.createObjectURL(file));
+    setHoldingPreview(window.URL.createObjectURL(file));
   };
 
   return (
