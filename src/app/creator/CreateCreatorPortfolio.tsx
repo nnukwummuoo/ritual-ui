@@ -122,6 +122,27 @@ export default function CreateCreatorPortfolio({
   const [photolink, setphotolink] = useState<File[]>([]);
   // ── CHANGED: popover instead of modal ──
   const [showRatesPopover, setShowRatesPopover] = useState(false);
+  const [hasOpenedRatesInfo, setHasOpenedRatesInfo] = useState(false);
+  const [isShakingRatesBtn, setIsShakingRatesBtn] = useState(false);
+
+  // Periodically shake the Gold-conversion "?" button until the creator
+  // actually opens it once — stops nagging the moment they've engaged with it.
+  useEffect(() => {
+    if (hasOpenedRatesInfo) return;
+
+    const triggerShake = () => {
+      setIsShakingRatesBtn(true);
+      setTimeout(() => setIsShakingRatesBtn(false), 820);
+    };
+
+    const kickoff = setTimeout(triggerShake, 1200);
+    const interval = setInterval(triggerShake, 4000);
+
+    return () => {
+      clearTimeout(kickoff);
+      clearInterval(interval);
+    };
+  }, [hasOpenedRatesInfo]);
   const [selectedTimes, setSelectedTimes] = useState<string[]>(() => readDraft().selectedTimes ?? []);
   const [selectedDays, setSelectedDays] = useState<string[]>(() => readDraft().selectedDays ?? []);
 
@@ -944,17 +965,26 @@ setStateQuery("");
               <p className="mt-1.5 text-[12px] leading-relaxed text-slate-500">{rateSubtitle}</p>
             </div>
 
-         {/* ── Gold conversion info button ── */}
-            <div onClick={(e) => e.stopPropagation()}>
+ {/* ── Gold conversion info button — shakes + glows until clicked once ── */}
+            <div onClick={(e) => e.stopPropagation()} style={{ position: "relative", flexShrink: 0, width: 36, height: 36 }}>
+              {!hasOpenedRatesInfo && (
+                <span className="rates-btn-pulse-ring" />
+              )}
               <button
                 type="button"
-                onClick={() => setShowRatesPopover(true)}
-                title="Gold conversion info"
+                onClick={() => { setShowRatesPopover(true); setHasOpenedRatesInfo(true); }}
+                title="Gold conversion info — click me!"
+                className={isShakingRatesBtn ? "rates-btn-shake" : ""}
                 style={{
-                  width: 36, height: 36, borderRadius: "50%", flexShrink: 0,
-                  background: "rgba(108,99,255,.12)", border: "1px solid rgba(108,99,255,.2)",
-                  color: "#a89cff", fontSize: 15, fontWeight: 800, cursor: "pointer",
+                  position: "relative",
+                  width: 36, height: 36, borderRadius: "50%",
+                  background: hasOpenedRatesInfo ? "rgba(108,99,255,.12)" : "#6c63ff",
+                  border: hasOpenedRatesInfo ? "1px solid rgba(108,99,255,.2)" : "1px solid rgba(155,89,245,.6)",
+                  color: hasOpenedRatesInfo ? "#a89cff" : "#ffffff",
+                  fontSize: 15, fontWeight: 800, cursor: "pointer",
                   display: "flex", alignItems: "center", justifyContent: "center",
+                  boxShadow: hasOpenedRatesInfo ? "none" : "0 0 0 0 rgba(108,99,255,.5)",
+                  transition: "background .3s, border-color .3s, color .3s",
                 }}
               >
                 ?
@@ -1200,6 +1230,29 @@ When you request a payout, you receive the full $2.00 USD.
   .dur-note{font-size:11px;color:#475569;text-align:center;margin-top:6px;}
   .dur-bar{height:4px;background:rgba(255,255,255,.04);border-radius:2px;margin-top:10px;overflow:hidden;}
   .dur-fill{height:100%;background:linear-gradient(90deg,#6c63ff,#9b59f5);border-radius:2px;transition:width .3s;}
+
+  .rates-btn-shake{
+    animation: rates-shake .82s cubic-bezier(.36,.07,.19,.97) both;
+  }
+  @keyframes rates-shake{
+    10%, 90% { transform: translateX(-1px) rotate(-3deg); }
+    20%, 80% { transform: translateX(2px) rotate(4deg); }
+    30%, 50%, 70% { transform: translateX(-4px) rotate(-6deg) scale(1.06); }
+    40%, 60% { transform: translateX(4px) rotate(6deg) scale(1.06); }
+  }
+  .rates-btn-pulse-ring{
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: rgba(108,99,255,.55);
+    animation: rates-pulse-ring 1.8s cubic-bezier(.4,0,.6,1) infinite;
+    pointer-events: none;
+  }
+  @keyframes rates-pulse-ring{
+    0%   { transform: scale(1);    opacity: .65; }
+    70%  { transform: scale(1.9);  opacity: 0;   }
+    100% { transform: scale(1.9);  opacity: 0;   }
+  }
 `}</style>
 
 
