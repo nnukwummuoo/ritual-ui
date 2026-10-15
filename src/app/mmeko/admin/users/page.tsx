@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useRef, JSX } from "react";
+import React, { useState, useEffect, useCallback, useRef, useMemo, JSX } from "react";
 import { Search } from "lucide-react";
 import axios from "axios";
 import { Send } from "lucide-react";
@@ -454,238 +454,274 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, isOpen, onClose
 // the correct result.
 const [creatorVerificationDoc, setCreatorVerificationDoc] = useState<any>(null);
 
-const FanDocsViewer: React.FC<{
+const FanDocsViewer = useMemo(() => {
+  const FanDocsViewerInner: React.FC<{
     userId: string;
     token: string;
     isFan?: boolean;
     targetUserName?: string;
     onDocLoaded?: (doc: any) => void;
   }> = ({ userId, token, isFan = false, targetUserName, onDocLoaded }) => {
- const dispatch = useDispatch<AppDispatch>();
-  const [doc, setDoc] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState(false);
-  const [retryTick, setRetryTick] = useState(0);
-  const [lightbox, setLightbox] = useState<string>("");
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [editingDoc, setEditingDoc] = useState<any>(null);
-  const [savingEdit, setSavingEdit] = useState(false);
-  const [deletingDoc, setDeletingDoc] = useState<any>(null);
-  const [deleting, setDeleting] = useState(false);
+    const dispatch = useDispatch<AppDispatch>();
+    const [doc, setDoc] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
+    const [loadError, setLoadError] = useState("");
+    const [retryTick, setRetryTick] = useState(0);
+    const [lightbox, setLightbox] = useState<string>("");
+    const [menuOpen, setMenuOpen] = useState(false);
+    const [editingDoc, setEditingDoc] = useState<any>(null);
+    const [savingEdit, setSavingEdit] = useState(false);
+    const [deletingDoc, setDeletingDoc] = useState<any>(null);
+    const [deleting, setDeleting] = useState(false);
 
-  useEffect(() => {
-    if (!userId) return;
+    useEffect(() => {
+      if (!userId) return;
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 20000);
+      setLoading(true);
+      setLoadError("");
+      fetch(`${URL}/getdocument`, { signal: controller.signal })
+        .then((r) => {
+          if (!r.ok) throw new Error(`Server returned ${r.status}`);
+          return r.json();
+        })
+        .then((data) => {
+          const docs: any[] = data.documents || [];
+          const match = docs.find(
+            (d: any) => d.userid === userId && !!d.fan_submission === isFan && d.verify === true
+          );
+          setDoc(match || null);
+          onDocLoaded?.(match || null);
+        })
+        .catch((err) => {
+          setDoc(null);
+          onDocLoaded?.(null);
+          setLoadError(
+            err?.name === "AbortError" ? "Request timed out." : err?.message || "Could not load documents."
+          );
+        })
+        .finally(() => {
+          clearTimeout(timer);
+          setLoading(false);
+        });
+      return () => {
+        clearTimeout(timer);
+        controller.abort();
+      };
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [userId, isFan, retryTick]);
 
-    setLoading(true);
-    setLoadError(false);
-
-    // A cold/sleeping backend (common on free-tier hosting) can otherwise
-    // leave this request pending indefinitely with no feedback at all —
-    // a hard timeout here means it fails visibly instead of hanging forever.
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 20000);
-
-    fetch(`${URL}/getdocument`, { signal: controller.signal })
-      .then(r => r.json())
-      .then(data => {
-        const docs: any[] = data.documents || [];
-        const match = docs.find((d: any) => d.userid === userId && !!d.fan_submission === isFan && d.verify === true);
-        setDoc(match || null);
-        onDocLoaded?.(match || null);
-      })
-      .catch(() => { setDoc(null); setLoadError(true); onDocLoaded?.(null); })
-      .finally(() => {
-        clearTimeout(timeoutId);
-        setLoading(false);
-      });
-
-    return () => {
-      clearTimeout(timeoutId);
-      controller.abort();
-    };
-  }, [userId, isFan, retryTick]);
-
-  const handleSaveEdit = async (docid: string | null, fields: Record<string, any>, files: { idPhotofile?: File; holdingIdPhotofile?: File }) => {
-    setSavingEdit(true);
-    try {
-      const result = docid
-        ? await dispatch(updateApplicationDocument({ docid, fields, files })).unwrap()
-        : await dispatch(adminFillDocument({ userid: userId, fields: { ...fields, fan_submission: isFan }, files })).unwrap();
-      if (result?.document) {
-        setDoc(result.document);
-        onDocLoaded?.(result.document);
+    const handleSaveEdit = async (
+      docid: string | null,
+      fields: Record<string, any>,
+      files: { idPhotofile?: File; holdingIdPhotofile?: File }
+    ) => {
+      setSavingEdit(true);
+      try {
+        const result = docid
+          ? await dispatch(updateApplicationDocument({ docid, fields, files })).unwrap()
+          : await dispatch(
+              adminFillDocument({ userid: userId, fields: { ...fields, fan_submission: isFan }, files })
+            ).unwrap();
+        if (result?.document) {
+          setDoc(result.document);
+          onDocLoaded?.(result.document);
+        }
+        setEditingDoc(null);
+        toast.success(docid ? "Application updated." : "Verification record created.");
+      } catch (err: any) {
+        const message =
+          typeof err === "string" ? err : err?.message || "Failed to save verification record";
+        console.error("Save verification record failed:", err);
+        toast.error(message);
+      } finally {
+        setSavingEdit(false);
       }
-      setEditingDoc(null);
- toast.success(docid ? "Application updated." : "Verification record created.");
-    } catch (err: any) {
-      const message = typeof err === "string" ? err : err?.message || "Failed to save verification record";
-      console.error("Save verification record failed:", err);
-      toast.error(message);
-    } finally {
-      setSavingEdit(false);
-    }
-  };
+    };
 
-  const openFillModal = () => {
-    setEditingDoc({
-      _id: null,
-      userid: userId,
-      fan_submission: isFan,
-      firstname: targetUserName?.split(" ")[0] || "",
-      lastname: targetUserName?.split(" ").slice(1).join(" ") || "",
-    });
-  };
+    const openFillModal = () => {
+      setEditingDoc({
+        _id: null,
+        userid: userId,
+        fan_submission: isFan,
+        firstname: targetUserName?.split(" ")[0] || "",
+        lastname: targetUserName?.split(" ").slice(1).join(" ") || "",
+      });
+    };
 
-  const handleConfirmDelete = async () => {
-    if (!deletingDoc) return;
-    setDeleting(true);
-    try {
-      await dispatch(deleteApplicationDocument({ docid: deletingDoc._id })).unwrap();
-      setDoc(null);
-      setDeletingDoc(null);
-      toast.success("Application deleted.");
-    } catch (err: any) {
-      toast.error(typeof err === "string" ? err : "Failed to delete application");
-    } finally {
-      setDeleting(false);
-    }
-  };
+    const handleConfirmDelete = async () => {
+      if (!deletingDoc) return;
+      setDeleting(true);
+      try {
+        await dispatch(deleteApplicationDocument({ docid: deletingDoc._id })).unwrap();
+        setDoc(null);
+        onDocLoaded?.(null);
+        setDeletingDoc(null);
+        toast.success("Application deleted.");
+      } catch (err: any) {
+        toast.error(typeof err === "string" ? err : "Failed to delete application");
+      } finally {
+        setDeleting(false);
+      }
+    };
 
-if (loading) return <p className="text-gray-400 text-sm">Loading documents…</p>;
+    if (loading) return <p className="text-gray-400 text-sm">Loading documents…</p>;
 
-  if (loadError) return (
-    <div className="bg-gray-700 rounded-lg p-4 text-center">
-      <p className="text-gray-400 text-sm mb-3">
-        Couldn't load verification documents — the server may be slow to respond right now.
-      </p>
-      <button
-        onClick={() => setRetryTick((t) => t + 1)}
-        className="bg-gray-600 text-white px-4 py-2 rounded text-sm font-medium hover:bg-gray-500"
-      >
-        Retry
-      </button>
-    </div>
-  );
-
-  if (!doc) return (
-    <>
-      {editingDoc && (
-        <VerificationEditModal doc={editingDoc} onClose={() => setEditingDoc(null)} onSave={handleSaveEdit} saving={savingEdit} />
-      )}
-      <div className="bg-gray-700 rounded-lg p-4 text-center">
-        <p className="text-gray-400 text-sm mb-3">
-          No verification record found. This user was verified manually, so there's nothing on file yet.
-        </p>
-        <button
-          onClick={openFillModal}
-          className="bg-yellow-500 text-black px-4 py-2 rounded text-sm font-medium hover:bg-yellow-400"
-        >
-          Fill Verification Details
-        </button>
-      </div>
-    </>
-  );
-
-  const idUrl      = doc.idPhotofile?.idPhotofilelink;
-  const selfieUrl  = doc.holdingIdPhotofile?.holdingIdPhotofilelink;
-
-  return (
-    <>
-      {/* Lightbox */}
-      {lightbox && (
-        <div
-          className="fixed inset-0 z-[9999] bg-black/90 flex items-center justify-center p-6"
-          onClick={() => setLightbox("")}
-        >
+    if (loadError)
+      return (
+        <div className="bg-gray-700 rounded-lg p-4 text-center">
+          <p className="text-red-400 text-sm mb-3">{loadError}</p>
           <button
-            onClick={() => setLightbox("")}
-            className="absolute top-5 right-5 w-10 h-10 rounded-full bg-white/10 text-white flex items-center justify-center text-lg hover:bg-white/20"
-          >✕</button>
-          <img
-            src={lightbox}
-            alt="Document"
-            className="max-w-full max-h-[90vh] rounded-xl border border-white/10"
-            onClick={e => e.stopPropagation()}
-          />
+            onClick={() => setRetryTick((t) => t + 1)}
+            className="bg-yellow-500 text-black px-4 py-2 rounded text-sm font-medium hover:bg-yellow-400"
+          >
+            Retry
+          </button>
         </div>
-      )}
+      );
 
-      {/* Edit / Delete modals */}
-      {editingDoc && (
-        <VerificationEditModal doc={editingDoc} onClose={() => setEditingDoc(null)} onSave={handleSaveEdit} saving={savingEdit} />
-      )}
-      {deletingDoc && (
-        <VerificationDeleteModal doc={deletingDoc} onCancel={() => setDeletingDoc(null)} onConfirm={handleConfirmDelete} deleting={deleting} />
-      )}
+    if (!doc)
+      return (
+        <>
+          {editingDoc && (
+            <VerificationEditModal
+              doc={editingDoc}
+              onClose={() => setEditingDoc(null)}
+              onSave={handleSaveEdit}
+              saving={savingEdit}
+            />
+          )}
+          <div className="bg-gray-700 rounded-lg p-4 text-center">
+            <p className="text-gray-400 text-sm mb-3">
+              No verification record found. This user was verified manually, so there&apos;s nothing on file yet.
+            </p>
+            <button
+              onClick={openFillModal}
+              className="bg-yellow-500 text-black px-4 py-2 rounded text-sm font-medium hover:bg-yellow-400"
+            >
+              Fill Verification Details
+            </button>
+          </div>
+        </>
+      );
 
-      {/* 3-dot menu */}
-      <div className="flex justify-end relative mb-2">
-        <button
-          onClick={() => setMenuOpen((v) => !v)}
-          className="w-8 h-8 rounded-full flex items-center justify-center text-gray-300 hover:bg-white/10 text-lg"
-          aria-label="Application options"
-        >
-          ⋮
-        </button>
-        {menuOpen && (
-          <div className="absolute top-9 right-0 z-20 w-36 bg-[#1a2233] border border-gray-700 rounded-lg shadow-xl overflow-hidden">
+    const idUrl = doc.idPhotofile?.idPhotofilelink;
+    const selfieUrl = doc.holdingIdPhotofile?.holdingIdPhotofilelink;
+
+    return (
+      <>
+        {lightbox && (
+          <div
+            className="fixed inset-0 z-[9999] bg-black/90 flex items-center justify-center p-6"
+            onClick={() => setLightbox("")}
+          >
             <button
-              onClick={() => { setEditingDoc(doc); setMenuOpen(false); }}
-              className="w-full text-left px-4 py-2.5 text-sm text-gray-200 hover:bg-white/10"
+              onClick={() => setLightbox("")}
+              className="absolute top-5 right-5 w-10 h-10 rounded-full bg-white/10 text-white flex items-center justify-center text-lg hover:bg-white/20"
             >
-              ✏️ Edit
+              ✕
             </button>
-            <button
-              onClick={() => { setDeletingDoc(doc); setMenuOpen(false); }}
-              className="w-full text-left px-4 py-2.5 text-sm text-red-400 hover:bg-red-500/10"
-            >
-              🗑 Delete
-            </button>
+            <img
+              src={lightbox}
+              alt="Document"
+              className="max-w-full max-h-[90vh] rounded-xl border border-white/10"
+              onClick={(e) => e.stopPropagation()}
+            />
           </div>
         )}
-      </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {[
-          { label: "Government-issued ID", icon: "🪪", url: idUrl },
-          { label: "Photo holding ID",     icon: "🤳", url: selfieUrl },
-        ].map(slot => (
-          <div key={slot.label} className="bg-gray-700 rounded-lg p-3">
-            <label className="text-gray-400 text-xs uppercase tracking-wider block mb-2">
-              {slot.icon} {slot.label}
-            </label>
-            {slot.url ? (
-              <div
-                className="relative aspect-[4/3] rounded-lg overflow-hidden cursor-pointer group"
-                onClick={() => setLightbox(slot.url!)}
+        {editingDoc && (
+          <VerificationEditModal
+            doc={editingDoc}
+            onClose={() => setEditingDoc(null)}
+            onSave={handleSaveEdit}
+            saving={savingEdit}
+          />
+        )}
+        {deletingDoc && (
+          <VerificationDeleteModal
+            doc={deletingDoc}
+            onCancel={() => setDeletingDoc(null)}
+            onConfirm={handleConfirmDelete}
+            deleting={deleting}
+          />
+        )}
+
+        <div className="flex justify-end relative mb-2">
+          <button
+            onClick={() => setMenuOpen((v) => !v)}
+            className="w-8 h-8 rounded-full flex items-center justify-center text-gray-300 hover:bg-white/10 text-lg"
+            aria-label="Application options"
+          >
+            ⋮
+          </button>
+          {menuOpen && (
+            <div className="absolute top-9 right-0 z-20 w-36 bg-[#1a2233] border border-gray-700 rounded-lg shadow-xl overflow-hidden">
+              <button
+                onClick={() => {
+                  setEditingDoc(doc);
+                  setMenuOpen(false);
+                }}
+                className="w-full text-left px-4 py-2.5 text-sm text-gray-200 hover:bg-white/10"
               >
-                <img
-                  src={slot.url}
-                  alt={slot.label}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                />
-                <div className="absolute bottom-2 right-2 bg-black/60 rounded px-2 py-0.5 text-xs text-white/70">
-                  Click to expand
+                ✏️ Edit
+              </button>
+              <button
+                onClick={() => {
+                  setDeletingDoc(doc);
+                  setMenuOpen(false);
+                }}
+                className="w-full text-left px-4 py-2.5 text-sm text-red-400 hover:bg-red-500/10"
+              >
+                🗑 Delete
+              </button>
+            </div>
+          )}
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {[
+            { label: "Government-issued ID", icon: "🪪", url: idUrl },
+            { label: "Photo holding ID", icon: "🤳", url: selfieUrl },
+          ].map((slot) => (
+            <div key={slot.label} className="bg-gray-700 rounded-lg p-3">
+              <label className="text-gray-400 text-xs uppercase tracking-wider block mb-2">
+                {slot.icon} {slot.label}
+              </label>
+              {slot.url ? (
+                <div
+                  className="relative aspect-[4/3] rounded-lg overflow-hidden cursor-pointer group"
+                  onClick={() => setLightbox(slot.url!)}
+                >
+                  <img
+                    src={slot.url}
+                    alt={slot.label}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                  <div className="absolute bottom-2 right-2 bg-black/60 rounded px-2 py-0.5 text-xs text-white/70">
+                    Click to expand
+                  </div>
                 </div>
-              </div>
-            ) : (
-              <div className="aspect-[4/3] rounded-lg bg-gray-600 flex items-center justify-center">
-                <p className="text-gray-400 text-xs">No document on file</p>
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
+              ) : (
+                <div className="aspect-[4/3] rounded-lg bg-gray-600 flex items-center justify-center">
+                  <p className="text-gray-400 text-xs">No document on file</p>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
 
-      <div className="mt-3 bg-green-900/20 border border-green-500/20 rounded-lg p-3">
-        <p className="text-green-300 text-xs">
-          ✓ These documents were verified and approved. Submitted {doc.createdAt ? new Date(doc.createdAt).toLocaleDateString() : "N/A"}.
-        </p>
-      </div>
-    </>
-  );
-};
-
+        <div className="mt-3 bg-green-900/20 border border-green-500/20 rounded-lg p-3">
+          <p className="text-green-300 text-xs">
+            ✓ These documents were verified and approved. Submitted{" "}
+            {doc.createdAt ? new Date(doc.createdAt).toLocaleDateString() : "N/A"}.
+          </p>
+        </div>
+      </>
+    );
+  };
+  return FanDocsViewerInner;
+}, []);
   const fetchUserFollows = async (userId: string) => {
     setLoadingFollows(true);
     try {
