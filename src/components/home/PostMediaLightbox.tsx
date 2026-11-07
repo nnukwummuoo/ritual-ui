@@ -1,5 +1,6 @@
 "use client";
 import React, { useEffect, useRef, useState } from "react";
+import { SafeMedia } from "./PostMediaCollage";
 import type { MediaItem } from "./PostMediaCollage";
 
 export default function PostMediaLightbox({
@@ -60,11 +61,12 @@ export default function PostMediaLightbox({
       >
         {items.map((item, i) => (
           <div key={i} className="w-full h-full flex-shrink-0 snap-center flex items-center justify-center">
-            {item.type === "video" ? (
-              <video src={item.url} controls autoPlay={i === index} className="max-w-full max-h-full object-contain" />
-            ) : (
-              <img src={item.url} alt="" className="max-w-full max-h-full object-contain" />
-            )}
+<SafeMedia
+              item={item}
+              controls
+              autoPlay={item.type === "video" && i === index}
+              className="max-w-full max-h-full object-contain"
+            />
           </div>
         ))}
       </div>
