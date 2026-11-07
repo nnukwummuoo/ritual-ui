@@ -8,6 +8,7 @@ import { useAuth } from "@/lib/context/auth-context";
 import { useAuthToken } from "@/lib/hooks/useAuthToken";
 import { toast, ToastContainer } from "react-toastify";
 import ClockLoader from "react-spinners/ClockLoader";
+import { getImageSource } from "@/lib/imageUtils";
 
 /* ─── types ─── */
 type DocStatus = "pending" | "approved" | "declined";
@@ -269,8 +270,12 @@ function EditFanPhotosModal({
 }) {
   const [idPhotoFile, setIdPhotoFile] = useState<File | null>(null);
   const [holdingIdPhotoFile, setHoldingIdPhotoFile] = useState<File | null>(null);
-  const [idPreview, setIdPreview] = useState<string | null>(doc.idPhotofile?.idPhotofilelink || null);
-  const [holdingPreview, setHoldingPreview] = useState<string | null>(doc.holdingIdPhotofile?.holdingIdPhotofilelink || null);
+  const [idPreview, setIdPreview] = useState<string | null>(
+    doc.idPhotofile?.idPhotofilelink ? getImageSource(doc.idPhotofile.idPhotofilelink, "creator").src : null
+  );
+  const [holdingPreview, setHoldingPreview] = useState<string | null>(
+    doc.holdingIdPhotofile?.holdingIdPhotofilelink ? getImageSource(doc.holdingIdPhotofile.holdingIdPhotofilelink, "creator").src : null
+  );
 
   const handleIdPhotoPick = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

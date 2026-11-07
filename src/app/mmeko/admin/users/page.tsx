@@ -273,6 +273,22 @@ const FanVerificationSection: React.FC<{
   );
 };
 
+// Fields that should open a calendar picker instead of free text.
+const DATE_FIELDS = ["dob", "idexpire"];
+
+// <input type="date"> only accepts YYYY-MM-DD. Older records may hold other
+// formats, so convert what we can and fall back to empty instead of breaking.
+const toDateInputValue = (value?: string) => {
+  if (!value) return "";
+  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
+  const d = new Date(value);
+  if (isNaN(d.getTime())) return "";
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+};
+
 const VerificationEditModal: React.FC<{
   doc: any;
   onClose: () => void;
@@ -285,17 +301,21 @@ const VerificationEditModal: React.FC<{
     firstname: doc.firstname || "",
     lastname: doc.lastname || "",
     email: doc.email || "",
-    dob: doc.dob || "",
+    dob: toDateInputValue(doc.dob),
     country: doc.country || "",
     city: doc.city || "",
     address: doc.address || "",
     documentType: doc.documentType || "",
-    idexpire: doc.idexpire || "",
+    idexpire: toDateInputValue(doc.idexpire),
   });
   const [idPhotoFile, setIdPhotoFile] = useState<File | null>(null);
   const [holdingIdPhotoFile, setHoldingIdPhotoFile] = useState<File | null>(null);
-  const [idPreview, setIdPreview] = useState<string | null>(doc.idPhotofile?.idPhotofilelink || null);
-  const [holdingPreview, setHoldingPreview] = useState<string | null>(doc.holdingIdPhotofile?.holdingIdPhotofilelink || null);
+  const [idPreview, setIdPreview] = useState<string | null>(
+    doc.idPhotofile?.idPhotofilelink ? getImageSource(doc.idPhotofile.idPhotofilelink, "creator").src : null
+  );
+  const [holdingPreview, setHoldingPreview] = useState<string | null>(
+    doc.holdingIdPhotofile?.holdingIdPhotofilelink ? getImageSource(doc.holdingIdPhotofile.holdingIdPhotofilelink, "creator").src : null
+  );
 
   const handleChange = (key: string, value: string) => setForm((f) => ({ ...f, [key]: value }));
  const handleIdPhotoPick = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -340,12 +360,27 @@ const VerificationEditModal: React.FC<{
               ["idexpire", "ID Expiry"],
             ] as [string, string][]).map(([key, label]) => (
               <div key={key}>
-                <label className="block text-xs text-gray-400 mb-1">{label}</label>
-                <input
-                  value={(form as any)[key]}
-                  onChange={(e) => handleChange(key, e.target.value)}
-                  className="w-full bg-[#0e1220] border border-gray-700 rounded-lg px-3 py-2 text-sm text-white"
-                />
+          <label className="block text-xs text-gray-400 mb-1">{label}</label>
+                {DATE_FIELDS.includes(key) ? (
+                  <input
+                    type="date"
+                    value={(form as any)[key]}
+                    onChange={(e) => handleChange(key, e.target.value)}
+                    onClick={(e) => {
+                      // Open the calendar when clicking anywhere on the field, not only the little icon
+                      try { (e.currentTarget as any).showPicker?.(); } catch {}
+                    }}
+                    max={key === "dob" ? new Date().toISOString().split("T")[0] : undefined}
+                    style={{ colorScheme: "dark" }}
+                    className="w-full bg-[#0e1220] border border-gray-700 rounded-lg px-3 py-2 text-sm text-white cursor-pointer"
+                  />
+                ) : (
+                  <input
+                    value={(form as any)[key]}
+                    onChange={(e) => handleChange(key, e.target.value)}
+                    className="w-full bg-[#0e1220] border border-gray-700 rounded-lg px-3 py-2 text-sm text-white"
+                  />
+                )}
               </div>
             ))}
           </div>

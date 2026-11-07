@@ -27,8 +27,12 @@ function EditApplicationModal({
   });
   const [idPhotoFile, setIdPhotoFile] = useState<File | null>(null);
   const [holdingIdPhotoFile, setHoldingIdPhotoFile] = useState<File | null>(null);
-  const [idPreview, setIdPreview] = useState<string | null>(doc.idPhotofile?.idPhotofilelink || null);
-  const [holdingPreview, setHoldingPreview] = useState<string | null>(doc.holdingIdPhotofile?.holdingIdPhotofilelink || null);
+  const [idPreview, setIdPreview] = useState<string | null>(
+    doc.idPhotofile?.idPhotofilelink ? getImageSource(doc.idPhotofile.idPhotofilelink, "creator").src : null
+  );
+  const [holdingPreview, setHoldingPreview] = useState<string | null>(
+    doc.holdingIdPhotofile?.holdingIdPhotofilelink ? getImageSource(doc.holdingIdPhotofile.holdingIdPhotofilelink, "creator").src : null
+  );
 
   const handleChange = (key: string, value: string) => setForm((f) => ({ ...f, [key]: value }));
 
@@ -75,12 +79,34 @@ function EditApplicationModal({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
           <div>
             <label className="block text-xs text-gray-400 mb-2">Government ID Photo</label>
-            {idPreview && <img src={idPreview} alt="ID" className="w-full h-40 object-cover rounded-lg mb-2" />}
+            {idPreview && (
+              <img
+                src={idPreview}
+                alt="ID"
+                className="w-full h-40 object-cover rounded-lg mb-2"
+                onError={(e) => {
+                  const original = doc.idPhotofile?.idPhotofilelink;
+                  const img = e.currentTarget;
+                  if (original && img.src !== original) img.src = original;
+                }}
+              />
+            )}
             <input type="file" accept="image/*" onChange={handleIdPhotoPick} className="text-xs text-gray-300" />
           </div>
           <div>
             <label className="block text-xs text-gray-400 mb-2">Selfie with ID</label>
-            {holdingPreview && <img src={holdingPreview} alt="Selfie" className="w-full h-40 object-cover rounded-lg mb-2" />}
+            {holdingPreview && (
+              <img
+                src={holdingPreview}
+                alt="Selfie"
+                className="w-full h-40 object-cover rounded-lg mb-2"
+                onError={(e) => {
+                  const original = doc.holdingIdPhotofile?.holdingIdPhotofilelink;
+                  const img = e.currentTarget;
+                  if (original && img.src !== original) img.src = original;
+                }}
+              />
+            )}
             <input type="file" accept="image/*" onChange={handleHoldingPhotoPick} className="text-xs text-gray-300" />
           </div>
         </div>
