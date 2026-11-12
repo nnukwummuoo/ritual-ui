@@ -2188,11 +2188,11 @@ const FanDocsViewer = useMemo(() => {
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-gray-300 font-medium">Total Earnings</span>
                     <span className="text-green-400 font-bold text-xl">
-                      {((user?.referralCount || 0) * 1.7).toFixed(2)} Gold
+                      {((user?.referralCount || 0) * 50).toFixed(0)} Gold
                     </span>
                   </div>
                   <p className="text-gray-500 text-xs">
-                    Calculated as: {user?.referralCount || 0} referrals × 1.7 gold
+                    Calculated as: {user?.referralCount || 0} referrals × 50 gold
                   </p>
                 </div>
 
@@ -2223,7 +2223,7 @@ const FanDocsViewer = useMemo(() => {
                 {/* Info Box */}
                 <div className="bg-blue-900/20 border border-blue-500/30 rounded-lg p-3">
                   <p className="text-blue-300 text-xs">
-                    <strong>Note:</strong> Users earn 1.7 gold for each successful referral.
+                    <strong>Note:</strong> Users earn 50 gold ($2) for each successful referral.
                     The reward balance can be transferred to their main earning wallet.
                   </p>
                 </div>
