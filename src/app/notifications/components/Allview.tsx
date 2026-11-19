@@ -551,6 +551,19 @@ const userId = reduxProfileUserId || reduxRegisterUserId || localUserId;
                 </div>
               )}
 
+              {/* Creator marked the booking complete → send the fan to their activity */}
+              {title === "Booking marked as complete" && (
+                <div className="pt-2">
+                  <Link href="/notifications/activity">
+                    <button
+                      className="px-4 py-2 border border-slate-700 hover:border-slate-500 
+                                rounded-lg text-sm text-slate-200 transition">
+                      View Activity
+                    </button>
+                  </Link>
+                </div>
+              )}
+
               {/* Pending has no button */}
               <span className="absolute right-4 bottom-3 text-[10px] text-slate-500">
                 {formatRelativeTime(note.createdAt)}
