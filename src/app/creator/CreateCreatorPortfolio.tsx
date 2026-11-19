@@ -304,12 +304,14 @@ const removeTour = (index: number) => {
     return Array.from({ length: MAX_PHOTOS }, (_, i) => imglist[i] || null);
   }, [imglist]);
 
-  const rateSubtitle =
-    hosttype === "Fan call"
-      ? "Rate in GOLD per minute — e.g. 100 gold/min ≈ $4/min"
-      : hosttype === "Fan date"
-        ? "Suggested: 15,000 gold ≈ $600 per date"
-        : "Suggested: 10,000 gold ≈ $400 per meet";
+ // 1 Gold = $0.04 — live USD equivalent of whatever the creator types
+  const GOLD_TO_USD = 0.04;
+  const rateUsdText = ((priceValue ?? 0) * GOLD_TO_USD).toLocaleString("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+  const rateUnit =
+    hosttype === "Fan call" ? "per minute" : hosttype === "Fan date" ? "per date" : "per meet";
 
   const ratePriceLabel =
     hosttype === "Fan call"
@@ -962,7 +964,18 @@ setStateQuery("");
                 min="0"
                 onChange={(e) => updatePriceValue(e.currentTarget.value)}
               />
-              <p className="mt-1.5 text-[12px] leading-relaxed text-slate-500">{rateSubtitle}</p>
+              <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1">
+                <span className="rounded-full border border-[#f5c451]/25 bg-[#f5c451]/[0.06] px-2.5 py-1 text-[12px] font-semibold text-[#f5c451]">
+                  1 Gold = $0.04
+                </span>
+                {priceValue ? (
+                  <span className="text-[13px] font-semibold text-emerald-400">
+                    ≈ ${rateUsdText} USD {rateUnit}
+                  </span>
+                ) : (
+                  <span className="text-[12px] text-slate-500">Enter an amount to see the USD value</span>
+                )}
+              </div>
             </div>
 
  {/* ── Gold conversion info button — shakes + glows until clicked once ── */}

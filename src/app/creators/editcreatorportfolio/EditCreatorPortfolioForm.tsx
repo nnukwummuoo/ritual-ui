@@ -271,12 +271,15 @@ const tourAvailableCities = useMemo(() => {
     return Array.from({ length: MAX_PHOTOS }, (_, index) => combinedSlots[index] || null);
   }, [existingImages, newImages]);
 
-  const rateSubtitle =
-    hosttype === "Fan call"
-      ? "Rate in GOLD per minute - e.g. 100 gold/min"
-      : hosttype === "Fan date"
-        ? "Suggested: 15,000 gold per date"
-        : "Suggested: 10,000 gold per meet";
+  // 1 Gold = $0.04 — live USD equivalent of whatever the creator types
+  const GOLD_TO_USD = 0.04;
+  const priceNum = Number(price) || 0;
+  const rateUsdText = (priceNum * GOLD_TO_USD).toLocaleString("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+  const rateUnit =
+    hosttype === "Fan call" ? "per minute" : hosttype === "Fan date" ? "per date" : "per meet";
 
   // If Redux is empty (e.g. hard refresh wiped it), try re-fetching using the
   // portfolio id we stashed in sessionStorage right before navigating here.
@@ -1000,7 +1003,14 @@ if (matched?.isoCode && creator.state) {
                 min={0}
                 onChange={(e) => setprice(e.currentTarget.value)}
               />
-              <div className="price-label-txt">{rateSubtitle}</div>
+              <div className="price-label-txt rate-live">
+                <span className="rate-chip">1 Gold = $0.04</span>
+                {priceNum > 0 ? (
+                  <span className="rate-usd">≈ ${rateUsdText} USD {rateUnit}</span>
+                ) : (
+                  <span>Enter an amount to see the USD value</span>
+                )}
+              </div>
             </div>
             <button
               type="button"
@@ -1296,6 +1306,9 @@ When you request a payout, you receive the full $2 USD.
         .price-row{display:flex;align-items:flex-start;gap:10px;}
         .price-input-wrap{flex:1;}
         .price-label-txt{font-size:12px;color:var(--text3);margin-top:6px;line-height:1.5;}
+        .rate-live{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;}
+        .rate-chip{background:rgba(245,196,81,.06);border:1px solid rgba(245,196,81,.25);color:#f5c451;font-weight:600;border-radius:999px;padding:3px 10px;}
+        .rate-usd{color:#34d399;font-weight:600;font-size:13px;}
         .btn-hint{width:36px;height:36px;border-radius:50%;background:rgba(108,99,255,.12);border:1px solid rgba(108,99,255,.2);color:#a89cff;font-size:15px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0;margin-top:0;font-family:inherit;}
         .btn-hint:hover{background:rgba(108,99,255,.22);}
         .rates-pop{display:none;position:absolute;right:0;top:48px;z-index:50;width:260px;background:#141928;border:1px solid rgba(108,99,255,.25);border-radius:14px;padding:18px;box-shadow:0 20px 60px rgba(0,0,0,.6);}
