@@ -46,7 +46,6 @@ import RevenuePage from "./revenue/page";
 import ReferralAnalysisPage from "./referral-analysis/page";
 import SeriesConfigPage from "./series-config/page";
 import AdminUpdatesPage from "./updates/page";
-import PPVRequestsPage from "./ppv-requests/page";
 import PushNotificationToggle from "@/components/PushNotificationToggle";
 import MaintenanceToggle from "@/components/admin/MaintenanceToggle";
 import MaintenanceControl from "@/components/admin/MaintenanceControl";
@@ -80,8 +79,6 @@ const AdminPage = () => {
   // State for support chat count
   const [supportChatCount, setSupportChatCount] = useState(0);
 
-  // State for PPV requests count (pending)
-  const [ppvRequestsCount, setPpvRequestsCount] = useState(0);
 
   // Notification logic remains unchanged
   useEffect(() => {
@@ -153,27 +150,6 @@ useEffect(() => {
     }
   }, [token]);
 
-  // Fetch PPV requests count on mount and periodically
-  useEffect(() => {
-    const fetchPpvRequestsCount = async () => {
-      try {
-        const res = await axios.get(`${URL}/api/ppv/admin/requests`, {
-          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-        });
-        const requests = res.data?.ok ? res.data.requests || [] : [];
-        setPpvRequestsCount(requests.length);
-      } catch (err) {
-        console.error("Error fetching PPV requests count:", err);
-        setPpvRequestsCount(0);
-      }
-    };
-
-    if (token) {
-      fetchPpvRequestsCount();
-      const interval = setInterval(fetchPpvRequestsCount, 30000);
-      return () => clearInterval(interval);
-    }
-  }, [token]);
 
   // Sidebar navigation items
   const navdata = [
@@ -274,11 +250,6 @@ useEffect(() => {
       name: "Users",
       icon: <IoPeopleOutline size={22} />,
       component: <Users />,
-    },
-    {
-      name: "PPV Requests",
-      icon: <IoLockOpenOutline size={22} />,
-      component: <PPVRequestsPage />,
     },
     {
       name: "Backup Management",
@@ -394,11 +365,7 @@ useEffect(() => {
                     {pendingWithdrawalsCount}
                   </span>
                 )}
-                {item.name === "PPV Requests" && ppvRequestsCount > 0 && (
-                  <span className="ml-2 bg-red-500 text-white px-1.5 py-1 rounded-full text-xs">
-                    {ppvRequestsCount}
-                  </span>
-                )}
+                
               </li>
             ))}
           </ul>

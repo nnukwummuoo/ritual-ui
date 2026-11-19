@@ -355,7 +355,7 @@ const FAQ_DATA: Record<CategoryKey, FAQSection[]> = {
         {
           question: "How PPV Works",
           answer:
-            "PPV (Pay‑Per‑View) is available only to verified creators. To enable it:\n\n1. Verify your account — once verified, go to Settings.\n2. Navigate to the Pay‑Per‑View page and submit a Request.\n3. After approval, return to Settings to set your PPV price and save it.\n4. From then on, when replying to a fan, you can lock any reply by clicking the padlock icon in the typing container.\n\nThis allows you to send blurred or locked replies that fans can unlock by paying your set PPV price.",
+            "PPV (Pay‑Per‑View) is available to every verified creator — no request or approval needed. To use it:\n\n1. Get verified as a creator — once verified, go to Settings.\n2. Open Pay Per View, then tap Go to PPV Settings.\n3. Turn PPV on, set your price in Gold (the default is 100 Gold) and save. 1 Gold = $0.04.\n4. From then on, when replying to a fan, you can lock any reply by clicking the padlock icon in the typing container.\n\nThis allows you to send blurred or locked replies that fans can unlock by paying your set PPV price. You keep 100% of what fans pay.",
         },
       ],
     },

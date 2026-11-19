@@ -8,6 +8,9 @@ import axios from 'axios'
 import { URL } from '@/api/config'
 import { toast } from 'react-toastify'
 
+const DEFAULT_PPV_PRICE = 100;
+const GOLD_TO_USD = 0.04;
+
 export default function PPVSettingsPage() {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
@@ -17,6 +20,7 @@ export default function PPVSettingsPage() {
     const [isEditing, setIsEditing] = useState(false);
 
     const reduxUserId = useSelector((state: RootState) => state.register.userID);
+    const reduxToken = useSelector((state: RootState) => state.register.accesstoken);
     const [user, setUser] = useState<any>(null);
 
     const fetchProfile = async (userId: string) => {
@@ -27,7 +31,7 @@ export default function PPVSettingsPage() {
                 const userData = res.data.user || res.data.profile;
                 setUser(userData);
                 setEnabled(userData.ppvEnabled || false);
-                setPrice(userData.ppvPrice || "");
+                setPrice(userData.ppvPrice || DEFAULT_PPV_PRICE);
 
                 // Update localStorage to keep it fresh
                 const raw = localStorage.getItem("login");
@@ -63,7 +67,7 @@ export default function PPVSettingsPage() {
 
                     setUser(userData);
                     setEnabled(userData.ppvEnabled || false);
-                    setPrice(userData.ppvPrice || "");
+                    setPrice(userData.ppvPrice || DEFAULT_PPV_PRICE);
                 } catch (e) {
                     console.error("PPV Settings - Failed to parse login data", e);
                 }
@@ -97,7 +101,25 @@ export default function PPVSettingsPage() {
 
         setIsSaving(true);
         try {
-            const res = await axios.put(`${URL}/api/ppv/settings`, payload);
+            let token = reduxToken || "";
+            if (!token) {
+                try {
+                    const raw = localStorage.getItem("login");
+                    if (raw) {
+                        const d = JSON.parse(raw);
+                        token = d?.accesstoken || d?.user?.accesstoken || "";
+                    }
+                } catch {}
+            }
+            if (!token) {
+                toast.error("Session expired. Please log in again.");
+                setIsSaving(false);
+                return;
+            }
+
+            const res = await axios.put(`${URL}/api/ppv/settings`, payload, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
 
             if (res.data.ok) {
                 await fetchProfile(userId);
@@ -122,7 +144,7 @@ export default function PPVSettingsPage() {
                 const data = JSON.parse(raw);
                 const userData = data.user || data;
                 setEnabled(userData.ppvEnabled || false);
-                setPrice(userData.ppvPrice || "");
+                setPrice(userData.ppvPrice || DEFAULT_PPV_PRICE);
             } catch (e) {
                 console.error("PPV Settings - Failed to parse login data on cancel", e);
             }
@@ -193,16 +215,22 @@ export default function PPVSettingsPage() {
                                     min="1"
                                 />
                             </div>
-                            <p className="text-gray-400 text-xs mt-3 text-center">
+                        <p className="text-gray-400 text-xs mt-3 text-center">
                                 Fans pay this amount (Gold) to unlock each of your PPV messages.
+                            </p>
+                            <p className="text-yellow-400 text-xs mt-2 text-center font-semibold">
+                                1 Gold = $0.04 · {price === "" ? 0 : price} Gold ≈ ${((Number(price) || 0) * GOLD_TO_USD).toFixed(2)}
                             </p>
                         </>
                     ) : (
                         <div className="text-center py-2">
-                            {price ? (
+                       {price ? (
                                 <>
                                     <span className="text-4xl font-black text-yellow-400">{price}</span>
                                     <span className="ml-2 text-gray-400 font-bold">Gold</span>
+                                    <p className="text-gray-500 text-xs mt-2">
+                                        1 Gold = $0.04 · ≈ ${(Number(price) * GOLD_TO_USD).toFixed(2)} per message
+                                    </p>
                                 </>
                             ) : (
                                 <span className="text-gray-500 text-lg">No price set</span>

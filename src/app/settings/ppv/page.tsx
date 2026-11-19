@@ -1,105 +1,26 @@
 "use client"
 import React, { useEffect, useState } from 'react'
-import { FaLock, FaMoneyBillWave, FaBolt, FaHeart, FaChevronLeft } from 'react-icons/fa'
-import { useSelector } from 'react-redux'
-import { RootState } from '@/store/store'
+import { FaLock, FaMoneyBillWave, FaBolt, FaHeart, FaChevronLeft, FaCoins } from 'react-icons/fa'
 import { useRouter } from 'next/navigation'
-import axios from 'axios'
-import { URL } from '@/api/config'
-import Image from 'next/image'
 
-export default function PPVRequestPage() {
+export default function PPVInfoPage() {
     const router = useRouter();
-    const [loading, setLoading] = useState(false);
-    const [status, setStatus] = useState<"none" | "pending" | "approved" | "declined">("none");
-
-    // Get user data from Redux or LocalStorage
-    // Get register state from Redux
-    const register = useSelector((state: RootState) => state.register);
-    const [user, setUser] = useState<any>(null);
+    const [isCreatorVerified, setIsCreatorVerified] = useState<boolean | null>(null);
 
     useEffect(() => {
-        const fetchStatus = async (uid: string) => {
-            try {
-                const res = await axios.post(`${URL}/getprofile`, { userid: uid });
-                if (res.data.ok && res.data.profile) {
-                    const latestStatus = res.data.profile.ppvStatus || "none";
-                    setStatus(latestStatus);
-
-                    // Sync with localStorage
-                    const raw = localStorage.getItem("login");
-                    if (raw) {
-                        const data = JSON.parse(raw);
-                        if (data.user) {
-                            data.user.ppvStatus = latestStatus;
-                        } else {
-                            data.ppvStatus = latestStatus;
-                        }
-                        localStorage.setItem("login", JSON.stringify(data));
-                    }
-                }
-            } catch (err) {
-                console.error("Failed to fetch latest PPV status:", err);
-            }
-        };
-
-        if (typeof window !== "undefined") {
+        try {
             const raw = localStorage.getItem("login");
             if (raw) {
-                try {
-                    const data = JSON.parse(raw);
-                    const userData = data.user || data;
-                    setUser(userData);
-
-                    if (userData.ppvStatus) {
-                        setStatus(userData.ppvStatus);
-                    }
-
-                    // Fetch latest from server to avoid stale state
-                    const uid = userData.userID || userData._id;
-                    if (uid) fetchStatus(uid);
-                } catch (e) {
-                }
-            } else if (register.userID) {
-                setUser({ userID: register.userID });
-                fetchStatus(register.userID);
+                const data = JSON.parse(raw);
+                const userData = data.user || data;
+                setIsCreatorVerified(userData.creator_verified === true);
+                return;
             }
+        } catch (e) {
+            console.error("PPV - Failed to read login data", e);
         }
-    }, [register.userID]);
-
-    const handleRequest = async () => {
-        // Based on your logs, the ID is in 'userID'
-        const userId = user?.userID || user?._id || register.userID;
-
-        if (!userId) {
-            alert("Session error. Please log in again.");
-            return;
-        }
-        setLoading(true);
-        try {
-            const res = await axios.post(`${URL}/api/ppv/request`, { userid: userId });
-
-            if (res.data.ok) {
-                setStatus("pending");
-                // Update local storage
-                const raw = localStorage.getItem("login");
-                if (raw) {
-                    const data = JSON.parse(raw);
-                    if (data.user) {
-                        data.user.ppvStatus = "pending";
-                    } else {
-                        data.ppvStatus = "pending";
-                    }
-                    localStorage.setItem("login", JSON.stringify(data));
-                }
-            }
-        } catch (error) {
-            alert("Failed to submit request.");
-        } finally {
-            setLoading(false);
-        }
-    }
-
+        setIsCreatorVerified(false);
+    }, []);
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-blue-900 via-purple-900 to-black text-white p-6 pb-20">
@@ -115,11 +36,20 @@ export default function PPVRequestPage() {
             </div>
 
             {/* Intro */}
-            <div className="mb-8">
+            <div className="mb-6">
                 <h2 className="text-xl font-bold mb-2">What is a Pay-Per-View Message?</h2>
                 <p className="text-gray-300 text-sm leading-relaxed">
                     A Pay Per View (PPV) message is a private, blurred message that fans must pay to view.
                     Every message you share becomes an opportunity to earn — fans invest to access your words, updates, or replies.
+                </p>
+            </div>
+
+            {/* Gold rate */}
+            <div className="flex items-center gap-3 bg-white/10 border border-white/10 rounded-xl p-4 mb-8">
+                <FaCoins className="text-yellow-400" size={20} />
+                <p className="text-sm text-gray-200">
+                    <span className="font-bold text-yellow-400">1 Gold = $0.04</span>
+                    <span className="text-gray-400"> — PPV prices are set in Gold.</span>
                 </p>
             </div>
 
@@ -160,38 +90,19 @@ export default function PPVRequestPage() {
                 </div>
             </div>
 
-            {/* Action Button */}
+            {/* Action */}
             <div className="mt-10 mb-6">
-                {status === "pending" ? (
-                    <button
-                        disabled
-                        className="w-full bg-gray-600 text-gray-300 font-bold py-4 rounded-xl cursor-not-allowed opacity-75"
-                    >
-                        Request Pending...
-                    </button>
-                ) : status === "approved" ? (
+                {isCreatorVerified === null ? null : isCreatorVerified ? (
                     <button
                         onClick={() => router.push("/settings/ppv/settings")}
                         className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 rounded-xl transition-all shadow-lg shadow-green-500/20"
                     >
                         Go to PPV Settings
                     </button>
-                ) : status === "declined" ? (
-                    <button
-                        onClick={handleRequest}
-                        disabled={loading}
-                        className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-4 rounded-xl transition-all"
-                    >
-                        {loading ? "Requesting..." : "Declined. Request Again?"}
-                    </button>
                 ) : (
-                    <button
-                        onClick={handleRequest}
-                        disabled={loading}
-                        className="w-full bg-white text-black font-bold py-4 rounded-xl hover:bg-gray-200 transition-all shadow-lg shadow-white/10"
-                    >
-                        {loading ? "Requesting..." : "Request Access"}
-                    </button>
+                    <div className="w-full bg-white/10 text-gray-300 text-sm text-center py-4 px-4 rounded-xl">
+                        Pay-Per-View is available to verified creators only.
+                    </div>
                 )}
             </div>
         </div>

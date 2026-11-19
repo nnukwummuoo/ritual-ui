@@ -418,7 +418,7 @@ const [sizeWarningType, setSizeWarningType] = useState<"image" | "video" | null>
             ppvPrice: userData.ppvPrice
           });
           setPpvEnabled(userData.ppvEnabled === true);
-          setPpvPrice(userData.ppvPrice || 0);
+          setPpvPrice(userData.ppvPrice || 100);
         } catch (e) {
           console.error("💬 [Chat] Error loading PPV settings:", e);
         }
@@ -447,10 +447,22 @@ const [sizeWarningType, setSizeWarningType] = useState<"image" | "video" | null>
     setUnlockingMessageId(msgId);
     try {
       console.log("🔓 [Chat] Sending unlock request to API...", { userid: loggedInUserId, messageid: msgId });
-      const res = await axios.post(`${API_URL}/api/ppv/unlock-message`, {
-        userid: loggedInUserId,
-        messageid: msgId
-      });
+     const unlockToken = (() => {
+        try {
+          const raw = localStorage.getItem("login");
+          if (raw) {
+            const d = JSON.parse(raw);
+            return d?.accesstoken || d?.user?.accesstoken || "";
+          }
+        } catch {}
+        return "";
+      })();
+
+      const res = await axios.post(
+        `${API_URL}/api/ppv/unlock-message`,
+        { userid: loggedInUserId, messageid: msgId },
+        { headers: { Authorization: `Bearer ${unlockToken}` } }
+      );
 
       if (res.data.ok) {
         toast.success("Message unlocked!");
