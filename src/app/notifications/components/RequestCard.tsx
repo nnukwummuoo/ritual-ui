@@ -1650,7 +1650,7 @@ setSessionCompleted: (v: boolean) => void;
         setCreatorMarked(true);
         setShowCompleteConfirm(false);
         toast.success(
-          data.alreadyMarked ? "Already marked as complete." : "Marked as complete. Your client has been notified."
+          data.alreadyMarked ? "Already marked as complete." : "Marked as complete. Your fan has been notified."
         );
       } else {
         toast.error(data.message || "Could not mark this booking as complete");
@@ -1770,7 +1770,7 @@ const formatTimer = (seconds: number) => {
         {type === "creator" && currentStatus === "accepted" && hosttype?.toLowerCase() !== "fan call" && (
           creatorMarked ? (
             <div className="w-full mb-5 py-3 rounded-lg text-center font-semibold text-green-700 bg-green-50 border border-green-200">
-              ✓ Marked as complete — your client has been notified
+              ✓ Marked as complete — your fan has been notified
             </div>
           ) : (
             <button
