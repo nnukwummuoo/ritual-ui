@@ -1793,11 +1793,14 @@ const formatTimer = (seconds: number) => {
               onClick={(e) => e.stopPropagation()}
             >
               <h3 className="text-lg font-bold text-gray-800 mb-3">Mark this booking as complete?</h3>
-              <p className="text-sm text-gray-600 leading-relaxed">
-                Only do this after the meet has ended — whether it went well or not.
+           <p className="text-sm text-gray-600 leading-relaxed">
+                Only click this after the meet has ended — whether it went well or not.
               </p>
-              <p className="text-sm text-gray-600 leading-relaxed mt-2">
-                This will notify the client to release the payment.
+              <p className="text-sm text-gray-600 leading-relaxed mt-3">
+                This will notify your fan to mark it as complete too. Once they do, your payment is released instantly.
+              </p>
+              <p className="text-sm text-gray-600 leading-relaxed mt-3">
+                If they don’t mark it as complete within 15 minutes, contact <strong>Mmeko Support</strong> and we will release your payment immediately.
               </p>
               <div className="flex gap-3 mt-6">
                 <button
@@ -1864,11 +1867,25 @@ const formatTimer = (seconds: number) => {
     <span className="text-xl mt-1">🔒</span>
     <div>
       <h3 className="font-semibold text-gray-800">Payment Secured</h3>
-      <p className="text-gray-600 text-sm mt-1">
-        Once a booking is accepted, your payment is secured and held by Mmeko. After the{" "}
-        <strong>{hosttype?.toLowerCase() === "fan date" ? "date" : "meet & greet"}</strong>,{" "}
-        Your fan will be notified to <strong>"Mark it as Complete"</strong> — once they do, your payment is released instantly. If they don't, contact <strong>Mmeko Support</strong> and we will release your payment immediately. 🙂
-      </p>
+      {type === "creator" ? (
+        <>
+          <p className="text-gray-600 text-sm mt-1">
+            Once a booking is accepted, your payment is secured and held by Mmeko.
+          </p>
+          <p className="text-gray-600 text-sm mt-2">
+            After the {hosttype?.toLowerCase() === "fan date" ? "date" : "meet"}, click the <strong>“Mark as Complete”</strong> button above and leave. Your fan will be notified to mark it as complete too. Once they do, your payment is released instantly.
+          </p>
+          <p className="text-gray-600 text-sm mt-2">
+            If they don’t mark it as complete within 15 minutes, contact <strong>Mmeko Support</strong> and we will release your payment immediately.
+          </p>
+        </>
+      ) : (
+        <p className="text-gray-600 text-sm mt-1">
+          Once a booking is accepted, your payment is secured and held by Mmeko. After the{" "}
+          <strong>{hosttype?.toLowerCase() === "fan date" ? "date" : "meet & greet"}</strong>,{" "}
+          Click <strong>"Mark as Complete"</strong> on the request card — whether the meet went well or not. This releases the payment to the creator.
+        </p>
+      )}
     </div>
   </div>
 )}
@@ -2138,10 +2155,23 @@ const formatTimer = (seconds: number) => {
               </ul>
 
               <p className="text-gray-800 text-sm font-semibold mt-3">
-                What if the fan stops responding?
+                Clear Payment Release Rules (15 Minutes Rule)
+              </p>
+              <p className="text-gray-600 text-sm mt-1">
+                <span className="font-medium text-gray-700">If the fan goes silent at the meeting point:</span> Message them that you have arrived. If they don’t respond within 15 minutes, leave and contact Support. We will release your payment immediately.
+              </p>
+              <p className="text-gray-600 text-sm mt-1">
+                <span className="font-medium text-gray-700">After the date:</span> Click the “Mark as Complete” button and leave. The fan will be reminded to release the funds. If you still haven’t received payment after 15 minutes, contact Support and we will release it to you immediately.
+              </p>
+              <p className="text-gray-600 text-sm mt-1">
+                You never need to chase or argue with the fan. The chat record is enough.
+              </p>
+
+              <p className="text-gray-800 text-sm font-semibold mt-3">
+                What if the fan stops responding? (24 Hour Rule)
               </p>
                <p className="text-gray-600 text-sm mt-1">
-                If a fan books you and then goes silent, you are still protected. Keep all communication inside the Mmeko chat. If they don’t reply within 24 hours, contact Support and we will release the payment to you.
+                If a fan books you and then goes silent before the meet, you are still protected. Keep all communication inside the Mmeko chat. If they don’t reply within 24 hours, contact Support and we will release the payment to you.
               </p>
                <p className="text-gray-600 text-sm mt-1">
                 The reason is simple: if a fan is not responding, there is no real arrangement. You shouldn’t have to keep waiting or travel when they have gone silent. Your protection is in the chat record.
