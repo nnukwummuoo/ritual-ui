@@ -236,6 +236,8 @@ const userId = reduxProfileUserId || reduxRegisterUserId || localUserId;
         let title = "MMEKO"; // Default fallback
         if (isAdminNotification) {
           title = note.title || "Admin Notification";
+        } else if (note.title) {
+          title = note.title; // e.g. "Booking marked as complete"
         } else if (message.includes("application")) {
           title = "Application Status";
         } else if (message.includes("follow")) {
@@ -383,7 +385,7 @@ const userId = reduxProfileUserId || reduxRegisterUserId || localUserId;
 
            {/* Message */}
               <p
-                className={`text-slate-300 text-sm sm:text-base leading-relaxed ${
+                className={`text-slate-300 text-sm sm:text-base leading-relaxed whitespace-pre-line ${
                   note.hasLearnMore ? "line-clamp-3" : ""
                 }`}
               >

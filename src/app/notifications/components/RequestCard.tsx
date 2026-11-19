@@ -1611,6 +1611,57 @@ setSessionCompleted: (v: boolean) => void;
 
   const [lightboxSrc, setLightboxSrc] = useState<string>("");
 
+  // ── Creator "Mark as Complete" ─────────────────────────────────────────
+  const [showCompleteConfirm, setShowCompleteConfirm] = useState(false);
+  const [markingComplete, setMarkingComplete] = useState(false);
+  const [creatorMarked, setCreatorMarked] = useState<boolean>(() => {
+    try {
+      return typeof window !== "undefined" && localStorage.getItem(`creator_marked_complete_${requestId}`) === "true";
+    } catch {
+      return false;
+    }
+  });
+
+  const handleCreatorMarkComplete = async () => {
+    if (!requestId || markingComplete) return;
+    setMarkingComplete(true);
+    try {
+      let token = "";
+      try {
+        const raw = localStorage.getItem("login");
+        if (raw) {
+          const d = JSON.parse(raw);
+          token = d?.accesstoken || d?.user?.accesstoken || "";
+        }
+      } catch {}
+
+      const res = await fetch(`${URL}/fanrequest/creator-mark-complete`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ requestId }),
+      });
+      const data = await res.json().catch(() => ({}));
+
+      if (res.ok && data.ok) {
+        try { localStorage.setItem(`creator_marked_complete_${requestId}`, "true"); } catch {}
+        setCreatorMarked(true);
+        setShowCompleteConfirm(false);
+        toast.success(
+          data.alreadyMarked ? "Already marked as complete." : "Marked as complete. Your client has been notified."
+        );
+      } else {
+        toast.error(data.message || "Could not mark this booking as complete");
+      }
+    } catch {
+      toast.error("Network error. Please try again.");
+    } finally {
+      setMarkingComplete(false);
+    }
+  };
+
 const handleStartTimer = async () => {
   if (timerActive) return;
 
@@ -1714,7 +1765,61 @@ const formatTimer = (seconds: number) => {
 
   return (
     <div className="fixed inset-0 z-[9999] overflow-y-auto">
-    <div className="bg-white w-full h-full min-h-screen p-6 overflow-y-auto">
+<div className="bg-white w-full h-full min-h-screen p-6 overflow-y-auto">
+        {/* Creator: Mark as Complete (Fan Meet / Fan Date, accepted bookings only) */}
+        {type === "creator" && currentStatus === "accepted" && hosttype?.toLowerCase() !== "fan call" && (
+          creatorMarked ? (
+            <div className="w-full mb-5 py-3 rounded-lg text-center font-semibold text-green-700 bg-green-50 border border-green-200">
+              ✓ Marked as complete — your client has been notified
+            </div>
+          ) : (
+            <button
+              onClick={() => setShowCompleteConfirm(true)}
+              className="w-full mb-5 py-3 rounded-lg font-bold text-white transition-all hover:opacity-90"
+              style={{ background: "linear-gradient(135deg, #16a34a, #15803d)" }}
+            >
+              Mark as Complete
+            </button>
+          )
+        )}
+
+        {showCompleteConfirm && (
+          <div
+            className="fixed inset-0 z-[10000] bg-black/60 flex items-center justify-center p-4"
+            onClick={() => !markingComplete && setShowCompleteConfirm(false)}
+          >
+            <div
+              className="bg-white rounded-2xl w-full max-w-sm p-6 shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 className="text-lg font-bold text-gray-800 mb-3">Mark this booking as complete?</h3>
+              <p className="text-sm text-gray-600 leading-relaxed">
+                Only do this after the meet has ended — whether it went well or not.
+              </p>
+              <p className="text-sm text-gray-600 leading-relaxed mt-2">
+                This will notify the client to release the payment.
+              </p>
+              <div className="flex gap-3 mt-6">
+                <button
+                  onClick={() => setShowCompleteConfirm(false)}
+                  disabled={markingComplete}
+                  className="flex-1 py-3 rounded-lg border border-gray-300 text-gray-700 font-semibold hover:bg-gray-100 disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleCreatorMarkComplete}
+                  disabled={markingComplete}
+                  className="flex-1 py-3 rounded-lg font-bold text-white disabled:opacity-60"
+                  style={{ background: "linear-gradient(135deg, #16a34a, #15803d)" }}
+                >
+                  {markingComplete ? "Sending…" : "Yes, mark complete"}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         <h2 className="text-xl font-bold text-gray-800 mb-6">{getDetailsTitle(hosttype || "Fan Meet")}</h2>
         {bookingRef && <p className="text-xs font-mono text-gray-400 mb-5">Booking ID: {bookingRef}</p>}
 
