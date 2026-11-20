@@ -252,7 +252,7 @@ export default function RequestCard({ exp, img, originalPhotoLink, name, usernam
   const [showDetails, setShowDetails] = useState(false);
 
 const [timerActive, setTimerActive] = useState(false);
-const [timeRemaining, setTimeRemaining] = useState(30 * 60);
+const [timeRemaining, setTimeRemaining] = useState((hosttype?.toLowerCase() === "fan date" ? 60 : 30) * 60);
 const [sessionCompleted, setSessionCompleted] = useState(false);
 
 useEffect(() => {
@@ -629,7 +629,7 @@ useEffect(() => {
         setTimerActive(false);
         setTimeRemaining(0);
         setSessionCompleted(true); 
-        localStorage.setItem(`session_completed_${requestId} `, 'true'); 
+        localStorage.setItem(`session_completed_${requestId}`, 'true'); 
         localStorage.removeItem(`timer_active_${requestId}`);
         localStorage.removeItem(`timer_end_${requestId}`);
       } else {
@@ -1614,6 +1614,7 @@ setSessionCompleted: (v: boolean) => void;
   // ── Creator "Mark as Complete" ─────────────────────────────────────────
   const [showCompleteConfirm, setShowCompleteConfirm] = useState(false);
   const [markingComplete, setMarkingComplete] = useState(false);
+  const [showStartConfirm, setShowStartConfirm] = useState(false);
   const [creatorMarked, setCreatorMarked] = useState<boolean>(() => {
     try {
       return typeof window !== "undefined" && localStorage.getItem(`creator_marked_complete_${requestId}`) === "true";
@@ -1675,11 +1676,12 @@ const handleStartTimer = async () => {
     console.error('Failed to save session end time', err);
   }
 
-  const endTime = Date.now() + 30 * 60 * 1000;
+  const sessionMinutes = hosttype?.toLowerCase() === "fan date" ? 60 : 30;
+  const endTime = Date.now() + sessionMinutes * 60 * 1000;
   localStorage.setItem(`timer_active_${requestId}`, 'true');
   localStorage.setItem(`timer_end_${requestId}`, String(endTime));
   setTimerActive(true);
-  setTimeRemaining(30 * 60);
+  setTimeRemaining(sessionMinutes * 60);
 };
 
 const formatTimer = (seconds: number) => {
@@ -1817,6 +1819,46 @@ const formatTimer = (seconds: number) => {
                   style={{ background: "linear-gradient(135deg, #16a34a, #15803d)" }}
                 >
                   {markingComplete ? "Sending…" : "Yes, mark complete"}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {showStartConfirm && (
+          <div
+            className="fixed inset-0 z-[10000] bg-black/60 flex items-center justify-center p-4"
+            onClick={() => setShowStartConfirm(false)}
+          >
+            <div
+              className="bg-white rounded-2xl w-full max-w-sm p-6 shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 className="text-lg font-bold text-gray-800 mb-3">
+                Start the {hosttype?.toLowerCase() === "fan date" ? "date" : "meet"} timer?
+              </h3>
+              <p className="text-sm text-gray-600 leading-relaxed">
+                Only start this when the {hosttype?.toLowerCase() === "fan date" ? "date" : "meet"} begins.
+              </p>
+              <p className="text-sm text-gray-600 leading-relaxed mt-3">
+                The timer runs for {hosttype?.toLowerCase() === "fan date" ? "1 hour" : "30 minutes"}. You and your fan will be notified now, and again when the time is up.
+              </p>
+              <div className="flex gap-3 mt-6">
+                <button
+                  onClick={() => setShowStartConfirm(false)}
+                  className="flex-1 py-3 rounded-lg border border-gray-300 text-gray-700 font-semibold hover:bg-gray-100"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => {
+                    setShowStartConfirm(false);
+                    handleStartTimer();
+                  }}
+                  className="flex-1 py-3 rounded-lg font-bold text-white"
+                  style={{ background: "linear-gradient(135deg, #6c63ff, #9b59f5)" }}
+                >
+                  Start timer
                 </button>
               </div>
             </div>
@@ -2010,7 +2052,12 @@ const formatTimer = (seconds: number) => {
   <div className="flex items-start gap-3 mb-4">
     <span className="text-xl mt-1">⏰</span>
     <div className="w-full">
-      <h3 className="font-semibold text-gray-800">Timer</h3>
+      <div className="flex items-center gap-2">
+        <h3 className="font-semibold text-gray-800">Timer</h3>
+        <span className="text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 border border-gray-200">
+          Optional
+        </span>
+      </div>
 
       {/* Button or countdown */}
       <div className="mt-2 mb-3">
@@ -2026,7 +2073,7 @@ const formatTimer = (seconds: number) => {
   </div>
 ) : (
   <button
-    onClick={handleStartTimer}
+    onClick={() => setShowStartConfirm(true)}
     className="w-full py-3 rounded-lg font-bold text-white transition-all"
     style={{ background: "linear-gradient(135deg, #6c63ff, #9b59f5)" }}
   >
@@ -2036,9 +2083,9 @@ const formatTimer = (seconds: number) => {
       </div>
 
   <p className="text-gray-600 text-sm mt-1">
-  {timeRemaining === 0 && !timerActive
-    ? "Your fan will be notified to mark it as complete — once they do, your payment is released instantly. If they don't, contact Mmeko Support and we will release your payment immediately."
-    : `Start this timer when the ${hosttype?.toLowerCase() === "fan date" ? "date" : "meet & greet"} begins. It will notify both you and your fan when it starts and when it ends.`
+{timeRemaining === 0 && !timerActive
+    ? "The scheduled time is over. If the meet has finished, click the “Mark as Complete” button above."
+    : `Start this timer when the ${hosttype?.toLowerCase() === "fan date" ? "date" : "meet & greet"} begins. It runs for ${hosttype?.toLowerCase() === "fan date" ? "1 hour" : "30 minutes"} and notifies both you and your fan when it starts and when it ends.`
   }
 </p>
     </div>

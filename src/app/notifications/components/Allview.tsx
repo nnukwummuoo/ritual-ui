@@ -552,7 +552,7 @@ const userId = reduxProfileUserId || reduxRegisterUserId || localUserId;
               )}
 
               {/* Creator marked the booking complete → send the fan to their activity */}
-              {title === "Booking marked as complete" && (
+              {(title === "Booking marked as complete" || title === "Your meet has ended" || title === "Your date has ended") && (
                 <div className="pt-2">
                   <Link href="/notifications/activity">
                     <button
