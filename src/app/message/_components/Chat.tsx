@@ -403,28 +403,52 @@ const [sizeWarningType, setSizeWarningType] = useState<"image" | "video" | null>
   const [ppvEnabled, setPpvEnabled] = useState(false);
   const [unlockingMessageId, setUnlockingMessageId] = useState<string | null>(null);
 
-  // Load PPV settings
+ // Load PPV settings: use the cached value instantly, then confirm with the server
   useEffect(() => {
-    if (typeof window !== "undefined") {
+    if (typeof window === "undefined") return;
+
+    // 1) Instant: whatever is cached in localStorage
+    try {
       const raw = localStorage.getItem("login");
-      console.log("💬 [Chat] Loading PPV settings (routeChangeKey triggered):", raw ? "Found" : "Not found");
       if (raw) {
-        try {
-          const data = JSON.parse(raw);
-          const userData = data.user || data;
-          console.log("💬 [Chat] FULL User Object from localStorage:", userData);
-          console.log("💬 [Chat] PPV Settings found:", {
-            ppvEnabled: userData.ppvEnabled,
-            ppvPrice: userData.ppvPrice
-          });
-          setPpvEnabled(userData.ppvEnabled === true);
-          setPpvPrice(userData.ppvPrice || 100);
-        } catch (e) {
-          console.error("💬 [Chat] Error loading PPV settings:", e);
-        }
+        const data = JSON.parse(raw);
+        const userData = data.user || data;
+        setPpvEnabled(userData.ppvEnabled === true);
+        setPpvPrice(userData.ppvPrice || 0);
       }
+    } catch (e) {
+      console.error("💬 [Chat] Error loading PPV settings:", e);
     }
-  }, [routeChangeKey]);
+
+    // 2) Authoritative: ask the server, then cache it so it survives refreshes
+    if (!loggedInUserId) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await axios.post(`${API_URL}/getprofilebyid`, { userid: loggedInUserId });
+        const u = res.data?.user || res.data?.profile;
+        if (cancelled || !res.data?.ok || !u) return;
+
+        setPpvEnabled(u.ppvEnabled === true);
+        setPpvPrice(u.ppvPrice || 0);
+
+        const raw = localStorage.getItem("login");
+        if (raw) {
+          const data = JSON.parse(raw);
+          const target = data.user || data;
+          target.ppvEnabled = u.ppvEnabled === true;
+          target.ppvPrice = u.ppvPrice;
+          localStorage.setItem("login", JSON.stringify(data));
+        }
+      } catch (e) {
+        console.error("💬 [Chat] Could not refresh PPV settings:", e);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [routeChangeKey, loggedInUserId]);
 
   const handleUnlockMessage = async (msgId: string, price: number) => {
     console.log("🔓 [Chat] Attempting to unlock message:", { msgId, price, loggedInUserId });
