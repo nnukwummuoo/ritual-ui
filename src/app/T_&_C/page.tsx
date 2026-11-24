@@ -146,7 +146,26 @@ const TermsAndConditions = () => {
           Both parties are strongly encouraged to keep all communication on the platform. On-platform chat history
           is the primary tool used by Mmeko Support for faster and more accurate dispute resolution.
           Creators who notify fans of their departure, arrival, and presence at the meeting spot through the
-          platform are better protected in any dispute scenario.
+         platform are better protected in any dispute scenario.
+        </p>
+
+        <p className="mb-6">5. The 15-Minute Rule</p>
+        <p className="mb-6">
+          If you have arrived at the meeting point and the client is silent, message them on the platform that you
+          have arrived. If there is no response within 15 minutes, you may leave and contact Support. Support will
+          review the on-platform chat and release your payment immediately.
+        </p>
+        <p className="mb-6">
+          After the date, the creator clicks "Mark as Complete" and may leave. The fan will be reminded to release
+          payment. If the fan has not released payment within 15 minutes, the creator may contact Support for
+          immediate release.
+        </p>
+
+        <p className="mb-6">6. The 24-Hour Rule</p>
+        <p className="mb-6">
+          If a fan books and then goes silent before the meet, meaning they do not reply to the creator's messages within 24 hours,
+          the creator may contact Support. After review, the payment will be released to the creator. A fan who
+          fails to respond to messages within 24 hours forfeits the payment.
         </p>
 
         <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">10. Fan Meet & Fan Date Expiry</h3>
@@ -345,6 +364,7 @@ const TermsAndConditions = () => {
           If a fan refuses to mark a meet/date as complete, fails to respond to messages within 24 hours,
           or requests cancellation after the meet/date has already been accepted, the platform reserves the
           right to review the case and release payment based on on-platform chat history and evidence of attendance.
+          See Section 9 (The 15-Minute Rule and The 24-Hour Rule) for the exact release conditions.
         </p>
 
         <p className="mb-6">

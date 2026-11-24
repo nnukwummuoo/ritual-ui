@@ -87,7 +87,7 @@ export const Requestinfo: React.FC<requestInfoProps> = ({
 
       {/* Example usage of Next.js Link if needed */}
       <div className="mt-3 text-center">
-        <Link href="/terms" className="text-xs text-blue-400 underline">
+        <Link href="/T_&_C" className="text-xs text-blue-400 underline">
           View Terms & Conditions
         </Link>
       </div>

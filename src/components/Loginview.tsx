@@ -449,7 +449,7 @@ try {
               I accept the{" "}
               <span
                 className="text-[#9b59f5] underline cursor-pointer hover:text-[#b48cf7]"
-                onClick={(e) => { e.preventDefault(); router.push('/auth/T_&_C'); }}
+                onClick={(e) => { e.preventDefault(); router.push('/T_&_C'); }}
               >
                 Terms and Conditions
               </span>

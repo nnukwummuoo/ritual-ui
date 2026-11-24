@@ -65,7 +65,7 @@ export default function ConditionalLayout({ children, isAuthenticated }: Conditi
     'collections', 'createcreator', 'creator', 'creators', 'discover', 'explorer', 'fans',
     'feed', 'feedback', 'following', 'gold', 'goldstat', 'guidelines', 'learn-more', 'login',
     'message', 'mmeko', 'notifications', 'offline', 'portfolio', 'post', 'quickchat',
-    'refer-and-earn', 'ritual', 'search', 'settings', 'support', 'test-middleware', 'upload',
+    'privacy-policy', 'refer-and-earn', 'ritual', 'search', 'settings', 'support', 'test-middleware', 'upload',
     'upload-ritual', 'verify-creators', 'vip', 'whats-new',
   ]);
   const pathSegments = pathname.split('/').filter(Boolean);

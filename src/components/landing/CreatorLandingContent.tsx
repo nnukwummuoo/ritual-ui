@@ -824,7 +824,7 @@ export default function CreatorLandingContent({ prefetchedCreators }: Props) {
   </div>
 
   <div style={{ display: "flex", alignItems: "center", gap: 24, flexWrap: "wrap" }}>
-    {[["Safety", "/safety"], ["Privacy", "/auth/privacy-policy"], ["Terms", "/T_&_C"], ["Support", "/support"], ["Blog", "/blog"]].map(([l, h]) => (
+    {[["Safety", "/safety"], ["Privacy", "/privacy-policy"], ["Terms", "/T_&_C"], ["Support", "/support"], ["Blog", "/blog"]].map(([l, h]) => (
       <Link key={l} href={h} style={{ fontSize: 13, color: "#475569", textDecoration: "none" }}>
         {l}
       </Link>

@@ -359,7 +359,7 @@ export const CreatorSideMenu: React.FC<CreatorSideMenuProps> = ({
                 <p className="mt-1 ml-1">Help and support</p>
               </button>
 
-              <button className="flex mt-2" onClick={(e) => router.push("/community")}>
+              <button className="flex mt-2" onClick={(e) => router.push("/guidelines")}>
                 <Image
                   alt="globeearth"
                   src={globeearth}

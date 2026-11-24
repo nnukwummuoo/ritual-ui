@@ -22,19 +22,19 @@ import NavigateForward from "../_components/NavigateForward";
     {
       name: "Term and conditions",
       icon: <FaListCheck color="white" size={20} />,
-      linktitle: "T_&_C",
+      linktitle: "/T_&_C",
     },
 
     {
       name: "Privacy policy",
       icon: <MdOutlinePrivacyTip color="white" size={20} />,
-      linktitle: "privacy-policy",
+      linktitle: "/privacy-policy",
     },
 
     {
       name: "Community guidelines",
       icon: <GiWorld color="white" size={20} />,
-      linktitle: "community",
+      linktitle: "/guidelines",
     },
   ];
   return (

@@ -679,8 +679,8 @@ export const Register = () => {
                 </div>
               ))}
 
-              <Agree id="terms" toThe={<Link href="/auth/T_&_C" className='!text-[#9b59f5]'>the Terms & Conditions.</Link>} agree={agreedTerms} setAgree={() => setAgreedTerms(prev => !prev)} />
-              < Agree id="privacy" toThe={<Link href={"/auth/privacy-policy"} className='!text-[#9b59f5]'>Privacy Policy</Link>} agree={agreedPrivacy} setAgree={() => setAgreedPrivacy(prev => !prev)} />
+              <Agree id="terms" toThe={<Link href="/T_&_C" className='!text-[#9b59f5]'>the Terms & Conditions.</Link>} agree={agreedTerms} setAgree={() => setAgreedTerms(prev => !prev)} />
+              < Agree id="privacy" toThe={<Link href={"/privacy-policy"} className='!text-[#9b59f5]'>Privacy Policy</Link>} agree={agreedPrivacy} setAgree={() => setAgreedPrivacy(prev => !prev)} />
 
               <NextSlide onClick={handleNextClick} setStep={setStep} disabled={!isStepValid} />
             </Step>

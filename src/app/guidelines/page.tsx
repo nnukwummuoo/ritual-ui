@@ -134,7 +134,17 @@ const Community = () => {
                 <h2 className="text-xl font-semibold text-gray-300">💬 11. Use Messaging Responsibly</h2>
                 <ul className="mt-2 text-gray-400 list-disc list-inside space-y-2">
                 <li>No spamming, harassment or unsolicited promotion in DMs.</li>
-                <li>Keep all booking-related communication on the platform to protect yourself and ensure faster dispute resolution.</li>
+               <li>Keep all booking-related communication on the platform to protect yourself and ensure faster dispute resolution.</li>
+                </ul>
+            </section>
+
+            <section className="mb-6">
+                <h2 className="text-xl font-semibold text-gray-300">⏱️ 12. Respect the 15-Minute and 24-Hour Rules</h2>
+                <ul className="mt-2 text-gray-400 list-disc list-inside space-y-2">
+                <li><strong>15-Minute Rule:</strong> If you arrive at the meeting point and the client is silent, message them on the platform that you've arrived. If there is no response within 15 minutes, you may leave and contact Support, who will release your payment immediately.</li>
+                <li>After the date, creators click "Mark as Complete" and may leave. Fans are reminded to release payment, and if it isn't released within 15 minutes, creators can contact Support for immediate release.</li>
+                <li><strong>24-Hour Rule:</strong> If a fan books and goes silent, meaning no reply within 24 hours, the creator can contact Support and the payment will be released to the creator.</li>
+                <li>Fans: always reply to booking messages promptly. Going silent after booking means you forfeit the payment.</li>
                 </ul>
             </section>
 
