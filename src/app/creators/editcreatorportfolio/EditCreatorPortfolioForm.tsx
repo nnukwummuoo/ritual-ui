@@ -991,7 +991,11 @@ if (matched?.isoCode && creator.state) {
         <div className="sec-label">Your Rate</div>
         <div className="fg price-wrap" style={{ marginBottom: 6 }}>
           <label className="fl">
-            {hosttype === "Fan call" ? "Enter your call rate" : "Enter your rate"} <span className="req">*</span>
+            {hosttype === "Fan call"
+              ? "Enter your call rate per minute"
+              : hosttype === "Fan date"
+                ? "Enter rate for the Date in GOLD"
+                : "Enter rate for the Meet in GOLD"} <span className="req">*</span>
           </label>
        <div className="price-row">
             <div className="price-input-wrap">

@@ -98,7 +98,7 @@ const FAQ_DATA: Record<CategoryKey, FAQSection[]> = {
       items: [
        {
   question: "Can I post explicit content?",
-  answer: "No ❌. Visible nipples or genitals are strictly prohibited. One offense = permanent ban. No warnings, no second chances.",
+  answer: "Not in public areas ❌. Visible nipples or genitals are strictly prohibited on the homepage, ritual page, and portfolio photos. Explicit content is only allowed inside Exclusive content sections and PPV (Pay-Per-View) content. Posting explicit content in public areas = permanent ban. No warnings, no second chances.",
 },
         {
           question: "What if a fan/creator breaks the rules?",

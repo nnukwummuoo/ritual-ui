@@ -22,19 +22,24 @@ const TermsAndConditions = () => {
         </p>
 
        <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">2. Account & Conduct</h3>
+<p className="mb-3">
+  You are responsible for maintaining the confidentiality of your account credentials. You agree not to:
+</p>
+<ul className="mb-6 ml-6 space-y-2 list-disc">
+  <li>Upload or share violent content.</li>
+  <li>Display explicit exposure (such as visible nipples or genitals) on public areas of the platform, including the homepage, ritual page, and portfolio photos.</li>
+  <li>Explicit content is only allowed inside Exclusive content sections and PPV (Pay-Per-View) content.</li>
+  <li>Use the platform for illegal activities or to facilitate prostitution. Mmeko is a booking and payment tool for meetups, dates, calls, and content. What happens privately between consenting adults after they meet is outside the platform’s involvement.</li>
+  <li>Misrepresent your identity or the services you offer.</li>
+</ul>
+
 <p className="mb-6">
-  You are responsible for maintaining the confidentiality of your account credentials.
-  You agree not to: Upload or share violent content, or explicit exposure such as visible nipples or genitals on the homepage, ritual page, and portfolio photos. 
-  Use the platform for illegal activities or to facilitate prostitution. Misrepresent your identity or services offered.
+  Visible nipples or genitals are strictly prohibited in public areas, including the homepage, ritual page, and portfolio photos.
+  Cleavage, bikinis, and non‑sexual skin exposure are welcome. Content may be suggestive, but not explicit.
 </p>
 
 <p className="mb-6">
-  Visible nipples or genitals are strictly prohibited on the homepage, ritual page, and portfolio photos. 
-  Cleavage, bikinis, and non‑sexual skin exposure are welcome.
-</p>
-
-<p className="mb-6">
-  Any Creator or Fan who posts, shares, or requests visible nipples or genitals will be banned immediately — no second chances.
+  Any Creator or Fan who posts explicit content in public areas will be permanently banned — no second chances.
 </p>
 
         <p className="mb-6">
@@ -238,7 +243,7 @@ const TermsAndConditions = () => {
 
         <h3 className="mt-8 mb-4 text-xl font-semibold text-gray-300">14. Safety & Conduct</h3>
         <p className="mb-6">Creators must keep interactions respectful, safe, and legal.</p>
-        <p className="mb-6">Harassment, illegal activity, or explicit exposure such as visible nipples or genitals is strictly prohibited. Cleavage, bikinis, and non‑sexual skin exposure are welcome.</p>
+        <p className="mb-6">Harassment, illegal activity, or explicit exposure such as visible nipples or genitals in public areas is strictly prohibited. Explicit content is only permitted in Exclusive content sections and PPV content. Cleavage, bikinis, and non‑sexual skin exposure are welcome.</p>
         <p className="mb-6">Creators should not share personal contact info outside the platform.</p>
         <p className="mb-6">The platform is not responsible for off-platform activities once a meet or date occurs.</p>
 

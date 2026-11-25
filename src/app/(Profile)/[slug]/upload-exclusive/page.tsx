@@ -476,7 +476,14 @@ const triggerFileInput = () => {
                       <HelpCircle className="w-5 h-5" />
                     </button>
                   </div>
-                  <p className="text-xs text-gray-600 mt-1.5">Enter the price for this exclusive content in Gold</p>
+                  <p className="text-xs text-gray-500 mt-1.5">
+                    1 Gold = $0.04
+                    {parseFloat(exclusiveContentPrice) > 0 && (
+                      <span className="ml-2 font-semibold text-[#f5c451]">
+                        = ${(parseFloat(exclusiveContentPrice) * 0.04).toFixed(2)} USD
+                      </span>
+                    )}
+                  </p>
                 </div>
 
                 {/* Submit Button */}

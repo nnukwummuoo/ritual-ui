@@ -33,13 +33,14 @@ const Community = () => {
                 </p>
             </section>
 
-            <section className="mb-6">
-  <h2 className="text-xl font-semibold text-gray-300">🚫 1. No Explicit Content</h2>
+           <section className="mb-6">
+  <h2 className="text-xl font-semibold text-gray-300">🚫 1. No Explicit Content in Public Areas</h2>
   <ul className="mt-2 text-gray-400 list-disc list-inside space-y-2">
-    <li>No visible nipples or genitals are allowed on the homepage, ritual page, or portfolio photos.</li>
-    <li>Simulated sexual acts or sex toys in a sexual context are not permitted.</li>
-    <li>Cleavage, bikinis, and non‑sexual skin exposure are welcome — content may be suggestive, but never explicit.</li>
-    <li>Explicit uploads result in a permanent ban with no second chances.</li>
+    <li>No visible nipples or genitals on the homepage, ritual page, or portfolio photos.</li>
+    <li>No simulated sexual acts or sex toys in a sexual context in public areas.</li>
+    <li>Cleavage, bikinis, and non-sexual skin exposure are allowed. Content may be suggestive, but not explicit.</li>
+    <li>Explicit content is only permitted in Exclusive content sections and PPVs.</li>
+    <li>Posting explicit content in public areas will result in a permanent ban with no second chances.</li>
   </ul>
 </section>
 
@@ -154,7 +155,7 @@ const Community = () => {
                 We review all reported content seriously and act swiftly.
                 </p>
                 <p className="mt-2 text-gray-400">
-  Severe violations — including visible nipples or genitals on the homepage, ritual page, or portfolio photos, underage content, threats, prostitution offers,
+  Severe violations — including explicit content in public areas (homepage, ritual page, or portfolio photos), underage content, threats, prostitution offers,
   or illegal activity — result in an instant permanent ban with no appeal.
 </p>
             </section>
