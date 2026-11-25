@@ -219,11 +219,15 @@ export default function PPVSettingsPage() {
                                 Fans pay this amount (Gold) to unlock each of your PPV messages.
                             </p>
                             <p className="text-xs mt-2 text-center text-gray-500">
-                                1 Gold = $0.04{" "}
-                                <span className="font-semibold text-yellow-400">
-                                    {Number(price) > 0
-                                        ? `= $${(Number(price) * 0.04).toFixed(2)} USD`
-                                        : "· Enter an amount to see the USD value"}
+                                1 Gold = $0.04
+                                <span className="block mt-0.5">
+                                    {Number(price) > 0 ? (
+                                        <span className="font-semibold text-yellow-400">
+                                            = ${(Number(price) * 0.04).toFixed(2)} USD
+                                        </span>
+                                    ) : (
+                                        "Enter an amount to see the USD value"
+                                    )}
                                 </span>
                             </p>
                             <p className="text-yellow-400 text-xs mt-2 text-center font-semibold">
