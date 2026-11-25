@@ -81,6 +81,8 @@ export default function FanVerificationPage() {
 
   const [idFile,      setIdFile]      = useState<File|null>(null);
   const [selfieFile,  setSelfieFile]  = useState<File|null>(null);
+  const [email,       setEmail]       = useState("");
+  const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.trim());
   const [loading,     setLoading]     = useState(false);
   const [submitted,   setSubmitted]   = useState(false);
   const [appStatus, setAppStatus] = useState<"pending"|"none"|"rejected"|"approved">("none");
@@ -112,11 +114,12 @@ useEffect(() => {
 
   const submitVerification = async () => {
     if (!idFile || !selfieFile) return toast.error("Please upload both documents.");
+    if (!emailValid)            return toast.error("Please enter a valid email address.");
     if (!userId || !token)      return toast.error("Please log in again.");
     setLoading(true);
     setSubmitError(null);
     try {
-      await dispatch(post_fan_verification({ userid: userId, token, idPhotofile: idFile, holdingIdPhotofile: selfieFile })).unwrap();
+      await dispatch(post_fan_verification({ userid: userId, token, email: email.trim(), idPhotofile: idFile, holdingIdPhotofile: selfieFile })).unwrap();
       dispatch(getprofile({ userid: userId, token }));
       toast.success("Verification submitted!");
       setSubmitted(true);
@@ -437,6 +440,24 @@ style={{ width: "100%", height: 380, borderRadius: 12, objectFit: "cover", margi
           sub="Take a clear photo of yourself holding your ID next to your face. Both must be visible."
           accept="image/*" filled={!!selfieFile} onChange={setSelfieFile}/>
 
+        {/* Email */}
+        <div style={{ marginTop:18 }}>
+          <label style={{ display:"block", fontSize:13, fontWeight:700, marginBottom:8 }}>
+            Email address <span style={{ color:"#ef4444" }}>*</span>
+          </label>
+          <input
+            type="email"
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+            placeholder="you@example.com"
+            autoComplete="email"
+            style={{ width:"100%", padding:"13px 14px", borderRadius:10, background:S.bg3, border:`1px solid ${email && !emailValid ? "#ef4444" : S.border2}`, color:"white", fontSize:14, fontFamily:"inherit", outline:"none" }}
+          />
+          {email && !emailValid && (
+            <div style={{ fontSize:11.5, color:"#ef4444", marginTop:6 }}>Enter a valid email address.</div>
+          )}
+        </div>
+
         {/* Privacy note */}
         <div style={{ display:"flex", alignItems:"flex-start", gap:10, background:S.bg3, border:`1px solid ${S.border2}`, borderRadius:10, padding:"12px 14px", marginTop:6 }}>
           <div style={{ fontSize:14, flexShrink:0, marginTop:1 }}>🔒</div>
@@ -445,13 +466,13 @@ style={{ width: "100%", height: 380, borderRadius: 12, objectFit: "cover", margi
 
         {/* ACTIONS */}
         <div style={{ display:"flex", flexDirection:"column", gap:10, marginTop:28 }}>
-          <button className="fv-submit" disabled={count < 2 || loading || submitted} onClick={handleSubmit}
+          <button className="fv-submit" disabled={count < 2 || !emailValid || loading || submitted} onClick={handleSubmit}
             style={{ width:"100%", padding:15, borderRadius:12, border:"none", fontFamily:"inherit", fontSize:14, fontWeight:700,
-              cursor: count<2||loading||submitted ? "not-allowed":"pointer",
+              cursor: count<2||!emailValid||loading||submitted ? "not-allowed":"pointer",
               display:"flex", alignItems:"center", justifyContent:"center", gap:8,
               background: submitted ? "linear-gradient(135deg,#22c55e,#16a34a)" : `linear-gradient(135deg,${S.accent},${S.accent2})`,
               color:"white", boxShadow:"0 4px 20px rgba(108,99,255,.35)", transition:"all .25s",
-              opacity: count<2 && !submitted ? .4 : 1,
+              opacity: (count<2 || !emailValid) && !submitted ? .4 : 1,
             }}>
             {loading ? <><ClockLoader color="#fff" size={16}/> Submitting…</> : submitted ? "✓ Submitted — under review" : "Submit for Verification"}
           </button>

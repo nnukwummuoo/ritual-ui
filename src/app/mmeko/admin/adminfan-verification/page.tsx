@@ -20,6 +20,7 @@ interface FanDoc {
   firstname?: string;
   lastname?: string;
   username?: string;
+  email?: string;
   photolink?: string;
   // correct nested shape from backend
   idPhotofile?: { idPhotofilelink?: string };
@@ -174,6 +175,7 @@ function AppCard({
                 </span>
               </div>
               <div className="text-xs text-[#475569]">@{doc.username || doc.userid?.slice(0,8)}</div>
+              {doc.email && <div className="text-xs text-[#94a3b8] select-all">{doc.email}</div>}
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -423,6 +425,7 @@ useEffect(() => {
         firstname:          d.firstname,
         lastname:           d.lastname,
         username:           d.username,
+        email:              d.email,
         photolink:          d.photolink,
         idPhotofile:        d.idPhotofile,
         holdingIdPhotofile: d.holdingIdPhotofile,

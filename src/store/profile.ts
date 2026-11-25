@@ -681,13 +681,13 @@ export const checkFanApplicationStatus = createAsyncThunk<
 
 export const post_fan_verification = createAsyncThunk<
   { message: string },
-  { userid: string; token: string; idPhotofile: File; holdingIdPhotofile: File }
+  { userid: string; token: string; email: string; idPhotofile: File; holdingIdPhotofile: File }
 >(
   "profile/post_fan_verification",
   async (data, thunkAPI) => {
     try {
       const formData = new FormData();
-      formData.append("data", JSON.stringify({ userid: data.userid }));
+     formData.append("data", JSON.stringify({ userid: data.userid, email: data.email }));
       formData.append("idPhotofile", data.idPhotofile);
       formData.append("holdingIdPhotofile", data.holdingIdPhotofile);
  

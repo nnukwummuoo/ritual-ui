@@ -477,12 +477,12 @@ const triggerFileInput = () => {
                     </button>
                   </div>
                   <p className="text-xs text-gray-500 mt-1.5">
-                    1 Gold = $0.04
-                    {parseFloat(exclusiveContentPrice) > 0 && (
-                      <span className="ml-2 font-semibold text-[#f5c451]">
-                        = ${(parseFloat(exclusiveContentPrice) * 0.04).toFixed(2)} USD
-                      </span>
-                    )}
+                   1 Gold = $0.04
+                    <span className="ml-2 font-semibold text-[#f5c451]">
+                      {parseFloat(exclusiveContentPrice) > 0
+                        ? `= $${(parseFloat(exclusiveContentPrice) * 0.04).toFixed(2)} USD`
+                        : "· Enter an amount to see the USD value"}
+                    </span>
                   </p>
                 </div>
 
