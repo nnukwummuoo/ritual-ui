@@ -921,8 +921,7 @@ const HistoryPage = () => {
             </div>
             <h2 className="text-2xl font-bold mb-4 text-white">Instruction</h2>
             <p className="text-white mb-6 text-lg">1 gold = $0.04 </p>
-            <p className="text-white mb-6 text-lg">You can make withdrawals manually and the corresponding amount
-              will be credited to your USDT or USDC (BEP20) wallet within 24 hours </p>
+            <p className="text-white mb-6 text-lg">You can request a withdrawal at any time. Payouts are sent instantly to your USDT or USDC (BEP20) wallet. In rare cases of blockchain network delays, it may take up to 24 hours. </p>
             <button
               className="bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-500 hover:to-pink-400 transition-all text-white font-bold px-6 py-3 rounded-lg"
               onClick={() => setShowPopup(false)}
