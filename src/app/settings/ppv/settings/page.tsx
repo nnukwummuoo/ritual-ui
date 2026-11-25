@@ -230,9 +230,7 @@ export default function PPVSettingsPage() {
                                     )}
                                 </span>
                             </p>
-                            <p className="text-yellow-400 text-xs mt-2 text-center font-semibold">
-                                1 Gold = $0.04 · {price === "" ? 0 : price} Gold ≈ ${((Number(price) || 0) * GOLD_TO_USD).toFixed(2)}
-                            </p>
+                           
                         </>
                     ) : (
                         <div className="text-center py-2">
