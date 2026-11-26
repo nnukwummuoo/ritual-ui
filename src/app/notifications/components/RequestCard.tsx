@@ -973,572 +973,568 @@ useEffect(() => {
     router.push(`/${slug}`);
   };
 
-  return (
-    <div className={`w-full flex flex-col gap-6 rounded-lg border-2 ${cardBorderVariance} p-4 mx-auto text-white bg-slate-800 overflow-visible`}>
-      <div className={`flex justify-between items-start gap-4 ${cardTextVariance}`}>
-        <div className="flex gap-4">
-          <div
-            className={`size-16 relative rounded-full border-4 overflow-hidden ${cardBorderVariance} bg-[#080b14] flex items-center justify-center cursor-pointer hover:opacity-80 transition-opacity`}
-            onClick={handleProfileClick}
-          >
-            {img && img !== '/picture-1.jfif' && img !== '/default-image.png' && img.trim() !== '' ? (
-              <Image
-                src={img}
-                width={100}
-                alt="picture"
-                height={100}
-                className='absolute top-0 left-0 size-full object-cover'
-                unoptimized
-                onError={(e) => {
-                  // If image fails to load, show initials instead
-                  const target = e.target as HTMLImageElement;
-                  target.style.display = 'none';
-                  const parent = target.parentElement;
-                  if (parent) {
-                    // Check if fallback div already exists
-                    const existingFallback = parent.querySelector('.fallback-initials');
-                    if (!existingFallback) {
-                      const fallbackDiv = document.createElement('div');
-                      fallbackDiv.className = 'w-full h-full flex items-center justify-center bg-gray-600 text-white font-bold text-xl fallback-initials';
-                      fallbackDiv.textContent = generateInitials(firstName, lastName, username || name);
-                      parent.appendChild(fallbackDiv);
-                    }
-                  }
-                }}
-                onLoad={(e) => {
-                  // Hide any existing fallback div when image loads successfully
-                  const target = e.target as HTMLImageElement;
-                  const parent = target.parentElement;
-                  if (parent) {
-                    const fallbackDiv = parent.querySelector('.fallback-initials');
-                    if (fallbackDiv) {
-                      fallbackDiv.remove();
-                    }
-                  }
-                }}
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center bg-gray-600 text-white font-bold text-xl">
-                {generateInitials(firstName, lastName, username || name)}
-              </div>
-            )}
+  // ── Card look (design only) ─────────────────────────────────────────────
+  const accent =
+    type === "creator"
+      ? {
+          text: "text-indigo-300",
+          ring: "border-[#6c63ff]/60",
+          bar: "from-[#6c63ff] to-[#9b59f5]",
+          glow: "from-[#6c63ff]/[0.13]",
+          chip: "bg-[#6c63ff]/15 text-indigo-200 border-[#6c63ff]/30",
+        }
+      : ["accepted", "completed"].includes(currentStatus)
+        ? {
+            text: "text-emerald-300",
+            ring: "border-emerald-500/60",
+            bar: "from-emerald-500 to-teal-400",
+            glow: "from-emerald-500/[0.12]",
+            chip: "bg-emerald-500/15 text-emerald-200 border-emerald-500/30",
+          }
+        : {
+            text: "text-amber-300",
+            ring: "border-amber-500/60",
+            bar: "from-amber-500 to-orange-400",
+            glow: "from-amber-500/[0.12]",
+            chip: "bg-amber-500/15 text-amber-200 border-amber-500/30",
+          };
 
-          </div>
-          <div className='text-sm'>
-            <div className='flex items-center gap-2'>
-              <p className='font-bold cursor-pointer hover:text-blue-400 transition-colors' onClick={handleProfileClick}>
+  const ghostBtn =
+    "w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl text-xs sm:text-sm font-semibold flex items-center justify-center border border-white/10 bg-white/[0.03] text-slate-200 hover:bg-white/[0.08] hover:border-white/20 transition-all duration-200";
+  const primaryBtn =
+    "w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center text-white bg-gradient-to-r from-[#6c63ff] to-[#9b59f5] hover:brightness-110 active:scale-[0.99] transition-all duration-200 shadow-lg shadow-[#6c63ff]/20";
+
+  const fullName = firstName && lastName ? `${firstName} ${lastName}` : (username || name);
+
+  const cardContent =
+    type === "creator"
+      ? getCreatorContent(hosttype || "Fan Request", submittedRating > 0)[currentStatus]
+      : getFanContent(price || 0, hosttype || "Fan Request", submittedRating > 0)[currentStatus];
+
+  return (
+    <div className="relative w-full mx-auto overflow-visible rounded-2xl border border-white/[0.08] bg-[#0d1220] text-white shadow-xl shadow-black/20">
+      {/* accent bar + soft glow */}
+      <div className={`absolute inset-x-0 top-0 h-[3px] rounded-t-2xl bg-gradient-to-r ${accent.bar}`} />
+      <div className={`pointer-events-none absolute inset-x-0 top-0 h-28 rounded-t-2xl bg-gradient-to-b ${accent.glow} to-transparent`} />
+
+      <div className="relative flex flex-col gap-5 p-4 sm:p-5">
+
+        {/* ── Header: avatar, name, price ─────────────────────── */}
+        <div className="flex justify-between items-start gap-4">
+          <div className="flex gap-3.5 min-w-0">
+            <div
+              className={`size-14 sm:size-16 shrink-0 relative rounded-full border-2 overflow-hidden ${accent.ring} bg-[#080b14] flex items-center justify-center cursor-pointer hover:opacity-80 transition-opacity`}
+              onClick={handleProfileClick}
+            >
+              {img && img !== '/picture-1.jfif' && img !== '/default-image.png' && img.trim() !== '' ? (
+                <Image
+                  src={img}
+                  width={100}
+                  alt="picture"
+                  height={100}
+                  className='absolute top-0 left-0 size-full object-cover'
+                  unoptimized
+                  onError={(e) => {
+                    // If image fails to load, show initials instead
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none';
+                    const parent = target.parentElement;
+                    if (parent) {
+                      // Check if fallback div already exists
+                      const existingFallback = parent.querySelector('.fallback-initials');
+                      if (!existingFallback) {
+                        const fallbackDiv = document.createElement('div');
+                        fallbackDiv.className = 'w-full h-full flex items-center justify-center bg-gray-600 text-white font-bold text-xl fallback-initials';
+                        fallbackDiv.textContent = generateInitials(firstName, lastName, username || name);
+                        parent.appendChild(fallbackDiv);
+                      }
+                    }
+                  }}
+                  onLoad={(e) => {
+                    // Hide any existing fallback div when image loads successfully
+                    const target = e.target as HTMLImageElement;
+                    const parent = target.parentElement;
+                    if (parent) {
+                      const fallbackDiv = parent.querySelector('.fallback-initials');
+                      if (fallbackDiv) {
+                        fallbackDiv.remove();
+                      }
+                    }
+                  }}
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center bg-gray-600 text-white font-bold text-xl">
+                  {generateInitials(firstName, lastName, username || name)}
+                </div>
+              )}
+            </div>
+
+            <div className="min-w-0 text-sm">
+              <p
+                className='font-bold text-[15px] text-white truncate cursor-pointer hover:text-indigo-300 transition-colors'
+                onClick={handleProfileClick}
+              >
                 {username || name}
               </p>
+              <div className='mt-0.5 flex flex-wrap items-center gap-x-1 text-[12px] text-slate-400'>
+                {titles?.map((title, i) => i === titles.length - 1 ? <span key={title}>{title}</span> : <span key={title}>{title} &#x2022; </span>)}
+              </div>
+
+              <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                {hosttype && (
+                  <span className={`inline-flex items-center px-2 py-0.5 rounded-md border text-[10px] font-bold uppercase tracking-wider ${accent.chip}`}>
+                    {hosttype}
+                  </span>
+                )}
+                {type === "creator" && fanVerified && (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold"
+                    style={{
+                      background: "linear-gradient(135deg,rgba(108,99,255,.15),rgba(155,89,245,.1))",
+                      border: "1px solid rgba(108,99,255,.3)",
+                      color: "#a89cff"
+                    }}
+                  >
+                    <svg viewBox="0 0 24 24" width="12" height="12" fill="none">
+                      <path d="M12 2.8L4.5 6V11C4.5 15.2 7.9 19.4 12 20.6C16.1 19.4 19.5 15.2 19.5 11V6L12 2.8Z" fill="#a89cff"/>
+                      <path d="M12 7l1.2 2.4 2.6.4-1.9 1.85.45 2.6L12 13.1l-2.35 1.15.45-2.6L8.2 9.8l2.6-.4L12 7z" fill="white"/>
+                    </svg>
+                    Verified Fan
+                  </span>
+                )}
+              </div>
             </div>
-            <div className='flex gap-1'>{titles?.map((title, i) => i === titles.length - 1 ? <p key={title}>{title}</p> : <p key={title}>{title} &#x2022; </p>)}</div>
+          </div>
 
-           {type === "creator" && fanVerified && (
-  <div className="mt-1">
-    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold"
-      style={{
-        background: "linear-gradient(135deg,rgba(108,99,255,.15),rgba(155,89,245,.1))",
-        border: "1px solid rgba(108,99,255,.3)",
-        color: "#a89cff"
-      }}
-    >
-      <svg viewBox="0 0 24 24" width="12" height="12" fill="none">
-        <path d="M12 2.8L4.5 6V11C4.5 15.2 7.9 19.4 12 20.6C16.1 19.4 19.5 15.2 19.5 11V6L12 2.8Z" fill="#a89cff"/>
-        <path d="M12 7l1.2 2.4 2.6.4-1.9 1.85.45 2.6L12 13.1l-2.35 1.15.45-2.6L8.2 9.8l2.6-.4L12 7z" fill="white"/>
-      </svg>
-      Verified Fan
-    </span>
-  </div>
-)}
-
+          <div className="shrink-0">
+            {currentStatus === "accepted" ? (
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-yellow-500/25 bg-yellow-500/10 text-yellow-300 font-bold text-base tabular-nums">
+                <FaCoins className="text-sm" /> {price || 20}
+              </div>
+            ) : (
+              <div className="w-9 h-9 rounded-xl bg-white/[0.05] border border-white/[0.08] flex items-center justify-center text-slate-400">
+                <BiTimeFive className="text-xl" />
+              </div>
+            )}
           </div>
         </div>
 
-        <div className="flex flex-col items-end">
-          {currentStatus === "accepted" ? <p className="flex items-center gap-2 text-xl"><FaCoins /> {price || 20}</p> : <BiTimeFive className="text-2xl" />}
-        </div>
-      </div>
-
-      <h3 className={`text-3xl md:text-4xl ${cardTextVariance}`}>{
-        type === "creator" ? (getCreatorContent(hosttype || "Fan Request", submittedRating > 0)[currentStatus]?.head || "Unknown Status") : (getFanContent(price || 0, hosttype || "Fan Request", submittedRating > 0)[currentStatus]?.head || "Unknown Status")
-      }</h3>
-
-      <p className="text-sm md:text-base">{type === "creator" ? (getCreatorContent(hosttype || "Fan Request", submittedRating > 0)[currentStatus]?.body || "Status information not available") : (getFanContent(price || 0, hosttype || "Fan Request", submittedRating > 0)[currentStatus]?.body || "Status information not available")}</p>
-
-      {/* Rating Stars - Show for fans when completed */}
-      {type === "fan" && currentStatus === "completed" && (
-        <div className="flex flex-col items-center gap-2 py-3">
-          <div className="flex justify-center gap-2">
-            {[1, 2, 3, 4, 5].map((star) => {
-              const isFilled = star <= submittedRating;
-              const isClickable = submittedRating === 0; // Only clickable if no rating submitted yet
-
-              return (
-                <button
-                  key={star}
-                  onClick={() => {
-                    if (isClickable) {
-                      setShowRatingModal(true);
-                      // Store the selected rating for the modal
-                      setSelectedRating(star);
-                    }
-                  }}
-                  className={`text-4xl transition-colors focus:outline-none ${isClickable ? "hover:scale-110 cursor-pointer" : "cursor-default"
-                    }`}
-                  disabled={!isClickable}
-                >
-                  <span className={`transition-colors ${isFilled ? "text-yellow-400" : "text-gray-400"
-                    } ${isClickable ? "hover:text-yellow-400" : ""}`}>
-                    ★
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-          {submittedRating > 0 && (
-            <p className="text-sm text-green-500 font-medium">
-              ✓ Rating submitted ({submittedRating} star{submittedRating !== 1 ? 's' : ''})
-            </p>
-          )}
-        </div>
-      )}
-
-      {/* Rating Stars - Show for creators when completed and rated */}
-      {type === "creator" && currentStatus === "completed" && submittedRating > 0 && (
-        <div className="flex flex-col items-center gap-2 py-3">
-          <p className="text-sm text-gray-400 mb-2">Rating from {firstName && lastName ? `${firstName} ${lastName}` : (username || name)}:</p>
-          <div className="flex justify-center gap-2">
-            {[1, 2, 3, 4, 5].map((star) => {
-              const isFilled = star <= submittedRating;
-
-              return (
-                <button
-                  key={star}
-                  onClick={() => {
-                    if (ratingData) {
-                      setShowFeedbackModal(true);
-                    }
-                  }}
-                  className="text-4xl transition-colors focus:outline-none hover:scale-110 cursor-pointer"
-                >
-                  <span className={`transition-colors ${isFilled ? "text-yellow-400" : "text-gray-400"
-                    } hover:text-yellow-400`}>
-                    ★
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-          <p className="text-sm text-blue-400 font-medium cursor-pointer hover:text-blue-300" onClick={() => setShowFeedbackModal(true)}>
-            Click stars to view feedback
+        {/* ── Status heading + body ───────────────────────────── */}
+        <div>
+          <h3 className={`text-xl md:text-2xl font-extrabold tracking-tight leading-snug ${accent.text}`}>
+            {cardContent?.head || "Unknown Status"}
+          </h3>
+          <p className="mt-1.5 text-[13.5px] md:text-sm leading-relaxed text-slate-400">
+            {cardContent?.body || "Status information not available"}
           </p>
         </div>
-      )}
 
-      {/* Creator Rating Stars - Show for creators when completed (to rate the fan) */}
-      {type === "creator" && currentStatus === "completed" && (
-        <div className="flex flex-col items-center gap-2 py-3 border-t border-gray-600 pt-3">
-          <p className="text-sm text-gray-400 mb-2">Rate your fan:</p>
-          <div className="flex justify-center gap-2">
-            {[1, 2, 3, 4, 5].map((star) => {
-              const isFilled = star <= submittedFanRating;
-              const isClickable = submittedFanRating === 0; // Only clickable if no rating submitted yet
-
-              return (
-                <button
-                  key={star}
-                  onClick={() => {
-                    if (isClickable) {
-                      setShowFanRatingModal(true);
-                      // Store the selected rating for the modal
-                      setSelectedFanRating(star);
-                    }
-                  }}
-                  className={`text-4xl transition-colors focus:outline-none ${isClickable ? "hover:scale-110 cursor-pointer" : "cursor-default"
-                    }`}
-                  disabled={!isClickable}
-                >
-                  <span className={`transition-colors ${isFilled ? "text-yellow-400" : "text-gray-400"
-                    } ${isClickable ? "hover:text-yellow-400" : ""}`}>
-                    ★
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-          {submittedFanRating > 0 && (
-            <p className="text-sm text-green-500 font-medium">
-              ✓ Fan rating submitted ({submittedFanRating} star{submittedFanRating !== 1 ? 's' : ''})
-            </p>
-          )}
-        </div>
-      )}
-
-      {/* Fan Rating Stars - Show for fans when completed (to view creator's rating of them) */}
-      {type === "fan" && currentStatus === "completed" && submittedFanRating > 0 && (
-        <div className="flex flex-col items-center gap-2 py-3 border-t border-gray-600 pt-3">
-          <p className="text-sm text-gray-400 mb-2">Rating from {firstName && lastName ? `${firstName} ${lastName}` : (username || name)}:</p>
-          <div className="flex justify-center gap-2">
-            {[1, 2, 3, 4, 5].map((star) => {
-              const isFilled = star <= submittedFanRating;
-
-              return (
-                <button
-                  key={star}
-                  onClick={() => {
-                    if (fanRatingData) {
-                      setShowFanFeedbackModal(true);
-                    }
-                  }}
-                  className="text-4xl transition-colors focus:outline-none hover:scale-110 cursor-pointer"
-                >
-                  <span className={`transition-colors ${isFilled ? "text-yellow-400" : "text-gray-400"
-                    } hover:text-yellow-400`}>
-                    ★
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-          <p className="text-sm text-blue-400 font-medium cursor-pointer hover:text-blue-300" onClick={() => setShowFanFeedbackModal(true)}>
-            Click stars to view feedback
-          </p>
-        </div>
-      )}
-
-      {/* Rating Modal */}
-      <RatingModal
-        isOpen={showRatingModal}
-        onClose={() => {
-          setShowRatingModal(false);
-          setSelectedRating(0);
-        }}
-        onSubmit={handleRatingSubmit}
-        creatorName={firstName && lastName ? `${firstName} ${lastName}` : (username || name)}
-        hostType={hosttype}
-        loading={ratingLoading}
-        preSelectedRating={selectedRating}
-      />
-
-      {/* Fan Rating Modal */}
-      <FanRatingModal
-        isOpen={showFanRatingModal}
-        onClose={() => {
-          setShowFanRatingModal(false);
-          setSelectedFanRating(0);
-        }}
-        onSubmit={handleFanRatingSubmit}
-        fanName={firstName && lastName ? `${firstName} ${lastName}` : (username || name)}
-        hostType={hosttype}
-        loading={fanRatingLoading}
-        preSelectedRating={selectedFanRating}
-      />
-
-      {/* Cancel Confirmation Modal */}
-      {showCancelConfirm && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-[9999] p-4"
-          onClick={() => !loading && setShowCancelConfirm(false)}
-        >
-          <div
-            className="bg-[#111624] rounded-2xl p-6 max-w-sm w-full border border-white/10 relative overflow-hidden"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Top accent line */}
-            <div
-              className="absolute top-0 left-0 right-0 h-[3px]"
-              style={{ background: "linear-gradient(90deg,#f43f5e,#fb923c)" }}
+        {/* ── Rating: fan rates creator ───────────────────────── */}
+        {type === "fan" && currentStatus === "completed" && (
+          <div className="rounded-xl border border-white/[0.07] bg-white/[0.02] py-4 px-3 flex flex-col items-center gap-2">
+            <StarRow
+              value={submittedRating}
+              clickable={submittedRating === 0}
+              onPick={(star) => {
+                setShowRatingModal(true);
+                // Store the selected rating for the modal
+                setSelectedRating(star);
+              }}
+              size="text-4xl"
             />
-
-            <div className="flex items-center justify-center mb-4 mt-1">
-              <div
-                className="w-14 h-14 rounded-full flex items-center justify-center"
-                style={{ background: "rgba(244,63,94,.12)", border: "1px solid rgba(244,63,94,.25)" }}
-              >
-                <IoWarningOutline className="text-rose-400" size={26} />
-              </div>
-            </div>
-
-            <h3 className="text-white font-bold text-base text-center mb-2">
-              Cancel this {(hosttype || "Fan Meet").toLowerCase() === "fan call" ? "call" : (hosttype || "Fan Meet").toLowerCase() === "fan date" ? "date" : "meet"}?
-            </h3>
-
-            <p className="text-gray-400 text-xs text-center mb-6 leading-relaxed">
-              {currentStatus === "accepted"
-                ? `This booking has already been accepted. Cancelling will notify ${type === "creator" ? "the fan" : "the creator"} right away, and any pending gold on this request will be refunded. This can't be undone.`
-                : "This will withdraw the request and notify the other party. This can't be undone."}
-            </p>
-
-            <div className="flex gap-3">
-              <button
-                onClick={() => setShowCancelConfirm(false)}
-                disabled={loading}
-                className="flex-1 py-2.5 rounded-xl text-sm font-semibold border border-white/10 text-gray-300 hover:bg-white/5 transition-colors disabled:opacity-50"
-              >
-                Go back
-              </button>
-              <button
-                onClick={async () => {
-                  await handleCancel();
-                  setShowCancelConfirm(false);
-                }}
-                disabled={loading}
-                className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white transition-all disabled:opacity-60"
-                style={{ background: "linear-gradient(135deg,#f43f5e,#fb7185)" }}
-              >
-                {loading ? "Cancelling..." : "Yes, cancel"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Feedback Modal for Creators */}
-      {showFeedbackModal && ratingData && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999] p-4">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full">
-            <h2 className="text-xl font-bold text-gray-800 mb-4">Rating & Feedback</h2>
-
-            <div className="mb-4">
-              <p className="text-sm text-gray-600 mb-2">Rating from {ratingData.fanName}:</p>
-              <div className="flex gap-1">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <span
-                    key={star}
-                    className={`text-2xl ${star <= ratingData.rating ? "text-yellow-400" : "text-gray-300"
-                      }`}
-                  >
-                    ★
-                  </span>
-                ))}
-                <span className="ml-2 text-gray-600 font-medium">
-                  {ratingData.rating} out of 5 stars
-                </span>
-              </div>
-            </div>
-
-            {ratingData.feedback && (
-              <div className="mb-6">
-                <h3 className="text-sm font-semibold text-gray-800 mb-2">Feedback:</h3>
-                <p className="text-gray-700 bg-gray-50 p-3 rounded-lg text-sm">
-                  &ldquo;{ratingData.feedback}&rdquo;
-                </p>
-              </div>
+            {submittedRating > 0 && (
+              <p className="text-sm text-emerald-400 font-medium">
+                ✓ Rating submitted ({submittedRating} star{submittedRating !== 1 ? 's' : ''})
+              </p>
             )}
-
-            <button
-              onClick={() => setShowFeedbackModal(false)}
-              className="w-full bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors"
-            >
-              Close
-            </button>
           </div>
-        </div>
-      )}
-
-      {/* Fan Feedback Modal for Fans */}
-      {showFanFeedbackModal && fanRatingData && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999] p-4">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full">
-            <h2 className="text-xl font-bold text-gray-800 mb-4">Rating & Feedback</h2>
-
-            <div className="mb-4">
-              <p className="text-sm text-gray-600 mb-2">Rating from {fanRatingData.creatorName}:</p>
-              <div className="flex gap-1">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <span
-                    key={star}
-                    className={`text-2xl ${star <= fanRatingData.rating ? "text-yellow-400" : "text-gray-300"
-                      }`}
-                  >
-                    ★
-                  </span>
-                ))}
-                <span className="ml-2 text-gray-600 font-medium">
-                  {fanRatingData.rating} out of 5 stars
-                </span>
-              </div>
-            </div>
-
-            {fanRatingData.feedback && (
-              <div className="mb-6">
-                <h3 className="text-sm font-semibold text-gray-800 mb-2">Feedback:</h3>
-                <p className="text-gray-700 bg-gray-50 p-3 rounded-lg text-sm">
-                  &ldquo;{fanRatingData.feedback}&rdquo;
-                </p>
-              </div>
-            )}
-
-            <button
-              onClick={() => setShowFanFeedbackModal(false)}
-              className="w-full bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors"
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      )}
-
-      <div className={`flex flex-col gap-4 items-end`}>
-        {statusArr.slice(1).includes(currentStatus) ? (
-          // keep this row horizontal and make buttons equal width
-          <div className="flex w-full items-stretch gap-3">
-            <div className="flex-1 flex">
-             {type === "creator" && currentStatus === "accepted" ? (
-                <FanActionBtn
-                  label={
-                    hosttype?.toLowerCase() === "fan call"
-                      ? "Cancel call"
-                      : hosttype?.toLowerCase() === "fan date"
-                      ? "Cancel date"
-                      : "Cancel meet"
-                  }
-                  className={fanActionClass}
-                  onClick={() => setShowCancelConfirm(true)}
-                  disabled={loading}
-                />
-              ) : (
-                <div className="w-full border border-gray-600 text-gray-500 px-3 py-2 rounded-lg text-xs md:text-sm flex items-center justify-center">
-                  {cardStates[currentStatus as keyof typeof cardStates]}
-                </div>
-              )}
-            </div>
-
-            <div className="flex-1">
-              {type === "creator" && currentStatus === "accepted" ? (
-                // Creator accepted → Chat Now + View details
-                <div className="flex gap-3">
-                  <div className="flex-1">
-                    <FanActionBtn
-                      label="Chat Now"
-                      className={fanActionClass}
-                      onClick={() => {
-                        // Creator wants to message the fan
-                        if (userid) {
-                          router.push(`/message/${userid}`);
-                        }
-                      }}
-                    />
-                  </div>
-                  <div className="flex-1">
-                    <button className={fanActionClass} onClick={handleShowDetails}>View details</button>
-                  </div>
-                </div>
-              ) : type === "fan" && currentStatus === "accepted" ? (
-                // Fan accepted → Mark complete/Start call + View details
-                <div className="flex gap-3">
-                  <div className="flex-1">
-                    <FanActionBtn
-                      label={hosttype === "Fan call" ? "Start call" : "Mark as complete"}
-                      className={fanActionClass}
-                      onClick={handleComplete}
-                      disabled={loading}
-                    />
-                  </div>
-                  <div className="flex-1">
-                    <button className={fanActionClass} onClick={handleShowDetails}>View details</button>
-                  </div>
-                </div>
-              ) : type === "creator" ? (
-                <FanActionBtn
-                  label="Chat Now"
-                  className={fanActionClass}
-                  onClick={() => {
-                    // Creator wants to message the fan
-                    if (userid) {
-                      console.log('🔍 [RequestCard] Chat Now button clicked (single):', {
-                        userid,
-                        creator_portfolio_id,
-                        currentUserId,
-                        timestamp: new Date().toISOString()
-                      });
-                      router.push(`/message/${userid}`);
-                    }
-                  }}
-                />
-              ) : (
-                <FanActionBtn label="Renew request" className={fanActionClass} onClick={handleRenewRequest} />
-              )}
-            </div>
-          </div>
-
-        ) : (
-          <>
-            {/* ---------- UPDATED EXPIRY ROW: now a bordered, padded full-width element ---------- */}
-            <div className='w-full'>
-              <div className='w-full flex justify-center'>
-                {/* full width button-like row with border, padding and rounded corners */}
-                <div className='w-full bg-transparent border border-gray-600 rounded-lg px-4 py-4 flex flex-col items-center justify-center'>
-                  <p className='text-lg md:text-xl text-gray-300 font-normal mb-1'>Expires in:</p>
-                  <p className='text-2xl md:text-3xl font-normal'>{exp}</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Action buttons row: Responsive layout for small screens */}
-            <div className='w-full flex flex-row gap-2 sm:gap-4 items-center'>
-              {type === "creator" ? (
-                // Creator: Accept | Decline | View details (responsive widths)
-                <>
-                  <div className='flex-1 min-w-0'>
-                    <CreatorActionBtn type='accept' onClick={handleAccept} disabled={loading} />
-                  </div>
-                  <div className='flex-1 min-w-0'>
-                    <CreatorActionBtn type='decline' onClick={handleDecline} disabled={loading} />
-                  </div>
-                  <div className='flex-1 min-w-0'>
-                    <button className={fanActionClass} onClick={handleShowDetails}>View details</button>
-                  </div>
-                </>
-              ) : (
-                // Fan: Cancel request | View details side-by-side
-                <>
-                  <div className='flex-1 min-w-0'>
-                    {type === "fan" && currentStatus === "request" && <FanActionBtn label='Cancel request' className={fanActionClass} onClick={() => setShowCancelConfirm(true)} disabled={loading} />}
-                  </div>
-                  <div className='flex-1 min-w-0'>
-                    <button className={fanActionClass} onClick={handleShowDetails}>View details</button>
-                  </div>
-                </>
-              )}
-            </div>
-          </>
         )}
+
+        {/* ── Rating: creator sees fan's rating ───────────────── */}
+        {type === "creator" && currentStatus === "completed" && submittedRating > 0 && (
+          <div className="rounded-xl border border-white/[0.07] bg-white/[0.02] py-4 px-3 flex flex-col items-center gap-2">
+            <p className="text-[13px] text-slate-400">Rating from {fullName}</p>
+            <StarRow
+              value={submittedRating}
+              clickable={!!ratingData}
+              onPick={() => setShowFeedbackModal(true)}
+              size="text-4xl"
+            />
+            <p className="text-sm text-indigo-300 font-medium cursor-pointer hover:text-indigo-200" onClick={() => setShowFeedbackModal(true)}>
+              Click stars to view feedback
+            </p>
+          </div>
+        )}
+
+        {/* ── Rating: creator rates fan ───────────────────────── */}
+        {type === "creator" && currentStatus === "completed" && (
+          <div className="rounded-xl border border-white/[0.07] bg-white/[0.02] py-4 px-3 flex flex-col items-center gap-2">
+            <p className="text-[13px] text-slate-400">Rate your fan</p>
+            <StarRow
+              value={submittedFanRating}
+              clickable={submittedFanRating === 0}
+              onPick={(star) => {
+                setShowFanRatingModal(true);
+                // Store the selected rating for the modal
+                setSelectedFanRating(star);
+              }}
+              size="text-4xl"
+            />
+            {submittedFanRating > 0 && (
+              <p className="text-sm text-emerald-400 font-medium">
+                ✓ Fan rating submitted ({submittedFanRating} star{submittedFanRating !== 1 ? 's' : ''})
+              </p>
+            )}
+          </div>
+        )}
+
+        {/* ── Rating: fan sees creator's rating of them ───────── */}
+        {type === "fan" && currentStatus === "completed" && submittedFanRating > 0 && (
+          <div className="rounded-xl border border-white/[0.07] bg-white/[0.02] py-4 px-3 flex flex-col items-center gap-2">
+            <p className="text-[13px] text-slate-400">Rating from {fullName}</p>
+            <StarRow
+              value={submittedFanRating}
+              clickable={!!fanRatingData}
+              onPick={() => setShowFanFeedbackModal(true)}
+              size="text-4xl"
+            />
+            <p className="text-sm text-indigo-300 font-medium cursor-pointer hover:text-indigo-200" onClick={() => setShowFanFeedbackModal(true)}>
+              Click stars to view feedback
+            </p>
+          </div>
+        )}
+
+        {/* Rating Modal */}
+        <RatingModal
+          isOpen={showRatingModal}
+          onClose={() => {
+            setShowRatingModal(false);
+            setSelectedRating(0);
+          }}
+          onSubmit={handleRatingSubmit}
+          creatorName={fullName}
+          hostType={hosttype}
+          loading={ratingLoading}
+          preSelectedRating={selectedRating}
+        />
+
+        {/* Fan Rating Modal */}
+        <FanRatingModal
+          isOpen={showFanRatingModal}
+          onClose={() => {
+            setShowFanRatingModal(false);
+            setSelectedFanRating(0);
+          }}
+          onSubmit={handleFanRatingSubmit}
+          fanName={fullName}
+          hostType={hosttype}
+          loading={fanRatingLoading}
+          preSelectedRating={selectedFanRating}
+        />
+
+        {/* Cancel Confirmation Modal */}
+        {showCancelConfirm && (
+          <div
+            className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-[9999] p-4"
+            onClick={() => !loading && setShowCancelConfirm(false)}
+          >
+            <div
+              className="bg-[#111624] rounded-2xl p-6 max-w-sm w-full border border-white/10 relative overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Top accent line */}
+              <div
+                className="absolute top-0 left-0 right-0 h-[3px]"
+                style={{ background: "linear-gradient(90deg,#f43f5e,#fb923c)" }}
+              />
+
+              <div className="flex items-center justify-center mb-4 mt-1">
+                <div
+                  className="w-14 h-14 rounded-full flex items-center justify-center"
+                  style={{ background: "rgba(244,63,94,.12)", border: "1px solid rgba(244,63,94,.25)" }}
+                >
+                  <IoWarningOutline className="text-rose-400" size={26} />
+                </div>
+              </div>
+
+              <h3 className="text-white font-bold text-base text-center mb-2">
+                Cancel this {(hosttype || "Fan Meet").toLowerCase() === "fan call" ? "call" : (hosttype || "Fan Meet").toLowerCase() === "fan date" ? "date" : "meet"}?
+              </h3>
+
+              <p className="text-gray-400 text-xs text-center mb-6 leading-relaxed">
+                {currentStatus === "accepted"
+                  ? `This booking has already been accepted. Cancelling will notify ${type === "creator" ? "the fan" : "the creator"} right away, and any pending gold on this request will be refunded. This can't be undone.`
+                  : "This will withdraw the request and notify the other party. This can't be undone."}
+              </p>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowCancelConfirm(false)}
+                  disabled={loading}
+                  className="flex-1 py-2.5 rounded-xl text-sm font-semibold border border-white/10 text-gray-300 hover:bg-white/5 transition-colors disabled:opacity-50"
+                >
+                  Go back
+                </button>
+                <button
+                  onClick={async () => {
+                    await handleCancel();
+                    setShowCancelConfirm(false);
+                  }}
+                  disabled={loading}
+                  className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white transition-all disabled:opacity-60"
+                  style={{ background: "linear-gradient(135deg,#f43f5e,#fb7185)" }}
+                >
+                  {loading ? "Cancelling..." : "Yes, cancel"}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Feedback Modal for Creators */}
+        {showFeedbackModal && ratingData && (
+          <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-[9999] p-4">
+            <div className="w-full max-w-md rounded-2xl border border-white/10 bg-[#0f1424] p-6 shadow-2xl">
+              <h2 className="text-lg font-bold text-white mb-4">Rating & Feedback</h2>
+
+              <div className="mb-4">
+                <p className="text-sm text-slate-400 mb-2">Rating from {ratingData.fanName}:</p>
+                <div className="flex items-center gap-1">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <span
+                      key={star}
+                      className={`text-2xl ${star <= ratingData.rating ? "text-yellow-400" : "text-slate-600"}`}
+                    >
+                      ★
+                    </span>
+                  ))}
+                  <span className="ml-2 text-slate-400 font-medium text-sm">
+                    {ratingData.rating} out of 5 stars
+                  </span>
+                </div>
+              </div>
+
+              {ratingData.feedback && (
+                <div className="mb-6">
+                  <h3 className="text-sm font-semibold text-slate-200 mb-2">Feedback:</h3>
+                  <p className="text-slate-300 bg-white/[0.04] border border-white/[0.06] p-3 rounded-xl text-sm">
+                    &ldquo;{ratingData.feedback}&rdquo;
+                  </p>
+                </div>
+              )}
+
+              <button
+                onClick={() => setShowFeedbackModal(false)}
+                className={primaryBtn}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Fan Feedback Modal for Fans */}
+        {showFanFeedbackModal && fanRatingData && (
+          <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-[9999] p-4">
+            <div className="w-full max-w-md rounded-2xl border border-white/10 bg-[#0f1424] p-6 shadow-2xl">
+              <h2 className="text-lg font-bold text-white mb-4">Rating & Feedback</h2>
+
+              <div className="mb-4">
+                <p className="text-sm text-slate-400 mb-2">Rating from {fanRatingData.creatorName}:</p>
+                <div className="flex items-center gap-1">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <span
+                      key={star}
+                      className={`text-2xl ${star <= fanRatingData.rating ? "text-yellow-400" : "text-slate-600"}`}
+                    >
+                      ★
+                    </span>
+                  ))}
+                  <span className="ml-2 text-slate-400 font-medium text-sm">
+                    {fanRatingData.rating} out of 5 stars
+                  </span>
+                </div>
+              </div>
+
+              {fanRatingData.feedback && (
+                <div className="mb-6">
+                  <h3 className="text-sm font-semibold text-slate-200 mb-2">Feedback:</h3>
+                  <p className="text-slate-300 bg-white/[0.04] border border-white/[0.06] p-3 rounded-xl text-sm">
+                    &ldquo;{fanRatingData.feedback}&rdquo;
+                  </p>
+                </div>
+              )}
+
+              <button
+                onClick={() => setShowFanFeedbackModal(false)}
+                className={primaryBtn}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* ── Actions ─────────────────────────────────────────── */}
+        <div className="flex flex-col gap-3">
+          {statusArr.slice(1).includes(currentStatus) ? (
+            // keep this row horizontal and make buttons equal width
+            <div className="flex w-full items-stretch gap-3">
+              <div className="flex-1 flex">
+                {type === "creator" && currentStatus === "accepted" ? (
+                  <FanActionBtn
+                    label={
+                      hosttype?.toLowerCase() === "fan call"
+                        ? "Cancel call"
+                        : hosttype?.toLowerCase() === "fan date"
+                        ? "Cancel date"
+                        : "Cancel meet"
+                    }
+                    className={ghostBtn}
+                    onClick={() => setShowCancelConfirm(true)}
+                    disabled={loading}
+                  />
+                ) : (
+                  <div className="w-full rounded-xl border border-white/[0.07] bg-white/[0.02] text-slate-500 px-3 py-2.5 text-xs md:text-sm flex items-center justify-center">
+                    {cardStates[currentStatus as keyof typeof cardStates]}
+                  </div>
+                )}
+              </div>
+
+              <div className="flex-1">
+                {type === "creator" && currentStatus === "accepted" ? (
+                  // Creator accepted → Chat Now + View details
+                  <div className="flex gap-3">
+                    <div className="flex-1">
+                      <FanActionBtn
+                        label="Chat Now"
+                        className={primaryBtn}
+                        onClick={() => {
+                          // Creator wants to message the fan
+                          if (userid) {
+                            router.push(`/message/${userid}`);
+                          }
+                        }}
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <button className={ghostBtn} onClick={handleShowDetails}>View details</button>
+                    </div>
+                  </div>
+                ) : type === "fan" && currentStatus === "accepted" ? (
+                  // Fan accepted → Mark complete/Start call + View details
+                  <div className="flex gap-3">
+                    <div className="flex-1">
+                      <FanActionBtn
+                        label={hosttype === "Fan call" ? "Start call" : "Mark as complete"}
+                        className={primaryBtn}
+                        onClick={handleComplete}
+                        disabled={loading}
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <button className={ghostBtn} onClick={handleShowDetails}>View details</button>
+                    </div>
+                  </div>
+                ) : type === "creator" ? (
+                  <FanActionBtn
+                    label="Chat Now"
+                    className={primaryBtn}
+                    onClick={() => {
+                      // Creator wants to message the fan
+                      if (userid) {
+                        console.log('🔍 [RequestCard] Chat Now button clicked (single):', {
+                          userid,
+                          creator_portfolio_id,
+                          currentUserId,
+                          timestamp: new Date().toISOString()
+                        });
+                        router.push(`/message/${userid}`);
+                      }
+                    }}
+                  />
+                ) : (
+                  <FanActionBtn label="Renew request" className={primaryBtn} onClick={handleRenewRequest} />
+                )}
+              </div>
+            </div>
+
+          ) : (
+            <>
+              {/* Expiry */}
+              <div className="w-full rounded-xl border border-white/[0.07] bg-white/[0.03] px-4 py-3.5 flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2.5 text-slate-400">
+                  <IoTimeOutline className="text-lg" />
+                  <span className="text-[12.5px] font-semibold uppercase tracking-wider">Expires in</span>
+                </div>
+                <p className={`text-xl md:text-2xl font-extrabold tabular-nums ${accent.text}`}>{exp}</p>
+              </div>
+
+              {/* Action buttons row: Responsive layout for small screens */}
+              <div className='w-full flex flex-row gap-2 sm:gap-3 items-center'>
+                {type === "creator" ? (
+                  // Creator: Accept | Decline | View details (responsive widths)
+                  <>
+                    <div className='flex-1 min-w-0'>
+                      <CreatorActionBtn type='accept' onClick={handleAccept} disabled={loading} />
+                    </div>
+                    <div className='flex-1 min-w-0'>
+                      <CreatorActionBtn type='decline' onClick={handleDecline} disabled={loading} />
+                    </div>
+                    <div className='flex-1 min-w-0'>
+                      <button className={ghostBtn} onClick={handleShowDetails}>View details</button>
+                    </div>
+                  </>
+                ) : (
+                  // Fan: Cancel request | View details side-by-side
+                  <>
+                    <div className='flex-1 min-w-0'>
+                      {type === "fan" && currentStatus === "request" && <FanActionBtn label='Cancel request' className={ghostBtn} onClick={() => setShowCancelConfirm(true)} disabled={loading} />}
+                    </div>
+                    <div className='flex-1 min-w-0'>
+                      <button className={primaryBtn} onClick={handleShowDetails}>View details</button>
+                    </div>
+                  </>
+                )}
+              </div>
+            </>
+          )}
+        </div>
       </div>
 
       {/* Details Modal */}
-     {showDetails && (
-  <DetailsModal
-    details={details}
-    onClose={() => setShowDetails(false)}
-    type={type}
-    hosttype={hosttype}
-    timeLeft={timeLeft}
-    currentStatus={currentStatus}
-    fanUserid={userid}
-    fanVerified={fanVerified}
-    creatorUserid={currentUserId}
-    requestId={requestId}
-   bookingRef={bookingRef}
-    price={price}
-    timerActive={timerActive}
-  setTimerActive={setTimerActive}
-  timeRemaining={timeRemaining}
-  setTimeRemaining={setTimeRemaining}
-  timerInterval={timerInterval}
-  setTimerInterval={setTimerInterval}
-  sessionCompleted={sessionCompleted}
-setSessionCompleted={setSessionCompleted}
-  />
-)}
+      {showDetails && (
+        <DetailsModal
+          details={details}
+          onClose={() => setShowDetails(false)}
+          type={type}
+          hosttype={hosttype}
+          timeLeft={timeLeft}
+          currentStatus={currentStatus}
+          fanUserid={userid}
+          fanVerified={fanVerified}
+          creatorUserid={currentUserId}
+          requestId={requestId}
+          bookingRef={bookingRef}
+          price={price}
+          timerActive={timerActive}
+          setTimerActive={setTimerActive}
+          timeRemaining={timeRemaining}
+          setTimeRemaining={setTimeRemaining}
+          timerInterval={timerInterval}
+          setTimerInterval={setTimerInterval}
+          sessionCompleted={sessionCompleted}
+          setSessionCompleted={setSessionCompleted}
+        />
+      )}
     </div>
   );
 }
 
 function CreatorActionBtn({ type, onClick, disabled }: { type: "accept" | "decline", onClick?: () => void, disabled?: boolean }) {
   // Use same base sizing so heights match - responsive padding and text
-  const base = 'w-full px-3 sm:px-6 py-2 sm:py-3 rounded-lg transition-all duration-500 text-xs sm:text-sm text-white flex items-center justify-center';
+  const base = 'w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl transition-all duration-200 text-xs sm:text-sm font-bold text-white flex items-center justify-center active:scale-[0.99]';
   return <button
-    className={`${base} ${type === "accept" ? "hover:bg-green-700 bg-green-600" : "hover:bg-red-700 bg-red-600"} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+    className={`${base} ${type === "accept" ? "bg-gradient-to-r from-emerald-600 to-green-600 hover:brightness-110 shadow-lg shadow-emerald-900/30" : "bg-rose-600/90 hover:bg-rose-600"} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
     onClick={onClick}
     disabled={disabled}
   >
@@ -1548,7 +1544,7 @@ function CreatorActionBtn({ type, onClick, disabled }: { type: "accept" | "decli
 
 function FanActionBtn({ label, className, onClick, disabled }: { label: string, className?: string, onClick?: () => void, disabled?: boolean }) {
   // allow overriding/using shared class; default uses the same base so sizing is consistent
-  const defaultClass = 'w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg transition-all duration-500 text-xs sm:text-sm flex items-center justify-center border border-gray-500 text-gray-300 hover:bg-slate-700 bg-transparent';
+  const defaultClass = 'w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl transition-all duration-200 text-xs sm:text-sm font-semibold flex items-center justify-center border border-white/10 bg-white/[0.03] text-slate-200 hover:bg-white/[0.08]';
   return <button
     className={`${className ? className : defaultClass} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
     onClick={onClick}
@@ -1558,8 +1554,40 @@ function FanActionBtn({ label, className, onClick, disabled }: { label: string, 
   </button>
 }
 
+function StarRow({
+  value,
+  clickable,
+  onPick,
+  size = "text-3xl",
+}: {
+  value: number;
+  clickable: boolean;
+  onPick?: (star: number) => void;
+  size?: string;
+}) {
+  return (
+    <div className="flex justify-center gap-1.5">
+      {[1, 2, 3, 4, 5].map((star) => (
+        <button
+          key={star}
+          type="button"
+          onClick={() => clickable && onPick && onPick(star)}
+          disabled={!clickable}
+          className={`${size} leading-none transition-transform focus:outline-none ${clickable ? "hover:scale-110 cursor-pointer" : "cursor-default"}`}
+        >
+          <span className={`transition-colors ${star <= value ? "text-yellow-400" : "text-slate-600"} ${clickable ? "hover:text-yellow-400" : ""}`}>
+            ★
+          </span>
+        </button>
+      ))}
+    </div>
+  );
+}
+
+
 // Old Rating component removed - using new 5-star system
 
+/* ── Redesigned details modal helpers (design only) ─────────────────────── */
 function InfoSection({
   icon,
   title,
