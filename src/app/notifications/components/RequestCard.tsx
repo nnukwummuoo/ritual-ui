@@ -1845,8 +1845,7 @@ const formatTimer = (seconds: number) => {
   const statusInfo = statusMeta[currentStatus || ""];
 
   // Pending amount (fan only, while the gold is still held)
-  const showPending =
-    type === "fan" &&
+ const showPending =
     !isCall &&
     (currentStatus === "request" || currentStatus === "accepted") &&
     Number(price) > 0;
@@ -1910,14 +1909,20 @@ const formatTimer = (seconds: number) => {
                   <span className="text-3xl font-extrabold text-white tabular-nums">{Number(price).toLocaleString()}</span>
                   <span className="text-sm font-bold text-orange-300">GOLD</span>
                 </p>
-                <p className="mt-0.5 text-[12px] text-slate-500">≈ ${(Number(price) * 0.04).toFixed(2)} USD</p>
+                {type === "creator" && (
+                  <p className="mt-0.5 text-[12px] text-slate-500">≈ ${(Number(price) * 0.04).toFixed(2)} USD</p>
+                )}
               </div>
               <div className="w-12 h-12 rounded-2xl bg-orange-500/15 border border-orange-500/25 flex items-center justify-center text-2xl">🪙</div>
             </div>
             <p className="relative mt-3 pt-3 border-t border-white/[0.06] text-[12.5px] leading-relaxed text-slate-400">
-              {currentStatus === "request"
-                ? "Held by Mmeko while the creator reviews your request."
-                : "Secured by Mmeko until you mark the booking as complete."}
+             {type === "creator"
+                ? currentStatus === "request"
+                  ? "Held by Mmeko while you review this request."
+                  : "Secured by Mmeko and released to you once the booking is completed."
+                : currentStatus === "request"
+                  ? "Held by Mmeko while the creator reviews your request."
+                  : "Secured by Mmeko until you mark the booking as complete."}
             </p>
           </div>
         )}
