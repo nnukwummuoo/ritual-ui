@@ -5,7 +5,7 @@ const TermsAndConditions = () => {
     <div className="w-screen mx-auto sm:w-11/12 md:w-10/12 lg:w-9/12 xl:w-8/12">
       <div className="flex flex-col w-full px-4 text-gray-400 md:px-0">
         <Head heading="✅ Terms and Conditions" />
-        <p className="mb-6 text-gray-500">Effective Date: 19th July 2026</p>
+        <p className="mb-6 text-gray-500">Effective Date: 25th November 2026</p>
 
         <section className="mb-6">
           <p className="mb-4">

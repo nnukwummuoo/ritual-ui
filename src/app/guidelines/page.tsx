@@ -20,7 +20,7 @@ const Community = () => {
                 <h4 className="text-lg font-bold text-white">Community Guidelines</h4>
             </header>
 
-            <p className="mb-6 text-gray-500">Updated: 19th July, 2026</p>
+            <p className="mb-6 text-gray-500">Updated: 25th November, 2026</p>
 
             <section className="mb-6">
                 <h2 className="text-2xl font-semibold text-gray-300">
