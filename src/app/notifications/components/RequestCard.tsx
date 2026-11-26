@@ -1518,7 +1518,8 @@ useEffect(() => {
     fanVerified={fanVerified}
     creatorUserid={currentUserId}
     requestId={requestId}
-    bookingRef={bookingRef}
+   bookingRef={bookingRef}
+    price={price}
     timerActive={timerActive}
   setTimerActive={setTimerActive}
   timeRemaining={timeRemaining}
@@ -1559,6 +1560,67 @@ function FanActionBtn({ label, className, onClick, disabled }: { label: string, 
 
 // Old Rating component removed - using new 5-star system
 
+function InfoSection({
+  icon,
+  title,
+  badge,
+  open,
+  onToggle,
+  children,
+}: {
+  icon: string;
+  title: string;
+  badge?: React.ReactNode;
+  open: boolean;
+  onToggle: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="rounded-2xl border border-white/[0.07] bg-[#0d1220] overflow-hidden">
+      <button
+        type="button"
+        onClick={onToggle}
+        aria-expanded={open}
+        className="w-full flex items-center gap-3 px-4 py-3.5 text-left hover:bg-white/[0.03] transition-colors"
+      >
+        <span className="w-8 h-8 rounded-lg bg-white/[0.05] flex items-center justify-center text-base shrink-0">{icon}</span>
+        <span className="flex-1 text-[13.5px] font-semibold text-slate-100">{title}</span>
+        {badge}
+        <svg
+          viewBox="0 0 24 24"
+          width="18"
+          height="18"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className={`text-slate-500 shrink-0 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+        >
+          <polyline points="6 9 12 15 18 9" />
+        </svg>
+      </button>
+      {open && (
+        <div className="px-4 pb-4 border-t border-white/[0.05]">
+          <div className="pt-3 text-[13px] leading-relaxed text-slate-400">{children}</div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function InfoTile({ icon, label, children }: { icon: React.ReactNode; label: string; children: React.ReactNode }) {
+  return (
+    <div className="flex items-start gap-3 rounded-2xl border border-white/[0.07] bg-[#0d1220] p-4">
+      <span className="w-9 h-9 rounded-xl bg-[#6c63ff]/15 text-[#a89cff] flex items-center justify-center text-lg shrink-0">{icon}</span>
+      <div className="min-w-0">
+        <p className="text-[10.5px] font-bold uppercase tracking-[0.1em] text-slate-500">{label}</p>
+        <div className="mt-0.5 text-[14px] font-semibold text-slate-100 break-words">{children}</div>
+      </div>
+    </div>
+  );
+}
+
 function DetailsModal({
   details,
   onClose,
@@ -1573,6 +1635,7 @@ function DetailsModal({
    timerActive,
   requestId,
   bookingRef,
+  price,
   setTimerActive,
   timeRemaining,
   setTimeRemaining,
@@ -1593,6 +1656,7 @@ function DetailsModal({
   creatorUserid?: string;
   requestId?: string;
   bookingRef?: string;
+  price?: number;
    timerActive: boolean;
   setTimerActive: (v: boolean) => void;
   timeRemaining: number;
@@ -1610,6 +1674,10 @@ setSessionCompleted: (v: boolean) => void;
   const [fanDocLoading, setFanDocLoading] = useState(true);
 
   const [lightboxSrc, setLightboxSrc] = useState<string>("");
+
+  // Which info accordion is open (design only)
+  const [openSection, setOpenSection] = useState<string | null>("safety");
+  const toggleSection = (id: string) => setOpenSection((prev) => (prev === id ? null : id));
 
   // ── Creator "Mark as Complete" ─────────────────────────────────────────
   const [showCompleteConfirm, setShowCompleteConfirm] = useState(false);
@@ -1690,11 +1758,6 @@ const formatTimer = (seconds: number) => {
   return `${m}:${s}`;
 };
 
-
-
-
-
-
  useEffect(() => {
   if (type !== "creator" || !fanUserid) return;
   const fetchFanDoc = async () => {
@@ -1722,16 +1785,21 @@ const formatTimer = (seconds: number) => {
     // For now, we'll show a placeholder
     return "Countdown not available";
   };
+
+  const isCall = hosttype?.toLowerCase() === "fan call";
+  const isDate = hosttype?.toLowerCase() === "fan date";
+  const sessionWord = isDate ? "date" : "meet";
+
   if (!details) {
     return (
-      <div className="fixed inset-0 z-[9999] overflow-y-auto">
-        <div className="bg-white rounded-lg p-6 max-w-md w-full">
-          <h2 className="text-xl font-bold text-gray-800 mb-4">{getDetailsTitle(hosttype || "Fan Meet")}</h2>
-          {bookingRef && <p className="text-xs font-mono text-gray-400 mb-3">Booking ID: {bookingRef}</p>}
-          <p className="text-gray-600 mb-4">Details not available</p>
+      <div className="fixed inset-0 z-[9999] bg-[#070a13] overflow-y-auto flex items-center justify-center p-4">
+        <div className="w-full max-w-md rounded-2xl border border-white/[0.08] bg-[#0d1220] p-6 shadow-2xl">
+          <h2 className="text-lg font-bold text-white mb-2">{getDetailsTitle(hosttype || "Fan Meet")}</h2>
+          {bookingRef && <p className="text-xs font-mono text-slate-500 mb-3">Booking ID: {bookingRef}</p>}
+          <p className="text-slate-400 mb-5">Details not available</p>
           <button
             onClick={onClose}
-            className="w-full bg-gray-500 text-white py-2 px-4 rounded-lg hover:bg-gray-600 transition-colors"
+            className="w-full py-3 rounded-xl bg-white/[0.06] text-white font-semibold hover:bg-white/[0.1] transition-colors"
           >
             Close
           </button>
@@ -1765,19 +1833,122 @@ const formatTimer = (seconds: number) => {
     }
   };
 
+  // Status pill (display only)
+  const statusMeta: Record<string, { label: string; cls: string }> = {
+    request:   { label: "Awaiting acceptance", cls: "bg-amber-500/15 text-amber-300 border-amber-500/30" },
+    accepted:  { label: "Accepted",            cls: "bg-emerald-500/15 text-emerald-300 border-emerald-500/30" },
+    completed: { label: "Completed",           cls: "bg-sky-500/15 text-sky-300 border-sky-500/30" },
+    declined:  { label: "Declined",            cls: "bg-rose-500/15 text-rose-300 border-rose-500/30" },
+    cancelled: { label: "Cancelled",           cls: "bg-rose-500/15 text-rose-300 border-rose-500/30" },
+    expired:   { label: "Expired",             cls: "bg-slate-500/15 text-slate-300 border-slate-500/30" },
+  };
+  const statusInfo = statusMeta[currentStatus || ""];
+
+  // Pending amount (fan only, while the gold is still held)
+  const showPending =
+    type === "fan" &&
+    !isCall &&
+    (currentStatus === "request" || currentStatus === "accepted") &&
+    Number(price) > 0;
+
+  const docImg = (link: string) => {
+    const key = link.split("/").pop()?.split("?")[0] || "";
+    return `${API_BASE}/api/image/view?publicId=${encodeURIComponent(key)}&bucket=creator-application`;
+  };
+  const docImgLightbox = (link: string) => {
+    const key = link.split("/").pop()?.split("?")[0] || "";
+    return `${API_BASE}/api/image/view?publicId=${encodeURIComponent(key)}&bucket=post`;
+  };
+
   return (
-    <div className="fixed inset-0 z-[9999] overflow-y-auto">
-<div className="bg-white w-full h-full min-h-screen p-6 overflow-y-auto">
-        {/* Creator: Mark as Complete (Fan Meet / Fan Date, accepted bookings only) */}
-        {type === "creator" && currentStatus === "accepted" && hosttype?.toLowerCase() !== "fan call" && (
+    <div className="fixed inset-0 z-[9999] bg-[#070a13] overflow-y-auto text-slate-200">
+      {/* ── Top bar ─────────────────────────────────────────────── */}
+      <div className="sticky top-0 z-20 border-b border-white/[0.06] bg-[#070a13]/85 backdrop-blur-xl">
+        <div className="mx-auto max-w-2xl px-4 h-14 flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <span className="w-1 h-5 rounded-full bg-gradient-to-b from-[#6c63ff] to-[#9b59f5]" />
+            <h2 className="text-[15px] font-bold text-white tracking-tight">{getDetailsTitle(hosttype || "Fan Meet")}</h2>
+          </div>
+          <button
+            onClick={onClose}
+            aria-label="Close"
+            className="w-9 h-9 rounded-full bg-white/[0.06] text-slate-300 hover:bg-white/[0.12] hover:text-white transition-colors flex items-center justify-center"
+          >
+            ✕
+          </button>
+        </div>
+      </div>
+
+      <div className="mx-auto max-w-2xl px-4 pt-5 pb-32 space-y-4">
+
+        {/* ── Hero: booking id + status ───────────────────────── */}
+        {(bookingRef || statusInfo) && (
+          <div className="rounded-2xl border border-white/[0.07] bg-gradient-to-br from-[#6c63ff]/[0.14] via-[#0d1220] to-[#0d1220] p-4 flex items-center justify-between gap-3">
+            <div className="min-w-0">
+              <p className="text-[10.5px] font-bold uppercase tracking-[0.1em] text-slate-500">Booking ID</p>
+              <p className="mt-0.5 text-[13px] font-mono text-slate-200 truncate">{bookingRef || "—"}</p>
+            </div>
+            {statusInfo && (
+              <span className={`shrink-0 px-3 py-1 rounded-full border text-[11.5px] font-bold ${statusInfo.cls}`}>
+                {statusInfo.label}
+              </span>
+            )}
+          </div>
+        )}
+
+        {/* ── Pending amount (fan) ───────────────────────────── */}
+        {showPending && (
+          <div className="relative overflow-hidden rounded-2xl border border-orange-500/25 bg-gradient-to-br from-orange-500/[0.14] via-[#0d1220] to-[#0d1220] p-5">
+            <div className="absolute -top-10 -right-10 w-32 h-32 rounded-full bg-orange-500/10 blur-2xl" />
+            <div className="relative flex items-center justify-between gap-4">
+              <div>
+                <p className="flex items-center gap-1.5 text-[10.5px] font-bold uppercase tracking-[0.12em] text-orange-300">
+                  <span className="w-1.5 h-1.5 rounded-full bg-orange-400 animate-pulse" />
+                  Pending
+                </p>
+                <p className="mt-1.5 flex items-baseline gap-2">
+                  <span className="text-3xl font-extrabold text-white tabular-nums">{Number(price).toLocaleString()}</span>
+                  <span className="text-sm font-bold text-orange-300">GOLD</span>
+                </p>
+                <p className="mt-0.5 text-[12px] text-slate-500">≈ ${(Number(price) * 0.04).toFixed(2)} USD</p>
+              </div>
+              <div className="w-12 h-12 rounded-2xl bg-orange-500/15 border border-orange-500/25 flex items-center justify-center text-2xl">🪙</div>
+            </div>
+            <p className="relative mt-3 pt-3 border-t border-white/[0.06] text-[12.5px] leading-relaxed text-slate-400">
+              {currentStatus === "request"
+                ? "Held by Mmeko while the creator reviews your request."
+                : "Secured by Mmeko until you mark the booking as complete."}
+            </p>
+          </div>
+        )}
+
+        {/* ── Countdown (accepted) ───────────────────────────── */}
+        {currentStatus === "accepted" && (
+          <div className="rounded-2xl border border-orange-500/20 bg-gradient-to-r from-orange-500/[0.1] to-rose-500/[0.08] p-4">
+            <div className="flex items-center justify-center gap-3">
+              <IoTimeOutline className="text-orange-400 text-2xl" />
+              <div className="text-center">
+                <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-slate-400">
+                  {isCall ? "Expires in" : "Remain to meet"}
+                </p>
+                <p className="mt-0.5 text-2xl font-extrabold text-orange-300 tabular-nums">
+                  {timeLeft || getFallbackCountdown()}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── Creator: Mark as Complete ──────────────────────── */}
+        {type === "creator" && currentStatus === "accepted" && !isCall && (
           creatorMarked ? (
-            <div className="w-full mb-5 py-3 rounded-lg text-center font-semibold text-green-700 bg-green-50 border border-green-200">
+            <div className="w-full py-3.5 rounded-2xl text-center text-sm font-semibold text-emerald-300 bg-emerald-500/10 border border-emerald-500/25">
               ✓ Marked as complete — your fan has been notified
             </div>
           ) : (
             <button
               onClick={() => setShowCompleteConfirm(true)}
-              className="w-full mb-5 py-3 rounded-lg font-bold text-white transition-all hover:opacity-90"
+              className="w-full py-3.5 rounded-2xl font-bold text-white transition-all hover:brightness-110 active:scale-[0.99] shadow-lg shadow-emerald-900/30"
               style={{ background: "linear-gradient(135deg, #16a34a, #15803d)" }}
             >
               Mark as Complete
@@ -1785,521 +1956,431 @@ const formatTimer = (seconds: number) => {
           )
         )}
 
-        {showCompleteConfirm && (
-          <div
-            className="fixed inset-0 z-[10000] bg-black/60 flex items-center justify-center p-4"
-            onClick={() => !markingComplete && setShowCompleteConfirm(false)}
-          >
-            <div
-              className="bg-white rounded-2xl w-full max-w-sm p-6 shadow-2xl"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <h3 className="text-lg font-bold text-gray-800 mb-3">Mark this booking as complete?</h3>
-           <p className="text-sm text-gray-600 leading-relaxed">
-                Only click this after the meet has ended — whether it went well or not.
-              </p>
-              <p className="text-sm text-gray-600 leading-relaxed mt-3">
-                This will notify your fan to mark it as complete too. Once they do, your payment is released instantly.
-              </p>
-              <p className="text-sm text-gray-600 leading-relaxed mt-3">
-                If they don’t mark it as complete within 15 minutes, contact <strong>Mmeko Support</strong> and we will release your payment immediately.
-              </p>
-              <div className="flex gap-3 mt-6">
-                <button
-                  onClick={() => setShowCompleteConfirm(false)}
-                  disabled={markingComplete}
-                  className="flex-1 py-3 rounded-lg border border-gray-300 text-gray-700 font-semibold hover:bg-gray-100 disabled:opacity-50"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleCreatorMarkComplete}
-                  disabled={markingComplete}
-                  className="flex-1 py-3 rounded-lg font-bold text-white disabled:opacity-60"
-                  style={{ background: "linear-gradient(135deg, #16a34a, #15803d)" }}
-                >
-                  {markingComplete ? "Sending…" : "Yes, mark complete"}
-                </button>
-              </div>
+        {/* ── Schedule / Venue / Duration ───────────────────── */}
+        {!isCall && (
+          <div className="space-y-3">
+            <InfoTile icon={<IoCalendarOutline />} label="Booking Schedule">
+              {formatDate(details.date)} at {formatTime(details.time)}
+            </InfoTile>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <InfoTile icon={<IoLocationOutline />} label="Venue">
+                {details.venue}
+              </InfoTile>
+              <InfoTile icon={<IoTimeOutline />} label="Duration">
+                {details.duration || (isDate ? "1 hour per session" : "30 minutes per session")}
+              </InfoTile>
             </div>
-          </div>
-        )}
 
-        {showStartConfirm && (
-          <div
-            className="fixed inset-0 z-[10000] bg-black/60 flex items-center justify-center p-4"
-            onClick={() => setShowStartConfirm(false)}
-          >
-            <div
-              className="bg-white rounded-2xl w-full max-w-sm p-6 shadow-2xl"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <h3 className="text-lg font-bold text-gray-800 mb-3">
-                Start the {hosttype?.toLowerCase() === "fan date" ? "date" : "meet"} timer?
-              </h3>
-              <p className="text-sm text-gray-600 leading-relaxed">
-                Only start this when the {hosttype?.toLowerCase() === "fan date" ? "date" : "meet"} begins.
-              </p>
-              <p className="text-sm text-gray-600 leading-relaxed mt-3">
-                The timer runs for {hosttype?.toLowerCase() === "fan date" ? "1 hour" : "30 minutes"}. You and your fan will be notified now, and again when the time is up.
-              </p>
-              <div className="flex gap-3 mt-6">
-                <button
-                  onClick={() => setShowStartConfirm(false)}
-                  className="flex-1 py-3 rounded-lg border border-gray-300 text-gray-700 font-semibold hover:bg-gray-100"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={() => {
-                    setShowStartConfirm(false);
-                    handleStartTimer();
-                  }}
-                  className="flex-1 py-3 rounded-lg font-bold text-white"
-                  style={{ background: "linear-gradient(135deg, #6c63ff, #9b59f5)" }}
-                >
-                  Start timer
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        <h2 className="text-xl font-bold text-gray-800 mb-6">{getDetailsTitle(hosttype || "Fan Meet")}</h2>
-        {bookingRef && <p className="text-xs font-mono text-gray-400 mb-5">Booking ID: {bookingRef}</p>}
-
-        {/* Expiration Countdown - Only show for accepted requests */}
-        {currentStatus === "accepted" && (
-          <div className="mb-6 p-4 bg-gradient-to-r from-orange-50 to-red-50 border border-orange-200 rounded-lg">
-            <div className="flex items-center justify-center gap-2">
-              <IoTimeOutline className="text-orange-500 text-xl" />
-              <div className="text-center">
-                <p className="text-sm text-gray-600 mb-1">
-                  {hosttype?.toLowerCase() === "fan call" ? "Expires in:" : "Remain to meet:"}
+            {currentStatus === "accepted" && (
+              <div className="rounded-2xl border border-sky-500/20 bg-sky-500/[0.07] p-4">
+                <p className="text-[10.5px] font-bold uppercase tracking-[0.1em] text-sky-300 flex items-center gap-1.5 mb-1.5">
+                  ⚠️ Card Expiration Rule
                 </p>
-                <p className="text-2xl font-bold text-orange-600">
-  {timeLeft || getFallbackCountdown()}
-</p>
-                
-
-              </div>
-            </div>
-          </div>
-        )}
-
-       {/* How it works for Fan Meet and Fan Date */}
-{hosttype?.toLowerCase() !== "fan call" && (
-  <div className="flex items-start gap-3 mb-4">
-    <span className="text-xl mt-1">👉</span>
-    <div>
-      <h3 className="font-semibold text-gray-800">What happens next?</h3>
-      <p className="text-gray-600 text-sm mt-1">
-        Once a booking request is sent, the creator has up to 24 hours to accept. After acceptance, the{" "}
-        <strong>{hosttype?.toLowerCase() === "fan date" ? "date" : "meet & greet"}</strong>{" "}
-        can take place at any time based on mutual availability within that booking.
-      </p>
-    </div>
-  </div>
-)}
-
-
-{/* Payment details before acceptance */}
-{hosttype?.toLowerCase() !== "fan call" && (
-  <div className="flex items-start gap-3 mb-4">
-    <span className="text-xl mt-1">🔒</span>
-    <div>
-      <h3 className="font-semibold text-gray-800">Payment Secured</h3>
-      {type === "creator" ? (
-        <>
-          <p className="text-gray-600 text-sm mt-1">
-            Once a booking is accepted, your payment is secured and held by Mmeko.
-          </p>
-          <p className="text-gray-600 text-sm mt-2">
-            After the {hosttype?.toLowerCase() === "fan date" ? "date" : "meet"}, click the <strong>“Mark as Complete”</strong> button above and leave. Your fan will be notified to mark it as complete too. Once they do, your payment is released instantly.
-          </p>
-          <p className="text-gray-600 text-sm mt-2">
-            If they don’t mark it as complete within 15 minutes, contact <strong>Mmeko Support</strong> and we will release your payment immediately.
-          </p>
-        </>
-      ) : (
-        <p className="text-gray-600 text-sm mt-1">
-          Once a booking is accepted, your payment is secured and held by Mmeko. After the{" "}
-          <strong>{hosttype?.toLowerCase() === "fan date" ? "date" : "meet & greet"}</strong>,{" "}
-          Click <strong>"Mark as Complete"</strong> on the request card — whether the meet went well or not. This releases the payment to the creator.
-        </p>
-      )}
-    </div>
-  </div>
-)}
-
-{/* No Show Policy for creator */}
-{type === "creator" && hosttype?.toLowerCase() !== "fan call" && (
-  <div className="flex items-start gap-3 mb-4">
-    <span className="text-xl mt-1">🛑</span>
-    <div>
-      <h3 className="font-semibold text-gray-800">No show?? No problem!</h3>
-      <p className="text-gray-600 text-sm mt-1">
-        Cancellation by the fan is not allowed after you accept a booking request. If the fan does not show up, or asks to cancel, simply contact <strong>Mmeko Support</strong> and we will release your payment immediately. 🙂
-      </p>
-    </div>
-  </div>
-)}
-
-{/* No Show Policy for fan */}
-{type === "fan" && hosttype?.toLowerCase() !== "fan call" && (
-  <div className="flex items-start gap-3 mb-4">
-    <span className="text-xl mt-1">🤝</span>
-    <div>
-      <h3 className="font-semibold text-gray-800">Protected Booking</h3>
-      <p className="text-gray-600 text-sm mt-1">
-           Cancellations are not allowed after acceptance. If you don't show up, fails to respond to messages within 24 hours, or request a cancellation, your payment is forfeited to the creator. However, <strong>if the creator does not show up or respond</strong>, your payment is fully protected—simply do not mark it complete, and the funds will automatically refund to you on day 20. 🙂
-      </p>
-    </div>
-  </div>
-)}
-
-{/* Off-Platform Safety Notice */}
-{hosttype?.toLowerCase() !== "fan call" && (
-  <div className="flex items-start gap-3 mb-4">
-    <span className="text-xl mt-1">💬</span>
-    <div>
-      <h3 className="font-semibold text-gray-800">Keep chat on-platform</h3>
-      <p className="text-gray-600 text-sm mt-1">
-           Always keep your arrangements and conversations within the Mmeko chat. This is your ultimate protection if our support team ever needs to review a dispute or release a payment manually.
-      </p>
-    </div>
-  </div>
-)}
-
-
-         {/* How it works for fan call */}
-        {hosttype?.toLowerCase() === "fan call" && (
-          <div className="flex items-start gap-3 mb-4">
-           <span className="text-xl mt-1">👉</span>
-            <div>
-              <h3 className="font-semibold text-gray-800">What happens next?</h3>
-              <p className="text-gray-600 text-sm mt-1">
-                Once a booking request is sent, the creator has up to 24 hours to accept it. After the creator accepts, the call can be started anytime based on mutual availability within that booking.
-              </p>
-            </div>
-          </div>
-        )}
-
-       {/* Schedule / Date Section */}
-{hosttype?.toLowerCase() !== "fan call" && (
-  <div className="flex items-start gap-3 mb-4">
-    <span className="text-xl mt-1">📅</span>
-    <div className="w-full">
-      <h3 className="font-semibold text-gray-800">Booking Schedule</h3>
-      <p className="text-gray-600"> {formatDate(details.date)} at {formatTime(details.time)}</p>
-      
-      {/* Card Expiration Box - Nested exactly like the Premium box */}
-      {currentStatus === "accepted" && (
-        <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm">
-          <p className="font-bold text-xs uppercase tracking-wider text-blue-600 mb-1 flex items-center gap-1">
-            ⚠️ Card Expiration Rule
-          </p>
-          <p className="text-gray-600 leading-relaxed text-xs sm:text-sm">
-            While bookings must occur within 14 days, this card remains active for 20 days as a completion grace period. If not marked as complete and no creator dispute is filed by day 18, it automatically expires and refunds the fan.
-          </p>
-        </div>
-      )}
-    </div>
-  </div>
-)}
-
-        {/* Venue - Hide for Fan Call */}
-        {hosttype?.toLowerCase() !== "fan call" && (
-          <div className="flex items-start gap-3 mb-4">
-            <span className="text-xl mt-1">📍</span>
-            <div>
-              <h3 className="font-semibold text-gray-800">Venue</h3>
-              <p className="text-gray-600">{details.venue}</p>
-            </div>
-          </div>
-        )}
-
-    {/* Duration */}
-{hosttype?.toLowerCase() !== "fan call" && (
-  <div className="flex items-start gap-3 mb-4">
-    <span className="text-xl mt-1">⏱️</span>
-    <div className="w-full">
-      <h3 className="font-semibold text-gray-800">Duration</h3>
-      <p className="text-gray-600">
-        {details.duration || (hosttype?.toLowerCase() === "fan date" ? "1 hour per session" : "30 minutes per session")}
-      </p>
-    </div>
-  </div>
-)}
-        
-
-    
-        {/* Call Expiration Notice - Only show for fan calls */}
-        {hosttype?.toLowerCase() === "fan call" && (
-          <div className="flex items-start gap-3 mb-4">
-            <span className="text-xl mt-1">⏳</span>
-            <div>
-              <h3 className="font-semibold text-gray-800">Call Expiration</h3>
-              <p className="text-gray-600 text-sm mt-1">
-                Call must start within 10 days (240 hours) after acceptance or it will automatically expire.
-              </p>
-            </div>
-          </div>
-        )}
-
-
- {type === "creator" && currentStatus === "accepted" && hosttype?.toLowerCase() !== "fan call" && (
-  <div className="flex items-start gap-3 mb-4">
-    <span className="text-xl mt-1">⏰</span>
-    <div className="w-full">
-      <div className="flex items-center gap-2">
-        <h3 className="font-semibold text-gray-800">Timer</h3>
-        <span className="text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 border border-gray-200">
-          Optional
-        </span>
-      </div>
-
-      {/* Button or countdown */}
-      <div className="mt-2 mb-3">
-       {timerActive ? (
-  <div className="w-full py-3 rounded-lg text-center font-bold text-white text-xl"
-    style={{ background: "linear-gradient(135deg, #f97316, #ef4444)" }}>
-    ⏱️ {formatTimer(timeRemaining)} remaining
-  </div>
-) : timeRemaining === 0 ? (
-  <div className="w-full py-3 rounded-lg text-center font-bold text-white text-xl"
-    style={{ background: "linear-gradient(135deg, #16a34a, #15803d)" }}>
-    ✅ {hosttype || "Fan Meet"} Completed
-  </div>
-) : (
-  <button
-    onClick={() => setShowStartConfirm(true)}
-    className="w-full py-3 rounded-lg font-bold text-white transition-all"
-    style={{ background: "linear-gradient(135deg, #6c63ff, #9b59f5)" }}
-  >
-    Start {hosttype || "Fan Meet"}
-  </button>
-)}
-      </div>
-
-  <p className="text-gray-600 text-sm mt-1">
-{timeRemaining === 0 && !timerActive
-    ? "The scheduled time is over. If the meet has finished, click the “Mark as Complete” button above."
-    : `Start this timer when the ${hosttype?.toLowerCase() === "fan date" ? "date" : "meet & greet"} begins. It runs for ${hosttype?.toLowerCase() === "fan date" ? "1 hour" : "30 minutes"} and notifies both you and your fan when it starts and when it ends.`
-  }
-</p>
-    </div>
-  </div>
-)}
-
-
-
-
-          {/* Fan Verification Documents - Only show to creator */}
-{type === "creator" && fanDocument && fanVerified && (
-  <div className="flex items-start gap-3 mb-6">
-    <span className="text-xl mt-1">🪪</span>
-    <div className="w-full">
-      <h3 className="font-semibold text-gray-800 mb-3">Fan Verification</h3>
-      <div className="grid grid-cols-2 gap-3">
-       {fanDocument.idPhotofilelink && (
-  <div>
-    <p className="text-xs text-gray-500 mb-1">ID Document</p>
-   <img
-  src={(() => {
-    const original = fanDocument.idPhotofilelink!;
-    const key = original.split("/").pop()?.split("?")[0] || "";
-    return `${API_BASE}/api/image/view?publicId=${encodeURIComponent(key)}&bucket=creator-application`;
-  })()}
-  alt="Fan ID"
-  className="w-full rounded-lg object-cover border border-gray-200 cursor-pointer hover:opacity-90 transition-opacity"
-  onClick={() => setLightboxSrc(`${API_BASE}/api/image/view?publicId=${encodeURIComponent(fanDocument.idPhotofilelink!.split("/").pop()?.split("?")[0] || "")}&bucket=post`)}
-/>
-  </div>
-)}
-{fanDocument.holdingIdPhotofilelink && (
-  <div>
-    <p className="text-xs text-gray-500 mb-1">Selfie with ID</p>
-    <img
-  src={(() => {
-    const original = fanDocument.holdingIdPhotofilelink!;
-    const key = original.split("/").pop()?.split("?")[0] || "";
-    return `${API_BASE}/api/image/view?publicId=${encodeURIComponent(key)}&bucket=creator-application`;
-  })()}
-  alt="Fan selfie with ID"
-  className="w-full rounded-lg object-cover border border-gray-200 cursor-pointer hover:opacity-90 transition-opacity"
-  onClick={() => setLightboxSrc(`${API_BASE}/api/image/view?publicId=${encodeURIComponent(fanDocument.holdingIdPhotofilelink!.split("/").pop()?.split("?")[0] || "")}&bucket=post`)}
-/>
-  </div>
-)}
-      </div>
-    </div>
-  </div>
-)}
-
-{/* Fan Verified Badge - Only show to creator */}
-{type === "creator" && (
-  <div className="flex items-start gap-3 mb-6">
-    <span className="text-xl mt-1">🪪</span>
-    <div>
-      <h3 className="font-semibold text-gray-800 mb-1">Fan Identity</h3>
-      {fanVerified ? (
-        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-sm font-bold"
-          style={{
-            background: "linear-gradient(135deg,rgba(108,99,255,.15),rgba(155,89,245,.1))",
-            border: "1px solid rgba(108,99,255,.3)",
-            color: "#6c63ff"
-          }}
-        >
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="none">
-            <path d="M12 2.8L4.5 6V11C4.5 15.2 7.9 19.4 12 20.6C16.1 19.4 19.5 15.2 19.5 11V6L12 2.8Z" fill="#6c63ff"/>
-            <path d="M12 7l1.2 2.4 2.6.4-1.9 1.85.45 2.6L12 13.1l-2.35 1.15.45-2.6L8.2 9.8l2.6-.4L12 7z" fill="white"/>
-          </svg>
-          Verified Fan
-        </span>
-      ) : (
-        <p className="text-sm text-gray-500">ID and selfie confirmation will appear here once the fan is verified.</p>
-      )}
-    </div>
-  </div>
-)}
-
-{lightboxSrc && (
-  <div
-    className="fixed inset-0 z-[99999] bg-black/90 flex items-center justify-center p-4"
-    onClick={() => setLightboxSrc("")}
-  >
-    <button
-      onClick={() => setLightboxSrc("")}
-      className="absolute top-5 right-5 w-10 h-10 rounded-full bg-white/10 text-white flex items-center justify-center text-lg hover:bg-white/20"
-    >✕</button>
-    <img
-      src={lightboxSrc}
-      alt="Document"
-      className="max-w-full max-h-[90vh] rounded-xl"
-      onClick={e => e.stopPropagation()}
-    />
-  </div>
-)}
-
- {/* Creator FAQ - Only shown to creators */}
-      {type === "creator" && hosttype?.toLowerCase() !== "fan call" && (
-          <div className="flex items-start gap-3 mb-6">
-            <span className="text-xl mt-1">❓</span>
-            <div>
-              <h3 className="font-semibold text-gray-800 mb-2">Creator Protection</h3>
-
-              <p className="text-gray-800 text-sm font-semibold mt-2">
-                What happens if a fan claims they had a bad experience or that you left early?
-              </p>
-              <p className="text-gray-600 text-sm mt-1">
-                Mmeko does not judge the quality or content of the date; we only verify that the meet occurred. Here&apos;s exactly how you&apos;re protected:
-              </p>
-              <ul className="text-gray-600 text-sm mt-1 space-y-1">
-                <li>• <span className="font-medium text-gray-700">The Paper Trail:</span> Keep your communication on the Mmeko platform. Let the fan know when you&apos;re leaving home, when you arrive, and when you&apos;re at the meeting point.</li>
-                <li>• <span className="font-medium text-gray-700">No &quot;He Said, She Said&quot;:</span> If a fan attempts a dispute, Mmeko reviews the platform chat history — not the fan&apos;s version of events. Their word means nothing when the chat logs prove you arrived and were present.</li>
-                <li>• <span className="font-medium text-gray-700">Guaranteed Payouts:</span> A fan cannot reduce or withhold your payment based on what happened during the date. Either the meet occurred, or it didn&apos;t.</li>
-              </ul>
-
-              <p className="text-gray-800 text-sm font-semibold mt-3">
-                Clear Payment Release Rules (15 Minutes Rule)
-              </p>
-              <p className="text-gray-600 text-sm mt-1">
-                <span className="font-medium text-gray-700">If the fan goes silent at the meeting point:</span> Message them that you have arrived. If they don’t respond within 15 minutes, leave and contact Support. We will release your payment immediately.
-              </p>
-              <p className="text-gray-600 text-sm mt-1">
-                <span className="font-medium text-gray-700">After the date:</span> Click the “Mark as Complete” button and leave. The fan will be reminded to release the funds. If you still haven’t received payment after 15 minutes, contact Support and we will release it to you immediately.
-              </p>
-              <p className="text-gray-600 text-sm mt-1">
-                You never need to chase or argue with the fan. The chat record is enough.
-              </p>
-
-              <p className="text-gray-800 text-sm font-semibold mt-3">
-                What if the fan stops responding? (24 Hour Rule)
-              </p>
-               <p className="text-gray-600 text-sm mt-1">
-                If a fan books you and then goes silent before the meet, you are still protected. Keep all communication inside the Mmeko chat. If they don’t reply within 24 hours, contact Support and we will release the payment to you.
-              </p>
-               <p className="text-gray-600 text-sm mt-1">
-                The reason is simple: if a fan is not responding, there is no real arrangement. You shouldn’t have to keep waiting or travel when they have gone silent. Your protection is in the chat record.
-              </p>
-
-              <p className="text-gray-800 text-sm font-semibold mt-3">
-                What if I get sick or have an emergency and can&apos;t make a booking?
-              </p>
-              <p className="text-gray-600 text-sm mt-1">
-                You have up to 18 days from the booking request date to reschedule. The fan&apos;s payment stays secured during this time, so you don&apos;t lose the booking or feel pressured to rush back before you&apos;re ready.
-              </p>
-
-              <p className="text-gray-800 text-sm font-semibold mt-3">
-                How many days do I have to contact Mmeko Support if a fan refuses to mark a meet/date as complete, doesn&apos;t show up, or asks to cancel?
-              </p>
-              <p className="text-gray-600 text-sm mt-1">
-                You have 18 days from the booking request date to contact Mmeko Support. If Support is not contacted within 18 days, the client will automatically receive a refund on day 20.
-              </p>
-            </div>
-          </div>
-        )}
-
-    {/* Safety Rules */}
-        <div className="flex items-start gap-3 mb-4">
-         <span className="text-xl mt-1">🛡️</span>
-          <div>
-            <h3 className="font-semibold text-gray-800">Safety Rules (Important!)</h3>
-            {hosttype?.toLowerCase() === "fan call" ? (
-              <ul className="text-gray-600 text-sm mt-1 space-y-1">
-                <li>• Calls are billed per minute.</li>
-                <li>• Ensure stable internet connection before starting.</li>
-                <li>• Be respectful and follow platform guidelines.</li>
-              </ul>
-            ) : (
-              <>
-                <ul className="text-gray-600 text-sm mt-1 space-y-1">
-                  {hosttype?.toLowerCase() === "fan date" ? (
-                    <li>• All fan date sessions are limited to 1 hour.</li>
-                  ) : (
-                    <li>• All fan meet sessions are limited to 30 minutes.</li>
-                  )}
-                  <li>• {hosttype?.toLowerCase() === "fan date" ? "Dates" : "Meets"} must happen in a public place only.</li>
-                </ul>
-                <p className="text-gray-500 text-xs mt-2">
-                  What happens after {hosttype?.toLowerCase() === "fan date" ? "1 hour" : "30 minutes"} is outside the platform&apos;s responsibility.
+                <p className="text-[12.5px] leading-relaxed text-slate-400">
+                  While bookings must occur within 14 days, this card remains active for 20 days as a completion grace period. If not marked as complete and no creator dispute is filed by day 18, it automatically expires and refunds the fan.
                 </p>
-              </>
+              </div>
             )}
           </div>
+        )}
+
+        {/* ── Creator: Timer ─────────────────────────────────── */}
+        {type === "creator" && currentStatus === "accepted" && !isCall && (
+          <div className="rounded-2xl border border-white/[0.07] bg-[#0d1220] p-4">
+            <div className="flex items-center gap-2.5 mb-3">
+              <span className="w-8 h-8 rounded-lg bg-white/[0.05] flex items-center justify-center text-base">⏰</span>
+              <h3 className="text-[13.5px] font-semibold text-slate-100">Timer</h3>
+              <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-white/[0.06] text-slate-400 border border-white/[0.08]">
+                Optional
+              </span>
+            </div>
+
+            {timerActive ? (
+              <div className="w-full py-3.5 rounded-xl text-center font-extrabold text-white text-xl tabular-nums"
+                style={{ background: "linear-gradient(135deg, #f97316, #ef4444)" }}>
+                ⏱️ {formatTimer(timeRemaining)} remaining
+              </div>
+            ) : timeRemaining === 0 ? (
+              <div className="w-full py-3.5 rounded-xl text-center font-bold text-white text-lg"
+                style={{ background: "linear-gradient(135deg, #16a34a, #15803d)" }}>
+                ✅ {hosttype || "Fan Meet"} Completed
+              </div>
+            ) : (
+              <button
+                onClick={() => setShowStartConfirm(true)}
+                className="w-full py-3.5 rounded-xl font-bold text-white transition-all hover:brightness-110 active:scale-[0.99]"
+                style={{ background: "linear-gradient(135deg, #6c63ff, #9b59f5)" }}
+              >
+                Start {hosttype || "Fan Meet"}
+              </button>
+            )}
+
+            <p className="mt-3 text-[12.5px] leading-relaxed text-slate-400">
+              {timeRemaining === 0 && !timerActive
+                ? "The scheduled time is over. If the meet has finished, click the “Mark as Complete” button above."
+                : `Start this timer when the ${isDate ? "date" : "meet & greet"} begins. It runs for ${isDate ? "1 hour" : "30 minutes"} and notifies both you and your fan when it starts and when it ends.`
+              }
+            </p>
+          </div>
+        )}
+
+        {/* ── Creator: Fan identity + documents ──────────────── */}
+        {type === "creator" && (
+          <div className="rounded-2xl border border-white/[0.07] bg-[#0d1220] p-4">
+            <div className="flex items-center gap-2.5 mb-3">
+              <span className="w-8 h-8 rounded-lg bg-white/[0.05] flex items-center justify-center text-base">🪪</span>
+              <h3 className="text-[13.5px] font-semibold text-slate-100">Fan Identity</h3>
+            </div>
+
+            {fanVerified ? (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-bold"
+                style={{
+                  background: "linear-gradient(135deg,rgba(108,99,255,.2),rgba(155,89,245,.12))",
+                  border: "1px solid rgba(108,99,255,.35)",
+                  color: "#a89cff"
+                }}
+              >
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none">
+                  <path d="M12 2.8L4.5 6V11C4.5 15.2 7.9 19.4 12 20.6C16.1 19.4 19.5 15.2 19.5 11V6L12 2.8Z" fill="#6c63ff"/>
+                  <path d="M12 7l1.2 2.4 2.6.4-1.9 1.85.45 2.6L12 13.1l-2.35 1.15.45-2.6L8.2 9.8l2.6-.4L12 7z" fill="white"/>
+                </svg>
+                Verified Fan
+              </span>
+            ) : (
+              <p className="text-[13px] text-slate-500">ID and selfie confirmation will appear here once the fan is verified.</p>
+            )}
+
+            {fanDocument && fanVerified && (
+              <div className="mt-4 grid grid-cols-2 gap-3">
+                {fanDocument.idPhotofilelink && (
+                  <div>
+                    <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1.5">ID Document</p>
+                    <img
+                      src={docImg(fanDocument.idPhotofilelink)}
+                      alt="Fan ID"
+                      className="w-full aspect-[4/3] rounded-xl object-cover border border-white/[0.08] cursor-pointer hover:opacity-90 transition-opacity"
+                      onClick={() => setLightboxSrc(docImgLightbox(fanDocument.idPhotofilelink!))}
+                    />
+                  </div>
+                )}
+                {fanDocument.holdingIdPhotofilelink && (
+                  <div>
+                    <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1.5">Selfie with ID</p>
+                    <img
+                      src={docImg(fanDocument.holdingIdPhotofilelink)}
+                      alt="Fan selfie with ID"
+                      className="w-full aspect-[4/3] rounded-xl object-cover border border-white/[0.08] cursor-pointer hover:opacity-90 transition-opacity"
+                      onClick={() => setLightboxSrc(docImgLightbox(fanDocument.holdingIdPhotofilelink!))}
+                    />
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ── Info sections ──────────────────────────────────── */}
+        <div className="pt-1">
+          <p className="px-1 mb-2 text-[10.5px] font-bold uppercase tracking-[0.12em] text-slate-500">Good to know</p>
+          <div className="space-y-2.5">
+
+            {/* What happens next — Fan Meet / Fan Date */}
+            {!isCall && (
+              <InfoSection icon="👉" title="What happens next?" open={openSection === "next"} onToggle={() => toggleSection("next")}>
+                <p>
+                  Once a booking request is sent, the creator has up to 24 hours to accept. After acceptance, the{" "}
+                  <strong className="text-slate-200">{isDate ? "date" : "meet & greet"}</strong>{" "}
+                  can take place at any time based on mutual availability within that booking.
+                </p>
+              </InfoSection>
+            )}
+
+            {/* What happens next — Fan Call */}
+            {isCall && (
+              <InfoSection icon="👉" title="What happens next?" open={openSection === "next"} onToggle={() => toggleSection("next")}>
+                <p>
+                  Once a booking request is sent, the creator has up to 24 hours to accept it. After the creator accepts, the call can be started anytime based on mutual availability within that booking.
+                </p>
+              </InfoSection>
+            )}
+
+            {/* Payment Secured */}
+            {!isCall && (
+              <InfoSection icon="🔒" title="Payment Secured" open={openSection === "payment"} onToggle={() => toggleSection("payment")}>
+                {type === "creator" ? (
+                  <>
+                    <p>Once a booking is accepted, your payment is secured and held by Mmeko.</p>
+                    <p className="mt-2">
+                      After the {sessionWord}, click the <strong className="text-slate-200">“Mark as Complete”</strong> button above and leave. Your fan will be notified to mark it as complete too. Once they do, your payment is released instantly.
+                    </p>
+                    <p className="mt-2">
+                      If they don’t mark it as complete within 15 minutes, contact <strong className="text-slate-200">Mmeko Support</strong> and we will release your payment immediately.
+                    </p>
+                  </>
+                ) : (
+                  <p>
+                    Once a booking is accepted, your payment is secured and held by Mmeko. After the{" "}
+                    <strong className="text-slate-200">{isDate ? "date" : "meet & greet"}</strong>,{" "}
+                    Click <strong className="text-slate-200">"Mark as Complete"</strong> on the request card — whether the meet went well or not. This releases the payment to the creator.
+                  </p>
+                )}
+              </InfoSection>
+            )}
+
+            {/* No show — creator */}
+            {type === "creator" && !isCall && (
+              <InfoSection icon="🛑" title="No show?? No problem!" open={openSection === "noshow"} onToggle={() => toggleSection("noshow")}>
+                <p>
+                  Cancellation by the fan is not allowed after you accept a booking request. If the fan does not show up, or asks to cancel, simply contact <strong className="text-slate-200">Mmeko Support</strong> and we will release your payment immediately. 🙂
+                </p>
+              </InfoSection>
+            )}
+
+            {/* Protected booking — fan */}
+            {type === "fan" && !isCall && (
+              <InfoSection icon="🤝" title="Protected Booking" open={openSection === "protected"} onToggle={() => toggleSection("protected")}>
+                <p>
+                  Cancellations are not allowed after acceptance. If you don't show up, fails to respond to messages within 24 hours, or request a cancellation, your payment is forfeited to the creator. However, <strong className="text-slate-200">if the creator does not show up or respond</strong>, your payment is fully protected—simply do not mark it complete, and the funds will automatically refund to you on day 20. 🙂
+                </p>
+              </InfoSection>
+            )}
+
+            {/* Keep chat on-platform */}
+            {!isCall && (
+              <InfoSection icon="💬" title="Keep chat on-platform" open={openSection === "chat"} onToggle={() => toggleSection("chat")}>
+                <p>
+                  Always keep your arrangements and conversations within the Mmeko chat. This is your ultimate protection if our support team ever needs to review a dispute or release a payment manually.
+                </p>
+              </InfoSection>
+            )}
+
+            {/* Call expiration */}
+            {isCall && (
+              <InfoSection icon="⏳" title="Call Expiration" open={openSection === "callexp"} onToggle={() => toggleSection("callexp")}>
+                <p>Call must start within 10 days (240 hours) after acceptance or it will automatically expire.</p>
+              </InfoSection>
+            )}
+
+            {/* Creator Protection FAQ */}
+            {type === "creator" && !isCall && (
+              <InfoSection icon="❓" title="Creator Protection" open={openSection === "faq"} onToggle={() => toggleSection("faq")}>
+                <p className="text-slate-200 font-semibold">
+                  What happens if a fan claims they had a bad experience or that you left early?
+                </p>
+                <p className="mt-1">
+                  Mmeko does not judge the quality or content of the date; we only verify that the meet occurred. Here&apos;s exactly how you&apos;re protected:
+                </p>
+                <ul className="mt-1.5 space-y-1.5">
+                  <li>• <span className="font-medium text-slate-300">The Paper Trail:</span> Keep your communication on the Mmeko platform. Let the fan know when you&apos;re leaving home, when you arrive, and when you&apos;re at the meeting point.</li>
+                  <li>• <span className="font-medium text-slate-300">No &quot;He Said, She Said&quot;:</span> If a fan attempts a dispute, Mmeko reviews the platform chat history — not the fan&apos;s version of events. Their word means nothing when the chat logs prove you arrived and were present.</li>
+                  <li>• <span className="font-medium text-slate-300">Guaranteed Payouts:</span> A fan cannot reduce or withhold your payment based on what happened during the date. Either the meet occurred, or it didn&apos;t.</li>
+                </ul>
+
+                <p className="mt-4 text-slate-200 font-semibold">
+                  Clear Payment Release Rules (15 Minutes Rule)
+                </p>
+                <p className="mt-1">
+                  <span className="font-medium text-slate-300">If the fan goes silent at the meeting point:</span> Message them that you have arrived. If they don’t respond within 15 minutes, leave and contact Support. We will release your payment immediately.
+                </p>
+                <p className="mt-1.5">
+                  <span className="font-medium text-slate-300">After the date:</span> Click the “Mark as Complete” button and leave. The fan will be reminded to release the funds. If you still haven’t received payment after 15 minutes, contact Support and we will release it to you immediately.
+                </p>
+                <p className="mt-1.5">
+                  You never need to chase or argue with the fan. The chat record is enough.
+                </p>
+
+                <p className="mt-4 text-slate-200 font-semibold">
+                  What if the fan stops responding? (24 Hour Rule)
+                </p>
+                <p className="mt-1">
+                  If a fan books you and then goes silent before the meet, you are still protected. Keep all communication inside the Mmeko chat. If they don’t reply within 24 hours, contact Support and we will release the payment to you.
+                </p>
+                <p className="mt-1.5">
+                  The reason is simple: if a fan is not responding, there is no real arrangement. You shouldn’t have to keep waiting or travel when they have gone silent. Your protection is in the chat record.
+                </p>
+
+                <p className="mt-4 text-slate-200 font-semibold">
+                  What if I get sick or have an emergency and can&apos;t make a booking?
+                </p>
+                <p className="mt-1">
+                  You have up to 18 days from the booking request date to reschedule. The fan&apos;s payment stays secured during this time, so you don&apos;t lose the booking or feel pressured to rush back before you&apos;re ready.
+                </p>
+
+                <p className="mt-4 text-slate-200 font-semibold">
+                  How many days do I have to contact Mmeko Support if a fan refuses to mark a meet/date as complete, doesn&apos;t show up, or asks to cancel?
+                </p>
+                <p className="mt-1">
+                  You have 18 days from the booking request date to contact Mmeko Support. If Support is not contacted within 18 days, the client will automatically receive a refund on day 20.
+                </p>
+              </InfoSection>
+            )}
+
+            {/* Safety Rules */}
+            <InfoSection
+              icon="🛡️"
+              title="Safety Rules (Important!)"
+              open={openSection === "safety"}
+              onToggle={() => toggleSection("safety")}
+              badge={
+                <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/25">
+                  Important
+                </span>
+              }
+            >
+              {isCall ? (
+                <ul className="space-y-1.5">
+                  <li>• Calls are billed per minute.</li>
+                  <li>• Ensure stable internet connection before starting.</li>
+                  <li>• Be respectful and follow platform guidelines.</li>
+                </ul>
+              ) : (
+                <>
+                  <ul className="space-y-1.5">
+                    {isDate ? (
+                      <li>• All fan date sessions are limited to 1 hour.</li>
+                    ) : (
+                      <li>• All fan meet sessions are limited to 30 minutes.</li>
+                    )}
+                    <li>• {isDate ? "Dates" : "Meets"} must happen in a public place only.</li>
+                  </ul>
+                  <p className="mt-2.5 text-xs text-slate-500">
+                    What happens after {isDate ? "1 hour" : "30 minutes"} is outside the platform&apos;s responsibility.
+                  </p>
+                </>
+              )}
+            </InfoSection>
+          </div>
         </div>
 
-
-        {/* Agreement - Show for creators with appropriate message (excluding fan calls) */}
-        {type === "creator" && hosttype?.toLowerCase() !== "fan call" && (
-          <div className="flex items-start gap-3 mb-6">
-           <span className="text-xl mt-1">✅</span>
-            <p className="text-gray-800 font-semibold text-sm">
-              By accepting this request, you agree to follow these safety rules.
+        {/* ── Agreement ──────────────────────────────────────── */}
+        {!isCall && (
+          <div className="flex items-center gap-3 rounded-2xl border border-emerald-500/20 bg-emerald-500/[0.06] p-4">
+            <span className="w-8 h-8 rounded-lg bg-emerald-500/15 flex items-center justify-center text-base shrink-0">✅</span>
+            <p className="text-[13px] font-semibold text-slate-200">
+              {type === "creator"
+                ? "By accepting this request, you agree to follow these safety rules."
+                : "By sending this request, you agree to follow these safety rules."}
             </p>
           </div>
         )}
-
-        
-
-        {/* Agreement - Show for fans when viewing Fan Date and Fan Meet details */}
-        {type === "fan" && hosttype?.toLowerCase() !== "fan call" && (
-          <div className="flex items-start gap-3 mb-6">
-           <span className="text-xl mt-1">✅</span>
-            <p className="text-gray-800 font-semibold text-sm">
-              By sending this request, you agree to follow these safety rules.
-            </p>
-          </div>
-        )}
-
-        <button
-          onClick={onClose}
-          className="w-full bg-blue-500 text-white py-3 px-4 rounded-lg hover:bg-blue-600 transition-colors font-semibold"
-        >
-          Close
-        </button>
       </div>
+
+      {/* ── Sticky close ────────────────────────────────────────── */}
+      <div className="fixed bottom-0 inset-x-0 z-20 border-t border-white/[0.06] bg-[#070a13]/90 backdrop-blur-xl">
+        <div className="mx-auto max-w-2xl px-4 py-3">
+          <button
+            onClick={onClose}
+            className="w-full py-3.5 rounded-xl text-white font-bold transition-all hover:brightness-110 active:scale-[0.99]"
+            style={{ background: "linear-gradient(135deg, #6c63ff, #9b59f5)" }}
+          >
+            Close
+          </button>
+        </div>
+      </div>
+
+      {/* ── Confirm: Mark as Complete ───────────────────────────── */}
+      {showCompleteConfirm && (
+        <div
+          className="fixed inset-0 z-[10000] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
+          onClick={() => !markingComplete && setShowCompleteConfirm(false)}
+        >
+          <div
+            className="w-full max-w-sm rounded-2xl border border-white/10 bg-[#0f1424] p-6 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="w-11 h-11 rounded-xl bg-emerald-500/15 flex items-center justify-center text-xl mb-3">✅</div>
+            <h3 className="text-lg font-bold text-white mb-3">Mark this booking as complete?</h3>
+            <p className="text-sm text-slate-400 leading-relaxed">
+              Only click this after the meet has ended — whether it went well or not.
+            </p>
+            <p className="text-sm text-slate-400 leading-relaxed mt-3">
+              This will notify your fan to mark it as complete too. Once they do, your payment is released instantly.
+            </p>
+            <p className="text-sm text-slate-400 leading-relaxed mt-3">
+              If they don’t mark it as complete within 15 minutes, contact <strong className="text-slate-200">Mmeko Support</strong> and we will release your payment immediately.
+            </p>
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => setShowCompleteConfirm(false)}
+                disabled={markingComplete}
+                className="flex-1 py-3 rounded-xl border border-white/10 text-slate-300 font-semibold hover:bg-white/[0.06] disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleCreatorMarkComplete}
+                disabled={markingComplete}
+                className="flex-1 py-3 rounded-xl font-bold text-white disabled:opacity-60"
+                style={{ background: "linear-gradient(135deg, #16a34a, #15803d)" }}
+              >
+                {markingComplete ? "Sending…" : "Yes, mark complete"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Confirm: Start timer ────────────────────────────────── */}
+      {showStartConfirm && (
+        <div
+          className="fixed inset-0 z-[10000] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
+          onClick={() => setShowStartConfirm(false)}
+        >
+          <div
+            className="w-full max-w-sm rounded-2xl border border-white/10 bg-[#0f1424] p-6 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="w-11 h-11 rounded-xl bg-[#6c63ff]/20 flex items-center justify-center text-xl mb-3">⏱️</div>
+            <h3 className="text-lg font-bold text-white mb-3">
+              Start the {sessionWord} timer?
+            </h3>
+            <p className="text-sm text-slate-400 leading-relaxed">
+              Only start this when the {sessionWord} begins.
+            </p>
+            <p className="text-sm text-slate-400 leading-relaxed mt-3">
+              The timer runs for {isDate ? "1 hour" : "30 minutes"}. You and your fan will be notified now, and again when the time is up.
+            </p>
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => setShowStartConfirm(false)}
+                className="flex-1 py-3 rounded-xl border border-white/10 text-slate-300 font-semibold hover:bg-white/[0.06]"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  setShowStartConfirm(false);
+                  handleStartTimer();
+                }}
+                className="flex-1 py-3 rounded-xl font-bold text-white"
+                style={{ background: "linear-gradient(135deg, #6c63ff, #9b59f5)" }}
+              >
+                Start timer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Lightbox ────────────────────────────────────────────── */}
+      {lightboxSrc && (
+        <div
+          className="fixed inset-0 z-[99999] bg-black/90 flex items-center justify-center p-4"
+          onClick={() => setLightboxSrc("")}
+        >
+          <button
+            onClick={() => setLightboxSrc("")}
+            className="absolute top-5 right-5 w-10 h-10 rounded-full bg-white/10 text-white flex items-center justify-center text-lg hover:bg-white/20"
+          >✕</button>
+          <img
+            src={lightboxSrc}
+            alt="Document"
+            className="max-w-full max-h-[90vh] rounded-xl"
+            onClick={e => e.stopPropagation()}
+          />
+        </div>
+      )}
     </div>
   );
 }
