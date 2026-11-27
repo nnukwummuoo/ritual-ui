@@ -307,7 +307,7 @@ const userId = reduxProfileUserId || reduxRegisterUserId || localUserId;
         }
 
         const actionClass =
-          "inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-white/10 bg-white/[0.04] hover:bg-white/[0.09] hover:border-white/20 text-[13px] font-semibold text-slate-200 transition-all";
+          "inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-white/10 bg-[#161b2e] text-[13px] font-semibold text-slate-200 transition-colors [@media(hover:hover)]:hover:bg-[#1e2540] [@media(hover:hover)]:hover:border-white/20";
 
         return (
           <div
