@@ -1172,7 +1172,7 @@ return (
       'User'
     );
   })()}
-  {(cRecord?.isVerified || cRecord?.creator_verified) && (
+  {Boolean(cRecord?.isVerified || cRecord?.creator_verified) && (
     <BadgeCheck size={15} fill="#6c63ff" className="text-white shrink-0" />
   )}
 </span>
