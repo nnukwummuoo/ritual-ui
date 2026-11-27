@@ -465,7 +465,7 @@ const initials = userName.trim().charAt(0).toUpperCase() || "?";
               }}>
                 {post?.user?.firstname}
                 {(() => {
-                 const isVerified = post?.user?.creator_verified;
+                 const isVerified = post?.user?.creator_verified || post?.user?.fan_verified;
                   return isVerified && (
                     <BadgeCheck size={15} fill="#6c63ff" className="text-white" />
                   );

@@ -402,17 +402,15 @@ const FollowerCard: React.FC<FollowerCardProps> = ({ image, name, creator_portfo
           )}
 
           {/* VIP Lion Badge */}
-          <VIPBadge size="xl" className="absolute -top-5 -right-5" isVip={isVip} vipEndDate={vipEndDate} />
+          <VIPBadge size="md" className="absolute -top-2 -right-2" isVip={isVip} vipEndDate={vipEndDate} />
         </div>
         {/* Name - flexible, truncates when long */}
         <div className="flex flex-col gap-1 min-w-0 flex-1 overflow-hidden">
-          <div className="text-white font-semibold truncate flex items-center gap-1" title={name}>
-            {name}
-            {(() => {
-              return isVerified && (
-                <span><BadgeCheck size={17} className="text-black inline" fill="white" /></span>
-              );
-            })()}
+         <div className="text-white font-semibold truncate flex items-center gap-1" title={username || name}>
+            <span className="truncate">{username || name}</span>
+            {isVerified && (
+              <BadgeCheck size={15} fill="#6c63ff" className="text-white shrink-0" />
+            )}
           </div>
         </div>
       </div>

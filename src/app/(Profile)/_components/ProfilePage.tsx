@@ -3561,7 +3561,7 @@ const isFanPending = isViewingOwnProfile
                             {isViewingOwnProfile ? firstname : profileData?.firstname || ""}
                             {/* Creator Verified Badge */}
                             {(() => {
-                              const isVerified = isViewingOwnProfile ? creator_verified : profileData?.creator_verified;
+                              const isVerified = (isViewingOwnProfile ? creator_verified : profileData?.creator_verified) || isFanVerified;
                               return isVerified && (
                                 <BadgeCheck size={15} fill="white" className="text-black" />
                               );
@@ -4151,7 +4151,7 @@ const isFanPending = isViewingOwnProfile
 
                                       {(() => {
 
-                                        const isVerified = c?.isVerified || c?.creator_verified;
+                                        const isVerified = c?.isVerified || c?.creator_verified || c?.fan_verified;
 
                                         return isVerified && (
 
@@ -4271,7 +4271,7 @@ const isFanPending = isViewingOwnProfile
 
                                         vipEndDate: vipStatus?.vipEndDate || null,
 
-                                        isVerified: currentUserProfile.creator_verified || false,
+                                        isVerified: !!(currentUserProfile.creator_verified || (currentUserProfile as any).fan_verified),
 
                                         creator_verified: currentUserProfile.creator_verified || false,
 
@@ -6073,7 +6073,7 @@ const isFanPending = isViewingOwnProfile
                 <div className="mt-4 ml-6">
                   <p className="flex items-center gap-1.5 text-[#9b59f5] font-medium">
                     {username}
-                    {creator_verified && <BadgeCheck className="w-5 h-5 text-white" fill="#6c63ff" />}
+                    {(creator_verified || isFanVerified) && <BadgeCheck className="w-5 h-5 text-white" fill="#6c63ff" />}
                   </p>
 
                   {(profile as any).creator_portfolio && (

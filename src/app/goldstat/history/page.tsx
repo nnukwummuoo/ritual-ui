@@ -12,7 +12,7 @@ import { RootState } from "@/store/store";
 import { useAuth } from "@/lib/context/auth-context";
 import PacmanLoader from "react-spinners/PacmanLoader";
 import Image from "next/image";
-import { HelpCircle } from "lucide-react";
+import { HelpCircle, Inbox, Wallet, Eye, Users } from "lucide-react";
 import { URL } from "@/api/config";
 
 interface Transaction {
@@ -33,26 +33,57 @@ interface Analytics {
   followers: number;
 }
 
-const WithdrawRequestCard = ({ usd, onWithdrawClick }: { usd: number; onWithdrawClick: () => void }) => (
-  <div className="bg-[#111624] text-white p-4 rounded-lg mb-3 w-full">
-    <div className="flex justify-between items-center">
-      <div>
-        <p className="text-sm">Withdrawable Money</p>
-        {usd >= 5 ? <p className="text-xl font-bold">${usd.toFixed(2)}</p> : <p className="text-xs">Available once balance ≥ $5</p>}
-      </div>
-      <button
-        className={`transition-all text-white font-bold px-4 py-2 rounded-lg ${usd >= 5
-          ? 'bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-500 hover:to-pink-400 cursor-pointer'
-          : 'bg-gray-500 cursor-not-allowed opacity-50'
+const WithdrawRequestCard = ({ usd, onWithdrawClick }: { usd: number; onWithdrawClick: () => void }) => {
+  const canWithdraw = usd >= 5;
+  const progress = Math.max(0, Math.min(100, (usd / 5) * 100));
+  return (
+    <div className="rounded-3xl border border-white/[0.08] bg-[#0d1220] p-5 mb-4 w-full text-white">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">Withdrawable money</p>
+          {canWithdraw ? (
+            <p className="mt-1 text-3xl font-extrabold text-white">${usd.toFixed(2)}</p>
+          ) : (
+            <p className="mt-1 text-sm text-slate-400">Available once balance ≥ $5</p>
+          )}
+        </div>
+        <span
+          className={`shrink-0 rounded-full border px-3 py-1 text-[11px] font-semibold ${
+            canWithdraw
+              ? "border-[#22c55e]/25 bg-[#0f2a22] text-[#a7e3c4]"
+              : "border-white/10 bg-[#161b2e] text-slate-400"
           }`}
-        disabled={usd < 5}
-        onClick={usd >= 5 ? onWithdrawClick : undefined}
+        >
+          {canWithdraw ? "Ready" : "Locked"}
+        </span>
+      </div>
+
+      {!canWithdraw && (
+        <div className="mt-4">
+          <div className="h-2 w-full overflow-hidden rounded-full bg-[#161b2e]">
+            <div
+              className="h-full rounded-full bg-gradient-to-r from-[#6c63ff] to-[#9b59f5]"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+          <p className="mt-2 text-xs text-slate-500">${usd.toFixed(2)} of $5.00 minimum</p>
+        </div>
+      )}
+
+      <button
+        className={`mt-4 w-full rounded-xl px-4 py-3 text-sm font-bold text-white transition-all ${
+          canWithdraw
+            ? "bg-gradient-to-r from-purple-600 to-pink-500 [@media(hover:hover)]:hover:from-purple-500 [@media(hover:hover)]:hover:to-pink-400 cursor-pointer"
+            : "bg-[#161b2e] text-slate-500 cursor-not-allowed"
+        }`}
+        disabled={!canWithdraw}
+        onClick={canWithdraw ? onWithdrawClick : undefined}
       >
-        {usd >= 5 ? 'Withdraw' : '$5 required for available balance'}
+        {canWithdraw ? "Withdraw" : "$5 required for available balance"}
       </button>
     </div>
-  </div>
-);
+  );
+};
 
 const HistoryPage = () => {
   const router = useRouter();
@@ -553,35 +584,43 @@ const HistoryPage = () => {
         </div>
       )}
 
-      {/* Gold Card - Always show total current balance, not month-specific */}
-      <div className="bg-[#111624] rounded-lg px-4 py-3 mb-3">
-        <div className="flex justify-between">
+      {/* Page heading */}
+      <div className="mb-5">
+        <h1 className="text-3xl font-extrabold text-white">My Earnings</h1>
+        <p className="mt-1 text-sm text-slate-400">Your balance, payouts and monthly performance.</p>
+      </div>
+
+      {/* Gold balance - always total current balance, not month-specific */}
+      <div className="relative overflow-hidden rounded-3xl border border-white/[0.08] bg-gradient-to-br from-[#f5c451]/[0.16] via-[#0d1220] to-[#0d1220] p-6 mb-4">
+        <div className="pointer-events-none absolute -top-16 -right-16 h-56 w-56 rounded-full bg-[#f5c451]/15 blur-3xl" />
+        <div className="relative flex items-center justify-between">
           <button
-            className="text-sm text-blue-400 font-semibold focus:outline-none cursor-pointer"
+            className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-[#161b2e] px-3 py-1.5 text-xs font-semibold text-slate-200 transition-colors [@media(hover:hover)]:hover:bg-[#1e2540] focus:outline-none cursor-pointer"
             onClick={() => router.push("/goldstat/earnings")}
             type="button"
           >
             Gold &gt;
           </button>
-         <HelpCircle
-            className="cursor-pointer text-blue-400"
-            width={18}
-            height={18}
+          <HelpCircle
+            className="cursor-pointer text-slate-400 [@media(hover:hover)]:hover:text-white transition-colors"
+            width={20}
+            height={20}
             strokeWidth={2.25}
             onClick={() => setShowPopup(true)}
           />
         </div>
-        <div className="flex items-center mt-2">
+
+        <div className="relative mt-5 flex items-center gap-3">
           <button
             type="button"
             onClick={() => router.push("/goldstat/earnings")}
-            className="focus:outline-none hover:scale-105 transition-transform"
+            className="focus:outline-none [@media(hover:hover)]:hover:scale-105 transition-transform"
           >
-          <span
-              className="rounded-full flex items-center justify-center shrink-0 mr-1"
-              style={{ width: 32, height: 32, boxShadow: "0 4px 12px -4px rgba(245,196,81,0.5)" }}
+            <span
+              className="rounded-full flex items-center justify-center shrink-0"
+              style={{ width: 44, height: 44, boxShadow: "0 4px 12px -4px rgba(245,196,81,0.5)" }}
             >
-              <svg viewBox="0 0 24 24" width="32" height="32" xmlns="http://www.w3.org/2000/svg" style={{ filter: "drop-shadow(0 4px 8px rgba(245,196,81,0.4))" }}>
+              <svg viewBox="0 0 24 24" width="44" height="44" xmlns="http://www.w3.org/2000/svg" style={{ filter: "drop-shadow(0 4px 8px rgba(245,196,81,0.4))" }}>
                 <circle cx="12" cy="12" r="10" fill="#F5C451" />
                 <circle cx="12" cy="12" r="10" fill="none" stroke="#B8860B" strokeWidth="1.2" />
                 <circle cx="12" cy="12" r="7" fill="none" stroke="#B8860B" strokeWidth="0.8" opacity="0.45" />
@@ -589,142 +628,109 @@ const HistoryPage = () => {
               </svg>
             </span>
           </button>
-          <p className="text-lg font-bold">{totalCurrentBalance}</p>
+          <p className="text-4xl sm:text-5xl font-extrabold text-white">{totalCurrentBalance}</p>
         </div>
-        <p className="text-sm">= ${totalCurrentBalanceUSD.toFixed(2)}</p>
+        <p className="relative mt-2 text-sm text-slate-300">≈ ${totalCurrentBalanceUSD.toFixed(2)} <span className="text-slate-500">· 1 Gold = $0.04</span></p>
       </div>
 
-      {/* Withdraw Request - Always show total current balance, not month-specific */}
+      {/* Withdraw Request - always total current balance, not month-specific */}
       <WithdrawRequestCard usd={totalCurrentBalanceUSD} onWithdrawClick={handleWithdrawClick} />
 
-      {/* Account Analytics - Show for selected month */}
-      {analytics.request > 0 || analytics.gift > 0 || analytics.like > 0 || analytics.followers > 0 || analytics.earning > 0 ? (
-        <div className="bg-[#111624] rounded-lg px-4 py-3 mb-3">
-          <div className="flex justify-between items-center mb-3">
-            <p className="font-semibold text-sm">Account analytics</p>
-            <div className="flex items-center gap-2">
-              {/* Month Selector */}
-              <select
-                value={selectedMonth}
-                onChange={(e) => setSelectedMonth(e.target.value)}
-                className="bg-gray-700 text-white text-xs px-2 py-1 rounded border border-gray-600 focus:outline-none focus:ring-1 focus:ring-yellow-500"
-              >
-                <option value="1">January</option>
-                <option value="2">February</option>
-                <option value="3">March</option>
-                <option value="4">April</option>
-                <option value="5">May</option>
-                <option value="6">June</option>
-                <option value="7">July</option>
-                <option value="8">August</option>
-                <option value="9">September</option>
-                <option value="10">October</option>
-                <option value="11">November</option>
-                <option value="12">December</option>
-              </select>
-              {/* Year Selector */}
-              <select
-                value={selectedYear}
-                onChange={(e) => setSelectedYear(e.target.value)}
-                className="bg-gray-700 text-white text-xs px-2 py-1 rounded border border-gray-600 focus:outline-none focus:ring-1 focus:ring-yellow-500"
-              >
-                {Array.from({ length: 5 }, (_, i) => {
-                  const year = new Date().getFullYear() - i;
-                  return (
-                    <option key={year} value={year.toString()}>
-                      {year}
-                    </option>
-                  );
-                })}
-              </select>
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-2 text-sm">
-            <div className="bg-slate-600 rounded-lg p-2 flex flex-col">
-              <p>Fan Request</p>
-              <p className="text-xl font-bold">{analytics.request}</p>
-            </div>
-            <div className="bg-indigo-600 rounded-lg p-2 flex flex-col">
-              <p>Earnings</p>
-              <p className="text-xl font-bold">$ {(analytics.earning * 0.04).toFixed(2)}</p>
-            </div>
-            <div className="bg-emerald-600 rounded-lg p-2 flex flex-col">
-              <p>Portfolio views</p>
-              <p className="text-xl font-bold">{views + nonUserViews}</p>
-            </div>
-       <div className="bg-pink-600 rounded-lg p-2 flex flex-col">
-              <p>New Fans</p>
-              <p className="text-xl font-bold">{analytics.followers}</p>
-            </div>
-          </div>
-          <button
-            onClick={() => setShowViewsModal(true)}
-            className="mt-2 w-full text-xs font-semibold text-slate-300 bg-white/[0.04] border border-white/10 rounded-lg py-2 hover:bg-white/[0.08] hover:text-white transition-colors"
-          >
-            Portfolio view breakdown
-          </button>
-        </div>
-      ) : (
-        <div className="bg-[#111624] rounded-lg px-4 py-3 mb-3">
-          <div className="flex justify-between items-center mb-3">
-            <p className="font-semibold text-sm">Account analytics</p>
-            <div className="flex items-center gap-2">
-              {/* Month Selector */}
-              <select
-                value={selectedMonth}
-                onChange={(e) => setSelectedMonth(e.target.value)}
-                className="bg-gray-700 text-white text-xs px-2 py-1 rounded border border-gray-600 focus:outline-none focus:ring-1 focus:ring-yellow-500"
-              >
-                <option value="1">January</option>
-                <option value="2">February</option>
-                <option value="3">March</option>
-                <option value="4">April</option>
-                <option value="5">May</option>
-                <option value="6">June</option>
-                <option value="7">July</option>
-                <option value="8">August</option>
-                <option value="9">September</option>
-                <option value="10">October</option>
-                <option value="11">November</option>
-                <option value="12">December</option>
-              </select>
-              {/* Year Selector */}
-              <select
-                value={selectedYear}
-                onChange={(e) => setSelectedYear(e.target.value)}
-                className="bg-gray-700 text-white text-xs px-2 py-1 rounded border border-gray-600 focus:outline-none focus:ring-1 focus:ring-yellow-500"
-              >
-                {Array.from({ length: 5 }, (_, i) => {
-                  const year = new Date().getFullYear() - i;
-                  return (
-                    <option key={year} value={year.toString()}>
-                      {year}
-                    </option>
-                  );
-                })}
-              </select>
-            </div>
-          </div>
-          <div className="text-center text-gray-400">
-            <p className="text-sm">No activity for {new Date(parseInt(selectedYear), parseInt(selectedMonth) - 1).toLocaleString('default', { month: 'long', year: 'numeric' })}</p>
+      {/* Account Analytics - always visible, for the selected month */}
+      <div className="rounded-3xl border border-white/[0.08] bg-[#0d1220] p-5 mb-4">
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+          <p className="text-base font-bold text-white">Account analytics</p>
+          <div className="flex items-center gap-2">
+            {/* Month Selector */}
+            <select
+              value={selectedMonth}
+              onChange={(e) => setSelectedMonth(e.target.value)}
+              className="bg-[#161b2e] text-slate-200 text-xs px-2.5 py-1.5 rounded-lg border border-white/10 focus:outline-none focus:border-[#6c63ff]/60"
+            >
+              <option value="1">January</option>
+              <option value="2">February</option>
+              <option value="3">March</option>
+              <option value="4">April</option>
+              <option value="5">May</option>
+              <option value="6">June</option>
+              <option value="7">July</option>
+              <option value="8">August</option>
+              <option value="9">September</option>
+              <option value="10">October</option>
+              <option value="11">November</option>
+              <option value="12">December</option>
+            </select>
+            {/* Year Selector */}
+            <select
+              value={selectedYear}
+              onChange={(e) => setSelectedYear(e.target.value)}
+              className="bg-[#161b2e] text-slate-200 text-xs px-2.5 py-1.5 rounded-lg border border-white/10 focus:outline-none focus:border-[#6c63ff]/60"
+            >
+              {Array.from({ length: 5 }, (_, i) => {
+                const year = new Date().getFullYear() - i;
+                return (
+                  <option key={year} value={year.toString()}>
+                    {year}
+                  </option>
+                );
+              })}
+            </select>
           </div>
         </div>
-      )}
+
+        <div className="grid grid-cols-2 gap-3">
+          <div className="rounded-2xl border border-white/[0.06] bg-[#111830] p-4">
+            <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#1d2547] text-[#a89cff]"><Inbox size={16} /></span>
+            <p className="mt-3 text-xs font-medium text-slate-400">Fan Request</p>
+            <p className="mt-0.5 text-2xl font-extrabold text-white">{analytics.request}</p>
+          </div>
+          <div className="rounded-2xl border border-white/[0.06] bg-[#111830] p-4">
+            <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#2a2310] text-[#f5c451]"><Wallet size={16} /></span>
+            <p className="mt-3 text-xs font-medium text-slate-400">Earnings</p>
+            <p className="mt-0.5 text-2xl font-extrabold text-white">$ {(analytics.earning * 0.04).toFixed(2)}</p>
+          </div>
+          <div className="rounded-2xl border border-white/[0.06] bg-[#111830] p-4">
+            <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#0f2a22] text-[#2dd4bf]"><Eye size={16} /></span>
+            <p className="mt-3 text-xs font-medium text-slate-400">Portfolio views</p>
+            <p className="mt-0.5 text-2xl font-extrabold text-white">{views + nonUserViews}</p>
+          </div>
+          <div className="rounded-2xl border border-white/[0.06] bg-[#111830] p-4">
+            <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#2c1424] text-[#f472b6]"><Users size={16} /></span>
+            <p className="mt-3 text-xs font-medium text-slate-400">New Fans</p>
+            <p className="mt-0.5 text-2xl font-extrabold text-white">{analytics.followers}</p>
+          </div>
+        </div>
+
+        {!(analytics.request > 0 || analytics.gift > 0 || analytics.like > 0 || analytics.followers > 0 || analytics.earning > 0) && (
+          <p className="mt-3 text-center text-xs text-slate-500">
+            No activity for {new Date(parseInt(selectedYear), parseInt(selectedMonth) - 1).toLocaleString('default', { month: 'long', year: 'numeric' })}
+          </p>
+        )}
+
+        <button
+          onClick={() => setShowViewsModal(true)}
+          className="mt-4 w-full rounded-xl border border-white/10 bg-[#161b2e] py-2.5 text-xs font-semibold text-slate-200 transition-colors [@media(hover:hover)]:hover:bg-[#1e2540] [@media(hover:hover)]:hover:border-white/20"
+        >
+          Portfolio view breakdown
+        </button>
+      </div>
 
       {/* Pending Withdrawals Section */}
       {pendingWithdrawals.length > 0 && (
-        <div className="bg-[#111624] rounded-lg px-4 py-3 mb-3">
-          <div className="flex justify-between mb-3">
-            <p className="font-semibold text-sm">Pending Withdrawals</p>
-            <p className="text-xs text-yellow-400">{pendingWithdrawals.length} request{pendingWithdrawals.length !== 1 ? 's' : ''}</p>
+        <div className="rounded-3xl border border-white/[0.08] bg-[#0d1220] p-5 mb-4">
+          <div className="flex items-center justify-between mb-4">
+            <p className="text-base font-bold text-white">Pending Withdrawals</p>
+            <span className="rounded-full border border-yellow-500/25 bg-[#2a2310] px-3 py-1 text-[11px] font-semibold text-yellow-400">
+              {pendingWithdrawals.length} request{pendingWithdrawals.length !== 1 ? 's' : ''}
+            </span>
           </div>
-          <div className="space-y-2">
+          <div className="space-y-2.5">
             {pendingWithdrawals.map((request, index) => (
-              <div key={request._id || index} className="bg-gray-700 rounded-lg p-3">
-                <div className="flex justify-between items-center">
+              <div key={request._id || index} className="rounded-2xl border border-white/[0.06] bg-[#111830] p-4">
+                <div className="flex justify-between items-center gap-3">
                   <div>
-                    <p className="text-sm font-medium">${request.amount}</p>
-                    <p className="text-xs text-gray-400">
+                    <p className="text-lg font-extrabold text-white">${request.amount}</p>
+                    <p className="text-xs text-slate-500 mt-0.5">
                       {(() => {
                         try {
                           // Check both createdAt and requestedAt fields
@@ -739,20 +745,20 @@ const HistoryPage = () => {
                     </p>
                   </div>
                   <div className="text-right">
-                    <span className="inline-block bg-yellow-600 text-yellow-100 text-xs px-2 py-1 rounded-full">
+                    <span className="inline-block rounded-full border border-yellow-500/25 bg-[#2a2310] px-2.5 py-1 text-[11px] font-semibold text-yellow-400">
                       Pending
                     </span>
-                    <p className="text-xs text-gray-400 mt-1">
-  {request.credentials?.currency || (() => {
-    const cryptoType = request.credentials?.cryptoType;
-    if (!cryptoType) return 'Crypto';
-    if (cryptoType.includes('_')) {
-      const [currency, network] = cryptoType.split('_');
-      return `${currency} (${network})`;
-    }
-    return cryptoType;
-  })()}
-</p>
+                    <p className="text-xs text-slate-500 mt-1.5">
+                      {request.credentials?.currency || (() => {
+                        const cryptoType = request.credentials?.cryptoType;
+                        if (!cryptoType) return 'Crypto';
+                        if (cryptoType.includes('_')) {
+                          const [currency, network] = cryptoType.split('_');
+                          return `${currency} (${network})`;
+                        }
+                        return cryptoType;
+                      })()}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -760,7 +766,7 @@ const HistoryPage = () => {
           </div>
         </div>
       )}
-
+      
       {/* Payment Account Modal - Redirect to separate page */}
       {showPaymentModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">

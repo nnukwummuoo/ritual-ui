@@ -12,6 +12,7 @@ import { User } from "@/types/user";
 import VIPBadge from "@/components/VIPBadge";
 import { useRouter } from "next/navigation";
 import { getImageSource } from "@/lib/imageUtils";
+import { BadgeCheck } from "lucide-react";
 
 const FollowingMessagesPage: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -113,7 +114,8 @@ const FollowingMessagesPage: React.FC = () => {
 
   // Filter following users based on search
   const filteredFollowing = apiFollowing.filter((user) =>
-    user.name.toLowerCase().includes(search.toLowerCase()) && 
+    (user.name.toLowerCase().includes(search.toLowerCase()) ||
+      String((user as any).username || "").toLowerCase().includes(search.toLowerCase())) && 
     String(user.id) !== String(currentUserid)
   );
 
@@ -312,8 +314,8 @@ const FollowingMessagesPage: React.FC = () => {
                       
                       {/* VIP Badge */}
                       <VIPBadge 
-                        size="xl" 
-                        className="absolute -top-4 -right-4" 
+                        size="md" 
+                        className="absolute -top-2 -right-2" 
                         isVip={user.isVip || false} 
                         vipEndDate={user.vipEndDate} 
                       />
@@ -324,7 +326,12 @@ const FollowingMessagesPage: React.FC = () => {
                       className="flex-1 cursor-pointer"
                       onClick={() => handleProfileClick(user)}
                     >
-                      <div className="text-white font-semibold">{user.name}</div>
+                      <div className="text-white font-semibold flex items-center gap-1">
+                        <span className="truncate">{(user as any).username || user.name}</span>
+                        {(user as any).isVerified && (
+                          <BadgeCheck size={15} fill="#6c63ff" className="text-white shrink-0" />
+                        )}
+                      </div>
                       <div className="text-gray-400 text-sm">Following</div>
                     </div>
 

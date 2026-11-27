@@ -872,7 +872,7 @@ const [sizeWarningType, setSizeWarningType] = useState<"image" | "video" | null>
         setfirstname(viewingProfile.firstname || "");
         setlastname(viewingProfile.lastname || "");
         setchatusername(viewingProfile.username || "");
-        setChatVerified(viewingProfile.creator_verified || false);
+        setChatVerified(!!(viewingProfile.creator_verified || (viewingProfile as any).fan_verified));
 
         // Ensure we have a valid photo link
         const photoLink = (viewingProfile as any).photolink;
