@@ -8,7 +8,7 @@ import { getNotifications, markNotificationsSeen, getprofile } from "@/store/pro
 import { RootState, AppDispatch } from "@/store/store";
 import { useAuth } from "@/lib/context/auth-context";
 import PacmanLoader from "react-spinners/RingLoader";
-import { CheckCircle, XCircle, Clock, Star, Phone, Heart, Handshake, MessageCircle, ShoppingCart, Wallet, UserPlus, Eye } from "lucide-react";
+import { CheckCircle, XCircle, Clock, Star, Phone, Heart, Handshake, MessageCircle, ShoppingCart, Wallet, UserPlus, Eye, Bell, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { useNotificationIndicator } from "@/hooks/useNotificationIndicator";
@@ -181,17 +181,21 @@ const userId = reduxProfileUserId || reduxRegisterUserId || localUserId;
 
   if (loading) {
     return (
-      <div className="w-full h-full flex flex-col justify-center items-center">
+      <div className="w-full min-h-[50vh] flex flex-col justify-center items-center">
         <PacmanLoader color="#fff" loading={true} size={35} />
-        <p className="text-slate-400 text-xs mt-2">please wait...</p>
+        <p className="text-slate-400 text-xs mt-3">please wait...</p>
       </div>
     );
   }
 
   if (!notifications || notifications.length === 0) {
     return (
-      <div className="w-full h-full flex justify-center items-center">
-        <p className="text-slate-400 text-xs">
+      <div className="w-full min-h-[50vh] flex flex-col items-center justify-center text-center px-6">
+        <div className="w-16 h-16 rounded-2xl bg-white/[0.04] border border-white/[0.08] flex items-center justify-center mb-4">
+          <Bell className="w-7 h-7 text-slate-500" />
+        </div>
+        <p className="text-white font-semibold">No notifications yet</p>
+        <p className="text-slate-500 text-sm mt-1">
           Notifications about your account will appear here.
         </p>
       </div>
@@ -199,23 +203,17 @@ const userId = reduxProfileUserId || reduxRegisterUserId || localUserId;
   }
 
   return (
-    <div className="flex flex-col items-center w-full h-full p-4 space-y-4 min-h-screen">
-      {/* Notification Header */}
-      <div className="w-full max-w-md mb-4">
-        <div className="bg-[#0B0F1A]/70 backdrop-blur-xl border border-slate-800 rounded-2xl p-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-white">Notifications</h2>
-            <div className="flex items-center gap-2">
-              {hasUnread && (
-                <div className="bg-red-500 text-white text-xs px-2 py-1 rounded-full font-bold">
-                  {unreadCount} new
-                </div>
-              )}
-              <span className="text-slate-400 text-sm">
-                {totalCount} total
-              </span>
-            </div>
-          </div>
+    <div className="w-full max-w-md mx-auto pb-10 space-y-3">
+      {/* Summary row */}
+      <div className="flex items-center justify-between px-1 pb-1">
+        <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-slate-500">Recent</p>
+        <div className="flex items-center gap-2">
+          {hasUnread && (
+            <span className="bg-rose-500/15 text-rose-300 border border-rose-500/25 text-[11px] px-2 py-0.5 rounded-full font-bold">
+              {unreadCount} new
+            </span>
+          )}
+          <span className="text-slate-500 text-xs">{totalCount} total</span>
         </div>
       </div>
 
@@ -280,294 +278,107 @@ const userId = reduxProfileUserId || reduxRegisterUserId || localUserId;
           title = "Withdrawal Notification";
         }
 
+        // Buttons for this notification (same destinations as before)
+        const actions: { label: string; href: string }[] = [];
+        if (status === "rejected") {
+          actions.push({ label: "Reapply Later", href: "/be-a-creator/apply" });
+        }
+        if (title === "Follow Notification" || title === "Unfollow Notification") {
+          actions.push({ label: "View Following", href: "/following" });
+        }
+        if (
+          [
+            "Request Notification",
+            "Fan Date Request",
+            "Fan Meet Request",
+            "Fan Call Request",
+            "Missed Fan Call",
+            "Activity Update",
+            "Rating Notification",
+            "Booking marked as complete",
+            "Your meet has ended",
+            "Your date has ended",
+          ].includes(title)
+        ) {
+          actions.push({ label: "View Activity", href: "/notifications/activity" });
+        }
+        if (title === "Message Notification") {
+          actions.push({ label: "View Messages", href: "/message" });
+        }
+
+        const actionClass =
+          "inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-white/10 bg-white/[0.04] hover:bg-white/[0.09] hover:border-white/20 text-[13px] font-semibold text-slate-200 transition-all";
+
         return (
           <div
             key={note._id}
-            className={`relative bg-[#0B0F1A]/70 backdrop-blur-xl border shadow-lg 
-                       rounded-2xl p-6 w-full max-w-md text-white transition hover:border-slate-700 ${!note.seen
-                ? 'border-blue-500 bg-blue-500/5'
-                : 'border-slate-800'
-              }`}
+            className={`relative w-full rounded-2xl border p-4 text-white transition-colors hover:border-white/[0.18] ${
+              !note.seen
+                ? "border-[#6c63ff]/40 bg-gradient-to-br from-[#6c63ff]/[0.10] to-[#0d1220]"
+                : "border-white/[0.07] bg-[#0d1220]"
+            }`}
           >
-            {/* Unread indicator */}
-            {!note.seen && (
-              <div className="absolute top-3 right-3 w-2 h-2 bg-blue-500 rounded-full"></div>
-            )}
-            <div className="flex flex-col items-start space-y-3">
-              {/* Header + Icon */}
-              <div className="flex items-center space-x-2">
-         {isAdminNotification && (
-                  <div className="bg-[#0B0F1A] p-0.5 rounded-full border border-slate-700 overflow-hidden w-7 h-7 flex items-center justify-center">
-                    <Image
-                      src="/icons/icon-192x192.png"
-                      alt="MMEKO"
-                      width={24}
-                      height={24}
-                      className="rounded-full object-cover"
-                    />
-                  </div>
-                )}
-                {title === "Rating Notification" && (
-                  <div className="bg-yellow-500/10 p-1 rounded-full">
-                    <Star className="text-yellow-500 w-5 h-5 fill-current" />
-                  </div>
-                )}
-                {title === "Views Notification" && (
-                  <div className="bg-indigo-500/10 p-1 rounded-full">
-                    <Eye className="text-indigo-400 w-5 h-5" />
-                  </div>
-                )}
-                {title === "Missed Fan Call" && (
-                  <div className="bg-red-500/10 p-1 rounded-full">
-                    <Phone className="text-red-500 w-5 h-5" />
-                  </div>
-                )}
-                {title === "Fan Date Request" && (
-                  <div className="bg-pink-500/10 p-1 rounded-full">
-                    <Heart className="text-pink-500 w-5 h-5 fill-current" />
-                  </div>
-                )}
-                {title === "Fan Meet Request" && (
-                  <div className="bg-green-500/10 p-1 rounded-full">
-                    <Handshake className="text-green-500 w-5 h-5" />
-                  </div>
-                )}
-                {title === "Fan Call Request" && (
-                  <div className="bg-blue-500/10 p-1 rounded-full">
-                    <Phone className="text-blue-500 w-5 h-5" />
-                  </div>
-                )}
-                {title === "Like Notification" && (
-                  <div className="bg-red-500/10 p-1 rounded-full">
-                    <Heart className="text-red-500 w-5 h-5 fill-current" />
-                  </div>
-                )}
-                {title === "Message Notification" && (
-                  <div className="bg-blue-500/10 p-1 rounded-full">
-                    <MessageCircle className="text-blue-500 w-5 h-5" />
-                  </div>
-                )}
-                {(title === "Follow Notification" || title === "Unfollow Notification") && (
-                  <div className="bg-blue-500/10 p-1 rounded-full">
-                    <UserPlus className="text-blue-500 w-5 h-5" strokeWidth={2.25} />
-                  </div>
-                )}
-                {!isAdminNotification && title !== "Rating Notification" && title !== "Views Notification" && title !== "Missed Fan Call" && title !== "Fan Date Request" && title !== "Fan Meet Request" && title !== "Fan Call Request" && title !== "Like Notification" && title !== "Message Notification" && title !== "Follow Notification" && title !== "Unfollow Notification" && title !== "Purchase Notification" && title !== "Withdrawal Notification" && status === "approved" && (
-                  <div className="bg-green-500/10 p-1 rounded-full">
-                    <CheckCircle className="text-green-500 w-5 h-5" />
-                  </div>
-                )}
-                {!isAdminNotification && title !== "Rating Notification" && title !== "Views Notification" && title !== "Missed Fan Call" && title !== "Fan Date Request" && title !== "Fan Meet Request" && title !== "Fan Call Request" && title !== "Like Notification" && title !== "Message Notification" && title !== "Follow Notification" && title !== "Unfollow Notification" && title !== "Purchase Notification" && title !== "Withdrawal Notification" && status === "rejected" && (
-                  <div className="bg-red-500/10 p-1 rounded-full">
-                    <XCircle className="text-red-500 w-5 h-5" />
-                  </div>
-                )}
-                {!isAdminNotification && title !== "Rating Notification" && title !== "Views Notification" && title !== "Missed Fan Call" && title !== "Fan Date Request" && title !== "Fan Meet Request" && title !== "Fan Call Request" && title !== "Like Notification" && title !== "Message Notification" && title !== "Follow Notification" && title !== "Unfollow Notification" && title !== "Purchase Notification" && title !== "Withdrawal Notification" && status === "pending" && (
-                  <div className="bg-yellow-500/10 p-1 rounded-full">
-                    <Clock className="text-yellow-500 w-5 h-5" />
-                  </div>
-                )}
-                {title === "Purchase Notification" && (
-                  <div className="bg-green-500/10 p-1 rounded-full">
-                    <ShoppingCart className="text-green-500 w-5 h-5" />
-                  </div>
-                )}
-                {title === "Withdrawal Notification" && (
-                  <div className="bg-green-500/10 p-1 rounded-full">
-                    <Wallet className="text-green-500 w-5 h-5" />
-                  </div>
-                )}
-         
-                <h2 className="text-base sm:text-lg font-semibold">
-                  {title}
-                </h2>
-              </div>
+            <div className="flex gap-3.5">
+              <NotificationIcon title={title} status={status} isAdmin={isAdminNotification} />
 
-           {/* Message */}
-              <p
-                className={`text-slate-300 text-sm sm:text-base leading-relaxed whitespace-pre-line ${
-                  note.hasLearnMore ? "line-clamp-3" : ""
-                }`}
-              >
-                {note.message}
-              </p>
+              <div className="min-w-0 flex-1">
+                {/* Title + time */}
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <h2 className="text-[14.5px] font-semibold text-white leading-snug">{title}</h2>
+                    {!note.seen && <span className="w-2 h-2 shrink-0 rounded-full bg-[#6c63ff] shadow-[0_0_8px_rgba(108,99,255,0.9)]" />}
+                  </div>
+                  <span className="shrink-0 mt-0.5 text-[11px] text-slate-500">
+                    {formatRelativeTime(note.createdAt)}
+                  </span>
+                </div>
 
-              {/* Learn More — keeps long admin broadcasts from stretching the card */}
-              {note.hasLearnMore && (
-                <Link href={`/learn-more/${note._id}`}>
-                  <button
-                    className="px-4 py-2 border border-slate-700 hover:border-slate-500 
-                              rounded-lg text-sm text-slate-200 transition"
-                  >
-                    Learn More
-                  </button>
-                </Link>
-              )}
+                {/* Message */}
+                <p
+                  className={`mt-1 text-[13.5px] leading-relaxed text-slate-400 whitespace-pre-line ${
+                    note.hasLearnMore ? "line-clamp-3" : ""
+                  }`}
+                >
+                  {note.message}
+                </p>
 
-             {/* Buttons */}
-              {status === "approved" && title === "Application Status" && (
-                <div className="pt-2">
-                  {!myPortfolioId && (
-                    <p className="text-slate-500 text-xs mb-2">
-                      Your creator profile isn&apos;t live to fans yet — set up your portfolio next to start accepting requests.
-                    </p>
-                  )}
-                  <Link href={myPortfolioId ? `/creators/${myPortfolioId}` : "/creator/create"}>
-                    <button
-                      className="px-4 py-2 border border-slate-700 hover:border-slate-500 
-                                rounded-lg text-sm text-slate-200 transition">
+                {/* Learn More — keeps long admin broadcasts from stretching the card */}
+                {note.hasLearnMore && (
+                  <div className="mt-3">
+                    <Link href={`/learn-more/${note._id}`} className={actionClass}>
+                      Learn More
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </Link>
+                  </div>
+                )}
+
+                {/* Application approved → portfolio */}
+                {status === "approved" && title === "Application Status" && (
+                  <div className="mt-3">
+                    {!myPortfolioId && (
+                      <p className="text-slate-500 text-xs mb-2">
+                        Your creator profile isn&apos;t live to fans yet — set up your portfolio next to start accepting requests.
+                      </p>
+                    )}
+                    <Link href={myPortfolioId ? `/creators/${myPortfolioId}` : "/creator/create"} className={actionClass}>
                       {myPortfolioId ? "My Portfolio" : "Create Portfolio"}
-                    </button>
-                  </Link>
-                </div>
-              )}
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </Link>
+                  </div>
+                )}
 
-              {status === "rejected" && (
-                <div className="pt-2">
-                  <Link href="/be-a-creator/apply">
-                    <button
-                      className="px-4 py-2 border border-slate-700 hover:border-slate-500 
-                              rounded-lg text-sm text-slate-200 transition">
-                      Reapply Later
-                    </button>
-                  </Link>
-                </div>
-              )}
-
-              {/* Follow/Unfollow notifications show appropriate buttons */}
-              {(title === "Follow Notification" || title === "Unfollow Notification") && (
-                <div className="pt-2">
-                  <Link href="/following">
-                    <button
-                      className="px-4 py-2 border border-slate-700 hover:border-slate-500 
-                                rounded-lg text-sm text-slate-200 transition">
-                      View Following
-                    </button>
-                  </Link>
-                </div>
-              )}
-
-              {/* request notifications show activity button */}
-              {title === "Request Notification" && (
-                <div className="pt-2">
-                  <Link href="/notifications/activity">
-                    <button
-                      className="px-4 py-2 border border-slate-700 hover:border-slate-500 
-                                rounded-lg text-sm text-slate-200 transition">
-                      View Activity
-                    </button>
-                  </Link>
-                </div>
-              )}
-
-              {/* Fan Date Request notifications show activity button */}
-              {title === "Fan Date Request" && (
-                <div className="pt-2">
-                  <Link href="/notifications/activity">
-                    <button
-                      className="px-4 py-2 border border-slate-700 hover:border-slate-500 
-                                rounded-lg text-sm text-slate-200 transition">
-                      View Activity
-                    </button>
-                  </Link>
-                </div>
-              )}
-
-              {/* Fan Meet Request notifications show activity button */}
-              {title === "Fan Meet Request" && (
-                <div className="pt-2">
-                  <Link href="/notifications/activity">
-                    <button
-                      className="px-4 py-2 border border-slate-700 hover:border-slate-500 
-                                rounded-lg text-sm text-slate-200 transition">
-                      View Activity
-                    </button>
-                  </Link>
-                </div>
-              )}
-
-              {/* Fan Call Request notifications show activity button */}
-              {title === "Fan Call Request" && (
-                <div className="pt-2">
-                  <Link href="/notifications/activity">
-                    <button
-                      className="px-4 py-2 border border-slate-700 hover:border-slate-500 
-                                rounded-lg text-sm text-slate-200 transition">
-                      View Activity
-                    </button>
-                  </Link>
-                </div>
-              )}
-
-              {/* Message notifications show messages button */}
-              {title === "Message Notification" && (
-                <div className="pt-2">
-                  <Link href="/message">
-                    <button
-                      className="px-4 py-2 border border-slate-700 hover:border-slate-500 
-                                rounded-lg text-sm text-slate-200 transition">
-                      View Messages
-                    </button>
-                  </Link>
-                </div>
-              )}
-
-              {/* Missed call notifications show activity button */}
-              {title === "Missed Fan Call" && (
-                <div className="pt-2">
-                  <Link href="/notifications/activity">
-                    <button
-                      className="px-4 py-2 border border-slate-700 hover:border-slate-500 
-                                rounded-lg text-sm text-slate-200 transition">
-                      View Activity
-                    </button>
-                  </Link>
-                </div>
-              )}
-
-              {/* Activity update notifications show activity button */}
-              {title === "Activity Update" && (
-                <div className="pt-2">
-                  <Link href="/notifications/activity">
-                    <button
-                      className="px-4 py-2 border border-slate-700 hover:border-slate-500 
-                                rounded-lg text-sm text-slate-200 transition">
-                      View Activity
-                    </button>
-                  </Link>
-                </div>
-              )}
-
-              {/* Rating notifications show activity button */}
-              {title === "Rating Notification" && (
-                <div className="pt-2">
-                  <Link href="/notifications/activity">
-                    <button
-                      className="px-4 py-2 border border-slate-700 hover:border-slate-500 
-                                rounded-lg text-sm text-slate-200 transition">
-                      View Activity
-                    </button>
-                  </Link>
-                </div>
-              )}
-
-              {/* Creator marked the booking complete → send the fan to their activity */}
-              {(title === "Booking marked as complete" || title === "Your meet has ended" || title === "Your date has ended") && (
-                <div className="pt-2">
-                  <Link href="/notifications/activity">
-                    <button
-                      className="px-4 py-2 border border-slate-700 hover:border-slate-500 
-                                rounded-lg text-sm text-slate-200 transition">
-                      View Activity
-                    </button>
-                  </Link>
-                </div>
-              )}
-
-              {/* Pending has no button */}
-              <span className="absolute right-4 bottom-3 text-[10px] text-slate-500">
-                {formatRelativeTime(note.createdAt)}
-              </span>
+                {/* Other buttons */}
+                {actions.length > 0 && (
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {actions.map((a) => (
+                      <Link key={a.label} href={a.href} className={actionClass}>
+                        {a.label}
+                        <ArrowRight className="w-3.5 h-3.5" />
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         );
@@ -575,3 +386,63 @@ const userId = reduxProfileUserId || reduxRegisterUserId || localUserId;
     </div>
   );
 };
+
+function NotificationIcon({
+  title,
+  status,
+  isAdmin,
+}: {
+  title: string;
+  status: "approved" | "rejected" | "pending";
+  isAdmin: boolean;
+}) {
+  const bubble = "w-10 h-10 shrink-0 rounded-xl flex items-center justify-center";
+
+  if (isAdmin) {
+    return (
+      <div className={`${bubble} bg-[#080b14] border border-white/10 overflow-hidden`}>
+        <Image
+          src="/icons/icon-192x192.png"
+          alt="MMEKO"
+          width={26}
+          height={26}
+          className="rounded-full object-cover"
+        />
+      </div>
+    );
+  }
+
+  switch (title) {
+    case "Rating Notification":
+      return <div className={`${bubble} bg-yellow-500/10`}><Star className="text-yellow-400 w-5 h-5 fill-current" /></div>;
+    case "Views Notification":
+      return <div className={`${bubble} bg-indigo-500/10`}><Eye className="text-indigo-400 w-5 h-5" /></div>;
+    case "Missed Fan Call":
+      return <div className={`${bubble} bg-red-500/10`}><Phone className="text-red-400 w-5 h-5" /></div>;
+    case "Fan Date Request":
+      return <div className={`${bubble} bg-pink-500/10`}><Heart className="text-pink-400 w-5 h-5 fill-current" /></div>;
+    case "Fan Meet Request":
+      return <div className={`${bubble} bg-green-500/10`}><Handshake className="text-green-400 w-5 h-5" /></div>;
+    case "Fan Call Request":
+      return <div className={`${bubble} bg-blue-500/10`}><Phone className="text-blue-400 w-5 h-5" /></div>;
+    case "Like Notification":
+      return <div className={`${bubble} bg-red-500/10`}><Heart className="text-red-400 w-5 h-5 fill-current" /></div>;
+    case "Message Notification":
+      return <div className={`${bubble} bg-blue-500/10`}><MessageCircle className="text-blue-400 w-5 h-5" /></div>;
+    case "Follow Notification":
+    case "Unfollow Notification":
+      return <div className={`${bubble} bg-blue-500/10`}><UserPlus className="text-blue-400 w-5 h-5" strokeWidth={2.25} /></div>;
+    case "Purchase Notification":
+      return <div className={`${bubble} bg-green-500/10`}><ShoppingCart className="text-green-400 w-5 h-5" /></div>;
+    case "Withdrawal Notification":
+      return <div className={`${bubble} bg-green-500/10`}><Wallet className="text-green-400 w-5 h-5" /></div>;
+  }
+
+  if (status === "approved") {
+    return <div className={`${bubble} bg-green-500/10`}><CheckCircle className="text-green-400 w-5 h-5" /></div>;
+  }
+  if (status === "rejected") {
+    return <div className={`${bubble} bg-red-500/10`}><XCircle className="text-red-400 w-5 h-5" /></div>;
+  }
+  return <div className={`${bubble} bg-yellow-500/10`}><Clock className="text-yellow-400 w-5 h-5" /></div>;
+}

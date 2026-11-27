@@ -13,6 +13,8 @@ interface RatingModalProps {
   preSelectedRating?: number;
 }
 
+const RATING_LABELS = ["Tap a star to rate", "Poor", "Fair", "Good", "Very Good", "Excellent"];
+
 export default function RatingModal({ 
   isOpen, 
   onClose, 
@@ -56,80 +58,80 @@ export default function RatingModal({
 
   if (!isOpen) return null;
 
-  console.log("RatingModal rendering with isOpen:", isOpen, "creatorName:", creatorName);
-
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999] p-4">
-      <div className="bg-white rounded-lg p-6 max-w-md w-full">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+      <div className="relative w-full max-w-md overflow-hidden rounded-2xl border border-white/10 bg-[#0f1424] p-6 shadow-2xl">
+        {/* Top accent line */}
+        <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-[#6c63ff] via-[#9b59f5] to-[#f5c451]" />
+
         {/* Header */}
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold text-gray-800">Rate Your Experience</h2>
+        <div className="flex items-start justify-between gap-3 mb-5">
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-xl bg-yellow-400/10 border border-yellow-400/20 flex items-center justify-center text-xl text-yellow-400">
+              ★
+            </div>
+            <div>
+              <h2 className="text-lg font-bold text-white leading-tight">Rate Your Experience</h2>
+              <p className="text-[13px] text-slate-400 mt-0.5">
+                Your <span className="font-semibold text-slate-200">{hostType}</span> with <span className="font-semibold text-slate-200">{creatorName}</span>
+              </p>
+            </div>
+          </div>
           <button 
             onClick={handleClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
+            aria-label="Close"
+            className="w-8 h-8 shrink-0 rounded-full bg-white/[0.05] text-slate-400 hover:bg-white/[0.1] hover:text-white transition-colors flex items-center justify-center"
           >
-            <X className="w-6 h-6" />
+            <X className="w-4 h-4" />
           </button>
         </div>
 
-        {/* Creator Info */}
-        <div className="mb-4">
-          <p className="text-gray-600">
-            How was your <span className="font-semibold">{hostType}</span> with <span className="font-semibold">{creatorName}</span>?
-          </p>
-        </div>
-
         {/* Star Rating */}
-        <div className="mb-6">
-          <div className="flex justify-center gap-1">
+        <div className="mb-6 rounded-xl border border-white/[0.07] bg-white/[0.02] py-5 px-3">
+          <div className="flex justify-center gap-2">
             {[1, 2, 3, 4, 5].map((star) => (
               <button
                 key={star}
                 onClick={() => setRating(star)}
                 onMouseEnter={() => setHoveredRating(star)}
                 onMouseLeave={() => setHoveredRating(0)}
-                className="text-3xl transition-colors focus:outline-none"
+                className="text-4xl leading-none transition-transform hover:scale-110 focus:outline-none"
                 disabled={loading}
               >
                 <span
                   className={`${
                     star <= (hoveredRating || rating)
-                      ? 'text-yellow-400'
-                      : 'text-gray-300'
-                  } hover:text-yellow-400 transition-colors`}
+                      ? 'text-yellow-400 drop-shadow-[0_0_8px_rgba(250,204,21,0.45)]'
+                      : 'text-slate-600'
+                  } transition-colors`}
                 >
                   ★
                 </span>
               </button>
             ))}
           </div>
-          <p className="text-center text-sm text-gray-500 mt-2">
-            {rating === 0 && "Click a star to rate"}
-            {rating === 1 && "Poor"}
-            {rating === 2 && "Fair"}
-            {rating === 3 && "Good"}
-            {rating === 4 && "Very Good"}
-            {rating === 5 && "Excellent"}
+          <p className={`text-center text-sm mt-3 font-medium ${rating === 0 ? "text-slate-500" : "text-yellow-300"}`}>
+            {RATING_LABELS[rating]}
           </p>
         </div>
 
         {/* Feedback Input */}
         <div className="mb-6">
-          <label htmlFor="feedback" className="block text-sm font-medium text-gray-700 mb-2">
-            Share your experience (required)
+          <label htmlFor="feedback" className="block text-sm font-semibold text-slate-200 mb-2">
+            Share your experience <span className="text-rose-400">*</span>
           </label>
           <textarea
             id="feedback"
             value={feedback}
             onChange={(e) => setFeedback(e.target.value)}
             placeholder="Tell others about your experience..."
-            className="w-full text-black p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+            className="w-full p-3 rounded-xl bg-white/[0.04] border border-white/10 text-white placeholder-slate-600 focus:outline-none focus:border-[#6c63ff] focus:ring-1 focus:ring-[#6c63ff]/40 resize-none transition-colors"
             rows={3}
             maxLength={100}
             disabled={loading}
           />
-          <p className="text-xs text-gray-500 mt-1">
-            {feedback.length}/100 characters
+          <p className="text-xs text-slate-500 mt-1.5 text-right">
+            {feedback.length}/100
           </p>
         </div>
 
@@ -138,14 +140,14 @@ export default function RatingModal({
           <button
             onClick={handleClose}
             disabled={loading}
-            className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+            className="flex-1 px-4 py-3 rounded-xl border border-white/10 text-slate-300 font-semibold hover:bg-white/[0.06] transition-colors disabled:opacity-50"
           >
             Cancel
           </button>
           <button
             onClick={handleSubmit}
             disabled={loading || rating === 0 || !feedback.trim()}
-            className="flex-1 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 px-4 py-3 rounded-xl font-bold text-white bg-gradient-to-r from-[#6c63ff] to-[#9b59f5] hover:brightness-110 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {loading ? "Submitting..." : "Submit Rating"}
           </button>

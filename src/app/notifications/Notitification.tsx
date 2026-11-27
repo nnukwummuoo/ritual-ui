@@ -1,25 +1,13 @@
 "use client"
-import React, { useEffect, useRef, useState } from "react";
-import notifymeIcon from "../../icons/notifymeIcon.svg";
-// import { Meetupview } from "./creatornotifyviews/Meetupview";
-// import { Allview } from "./creatornotifyviews/Allview";
-// import { Requestview } from "./creatornotifyviews/Requestview";
-// import { Acceptedview } from "./creatornotifyviews/Acceptedview";
+import React, { useEffect, useRef } from "react";
 import { FaAngleLeft } from "react-icons/fa";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
-import { Allview } from "./components/Allview";
 import { useNotificationIndicator } from "@/hooks/useNotificationIndicator";
 import { useActivityNotificationIndicator } from "@/hooks/useActivityNotificationIndicator";
 
-const style = " hover:bg-gradient-to-r hover:from-blue-400 hover:to-purple-500 hover:bg-clip-text hover:text-transparent";
-
 export const Creatornotify = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
-  const [all, setall] = useState("#292d31");
-  const [meetup, setmeetup] = useState("");
-  const [request, setrequest] = useState("");
-  const [accepted, setaccepted] = useState("");
   const divFocusRef = useRef<HTMLDivElement>(null);
   
   // Get notification indicator data
@@ -33,25 +21,37 @@ export const Creatornotify = ({ children }: { children: React.ReactNode }) => {
   return (
     <div className="w-full px-4 pt-0 h-screen flex flex-col contain-content">
       <div className="md:w-4/5 md:mx-auto">
-        <header className="flex flex-col gap-4">
-          <div className="flex items-center gap-4">
-            <FaAngleLeft
-              color="white"
-              size={30}
+        <header className="flex flex-col gap-4 pt-4">
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              aria-label="Back"
               onClick={() => {
                 router.push("/");
               }}
-            />
-            <h4 className="text-lg font-bold text-white">Notifications</h4>
+              className="w-10 h-10 shrink-0 rounded-full bg-white/[0.05] border border-white/[0.08] text-white hover:bg-white/[0.1] transition-colors flex items-center justify-center"
+            >
+              <FaAngleLeft size={18} />
+            </button>
+            <div>
+              <h4 className="text-lg font-bold text-white leading-tight">Notifications</h4>
+              <p className="text-[12px] text-slate-500">
+                {allUnreadCount > 0
+                  ? `${allUnreadCount} unread`
+                  : "You're all caught up"}
+              </p>
+            </div>
           </div>
-          <div className="flex gap-2 mb-8">
+
+          {/* Segmented tabs */}
+          <div className="flex gap-1 p-1 mb-5 rounded-2xl bg-white/[0.04] border border-white/[0.06]">
             <HeadBtn label="All" route="/notifications?id=randomid" showIndicator={allUnreadCount > 0} count={allUnreadCount} />
             <HeadBtn label="Activity" route="/notifications/activity" showIndicator={hasActivityUnread} count={activityUnreadCount} />
           </div>
         </header>
         <div
           ref={divFocusRef}
-          className="cstm-height focus:outline-none focus:border-dashed focus:border-gray-600 pb-12 flex-col items-center w-full overflow-y-auto scrollbar"
+          className="cstm-height focus:outline-none pb-12 flex-col items-center w-full overflow-y-auto scrollbar"
         >
           {children}
         </div>
@@ -71,15 +71,17 @@ function HeadBtn({ label, route, showIndicator = false, count = 0 }: {
   return (
     <Link
       href={route}
-      className={`w-full font-bold transition-all duration-500 p-2 border border-gray-800 text-center text-slate-400 rounded-2xl hover:bg-[#080b14] relative ${
-        endpoint ? "bg-[#111624]" : "bg-transparent"
+      className={`relative flex-1 py-2.5 rounded-xl text-center text-sm font-bold transition-all duration-300 ${
+        endpoint
+          ? "bg-gradient-to-r from-[#6c63ff] to-[#9b59f5] text-white shadow-lg shadow-[#6c63ff]/25"
+          : "text-slate-400 hover:text-white hover:bg-white/[0.05]"
       }`}
     >
       {label}
       {showIndicator && (
-        <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full font-bold min-w-[16px] h-4 flex items-center justify-center">
+        <span className="absolute -top-1.5 -right-1 bg-rose-500 text-white text-[10px] px-1.5 rounded-full font-bold min-w-[18px] h-[18px] flex items-center justify-center border-2 border-[#080b14]">
           {count > 99 ? '99+' : count}
-        </div>
+        </span>
       )}
     </Link>
   );

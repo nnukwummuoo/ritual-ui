@@ -225,43 +225,41 @@ export default function Activity() {
     ));
   };
 
-  if (loading) {
+ if (loading) {
     return (
-      <div className='flex flex-col gap-8 max-w-[26rem] mx-auto'>
-        <div className="text-center text-white">Loading requests...</div>
+      <div className='w-full max-w-md mx-auto min-h-[50vh] flex flex-col items-center justify-center'>
+        <div className="w-10 h-10 rounded-full border-2 border-white/10 border-t-[#9b59f5] animate-spin" />
+        <p className="mt-4 text-sm text-slate-400">Loading requests...</p>
       </div>
     );
   }
 
   if (requests.length === 0) {
     return (
-      <div className='flex flex-col gap-8 max-w-[26rem] mx-auto'>
-        <div className="text-center text-white">No fan requests yet</div>
-        <div className="text-center text-gray-400 text-sm">
-          Fan meet requests will appear here when you send or receive them
+      <div className='w-full max-w-md mx-auto min-h-[50vh] flex flex-col items-center justify-center text-center px-6'>
+        <div className="w-16 h-16 rounded-2xl bg-white/[0.04] border border-white/[0.08] flex items-center justify-center mb-4 text-3xl">
+          🗓️
         </div>
+        <p className="text-white font-semibold">No fan requests yet</p>
+        <p className="text-slate-500 text-sm mt-1">
+          Fan meet requests will appear here when you send or receive them
+        </p>
       </div>
     );
   }
 
   return (
-    <div className='flex flex-col gap-8 max-w-[26rem] mx-auto'>
-      {/* Activity Header */}
-      <div className="w-full max-w-md mb-4">
-        <div className="bg-[#0B0F1A]/70 backdrop-blur-xl border border-slate-800 rounded-2xl p-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-white">Activity</h2>
-            <div className="flex items-center gap-2">
-              {hasUnread && (
-                <div className="bg-red-500 text-white text-xs px-2 py-1 rounded-full font-bold">
-                  {unreadCount} new
-                </div>
-              )}
-              <span className="text-slate-400 text-sm">
-                {requests.length} total
-              </span>
-            </div>
-          </div>
+    <div className='w-full max-w-md mx-auto flex flex-col gap-5 pb-10'>
+      {/* Summary row */}
+      <div className="flex items-center justify-between px-1 -mb-1">
+        <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-slate-500">Your requests</p>
+        <div className="flex items-center gap-2">
+          {hasUnread && (
+            <span className="bg-rose-500/15 text-rose-300 border border-rose-500/25 text-[11px] px-2 py-0.5 rounded-full font-bold">
+              {unreadCount} new
+            </span>
+          )}
+          <span className="text-slate-500 text-xs">{requests.length} total</span>
         </div>
       </div>
 

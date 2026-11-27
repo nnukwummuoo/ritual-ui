@@ -643,14 +643,6 @@ useEffect(() => {
 
 
 
-  const cardBorderVariance = type === "creator" ? "border-blue-500" : type === "fan" && ["accepted", "completed"].includes(currentStatus) ? "border-green-500" : "border-yellow-500"
-  const cardTextVariance = type === "creator" ? "text-blue-500" : type === "fan" && ["accepted", "completed"].includes(currentStatus) ? "text-green-500" : "text-yellow-500"
-
-  // shared action button base so buttons have same size / height
-  const actionBtnBase = 'w-full px-3 sm:px-6 py-2 sm:py-3 rounded-lg transition-all duration-500 text-xs sm:text-sm flex items-center justify-center';
-  // Fan action style (uses base for consistent sizing)
-  const fanActionClass = `${actionBtnBase} border border-gray-500 text-gray-300 hover:bg-slate-700 bg-transparent`;
-
   // API call functions
  const handleAccept = async () => {
   if (!requestId || !details) return;
