@@ -4111,7 +4111,7 @@ const isFanPending = isViewingOwnProfile
 
                                   return isVipActive && (
 
-                                    <VIPBadge size="sm" className="absolute -top-1.5 left-6 z-10" isVip={c.isVip} vipEndDate={c.vipEndDate} />
+                                    <VIPBadge size="md" className="absolute -top-2 left-4 z-10" isVip={c.isVip} vipEndDate={c.vipEndDate} />
 
                                   );
 

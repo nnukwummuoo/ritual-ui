@@ -15,6 +15,7 @@ import FanRatingModal from '@/components/FanRatingModal';
 import { useSelector } from "react-redux";
 import { RootState } from "@/store/store";
 import { URL as API_BASE } from "@/api/config";
+import { BadgeCheck } from 'lucide-react';
 
 const cardStates = {
   request: "Request sent",
@@ -1089,11 +1090,8 @@ useEffect(() => {
                       color: "#a89cff"
                     }}
                   >
-                    <svg viewBox="0 0 24 24" width="12" height="12" fill="none">
-                      <path d="M12 2.8L4.5 6V11C4.5 15.2 7.9 19.4 12 20.6C16.1 19.4 19.5 15.2 19.5 11V6L12 2.8Z" fill="#a89cff"/>
-                      <path d="M12 7l1.2 2.4 2.6.4-1.9 1.85.45 2.6L12 13.1l-2.35 1.15.45-2.6L8.2 9.8l2.6-.4L12 7z" fill="white"/>
-                    </svg>
-                    Verified Fan
+                    <BadgeCheck size={15} fill="#6c63ff" className="text-white shrink-0" />
+      Verified Fan
                   </span>
                 )}
               </div>
@@ -2069,11 +2067,8 @@ const formatTimer = (seconds: number) => {
                   color: "#a89cff"
                 }}
               >
-                <svg viewBox="0 0 24 24" width="14" height="14" fill="none">
-                  <path d="M12 2.8L4.5 6V11C4.5 15.2 7.9 19.4 12 20.6C16.1 19.4 19.5 15.2 19.5 11V6L12 2.8Z" fill="#6c63ff"/>
-                  <path d="M12 7l1.2 2.4 2.6.4-1.9 1.85.45 2.6L12 13.1l-2.35 1.15.45-2.6L8.2 9.8l2.6-.4L12 7z" fill="white"/>
-                </svg>
-                Verified Fan
+               <BadgeCheck size={15} fill="#6c63ff" className="text-white shrink-0" />
+          Verified Fan
               </span>
             ) : (
               <p className="text-[13px] text-slate-500">ID and selfie confirmation will appear here once the fan is verified.</p>

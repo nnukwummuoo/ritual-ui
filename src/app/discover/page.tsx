@@ -1154,27 +1154,28 @@ return (
                                           const vipEndDate = typeof cRecord?.vipEndDate === 'string' ? cRecord.vipEndDate : null;
                                           const isVipActive = isVip && vipEndDate && new Date(vipEndDate) > new Date();
                                           return isVipActive ? (
-                                            <VIPBadge size="lg" className="absolute -top-3 left-3 z-10" isVip={isVip} vipEndDate={vipEndDate} />
+                                            <VIPBadge size="md" className="absolute -top-2 left-4 z-10" isVip={isVip} vipEndDate={vipEndDate} />
                                           ) : null;
                                         })()}
                                         <div className="flex-1">
                                           <div className="flex items-center justify-between">
                                             <span className="font-medium text-gray-300 inline-flex items-center gap-1">
-                                              {(() => {
-                                                const firstname = typeof cRecord?.firstname === 'string' ? cRecord.firstname : '';
-                                                const lastname = typeof cRecord?.lastname === 'string' ? cRecord.lastname : '';
-                                                const combinedName = [firstname, lastname].filter(Boolean).join(" ");
-
-                                                return combinedName ||
-                                                  (typeof cRecord?.commentusername === 'string' ? cRecord.commentusername : '') ||
-                                                  (typeof cRecord?.fullname === 'string' ? cRecord.fullname : '') ||
-                                                  (typeof cRecord?.fullName === 'string' ? cRecord.fullName : '') ||
-                                                  (typeof cRecord?.name === 'string' ? cRecord.name : '') ||
-                                                  (typeof cRecord?.username === 'string' ? cRecord.username : '') ||
-                                                  (typeof cRecord?.author === 'string' ? cRecord.author : '') ||
-                                                  'User';
-                                              })()}
-                                            </span>
+  {(() => {
+    const str = (v: unknown) => (typeof v === 'string' ? v : '');
+    return (
+      str(cRecord?.commentusername) ||
+      str(cRecord?.username) ||
+      str(cRecord?.name) ||
+      str(cRecord?.fullname) ||
+      str(cRecord?.fullName) ||
+      str(cRecord?.author) ||
+      'User'
+    );
+  })()}
+  {(cRecord?.isVerified || cRecord?.creator_verified) && (
+    <BadgeCheck size={15} fill="#6c63ff" className="text-white shrink-0" />
+  )}
+</span>
                                             <span className="text-xs text-gray-500">
                                               {(() => {
                                                 const timestamp = cRecord?.commenttime ||

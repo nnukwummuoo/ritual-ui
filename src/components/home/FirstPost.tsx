@@ -1095,7 +1095,7 @@ className={`text-white px-2 bg-gradient-to-r from-[#6c63ff] to-[#9b59f5] cursor-
                           {(() => {
                             const isVipActive = c?.isVip && c?.vipEndDate && new Date(c.vipEndDate) > new Date();
                             return isVipActive && (
-                              <VIPBadge size="sm" className="absolute -top-1.5 left-6 z-10" isVip={c.isVip} vipEndDate={c.vipEndDate} />
+                              <VIPBadge size="md" className="absolute -top-2 left-4 z-10" isVip={c.isVip} vipEndDate={c.vipEndDate} />
                             );
                           })()}
                           <div className="flex-1">

@@ -19,6 +19,7 @@ import { useVideoAutoPlay } from "@/hooks/useVideoAutoPlayNew";
 import ExpandableText from "../ExpandableText";
 import { generateInitials } from "@/utils/generateInitials";
 import PostMediaCollage from "./PostMediaCollage";
+import { BadgeCheck } from "lucide-react";
 
 // Utility function to format relative time
 const formatRelativeTime = (timestamp: string | number | Date): string => {
@@ -1055,12 +1056,12 @@ const initials = userName.trim().charAt(0).toUpperCase() || "?";
                               {(() => {
                                 const isVipActive = c?.isVip && c?.vipEndDate && new Date(c.vipEndDate) > new Date();
                                 return isVipActive && (
-                                  <VIPBadge size="sm" className="absolute -top-1.5 left-6 z-10" isVip={c.isVip} vipEndDate={c.vipEndDate} />
+                                  <VIPBadge size="md" className="absolute -top-2 left-4 z-10" isVip={c.isVip} vipEndDate={c.vipEndDate} />
                                 );
                               })()}
                               <div className="flex-1">
                                 <div className="flex items-center justify-between">
-                                  <span className="font-medium text-gray-300 inline-flex items-center gap-1">
+                                 <span className="font-medium text-gray-300 inline-flex items-center gap-1">
                                     {(() => {
                                       const combinedName = [c?.firstname, c?.lastname].filter(Boolean).join(" ");
                                       return combinedName ||
@@ -1070,9 +1071,12 @@ const initials = userName.trim().charAt(0).toUpperCase() || "?";
                                         c?.name ||
                                         c?.username ||
                                         c?.username ||
-                                        c?.author ||
+                                       c?.author ||
                                         'User';
                                     })()}
+                                    {c?.isVerified && (
+                                      <BadgeCheck size={15} fill="#6c63ff" className="text-white shrink-0" />
+                                    )}
                                   </span>
                                   <span className="text-xs text-gray-500">
                                     {(() => {
