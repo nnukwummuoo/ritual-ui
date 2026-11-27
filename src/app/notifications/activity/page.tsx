@@ -324,15 +324,7 @@ export default function Activity() {
               onStatusChange={handleStatusChange}
             />
 
-            {/* VIP Badge - positioned outside the card */}
-            {request.otherUser?.isVip && (
-              <VIPBadge
-                size="xl"
-                className="absolute top-2 left-12 z-10"
-                isVip={request.otherUser.isVip}
-                vipEndDate={request.otherUser.vipEndDate || undefined}
-              />
-            )}
+ 
           </div>
         );
       })}

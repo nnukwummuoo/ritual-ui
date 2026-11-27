@@ -1013,9 +1013,10 @@ useEffect(() => {
 
         {/* ── Header: avatar, name, price ─────────────────────── */}
         <div className="flex justify-between items-start gap-4">
-          <div className="flex gap-3.5 min-w-0">
+         <div className="flex gap-3.5 min-w-0">
+            <div className="relative shrink-0">
             <div
-              className={`size-14 sm:size-16 shrink-0 relative rounded-full border-2 overflow-hidden ${accent.ring} bg-[#080b14] flex items-center justify-center cursor-pointer hover:opacity-80 transition-opacity`}
+              className={`size-14 sm:size-16 relative rounded-full border-2 overflow-hidden ${accent.ring} bg-[#080b14] flex items-center justify-center cursor-pointer hover:opacity-80 transition-opacity`}
               onClick={handleProfileClick}
             >
               {img && img !== '/picture-1.jfif' && img !== '/default-image.png' && img.trim() !== '' ? (
@@ -1059,6 +1060,8 @@ useEffect(() => {
                   {generateInitials(firstName, lastName, username || name)}
                 </div>
               )}
+            </div>
+            <VIPBadge size="lg" className="absolute -top-2 -right-2 z-10" isVip={isVip} vipEndDate={vipEndDate} />
             </div>
 
             <div className="min-w-0 text-sm">
