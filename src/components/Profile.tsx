@@ -52,7 +52,7 @@ export default function Profile({ name, firstname, lastname, src, url, gold_bala
         })()}
 
         {/* VIP Lion Badge */}
-        <VIPBadge size="xl" className='-top-5 -right-5' isVip={isVip} vipEndDate={vipEndDate} />
+        <VIPBadge size="md" className='-top-2 -right-2' isVip={isVip} vipEndDate={vipEndDate} />
       </div>
       <div className='flex flex-col gap-1 font-bold w-full'>
         <p className=" group-hover:text-gray-400 text-xl flex items-center gap-1">

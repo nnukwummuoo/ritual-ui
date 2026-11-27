@@ -4111,7 +4111,7 @@ const isFanPending = isViewingOwnProfile
 
                                   return isVipActive && (
 
-                                    <VIPBadge size="lg" className="absolute -top-3 left-3 z-10" isVip={c.isVip} vipEndDate={c.vipEndDate} />
+                                    <VIPBadge size="sm" className="absolute -top-1.5 left-6 z-10" isVip={c.isVip} vipEndDate={c.vipEndDate} />
 
                                   );
 
@@ -4155,7 +4155,7 @@ const isFanPending = isViewingOwnProfile
 
                                         return isVerified && (
 
-                                          <BadgeCheck size={17} className="text-black inline ml-1" fill="white" />
+                                          <BadgeCheck size={15} fill="#6c63ff" className="text-white inline ml-1 align-text-bottom" />
 
                                         );
 
@@ -4637,7 +4637,7 @@ const isFanPending = isViewingOwnProfile
 
               {/* VIP Lion Badge */}
 
-              {profileOwnerVipStatus && <VIPBadge size="xxl" className="absolute top-2 right-2" isVip={profileOwnerVipStatus} vipEndDate={vipStatus?.vipEndDate} />}
+              {profileOwnerVipStatus && <VIPBadge size="xl" className="absolute top-2 right-2" isVip={profileOwnerVipStatus} vipEndDate={vipStatus?.vipEndDate} />}
 
             </div>
 
@@ -5943,7 +5943,7 @@ const isFanPending = isViewingOwnProfile
 
                         {/* VIP Lion Badge */}
                         {(() => {
-                          return profileOwnerVipStatus && <VIPBadge size="xxl" className="absolute -top-8 -right-8 pointer-events-none" isVip={profileOwnerVipStatus} vipEndDate={vipStatus?.vipEndDate} />;
+                          return profileOwnerVipStatus && <VIPBadge size="xl" className="absolute -top-3 -right-3 pointer-events-none" isVip={profileOwnerVipStatus} vipEndDate={vipStatus?.vipEndDate} />;
                         })()}
                       </div>
                     </div>

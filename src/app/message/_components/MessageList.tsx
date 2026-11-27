@@ -549,7 +549,7 @@ export const MessageList = () => {
                     )}
                     {/* VIP Badge */}
                     {message.isVip && (
-                      <VIPBadge size="xl" className="absolute -top-5 -right-5" isVip={message.isVip} vipEndDate={message.vipEndDate} />
+                      <VIPBadge size="md" className="absolute -top-2 -right-2" isVip={message.isVip} vipEndDate={message.vipEndDate} />
                     )}
                   </div>
 

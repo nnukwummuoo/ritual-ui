@@ -1161,12 +1161,12 @@ className={`text-white px-2 bg-gradient-to-r from-[#6c63ff] to-[#9b59f5] cursor-
                           {(() => {
                             const isVipActive = c?.isVip && c?.vipEndDate && new Date(c.vipEndDate) > new Date();
                             return isVipActive && (
-                              <VIPBadge size="lg" className="absolute -top-3 left-3 z-10" isVip={c.isVip} vipEndDate={c.vipEndDate} />
+                              <VIPBadge size="sm" className="absolute -top-1.5 left-6 z-10" isVip={c.isVip} vipEndDate={c.vipEndDate} />
                             );
                           })()}
                           <div className="flex-1">
                             <div className="flex items-center justify-between">
-                              <span className="font-medium text-gray-300">
+                              <span className="font-medium text-gray-300 inline-flex items-center gap-1">
                                 {(() => {
                                   const combinedName = [c?.firstname, c?.lastname].filter(Boolean).join(" ");
                                   return combinedName ||
@@ -1182,7 +1182,7 @@ className={`text-white px-2 bg-gradient-to-r from-[#6c63ff] to-[#9b59f5] cursor-
                                 {(() => {
                                   const isVerified = c?.isVerified;
                                   return isVerified && (
-                                    <span> <BadgeCheck size={14} className="text-black inline" fill="white" /> </span>
+                                    <BadgeCheck size={15} fill="#6c63ff" className="text-white shrink-0" />
                                   );
                                 })()}
                               </span>

@@ -593,7 +593,7 @@ function PostSingle() {
                                                                 {(() => {
                                                                     const isVipActive = comment.isVip && comment.vipEndDate && new Date(comment.vipEndDate) > new Date();
                                                                     return isVipActive && (
-                                                                        <VIPBadge size="md" className="absolute -top-1 -right-1" isVip={comment.isVip} vipEndDate={comment.vipEndDate} />
+                                                                        <VIPBadge size="sm" className="absolute -top-1 -right-1" isVip={comment.isVip} vipEndDate={comment.vipEndDate} />
                                                                     );
                                                                 })()}
                                                             </div>

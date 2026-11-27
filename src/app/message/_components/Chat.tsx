@@ -2009,7 +2009,7 @@ const [sizeWarningType, setSizeWarningType] = useState<"image" | "video" | null>
                 </div>
                 {/* VIP Badge for chat partner */}
                 {viewingProfile.status === "succeeded" && vipStatus?.isVip && (
-                  <VIPBadge size="xl" className="absolute -top-3 -right-5" isVip={vipStatus.isVip} vipEndDate={vipStatus.vipEndDate} />
+                  <VIPBadge size="md" className="absolute -top-2 -right-2" isVip={vipStatus.isVip} vipEndDate={vipStatus.vipEndDate} />
                 )}
               </div>
 

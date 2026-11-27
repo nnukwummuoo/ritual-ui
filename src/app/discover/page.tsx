@@ -1159,7 +1159,7 @@ return (
                                         })()}
                                         <div className="flex-1">
                                           <div className="flex items-center justify-between">
-                                            <span className="font-medium text-gray-300">
+                                            <span className="font-medium text-gray-300 inline-flex items-center gap-1">
                                               {(() => {
                                                 const firstname = typeof cRecord?.firstname === 'string' ? cRecord.firstname : '';
                                                 const lastname = typeof cRecord?.lastname === 'string' ? cRecord.lastname : '';
