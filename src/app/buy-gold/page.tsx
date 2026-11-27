@@ -523,31 +523,7 @@ const TopupInner: React.FC = () => {
   };
    
 
-  // Table data from golds array
-  const tableRows = golds.map((gold) => (
-    <tr
-      key={gold.value}
-      className={`border-b border-white/[0.05] last:border-b-0 transition-colors ${
-        selectedPackId === gold.id ? "bg-[#6c63ff]/[0.08]" : ""
-      }`}
-    >
-      <td className="py-2.5 px-2 text-center text-sm sm:text-base border-r border-white/[0.05] whitespace-nowrap text-white font-medium">
-        {gold.value}
-      </td>
-      <td className="py-2.5 px-2 text-center text-sm sm:text-base border-r border-white/[0.05] whitespace-nowrap text-gray-300">
-        {gold.amount}
-      </td>
-      <td className="py-2.5 px-2 text-center text-sm sm:text-base whitespace-nowrap">
-        {gold.tag ? (
-          <span className="flex items-center gap-1 justify-center whitespace-nowrap text-[#c9c4ff]">
-            {tagIcons[gold.tag] || null}
-            {gold.tag}
-          </span>
-        ) : <span className="text-gray-600">-</span>}
-      </td>
-    </tr>
-  ));
-
+  
   const router = useRouter();
 
   return (
@@ -612,38 +588,58 @@ const TopupInner: React.FC = () => {
           </span>
         </button>
 
-        {/* Table Card */}
-        <div className="w-full bg-[#111624] rounded-2xl shadow-[0_20px_50px_-25px_rgba(0,0,0,0.6)] p-0 mb-6 mt-4 sm:mt-6 overflow-x-auto border border-white/[0.06]">
-          <table className="w-full text-white border-collapse">
-            <thead>
-              <tr className="border-b border-white/[0.06]">
-                <th className="py-3 px-2 font-semibold text-sm sm:text-base text-center border-r border-white/[0.06] whitespace-nowrap text-gray-400">Pack</th>
-                <th className="py-3 px-2 font-semibold text-sm sm:text-base text-center border-r border-white/[0.06] whitespace-nowrap text-gray-400">Price</th>
-                <th className="py-3 px-2 font-semibold text-sm sm:text-base text-center whitespace-nowrap text-gray-400">Tag</th>
-              </tr>
-            </thead>
-            <tbody>{tableRows}</tbody>
-          </table>
+        {/* Gold packs */}
+        <div className="w-full mt-5 sm:mt-6 mb-6">
+          <p className="mb-3 px-1 text-[11px] font-bold uppercase tracking-[0.12em] text-[#636583]">
+            Choose a Gold pack
+          </p>
+          <div className="grid grid-cols-2 gap-3">
+            {[...golds]
+              .sort((a, b) => Number(a.value) - Number(b.value))
+              .map((gold) => {
+                const selected = selectedPackId === gold.id;
+                return (
+                  <button
+                    key={gold.id}
+                    type="button"
+                    aria-pressed={selected}
+                    onClick={() => setSelectedPackId(gold.id)}
+                    className={`relative overflow-hidden rounded-2xl border p-4 text-left transition-all duration-200 active:scale-[0.98] ${
+                      selected
+                        ? "border-[#6c63ff] bg-gradient-to-br from-[#6c63ff]/[0.18] to-[#111624] shadow-[0_0_0_1px_rgba(108,99,255,0.5),0_12px_30px_-12px_rgba(108,99,255,0.6)]"
+                        : "border-white/[0.07] bg-[#111624] hover:border-white/[0.18]"
+                    }`}
+                  >
+                    {selected && (
+                      <span className="absolute top-2.5 right-2.5 flex h-5 w-5 items-center justify-center rounded-full bg-[#6c63ff]">
+                        <Check className="h-3 w-3 text-white" strokeWidth={3} />
+                      </span>
+                    )}
+                    <div className="flex items-center gap-1.5 min-h-[20px] pr-6 text-[11px] font-semibold text-[#c9c4ff]">
+                      {gold.tag ? (
+                        <>
+                          {tagIcons[gold.tag] || null}
+                          <span className="truncate">{gold.tag}</span>
+                        </>
+                      ) : null}
+                    </div>
+                    <div className="mt-2 flex items-baseline gap-1.5">
+                      <span className="text-2xl font-extrabold tabular-nums text-white">
+                        {Number(gold.value).toLocaleString()}
+                      </span>
+                      <span className="text-[11px] font-bold uppercase tracking-wider text-[#f5c451]">Gold</span>
+                    </div>
+                    <p className="mt-1 text-sm font-semibold text-[#8b8fa3]">{gold.amount}</p>
+                  </button>
+                );
+              })}
+          </div>
         </div>
 
         {/* Payment Form */}
         <div className="flex flex-col items-center gap-4 w-full">
 
-          <select
-            required
-            className="block bg-[#111624] text-white rounded-xl px-3 py-3 sm:px-4 w-full appearance-none border border-white/10 focus:outline-none focus:ring-1 focus:ring-[#6c63ff] focus:border-[#6c63ff] font-medium text-sm sm:text-base transition-colors"
-            value={selectedPackId}
-            onChange={(e) => setSelectedPackId(e.target.value)}
-          >
-            <option value="" disabled>
-              Choose Gold Pack
-            </option>
-            {golds.map((value) => (
-              <option key={value.id} value={value.id}>
-                {value.value} Gold / ${value.amount.replace(/[^0-9.]/g, "")}
-              </option>
-            ))}
-          </select>
+          
 
           {successInfo && (
             <div className="w-full border border-green-500/30 bg-gradient-to-br from-green-500/[0.1] to-green-500/[0.02] rounded-xl px-4 py-3.5 flex items-start justify-between gap-3">
