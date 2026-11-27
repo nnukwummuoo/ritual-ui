@@ -530,44 +530,46 @@ const TopupInner: React.FC = () => {
     <div className="min-h-screen w-full flex items-start justify-center px-4 sm:px-6 pt-4 sm:pt-6 pb-16">
       <div className="flex flex-col items-center w-full max-w-md mx-auto">
 
-        {/* Brand mark */}
-        <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#f5c451] to-[#e8a93a] flex items-center justify-center text-xl font-extrabold text-[#1A1C2C] shadow-[0_12px_28px_-10px_rgba(245,196,81,0.6)]">
-          ✦
+       {/* Unified hero card */}
+        <div className="relative overflow-hidden w-full rounded-3xl border border-white/[0.08] bg-gradient-to-br from-[#f5c451]/[0.16] via-[#0d1220] to-[#0d1220] p-6 sm:p-8 flex flex-col items-center text-center">
+          <div className="pointer-events-none absolute -top-16 -right-16 h-56 w-56 rounded-full bg-[#f5c451]/15 blur-3xl" />
+
+          {/* Brand mark */}
+          <div className="relative w-12 h-12 rounded-2xl bg-gradient-to-br from-[#f5c451] to-[#e8a93a] flex items-center justify-center text-xl font-extrabold text-[#1A1C2C] shadow-[0_12px_28px_-10px_rgba(245,196,81,0.6)]">
+            ✦
+          </div>
+
+          {/* Title */}
+          <h1 className="relative mt-4 text-white text-3xl sm:text-4xl font-extrabold">Gold Shop</h1>
+
+          {/* Subtitle */}
+          <p className="relative text-slate-300 text-sm sm:text-base mt-2 max-w-xs">
+            Fuel real connections. Buy Gold securely and book creators with confidence.
+          </p>
+
+          {/* Trust badges row */}
+          <div className="relative flex items-center gap-2 mt-5 flex-wrap justify-center">
+            <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-[#a7e3c4] bg-[#0f2a22] border border-[#22c55e]/25 rounded-full px-3 py-1.5">
+              <ShieldCheck className="w-3 h-3" /> Payment protected
+            </span>
+            <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-[#c9c4ff] bg-[#1a1838] border border-[#6c63ff]/25 rounded-full px-3 py-1.5">
+              <Lock className="w-3 h-3" /> Verified on-chain
+            </span>
+          </div>
+
+          {/* Accepted tokens line */}
+          <div className="relative w-full mt-5 pt-4 border-t border-white/[0.08] flex items-center justify-center gap-2">
+            <svg viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="12" cy="12" r="10" fill="#F5C451" />
+              <circle cx="12" cy="12" r="10" fill="none" stroke="#B8860B" strokeWidth="1.2" />
+              <circle cx="12" cy="12" r="7" fill="none" stroke="#B8860B" strokeWidth="0.8" opacity="0.45" />
+              <path d="M12 7.3l1.1 2.6 2.7.3-2 1.8.5 2.7-2.3-1.4-2.3 1.4.5-2.7-2-1.8 2.7-.3L12 7.3z" fill="#B8860B" opacity="0.55" />
+            </svg>
+            <span className="text-slate-300 text-sm font-medium">
+              Buy Gold with USDT or USDC <span className="text-slate-500 font-normal">(BEP20)</span>
+            </span>
+          </div>
         </div>
-
-        {/* Title */}
-        <h1 className="mt-3 text-white text-2xl sm:text-3xl font-bold text-center">Gold Shop</h1>
-
-        {/* Subtitle */}
-        <p className="text-[#8b8fa3] text-sm text-center mt-1.5 max-w-xs">
-          Fuel real connections. Buy Gold securely and book creators with confidence.
-        </p>
-
-        {/* Trust badges row */}
-        <div className="flex items-center gap-2 mt-4 flex-wrap justify-center">
-          <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-[#a7e3c4] bg-[#22c55e]/10 border border-[#22c55e]/25 rounded-full px-3 py-1.5">
-            <ShieldCheck className="w-3 h-3" /> Payment protected
-          </span>
-          <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-[#c9c4ff] bg-[#6c63ff]/10 border border-[#6c63ff]/25 rounded-full px-3 py-1.5">
-            <Lock className="w-3 h-3" /> Verified on-chain
-          </span>
-        </div>
-
-        {/* Accepted tokens line */}
-        <div className="flex items-center mt-5 gap-2">
-       
-           <svg viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="12" cy="12" r="10" fill="#F5C451" />
-            <circle cx="12" cy="12" r="10" fill="none" stroke="#B8860B" strokeWidth="1.2" />
-            <circle cx="12" cy="12" r="7" fill="none" stroke="#B8860B" strokeWidth="0.8" opacity="0.45" />
-            <path d="M12 7.3l1.1 2.6 2.7.3-2 1.8.5 2.7-2.3-1.4-2.3 1.4.5-2.7-2-1.8 2.7-.3L12 7.3z" fill="#B8860B" opacity="0.55" />
-          </svg>
-         
-          <span className="text-[#b6b7c7] text-sm sm:text-base font-medium">
-            Buy Gold with USDT or USDC <span className="text-[#636583] font-normal">(BEP20)</span>
-          </span>
-        </div>
-
         {/* New to crypto? */}
         <button
           type="button"
@@ -580,7 +582,7 @@ const TopupInner: React.FC = () => {
             </div>
             <div>
               <p className="text-white text-sm font-semibold leading-tight">No crypto?</p>
-              <p className="text-[#8b8fa3] text-xs mt-0.5">Pay with card instead</p>
+              <p className="text-[#8b8fa3] text-xs mt-0.5">We'll walk you through it, step by step</p>
             </div>
           </div>
           <span className="text-[#c9c4ff] text-xs font-semibold whitespace-nowrap flex-shrink-0">
