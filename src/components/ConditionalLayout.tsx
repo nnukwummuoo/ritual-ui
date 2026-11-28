@@ -192,8 +192,11 @@ export default function ConditionalLayout({ children, isAuthenticated }: Conditi
         {children}
         {/* spacer so the last content isn't hidden behind the fixed bottom bar */}
         <div className="h-24 md:hidden" />
-       {/* solid strip so nothing shows through the small gap under the bar */}
-        <div className="fixed bottom-0 left-0 right-0 h-3 z-40 md:hidden" style={{ background: "#080b14" }} />
+       {/* solid backing under the bar so nothing shows through behind it */}
+        <div
+          className="fixed bottom-0 left-0 right-0 h-24 z-[49] md:hidden pointer-events-none"
+          style={{ background: "#080b14" }}
+        />
         <div className="md:hidden">
           <BottomNavBar />
         </div>
