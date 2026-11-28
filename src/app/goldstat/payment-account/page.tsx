@@ -10,6 +10,7 @@ import { useAuth } from "@/lib/context/auth-context";
 import { useAccount, useSignMessage, useDisconnect } from "wagmi";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
 import Web3Providers from "@/components/Web3Providers";
+import { Trash2 } from "lucide-react";
 
 interface PaymentAccount {
   _id: string;
@@ -299,21 +300,17 @@ function PaymentAccountPageInner() {
   return (
     <div className="min-h-screen bg-[#080b14] text-white p-4">
       <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
+       {/* Header */}
+        <div className="mb-8">
           <button
             onClick={() => router.back()}
-            className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
+            type="button"
+            className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-[#161b2e] px-3.5 py-1.5 text-xs font-semibold text-slate-200 transition-colors [@media(hover:hover)]:hover:bg-[#1e2540] focus:outline-none cursor-pointer"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-            Back
+            ← Back
           </button>
-          <h1 className="text-2xl font-bold bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">
-            Payment Account
-          </h1>
-          <div className="w-20"></div>
+          <h1 className="mt-4 text-3xl font-extrabold text-white">Payment Account</h1>
+          <p className="mt-1 text-sm text-slate-400">Where your earnings are sent when you withdraw.</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -456,12 +453,13 @@ function PaymentAccountPageInner() {
                           {formData.walletAddress.slice(0, 6)}...{formData.walletAddress.slice(-4)}
                         </p>
                       </div>
-                      <button
+                     <button
                         type="button"
                         onClick={disconnectWallet}
-                        className="text-xs text-gray-400 hover:text-white underline underline-offset-2 shrink-0 ml-3"
+                        className="p-2 text-gray-500 hover:text-red-400 transition-colors shrink-0 ml-2"
+                        title="Remove wallet"
                       >
-                        Use different wallet
+                        <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
                   ) : isConnected && address ? (

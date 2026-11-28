@@ -24,6 +24,8 @@ import HeaderBackNav from "@/navs/HeaderBackNav";
 import { Gennavigation } from "@/components/navs/Gennav";
 
 const DEFAULT_PROFILE_IMAGE = "";
+const BIO_MAX = 150;
+const fieldBase = "w-full rounded-xl border bg-[#161b2e] px-4 py-3 text-sm text-slate-100 placeholder:text-slate-500 placeholder:font-normal focus:border-[#6c63ff]/60 focus:outline-none transition-colors";
 
 // Track API request status to prevent duplicate calls
 const apiRequestTracker = {
@@ -854,9 +856,10 @@ const EditProfile: React.FC = () => {
 
       <div className="md:w-3/5 md:mx-auto">
         <div className="w-full h-full flex flex-col items-center md:w-3/4 mt-4 sm:mt-3 md:mr-auto md:ml-0">
-          <p className="text-slate-400 font-bold border border-b-2 border-t-0 border-r-0 border-l-0 border-slate-400">
-            Edit your Profile Information
-          </p>
+         <div className="w-full max-w-md px-4 mt-2">
+            <h1 className="text-3xl font-extrabold text-white">Edit Profile</h1>
+            <p className="mt-1 text-sm text-slate-400">Update your photo, name, username and bio.</p>
+          </div>
 
           {!isAuthorized && errorMessage && (
             <div className="flex flex-col items-center mt-8 w-full">
@@ -907,11 +910,14 @@ const EditProfile: React.FC = () => {
           )}
 
           {showEdit && (
-            <div className="w-full mb-28">
-              <div className="w-full flex flex-col items-center mt-4 ">
+            <div className="w-full mb-28 px-4">
+              {/* Photo card */}
+              <div className="relative w-full max-w-md mx-auto mt-4 overflow-hidden rounded-3xl border border-white/[0.08] bg-[#0d1220] p-6 flex flex-col items-center">
+                <div className="pointer-events-none absolute -top-16 -right-16 h-48 w-48 rounded-full bg-[#6c63ff]/20 blur-3xl" />
+
                 {/* Profile Image */}
-                <div className="relative group">
-                  <div className="w-28 h-28 rounded-full p-1 bg-gradient-to-r from-blue-500 to-purple-600">
+                <div className="relative cursor-pointer" onClick={() => ref.current?.click()}>
+                  <div className="w-28 h-28 rounded-full p-1 bg-gradient-to-br from-[#6c63ff] to-[#9b59f5]">
                     <div className="w-full h-full rounded-full overflow-hidden bg-black">
                       {(() => {
                         const profileImage = profileimg;
@@ -933,7 +939,7 @@ const EditProfile: React.FC = () => {
                               onError={(e) => {
                                 try {
                                   const target = e.target as HTMLImageElement;
-                                  
+
                                   // Try fallback to original URL if proxy failed
                                   if (imageSource.isStorj && target?.src !== profileImage) {
                                     target.src = profileImage;
@@ -968,7 +974,7 @@ const EditProfile: React.FC = () => {
 
                         // Show initials as fallback
                         return (
-                          <div className="w-full h-full flex items-center justify-center text-white text-3xl font-bold bg-gray-600">
+                          <div className="w-full h-full flex items-center justify-center text-white text-3xl font-bold bg-[#161b2e]">
                             {initials}
                           </div>
                         );
@@ -976,17 +982,17 @@ const EditProfile: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Overlay with camera icon */}
-                  <div
-                    className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-full opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity"
-                    onClick={() => ref.current?.click()}
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  {/* Always-visible camera button */}
+                  <div className="absolute bottom-0 right-0 flex h-9 w-9 items-center justify-center rounded-full border-4 border-[#0d1220] bg-[#6c63ff] shadow-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
                     </svg>
                   </div>
                 </div>
+
+                {/* Text instruction */}
+                <p className="relative mt-4 text-sm text-slate-400">Tap your photo to change it</p>
 
                 {/* Delete Profile Picture Button */}
                 {profileimg && profileimg !== DEFAULT_PROFILE_IMAGE && (
@@ -1031,15 +1037,12 @@ const EditProfile: React.FC = () => {
                         setLoading(false);
                       }
                     }}
-                    className="mt-2 bg-red-600 hover:bg-red-700 text-white text-xs py-1 px-3 rounded-full transition-colors disabled:opacity-50"
+                    className="relative mt-3 rounded-full border border-red-500/25 bg-[#2a1216] px-4 py-1.5 text-xs font-semibold text-red-300 transition-colors [@media(hover:hover)]:hover:bg-[#3a1a20] disabled:opacity-50"
                     disabled={loading}
                   >
                     {loading ? "Deleting..." : "Delete Profile Picture"}
                   </button>
                 )}
-
-                {/* Text instruction */}
-                <p className="text-sm text-gray-400 mt-2 mb-3">Click on the image to change your profile picture</p>
 
                 {/* Hidden File Input */}
                 <input
@@ -1067,14 +1070,13 @@ const EditProfile: React.FC = () => {
               </div>
 
               {/* Form */}
-
-              <div className="w-full max-w-md mx-auto mt-6 p-4 bg-[#080b14] rounded-xl shadow-md text-slate-700 font-semibold">
+              <div className="w-full max-w-md mx-auto mt-4 rounded-3xl border border-white/[0.08] bg-[#0d1220] p-6">
                 {/* First Name */}
-                <div className="flex flex-col mb-4">
-                  <label className="mb-1 text-sm text-slate-300">First Name</label>
+                <div className="flex flex-col mb-5">
+                  <label className="mb-1.5 text-sm font-semibold text-slate-200">First Name</label>
                   <input
                     type="text"
-                    className="rounded-lg bg-slate-600 text-slate-100 p-2 placeholder:text-slate-500 placeholder:font-normal placeholder:text-sm"
+                    className={`${fieldBase} border-white/10`}
                     placeholder={firstnamepl}
                     value={firstname}
                     onChange={(e) => {
@@ -1083,17 +1085,17 @@ const EditProfile: React.FC = () => {
                     }}
                     maxLength={9}
                   />
-                  <div className="text-xs text-right mt-1 text-slate-400">
+                  <div className="text-xs text-right mt-1.5 text-slate-500">
                     {firstname.length}/9 characters
                   </div>
                 </div>
 
                 {/* Last Name */}
-                <div className="flex flex-col mb-4">
-                  <label className="mb-1 text-sm text-slate-300">Last Name</label>
+                <div className="flex flex-col mb-5">
+                  <label className="mb-1.5 text-sm font-semibold text-slate-200">Last Name</label>
                   <input
                     type="text"
-                    className="rounded-lg bg-slate-600 text-slate-100 p-2 placeholder:text-slate-500 placeholder:font-normal placeholder:text-sm"
+                    className={`${fieldBase} border-white/10`}
                     placeholder={lastnamepl}
                     value={lastname}
                     onChange={(e) => {
@@ -1102,21 +1104,21 @@ const EditProfile: React.FC = () => {
                     }}
                     maxLength={9}
                   />
-                  <div className="text-xs text-right mt-1 text-slate-400">
+                  <div className="text-xs text-right mt-1.5 text-slate-500">
                     {lastname.length}/9 characters
                   </div>
                 </div>
 
                 {/* Username */}
-                <div className="flex flex-col mb-4">
-                  <label className="mb-1 text-sm text-slate-300">Username</label>
+                <div className="flex flex-col mb-5">
+                  <label className="mb-1.5 text-sm font-semibold text-slate-200">Username</label>
                   <div className="relative">
-                    {/* <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 text-sm">@</span> */}
+                    <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm text-slate-500">@</span>
                     <input
                       type="text"
-                      className={`rounded-lg bg-slate-600 text-slate-100 p-2 pl-8 pr-10 placeholder:text-slate-500 placeholder:font-normal placeholder:text-sm w-full transition-colors ${usernameStatus === "valid" ? 'border border-green-500' :
-                        usernameStatus === "invalid" ? 'border border-red-500' :
-                          usernameStatus === "checking" ? 'border border-yellow-500' : ''
+                      className={`${fieldBase} pl-9 pr-10 ${usernameStatus === "valid" ? 'border-green-500/60' :
+                        usernameStatus === "invalid" ? 'border-red-500/60' :
+                          usernameStatus === "checking" ? 'border-yellow-500/60' : 'border-white/10'
                         }`}
                       placeholder="username"
                       value={username}
@@ -1157,44 +1159,57 @@ const EditProfile: React.FC = () => {
                       )}
                     </div>
                   </div>
-                  <div className="text-xs text-right mt-1 text-slate-400">
+                  <div className="text-xs text-right mt-1.5 text-slate-500">
                     @{username.length}/15 characters
                   </div>
-                  <div className="text-xs text-slate-500 mt-1">
-                    • Must be between 3-15 characters • No periods (.) allowed • Only letters, numbers, and underscores • Must be unique
+                  <div className="mt-2 rounded-xl border border-white/[0.06] bg-[#111830] px-3 py-2 text-xs leading-relaxed text-slate-500">
+                    3-15 characters · no periods (.) · letters, numbers and underscores only · must be unique
                   </div>
                   {usernameError && (
-                    <div className="text-xs text-red-400 mt-1">
+                    <div className="text-xs text-red-400 mt-1.5">
                       {usernameError}
                     </div>
                   )}
                   {usernameStatus === "valid" && (
-                    <div className="text-xs text-green-400 mt-1">
+                    <div className="text-xs text-green-400 mt-1.5">
                       ✓ Username is available
                     </div>
                   )}
                 </div>
 
                 {/* Bio */}
-                <div className="flex flex-col mb-4">
-                  <label className="mb-1 text-sm text-slate-300">Bio</label>
+                <div className="flex flex-col mb-5">
+                  <div className="mb-1.5 flex items-center justify-between">
+                    <label className="text-sm font-semibold text-slate-200">Bio</label>
+                    <span
+                      className={`rounded-full border px-2.5 py-0.5 text-[11px] font-semibold ${
+                        bio.length >= BIO_MAX
+                          ? "border-red-500/25 bg-[#2a1216] text-red-300"
+                          : bio.length >= BIO_MAX - 15
+                            ? "border-yellow-500/25 bg-[#2a2310] text-yellow-400"
+                            : "border-white/10 bg-[#161b2e] text-slate-400"
+                      }`}
+                    >
+                      {bio.length}/{BIO_MAX}
+                    </span>
+                  </div>
                   <textarea
-                    className="rounded-lg bg-slate-600 text-slate-100 p-2 h-32 resize-none placeholder:text-slate-500 placeholder:font-normal placeholder:text-sm"
+                    className={`${fieldBase} border-white/10 h-32 resize-none`}
                     placeholder={biopl || "Write something about yourself..."}
                     value={bio}
                     onChange={(e) => setBio(e.currentTarget.value)}
-                    maxLength={100}
+                    maxLength={BIO_MAX}
                   ></textarea>
-                  <div className="text-xs text-right mt-1 text-slate-400">
-                    {bio.length}/100 characters
+                  <div className="text-xs text-right mt-1.5 text-slate-500">
+                    {BIO_MAX - bio.length} characters left
                   </div>
                 </div>
 
                 {/* Country Dropdown */}
                 <div className="flex flex-col mb-6">
-                  <label className="mb-1 text-sm text-slate-300">Country</label>
+                  <label className="mb-1.5 text-sm font-semibold text-slate-200">Country</label>
                   <select
-                    className="rounded-lg bg-slate-600 text-slate-100 p-2 placeholder:text-slate-500 placeholder:font-normal placeholder:text-sm"
+                    className={`${fieldBase} border-white/10`}
                     value={country || countrypl}
                     onChange={(e) => setCountry(e.target.value)}
                   >
@@ -1210,16 +1225,16 @@ const EditProfile: React.FC = () => {
                 </div>
 
                 {/* Buttons */}
-                <div className="space-y-3">
+                <div className="space-y-2.5">
                   <button
-                    className={`bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 transition-colors text-white font-medium py-3 px-4 rounded-lg w-full text-center disabled:opacity-50 `}
+                    className="w-full rounded-xl bg-gradient-to-r from-purple-600 to-pink-500 px-4 py-3 text-sm font-bold text-white transition-all [@media(hover:hover)]:hover:from-purple-500 [@media(hover:hover)]:hover:to-pink-400 disabled:opacity-50"
                     onClick={updateButton}
                   >
-                    save changes
+                    Save changes
                   </button>
 
                   <button
-                    className="bg-transparent border border-gray-600 text-gray-300 hover:bg-[#111624] transition-colors font-medium py-2 px-4 rounded-lg w-full text-center disabled:opacity-50"
+                    className="w-full rounded-xl border border-white/10 bg-[#161b2e] px-4 py-3 text-sm font-semibold text-slate-200 transition-colors [@media(hover:hover)]:hover:bg-[#1e2540] disabled:opacity-50"
                     onClick={() => router.push(`/${routeSlug}`)}
                     disabled={loading}
                   >
