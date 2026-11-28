@@ -3,6 +3,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { AnyAction } from "redux";
+import { getprofile } from "@/store/profile";
 import PacmanLoader from "react-spinners/RingLoader";
 import { useRouter, useParams } from "next/navigation";
 import axios from "axios";
@@ -692,11 +693,21 @@ const EditProfile: React.FC = () => {
       setLoading(false);
       setSuccessMessage("Profile updated successfully!");
 
-      // Force full page reload to profile page after a short delay
-      setTimeout(() => {
-  const newUsername = (username || usernamepl).replace(/^@/, "");
-  window.location.href = `/${newUsername}`;
-}, 1500);
+     // Refresh the logged-in user's profile in Redux first, then go to the profile page
+      setTimeout(async () => {
+        const newUsername = (username || usernamepl).replace(/^@/, "");
+        try {
+          const ld = getLocalStorageData();
+          const refreshToken = token || ld.token;
+          const refreshUserId = loggedInUserId || ld.userID;
+          if (refreshUserId && refreshToken) {
+            await dispatch(getprofile({ userid: refreshUserId, token: refreshToken } as any) as unknown as AnyAction);
+          }
+        } catch {
+          // ignore, the profile page will fetch again
+        }
+        router.push(`/${newUsername}`);
+      }, 1500);
     }
 
     // Handle failed profile update
