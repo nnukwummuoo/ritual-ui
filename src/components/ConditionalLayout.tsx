@@ -185,6 +185,20 @@ export default function ConditionalLayout({ children, isAuthenticated }: Conditi
   }, [showNavbar]);
   */
 
+ // Profile pages keep their own top nav but still get the bottom nav on mobile
+  if (isProfileSlugRoute && isAuthenticated) {
+    return (
+      <>
+        {children}
+        {/* spacer so the last content isn't hidden behind the fixed bottom bar */}
+        <div className="h-24 md:hidden" />
+        <div className="md:hidden">
+          <BottomNavBar />
+        </div>
+      </>
+    );
+  }
+
  // If it's a QuickChat [userid] route, admin route, ritual route, or a page with
   // its own top nav (creator portfolio pages), render without main layout
   if (isQuickChatRoute || isAdminRoute || isRitualRoute || hasOwnTopbar) {
