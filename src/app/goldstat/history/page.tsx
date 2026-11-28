@@ -302,6 +302,7 @@ const HistoryPage = () => {
 
   const [views, setViews] = useState(0);
    const [nonUserViews, setNonUserViews] = useState(0);
+   const [monthlyViews, setMonthlyViews] = useState<Record<string, { users: number; nonUsers: number }>>({});
   const [showViewsModal, setShowViewsModal] = useState(false);
 
   // Get analytics from transactions based on selected month
@@ -542,23 +543,30 @@ const HistoryPage = () => {
       try {
         const payload = response?.payload;
 
-        if (!payload) {
+       if (!payload) {
           setViews(0);
           setNonUserViews(0);
+          setMonthlyViews({});
           return;
         }
 
         setViews(payload?.views ?? 0);
         setNonUserViews(payload?.nonUserViews ?? 0);
+        setMonthlyViews(payload?.monthly ?? {});
 
       } catch {
         setViews(0);
         setNonUserViews(0);
+        setMonthlyViews({});
       }
     };
 
     fetchViews();
   }, [session, dispatch, creator_portfolio_id]);
+
+  const monthViewKey = `${selectedYear}-${String(selectedMonth).padStart(2, "0")}`;
+  const monthViewCount =
+    (monthlyViews[monthViewKey]?.users || 0) + (monthlyViews[monthViewKey]?.nonUsers || 0);
 
   return (
     <div className="w-full max-w-md sm:max-w-lg lg:ml-36 min-h-screen py-8 px-6 text-white">
@@ -692,7 +700,7 @@ const HistoryPage = () => {
           <div className="rounded-2xl border border-white/[0.06] bg-[#111830] p-4">
             <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#0f2a22] text-[#2dd4bf]"><Eye size={16} /></span>
             <p className="mt-3 text-xs font-medium text-slate-400">Portfolio views</p>
-            <p className="mt-0.5 text-2xl font-extrabold text-white">{views + nonUserViews}</p>
+            <p className="mt-0.5 text-2xl font-extrabold text-white">{monthViewCount}</p>
           </div>
           <div className="rounded-2xl border border-white/[0.06] bg-[#111830] p-4">
             <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#2c1424] text-[#f472b6]"><Users size={16} /></span>
@@ -701,7 +709,7 @@ const HistoryPage = () => {
           </div>
         </div>
 
-        {!(analytics.request > 0 || analytics.gift > 0 || analytics.like > 0 || analytics.followers > 0 || analytics.earning > 0) && (
+        {!(analytics.request > 0 || analytics.gift > 0 || analytics.like > 0 || analytics.followers > 0 || analytics.earning > 0 || monthViewCount > 0) && (
           <p className="mt-3 text-center text-xs text-slate-500">
             No activity for {new Date(parseInt(selectedYear), parseInt(selectedMonth) - 1).toLocaleString('default', { month: 'long', year: 'numeric' })}
           </p>
@@ -769,33 +777,34 @@ const HistoryPage = () => {
       
       {/* Payment Account Modal - Redirect to separate page */}
       {showPaymentModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-[#111624] p-6 rounded-lg shadow-lg w-full max-w-md mx-4">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-white">Add Payment Account</h2>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+          <div className="relative w-full max-w-sm overflow-hidden rounded-3xl border border-white/[0.08] bg-[#0d1220] p-6 text-white">
+            <div className="pointer-events-none absolute -top-16 -right-16 h-48 w-48 rounded-full bg-[#6c63ff]/20 blur-3xl" />
+            <div className="relative flex items-start justify-between gap-3">
+              <h2 className="text-xl font-extrabold text-white">Add Payment Account</h2>
               <button
                 onClick={() => setShowPaymentModal(false)}
-                className="text-gray-400 hover:text-white"
+                className="text-2xl leading-none text-slate-400 transition-colors [@media(hover:hover)]:hover:text-white"
               >
-                ✕
+                ×
               </button>
             </div>
-            <p className="text-gray-300 mb-4">
+            <p className="relative mt-2 text-sm leading-relaxed text-slate-400">
               You need to add your payment account details before you can withdraw funds.
             </p>
-            <div className="space-y-3">
+            <div className="relative mt-5 space-y-2.5">
               <button
                 onClick={() => {
                   setShowPaymentModal(false);
                   router.push('/goldstat/payment-account?return=withdrawal');
                 }}
-                className="w-full bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-500 hover:to-pink-400 transition-all text-white font-bold px-6 py-3 rounded-lg"
+                className="w-full rounded-xl bg-gradient-to-r from-purple-600 to-pink-500 px-6 py-3 text-sm font-bold text-white transition-all [@media(hover:hover)]:hover:from-purple-500 [@media(hover:hover)]:hover:to-pink-400"
               >
                 Go to Payment Account Page
               </button>
               <button
                 onClick={() => setShowPaymentModal(false)}
-                className="w-full bg-gray-600 hover:bg-gray-700 text-white font-medium px-6 py-3 rounded-lg"
+                className="w-full rounded-xl border border-white/10 bg-[#161b2e] px-6 py-3 text-sm font-semibold text-slate-200 transition-colors [@media(hover:hover)]:hover:bg-[#1e2540]"
               >
                 Cancel
               </button>
@@ -806,68 +815,76 @@ const HistoryPage = () => {
 
       {/* Confirmation Modal */}
       {showConfirmModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-[#111624] p-8 rounded-lg shadow-lg text-center w-96">
-            <h2 className="text-2xl font-bold mb-4 text-white">Confirm Withdrawal</h2>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+          <div className="relative w-full max-w-sm max-h-[90vh] overflow-y-auto rounded-3xl border border-white/[0.08] bg-[#0d1220] p-6 text-white">
+            <h2 className="text-xl font-extrabold text-white">Confirm Withdrawal</h2>
 
             {/* Payment Account Details */}
             {paymentAccountDetails && (
-              <div className="bg-gray-700 p-4 rounded-lg mb-4 text-left">
-                <div className="flex justify-between items-center mb-2">
-                  <h3 className="text-lg font-semibold text-white">Payment Details</h3>
+              <div className="mt-4 rounded-2xl border border-white/[0.06] bg-[#111830] p-4 text-left">
+                <div className="mb-3 flex items-center justify-between">
+                  <h3 className="text-sm font-bold text-white">Payment Details</h3>
                   <button
                     onClick={() => setShowDeleteConfirm(true)}
-                    className="text-red-400 hover:text-red-300 text-sm"
+                    className="text-xs font-semibold text-red-400 transition-colors [@media(hover:hover)]:hover:text-red-300"
                   >
                     Delete Account
                   </button>
                 </div>
-                <p className="text-sm text-gray-300"><strong>Name:</strong> {paymentAccountDetails.fullName}</p>
-                <p className="text-sm text-gray-300 break-all"><strong>Email:</strong> {paymentAccountDetails.email}</p>
-                <p className="text-sm text-gray-300"><strong>Country:</strong> {paymentAccountDetails.country}</p>
-               <p className="text-sm text-gray-300"><strong>Stablecoin:</strong> {paymentAccountDetails.currency || (() => {
-  const cryptoType = paymentAccountDetails.cryptoType;
-  if (!cryptoType) return 'Crypto';
-  if (cryptoType.includes('_')) {
-    const [currency, network] = cryptoType.split('_');
-    return `${currency} (${network})`;
-  }
-  return cryptoType;
-})()}</p>
-                <p className="text-sm text-gray-300 break-all"><strong>Wallet:</strong> {paymentAccountDetails.walletAddress}</p>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between gap-3"><span className="text-slate-500">Name</span><span className="text-right text-slate-200">{paymentAccountDetails.fullName}</span></div>
+                  <div className="flex justify-between gap-3"><span className="text-slate-500">Email</span><span className="text-right text-slate-200 break-all">{paymentAccountDetails.email}</span></div>
+                  <div className="flex justify-between gap-3"><span className="text-slate-500">Country</span><span className="text-right text-slate-200">{paymentAccountDetails.country}</span></div>
+                  <div className="flex justify-between gap-3">
+                    <span className="text-slate-500">Stablecoin</span>
+                    <span className="text-right text-slate-200">
+                      {paymentAccountDetails.currency || (() => {
+                        const cryptoType = paymentAccountDetails.cryptoType;
+                        if (!cryptoType) return 'Crypto';
+                        if (cryptoType.includes('_')) {
+                          const [currency, network] = cryptoType.split('_');
+                          return `${currency} (${network})`;
+                        }
+                        return cryptoType;
+                      })()}
+                    </span>
+                  </div>
+                  <div className="flex justify-between gap-3"><span className="text-slate-500">Wallet</span><span className="text-right text-slate-200 break-all">{paymentAccountDetails.walletAddress}</span></div>
+                </div>
               </div>
             )}
 
-            <p className="text-gray-300 mb-4">
-              Available: ${totalCurrentBalanceUSD.toFixed(2)}<br />
-              Min: $5
-            </p>
+            <div className="mt-4 flex items-center justify-between rounded-2xl border border-white/[0.06] bg-[#111830] px-4 py-3 text-sm">
+              <span className="text-slate-400">Available</span>
+              <span className="font-extrabold text-white">${totalCurrentBalanceUSD.toFixed(2)}</span>
+            </div>
+            <p className="mt-2 text-xs text-slate-500">Minimum withdrawal: $5</p>
 
-            <div className="mb-4">
+            <div className="mt-4">
               <input
                 type="number"
                 value={withdrawAmount}
                 onChange={handleWithdrawAmountChange}
                 placeholder="Enter amount"
-                className="w-full px-4 py-3 rounded-lg bg-gray-700 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className="w-full rounded-xl border border-white/10 bg-[#161b2e] px-4 py-3 text-white placeholder:text-slate-500 focus:border-[#6c63ff]/60 focus:outline-none"
                 min="5"
                 max={totalCurrentBalanceUSD}
                 step="0.01"
               />
               {withdrawError && (
-                <p className="text-red-400 text-sm mt-2">{withdrawError}</p>
+                <p className="mt-2 text-sm text-red-400">{withdrawError}</p>
               )}
             </div>
 
-            <div className="flex gap-4">
+            <div className="mt-5 flex gap-3">
               <button
-                className="bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-500 hover:to-pink-400 transition-all text-white font-bold px-6 py-3 rounded-lg flex-1"
+                className="flex-1 rounded-xl bg-gradient-to-r from-purple-600 to-pink-500 px-4 py-3 text-sm font-bold text-white transition-all [@media(hover:hover)]:hover:from-purple-500 [@media(hover:hover)]:hover:to-pink-400"
                 onClick={handleConfirmWithdraw}
               >
                 Confirm Withdraw
               </button>
               <button
-                className="bg-gray-600 hover:bg-gray-700 text-white font-medium px-6 py-3 rounded-lg flex-1"
+                className="flex-1 rounded-xl border border-white/10 bg-[#161b2e] px-4 py-3 text-sm font-semibold text-slate-200 transition-colors [@media(hover:hover)]:hover:bg-[#1e2540]"
                 onClick={() => {
                   setShowConfirmModal(false);
                   setWithdrawAmount('');
@@ -883,22 +900,23 @@ const HistoryPage = () => {
 
       {/* Delete Account Confirmation Modal */}
       {showDeleteConfirm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-[#111624] p-8 rounded-lg shadow-lg text-center w-96">
-            <h2 className="text-2xl font-bold mb-4 text-white">Delete Payment Account</h2>
-            <p className="text-gray-300 mb-6">
-              Are you sure you want to delete your payment account? You&apos;ll all need to add it again to make withdrawals.
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+          <div className="w-full max-w-sm rounded-3xl border border-white/[0.08] bg-[#0d1220] p-6 text-center text-white">
+            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[#2a1216] text-2xl">🗑️</div>
+            <h2 className="text-xl font-extrabold text-white">Delete Payment Account</h2>
+            <p className="mt-2 text-sm leading-relaxed text-slate-400">
+              Are you sure you want to delete your payment account? You&apos;ll need to add it again to make withdrawals.
             </p>
 
-            <div className="flex gap-4">
+            <div className="mt-5 flex gap-3">
               <button
-                className="bg-red-600 hover:bg-red-700 text-white font-bold px-6 py-3 rounded-lg flex-1"
+                className="flex-1 rounded-xl bg-red-600 px-4 py-3 text-sm font-bold text-white transition-colors [@media(hover:hover)]:hover:bg-red-500"
                 onClick={handleDeleteAccount}
               >
                 Delete Account
               </button>
               <button
-                className="bg-gray-600 hover:bg-gray-700 text-white font-medium px-6 py-3 rounded-lg flex-1"
+                className="flex-1 rounded-xl border border-white/10 bg-[#161b2e] px-4 py-3 text-sm font-semibold text-slate-200 transition-colors [@media(hover:hover)]:hover:bg-[#1e2540]"
                 onClick={() => setShowDeleteConfirm(false)}
               >
                 Cancel
@@ -908,53 +926,67 @@ const HistoryPage = () => {
         </div>
       )}
 
-      {/* Popup */}
+      {/* Instruction popup (question-mark icon) */}
       {showPopup && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-[#111624] p-8 rounded-lg shadow-lg text-center w-96">
-            <div className="flex justify-center mb-6">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4" onClick={() => setShowPopup(false)}>
+          <div
+            className="relative w-full max-w-sm overflow-hidden rounded-3xl border border-white/[0.08] bg-gradient-to-br from-[#f5c451]/[0.16] via-[#0d1220] to-[#0d1220] p-6 text-white"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="pointer-events-none absolute -top-16 -right-16 h-48 w-48 rounded-full bg-[#f5c451]/15 blur-3xl" />
+            <div className="relative flex flex-col items-center text-center">
               <span
-                className="rounded-full flex items-center justify-center shrink-0"
-                style={{ width: 64, height: 64, boxShadow: "0 4px 12px -4px rgba(245,196,81,0.5)" }}
+                className="flex items-center justify-center rounded-full"
+                style={{ width: 56, height: 56, boxShadow: "0 4px 12px -4px rgba(245,196,81,0.5)" }}
               >
-                <svg viewBox="0 0 24 24" width="64" height="64" xmlns="http://www.w3.org/2000/svg" style={{ filter: "drop-shadow(0 4px 8px rgba(245,196,81,0.4))" }}>
+                <svg viewBox="0 0 24 24" width="56" height="56" xmlns="http://www.w3.org/2000/svg" style={{ filter: "drop-shadow(0 4px 8px rgba(245,196,81,0.4))" }}>
                   <circle cx="12" cy="12" r="10" fill="#F5C451" />
                   <circle cx="12" cy="12" r="10" fill="none" stroke="#B8860B" strokeWidth="1.2" />
                   <circle cx="12" cy="12" r="7" fill="none" stroke="#B8860B" strokeWidth="0.8" opacity="0.45" />
                   <path d="M12 7.3l1.1 2.6 2.7.3-2 1.8.5 2.7-2.3-1.4-2.3 1.4.5-2.7-2-1.8 2.7-.3L12 7.3z" fill="#B8860B" opacity="0.55" />
                 </svg>
               </span>
+              <h2 className="mt-4 text-2xl font-extrabold text-white">How payouts work</h2>
+
+              <div className="mt-4 w-full rounded-2xl border border-white/[0.08] bg-[#111830] px-4 py-3">
+                <p className="text-lg font-extrabold text-[#f5c451]">1 Gold = $0.04</p>
+              </div>
+
+              <p className="mt-4 text-sm leading-relaxed text-slate-300">
+                You can request a withdrawal at any time. Payouts are sent instantly to your USDT or USDC (BEP20) wallet.
+              </p>
+              <p className="mt-2 text-sm leading-relaxed text-slate-400">
+                In rare cases of blockchain network delays, it may take up to 24 hours.
+              </p>
+
+              <button
+                className="mt-6 w-full rounded-xl bg-gradient-to-r from-purple-600 to-pink-500 px-6 py-3 text-sm font-bold text-white transition-all [@media(hover:hover)]:hover:from-purple-500 [@media(hover:hover)]:hover:to-pink-400"
+                onClick={() => setShowPopup(false)}
+              >
+                Got it
+              </button>
             </div>
-            <h2 className="text-2xl font-bold mb-4 text-white">Instruction</h2>
-            <p className="text-white mb-6 text-lg">1 gold = $0.04 </p>
-            <p className="text-white mb-6 text-lg">You can request a withdrawal at any time. Payouts are sent instantly to your USDT or USDC (BEP20) wallet. In rare cases of blockchain network delays, it may take up to 24 hours. </p>
-            <button
-              className="bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-500 hover:to-pink-400 transition-all text-white font-bold px-6 py-3 rounded-lg"
-              onClick={() => setShowPopup(false)}
-            >
-              Got it
-            </button>
           </div>
         </div>
       )}
 
       {/* Success Modal */}
       {showSuccessModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-[#111624] p-8 rounded-lg shadow-lg text-center w-96">
-            <div className="flex justify-center mb-6">
-              <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center">
-                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+          <div className="w-full max-w-sm rounded-3xl border border-white/[0.08] bg-[#0d1220] p-6 text-center text-white">
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[#0f2a22]">
+              <div className="flex h-11 w-11 items-center justify-center rounded-full bg-green-500">
+                <svg className="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
                 </svg>
               </div>
             </div>
-            <h2 className="text-2xl font-bold mb-4 text-white">Withdrawal Submitted!</h2>
-            <p className="text-gray-300 mb-6">
-              Withdrawal submitted successfully. Processing typically completes within 24 hours
+            <h2 className="text-xl font-extrabold text-white">Withdrawal Submitted!</h2>
+            <p className="mt-2 text-sm leading-relaxed text-slate-400">
+              Withdrawal submitted successfully. Processing typically completes within 24 hours.
             </p>
             <button
-              className="bg-gradient-to-r from-green-600 to-green-500 hover:from-green-500 hover:to-green-400 transition-all text-white font-bold px-6 py-3 rounded-lg"
+              className="mt-6 w-full rounded-xl bg-gradient-to-r from-green-600 to-green-500 px-6 py-3 text-sm font-bold text-white transition-all [@media(hover:hover)]:hover:from-green-500 [@media(hover:hover)]:hover:to-green-400"
               onClick={() => setShowSuccessModal(false)}
             >
               Got it
@@ -965,23 +997,24 @@ const HistoryPage = () => {
 
       {/* Toast Notification */}
       {showToast && (
-        <div className="fixed top-4 right-4 z-50 animate-slide-in">
-          <div className="bg-red-600 text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-3">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="fixed top-4 right-4 left-4 sm:left-auto z-[70] animate-slide-in">
+          <div className="flex items-center gap-3 rounded-2xl border border-red-500/30 bg-[#2a1216] px-4 py-3 text-sm text-red-200 shadow-lg">
+            <svg className="h-5 w-5 shrink-0 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <span>{toastMessage}</span>
+            <span className="flex-1">{toastMessage}</span>
             <button
               onClick={() => setShowToast(false)}
-              className="ml-2 text-white hover:text-gray-200"
+              className="shrink-0 text-red-300 transition-colors [@media(hover:hover)]:hover:text-white"
             >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
           </div>
         </div>
       )}
+
 
       {showViewsModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 p-4" onClick={() => setShowViewsModal(false)}>
