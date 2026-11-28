@@ -43,12 +43,12 @@ const FAQ_DATA: Record<CategoryKey, FAQSection[]> = {
         {
           question: "What is the 12-secret-phrase?",
           answer:
-            "It's your backup key. If you forget your password or lose access, you can use the 12-secret-phrase to recover your account.",
+            "It's your backup key. If you forget your password or lose access, you can use the 12-secret-phrase to recover your account. For an extra way back in, add biometric login in Settings → Account.",
         },
         {
           question: "What if I lose my 12-secret-phrase?",
           answer:
-            "If you forget your password and lose your 12-secret-phrase, your account cannot be recovered. Keep it safe.",
+            "If you can still sign in with biometric login (for example a passkey synced to your Google or Apple account), you can keep using your account and view or save your phrase again from Settings. If you have lost your password, your phrase and every other way to sign in, your account cannot be recovered. Keep it safe.",
         },
       ],
     },

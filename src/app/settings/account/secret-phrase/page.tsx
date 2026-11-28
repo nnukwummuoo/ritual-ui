@@ -192,7 +192,7 @@ const SecretPhrasePage = () => {
             <div className="bg-gradient-to-br from-red-500/10 to-red-500/5 border border-red-500/30 rounded-xl p-4">
               <p className="text-red-400 font-semibold text-sm mb-1">⚠️ Important</p>
               <p className="text-gray-300 text-xs leading-relaxed">
-                This phrase is the only way to recover your account. If you lose it, we cannot help you.
+                This phrase is your guaranteed backup. If you lose it and cannot sign in any other way, we cannot recover your account. Adding biometric login gives you a second way back in, if your passkey syncs to your Google or Apple account.
                 Keep it safe. Never share it with anyone.
               </p>
             </div>

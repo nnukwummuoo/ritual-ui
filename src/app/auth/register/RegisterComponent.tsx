@@ -691,7 +691,7 @@ export const Register = () => {
                 <div className="phrase-heading">
                   <span className="phrase-heading-icon">🔐</span>
                   <h3>Save Your Recovery Phrase</h3>
-                  <p>This is the only way to recover your account.</p>
+                  <p>Your guaranteed backup for getting back into your account.</p>
                 </div>
 
                 <div className="phrase-grid">
@@ -707,7 +707,10 @@ export const Register = () => {
                   <p>
                     <span className="phrase-warning-title">⚠️ Important — Save Your Recovery Phrase</span>
                     <span className="phrase-warning-text">
-                      This phrase is the only way to recover your account. If you lose it, we cannot help you.
+                      Keep this phrase safe. If you lose it and have no other way to sign in, we cannot recover your account for you.
+                    </span>
+                    <span className="phrase-warning-text">
+                      Tip: after you sign in, add biometric login (Settings → Account). If your passkey syncs to your Google or Apple account, it can also get you back in on a new phone.
                     </span>
                     <span className="phrase-warning-text">→ Keep it safe. × Never share it with anyone.</span>
                   </p>
